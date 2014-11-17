@@ -13,11 +13,18 @@ onfetch = function(e) {
     var key = header[0], value = header[1];
     headers[key] = value;
   }
+  var errorNameWhileAddingHeader = '';
+  try {
+    e.request.headers.append('Test-Header', 'TestValue');
+  } catch (e) {
+    errorNameWhileAppendingHeader = e.name;
+  }
   port.postMessage({
       url: e.request.url,
       method: e.request.method,
       referrer: e.request.referrer,
       headers: headers,
-      headerSize: e.request.headers.size
+      headerSize: e.request.headers.size,
+      errorNameWhileAppendingHeader: errorNameWhileAppendingHeader
     });
 };

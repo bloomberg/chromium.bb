@@ -45,6 +45,7 @@
 #include "modules/push_messaging/PushEvent.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
+#include "modules/serviceworkers/Headers.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
@@ -87,6 +88,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     }
 
     Request* request = Request::create(m_workerGlobalScope, webRequest);
+    request->headers()->setGuard(Headers::ImmutableGuard);
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(observer, request));
     fetchEvent->setIsReload(webRequest.isReload());
     m_workerGlobalScope->dispatchEvent(fetchEvent.release());
