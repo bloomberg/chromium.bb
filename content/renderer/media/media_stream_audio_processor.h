@@ -51,10 +51,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
     NON_EXPORTED_BASE(public AudioProcessorInterface),
     NON_EXPORTED_BASE(public AecDumpMessageFilter::AecDumpDelegate) {
  public:
-  // Returns false if |kDisableAudioTrackProcessing| is set to true, otherwise
-  // returns true.
-  static bool IsAudioTrackProcessingEnabled();
-
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
   // |playout_data_source| won't be used.

@@ -20,21 +20,15 @@ class MediaStreamAudioSinkOwner : public MediaStreamAudioTrackSink {
   explicit MediaStreamAudioSinkOwner(MediaStreamAudioSink* sink);
 
   // MediaStreamAudioTrackSink implementation.
-  int OnData(const int16* audio_data,
-             int sample_rate,
-             int number_of_channels,
-             int number_of_frames,
-             const std::vector<int>& channels,
-             int audio_delay_milliseconds,
-             int current_volume,
-             bool need_audio_processing,
-             bool key_pressed) override;
+  void OnData(const int16* audio_data,
+              int sample_rate,
+              int number_of_channels,
+              int number_of_frames) override;
   void OnSetFormat(const media::AudioParameters& params) override;
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
   void Reset() override;
   bool IsEqual(const MediaStreamAudioSink* other) const override;
-  bool IsEqual(const PeerConnectionAudioSink* other) const override;
 
  protected:
   ~MediaStreamAudioSinkOwner() override {}

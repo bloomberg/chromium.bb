@@ -16,7 +16,6 @@
 
 namespace content {
 
-class WebRtcAudioCapturer;
 class WebRtcLocalAudioTrack;
 
 // WebAudioCapturerSource is the missing link between
@@ -44,7 +43,7 @@ class WebAudioCapturerSource
   // |track| is the sink of the data flow. |source_provider| is the source of
   // the data flow where stream information like delay, volume, key_pressed,
   // is stored.
-  void Start(WebRtcLocalAudioTrack* track, WebRtcAudioCapturer* capturer);
+  void Start(WebRtcLocalAudioTrack* track);
 
   // Called when the media audio track is stopping.
   void Stop();
@@ -61,11 +60,6 @@ class WebAudioCapturerSource
   // WebRtcLocalAudioTrack is reference counted, and owning this object.
   // To avoid circular reference, a raw pointer is kept here.
   WebRtcLocalAudioTrack* track_;
-
-  // A raw pointer to the capturer to get audio processing params like
-  // delay, volume, key_pressed information.
-  // This |capturer_| is guaranteed to outlive this object.
-  WebRtcAudioCapturer* capturer_;
 
   media::AudioParameters params_;
 

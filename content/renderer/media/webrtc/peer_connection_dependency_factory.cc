@@ -175,8 +175,6 @@ PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
 
 PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   CleanupPeerConnectionFactory();
-  if (aec_dump_message_filter_.get())
-    aec_dump_message_filter_->RemoveDelegate(this);
 }
 
 blink::WebRTCPeerConnectionHandler*
@@ -323,17 +321,6 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       RenderThreadImpl::current()->GetGpuFactories(),
       &start_signaling_event));
 
-  // TODO(xians): Remove the following code after kDisableAudioTrackProcessing
-  // is removed.
-  if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
-    aec_dump_message_filter_ = AecDumpMessageFilter::Get();
-    // In unit tests not creating a message filter, |aec_dump_message_filter_|
-    // will be NULL. We can just ignore that. Other unit tests and browser tests
-    // ensure that we do get the filter when we should.
-    if (aec_dump_message_filter_.get())
-      aec_dump_message_filter_->AddDelegate(this);
-  }
-
   start_signaling_event.Wait();
   CHECK(signaling_thread_);
 }
@@ -476,12 +463,6 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
 
 void PeerConnectionDependencyFactory::StartLocalAudioTrack(
     WebRtcLocalAudioTrack* audio_track) {
-  // Add the WebRtcAudioDevice as the sink to the local audio track.
-  // TODO(xians): Remove the following line of code after the APM in WebRTC is
-  // completely deprecated. See http://crbug/365672.
-  if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled())
-    audio_track->AddSink(GetWebRtcAudioDevice());
-
   // Start the audio track. This will hook the |audio_track| to the capturer
   // as the sink of the audio, and only start the source of the capturer if
   // it is the first audio track connecting to the capturer.
@@ -630,32 +611,6 @@ scoped_refptr<base::MessageLoopProxy>
 PeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
   DCHECK(CalledOnValidThread());
   return chrome_signaling_thread_.message_loop_proxy();
-}
-
-void PeerConnectionDependencyFactory::OnAecDumpFile(
-    const IPC::PlatformFileForTransit& file_handle) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled());
-  DCHECK(PeerConnectionFactoryCreated());
-
-  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
-  DCHECK(file.IsValid());
-
-  // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
-  // fails, |aec_dump_file| will be closed.
-  if (!GetPcFactory()->StartAecDump(file.TakePlatformFile()))
-    DVLOG(1) << "Could not start AEC dump.";
-}
-
-void PeerConnectionDependencyFactory::OnDisableAecDump() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled());
-  // Do nothing. We never disable AEC dump for non-track-processing case.
-}
-
-void PeerConnectionDependencyFactory::OnIpcClosing() {
-  DCHECK(CalledOnValidThread());
-  aec_dump_message_filter_ = NULL;
 }
 
 void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {

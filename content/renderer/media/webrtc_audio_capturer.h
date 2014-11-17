@@ -105,12 +105,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // call Stop()
   void Stop();
 
-  // Called by the WebAudioCapturerSource to get the audio processing params.
-  // This function is triggered by provideInput() on the WebAudio audio thread,
-  // TODO(xians): Remove after moving APM from WebRtc to Chrome.
-  void GetAudioProcessingParams(base::TimeDelta* delay, int* volume,
-                                bool* key_pressed);
-
   // Used by the unittests to inject their own source to the capturer.
   void SetCapturerSourceForTesting(
       const scoped_refptr<media::AudioCapturerSource>& source,
@@ -195,13 +189,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Flag which affects the buffer size used by the capturer.
   bool peer_connection_mode_;
-
-  // Cache value for the audio processing params.
-  base::TimeDelta audio_delay_;
-  bool key_pressed_;
-
-  // Flag to help deciding if the data needs audio processing.
-  bool need_audio_processing_;
 
   // Raw pointer to the WebRtcAudioDeviceImpl, which is valid for the lifetime
   // of RenderThread.

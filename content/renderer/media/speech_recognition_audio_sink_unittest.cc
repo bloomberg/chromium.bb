@@ -290,9 +290,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
   // Emulates an audio capture device capturing data from the source.
   inline void CaptureAudio(const uint32 buffers) {
     for (uint32 i = 0; i < buffers; ++i)
-      native_track()->Capture(source_data(),
-                             base::TimeDelta::FromMilliseconds(0), 1, false,
-                             false, false);
+      native_track()->Capture(source_data(), false);
   }
 
   // Used to simulate a problem with sockets.

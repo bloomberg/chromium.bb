@@ -608,8 +608,6 @@
       'renderer/media/media_stream_video_track.h',
       'renderer/media/native_handle_impl.cc',
       'renderer/media/native_handle_impl.h',
-      'renderer/media/peer_connection_audio_sink_owner.cc',
-      'renderer/media/peer_connection_audio_sink_owner.h',
       'renderer/media/peer_connection_identity_service.cc',
       'renderer/media/peer_connection_identity_service.h',
       'renderer/media/peer_connection_tracker.cc',

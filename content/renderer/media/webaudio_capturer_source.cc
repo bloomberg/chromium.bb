@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
 using media::AudioBus;
@@ -22,7 +21,6 @@ namespace content {
 
 WebAudioCapturerSource::WebAudioCapturerSource()
     : track_(NULL),
-      capturer_(NULL),
       audio_format_changed_(false) {
 }
 
@@ -61,20 +59,17 @@ void WebAudioCapturerSource::setFormat(
       kMaxNumberOfBuffersInFifo * params_.frames_per_buffer()));
 }
 
-void WebAudioCapturerSource::Start(
-    WebRtcLocalAudioTrack* track, WebRtcAudioCapturer* capturer) {
+void WebAudioCapturerSource::Start(WebRtcLocalAudioTrack* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(track);
   base::AutoLock auto_lock(lock_);
   track_ = track;
-  capturer_ = capturer;
 }
 
 void WebAudioCapturerSource::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   track_ = NULL;
-  capturer_ = NULL;
 }
 
 void WebAudioCapturerSource::consumeAudio(
@@ -108,26 +103,13 @@ void WebAudioCapturerSource::consumeAudio(
 
   fifo_->Push(wrapper_bus_.get());
   int capture_frames = params_.frames_per_buffer();
-  base::TimeDelta delay;
-  int volume = 0;
-  bool key_pressed = false;
-  if (capturer_) {
-    capturer_->GetAudioProcessingParams(&delay, &volume, &key_pressed);
-  }
-
-  // Turn off audio processing if the delay value is 0, since in such case,
-  // it indicates the data is not from microphone.
-  // TODO(xians): remove the flag when supporting one APM per audio track.
-  // See crbug/264611 for details.
-  bool need_audio_processing = (delay.InMilliseconds() != 0);
   while (fifo_->frames() >= capture_frames) {
     fifo_->Consume(capture_bus_.get(), 0, capture_frames);
     // TODO(xians): Avoid this interleave/deinterleave operation.
     capture_bus_->ToInterleaved(capture_bus_->frames(),
                                 params_.bits_per_sample() / 8,
                                 audio_data_.get());
-    track_->Capture(audio_data_.get(), delay, volume, key_pressed,
-                    need_audio_processing, false);
+    track_->Capture(audio_data_.get(), false);
   }
 }
 

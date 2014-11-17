@@ -4,13 +4,11 @@
 
 #include "content/renderer/media/media_stream_audio_processor.h"
 
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #if defined(OS_MACOSX)
 #include "base/metrics/field_trial.h"
 #endif
 #include "base/metrics/histogram.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -205,11 +203,6 @@ class MediaStreamAudioFifo {
   bool data_available_;
 };
 
-bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAudioTrackProcessing);
-}
-
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
     int effects,
@@ -222,14 +215,13 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
-  if (IsAudioTrackProcessingEnabled()) {
-    aec_dump_message_filter_ = AecDumpMessageFilter::Get();
-    // In unit tests not creating a message filter, |aec_dump_message_filter_|
-    // will be NULL. We can just ignore that. Other unit tests and browser tests
-    // ensure that we do get the filter when we should.
-    if (aec_dump_message_filter_.get())
-      aec_dump_message_filter_->AddDelegate(this);
-  }
+
+  aec_dump_message_filter_ = AecDumpMessageFilter::Get();
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be NULL. We can just ignore that. Other unit tests and browser tests
+  // ensure that we do get the filter when we should.
+  if (aec_dump_message_filter_.get())
+    aec_dump_message_filter_->AddDelegate(this);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -400,11 +392,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // disabled.
   audio_mirroring_ = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogAudioMirroring);
-
-  if (!IsAudioTrackProcessingEnabled()) {
-    RecordProcessingState(AUDIO_PROCESSING_IN_WEBRTC);
-    return;
-  }
 
 #if defined(OS_IOS)
   // On iOS, VPIO provides built-in AGC and AEC.

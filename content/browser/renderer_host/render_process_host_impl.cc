@@ -1228,7 +1228,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePluginPowerSaver,
 #endif
 #if defined(ENABLE_WEBRTC)
-    switches::kDisableAudioTrackProcessing,
     switches::kDisableWebRtcHWDecoding,
     switches::kDisableWebRtcHWEncoding,
     switches::kEnableWebRtcHWVp8Encoding,

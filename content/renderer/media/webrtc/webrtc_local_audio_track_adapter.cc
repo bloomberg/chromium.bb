@@ -127,14 +127,6 @@ void WebRtcLocalAudioTrackAdapter::RemoveSink(
 bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
   DCHECK(signaling_thread_checker_.CalledOnValidThread());
 
-  // It is required to provide the signal level after audio processing. In
-  // case the audio processing is not enabled for the track, we return
-  // false here in order not to overwrite the value from WebRTC.
-  // TODO(xians): Remove this after we turn on the APM in Chrome by default.
-  // http://crbug/365672 .
-  if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled())
-    return false;
-
   base::AutoLock auto_lock(lock_);
   *level = signal_level_;
   return true;
@@ -191,16 +183,7 @@ webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
 }
 
 cricket::AudioRenderer* WebRtcLocalAudioTrackAdapter::GetRenderer() {
-  // When the audio track processing is enabled, return a NULL so that capture
-  // data goes through Libjingle LocalAudioTrackHandler::LocalAudioSinkAdapter
-  // ==> WebRtcVoiceMediaChannel::WebRtcVoiceChannelRenderer ==> WebRTC.
-  // When the audio track processing is disabled, WebRtcLocalAudioTrackAdapter
-  // is used to pass the channel ids to WebRtcAudioDeviceImpl, the data flow
-  // becomes WebRtcAudioDeviceImpl ==> WebRTC.
-  // TODO(xians): Only return NULL after the APM in WebRTC is deprecated.
-  // See See http://crbug/365672 for details.
-  return MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()?
-      NULL : this;
+  return NULL;
 }
 
 }  // namespace content

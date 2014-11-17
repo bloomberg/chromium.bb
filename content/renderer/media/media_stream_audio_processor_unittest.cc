@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -175,29 +173,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
   media::AudioParameters params_;
 };
 
-TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
-  // Setup the audio processor with disabled flag on.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioTrackProcessing);
-  MockMediaConstraintFactory constraint_factory;
-  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
-      new WebRtcAudioDeviceImpl());
-  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
-      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          constraint_factory.CreateWebMediaConstraints(), 0,
-          webrtc_audio_device.get()));
-  EXPECT_FALSE(audio_processor->has_audio_processing());
-  audio_processor->OnCaptureFormatChanged(params_);
-
-  ProcessDataAndVerifyFormat(audio_processor.get(),
-                             params_.sample_rate(),
-                             params_.channels(),
-                             params_.sample_rate() / 100);
-  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
-  // |audio_processor|.
-  audio_processor = NULL;
-}
-
 TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
@@ -355,7 +330,6 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
     for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {
       EXPECT_FALSE(audio_constraints.GetProperty(kDefaultAudioConstraints[i]));
     }
-    EXPECT_FALSE(audio_constraints.NeedsAudioProcessing());
 #if defined(OS_WIN)
     EXPECT_TRUE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
 #else
@@ -511,35 +485,6 @@ TEST_F(MediaStreamAudioProcessorTest, TestWithKeyboardMicChannel) {
                              kAudioProcessingSampleRate,
                              kAudioProcessingNumberOfChannel,
                              kAudioProcessingSampleRate / 100);
-  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
-  // |audio_processor|.
-  audio_processor = NULL;
-}
-
-TEST_F(MediaStreamAudioProcessorTest,
-       TestWithKeyboardMicChannelWithoutProcessing) {
-  // Setup the audio processor with disabled flag on.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioTrackProcessing);
-  MockMediaConstraintFactory constraint_factory;
-  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
-      new WebRtcAudioDeviceImpl());
-  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
-      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-          constraint_factory.CreateWebMediaConstraints(), 0,
-          webrtc_audio_device.get()));
-  EXPECT_FALSE(audio_processor->has_audio_processing());
-
-  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC,
-                                48000, 16, 512);
-  audio_processor->OnCaptureFormatChanged(params);
-
-  ProcessDataAndVerifyFormat(
-      audio_processor.get(),
-      params.sample_rate(),
-      media::ChannelLayoutToChannelCount(media::CHANNEL_LAYOUT_STEREO),
-      params.sample_rate() / 100);
   // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
   // |audio_processor|.
   audio_processor = NULL;

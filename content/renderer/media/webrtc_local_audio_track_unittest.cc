@@ -4,11 +4,11 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -122,36 +122,20 @@ class MockCapturerSource : public media::AudioCapturerSource {
   media::AudioParameters params_;
 };
 
-// TODO(xians): Use MediaStreamAudioSink.
-class MockMediaStreamAudioSink : public PeerConnectionAudioSink {
+class MockMediaStreamAudioSink : public MediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() {}
   ~MockMediaStreamAudioSink() {}
-  int OnData(const int16* audio_data,
+  void OnData(const int16* audio_data,
              int sample_rate,
              int number_of_channels,
-             int number_of_frames,
-             const std::vector<int>& channels,
-             int audio_delay_milliseconds,
-             int current_volume,
-             bool need_audio_processing,
-             bool key_pressed) override {
+             int number_of_frames) override {
     EXPECT_EQ(params_.sample_rate(), sample_rate);
     EXPECT_EQ(params_.channels(), number_of_channels);
     EXPECT_EQ(params_.frames_per_buffer(), number_of_frames);
-    CaptureData(channels.size(),
-                audio_delay_milliseconds,
-                current_volume,
-                need_audio_processing,
-                key_pressed);
-    return 0;
+    CaptureData();
   }
-  MOCK_METHOD5(CaptureData,
-               void(int number_of_network_channels,
-                    int audio_delay_milliseconds,
-                    int current_volume,
-                    bool need_audio_processing,
-                    bool key_pressed));
+  MOCK_METHOD0(CaptureData, void());
   void OnSetFormat(const media::AudioParameters& params) {
     params_ = params;
     FormatIsSet();
@@ -218,11 +202,7 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectAndDisconnectOneSink) {
   base::WaitableEvent event(false, false);
   EXPECT_CALL(*sink, FormatIsSet());
   EXPECT_CALL(*sink,
-      CaptureData(0,
-                  0,
-                  0,
-                  _,
-                  false)).Times(AtLeast(1))
+      CaptureData()).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event));
   track->AddSink(sink.get());
   EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
@@ -252,15 +232,14 @@ TEST_F(WebRtcLocalAudioTrackTest,  DISABLED_DisableEnableAudioTrack) {
   const media::AudioParameters params = capturer_->source_audio_parameters();
   base::WaitableEvent event(false, false);
   EXPECT_CALL(*sink, FormatIsSet()).Times(1);
-  EXPECT_CALL(*sink,
-              CaptureData(0, 0, 0, _, false)).Times(0);
+  EXPECT_CALL(*sink, CaptureData()).Times(0);
   EXPECT_EQ(sink->audio_params().frames_per_buffer(),
             params.sample_rate() / 100);
   track->AddSink(sink.get());
   EXPECT_FALSE(event.TimedWait(TestTimeouts::tiny_timeout()));
 
   event.Reset();
-  EXPECT_CALL(*sink, CaptureData(0, 0, 0, _, false)).Times(AtLeast(1))
+  EXPECT_CALL(*sink, CaptureData()).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event));
   EXPECT_TRUE(track->GetAudioAdapter()->set_enabled(true));
   EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
@@ -285,8 +264,7 @@ TEST_F(WebRtcLocalAudioTrackTest, DISABLED_MultipleAudioTracks) {
   const media::AudioParameters params = capturer_->source_audio_parameters();
   base::WaitableEvent event_1(false, false);
   EXPECT_CALL(*sink_1, FormatIsSet()).WillOnce(Return());
-  EXPECT_CALL(*sink_1,
-      CaptureData(0, 0, 0, _, false)).Times(AtLeast(1))
+  EXPECT_CALL(*sink_1, CaptureData()).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_1));
   EXPECT_EQ(sink_1->audio_params().frames_per_buffer(),
             params.sample_rate() / 100);
@@ -306,11 +284,11 @@ TEST_F(WebRtcLocalAudioTrackTest, DISABLED_MultipleAudioTracks) {
 
   scoped_ptr<MockMediaStreamAudioSink> sink_2(new MockMediaStreamAudioSink());
   EXPECT_CALL(*sink_2, FormatIsSet()).WillOnce(Return());
-  EXPECT_CALL(*sink_1, CaptureData(0, 0, 0, _, false)).Times(AtLeast(1))
+  EXPECT_CALL(*sink_1, CaptureData()).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_1));
   EXPECT_EQ(sink_1->audio_params().frames_per_buffer(),
             params.sample_rate() / 100);
-  EXPECT_CALL(*sink_2, CaptureData(0, 0, 0, _, false)).Times(AtLeast(1))
+  EXPECT_CALL(*sink_2, CaptureData()).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event_2));
   EXPECT_EQ(sink_2->audio_params().frames_per_buffer(),
             params.sample_rate() / 100);
@@ -381,7 +359,7 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
   scoped_ptr<MockMediaStreamAudioSink> sink(new MockMediaStreamAudioSink());
   event.Reset();
   EXPECT_CALL(*sink, FormatIsSet()).WillOnce(SignalEvent(&event));
-  EXPECT_CALL(*sink, CaptureData(_, 0, 0, _, false))
+  EXPECT_CALL(*sink, CaptureData())
       .Times(AnyNumber()).WillRepeatedly(Return());
   track_1->AddSink(sink.get());
   EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
@@ -429,7 +407,7 @@ TEST_F(WebRtcLocalAudioTrackTest,
 
   // Verify the data flow by connecting the |sink_1| to |track_1|.
   scoped_ptr<MockMediaStreamAudioSink> sink_1(new MockMediaStreamAudioSink());
-  EXPECT_CALL(*sink_1.get(), CaptureData(0, 0, 0, _, false))
+  EXPECT_CALL(*sink_1.get(), CaptureData())
       .Times(AnyNumber()).WillRepeatedly(Return());
   EXPECT_CALL(*sink_1.get(), FormatIsSet()).Times(AnyNumber());
   track_1->AddSink(sink_1.get());
@@ -463,7 +441,7 @@ TEST_F(WebRtcLocalAudioTrackTest,
   // Verify the data flow by connecting the |sink_2| to |track_2|.
   scoped_ptr<MockMediaStreamAudioSink> sink_2(new MockMediaStreamAudioSink());
   base::WaitableEvent event(false, false);
-  EXPECT_CALL(*sink_2, CaptureData(0, 0, 0, _, false))
+  EXPECT_CALL(*sink_2, CaptureData())
       .Times(AnyNumber()).WillRepeatedly(Return());
   EXPECT_CALL(*sink_2, FormatIsSet()).WillOnce(SignalEvent(&event));
   track_2->AddSink(sink_2.get());
@@ -524,8 +502,7 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
 #else
   const int expected_buffer_size = params.frames_per_buffer();
 #endif
-  EXPECT_CALL(*sink, CaptureData(
-      0, 0, 0, _, false))
+  EXPECT_CALL(*sink, CaptureData())
       .Times(AtLeast(1)).WillRepeatedly(SignalEvent(&event));
   track->AddSink(sink.get());
   EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));

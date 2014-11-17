@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
@@ -37,28 +36,18 @@ class MockCapturerSource : public media::AudioCapturerSource {
   virtual ~MockCapturerSource() {}
 };
 
-class MockPeerConnectionAudioSink : public PeerConnectionAudioSink {
+class MockMediaStreamAudioSink : public MediaStreamAudioSink {
  public:
-  MockPeerConnectionAudioSink() {}
-  ~MockPeerConnectionAudioSink() {}
-  virtual int OnData(const int16* audio_data, int sample_rate,
-                     int number_of_channels, int number_of_frames,
-                     const std::vector<int>& channels,
-                     int audio_delay_milliseconds, int current_volume,
-                     bool need_audio_processing, bool key_pressed) override {
+  MockMediaStreamAudioSink() {}
+  ~MockMediaStreamAudioSink() {}
+  virtual void OnData(const int16* audio_data, int sample_rate,
+                      int number_of_channels, int number_of_frames) override {
     EXPECT_EQ(sample_rate, params_.sample_rate());
     EXPECT_EQ(number_of_channels, params_.channels());
     EXPECT_EQ(number_of_frames, params_.frames_per_buffer());
-    OnDataCallback(audio_data, channels, audio_delay_milliseconds,
-                   current_volume, need_audio_processing, key_pressed);
-    return 0;
+    OnDataCallback();
   }
-  MOCK_METHOD6(OnDataCallback, void(const int16* audio_data,
-                                    const std::vector<int>& channels,
-                                    int audio_delay_milliseconds,
-                                    int current_volume,
-                                    bool need_audio_processing,
-                                    bool key_pressed));
+  MOCK_METHOD0(OnDataCallback, void());
   virtual void OnSetFormat(const media::AudioParameters& params) override {
     params_ = params;
     FormatIsSet();
@@ -84,11 +73,6 @@ class WebRtcAudioCapturerTest : public testing::Test {
 #endif
   }
 
-  void DisableAudioTrackProcessing() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableAudioTrackProcessing);
-  }
-
   void VerifyAudioParams(const blink::WebMediaConstraints& constraints,
                          bool need_audio_processing) {
     capturer_ = WebRtcAudioCapturer::CreateCapturer(
@@ -109,17 +93,13 @@ class WebRtcAudioCapturerTest : public testing::Test {
     track_->Start();
 
     // Connect a mock sink to the track.
-    scoped_ptr<MockPeerConnectionAudioSink> sink(
-        new MockPeerConnectionAudioSink());
+    scoped_ptr<MockMediaStreamAudioSink> sink(new MockMediaStreamAudioSink());
     track_->AddSink(sink.get());
 
     int delay_ms = 65;
     bool key_pressed = true;
     double volume = 0.9;
 
-    // MaxVolume() in WebRtcAudioCapturer is hard-coded to return 255, we add
-    // 0.5 to do the correct truncation like the production code does.
-    int expected_volume_value = volume * capturer_->MaxVolume() + 0.5;
     scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(params_);
     audio_bus->Zero();
 
@@ -129,21 +109,8 @@ class WebRtcAudioCapturerTest : public testing::Test {
 
     // Verify the sink is getting the correct values.
     EXPECT_CALL(*sink, FormatIsSet());
-    EXPECT_CALL(*sink,
-                OnDataCallback(_, _, delay_ms, expected_volume_value,
-                               need_audio_processing, key_pressed))
-        .Times(AtLeast(1));
+    EXPECT_CALL(*sink, OnDataCallback()).Times(AtLeast(1));
     callback->Capture(audio_bus.get(), delay_ms, volume, key_pressed);
-
-    // Verify the cached values in the capturer fits what we expect.
-    base::TimeDelta cached_delay;
-    int cached_volume = !expected_volume_value;
-    bool cached_key_pressed = !key_pressed;
-    capturer_->GetAudioProcessingParams(&cached_delay, &cached_volume,
-                                        &cached_key_pressed);
-    EXPECT_EQ(cached_delay.InMilliseconds(), delay_ms);
-    EXPECT_EQ(cached_volume, expected_volume_value);
-    EXPECT_EQ(cached_key_pressed, key_pressed);
 
     track_->RemoveSink(sink.get());
     EXPECT_CALL(*capturer_source_.get(), Stop());
@@ -155,15 +122,6 @@ class WebRtcAudioCapturerTest : public testing::Test {
   scoped_refptr<WebRtcAudioCapturer> capturer_;
   scoped_ptr<WebRtcLocalAudioTrack> track_;
 };
-
-// Pass the delay value, volume and key_pressed info via capture callback, and
-// those values should be correctly stored and passed to the track.
-TEST_F(WebRtcAudioCapturerTest, VerifyAudioParamsWithoutAudioProcessing) {
-  DisableAudioTrackProcessing();
-  // Use constraints with default settings.
-  MockMediaConstraintFactory constraint_factory;
-  VerifyAudioParams(constraint_factory.CreateWebMediaConstraints(), true);
-}
 
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParamsWithAudioProcessing) {
   // Turn off the default constraints to verify that the sink will get packets

@@ -59,10 +59,6 @@ class CONTENT_EXPORT MediaAudioConstraints {
                         int effects);
   virtual ~MediaAudioConstraints();
 
-  // Checks if any audio constraints are set that requires audio processing to
-  // be applied.
-  bool NeedsAudioProcessing();
-
   // Gets the property of the constraint named by |key| in |constraints_|.
   // Returns the constraint's value if the key is found; Otherwise returns the
   // default value of the constraint.

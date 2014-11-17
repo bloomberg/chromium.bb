@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,14 +73,14 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
   EXPECT_CALL(*sink,
               OnData(_, 16, params_.sample_rate(), params_.channels(),
                      params_.frames_per_buffer()));
-  track_->Capture(data.get(), base::TimeDelta(), 255, false, false, false);
+  track_->Capture(data.get(), false);
 
   // Remove the sink from the webrtc track.
   webrtc_track->RemoveSink(sink.get());
   sink.reset();
 
   // Verify that no more callback gets into the sink.
-  track_->Capture(data.get(), base::TimeDelta(), 255, false, false, false);
+  track_->Capture(data.get(), false);
 }
 
 TEST_F(WebRtcLocalAudioTrackAdapterTest, GetSignalLevel) {
@@ -89,11 +88,6 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, GetSignalLevel) {
       static_cast<webrtc::AudioTrackInterface*>(adapter_.get());
   int signal_level = 0;
   EXPECT_TRUE(webrtc_track->GetSignalLevel(&signal_level));
-
-  // Disable the audio processing in the audio track.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioTrackProcessing);
-  EXPECT_FALSE(webrtc_track->GetSignalLevel(&signal_level));
 }
 
 }  // namespace content

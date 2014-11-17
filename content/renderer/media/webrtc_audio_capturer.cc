@@ -47,20 +47,10 @@ class WebRtcAudioCapturer::TrackOwner
   explicit TrackOwner(WebRtcLocalAudioTrack* track)
       : delegate_(track) {}
 
-  void Capture(const int16* audio_data,
-               base::TimeDelta delay,
-               double volume,
-               bool key_pressed,
-               bool need_audio_processing,
-               bool force_report_nonzero_energy) {
+  void Capture(const int16* audio_data, bool force_report_nonzero_energy) {
     base::AutoLock lock(lock_);
     if (delegate_) {
-      delegate_->Capture(audio_data,
-                         delay,
-                         volume,
-                         key_pressed,
-                         need_audio_processing,
-                         force_report_nonzero_energy);
+      delegate_->Capture(audio_data, force_report_nonzero_energy);
     }
   }
 
@@ -170,7 +160,6 @@ bool WebRtcAudioCapturer::Initialize() {
   // layout that includes the keyboard mic.
   if ((device_info_.device.input.effects &
           media::AudioParameters::KEYBOARD_MIC) &&
-      MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() &&
       audio_constraints.GetProperty(
           MediaAudioConstraints::kGoogExperimentalNoiseSuppression)) {
     if (channel_layout == media::CHANNEL_LAYOUT_STEREO) {
@@ -236,8 +225,6 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
       device_info_(device_info),
       volume_(0),
       peer_connection_mode_(false),
-      key_pressed_(false),
-      need_audio_processing_(false),
       audio_device_(audio_device),
       audio_source_(audio_source) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
@@ -334,9 +321,6 @@ void WebRtcAudioCapturer::SetCapturerSource(
     // Notify the |audio_processor_| of the new format.
     audio_processor_->OnCaptureFormatChanged(params);
 
-    MediaAudioConstraints audio_constraints(constraints_,
-                                            device_info_.device.input.effects);
-    need_audio_processing_ = audio_constraints.NeedsAudioProcessing();
     // Notify all tracks about the new format.
     tracks_.TagAll();
   }
@@ -468,7 +452,6 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
   TrackList::ItemList tracks_to_notify_format;
   int current_volume = 0;
   base::TimeDelta audio_delay;
-  bool need_audio_processing = true;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
@@ -480,16 +463,8 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
     volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
     current_volume = volume_ > MaxVolume() ? MaxVolume() : volume_;
     audio_delay = base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
-    audio_delay_ = audio_delay;
-    key_pressed_ = key_pressed;
     tracks = tracks_.Items();
     tracks_.RetrieveAndClearTags(&tracks_to_notify_format);
-
-    // Set the flag to turn on the audio processing in PeerConnection level.
-    // Note that, we turn off the audio processing in PeerConnection if the
-    // processor has already processed the data.
-    need_audio_processing = need_audio_processing_ ?
-        !MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() : false;
   }
 
   DCHECK(audio_processor_->InputFormat().IsValid());
@@ -525,8 +500,7 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
     // Feed the post-processed data to the tracks.
     for (TrackList::ItemList::const_iterator it = tracks.begin();
          it != tracks.end(); ++it) {
-      (*it)->Capture(output, audio_delay, current_volume, key_pressed,
-                     need_audio_processing, force_report_nonzero_energy);
+      (*it)->Capture(output, force_report_nonzero_energy);
     }
 
     if (new_volume) {
@@ -590,14 +564,6 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
   }
 
   return (sample_rate / 100);
-}
-
-void WebRtcAudioCapturer::GetAudioProcessingParams(
-    base::TimeDelta* delay, int* volume, bool* key_pressed) {
-  base::AutoLock auto_lock(lock_);
-  *delay = audio_delay_;
-  *volume = volume_;
-  *key_pressed = key_pressed_;
 }
 
 void WebRtcAudioCapturer::SetCapturerSourceForTesting(

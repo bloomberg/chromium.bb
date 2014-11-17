@@ -13,26 +13,17 @@ MediaStreamAudioSinkOwner::MediaStreamAudioSinkOwner(MediaStreamAudioSink* sink)
     : delegate_(sink) {
 }
 
-int MediaStreamAudioSinkOwner::OnData(const int16* audio_data,
-                                      int sample_rate,
-                                      int number_of_channels,
-                                      int number_of_frames,
-                                      const std::vector<int>& channels,
-                                      int audio_delay_milliseconds,
-                                      int current_volume,
-                                      bool need_audio_processing,
-                                      bool key_pressed) {
+void MediaStreamAudioSinkOwner::OnData(const int16* audio_data,
+                                       int sample_rate,
+                                       int number_of_channels,
+                                       int number_of_frames) {
   base::AutoLock lock(lock_);
-  // TODO(xians): Investigate on the possibility of not calling out with the
-  // lock.
   if (delegate_) {
     delegate_->OnData(audio_data,
                       sample_rate,
                       number_of_channels,
                       number_of_frames);
   }
-
-  return 0;
 }
 
 void MediaStreamAudioSinkOwner::OnSetFormat(
@@ -59,12 +50,6 @@ bool MediaStreamAudioSinkOwner::IsEqual(
   DCHECK(other);
   base::AutoLock lock(lock_);
   return (other == delegate_);
-}
-
-bool MediaStreamAudioSinkOwner::IsEqual(
-    const PeerConnectionAudioSink* other) const {
-  DCHECK(other);
-  return false;
 }
 
 }  // namespace content
