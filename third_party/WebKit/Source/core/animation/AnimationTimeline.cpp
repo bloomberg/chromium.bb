@@ -236,12 +236,10 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 
 void AnimationTimeline::setPlaybackRate(double playbackRate)
 {
+    // FIXME: need to invalidate compositor animations
     m_currentTimeSnapshot = currentTimeInternal();
     m_rawCurrentTimeSnapshot = m_document->animationClock().currentTime() - zeroTime();
     m_playbackRate = playbackRate;
-    for (auto& player : m_players) {
-        player->setCompositorPending(true);
-    }
 }
 
 double AnimationTimeline::playbackRate() const

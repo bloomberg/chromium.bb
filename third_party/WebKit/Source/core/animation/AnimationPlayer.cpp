@@ -599,8 +599,7 @@ void AnimationPlayer::setOutdated()
 
 bool AnimationPlayer::canStartAnimationOnCompositor()
 {
-    // FIXME: Timeline playback rates should be compositable
-    if (m_playbackRate == 0 || (std::isinf(sourceEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
+    if (m_playbackRate == 0 || (std::isinf(sourceEnd()) && m_playbackRate < 0))
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();
