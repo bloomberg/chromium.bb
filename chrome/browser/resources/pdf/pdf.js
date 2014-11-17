@@ -114,9 +114,12 @@ function PDFViewer(streamDetails) {
 
   // Set up the zoom API.
   if (chrome.tabs) {
-    chrome.tabs.setZoomSettings({mode: 'manual', scope: 'per-tab'},
+    chrome.tabs.setZoomSettings(this.streamDetails.tabId,
+                                {mode: 'manual', scope: 'per-tab'},
                                 this.afterZoom_.bind(this));
     chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
+      if (zoomChangeInfo.tabId != this.streamDetails.tabId)
+        return;
       // If the zoom level is close enough to the current zoom level, don't
       // change it. This avoids us getting into an infinite loop of zoom changes
       // due to floating point error.
@@ -421,7 +424,8 @@ PDFViewer.prototype = {
     var zoom = this.viewport_.zoom;
     if (chrome.tabs && !this.setZoomInProgress_) {
       this.setZoomInProgress_ = true;
-      chrome.tabs.setZoom(zoom, this.setZoomComplete_.bind(this, zoom));
+      chrome.tabs.setZoom(this.streamDetails.tabId, zoom,
+                          this.setZoomComplete_.bind(this, zoom));
     }
     this.plugin_.postMessage({
       type: 'viewport',
@@ -441,10 +445,12 @@ PDFViewer.prototype = {
    */
   setZoomComplete_: function(lastZoom) {
     var zoom = this.viewport_.zoom;
-    if (zoom != lastZoom)
-      chrome.tabs.setZoom(zoom, this.setZoomComplete_.bind(this, zoom));
-    else
+    if (zoom != lastZoom) {
+      chrome.tabs.setZoom(this.streamDetails.tabId, zoom,
+                          this.setZoomComplete_.bind(this, zoom));
+    } else {
       this.setZoomInProgress_ = false;
+    }
   },
 
   /**
