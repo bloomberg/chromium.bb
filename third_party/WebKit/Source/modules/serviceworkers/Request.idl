@@ -4,12 +4,13 @@
 
 // http://fetch.spec.whatwg.org/#request-class
 
+typedef (Request or USVString) RequestInfo;
+
 enum RequestMode { "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 
 [
-    Constructor(USVString input, optional Dictionary requestInitDict),
-    Constructor(Request input, optional Dictionary requestInitDict),
+    Constructor(RequestInfo input, optional Dictionary requestInitDict),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,

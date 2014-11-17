@@ -99,35 +99,19 @@ CacheStorage* ServiceWorkerGlobalScope::caches(ExecutionContext* context)
     return m_caches;
 }
 
-ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request, const Dictionary& requestInit)
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
-    // "Let |r| be the associated request of the result of invoking the initial
-    // value of Request as constructor with |input| and |init| as arguments. If
-    // this throws an exception, reject |p| with it."
-    TrackExceptionState exceptionState;
-    Request* r = Request::create(this, request, requestInit, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
+    if (!m_fetchManager) {
+        exceptionState.throwTypeError("ServiceWorkerGlobalScope is shutting down.");
+        return ScriptPromise();
     }
-    return m_fetchManager->fetch(scriptState, r->request());
-}
 
-ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring, const Dictionary& requestInit)
-{
-    if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
     // "Let |r| be the associated request of the result of invoking the initial
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
-    TrackExceptionState exceptionState;
-    Request* r = Request::create(this, urlstring, requestInit, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
-    }
+    Request* r = Request::create(this, input, init, exceptionState);
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return m_fetchManager->fetch(scriptState, r->request());
 }
 

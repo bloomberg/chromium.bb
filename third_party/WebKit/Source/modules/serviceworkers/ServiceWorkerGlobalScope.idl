@@ -29,6 +29,7 @@
  */
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-global-scope-interface
+typedef (Request or USVString) RequestInfo;
 [
     Exposed=ServiceWorker,
     Global=(Worker,ServiceWorker),
@@ -40,8 +41,7 @@
   [CallWith=ExecutionContext, Unforgeable] readonly attribute USVString scope;
   [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerCache] readonly attribute CacheStorage caches;
 
-  [CallWith=ScriptState] Promise<Response> fetch(DOMString request, optional Dictionary requestInitDict);
-  [CallWith=ScriptState] Promise<Response> fetch(Request request, optional Dictionary requestInitDict);
+  [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
 
   [RaisesException] void close();
 

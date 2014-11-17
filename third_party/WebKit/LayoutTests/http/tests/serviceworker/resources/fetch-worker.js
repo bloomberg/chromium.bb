@@ -4,9 +4,12 @@ importScripts('test-helpers.js');
 async_test(function(t) {
     fetch('http://')
       .then(
-        unreached_rejection(t, 'fetch of invalid URL must fail'),
+        t.unreached_func('fetch of invalid URL must fail'),
         function(e) {
-          assert_equals(e.message, 'Invalid URL');
+          assert_equals(
+            e.message,
+            'Failed to execute \'fetch\' on \'ServiceWorkerGlobalScope\': ' +
+            'Invalid URL');
           t.done();
         })
       .catch(unreached_rejection(t));

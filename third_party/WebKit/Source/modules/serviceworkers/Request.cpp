@@ -133,6 +133,14 @@ Request* Request::createRequestWithRequestData(ExecutionContext* context, FetchR
     return r;
 }
 
+Request* Request::create(ExecutionContext* context, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+{
+    ASSERT(!input.isNull());
+    if (input.isUSVString())
+        return create(context, input.getAsUSVString(), init, exceptionState);
+    return create(context, input.getAsRequest(), init, exceptionState);
+}
+
 Request* Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
 {
     return create(context, input, Dictionary(), exceptionState);

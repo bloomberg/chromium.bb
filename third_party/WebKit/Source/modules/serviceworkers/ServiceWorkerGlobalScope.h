@@ -30,6 +30,7 @@
 #ifndef ServiceWorkerGlobalScope_h
 #define ServiceWorkerGlobalScope_h
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
@@ -49,6 +50,8 @@ class ServiceWorkerThread;
 class WaitUntilObserver;
 class WorkerThreadStartupData;
 
+typedef RequestOrUSVString RequestInfo;
+
 class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -67,8 +70,7 @@ public:
 
     CacheStorage* caches(ExecutionContext*);
 
-    ScriptPromise fetch(ScriptState*, Request*, const Dictionary&);
-    ScriptPromise fetch(ScriptState*, const String&, const Dictionary&);
+    ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
     void close(ExceptionState&);
 
