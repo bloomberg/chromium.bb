@@ -35,21 +35,39 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
+#include "platform/text/LocaleToScriptMapping.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 
 namespace blink {
+
+// SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
+// instead of "zh-CN" and "zh-TW".
+static CString toSkFontMgrLocale(const String& locale)
+{
+    if (!locale.startsWith("zh", false))
+        return locale.ascii();
+
+    switch (localeToScriptCodeForFontSelection(locale)) {
+    case USCRIPT_SIMPLIFIED_HAN:
+        return "zh-Hans";
+    case USCRIPT_TRADITIONAL_HAN:
+        return "zh-Hant";
+    default:
+        return locale.ascii();
+    }
+}
 
 static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription)
 {
     RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
     const char* bcp47Locales[2];
     int localeCount = 0;
-    CString defaultLocale = defaultLanguage().ascii();
+    CString defaultLocale = toSkFontMgrLocale(defaultLanguage());
     bcp47Locales[localeCount++] = defaultLocale.data();
     CString fontLocale;
     if (!fontDescription.locale().isEmpty()) {
-        fontLocale = fontDescription.locale().ascii();
+        fontLocale = toSkFontMgrLocale(fontDescription.locale());
         bcp47Locales[localeCount++] = fontLocale.data();
     }
     RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
