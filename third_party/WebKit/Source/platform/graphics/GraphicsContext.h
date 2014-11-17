@@ -284,11 +284,6 @@ public:
     void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
-    // After drawing directly to the context's canvas, use this function to notify the context so
-    // it can track the opaque region.
-    // FIXME: this is still needed only because ImageSkia::paintSkBitmap() may need to notify for a
-    //        smaller rect than the one drawn to, due to its clipping logic.
-    void didDrawRect(const SkRect&, const SkPaint&, const SkBitmap* = 0);
     void drawRect(const SkRect&, const SkPaint&);
     void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkRect& textRect, const SkPaint&);
     void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);

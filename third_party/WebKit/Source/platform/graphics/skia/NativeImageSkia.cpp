@@ -70,7 +70,6 @@ void NativeImageSkia::draw(
 
     if (isLazyDecoded)
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
-    context->didDrawRect(destRect, paint, &bitmap());
 }
 
 static SkBitmap createBitmapWithSpace(const SkBitmap& bitmap, int spaceWidth, int spaceHeight)

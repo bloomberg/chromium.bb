@@ -1330,15 +1330,6 @@ void GraphicsContext::drawRRect(const SkRRect& rrect, const SkPaint& paint)
         m_trackedRegion.didDrawBounded(this, rrect.rect(), paint);
 }
 
-void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, const SkBitmap* bitmap)
-{
-    if (contextDisabled())
-        return;
-
-    if (regionTrackingEnabled())
-        m_trackedRegion.didDrawRect(this, rect, paint, bitmap);
-}
-
 void GraphicsContext::drawPosText(const void* text, size_t byteLength,
     const SkPoint pos[], const SkRect& textRect, const SkPaint& paint)
 {
