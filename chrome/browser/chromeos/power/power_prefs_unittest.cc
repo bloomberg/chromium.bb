@@ -25,8 +25,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -55,7 +53,7 @@ class PowerPrefsTest : public testing::Test {
 
   TestingProfileManager profile_manager_;
   PowerPolicyController* power_policy_controller_;     // Not owned.
-  FakePowerManagerClient* fake_power_manager_client_;  // Not owned.
+  scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;
 
   scoped_ptr<PowerPrefs> power_prefs_;
 
@@ -71,13 +69,8 @@ PowerPrefsTest::PowerPrefsTest()
 void PowerPrefsTest::SetUp() {
   testing::Test::SetUp();
 
-  scoped_ptr<DBusThreadManagerSetter> dbus_setter =
-      chromeos::DBusThreadManager::GetSetterForTesting();
-  dbus_setter->SetPowerManagerClient(
-      scoped_ptr<PowerManagerClient>(fake_power_manager_client_));
-  // Power policy controller is recreated with SetPowerManagerClient().
-  power_policy_controller_ =
-      chromeos::DBusThreadManager::Get()->GetPowerPolicyController();
+  PowerPolicyController::Initialize(fake_power_manager_client_.get());
+  power_policy_controller_ = PowerPolicyController::Get();
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
@@ -90,6 +83,7 @@ void PowerPrefsTest::SetUp() {
 
 void PowerPrefsTest::TearDown() {
   power_prefs_.reset();
+  PowerPolicyController::Shutdown();
   testing::Test::TearDown();
 }
 

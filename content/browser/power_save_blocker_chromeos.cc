@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,11 +26,10 @@ class PowerSaveBlockerImpl::Delegate
 
   void ApplyBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!chromeos::DBusThreadManager::IsInitialized())
+    if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 
-    chromeos::PowerPolicyController* controller =
-        chromeos::DBusThreadManager::Get()->GetPowerPolicyController();
+    auto* controller = chromeos::PowerPolicyController::Get();
     switch (type_) {
       case kPowerSaveBlockPreventAppSuspension:
         block_id_ = controller->AddSystemWakeLock(reason_);
@@ -46,11 +44,10 @@ class PowerSaveBlockerImpl::Delegate
 
   void RemoveBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!chromeos::DBusThreadManager::IsInitialized())
+    if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 
-    chromeos::DBusThreadManager::Get()->GetPowerPolicyController()->
-        RemoveWakeLock(block_id_);
+    chromeos::PowerPolicyController::Get()->RemoveWakeLock(block_id_);
   }
 
  private:

@@ -8,21 +8,30 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
-class DBusThreadManager;
-
 // PowerPolicyController is responsible for sending Chrome's assorted power
 // management preferences to the Chrome OS power manager.
 class CHROMEOS_EXPORT PowerPolicyController
     : public PowerManagerClient::Observer {
  public:
+  // Sets the global instance. Must be called before any calls to Get().
+  static void Initialize(PowerManagerClient* power_manager_client);
+
+  // Returns true if the global instance has been initialized.
+  static bool IsInitialized();
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Returns the global instance. Initialize() must be called first.
+  static PowerPolicyController* Get();
+
   // Note: Do not change these values; they are used by preferences.
   enum Action {
     ACTION_SUSPEND      = 0,
@@ -69,11 +78,6 @@ class CHROMEOS_EXPORT PowerPolicyController
   // constant would imply.
   static const int kScreenLockAfterOffDelayMs;
 
-  PowerPolicyController();
-  virtual ~PowerPolicyController();
-
-  void Init(DBusThreadManager* manager);
-
   // Updates |prefs_policy_| with |values| and sends an updated policy.
   void ApplyPrefs(const PrefValues& values);
 
@@ -90,9 +94,12 @@ class CHROMEOS_EXPORT PowerPolicyController
   void RemoveWakeLock(int id);
 
   // PowerManagerClient::Observer implementation:
-  virtual void PowerManagerRestarted() override;
+  void PowerManagerRestarted() override;
 
  private:
+  explicit PowerPolicyController(PowerManagerClient* client);
+  ~PowerPolicyController() override;
+
   friend class PowerPrefsTest;
 
   typedef std::map<int, std::string> WakeLockMap;

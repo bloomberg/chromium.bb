@@ -53,7 +53,6 @@ class NfcRecordClient;
 class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
-class PowerPolicyController;
 class PrivetDaemonClient;
 class SessionManagerClient;
 class ShillDeviceClient;
@@ -143,7 +142,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   NfcTagClient* GetNfcTagClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
-  PowerPolicyController* GetPowerPolicyController();
   PrivetDaemonClient* GetPrivetDaemonClient();
   SessionManagerClient* GetSessionManagerClient();
   ShillDeviceClient* GetShillDeviceClient();
@@ -190,7 +188,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_ptr<DBusClientBundle> client_bundle_;
-  scoped_ptr<PowerPolicyController> power_policy_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

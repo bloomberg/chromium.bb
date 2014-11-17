@@ -90,6 +90,7 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/ime/ime_keyboard.h"
@@ -161,6 +162,8 @@ class DBusServices {
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
     DBusThreadManager::Initialize();
+    PowerPolicyController::Initialize(
+        DBusThreadManager::Get()->GetPowerManagerClient());
     CrosDBusService::Initialize();
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
@@ -219,6 +222,8 @@ class DBusServices {
 
     // Shutdown the PowerDataCollector before shutting down DBusThreadManager.
     PowerDataCollector::Shutdown();
+
+    PowerPolicyController::Shutdown();
 
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();
@@ -433,8 +438,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     WizardController::SetZeroDelays();
   }
 
-  power_prefs_.reset(new PowerPrefs(
-      DBusThreadManager::Get()->GetPowerPolicyController()));
+  power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();

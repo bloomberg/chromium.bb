@@ -8,11 +8,12 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
 namespace {
+
+PowerPolicyController* g_power_policy_controller = nullptr;
 
 // Appends a description of |field|, a field within |delays|, a
 // power_manager::PowerManagementPolicy::Delays object, to |str|, an
@@ -133,23 +134,28 @@ std::string PowerPolicyController::GetPolicyDebugString(
   return str;
 }
 
-PowerPolicyController::PowerPolicyController()
-    : client_(NULL),
-      prefs_were_set_(false),
-      honor_screen_wake_locks_(true),
-      next_wake_lock_id_(1) {
+// static
+void PowerPolicyController::Initialize(PowerManagerClient* client) {
+  DCHECK(!IsInitialized());
+  g_power_policy_controller = new PowerPolicyController(client);
 }
 
-PowerPolicyController::~PowerPolicyController() {
-  if (client_) {
-    client_->RemoveObserver(this);
-    client_ = NULL;
-  }
+// static
+bool PowerPolicyController::IsInitialized() {
+  return g_power_policy_controller;
 }
 
-void PowerPolicyController::Init(DBusThreadManager* manager) {
-  client_ = manager->GetPowerManagerClient();
-  client_->AddObserver(this);
+// static
+void PowerPolicyController::Shutdown() {
+  DCHECK(IsInitialized());
+  delete g_power_policy_controller;
+  g_power_policy_controller = nullptr;
+}
+
+// static
+PowerPolicyController* PowerPolicyController::Get() {
+  DCHECK(IsInitialized());
+  return g_power_policy_controller;
 }
 
 void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
@@ -234,6 +240,19 @@ void PowerPolicyController::RemoveWakeLock(int id) {
 
 void PowerPolicyController::PowerManagerRestarted() {
   SendCurrentPolicy();
+}
+
+PowerPolicyController::PowerPolicyController(PowerManagerClient* client)
+    : client_(client),
+      prefs_were_set_(false),
+      honor_screen_wake_locks_(true),
+      next_wake_lock_id_(1) {
+  DCHECK(client_);
+  client_->AddObserver(this);
+}
+
+PowerPolicyController::~PowerPolicyController() {
+  client_->RemoveObserver(this);
 }
 
 void PowerPolicyController::SendCurrentPolicy() {

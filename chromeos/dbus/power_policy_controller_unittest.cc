@@ -6,40 +6,32 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::_;
-using ::testing::SaveArg;
 
 namespace chromeos {
 
 class PowerPolicyControllerTest : public testing::Test {
  public:
-  PowerPolicyControllerTest() {}
+  PowerPolicyControllerTest()
+      : fake_power_client_(new FakePowerManagerClient) {}
+
   virtual ~PowerPolicyControllerTest() {}
 
   virtual void SetUp() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    fake_power_client_ = new FakePowerManagerClient;
-    dbus_setter->SetPowerManagerClient(
-        scoped_ptr<PowerManagerClient>(fake_power_client_));
-
-    policy_controller_.reset(new PowerPolicyController);
-    policy_controller_->Init(DBusThreadManager::Get());
+    PowerPolicyController::Initialize(fake_power_client_.get());
+    ASSERT_TRUE(PowerPolicyController::IsInitialized());
+    policy_controller_ = PowerPolicyController::Get();
   }
 
   virtual void TearDown() override {
-    policy_controller_.reset();
-    DBusThreadManager::Shutdown();
+    if (PowerPolicyController::IsInitialized())
+      PowerPolicyController::Shutdown();
   }
 
  protected:
-  FakePowerManagerClient* fake_power_client_;
-  scoped_ptr<PowerPolicyController> policy_controller_;
+  scoped_ptr<FakePowerManagerClient> fake_power_client_;
+  PowerPolicyController* policy_controller_;
   base::MessageLoop message_loop_;
 };
 
@@ -210,7 +202,7 @@ TEST_F(PowerPolicyControllerTest, AvoidSendingEmptyPolicies) {
   // Check that empty policies aren't sent when PowerPolicyController is created
   // or destroyed.
   EXPECT_EQ(0, fake_power_client_->num_set_policy_calls());
-  policy_controller_.reset();
+  PowerPolicyController::Shutdown();
   EXPECT_EQ(0, fake_power_client_->num_set_policy_calls());
 }
 

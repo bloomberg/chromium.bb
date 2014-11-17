@@ -37,7 +37,6 @@
 #include "chromeos/dbus/nfc_tag_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/privet_daemon_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -76,16 +75,9 @@ DBusThreadManager::DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle)
     system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
   }
-
-  // TODO(crbug.com/345586): Move PowerPolicyController out of
-  // DBusThreadManager.
-  power_policy_controller_.reset(new PowerPolicyController);
 }
 
 DBusThreadManager::~DBusThreadManager() {
-  // PowerPolicyController's destructor depends on PowerManagerClient.
-  power_policy_controller_.reset();
-
   // Delete all D-Bus clients before shutting down the system bus.
   client_bundle_.reset();
 
@@ -282,10 +274,6 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
   return client_bundle_->update_engine_client();
 }
 
-PowerPolicyController* DBusThreadManager::GetPowerPolicyController() {
-  return power_policy_controller_.get();
-}
-
 void DBusThreadManager::InitializeClients() {
   GetBluetoothAdapterClient()->Init(GetSystemBus());
   GetBluetoothAgentManagerClient()->Init(GetSystemBus());
@@ -329,11 +317,6 @@ void DBusThreadManager::InitializeClients() {
   GetNfcDeviceClient()->Init(GetSystemBus());
   GetNfcTagClient()->Init(GetSystemBus());
   GetNfcRecordClient()->Init(GetSystemBus());
-
-  // PowerPolicyController is dependent on PowerManagerClient, so
-  // initialize it after the main list of clients.
-  if (GetPowerPolicyController())
-    GetPowerPolicyController()->Init(this);
 
   // This must be called after the list of clients so they've each had a
   // chance to register with their object g_dbus_thread_managers.
@@ -623,13 +606,8 @@ void DBusThreadManagerSetter::SetPermissionBrokerClient(
 
 void DBusThreadManagerSetter::SetPowerManagerClient(
     scoped_ptr<PowerManagerClient> client) {
-  DBusThreadManager::Get()->power_policy_controller_.reset();
   DBusThreadManager::Get()->client_bundle_->power_manager_client_ =
       client.Pass();
-  DBusThreadManager::Get()->power_policy_controller_.reset(
-      new PowerPolicyController);
-  DBusThreadManager::Get()->power_policy_controller_->Init(
-      DBusThreadManager::Get());
 }
 
 void DBusThreadManagerSetter::SetPrivetDaemonClient(
