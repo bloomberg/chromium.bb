@@ -5582,7 +5582,10 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
   }
 };
 
+// TODO(danakj): Disabled for flake: crbug.com/433208
+#if !defined(OS_LINUX) || defined(NDEBUG)
 MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
+#endif
 
 class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {
