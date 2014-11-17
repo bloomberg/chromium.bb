@@ -104,7 +104,7 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   page_set = page_sets.SimpleMobileSitesPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled #crbug.com/433794
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases
