@@ -561,6 +561,7 @@ config("no_chromium_code") {
       "/W3",  # Warning level 3.
       "/wd4800",  # Disable warning when forcing value to bool.
       "/wd4267",  # TODO(jschuh): size_t to int.
+      "/wd4996",  # Deprecated function warning.
     ]
     defines += [
       "_CRT_NONSTDC_NO_WARNINGS",
@@ -696,6 +697,7 @@ config("default_warnings") {
       "/wd4510",  # Default constructor could not be generated.
       "/wd4512",  # Assignment operator could not be generated.
       "/wd4610",  # Class can never be instantiated, constructor required.
+      "/wd4996",  # Deprecated function warning.
     ]
   } else {
     # Common GCC warning setup.

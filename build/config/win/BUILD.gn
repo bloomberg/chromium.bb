@@ -45,7 +45,7 @@ config("sdk_link") {
   if (cpu_arch == "x64") {
     ldflags = [ "/MACHINE:X64" ]
     lib_dirs = [
-      "$windows_sdk_path\Lib\win8\um\x64",
+      "$windows_sdk_path\Lib\winv6.3\um\x64",
       "$visual_studio_path\VC\lib\amd64",
       "$visual_studio_path\VC\atlmfc\lib\amd64",
     ]
@@ -58,7 +58,7 @@ config("sdk_link") {
       "/SAFESEH",  # Not compatible with x64 so use only for x86.
     ]
     lib_dirs = [
-      "$windows_sdk_path\Lib\win8\um\x86",
+      "$windows_sdk_path\Lib\winv6.3\um\x86",
       "$visual_studio_path\VC\lib",
       "$visual_studio_path\VC\atlmfc\lib",
     ]
