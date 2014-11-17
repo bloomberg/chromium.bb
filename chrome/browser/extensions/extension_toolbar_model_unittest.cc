@@ -1311,4 +1311,40 @@ TEST_F(ExtensionToolbarModelUnitTest, ModelWaitsForExtensionSystemReady) {
   EXPECT_EQ(1u, model_observer.initialized_count());
 }
 
+// Check that the toolbar model correctly clears and reorders when it detects
+// a preference change.
+TEST_F(ExtensionToolbarModelUnitTest, ToolbarModelPrefChange) {
+  Init();
+
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  // We should start in the basic A B C order.
+  ASSERT_TRUE(browser_action_a());
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0));
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2));
+  // Record the difference between the inserted and removed counts. The actual
+  // value of the counts is not important, but we need to be sure that if we
+  // call to remove any, we also add them back.
+  size_t inserted_and_removed_difference =
+      observer()->inserted_count() - observer()->removed_count();
+
+  // Assign a new order, B C A, and write it in the prefs.
+  ExtensionIdList new_order;
+  new_order.push_back(browser_action_b()->id());
+  new_order.push_back(browser_action_c()->id());
+  new_order.push_back(browser_action_a()->id());
+  ExtensionPrefs::Get(profile())->SetToolbarOrder(new_order);
+
+  // Ensure everything has time to run.
+  base::RunLoop().RunUntilIdle();
+
+  // The new order should be reflected in the model.
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1));
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(2));
+  EXPECT_EQ(inserted_and_removed_difference,
+            observer()->inserted_count() - observer()->removed_count());
+}
+
 }  // namespace extensions

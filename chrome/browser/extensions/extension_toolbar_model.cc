@@ -394,16 +394,6 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   UpdatePrefs();
 }
 
-void ExtensionToolbarModel::ClearItems() {
-  size_t items_count = toolbar_items_.size();
-  for (size_t i = 0; i < items_count; ++i) {
-    const Extension* extension = toolbar_items_.back().get();
-    toolbar_items_.pop_back();
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarExtensionRemoved(extension));
-  }
-  DCHECK(toolbar_items_.empty());
-}
-
 // Combine the currently enabled extensions that have browser actions (which
 // we get from the ExtensionRegistry) with the ordering we get from the
 // pref service. For robustness we use a somewhat inefficient process:
@@ -575,10 +565,24 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   }
   last_known_positions_.swap(pref_positions);
 
-  ClearItems();
+  // Clear out the old...
+  while (!toolbar_items_.empty()) {
+    scoped_refptr<const Extension> extension = toolbar_items_.back();
+    toolbar_items_.pop_back();
+    FOR_EACH_OBSERVER(
+        Observer, observers_, ToolbarExtensionRemoved(extension.get()));
+  }
+  DCHECK(toolbar_items_.empty());
 
-  // Re-populate.
+  // ...Add the new...
   Populate(last_known_positions_);
+
+  // ...And notify.
+  for (size_t i = 0; i < toolbar_items().size(); ++i) {
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      ToolbarExtensionAdded(toolbar_items()[i].get(), i));
+  }
 
   if (last_known_positions_.size() > pref_position_size) {
     // Need to update pref because we have extra icons. But can't call

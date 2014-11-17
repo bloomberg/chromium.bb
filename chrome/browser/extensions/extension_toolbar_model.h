@@ -224,9 +224,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   void AddExtension(const Extension* extension);
   void RemoveExtension(const Extension* extension);
 
-  // Removes all current items (because we're going to [re]Populate()).
-  void ClearItems();
-
   // Our observers.
   ObserverList<Observer> observers_;
 
