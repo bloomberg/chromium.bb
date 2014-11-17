@@ -1307,9 +1307,8 @@ PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidati
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
-    if (!view()->doingFullPaintInvalidation()) {
-        if (!isFullPaintInvalidationReason(reason))
-            invalidatePaintForOverflowIfNeeded();
+    if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason)) {
+        invalidatePaintForOverflowIfNeeded();
 
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
         if (ScrollableArea* area = scrollableArea()) {
@@ -3764,6 +3763,19 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || isReplacedElement(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
+bool RenderBox::hasNonCompositedScrollbars() const
+{
+    if (RenderLayer* layer = this->layer()) {
+        if (RenderLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+            if (scrollableArea->hasHorizontalScrollbar() && !scrollableArea->layerForHorizontalScrollbar())
+                return true;
+            if (scrollableArea->hasVerticalScrollbar() && !scrollableArea->layerForVerticalScrollbar())
+                return true;
+        }
+    }
+    return false;
+}
+
 PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
@@ -3779,14 +3791,23 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerMode
         && hasLayer() && layer()->transform() && !layer()->transform()->isIdentityOrTranslation())
         return PaintInvalidationBoundsChange;
 
-    if (!style()->hasBackground() && !style()->hasBoxDecorations())
+    if (!style()->hasBackground() && !style()->hasBoxDecorations()) {
+        // We could let incremental invalidation cover non-composited scrollbars, but just
+        // do a full invalidation because incremental invalidation will go away with slimming paint.
+        if (invalidationReason == PaintInvalidationIncremental && hasNonCompositedScrollbars())
+            return PaintInvalidationBorderBoxChange;
         return invalidationReason;
+    }
 
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = size();
 
     if (oldBorderBoxSize == newBorderBoxSize)
         return invalidationReason;
+
+    // See another hasNonCompositedScrollbars() callsite above.
+    if (hasNonCompositedScrollbars())
+        return PaintInvalidationBorderBoxChange;
 
     // FIXME: Implement correct incremental invalidation for visual overflowing effects.
     if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilter())

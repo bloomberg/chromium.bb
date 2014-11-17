@@ -751,6 +751,8 @@ private:
 
     void inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect&) const;
 
+    bool hasNonCompositedScrollbars() const;
+
 protected:
     LayoutBoxExtent m_marginBox;
 
