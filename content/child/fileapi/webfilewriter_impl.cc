@@ -121,9 +121,9 @@ class WebFileWriterImpl::WriterBridge
 WebFileWriterImpl::WebFileWriterImpl(
      const GURL& path, blink::WebFileWriterClient* client,
      Type type,
-     base::MessageLoopProxy* main_thread_loop)
+     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner)
   : WebFileWriterBase(path, client),
-    main_thread_loop_(main_thread_loop),
+    main_thread_task_runner_(main_thread_task_runner),
     bridge_(new WriterBridge(type)) {
 }
 
@@ -150,12 +150,12 @@ void WebFileWriterImpl::DoCancel() {
 }
 
 void WebFileWriterImpl::RunOnMainThread(const base::Closure& closure) {
-  if (main_thread_loop_->RunsTasksOnCurrentThread()) {
+  if (main_thread_task_runner_->RunsTasksOnCurrentThread()) {
     DCHECK(!bridge_->waitable_event());
     closure.Run();
     return;
   }
-  main_thread_loop_->PostTask(FROM_HERE, closure);
+  main_thread_task_runner_->PostTask(FROM_HERE, closure);
   if (bridge_->waitable_event())
     bridge_->WaitAndRun();
 }

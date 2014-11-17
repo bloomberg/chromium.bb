@@ -237,7 +237,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
-      child_thread_loop_(base::MessageLoopProxy::current()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       bluetooth_(new WebBluetoothImpl) {
   if (g_sandbox_enabled && sandboxEnabled()) {
@@ -335,7 +334,7 @@ void RendererBlinkPlatformImpl::createMessageChannel(
     blink::WebMessagePortChannel** channel1,
     blink::WebMessagePortChannel** channel2) {
   WebMessagePortChannelImpl::CreatePair(
-      child_thread_loop_.get(), channel1, channel2);
+      default_task_runner_, channel1, channel2);
 }
 
 blink::WebPrescientNetworking*
@@ -393,7 +392,7 @@ WebIDBFactory* RendererBlinkPlatformImpl::idbFactory() {
 //------------------------------------------------------------------------------
 
 WebFileSystem* RendererBlinkPlatformImpl::fileSystem() {
-  return WebFileSystemImpl::ThreadSpecificInstance(child_thread_loop_.get());
+  return WebFileSystemImpl::ThreadSpecificInstance(default_task_runner_);
 }
 
 //------------------------------------------------------------------------------

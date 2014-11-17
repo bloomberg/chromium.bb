@@ -15,8 +15,8 @@
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
 namespace base {
-class MessageLoopProxy;
 class WaitableEvent;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -37,14 +37,17 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   // is given and no thread-specific instance has been created it may
   // create a new instance.
   static WebFileSystemImpl* ThreadSpecificInstance(
-      base::MessageLoopProxy* main_thread_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          main_thread_task_runner);
 
   // Deletes thread-specific instance (if exists). For workers it deletes
   // itself in OnWorkerRunLoopStopped(), but for an instance created on the
   // main thread this method must be called.
   static void DeleteThreadSpecificInstance();
 
-  explicit WebFileSystemImpl(base::MessageLoopProxy* main_thread_loop);
+  explicit WebFileSystemImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          main_thread_task_runner);
   virtual ~WebFileSystemImpl();
 
   // WorkerTaskRunner::Observer implementation.
@@ -117,7 +120,7 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   WaitableCallbackResults* MaybeCreateWaitableResults(
       const blink::WebFileSystemCallbacks& callbacks, int callbacks_id);
 
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   CallbacksMap callbacks_;
   int next_callbacks_id_;

@@ -26,7 +26,8 @@ class WebFileWriterImpl : public WebFileWriterBase,
   WebFileWriterImpl(const GURL& path,
                     blink::WebFileWriterClient* client,
                     Type type,
-                    base::MessageLoopProxy* main_thread_loop);
+                    const scoped_refptr<base::SingleThreadTaskRunner>&
+                        main_thread_task_runner);
   virtual ~WebFileWriterImpl();
 
  protected:
@@ -42,7 +43,7 @@ class WebFileWriterImpl : public WebFileWriterBase,
 
   void RunOnMainThread(const base::Closure& closure);
 
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<WriterBridge> bridge_;
 };
 
