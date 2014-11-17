@@ -957,6 +957,8 @@
       'browser/power_save_blocker_ozone.cc',
       'browser/power_save_blocker_win.cc',
       'browser/power_save_blocker_x11.cc',
+      'browser/power_usage_monitor_impl.cc',
+      'browser/power_usage_monitor_impl.h',
       'browser/profiler_controller_impl.cc',
       'browser/profiler_controller_impl.h',
       'browser/profiler_message_filter.cc',

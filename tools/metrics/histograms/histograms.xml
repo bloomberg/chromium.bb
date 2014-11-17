@@ -25370,11 +25370,71 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Power.BatteryDischargePercentPerHour" units="%">
+  <owner>jeremy@chromium.org</owner>
+  <summary>
+        The percentage of battery capacity used per hour relative to a full
+    battery. Reported once when the power adaptor is plugged back in after the
+    system is on battery power for more than 30 minutes.  If at any point the
+    system is suspended or all Chrome renderers are closed the measurement is
+    not recorded. Anytime the user unplugs the power adaptor, a new measurement
+    will begin being recorded. Collection of this histogram only starts after 30
+    minutes of uptime at which point the clock starts (assuming the user is on
+    battery power at that point).  The system will need to remain unplugged for
+    at least another 30 minutes in order for any measurement to be recorded.
+    Values are normalized to a percent per hour scale. This measurement is tied
+    tightly to hardware model/OS and is not comparable across different hardware
+    configurations.
+  </summary>
+</histogram>
+
 <histogram name="Power.BatteryDischargeRate" units="mW">
   <owner>derat@chromium.org</owner>
   <summary>
     Chrome OS battery discharge rate in mW sampled every 30 seconds while the
     device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRate_15" units="%">
+  <owner>jeremy@chromium.org</owner>
+  <summary>
+        The percent of depleted battery capacity relative to a full battery over
+    the first 15 minutes after battery power collection information starts.
+    Collection of this histogram only starts after 30 minutes of uptime at which
+    point the clock starts (assuming the user is on battery power at that
+    point).  The system will need to remain unplugged for at least another 15
+    minutes in order for any measurement to be recorded. Values are normalized
+    to a percent per hour scale. This measurement is tied tightly to hardware
+    model/OS and is not comparable across different hardware configurations.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRate_30" units="%">
+  <owner>jeremy@chromium.org</owner>
+  <summary>
+        The percent of depleted battery capacity relative to a full battery over
+    the first 30 minutes after battery power collection information starts.
+    Collection of this histogram only starts after 30 minutes of uptime at which
+    point the clock starts (assuming the user is on battery power at that
+    point).  The system will need to remain unplugged for at least another 30
+    minutes in order for any measurement to be recorded. Values are normalized
+    to a percent per hour scale. This measurement is tied tightly to hardware
+    model/OS and is not comparable across different hardware configurations.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRate_5" units="%">
+  <owner>jeremy@chromium.org</owner>
+  <summary>
+        The percent of depleted battery capacity relative to a full battery over
+    the first 5 minutes after battery power collection information starts.
+    Collection of this histogram only starts after 30 minutes of uptime at which
+    point the clock starts (assuming the user is on battery power at that
+    point).  The system will need to remain unplugged for at least another 5
+    minutes in order for any measurement to be recorded. Values are normalized
+    to a percent per hour scale. This measurement is tied tightly to hardware
+    model/OS and is not comparable across different hardware configurations.
   </summary>
 </histogram>
 
