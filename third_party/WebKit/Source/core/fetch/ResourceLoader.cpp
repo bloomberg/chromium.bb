@@ -113,21 +113,13 @@ void ResourceLoader::releaseResources()
 
     ASSERT(m_state != Terminated);
 
-    // It's possible that when we release the loader, it will be
-    // deallocated and release the last reference to this object.
-    // We need to retain to avoid accessing the object after it
-    // has been deallocated and also to avoid reentering this method.
-    RefPtrWillBeRawPtr<ResourceLoader> protector(this);
-
-    m_host.clear();
     m_state = Terminated;
-
     if (m_loader) {
         m_loader->cancel();
         m_loader.clear();
     }
-
     m_deferredRequest = ResourceRequest();
+    m_host.clear();
 }
 
 void ResourceLoader::init(const ResourceRequest& passedRequest)
@@ -336,7 +328,6 @@ void ResourceLoader::didReceiveCachedMetadata(blink::WebURLLoader*, const char* 
 void ResourceLoader::didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     ASSERT(m_state == Initialized);
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
