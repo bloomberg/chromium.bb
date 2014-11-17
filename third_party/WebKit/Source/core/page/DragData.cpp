@@ -85,21 +85,18 @@ bool DragData::containsFiles() const
     return m_platformDragData->containsFilenames();
 }
 
-unsigned DragData::numberOfFiles() const
-{
-    return m_platformDragData->filenames().size();
-}
-
 int DragData::modifierKeyState() const
 {
     return m_platformDragData->modifierKeyState();
 }
 
-void DragData::asFilenames(Vector<String>& result) const
+void DragData::asFilePaths(Vector<String>& result) const
 {
     const Vector<String>& filenames = m_platformDragData->filenames();
-    for (size_t i = 0; i < filenames.size(); ++i)
-        result.append(filenames[i]);
+    for (size_t i = 0; i < filenames.size(); ++i) {
+        if (!filenames[i].isEmpty())
+            result.append(filenames[i]);
+    }
 }
 
 bool DragData::containsPlainText() const

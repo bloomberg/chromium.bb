@@ -385,16 +385,18 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         dragSession.mouseIsOverFileInput = m_fileInputElementUnderMouse;
         dragSession.numberOfItemsToBeAccepted = 0;
 
-        unsigned numberOfFiles = dragData->numberOfFiles();
+        Vector<String> paths;
+        dragData->asFilePaths(paths);
+        const unsigned numberOfFiles = paths.size();
         if (m_fileInputElementUnderMouse) {
             if (m_fileInputElementUnderMouse->isDisabledFormControl())
                 dragSession.numberOfItemsToBeAccepted = 0;
             else if (m_fileInputElementUnderMouse->multiple())
                 dragSession.numberOfItemsToBeAccepted = numberOfFiles;
-            else if (numberOfFiles > 1)
-                dragSession.numberOfItemsToBeAccepted = 0;
-            else
+            else if (numberOfFiles == 1)
                 dragSession.numberOfItemsToBeAccepted = 1;
+            else
+                dragSession.numberOfItemsToBeAccepted = 0;
 
             if (!dragSession.numberOfItemsToBeAccepted)
                 dragSession.operation = DragOperationNone;

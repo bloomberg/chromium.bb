@@ -336,7 +336,7 @@ void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
 bool FileInputType::receiveDroppedFiles(const DragData* dragData)
 {
     Vector<String> paths;
-    dragData->asFilenames(paths);
+    dragData->asFilePaths(paths);
     if (paths.isEmpty())
         return false;
 

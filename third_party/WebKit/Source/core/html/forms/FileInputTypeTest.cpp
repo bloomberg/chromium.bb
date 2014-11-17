@@ -5,7 +5,11 @@
 #include "config.h"
 #include "FileInputType.h"
 
+#include "core/clipboard/DataObject.h"
+#include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/page/DragData.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -40,6 +44,36 @@ TEST(FileInputTypeTest, createFileList)
     EXPECT_EQ(url, list->item(1)->fileSystemURL());
     EXPECT_EQ(64u, list->item(1)->size());
     EXPECT_EQ(24 * 60 * 60 * 1000 /* ms */, list->item(1)->lastModified());
+}
+
+TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)
+{
+    const RefPtrWillBeRawPtr<Document> document = Document::create();
+    const RefPtrWillBeRawPtr<HTMLInputElement> input =
+        HTMLInputElement::create(*document, nullptr, /* createdByParser */true);
+    const RefPtrWillBeRawPtr<InputType> fileInput = FileInputType::create(*input);
+
+    const RefPtrWillBeRawPtr<DataObject> nativeFileRawDragData = DataObject::create();
+    const DragData nativeFileDragData(nativeFileRawDragData.get(), IntPoint(), IntPoint(), DragOperationCopy);
+    nativeFileDragData.platformData()->add(File::create("/native/path"));
+    nativeFileDragData.platformData()->setFilesystemId("fileSystemId");
+    fileInput->receiveDroppedFiles(&nativeFileDragData);
+    EXPECT_EQ("fileSystemId", fileInput->droppedFileSystemId());
+    ASSERT_EQ(1u, fileInput->files()->length());
+    EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+
+    const RefPtrWillBeRawPtr<DataObject> nonNativeFileRawDragData = DataObject::create();
+    const DragData nonNativeFileDragData(nonNativeFileRawDragData.get(), IntPoint(), IntPoint(), DragOperationCopy);
+    FileMetadata metadata;
+    metadata.length = 1234;
+    const KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file");
+    nonNativeFileDragData.platformData()->add(File::createForFileSystemFile(url, metadata, File::IsUserVisible));
+    nonNativeFileDragData.platformData()->setFilesystemId("fileSystemId");
+    fileInput->receiveDroppedFiles(&nonNativeFileDragData);
+    // Dropping non-native files should not change the existing files.
+    EXPECT_EQ("fileSystemId", fileInput->droppedFileSystemId());
+    ASSERT_EQ(1u, fileInput->files()->length());
+    EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
 }
 
 } // namespace blink
