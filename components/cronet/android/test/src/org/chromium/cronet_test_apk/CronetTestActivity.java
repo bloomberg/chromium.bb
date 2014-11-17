@@ -14,9 +14,9 @@ import android.util.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
-import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
 import org.chromium.net.UrlRequestContext;
+import org.chromium.net.UrlRequestContextConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -96,8 +96,8 @@ public class CronetTestActivity extends Activity {
 
     // Helper function to initialize request factory. Also used in testing.
     public HttpUrlRequestFactory initRequestFactory() {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY,
                                100 * 1024)
               .enableSPDY(true)
               .enableQUIC(true);
@@ -107,7 +107,7 @@ public class CronetTestActivity extends Activity {
         if (configString != null) {
             try {
                 Log.i(TAG, "Using Config: " + configString);
-                config = new HttpUrlRequestFactoryConfig(configString);
+                config = new UrlRequestContextConfig(configString);
             } catch (org.json.JSONException e) {
                 Log.e(TAG, "Invalid Config.", e);
                 finish();

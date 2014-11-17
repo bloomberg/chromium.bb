@@ -22,7 +22,7 @@ public abstract class HttpUrlRequestFactory {
             "org.chromium.net.ChromiumUrlRequestFactory";
 
     public static HttpUrlRequestFactory createFactory(
-            Context context, HttpUrlRequestFactoryConfig config) {
+            Context context, UrlRequestContextConfig config) {
         HttpUrlRequestFactory factory = null;
         if (!config.legacyMode()) {
             factory = createChromiumFactory(context, config);
