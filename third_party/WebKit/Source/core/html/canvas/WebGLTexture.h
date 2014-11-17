@@ -76,12 +76,11 @@ public:
 
     static GLint computeLevelCount(GLsizei width, GLsizei height);
 
-protected:
+private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
 
-private:
     class LevelInfo {
     public:
         LevelInfo()

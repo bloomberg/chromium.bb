@@ -107,8 +107,10 @@ public:
     virtual void trace(Visitor*) override;
 
 protected:
-    virtual bool isMediaControlElement() const override final { return true; }
     MediaControlDivElement(MediaControls&, MediaControlElementType);
+
+private:
+    virtual bool isMediaControlElement() const override final { return true; }
 };
 
 // ----------------------------
@@ -119,11 +121,11 @@ public:
     virtual void trace(Visitor*) override;
 
 protected:
-    virtual bool isMediaControlElement() const override final { return true; }
     MediaControlInputElement(MediaControls&, MediaControlElementType);
 
 private:
     virtual void updateDisplayType() { }
+    virtual bool isMediaControlElement() const override final { return true; }
     virtual bool isMouseFocusable() const override;
 };
 
