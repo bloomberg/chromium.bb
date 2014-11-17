@@ -881,18 +881,13 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
 
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
-  SetContentsScaleOnBothLayers(
-      low_res_factor, 1.0f, low_res_factor / 2.0f, 1.0f, false);
+  SetContentsScaleOnBothLayers(low_res_factor * 2.1f, 1.0f,
+                               low_res_factor * 2.1f, 1.0f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Zoom in a lot now. Since we increase by increments of
-  // kMaxScaleRatioDuringPinch, this will first use 1.0, then 2.0
-  // and then finally create a new tiling at 4.0.
-  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
-  EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
-  EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(4.2f, 1.0f, 2.1f, 1.f, false);
+  // kMaxScaleRatioDuringPinch, this will create a new tiling at 4.0.
+  SetContentsScaleOnBothLayers(3.8f, 1.0f, 2.1f, 1.f, false);
   EXPECT_EQ(4u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(4.0f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -936,10 +931,17 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
   SetContentsScaleOnBothLayers(0.1f, 1.0f, 0.1f, 1.0f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
-  // Zoom in. 0.125(desired_scale) should be snapped to 0.12 during zoom-in
-  // because 0.125(desired_scale) is within the ratio(1.2)
-  SetContentsScaleOnBothLayers(0.5f, 1.0f, 0.5f, 1.0f, false);
+  // Zoom in. 0.25(desired_scale) should be snapped to 0.24 during zoom-in
+  // because 0.25(desired_scale) is within the ratio(1.2).
+  SetContentsScaleOnBothLayers(0.25f, 1.0f, 0.25f, 1.0f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
+
+  // Zoom in a lot. Since we move in factors of two, we should get a scale that
+  // is a power of 2 times 0.24.
+  SetContentsScaleOnBothLayers(1.f, 1.0f, 1.f, 1.0f, false);
+  EXPECT_EQ(4u, active_layer_->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(1.92f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
 }
 
 TEST_F(PictureLayerImplTest, CleanUpTilings) {
@@ -2457,7 +2459,8 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
   EXPECT_LT(page_scale * contents_scale,
             pending_layer_->MinimumContentsScale());
 
-  SetContentsScaleOnBothLayers(contents_scale, 1.f, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(contents_scale * page_scale, 1.f, page_scale,
+                               1.f, false);
   ASSERT_GE(pending_layer_->num_tilings(), 0u);
   EXPECT_FLOAT_EQ(pending_layer_->MinimumContentsScale(),
                   pending_layer_->HighResTiling()->contents_scale());

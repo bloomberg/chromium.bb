@@ -31,6 +31,8 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace {
+// This must be > 1 as we multiply or divide by this to find a new raster
+// scale during pinch.
 const float kMaxScaleRatioDuringPinch = 2.0f;
 
 // When creating a new tiling during pinch, snap to an existing
@@ -1048,16 +1050,20 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   // During pinch we completely ignore the current ideal scale, and just use
   // a multiple of the previous scale.
-  // TODO(danakj): This seems crazy, we should use the current ideal, no?
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && old_raster_contents_scale) {
     // See ShouldAdjustRasterScale:
     // - When zooming out, preemptively create new tiling at lower resolution.
     // - When zooming in, approximate ideal using multiple of kMaxScaleRatio.
     bool zooming_out = old_raster_page_scale > ideal_page_scale_;
-    float desired_contents_scale =
-        zooming_out ? old_raster_contents_scale / kMaxScaleRatioDuringPinch
-                    : old_raster_contents_scale * kMaxScaleRatioDuringPinch;
+    float desired_contents_scale = old_raster_contents_scale;
+    if (zooming_out) {
+      while (desired_contents_scale > ideal_contents_scale_)
+        desired_contents_scale /= kMaxScaleRatioDuringPinch;
+    } else {
+      while (desired_contents_scale < ideal_contents_scale_)
+        desired_contents_scale *= kMaxScaleRatioDuringPinch;
+    }
     raster_contents_scale_ = SnappedContentsScale(desired_contents_scale);
     raster_page_scale_ =
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
