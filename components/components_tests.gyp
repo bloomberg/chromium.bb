@@ -72,6 +72,7 @@
             'bookmarks/browser/bookmark_index_unittest.cc',
             'bookmarks/browser/bookmark_model_unittest.cc',
             'bookmarks/browser/bookmark_utils_unittest.cc',
+            'browser_watcher/watcher_win_unittest.cc',
             'crash/app/crash_keys_win_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
@@ -478,6 +479,12 @@
               'dependencies': [
                 '<(DEPTH)/ui/views/views.gyp:views_test_support',
                 'components.gyp:constrained_window',
+              ]
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                 # Dependencies of browser_watcher, windows only.
+                 'components.gyp:browser_watcher_lib',
               ]
             }],
             ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {

@@ -100,6 +100,11 @@
         'wifi.gypi',
       ],
     }],
+    ['OS == "win"', {
+      'includes': [
+        'browser_watcher.gypi',
+      ],
+    }],
     ['chromeos == 1 or use_ash == 1', {
       'includes': [
         'session_manager.gypi',
