@@ -580,7 +580,6 @@
       'browser/download/save_package.h',
       'browser/download/save_types.cc',
       'browser/download/save_types.h',
-      'browser/dwrite_font_cache_win.cc',
       'browser/fileapi/blob_storage_host.cc',
       'browser/fileapi/blob_storage_host.h',
       'browser/fileapi/browser_file_system_helper.cc',

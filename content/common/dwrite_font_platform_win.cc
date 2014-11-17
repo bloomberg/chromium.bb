@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dwrite_font_platform_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 
 #include <dwrite.h>
 #include <map>
@@ -33,7 +33,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/dwrite_font_cache_win.h"
 
 namespace {
 
@@ -70,7 +69,15 @@ const char kFontKeyName[] = "font_key_name";
 // phase. If we don't use this percentile formula we will end up
 // increasing significant cache size by caching entire file contents
 // for some of the font files.
-const double kMaxPercentileOfFontFileSizeToCache = 0.7;
+const double kMaxPercentileOfFontFileSizeToCache = 0.5;
+
+// With current implementation we map entire shared section into memory during
+// renderer startup. This causes increase in working set of Chrome. As first
+// step we want to see if caching is really improving any performance for our
+// users, so we are putting arbitrary limit on cache file size. There are
+// multiple ways we can tune our working size, like mapping only required part
+// of section at any given time.
+const double kArbitraryCacheFileSizeLimit = (20 * 1024 * 1024);
 
 // We have chosen current font file length arbitrarily. In our logic
 // if we don't find file we are looking for in cache we end up loading
@@ -367,6 +374,14 @@ class FontCacheWriter {
     base::AutoLock lock(lock_);
     if (cookie_map_.find(cookie) == cookie_map_.end())
       return false;
+
+    // We will skip writing entries beyond allowed limit. Following condition
+    // doesn't enforce hard file size. We need to write complete font entry.
+    int64 length = static_cache_->GetLength();
+    if (length == -1 || length >= kArbitraryCacheFileSizeLimit) {
+      count_font_entries_ignored_++;
+      return false;
+    }
 
     FontEntryInternal* font_entry = cookie_map_[cookie].get();
     RegionVector& regions = font_entry->regions;
@@ -1122,8 +1137,6 @@ bool BuildFontCacheInternal(const WCHAR* file_name) {
   CHECK(SUCCEEDED(hr));
   CHECK(font_collection.Get() != NULL);
 
-  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.LoadTime", time_delta);
-
   base::debug::ClearCrashKey(kFontKeyName);
 
   return true;
@@ -1173,12 +1186,8 @@ bool LoadFontCache(const base::FilePath& path) {
   return true;
 }
 
-// Assumption for this function is that it will get called through a posted task
-// on FILE thread.
-bool BuildAndLoadFontCache(const base::FilePath& file) {
-  if (BuildFontCacheInternal(file.value().c_str()))
-    return LoadFontCache(file);
-  return false;
+bool BuildFontCache(const base::FilePath& file) {
+  return BuildFontCacheInternal(file.value().c_str());
 }
 
 }  // namespace content

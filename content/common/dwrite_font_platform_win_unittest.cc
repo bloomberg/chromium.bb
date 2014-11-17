@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dwrite_font_platform_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -41,7 +41,7 @@ class DWriteFontCacheTest : public testing::Test {
 TEST_F(DWriteFontCacheTest, BuildCacheTest) {
   if (gfx::win::ShouldUseDirectWrite()) {
     DLOG(INFO) << __FUNCTION__ << ": " << cache_file_path_.value().c_str();
-    EXPECT_TRUE(BuildAndLoadFontCache(cache_file_path_));
+    EXPECT_TRUE(BuildFontCache(cache_file_path_));
     ASSERT_TRUE(base::PathExists(cache_file_path_));
   }
 }
