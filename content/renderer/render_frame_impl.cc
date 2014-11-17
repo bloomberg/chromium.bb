@@ -2408,6 +2408,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
+void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
+  DCHECK(!frame_ || frame_ == frame);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidCreateNewDocument(frame));
+}
+
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
   // TODO(nasko): Move implementation here. Needed state:

@@ -41,10 +41,10 @@ class ScriptInjectionManager::RVOHelper : public content::RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void DidCreateNewDocument(blink::WebLocalFrame* frame) override;
   void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
   void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
   void DidFinishLoad(blink::WebLocalFrame* frame) override;
-  void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
   void FrameDetached(blink::WebFrame* frame) override;
   void OnDestruct() override;
 
@@ -99,6 +99,17 @@ bool ScriptInjectionManager::RVOHelper::OnMessageReceived(
   return handled;
 }
 
+void ScriptInjectionManager::RVOHelper::DidCreateNewDocument(
+    blink::WebLocalFrame* frame) {
+  // A new document is going to be shown, so invalidate the old document state.
+  // Check that the frame's state is known before invalidating the frame,
+  // because it is possible that a script injection was scheduled before the
+  // page was loaded, e.g. by navigating to a javascript: URL before the page
+  // has loaded.
+  if (manager_->frame_statuses_.find(frame) != manager_->frame_statuses_.end())
+    InvalidateFrame(frame);
+}
+
 void ScriptInjectionManager::RVOHelper::DidCreateDocumentElement(
     blink::WebLocalFrame* frame) {
   manager_->InjectScripts(frame, UserScript::DOCUMENT_START);
@@ -135,12 +146,6 @@ void ScriptInjectionManager::RVOHelper::DidFinishLoad(
       base::Bind(&ScriptInjectionManager::RVOHelper::RunIdle,
                  weak_factory_.GetWeakPtr(),
                  frame));
-}
-
-void ScriptInjectionManager::RVOHelper::DidStartProvisionalLoad(
-    blink::WebLocalFrame* frame) {
-  // We're starting a new load - invalidate.
-  InvalidateFrame(frame);
 }
 
 void ScriptInjectionManager::RVOHelper::FrameDetached(blink::WebFrame* frame) {
