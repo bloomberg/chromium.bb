@@ -19,7 +19,7 @@ sig_files = [ "chromium/ffmpegsumo.sigs" ]
 # outputs of an action via a function.
 stubs_filename_root = "ffmpeg_stubs"
 
-if (cpu_arch != "arm" && os_config != "linux-noasm") {
+if ((cpu_arch == "x86" || cpu_arch == "x64") && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
     sources = ffmpeg_yasm_sources
@@ -216,7 +216,8 @@ if (build_ffmpegsumo) {
       } else if (cpu_arch == "mipsel") {
         cflags += [
           "-mips32",
-          "-EL -Wl,-EL",
+          "-EL",
+          "-Wl,-EL",
         ]
       }
     }
@@ -360,7 +361,8 @@ if (build_ffmpegsumo) {
       deps += [ ":ffmpeg_generate_def" ]
     }
 
-    if (cpu_arch != "arm" && cpu_arch != "mipsel" && os_config != "linux-noasm") {
+    if ((cpu_arch == "x86" || cpu_arch == "x64") &&
+        os_config != "linux-noasm") {
       deps += [ ":ffmpeg_yasm" ]
     }
   }

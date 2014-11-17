@@ -85,7 +85,7 @@
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
-    ['target_arch != "arm" and os_config != "linux-noasm"', {
+    ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
       'targets': [
         {
           'target_name': 'ffmpeg_yasm',
@@ -138,7 +138,7 @@
           },
         },
       ] # targets
-    }], # arch != arm
+    }], # (target_arch == "ia32" or target_arch == "x64")
     ['build_ffmpegsumo != 0', {
       'includes': [
         'ffmpeg_generated.gypi',
@@ -226,7 +226,7 @@
             '-Wno-deprecated-declarations',
           ],
           'conditions': [
-            ['target_arch != "arm" and target_arch != "mipsel" and os_config != "linux-noasm"', {
+            ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
               'dependencies': [
                 'ffmpeg_yasm',
               ],
