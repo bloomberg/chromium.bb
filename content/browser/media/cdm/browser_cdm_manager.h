@@ -108,6 +108,9 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
               const std::string& key_system,
               const GURL& security_origin);
 
+  // Removes all CDMs associated with |render_frame_id|.
+  void RemoveAllCdmForFrame(int render_frame_id);
+
   // Removes the CDM with the specified id.
   void RemoveCdm(uint64 id);
 
