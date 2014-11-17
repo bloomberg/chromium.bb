@@ -204,12 +204,14 @@ void ImagePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layo
 {
     // Don't anti-alias the background of an image. See crbug.com/423834 for the reason why.
     // However, don't turn off anti-aliasing for subclasses such as video.
-    bool shouldAntialias = !m_renderImage.isRenderImage();
+    // An additional mega-hack here is to turn off anti-aliasing only for situations with a large device scale factor
+    // The referenced bug gives more details about a device with a scale factor greater than 3.4).
+    bool shouldAntialias = !m_renderImage.isRenderImage() || blink::deviceScaleFactor(m_renderImage.frame()) < 3.4;
 
     bool oldShouldAntialias = paintInfo.context->shouldAntialias();
-
     paintInfo.context->setShouldAntialias(shouldAntialias);
     BoxPainter(m_renderImage).paintBoxDecorationBackground(paintInfo, paintOffset);
+
     paintInfo.context->setShouldAntialias(oldShouldAntialias);
 }
 
