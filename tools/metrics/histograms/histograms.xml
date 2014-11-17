@@ -55889,6 +55889,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Public Account"/>
   <int value="4" label="Locally Managed"/>
   <int value="5" label="Kiosk App"/>
+  <int value="6" label="Regular Supervised"/>
 </enum>
 
 <enum name="ValidationFailures" type="int">

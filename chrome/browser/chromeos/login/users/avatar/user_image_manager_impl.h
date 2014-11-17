@@ -149,8 +149,8 @@ class UserImageManagerImpl
   // Returns mutable version of user with |user_id_|.
   user_manager::User* GetUserAndModify() const;
 
-  // Returns true if user with |user_id_| is logged in and a regular user.
-  bool IsUserLoggedInAndRegular() const;
+  // Returns true if user with |user_id_| is logged in and has gaia account.
+  bool IsUserLoggedInAndHasGaiaAccount() const;
 
   // The user manager.
   user_manager::UserManager* user_manager_;

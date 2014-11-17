@@ -69,14 +69,14 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void LoggedInAsUser() {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsRegularUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsUserWithGaiaAccount())
         .WillRepeatedly(testing::Return(true));
   }
 
   void LoggedInAsGuest() {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsRegularUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsUserWithGaiaAccount())
         .WillRepeatedly(testing::Return(false));
     EXPECT_CALL(*mock_user_manager_, IsLoggedInAsSupervisedUser())
         .WillRepeatedly(testing::Return(false));

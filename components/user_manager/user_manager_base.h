@@ -86,7 +86,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
   virtual bool CanCurrentUserLock() const override;
   virtual bool IsUserLoggedIn() const override;
-  virtual bool IsLoggedInAsRegularUser() const override;
+  virtual bool IsLoggedInAsUserWithGaiaAccount() const override;
+  virtual bool IsLoggedInAsRegularSupervisedUser() const override;
   virtual bool IsLoggedInAsDemoUser() const override;
   virtual bool IsLoggedInAsPublicAccount() const override;
   virtual bool IsLoggedInAsGuest() const override;
@@ -307,8 +308,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Insert |user| at the front of the LRU user list.
   void SetLRUUser(User* user);
 
-  // Sends metrics in response to a regular user logging in.
-  void SendRegularUserLoginMetrics(const std::string& user_id);
+  // Sends metrics in response to a user with gaia account (regular) logging in.
+  void SendGaiaUserLoginMetrics(const std::string& user_id);
 
   // Sets account locale for user with id |user_id|.
   virtual void UpdateUserAccountLocale(const std::string& user_id,

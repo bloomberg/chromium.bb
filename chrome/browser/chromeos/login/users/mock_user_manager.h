@@ -56,7 +56,7 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(IsCurrentUserNonCryptohomeDataEphemeral, bool(void));
   MOCK_CONST_METHOD0(CanCurrentUserLock, bool(void));
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
-  MOCK_CONST_METHOD0(IsLoggedInAsRegularUser, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsUserWithGaiaAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));

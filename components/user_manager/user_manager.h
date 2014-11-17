@@ -253,8 +253,11 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if at least one user has signed in.
   virtual bool IsUserLoggedIn() const = 0;
 
-  // Returns true if we're logged in as a regular user.
-  virtual bool IsLoggedInAsRegularUser() const = 0;
+  // Returns true if we're logged in as a user with gaia account.
+  virtual bool IsLoggedInAsUserWithGaiaAccount() const = 0;
+
+  // Returns true if we're logged in as a regular supervised user.
+  virtual bool IsLoggedInAsRegularSupervisedUser() const = 0;
 
   // Returns true if we're logged in as a demo user.
   virtual bool IsLoggedInAsDemoUser() const = 0;

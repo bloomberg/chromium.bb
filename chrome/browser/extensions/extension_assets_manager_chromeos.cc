@@ -288,7 +288,7 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
   }
 
   if (user_manager->IsUserNonCryptohomeDataEphemeral(user_id) ||
-      !user_manager->IsLoggedInAsRegularUser()) {
+      !user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     // Don't cache anything in shared location for ephemeral user or special
     // user types.
     ExtensionAssetsManagerChromeOS::GetFileTaskRunner(profile)->PostTask(

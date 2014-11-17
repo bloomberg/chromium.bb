@@ -360,7 +360,7 @@ void DriveFirstRunController::EnableOfflineMode() {
     return;
   }
 
-  if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
+  if (!user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount()) {
     LOG(ERROR) << "Attempting to enable offline access "
                   "but not logged in a regular user.";
     OnOfflineInit(false, OUTCOME_WRONG_USER_TYPE);

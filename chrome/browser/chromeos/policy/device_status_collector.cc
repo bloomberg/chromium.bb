@@ -431,8 +431,8 @@ void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
       user_manager::UserManager::Get()->GetUsers();
   user_manager::UserList::const_iterator user;
   for (user = users.begin(); user != users.end(); ++user) {
-    // Only regular users are reported.
-    if ((*user)->GetType() != user_manager::USER_TYPE_REGULAR)
+    // Only users with gaia accounts (regular) are reported.
+    if (!(*user)->HasGaiaAccount())
       continue;
 
     em::DeviceUser* device_user = request->add_user();

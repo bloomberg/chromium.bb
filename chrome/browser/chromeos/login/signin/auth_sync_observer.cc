@@ -44,7 +44,7 @@ void AuthSyncObserver::Shutdown() {
 }
 
 void AuthSyncObserver::OnStateChanged() {
-  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsRegularUser() ||
+  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() ||
          user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);

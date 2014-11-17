@@ -399,14 +399,14 @@ void UserSessionManager::PerformPostUserLoggedInActions() {
 
 void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  // We need to restore session only for logged in regular (GAIA) users.
+  // We need to restore session only for logged in GAIA (regular) users.
   // Note: stub user is a special case that is used for tests, running
   // linux_chromeos build on dev workstations w/o user_id parameters.
   // Stub user is considered to be a regular GAIA user but it has special
   // user_id (kStubUser) and certain services like restoring OAuth session are
   // explicitly disabled for it.
   if (!user_manager->IsUserLoggedIn() ||
-      !user_manager->IsLoggedInAsRegularUser() ||
+      !user_manager->IsLoggedInAsUserWithGaiaAccount() ||
       user_manager->IsLoggedInAsStub()) {
     return;
   }
@@ -598,7 +598,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
 bool UserSessionManager::NeedsToUpdateEasyUnlockKeys() const {
   return EasyUnlockService::IsSignInEnabled() &&
          !user_context_.GetUserID().empty() &&
-         user_context_.GetUserType() == user_manager::USER_TYPE_REGULAR &&
+         user_manager::User::TypeHasGaiaAccount(user_context_.GetUserType()) &&
          user_context_.GetKey() && !user_context_.GetKey()->GetSecret().empty();
 }
 
@@ -683,7 +683,7 @@ void UserSessionManager::OnConnectionTypeChanged(
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
       !user_manager->IsUserLoggedIn() ||
-      !user_manager->IsLoggedInAsRegularUser() ||
+      !user_manager->IsLoggedInAsUserWithGaiaAccount() ||
       user_manager->IsLoggedInAsStub() || is_running_test) {
     return;
   }
@@ -828,7 +828,8 @@ void UserSessionManager::InitProfilePreferences(
             active_user->email());
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
-  } else if (user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
+  } else if (user_manager::UserManager::Get()->
+      IsLoggedInAsUserWithGaiaAccount()) {
     // Prime the account tracker with this combination of gaia id/display email.
     // Don't do this unless both email and gaia_id are valid.  They may not
     // be when simply unlocking the profile.
@@ -932,7 +933,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   btl->AddLoginTimeMarker("TPMOwn-End", false);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager->IsLoggedInAsRegularUser()) {
+  if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);
     if (saml_offline_signin_limiter)
@@ -1289,7 +1290,7 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
   // authenticator.
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
-  if (!user || user->GetType() != user_manager::USER_TYPE_REGULAR)
+  if (!user || !user->HasGaiaAccount())
     return;
 
   // Bail if |user_context| does not have secret.

@@ -176,7 +176,7 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   // Add observer so we can see when the first profile's session restore is
   // completed. After that, we won't need the default profile anymore.
   if (!IsSigninProfile(profile) &&
-      user_manager::UserManager::Get()->IsLoggedInAsRegularUser() &&
+      user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() &&
       !user_manager::UserManager::Get()->IsLoggedInAsStub()) {
     chromeos::OAuth2LoginManager* login_manager =
         chromeos::OAuth2LoginManagerFactory::GetInstance()->GetForProfile(

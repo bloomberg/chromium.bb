@@ -16,7 +16,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/user_manager/user_type.h"
 
 namespace policy {
 
@@ -73,8 +72,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (user != user_manager::UserManager::Get()->GetPrimaryUser())
     return NULL;
 
-  const bool allow_trusted_certs_from_policy =
-      user->GetType() == user_manager::USER_TYPE_REGULAR;
+  const bool allow_trusted_certs_from_policy = user->HasGaiaAccount();
 
   ProfilePolicyConnector* profile_connector =
       ProfilePolicyConnectorFactory::GetForProfile(profile);

@@ -265,7 +265,7 @@ bool FakeUserManager::IsUserLoggedIn() const {
   return logged_in_users_.size() > 0;
 }
 
-bool FakeUserManager::IsLoggedInAsRegularUser() const {
+bool FakeUserManager::IsLoggedInAsUserWithGaiaAccount() const {
   return true;
 }
 

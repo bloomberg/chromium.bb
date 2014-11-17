@@ -270,7 +270,7 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() {
 #if defined(OS_CHROMEOS)
-  if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser())
+  if (!user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount())
     return false;
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile()))

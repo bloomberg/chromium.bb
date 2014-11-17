@@ -107,7 +107,7 @@ bool AutotestPrivateLoginStatusFunction::RunSync() {
     result->SetBoolean("isScreenLocked", is_screen_locked);
     if (user_manager->IsUserLoggedIn()) {
       result->SetBoolean("isRegularUser",
-                         user_manager->IsLoggedInAsRegularUser());
+                         user_manager->IsLoggedInAsUserWithGaiaAccount());
       result->SetBoolean("isGuest", user_manager->IsLoggedInAsGuest());
       result->SetBoolean("isKiosk", user_manager->IsLoggedInAsKioskApp());
 

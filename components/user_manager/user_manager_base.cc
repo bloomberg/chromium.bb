@@ -58,9 +58,9 @@ const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 const char kUserForceOnlineSignin[] = "UserForceOnlineSignin";
 
 // A string pref containing the ID of the last user who logged in if it was
-// a regular user or an empty string if it was another type of user (guest,
-// kiosk, public account, etc.).
-const char kLastLoggedInRegularUser[] = "LastLoggedInRegularUser";
+// a user with gaia account (regular) or an empty string if it was another type
+// of user (guest, kiosk, public account, etc.).
+const char kLastLoggedInGaiaUser[] = "LastLoggedInRegularUser";
 
 // A string pref containing the ID of the last active user.
 // In case of browser crash, this pref will be used to set active user after
@@ -93,7 +93,7 @@ void ResolveLocale(const std::string& raw_locale,
 // static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kRegularUsers);
-  registry->RegisterStringPref(kLastLoggedInRegularUser, std::string());
+  registry->RegisterStringPref(kLastLoggedInGaiaUser, std::string());
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserGivenName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
@@ -218,16 +218,15 @@ void UserManagerBase::UserLoggedIn(const std::string& user_id,
 
   if (!primary_user_) {
     primary_user_ = active_user_;
-    if (primary_user_->GetType() == USER_TYPE_REGULAR)
-      SendRegularUserLoginMetrics(user_id);
+    if (primary_user_->HasGaiaAccount())
+      SendGaiaUserLoginMetrics(user_id);
   }
 
   UMA_HISTOGRAM_ENUMERATION(
       "UserManager.LoginUserType", active_user_->GetType(), NUM_USER_TYPES);
 
   GetLocalState()->SetString(
-      kLastLoggedInRegularUser,
-      (active_user_->GetType() == USER_TYPE_REGULAR) ? user_id : "");
+      kLastLoggedInGaiaUser, active_user_->HasGaiaAccount() ? user_id : "");
 
   NotifyOnLogin();
   PerformPostUserLoggedInActions(browser_restart);
@@ -247,8 +246,9 @@ void UserManagerBase::SwitchActiveUser(const std::string& user_id) {
     NOTREACHED() << "Switching to a user that is not logged in";
     return;
   }
-  if (user->GetType() != USER_TYPE_REGULAR) {
-    NOTREACHED() << "Switching to a non-regular user";
+  if (!user->HasGaiaAccount()) {
+    NOTREACHED() <<
+        "Switching to a user without gaia account (non-regular one)";
     return;
   }
   if (user->username_hash().empty()) {
@@ -551,9 +551,15 @@ bool UserManagerBase::IsUserLoggedIn() const {
   return active_user_;
 }
 
-bool UserManagerBase::IsLoggedInAsRegularUser() const {
+bool UserManagerBase::IsLoggedInAsUserWithGaiaAccount() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_REGULAR;
+  return IsUserLoggedIn() && active_user_->HasGaiaAccount();
+}
+
+bool UserManagerBase::IsLoggedInAsRegularSupervisedUser() const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  return IsUserLoggedIn() && active_user_->GetType() ==
+      USER_TYPE_REGULAR_SUPERVISED;
 }
 
 bool UserManagerBase::IsLoggedInAsDemoUser() const {
@@ -611,12 +617,13 @@ bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
   }
 
   // Data belonging to the currently logged-in user is ephemeral when:
-  // a) The user logged into a regular account while the ephemeral users policy
-  //    was enabled.
+  // a) The user logged into a regular gaia account while the ephemeral users
+  //    policy was enabled.
   //    - or -
   // b) The user logged into any other account type.
   if (IsUserLoggedIn() && (user_id == GetLoggedInUser()->email()) &&
-      (is_current_user_ephemeral_regular_user_ || !IsLoggedInAsRegularUser())) {
+      (is_current_user_ephemeral_regular_user_ ||
+       !IsLoggedInAsUserWithGaiaAccount())) {
     return true;
   }
 
@@ -659,10 +666,8 @@ void UserManagerBase::NotifyLocalStateChanged() {
 
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
-  if (!user || (user->GetType() != USER_TYPE_REGULAR &&
-                user->GetType() != USER_TYPE_SUPERVISED)) {
+  if (!user || !(user->HasGaiaAccount() || user->IsSupervised()))
     return false;
-  }
 
   // Sanity check: we must not remove single user unless it's an enterprise
   // device. This check may seem redundant at a first sight because
@@ -922,10 +927,8 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
       user = *it;
       it = users_.erase(it);
     } else {
-      if ((*it)->GetType() == USER_TYPE_REGULAR ||
-          (*it)->GetType() == USER_TYPE_SUPERVISED) {
+      if ((*it)->HasGaiaAccount() || (*it)->IsSupervised())
         prefs_users_update->Append(new base::StringValue(user_email));
-      }
       ++it;
     }
   }
@@ -1009,13 +1012,13 @@ void UserManagerBase::SetLRUUser(User* user) {
   lru_logged_in_users_.insert(lru_logged_in_users_.begin(), user);
 }
 
-void UserManagerBase::SendRegularUserLoginMetrics(const std::string& user_id) {
+void UserManagerBase::SendGaiaUserLoginMetrics(const std::string& user_id) {
   // If this isn't the first time Chrome was run after the system booted,
   // assume that Chrome was restarted because a previous session ended.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kFirstExecAfterBoot)) {
     const std::string last_email =
-        GetLocalState()->GetString(kLastLoggedInRegularUser);
+        GetLocalState()->GetString(kLastLoggedInGaiaUser);
     const base::TimeDelta time_to_login =
         base::TimeTicks::Now() - manager_creation_time_;
     if (!last_email.empty() && user_id != last_email &&

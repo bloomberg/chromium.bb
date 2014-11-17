@@ -100,7 +100,7 @@ ash::DisplayManager* GetDisplayManager() {
 bool UserCanSaveDisplayPreference() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   return user_manager->IsUserLoggedIn() &&
-      (user_manager->IsLoggedInAsRegularUser() ||
+      (user_manager->IsLoggedInAsUserWithGaiaAccount() ||
        user_manager->IsLoggedInAsSupervisedUser() ||
        user_manager->IsLoggedInAsKioskApp());
 }

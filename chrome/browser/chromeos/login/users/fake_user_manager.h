@@ -101,7 +101,7 @@ class FakeUserManager : public ChromeUserManager {
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
   virtual bool CanCurrentUserLock() const override;
   virtual bool IsUserLoggedIn() const override;
-  virtual bool IsLoggedInAsRegularUser() const override;
+  virtual bool IsLoggedInAsUserWithGaiaAccount() const override;
   virtual bool IsLoggedInAsDemoUser() const override;
   virtual bool IsLoggedInAsPublicAccount() const override;
   virtual bool IsLoggedInAsGuest() const override;

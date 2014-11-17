@@ -553,7 +553,7 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
   if (!shell->delegate()->IsMultiProfilesEnabled())
     return;
 
-  // Only regular users could add other users to current session.
+  // Only regular non-supervised users could add other users to current session.
   if (user_manager::UserManager::Get()->GetActiveUser()->GetType() !=
       user_manager::USER_TYPE_REGULAR) {
     return;

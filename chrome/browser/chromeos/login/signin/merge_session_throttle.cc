@@ -164,7 +164,8 @@ bool MergeSessionThrottle::ShouldDelayRequest(
 
   if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     return false;
-  } else if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
+  } else if (!user_manager::UserManager::Get()->
+      IsLoggedInAsUserWithGaiaAccount()) {
     // This is not a regular user session, let's remove the throttle
     // permanently.
     if (!AreAllSessionMergedAlready())
@@ -205,7 +206,7 @@ bool MergeSessionThrottle::ShouldDelayRequest(
       // In theory this should not happen since we should
       // kick off the session restore process for the newly added profile
       // before we attempt loading any page.
-      if (user_manager::UserManager::Get()->IsLoggedInAsRegularUser() &&
+      if (user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() &&
           !user_manager::UserManager::Get()->IsLoggedInAsStub()) {
         LOG(WARNING) << "Loading content for a profile without "
                      << "session restore?";

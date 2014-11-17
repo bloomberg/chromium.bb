@@ -240,7 +240,7 @@ void ExistingUserController::UpdateLoginDisplay(
         user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
     bool meets_whitelist_requirements =
         LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
-        (*it)->GetType() != user_manager::USER_TYPE_REGULAR;
+        !(*it)->HasGaiaAccount();
 
     // Public session accounts are always shown on login screen.
     bool meets_show_users_requirements =

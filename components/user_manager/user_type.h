@@ -23,8 +23,10 @@ typedef enum {
   USER_TYPE_SUPERVISED = 4,
   // Kiosk app robot, logs in without authentication.
   USER_TYPE_KIOSK_APP = 5,
+  // Regular user, with supervised options.
+  USER_TYPE_REGULAR_SUPERVISED = 6,
   // Maximum histogram value.
-  NUM_USER_TYPES = 6
+  NUM_USER_TYPES = 7
 } UserType;
 
 }  // namespace user_manager
