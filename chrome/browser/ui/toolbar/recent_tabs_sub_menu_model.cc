@@ -310,6 +310,10 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
                                 browser_->host_desktop_type(), disposition);
     }
   }
+  UMA_HISTOGRAM_TIMES("WrenchMenu.TimeToAction.RecentTab",
+                       menu_opened_timer_.Elapsed());
+  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", MENU_ACTION_RECENT_TAB,
+                             LIMIT_MENU_ACTION);
 }
 
 int RecentTabsSubMenuModel::GetFirstRecentTabsCommandId() {

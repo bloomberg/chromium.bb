@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -170,6 +171,9 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   base::CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
+
+  // Time the menu is open for until a recent tab is selected.
+  base::ElapsedTimer menu_opened_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModel);
 };

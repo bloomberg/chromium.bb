@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -277,6 +278,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                                  Browser* browser)
     : ui::SimpleMenuModel(this),
+      uma_action_recorded_(false),
       provider_(provider),
       browser_(browser),
       tab_strip_model_(browser_->tab_strip_model()) {
@@ -408,17 +410,307 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
     }
   }
 
-  if (command_id == IDC_HELP_PAGE_VIA_MENU)
-    content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
+  LogMenuMetrics(command_id);
+  chrome::ExecuteCommand(browser_, command_id);
+}
 
-  if (command_id == IDC_FULLSCREEN) {
-    // We issue the UMA command here and not in BrowserCommandController or even
-    // FullscreenController since we want to be able to distinguish this event
-    // and a menu which is under development.
-    content::RecordAction(UserMetricsAction("EnterFullScreenWithWrenchMenu"));
+void WrenchMenuModel::LogMenuMetrics(int command_id) {
+  base::TimeDelta delta = timer_.Elapsed();
+
+  switch (command_id) {
+    case IDC_NEW_TAB:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.NewTab", delta);
+      LogMenuAction(MENU_ACTION_NEW_TAB);
+      break;
+    case IDC_NEW_WINDOW:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.NewWindow", delta);
+      LogMenuAction(MENU_ACTION_NEW_WINDOW);
+      break;
+    case IDC_NEW_INCOGNITO_WINDOW:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.NewIncognitoWindow",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_NEW_INCOGNITO_WINDOW);
+      break;
+
+    // Bookmarks sub menu.
+    case IDC_SHOW_BOOKMARK_BAR:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowBookmarkBar",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_BAR);
+      break;
+    case IDC_SHOW_BOOKMARK_MANAGER:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowBookmarkMgr",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_MANAGER);
+      break;
+    case IDC_IMPORT_SETTINGS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ImportSettings",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_IMPORT_SETTINGS);
+      break;
+    case IDC_BOOKMARK_PAGE:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BookmarkPage",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_BOOKMARK_PAGE);
+      break;
+    case IDC_BOOKMARK_ALL_TABS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BookmarkAllTabs",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_BOOKMARK_ALL_TABS);
+      break;
+    case IDC_PIN_TO_START_SCREEN:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.PinToStartScreen",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_PIN_TO_START_SCREEN);
+      break;
+
+    // Recent tabs menu.
+    case IDC_RESTORE_TAB:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.RestoreTab", delta);
+      LogMenuAction(MENU_ACTION_RESTORE_TAB);
+      break;
+
+    // Windows.
+    case IDC_WIN_DESKTOP_RESTART:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.WinDesktopRestart",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_WIN_DESKTOP_RESTART);
+      break;
+    case IDC_WIN8_METRO_RESTART:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Win8MetroRestart",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_WIN8_METRO_RESTART);
+      break;
+
+    case IDC_WIN_CHROMEOS_RESTART:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeOSRestart",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_WIN_CHROMEOS_RESTART);
+      break;
+    case IDC_DISTILL_PAGE:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DistillPage",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_DISTILL_PAGE);
+      break;
+    case IDC_SAVE_PAGE:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.SavePage", delta);
+      LogMenuAction(MENU_ACTION_SAVE_PAGE);
+      break;
+    case IDC_FIND:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Find", delta);
+      LogMenuAction(MENU_ACTION_FIND);
+      break;
+    case IDC_PRINT:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Print", delta);
+      LogMenuAction(MENU_ACTION_PRINT);
+      break;
+
+    // Edit menu.
+    case IDC_CUT:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Cut", delta);
+      LogMenuAction(MENU_ACTION_CUT);
+      break;
+    case IDC_COPY:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Copy", delta);
+      LogMenuAction(MENU_ACTION_COPY);
+      break;
+    case IDC_PASTE:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Paste", delta);
+      LogMenuAction(MENU_ACTION_PASTE);
+      break;
+
+    // Tools menu.
+    case IDC_CREATE_HOSTED_APP:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.CreateHostedApp",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_CREATE_HOSTED_APP);
+      break;
+    case IDC_CREATE_SHORTCUTS:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.CreateShortcuts",
+                                   delta);
+      LogMenuAction(MENU_ACTION_CREATE_SHORTCUTS);
+      break;
+    case IDC_MANAGE_EXTENSIONS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ManageExtensions",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_MANAGE_EXTENSIONS);
+      break;
+    case IDC_TASK_MANAGER:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.TaskManager",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_TASK_MANAGER);
+      break;
+    case IDC_CLEAR_BROWSING_DATA:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ClearBrowsingData",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_CLEAR_BROWSING_DATA);
+      break;
+    case IDC_VIEW_SOURCE:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ViewSource", delta);
+      LogMenuAction(MENU_ACTION_VIEW_SOURCE);
+      break;
+    case IDC_DEV_TOOLS:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DevTools", delta);
+      LogMenuAction(MENU_ACTION_DEV_TOOLS);
+      break;
+    case IDC_DEV_TOOLS_CONSOLE:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DevToolsConsole",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_DEV_TOOLS_CONSOLE);
+      break;
+    case IDC_DEV_TOOLS_DEVICES:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DevToolsDevices",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_DEV_TOOLS_DEVICES);
+      break;
+    case IDC_PROFILING_ENABLED:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ProfilingEnabled",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_PROFILING_ENABLED);
+      break;
+
+    // Zoom menu
+    case IDC_ZOOM_MINUS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ZoomMinus", delta);
+        LogMenuAction(MENU_ACTION_ZOOM_MINUS);
+      }
+      break;
+    case IDC_ZOOM_PLUS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ZoomPlus", delta);
+        LogMenuAction(MENU_ACTION_ZOOM_PLUS);
+      }
+      break;
+    case IDC_FULLSCREEN:
+      content::RecordAction(UserMetricsAction("EnterFullScreenWithWrenchMenu"));
+
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.EnterFullScreen",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_FULLSCREEN);
+      break;
+
+    case IDC_SHOW_HISTORY:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowHistory",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_HISTORY);
+      break;
+    case IDC_SHOW_DOWNLOADS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowDownloads",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_DOWNLOADS);
+      break;
+    case IDC_SHOW_SYNC_SETUP:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowSyncSetup",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_SYNC_SETUP);
+      break;
+    case IDC_OPTIONS:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Settings", delta);
+      LogMenuAction(MENU_ACTION_OPTIONS);
+      break;
+    case IDC_ABOUT:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.About", delta);
+      LogMenuAction(MENU_ACTION_ABOUT);
+      break;
+
+    // Help menu.
+    case IDC_HELP_PAGE_VIA_MENU:
+      content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
+
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.HelpPage", delta);
+      LogMenuAction(MENU_ACTION_HELP_PAGE_VIA_MENU);
+      break;
+  #if defined(GOOGLE_CHROME_BUILD)
+    case IDC_FEEDBACK:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Feedback", delta);
+      LogMenuAction(MENU_ACTION_FEEDBACK);
+      break;
+  #endif
+
+    case IDC_TOGGLE_REQUEST_TABLET_SITE:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.RequestTabletSite",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_TOGGLE_REQUEST_TABLET_SITE);
+      break;
+    case IDC_EXIT:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Exit", delta);
+      LogMenuAction(MENU_ACTION_EXIT);
+      break;
   }
 
-  chrome::ExecuteCommand(browser_, command_id);
+  if (!uma_action_recorded_) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction", delta);
+    uma_action_recorded_ = true;
+  }
+}
+
+void WrenchMenuModel::LogMenuAction(int action_id) {
+  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
+                            LIMIT_MENU_ACTION);
 }
 
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
@@ -670,6 +962,7 @@ void WrenchMenuModel::Build() {
   }
 
   RemoveTrailingSeparators();
+  uma_action_recorded_ = false;
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {

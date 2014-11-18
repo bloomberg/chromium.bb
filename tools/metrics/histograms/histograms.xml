@@ -40719,11 +40719,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WrenchMenu.MenuAction" enum="WretchMenuAction">
+  <owner>ainslie@chromium.org</owner>
+  <owner>edwardjung@chromium.org</owner>
+  <summary>Number of times that each menu item is clicked.</summary>
+</histogram>
+
 <histogram name="WrenchMenu.RecentTabsSubMenu" enum="RecentTabsAction">
   <owner>rpop@chromium.org</owner>
   <summary>
     The number of times each tab or window restore option in the Recent Tabs
     submenu is clicked.
+  </summary>
+</histogram>
+
+<histogram name="WrenchMenu.TimeToAction">
+  <owner>ainslie@chromium.org</owner>
+  <owner>edwardjung@chromium.org</owner>
+  <summary>
+    The time a user takes to select a menu itme after opening the menu.
   </summary>
 </histogram>
 
@@ -56399,6 +56413,53 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="People"/>
 </enum>
 
+<enum name="WretchMenuAction" type="int">
+  <int value="0" label="New tab"/>
+  <int value="1" label="New window"/>
+  <int value="2" label="New incognito window"/>
+  <int value="3" label="Show bookmark bar"/>
+  <int value="4" label="Show bookmark manager"/>
+  <int value="5" label="Import settings"/>
+  <int value="6" label="Bookmark page"/>
+  <int value="7" label="Bookmark all tabs"/>
+  <int value="8" label="Pin to start screen"/>
+  <int value="9" label="Restore tab"/>
+  <int value="10" label="Win desktop restart"/>
+  <int value="11" label="Win8 metro restart"/>
+  <int value="12" label="Win chromeos restart"/>
+  <int value="13" label="Distill page"/>
+  <int value="14" label="Save page"/>
+  <int value="15" label="Find"/>
+  <int value="16" label="Print"/>
+  <int value="17" label="Cut"/>
+  <int value="18" label="Copy"/>
+  <int value="19" label="Paste"/>
+  <int value="20" label="Create hosted app"/>
+  <int value="21" label="Create shortcuts"/>
+  <int value="22" label="Manage extensions"/>
+  <int value="23" label="Task manager"/>
+  <int value="24" label="Clear browsing data"/>
+  <int value="25" label="View source"/>
+  <int value="26" label="Dev tools"/>
+  <int value="27" label="Dev tools console"/>
+  <int value="28" label="Dev tools devices"/>
+  <int value="29" label="Profiling enabled"/>
+  <int value="30" label="Zoom minus"/>
+  <int value="31" label="Zoom plus"/>
+  <int value="32" label="Fullscreen"/>
+  <int value="33" label="Show history"/>
+  <int value="34" label="Show downloads"/>
+  <int value="35" label="Show sync setup"/>
+  <int value="36" label="Options"/>
+  <int value="37" label="About"/>
+  <int value="38" label="Help page via menu"/>
+  <int value="39" label="Feedback"/>
+  <int value="40" label="Toggle request tablet site"/>
+  <int value="41" label="Recent tab"/>
+  <int value="42" label="Open a bookmark"/>
+  <int value="43" label="Exit"/>
+</enum>
+
 <enum name="XMLHttpRequestSendArrayBufferOrView" type="int">
   <int value="0" label="XMLHttpRequestSendArrayBuffer"/>
   <int value="1" label="XMLHttpRequestSendArrayBufferView"/>
@@ -60179,6 +60240,52 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="PlusIcon" label="Plus icon in apps page"/>
   <affected-histogram name="Extensions.AppLaunch"/>
   <affected-histogram name="NewTabPage.DefaultPageType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WrenchMenuActionTimings" separator=".">
+  <suffix name="NewTab"/>
+  <suffix name="NewWindow"/>
+  <suffix name="NewIncognitoWindow"/>
+  <suffix name="ShowBookmarkBar"/>
+  <suffix name="ShowBookmarkMgr"/>
+  <suffix name="ImportSettings"/>
+  <suffix name="BookmarkPage"/>
+  <suffix name="BookmarkAllTabs"/>
+  <suffix name="PinToStartScreen"/>
+  <suffix name="RestoreTab"/>
+  <suffix name="WinDesktopRestart"/>
+  <suffix name="Win8MetroRestart"/>
+  <suffix name="ChromeOSRestart"/>
+  <suffix name="DistillPage"/>
+  <suffix name="SavePage"/>
+  <suffix name="Find"/>
+  <suffix name="Print"/>
+  <suffix name="Cut"/>
+  <suffix name="Copy"/>
+  <suffix name="Paste"/>
+  <suffix name="CreateHostedApp"/>
+  <suffix name="CreateShortcuts"/>
+  <suffix name="ManageExtensions"/>
+  <suffix name="TaskManager"/>
+  <suffix name="ClearBrowsingData"/>
+  <suffix name="ViewSource"/>
+  <suffix name="DevTools"/>
+  <suffix name="DevToolsConsole"/>
+  <suffix name="DevToolsDevices"/>
+  <suffix name="ProfilingEnabled"/>
+  <suffix name="ZoomMinus"/>
+  <suffix name="ZoomPlus"/>
+  <suffix name="EnterFullScreen"/>
+  <suffix name="ShowHistory"/>
+  <suffix name="ShowDownloads"/>
+  <suffix name="ShowSyncSetup"/>
+  <suffix name="Settings"/>
+  <suffix name="About"/>
+  <suffix name="HelpPage"/>
+  <suffix name="Feedback"/>
+  <suffix name="RequestTabletSite"/>
+  <suffix name="Exit"/>
+  <affected-histogram name="WrenchMenu.TimeToAction"/>
 </histogram_suffixes>
 
 </histogram_suffixes_list>

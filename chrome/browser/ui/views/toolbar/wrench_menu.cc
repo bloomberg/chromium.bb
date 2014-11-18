@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -1002,6 +1003,10 @@ bool WrenchMenu::IsCommandEnabled(int command_id) const {
 
 void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   if (IsBookmarkCommand(command_id)) {
+    UMA_HISTOGRAM_TIMES("WrenchMenu.TimeToAction.BookmarkOpen",
+                        menu_opened_timer_.Elapsed());
+    UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction",
+                              MENU_ACTION_BOOKMARK_OPEN, LIMIT_MENU_ACTION);
     bookmark_menu_delegate_->ExecuteCommand(command_id, mouse_event_flags);
     return;
   }

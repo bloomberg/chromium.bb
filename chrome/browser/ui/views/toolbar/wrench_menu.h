@@ -10,6 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -183,6 +185,9 @@ class WrenchMenu : public views::MenuDelegate,
   const int run_flags_;
 
   ObserverList<WrenchMenuObserver> observer_list_;
+
+  // Records the time from when menu opens to when the user selects a menu item.
+  base::ElapsedTimer menu_opened_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenu);
 };
