@@ -6,6 +6,12 @@
 
 # Script to install build dependencies of packages which we instrument.
 
+# Enable source repositories in Goobuntu.
+if hash goobuntu-config 2> /dev/null
+then
+  sudo goobuntu-config set include_deb_src true
+fi
+
 # TODO(earthdok): find a way to pull the list from the build config.
 common_packages="\
 atk1.0 \
