@@ -56,32 +56,12 @@ ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment)
 {
     return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), static_cast<long>(increment)) + increment;
 }
-ALWAYS_INLINE unsigned atomicAdd(unsigned volatile* addend, unsigned increment)
-{
-    return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), static_cast<long>(increment)) + increment;
-}
-#if defined(_WIN64)
-ALWAYS_INLINE unsigned long atomicAdd(unsigned long volatile* addend, unsigned long increment)
-{
-    return InterlockedExchangeAdd64(reinterpret_cast<long long volatile*>(addend), static_cast<long long>(increment)) + increment;
-}
-#endif
 
 // atomicSubtract returns the result of the subtraction.
 ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement)
 {
     return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), static_cast<long>(-decrement)) - decrement;
 }
-ALWAYS_INLINE unsigned atomicSubtract(unsigned volatile* addend, unsigned decrement)
-{
-    return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend), -static_cast<long>(decrement)) - decrement;
-}
-#if defined(_WIN64)
-ALWAYS_INLINE unsigned long atomicSubtract(unsigned long volatile* addend, unsigned long decrement)
-{
-    return InterlockedExchangeAdd64(reinterpret_cast<long long volatile*>(addend), -static_cast<long long>(decrement)) - decrement;
-}
-#endif
 
 ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
 ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
@@ -106,12 +86,8 @@ ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
 
 // atomicAdd returns the result of the addition.
 ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment) { return __sync_add_and_fetch(addend, increment); }
-ALWAYS_INLINE unsigned atomicAdd(unsigned volatile* addend, unsigned increment) { return __sync_add_and_fetch(addend, increment); }
-ALWAYS_INLINE unsigned long atomicAdd(unsigned long volatile* addend, unsigned long increment) { return __sync_add_and_fetch(addend, increment); }
 // atomicSubtract returns the result of the subtraction.
 ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement) { return __sync_sub_and_fetch(addend, decrement); }
-ALWAYS_INLINE unsigned atomicSubtract(unsigned volatile* addend, unsigned decrement) { return __sync_sub_and_fetch(addend, decrement); }
-ALWAYS_INLINE unsigned long atomicSubtract(unsigned long volatile* addend, unsigned long decrement) { return __sync_sub_and_fetch(addend, decrement); }
 
 ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return atomicAdd(addend, 1); }
 ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return atomicSubtract(addend, 1); }

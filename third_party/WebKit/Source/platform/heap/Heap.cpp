@@ -681,16 +681,12 @@ void ThreadHeap<Header>::cleanupPages()
     clearFreeLists();
 
     // Add the ThreadHeap's pages to the orphanedPagePool.
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->m_next) {
-        Heap::decreaseAllocatedSpace(blinkPageSize);
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->m_next)
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
-    }
     m_firstPage = 0;
 
-    for (LargeHeapObject<Header>* largeObject = m_firstLargeHeapObject; largeObject; largeObject = largeObject->m_next) {
-        Heap::decreaseAllocatedSpace(largeObject->size());
+    for (LargeHeapObject<Header>* largeObject = m_firstLargeHeapObject; largeObject; largeObject = largeObject->m_next)
         Heap::orphanedPagePool()->addOrphanedPage(m_index, largeObject);
-    }
     m_firstLargeHeapObject = 0;
 }
 
@@ -698,7 +694,7 @@ template<typename Header>
 void ThreadHeap<Header>::updateRemainingAllocationSize()
 {
     if (m_lastRemainingAllocationSize > remainingAllocationSize()) {
-        Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
+        stats().increaseObjectSpace(m_lastRemainingAllocationSize - remainingAllocationSize());
         m_lastRemainingAllocationSize = remainingAllocationSize();
     }
     ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
@@ -966,7 +962,7 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
             if (basicHeader->isPromptlyFreed()) {
-                Heap::decreaseAllocatedObjectSize(reinterpret_cast<Header*>(basicHeader)->size());
+                stats().decreaseObjectSpace(reinterpret_cast<Header*>(basicHeader)->size());
                 size_t size = basicHeader->size();
                 ASSERT(size >= sizeof(Header));
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
@@ -1050,8 +1046,8 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
     ASAN_POISON_MEMORY_REGION(largeObject->address() + largeObject->size(), allocationGranularity);
     largeObject->link(&m_firstLargeHeapObject);
-    Heap::increaseAllocatedSpace(largeObject->size());
-    Heap::increaseAllocatedObjectSize(largeObject->size());
+    stats().increaseAllocatedSpace(largeObject->size());
+    stats().increaseObjectSpace(largeObject->size());
     return result;
 }
 
@@ -1060,7 +1056,6 @@ void ThreadHeap<Header>::freeLargeObject(LargeHeapObject<Header>* object, LargeH
 {
     object->unlink(previousNext);
     object->finalize();
-    Heap::decreaseAllocatedSpace(object->size());
 
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.
@@ -1282,8 +1277,6 @@ void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
 template <typename Header>
 void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
 {
-    Heap::decreaseAllocatedSpace(blinkPageSize);
-
     MutexLocker locker(m_threadState->sweepMutex());
     if (page->terminating()) {
         // The thread is shutting down so this page is being removed as part
@@ -1337,7 +1330,6 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
         }
     }
     HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this, gcInfo);
-    Heap::increaseAllocatedSpace(blinkPageSize);
     // Use a separate list for pages allocated during sweeping to make
     // sure that we do not accidentally sweep objects that have been
     // allocated during sweeping.
@@ -1375,19 +1367,17 @@ bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
 #endif
 
 template<typename Header>
-size_t ThreadHeap<Header>::objectPayloadSizeForTesting()
+void ThreadHeap<Header>::getStatsForTesting(HeapStats& stats)
 {
     ASSERT(!m_firstPageAllocatedDuringSweeping);
-    size_t objectPayloadSize = 0;
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
-        objectPayloadSize += page->objectPayloadSizeForTesting();
+        page->getStatsForTesting(stats);
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next())
-        objectPayloadSize += current->objectPayloadSizeForTesting();
-    return objectPayloadSize;
+        current->getStatsForTesting(stats);
 }
 
 template<typename Header>
-void ThreadHeap<Header>::sweepNormalPages()
+void ThreadHeap<Header>::sweepNormalPages(HeapStats* stats)
 {
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepNormalPages");
     HeapPage<Header>* page = m_firstPage;
@@ -1403,7 +1393,7 @@ void ThreadHeap<Header>::sweepNormalPages()
             HeapPage<Header>::unlink(this, unused, previousNext);
             --m_numberOfNormalPages;
         } else {
-            page->sweep(this);
+            page->sweep(stats, this);
             previousNext = &page->m_next;
             previous = page;
             page = page->next();
@@ -1412,13 +1402,14 @@ void ThreadHeap<Header>::sweepNormalPages()
 }
 
 template<typename Header>
-void ThreadHeap<Header>::sweepLargePages()
+void ThreadHeap<Header>::sweepLargePages(HeapStats* stats)
 {
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepLargePages");
     LargeHeapObject<Header>** previousNext = &m_firstLargeHeapObject;
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
         if (current->isMarked()) {
-            Heap::increaseMarkedObjectSize(current->size());
+            stats->increaseAllocatedSpace(current->size());
+            stats->increaseObjectSpace(current->size());
             current->unmark();
             previousNext = &current->m_next;
             current = current->next();
@@ -1439,7 +1430,7 @@ void ThreadHeap<Header>::sweepLargePages()
 #define STRICT_ASAN_FINALIZATION_CHECKING 0
 
 template<typename Header>
-void ThreadHeap<Header>::sweep()
+void ThreadHeap<Header>::sweep(HeapStats* stats)
 {
     ASSERT(isConsistentForSweeping());
 #if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
@@ -1450,8 +1441,8 @@ void ThreadHeap<Header>::sweep()
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
         page->poisonUnmarkedObjects();
 #endif
-    sweepNormalPages();
-    sweepLargePages();
+    sweepNormalPages(stats);
+    sweepLargePages(stats);
 }
 
 template<typename Header>
@@ -1551,6 +1542,7 @@ HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap, const 
     COMPILE_ASSERT(!(sizeof(HeapPage<Header>) & allocationMask), page_header_incorrectly_aligned);
     m_objectStartBitMapComputed = false;
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
+    heap->stats().increaseAllocatedSpace(blinkPageSize);
 }
 
 template<typename Header>
@@ -1568,21 +1560,20 @@ void HeapPage<Header>::unlink(ThreadHeap<Header>* heap, HeapPage* unused, HeapPa
 }
 
 template<typename Header>
-size_t HeapPage<Header>::objectPayloadSizeForTesting()
+void HeapPage<Header>::getStatsForTesting(HeapStats& stats)
 {
-    size_t objectPayloadSize = 0;
+    stats.increaseAllocatedSpace(blinkPageSize);
     Address headerAddress = payload();
     ASSERT(headerAddress != end());
     do {
         Header* header = reinterpret_cast<Header*>(headerAddress);
         if (!header->isFree()) {
-            objectPayloadSize += header->payloadSize();
+            stats.increaseObjectSpace(header->payloadSize());
         }
         ASSERT(header->size() < blinkPagePayloadSize());
         headerAddress += header->size();
         ASSERT(headerAddress <= end());
     } while (headerAddress < end());
-    return objectPayloadSize;
 }
 
 template<typename Header>
@@ -1593,9 +1584,10 @@ bool HeapPage<Header>::isEmpty()
 }
 
 template<typename Header>
-void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
+void HeapPage<Header>::sweep(HeapStats* stats, ThreadHeap<Header>* heap)
 {
     clearObjectStartBitMap();
+    stats->increaseAllocatedSpace(blinkPageSize);
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < end(); ) {
         BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
@@ -1641,7 +1633,7 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
             heap->addToFreeList(startOfGap, headerAddress - startOfGap);
         header->unmark();
         headerAddress += header->size();
-        Heap::increaseMarkedObjectSize(header->size());
+        stats->increaseObjectSpace(header->size());
         startOfGap = headerAddress;
     }
     if (startOfGap != end())
@@ -1867,9 +1859,10 @@ inline bool HeapPage<FinalizedHeapObjectHeader>::hasVTable(FinalizedHeapObjectHe
 }
 
 template<typename Header>
-size_t LargeHeapObject<Header>::objectPayloadSizeForTesting()
+void LargeHeapObject<Header>::getStatsForTesting(HeapStats& stats)
 {
-    return payloadSize();
+    stats.increaseAllocatedSpace(size());
+    stats.increaseObjectSpace(payloadSize());
 }
 
 #if ENABLE(GC_PROFILE_HEAP)
@@ -2209,9 +2202,6 @@ void Heap::init()
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_markingThreads = new Vector<OwnPtr<WebThread>>();
-    s_allocatedObjectSize = 0;
-    s_allocatedSpace = 0;
-    s_markedObjectSize = 0;
     if (Platform::current()) {
         int processors = Platform::current()->numberOfProcessors();
         int numberOfMarkingThreads = std::min(processors, maxNumberOfMarkingThreads);
@@ -2255,7 +2245,6 @@ void Heap::doShutdown()
     delete s_regionTree;
     s_regionTree = 0;
     ThreadState::shutdown();
-    ASSERT(Heap::allocatedSpace() == 0);
 }
 
 BaseHeapPage* Heap::contains(Address address)
@@ -2508,9 +2497,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
 
     s_lastGCWasConservative = false;
 
-    Heap::resetMarkedObjectSize();
-    Heap::resetAllocatedObjectSize();
-
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
         "precise", stackState == ThreadState::NoHeapPointersOnStack,
         "forced", cause == ThreadState::ForcedGC);
@@ -2569,9 +2555,12 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
 #endif
 
     if (Platform::current()) {
+        uint64_t objectSpaceSize;
+        uint64_t allocatedSpaceSize;
+        getHeapSpaceSize(&objectSpaceSize, &allocatedSpaceSize);
         Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", objectSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", allocatedSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
     }
 
     if (state->isMainThread())
@@ -2810,17 +2799,31 @@ void ThreadHeap<Header>::merge(PassOwnPtr<BaseHeap> splitOffBase)
     }
 }
 
-size_t Heap::objectPayloadSizeForTesting()
+void Heap::getHeapSpaceSize(uint64_t* objectSpaceSize, uint64_t* allocatedSpaceSize)
 {
-    size_t objectPayloadSize = 0;
+    *objectSpaceSize = 0;
+    *allocatedSpaceSize = 0;
+    ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
+    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        *objectSpaceSize += (*it)->stats().totalObjectSpace();
+        *allocatedSpaceSize += (*it)->stats().totalAllocatedSpace();
+    }
+}
+
+void Heap::getStatsForTesting(HeapStats* stats)
+{
+    stats->clear();
     ASSERT(ThreadState::isAnyThreadInGC());
     makeConsistentForSweeping();
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
     for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        objectPayloadSize += (*it)->objectPayloadSizeForTesting();
+        HeapStats temp;
+        (*it)->getStatsForTesting(temp);
+        stats->add(&temp);
     }
-    return objectPayloadSize;
 }
 
 #if ENABLE(ASSERT)
@@ -3006,8 +3009,5 @@ bool Heap::s_lastGCWasConservative = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = 0;
-size_t Heap::s_allocatedObjectSize = 0;
-size_t Heap::s_allocatedSpace = 0;
-size_t Heap::s_markedObjectSize = 0;
 
 } // namespace blink

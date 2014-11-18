@@ -37,7 +37,6 @@
 #include "platform/heap/Visitor.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
@@ -117,6 +116,7 @@ enum CallbackInvocationMode {
 };
 
 class CallbackStack;
+class HeapStats;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
@@ -263,7 +263,7 @@ public:
 
     bool isMarked();
     void unmark();
-    size_t objectPayloadSizeForTesting();
+    void getStatsForTesting(HeapStats&);
     void mark(Visitor*);
     void finalize();
     void setDeadMark();
@@ -537,9 +537,9 @@ public:
 
     Address end() { return payload() + payloadSize(); }
 
-    size_t objectPayloadSizeForTesting();
+    void getStatsForTesting(HeapStats&);
     void clearLiveAndMarkDead();
-    void sweep(ThreadHeap<Header>*);
+    void sweep(HeapStats*, ThreadHeap<Header>*);
     void clearObjectStartBitMap();
     void finalize(Header*);
     virtual void checkAndMarkPointer(Visitor*, Address) override;
@@ -706,7 +706,7 @@ public:
 
     // Sweep this part of the Blink heap. This finalizes dead objects
     // and builds freelists for all the unused memory.
-    virtual void sweep() = 0;
+    virtual void sweep(HeapStats*) = 0;
     virtual void postSweepProcessing() = 0;
 
     virtual void clearFreeLists() = 0;
@@ -716,7 +716,7 @@ public:
 #if ENABLE(ASSERT)
     virtual bool isConsistentForSweeping() = 0;
 #endif
-    virtual size_t objectPayloadSizeForTesting() = 0;
+    virtual void getStatsForTesting(HeapStats&) = 0;
 
     virtual void updateRemainingAllocationSize() = 0;
 
@@ -776,7 +776,7 @@ public:
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
 #endif
 
-    virtual void sweep() override;
+    virtual void sweep(HeapStats*) override;
     virtual void postSweepProcessing() override;
 
     virtual void clearFreeLists() override;
@@ -786,11 +786,12 @@ public:
 #if ENABLE(ASSERT)
     virtual bool isConsistentForSweeping() override;
 #endif
-    virtual size_t objectPayloadSizeForTesting() override;
+    virtual void getStatsForTesting(HeapStats&) override;
 
     virtual void updateRemainingAllocationSize() override;
 
     ThreadState* threadState() { return m_threadState; }
+    HeapStats& stats() { return m_threadState->stats(); }
 
     void addToFreeList(Address address, size_t size)
     {
@@ -844,8 +845,8 @@ private:
     bool pagesAllocatedDuringSweepingContains(Address);
 #endif
 
-    void sweepNormalPages();
-    void sweepLargePages();
+    void sweepNormalPages(HeapStats*);
+    void sweepLargePages(HeapStats*);
     bool coalesce(size_t);
 
     Address m_currentAllocationPoint;
@@ -966,7 +967,7 @@ public:
     static String createBacktraceString();
 #endif
 
-    static size_t objectPayloadSizeForTesting();
+    static void getStatsForTesting(HeapStats*);
 
     static void getHeapSpaceSize(uint64_t*, uint64_t*);
 
@@ -992,15 +993,6 @@ public:
     static void addPageMemoryRegion(PageMemoryRegion*);
     static void removePageMemoryRegion(PageMemoryRegion*);
 
-    static void increaseAllocatedObjectSize(size_t delta) { atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta)); }
-    static void decreaseAllocatedObjectSize(size_t delta) { atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta)); }
-    static size_t allocatedObjectSize() { return s_allocatedObjectSize; }
-    static void increaseMarkedObjectSize(size_t delta) { atomicAdd(&s_markedObjectSize, static_cast<long>(delta)); }
-    static size_t markedObjectSize() { return s_markedObjectSize; }
-    static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
-    static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
-    static size_t allocatedSpace() { return s_allocatedSpace; }
-
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
     // by base addresses.
@@ -1021,9 +1013,6 @@ private:
         RegionTree* m_right;
     };
 
-    static void resetAllocatedObjectSize() { ASSERT(ThreadState::isAnyThreadInGC()); s_allocatedObjectSize = 0; }
-    static void resetMarkedObjectSize() { ASSERT(ThreadState::isAnyThreadInGC()); s_markedObjectSize = 0; }
-
     static Visitor* s_markingVisitor;
     static Vector<OwnPtr<WebThread>>* s_markingThreads;
     static CallbackStack* s_markingStack;
@@ -1036,9 +1025,6 @@ private:
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
     static RegionTree* s_regionTree;
-    static size_t s_allocatedSpace;
-    static size_t s_allocatedObjectSize;
-    static size_t s_markedObjectSize;
     friend class ThreadState;
 };
 

@@ -295,6 +295,62 @@ struct HeapTypeTrait : public HeapIndexTrait<General1Heap> { };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 #undef DEFINE_TYPED_HEAP_TRAIT
 
+// A HeapStats structure keeps track of the amount of memory allocated
+// for a Blink heap and how much of that memory is used for actual
+// Blink objects. These stats are used in the heuristics to determine
+// when to perform garbage collections.
+class HeapStats {
+public:
+    HeapStats() : m_totalObjectSpace(0), m_totalAllocatedSpace(0) { }
+
+    size_t totalObjectSpace() const { return m_totalObjectSpace; }
+    size_t totalAllocatedSpace() const { return m_totalAllocatedSpace; }
+
+    void add(HeapStats* other)
+    {
+        m_totalObjectSpace += other->m_totalObjectSpace;
+        m_totalAllocatedSpace += other->m_totalAllocatedSpace;
+    }
+
+    void inline increaseObjectSpace(size_t newObjectSpace)
+    {
+        m_totalObjectSpace += newObjectSpace;
+    }
+
+    void inline decreaseObjectSpace(size_t deadObjectSpace)
+    {
+        m_totalObjectSpace -= deadObjectSpace;
+    }
+
+    void inline increaseAllocatedSpace(size_t newAllocatedSpace)
+    {
+        m_totalAllocatedSpace += newAllocatedSpace;
+    }
+
+    void inline decreaseAllocatedSpace(size_t deadAllocatedSpace)
+    {
+        m_totalAllocatedSpace -= deadAllocatedSpace;
+    }
+
+    void clear()
+    {
+        m_totalObjectSpace = 0;
+        m_totalAllocatedSpace = 0;
+    }
+
+    bool operator==(const HeapStats& other)
+    {
+        return m_totalAllocatedSpace == other.m_totalAllocatedSpace
+            && m_totalObjectSpace == other.m_totalObjectSpace;
+    }
+
+private:
+    size_t m_totalObjectSpace; // Actually contains objects that may be live, not including headers.
+    size_t m_totalAllocatedSpace; // Allocated from the OS.
+
+    friend class HeapTester;
+};
+
 class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
@@ -392,12 +448,6 @@ public:
         return true;
     }
 
-    // If gcRequested returns true when a thread returns to its event
-    // loop the thread will initiate a garbage collection.
-    bool gcRequested();
-    void setGCRequested();
-    void clearGCRequested();
-
     // shouldGC and shouldForceConservativeGC implement the heuristics
     // that are used to determine when to collect garbage. If
     // shouldForceConservativeGC returns true, we force the garbage
@@ -407,6 +457,14 @@ public:
     // collect garbage at this point.
     bool shouldGC();
     bool shouldForceConservativeGC();
+    bool increasedEnoughToGC(size_t, size_t);
+    bool increasedEnoughToForceConservativeGC(size_t, size_t);
+
+    // If gcRequested returns true when a thread returns to its event
+    // loop the thread will initiate a garbage collection.
+    bool gcRequested();
+    void setGCRequested();
+    void clearGCRequested();
 
     // Was the last GC forced for testing? This is set when garbage collection
     // is forced for testing and there are pointers on the stack. It remains
@@ -655,7 +713,9 @@ public:
     void pushWeakObjectPointerCallback(void*, WeakPointerCallback);
     bool popAndInvokeWeakPointerCallback(Visitor*);
 
-    size_t objectPayloadSizeForTesting();
+    void getStats(HeapStats&);
+    void getStatsForTesting(HeapStats&);
+    HeapStats& stats() { return m_stats; }
 
     void setupHeapsForTermination();
 
@@ -730,6 +790,8 @@ private:
     void cleanup();
     void cleanupPages();
 
+    void setLowCollectionRate(bool value) { m_lowCollectionRate = value; }
+
     void performPendingSweepInParallel();
     void waitUntilSweepersDone();
     void unregisterPreFinalizerInternal(void*);
@@ -769,6 +831,8 @@ private:
     size_t m_noAllocationCount;
     bool m_inGC;
     BaseHeap* m_heaps[NumberOfHeaps];
+    HeapStats m_stats;
+    HeapStats m_statsAfterLastGC;
 
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
     bool m_isTerminating;
