@@ -69,6 +69,69 @@ void GetTextMetricsForFont(HDC hdc, HFONT font, TEXTMETRIC* text_metrics) {
   GetTextMetrics(hdc, text_metrics);
 }
 
+// Returns a matching IDWriteFont for the |face_name| passed in. If we fail
+// to find a matching font, then we return the IDWriteFont corresponding to
+// the default font on the system.
+// Returns S_OK on success.
+HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
+                                              int font_style,
+                                              IDWriteFactory* factory,
+                                              IDWriteFont** dwrite_font) {
+  // Enumerate the system font collectione exposed by DirectWrite for a
+  // matching font.
+  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  HRESULT hr = factory->GetSystemFontCollection(font_collection.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return hr;
+  }
+
+  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+  BOOL exists = FALSE;
+  uint32 index = 0;
+  hr = font_collection->FindFamilyName(face_name, &index, &exists);
+  // If we fail to find a match then fallback to the default font on the
+  // system. This is what skia does as well.
+  if (FAILED(hr)) {
+    NONCLIENTMETRICS metrics = {0};
+    metrics.cbSize = sizeof(metrics);
+    if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS,
+                               sizeof(metrics),
+                               &metrics,
+                               0)) {
+      CHECK(false);
+      return E_FAIL;
+    }
+    hr = font_collection->FindFamilyName(metrics.lfMessageFont.lfFaceName,
+                                         &index,
+                                         &exists);
+  }
+
+  if (FAILED(hr)) {
+    CHECK(false);
+    return hr;
+  }
+
+  hr = font_collection->GetFontFamily(index, font_family.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return hr;
+  }
+
+  DWRITE_FONT_WEIGHT weight = (font_style & SkTypeface::kBold)
+                            ? DWRITE_FONT_WEIGHT_BOLD
+                            : DWRITE_FONT_WEIGHT_NORMAL;
+  DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH_NORMAL;
+  DWRITE_FONT_STYLE italic = (font_style & SkTypeface::kItalic)
+                            ? DWRITE_FONT_STYLE_ITALIC
+                            : DWRITE_FONT_STYLE_NORMAL;
+  hr = font_family->GetFirstMatchingFont(weight, stretch, italic,
+                                         dwrite_font);
+  if (FAILED(hr))
+    CHECK(false);
+  return hr;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -82,7 +145,7 @@ PlatformFontWin::AdjustFontCallback
 PlatformFontWin::GetMinimumFontSizeCallback
     PlatformFontWin::get_minimum_font_size_callback = NULL;
 
-IDWriteFactory* PlatformFontWin::direct_write_factory_ = NULL;
+IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin, public
@@ -328,30 +391,6 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   LOGFONT font_info = {0};
   GetObject(gdi_font, sizeof(LOGFONT), &font_info);
 
-  // Skia does not return all values we need for font metrics. For e.g.
-  // the cap height which indicates the height of capital letters is not
-  // returned even though it is returned by DirectWrite.
-  // TODO(ananta)
-  // Fix SkScalerContext_win_dw.cpp to return all metrics we need from
-  // DirectWrite and remove the code here which retrieves metrics from
-  // DirectWrite to calculate the cap height.
-  base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
-  HRESULT hr = direct_write_factory_->GetGdiInterop(gdi_interop.Receive());
-  if (FAILED(hr)) {
-    CHECK(false);
-    return NULL;
-  }
-
-  base::win::ScopedComPtr<IDWriteFont> dwrite_font;
-  hr = gdi_interop->CreateFontFromLOGFONT(&font_info, dwrite_font.Receive());
-  if (FAILED(hr)) {
-    CHECK(false);
-    return NULL;
-  }
-
-  DWRITE_FONT_METRICS dwrite_font_metrics = {0};
-  dwrite_font->GetMetrics(&dwrite_font_metrics);
-
   int skia_style = SkTypeface::kNormal;
   if (font_info.lfWeight >= FW_SEMIBOLD &&
       font_info.lfWeight <= FW_ULTRABOLD) {
@@ -360,10 +399,31 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   if (font_info.lfItalic)
     skia_style |= SkTypeface::kItalic;
 
+  // Skia does not return all values we need for font metrics. For e.g.
+  // the cap height which indicates the height of capital letters is not
+  // returned even though it is returned by DirectWrite.
+  // TODO(ananta)
+  // Fix SkScalerContext_win_dw.cpp to return all metrics we need from
+  // DirectWrite and remove the code here which retrieves metrics from
+  // DirectWrite to calculate the cap height.
+  base::win::ScopedComPtr<IDWriteFont> dwrite_font;
+  HRESULT hr = GetMatchingDirectWriteFontForTypeface(font_info.lfFaceName,
+                                                     skia_style,
+                                                     direct_write_factory_,
+                                                     dwrite_font.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return nullptr;
+  }
+
+  DWRITE_FONT_METRICS dwrite_font_metrics = {0};
+  dwrite_font->GetMetrics(&dwrite_font_metrics);
+
   skia::RefPtr<SkTypeface> skia_face = skia::AdoptRef(
       SkTypeface::CreateFromName(
           base::SysWideToUTF8(font_info.lfFaceName).c_str(),
                               static_cast<SkTypeface::Style>(skia_style)));
+
   BOOL antialiasing = TRUE;
   SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
 
