@@ -1174,11 +1174,6 @@ void RenderObject::invalidatePaintRectangle(const LayoutRect& r) const
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationRectangle);
 }
 
-IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
-{
-    return pixelSnappedIntRect(absoluteClippedOverflowRect());
-}
-
 void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
