@@ -188,15 +188,39 @@ function test()
     }
     ];
 
+    var cpuProfile = {
+        startTime: 420,
+        endTime: 430,
+        head: {
+            functionName: "(root)",
+            id: 1,
+            children: [{
+                functionName: "foo",
+                id: 2,
+                children: [{
+                    functionName: "bar",
+                    id: 3,
+                    children: []
+                },
+                {
+                    functionName: "baz",
+                    id: 4,
+                    children: []
+                }]
+            }]
+        },
+        timestamps: [421000, 422000, 423000, 424000, 425000, 426000, 427000, 428000, 429000],
+        samples: [2, 2, 3, 3, 3, 4, 4, 2, 2 ]
+    };
+
     var tracingTimelineModel = InspectorTest.tracingTimelineModel();
+    tracingTimelineModel._didStopRecordingJSSamples(WebInspector.targetManager.mainTarget().id(), null, cpuProfile);
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
-    InspectorTest.assertEquals(8, events.length);
-    var eventTimes = events.map(function(e)
-    {
-        return e.name + ": " + e.duration + "(" + e.selfTime + ")";
+    InspectorTest.assertEquals(20, events.length);
+    events.forEach(function(e) {
+        InspectorTest.addResult(e.name + ": " + e.startTime + " " + e.selfTime + "/" + e.duration);
     });
-    InspectorTest.addResult(eventTimes.join("\n"));
     InspectorTest.completeTest();
 }
 

@@ -1,9 +1,21 @@
-TracingStartedInPage: undefined(0)
-Program: 100(50)
-InvalidateLayout: undefined(0)
-Layout: 50(50)
-Program: 100(40)
-EventDispatch: 60(40)
-FunctionCall: 10(10)
-FunctionCall: 10(10)
+TracingStartedInPage: 100 0/undefined
+Program: 200 50/100
+InvalidateLayout: 210 0/undefined
+Layout: 220 50/50
+Program: 400 40/100
+EventDispatch: 410 40/60
+FunctionCall: 420 2/10
+JSFrame: 421 5/8
+JSSample: 421 0/undefined
+JSSample: 422 0/undefined
+JSFrame: 423 2/2
+JSSample: 423 0/undefined
+JSSample: 424 0/undefined
+JSSample: 425 0/undefined
+JSFrame: 426 1/1
+JSSample: 426 0/undefined
+JSSample: 427 0/undefined
+JSSample: 428 0/undefined
+JSSample: 429 0/undefined
+FunctionCall: 440 10/10
 
