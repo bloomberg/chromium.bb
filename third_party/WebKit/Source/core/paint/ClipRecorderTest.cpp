@@ -39,7 +39,7 @@ void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    ClipRecorder clipRecorder(renderer->compositor()->rootRenderLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect);
+    ClipRecorder clipRecorder(renderer->compositor()->rootRenderLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
 TEST_F(ClipRecorderTest, ClipRecorderTest_Single)

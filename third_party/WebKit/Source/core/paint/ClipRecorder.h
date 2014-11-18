@@ -6,6 +6,7 @@
 #define ClipRecorder_h
 
 #include "core/paint/ViewDisplayList.h"
+#include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "platform/geometry/RoundedRect.h"
@@ -22,8 +23,6 @@ public:
         : DisplayItem(renderer, type), m_clipRect(clipRect) { }
 
     Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
-
-private:
     virtual void replay(GraphicsContext*) override;
 
     IntRect m_clipRect;
@@ -43,13 +42,25 @@ private:
 
 class ClipRecorder {
 public:
-    explicit ClipRecorder(const RenderLayerModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&);
-    void addRoundedRectClip(const RoundedRect&);
+
+    enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
+
+    // Set rounded clip rectangles defined by border radii all the way from the LayerPaintingInfo
+    // "root" layer down to the specified layer (or the parent of said layer, in case
+    // BorderRadiusClippingRule says to skip self). fragmentOffset is used for multicol, to specify
+    // the translation required to get from flow thread coordinates to visual coordinates for a
+    // certain column.
+    // FIXME: The BorderRadiusClippingRule parameter is really useless now. If we want to skip self,
+    // why not just supply the parent layer as the first parameter instead?
+    explicit ClipRecorder(const RenderLayerModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&, const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
 
     ~ClipRecorder();
 
 private:
-    ClipDisplayItem* m_clipDisplayItem;
+
+    void collectRoundedRectClips(RenderLayer&, const LayerPaintingInfo& localPaintingInfo, GraphicsContext*, const LayoutPoint& fragmentOffset, PaintLayerFlags,
+        BorderRadiusClippingRule, Vector<RoundedRect>& roundedRectClips);
+
     GraphicsContext* m_graphicsContext;
     const RenderLayerModelObject* m_renderer;
 };
