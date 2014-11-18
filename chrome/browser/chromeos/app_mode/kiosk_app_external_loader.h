@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_EXTERNAL_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_EXTERNAL_LOADER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/external_loader.h"
 
 namespace chromeos {
@@ -24,12 +23,10 @@ class KioskAppExternalLoader
   void SetCurrentAppExtensions(scoped_ptr<base::DictionaryValue> prefs);
 
   // extensions::ExternalLoader overrides:
-  virtual void StartLoading() override;
+  void StartLoading() override;
 
  private:
-  virtual ~KioskAppExternalLoader();
-
-  base::DictionaryValue kiosk_apps_;
+  ~KioskAppExternalLoader() override;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppExternalLoader);
 };

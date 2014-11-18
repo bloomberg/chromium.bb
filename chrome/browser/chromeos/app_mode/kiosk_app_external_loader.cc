@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 
+#include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
 namespace chromeos {
@@ -16,13 +17,13 @@ KioskAppExternalLoader::~KioskAppExternalLoader() {
 
 void KioskAppExternalLoader::SetCurrentAppExtensions(
     scoped_ptr<base::DictionaryValue> prefs) {
-  kiosk_apps_.Swap(prefs.get());
+  prefs_ = prefs.Pass();
   StartLoading();
 }
 
 void KioskAppExternalLoader::StartLoading() {
-  prefs_.reset(kiosk_apps_.DeepCopy());
-  LoadFinished();
+  if (prefs_)
+    LoadFinished();
 }
 
 }  // namespace chromeos
