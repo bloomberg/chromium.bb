@@ -4,7 +4,7 @@ Clipboard
 Many of the steps in this tutorial will be easier to copy and paste
 into the Dev Environment.
 To copy and paste in the Dev Environment web page,
-you can use the keyboard or the menu options under (|chrome_menu|).
+you can use the keyboard or the menu options (top right corner |chrome_menu|).
 
 .. |chrome_menu| raw:: html
 

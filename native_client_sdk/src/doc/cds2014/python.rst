@@ -73,15 +73,14 @@ You'll probably want to consult the |difflib| documentation.
 I would suggest you check out the HtmlDiff class and make use of
 the make_file member function. Note our goal is to create a
 full HTML diff, so the make_table function is insufficient.
-I would also suggest the splitlines
-function may come in handy.
+The splitlines function may also come in handy.
 
 You can test diff.py manually as you would in a normal UNIX environment.
 It can be run like this::
 
   ./diff.py before.txt after.txt out.html
 
-Once everything is working diff.html will contain an html diff.
+Once everything is working, diff.html will contain an html diff.
 After the initial `make` you can hit "Run" to test your changes.
 
 Now get to it, and good luck!
@@ -110,7 +109,7 @@ for the broadest range of development options, check out the
 `NaCl SDK
 <https://developer.chrome.com/native-client/sdk/download>`_.
 
-For questions, concerns, and help contact us at
+For questions, concerns, or help contact us at
 `native-client-discuss@googlegroups.com
 <https://groups.google.com/forum/#!forum/native-client-discuss>`_.
 

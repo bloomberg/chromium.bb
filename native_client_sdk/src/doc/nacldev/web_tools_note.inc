@@ -14,6 +14,6 @@ we recommend you use the
 
   <b><font color="#880000">
   NOTE: The NaCl Development Environment is not yet stable.
-  Ideally user data is preserved, but currently it can be lost during updates
+  Ideally, user data is preserved, but currently it can be lost during updates
   or sporadically. We're working to resolve this.
   </font></b>

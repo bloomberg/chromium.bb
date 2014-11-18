@@ -49,11 +49,12 @@ require you to agree to allow the page unlimited storage
 (Click &#8220;Ok&#8221; in the bar at the top of your browser window.)</p>
 <p>The first run requires a large download. Please be patient.
 Also, as PNaCl translates executables to native code on demand,
-each program will also have have a noticable load delay on first run.
+each program will also have a noticable load delay on first run.
 We&#8217;re actively working to improve this.</p>
 <p>NOTE: This environment will leave a substantial (800MB) payload in your
 browser. See the cleanup section below to learn how to recover this space.</p>
-<p>Once the download is complete you should see a bash prompt:</p>
+<p>Once the download is complete, you should see a bash prompt (ignore
+the gcc warning, our web C compiler is coming soon!):</p>
 <pre class="prettyprint">
 WARNING: gcc not yet available for your platform (coming soon).
 bash.nmf-4.3$
@@ -69,7 +70,7 @@ we recommend you use the
 <a class="reference external" href="/native-client/sdk/download">Native Client SDK</a>.</p>
 <b><font color="#880000">
 NOTE: The NaCl Development Environment is not yet stable.
-Ideally user data is preserved, but currently it can be lost during updates
+Ideally, user data is preserved, but currently it can be lost during updates
 or sporadically. We're working to resolve this.
 </font></b><h3 id="navigating-in-the-dev-environment">Navigating in the Dev Environment</h3>
 <p>The NaCl Dev Environment behaves like a mini-UNIX system.
@@ -91,7 +92,7 @@ that corresponds to the /mnt/html5/home directory.</li>
 <p>Many of the steps in this tutorial will be easier to copy and paste
 into the Dev Environment.
 To copy and paste in the Dev Environment web page,
-you can use the keyboard or the menu options under (&#9776; &#8594; Edit).</p>
+you can use the keyboard or the menu options (top right corner &#9776; &#8594; Edit).</p>
 <p>On your platform use:</p>
 <blockquote>
 <div><ul class="small-gap">
@@ -141,7 +142,7 @@ $ vim &lt;filename&gt;
 <p>This tutorial also uses a revision control program called
 <a class="reference external" href="http://en.wikipedia.org/wiki/Git_(software)">git</a>.
 In order to commit to a git repository,
-you need to setup your environment to with your identity.</p>
+you need to set up your identity.</p>
 <p>Run these commands (with your info) to setup your <cite>~/.gitconfig</cite>
 for use:</p>
 <pre class="prettyprint">
@@ -201,14 +202,13 @@ You&#8217;ll probably want to consult the <a href="https://docs.python.org/2/lib
 I would suggest you check out the HtmlDiff class and make use of
 the make_file member function. Note our goal is to create a
 full HTML diff, so the make_table function is insufficient.
-I would also suggest the splitlines
-function may come in handy.</p>
+The splitlines function may also come in handy.</p>
 <p>You can test diff.py manually as you would in a normal UNIX environment.
 It can be run like this:</p>
 <pre class="prettyprint">
 ./diff.py before.txt after.txt out.html
 </pre>
-<p>Once everything is working diff.html will contain an html diff.
+<p>Once everything is working, diff.html will contain an html diff.
 After the initial <cite>make</cite> you can hit &#8220;Run&#8221; to test your changes.</p>
 <p>Now get to it, and good luck!</p>
 <h2 id="what-you-ve-learned">What you&#8217;ve learned</h2>
@@ -226,7 +226,7 @@ interpreted languages that have been ported to PNaCl.</p>
 to become a complete development solution,
 for the broadest range of development options, check out the
 <a class="reference external" href="https://developer.chrome.com/native-client/sdk/download">NaCl SDK</a>.</p>
-<p>For questions, concerns, and help contact us at
+<p>For questions, concerns, or help contact us at
 <a class="reference external" href="https://groups.google.com/forum/#!forum/native-client-discuss">native-client-discuss&#64;googlegroups.com</a>.</p>
 <p>Bring your interpreted app to PNaCl today!</p>
 <h2 id="cleanup">Cleanup</h2>

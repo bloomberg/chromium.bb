@@ -18,7 +18,7 @@ browser. See the cleanup section below to learn how to recover this space.
 Once the installation is complete, run the app.
 
 On the first run, it will download several packages.
-Once download is complete you should see a bash prompt::
+Once download is complete, you should see a bash prompt::
 
   bash.nmf-4.3$
 

@@ -66,7 +66,7 @@ Water
 Remarkably, not everyone enjoys the primal illusion of fire.
 
 Your task in this codelab is to transform the rising fire
-effect you see before you, into a beautiful, tranquil waterfall.
+effect you see before you into a beautiful, tranquil waterfall.
 This will require digging into some C++ code.
 
 Before you begin, you'll want to copy our fire program to a new name,
@@ -95,7 +95,7 @@ our flame effect is actually monochrome. A single intensity
 value is used in the flame simulation. This is then converted
 to color based on a multi-color gradient.
 To alter the color-scheme, locate this palette, and exchange
-the red component (first) with blue (third).
+the red component (first) with the blue one (third).
 
 Hint: Focus your energies on the CreatePalette function.
 
@@ -145,7 +145,7 @@ for the broadest range of development options, check out the
 `NaCl SDK
 <https://developer.chrome.com/native-client/cpp-api>`_.
 
-For questions, concerns, and help contact us at
+For questions, concerns, or help contact us at
 `native-client-discuss@googlegroups.com
 <https://groups.google.com/forum/#!forum/native-client-discuss>`_.
 

@@ -4,7 +4,7 @@ Git Setup
 This tutorial also uses a revision control program called
 `git <http://en.wikipedia.org/wiki/Git_(software)>`_.
 In order to commit to a git repository,
-you need to setup your environment to with your identity.
+you need to set up your identity.
 
 Run these commands (with your info) to setup your `~/.gitconfig`
 for use::
