@@ -1051,12 +1051,6 @@ moblab = _config(
 
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
-full.add_config('mipsel-o32-generic-full',
-  brillo,
-  non_testable_builder,
-  boards=['mipsel-o32-generic'],
-)
-
 # This adds Chrome branding.
 official_chrome = _config(
   useflags=[constants.USE_CHROME_INTERNAL],
@@ -1087,68 +1081,12 @@ asan = _config(
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
-_config.add_raw_config('refresh-packages',
-  boards=['x86-generic', 'arm-generic'],
-  build_type=constants.REFRESH_PACKAGES_TYPE,
-  description='Check upstream Gentoo for package updates',
-)
-
-incremental.add_config('x86-generic-incremental',
-  boards=['x86-generic'],
-)
-
-incremental.add_config('daisy-incremental',
-  non_testable_builder,
-  boards=['daisy'],
-)
-
-incremental.add_config('amd64-generic-incremental',
-  boards=['amd64-generic'],
-  # This builder runs on a VM, so it can't run VM tests.
-  vm_tests=[],
-)
-
-incremental.add_config('x32-generic-incremental',
-  boards=['x32-generic'],
-  # This builder runs on a VM, so it can't run VM tests.
-  vm_tests=[],
-)
-
-paladin.add_config('x86-generic-asan-paladin',
-  asan,
-  boards=['x86-generic'],
-  paladin_builder_name='x86-generic asan-paladin',
-  description='Paladin build with Address Sanitizer (Clang)',
-  important=False,
-)
-
-incremental.add_config('amd64-generic-asan-paladin',
-  asan,
-  boards=['amd64-generic'],
-  paladin_builder_name='amd64-generic asan-paladin',
-  description='Paladin build with Address Sanitizer (Clang)',
-  important=False,
-)
-
 telemetry = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
   vm_tests=[constants.TELEMETRY_SUITE_TEST_TYPE],
   description='Telemetry Builds',
-)
-
-telemetry.add_config('amd64-generic-telemetry',
-  boards=['amd64-generic'],
-)
-
-telemetry.add_config('arm-generic-telemetry',
-  non_testable_builder,
-  boards=['arm-generic'],
-)
-
-telemetry.add_config('x86-generic-telemetry',
-  boards=['x86-generic'],
 )
 
 chromium_pfq = _config(
@@ -1280,79 +1218,6 @@ chrome_perf = chrome_info.derive(
   use_chrome_lkgm=True,
   use_lkgm=False,
   useflags=official['useflags'] + ['-cros-debug'],
-)
-
-chrome_perf.add_config('daisy-chrome-perf',
-  non_testable_builder,
-  boards=['daisy'],
-  trybot_list=True,
-)
-
-chrome_perf.add_config('lumpy-chrome-perf',
-  boards=['lumpy'],
-  trybot_list=True,
-)
-
-chrome_perf.add_config('parrot-chrome-perf',
-  boards=['parrot'],
-  trybot_list=True,
-)
-
-chromium_info_x86 = \
-chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
-  boards=['x86-generic'],
-)
-
-chromium_info_daisy = \
-chromium_info.add_config('daisy-tot-chrome-pfq-informational',
-  non_testable_builder,
-  boards=['daisy'],
-)
-
-chromium_info_amd64 = \
-chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
-  boards=['amd64-generic'],
-)
-
-chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',
-  boards=['x32-generic'],
-)
-
-telemetry_info.add_config('x86-generic-telem-chrome-pfq-informational',
-  boards=['x86-generic'],
-)
-
-telemetry_info.add_config('amd64-generic-telem-chrome-pfq-informational',
-  boards=['amd64-generic'],
-)
-
-chrome_info.add_config('alex-tot-chrome-pfq-informational',
-  boards=['x86-alex'],
-)
-
-chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
-  boards=['lumpy'],
-)
-
-# WebRTC configurations.
-chrome_info.add_config('alex-webrtc-chrome-pfq-informational',
-  boards=['x86-alex'],
-)
-chrome_info.add_config('lumpy-webrtc-chrome-pfq-informational',
-  boards=['lumpy'],
-)
-chrome_info.add_config('daisy-webrtc-chrome-pfq-informational',
-  non_testable_builder,
-  boards=['daisy'],
-)
-chromium_info_x86.add_config('x86-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
-)
-chromium_info_amd64.add_config('amd64-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
-)
-chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
 )
 
 # Base per-board configuration.
@@ -1571,11 +1436,7 @@ _base_configs = dict()
 
 def _CreateBaseConfigs():
   for board in _all_boards:
-    base = dict()
-    if board in _internal_boards:
-      base.update(internal)
-      base.update(official_chrome)
-      base.update(manifest=constants.OFFICIAL_MANIFEST)
+    base = _config()
     if board not in _x86_boards:
       base.update(non_testable_builder)
     if board in _brillo_boards:
@@ -1584,9 +1445,32 @@ def _CreateBaseConfigs():
       base.update(moblab)
     if board in _minimal_profile_boards:
       base.update(profile='minimal')
-    _base_configs[board] = _config(base, boards=[board])
+    _base_configs[board] = base.derive(boards=[board])
 
 _CreateBaseConfigs()
+
+def _CreateConfigsForBoards(config_base, boards, name_suffix):
+  """Create configs based on |config_base| for all boards in |boards|.
+
+  Args:
+    config_base: A _config instance to inherit from.
+    boards: A set of boards to create configs for.
+    name_suffix: A naming suffix. Configs will have names of the form
+                 board-name_suffix.
+  """
+  for board in boards:
+    base = _base_configs[board]
+    if board in _internal_boards:
+      base = base.derive(
+        internal, official_chrome,
+        manifest=constants.OFFICIAL_MANIFEST
+      )
+    config_base.add_config('%s-%s' % (board, name_suffix), base)
+
+
+full.add_config('mipsel-o32-generic-full',
+  _base_configs['mipsel-o32-generic'],
+)
 
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
@@ -1624,6 +1508,14 @@ def _AddFullConfigs():
       internal_chromium_pfq.add_config(config_name, pfq_config)
 
 _AddFullConfigs()
+
+_telemetry_boards = frozenset([
+    'amd64-generic',
+    'arm-generic',
+    'x86-generic',
+])
+
+_CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
 
 _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
@@ -1673,6 +1565,122 @@ incremental_beaglebone.add_config('beaglebone-incremental',
   trybot_list=True,
   description='Incremental Beaglebone Builder',
 )
+
+_config.add_raw_config('refresh-packages',
+  boards=['x86-generic', 'arm-generic'],
+  build_type=constants.REFRESH_PACKAGES_TYPE,
+  description='Check upstream Gentoo for package updates',
+)
+
+incremental.add_config('x86-generic-incremental',
+  _base_configs['x86-generic'],
+)
+
+incremental.add_config('daisy-incremental',
+  _base_configs['daisy'],
+)
+
+incremental.add_config('amd64-generic-incremental',
+  _base_configs['amd64-generic'],
+  # This builder runs on a VM, so it can't run VM tests.
+  vm_tests=[],
+)
+
+incremental.add_config('x32-generic-incremental',
+  _base_configs['x32-generic'],
+  # This builder runs on a VM, so it can't run VM tests.
+  vm_tests=[],
+)
+
+paladin.add_config('x86-generic-asan-paladin',
+  _base_configs['x86-generic'],
+  asan,
+  paladin_builder_name='x86-generic asan-paladin',
+  description='Paladin build with Address Sanitizer (Clang)',
+  important=False,
+)
+
+incremental.add_config('amd64-generic-asan-paladin',
+  _base_configs['amd64-generic'],
+  asan,
+  paladin_builder_name='amd64-generic asan-paladin',
+  description='Paladin build with Address Sanitizer (Clang)',
+  important=False,
+)
+
+chrome_perf.add_config('daisy-chrome-perf',
+  non_testable_builder,
+  boards=['daisy'],
+  trybot_list=True,
+)
+
+chrome_perf.add_config('lumpy-chrome-perf',
+  boards=['lumpy'],
+  trybot_list=True,
+)
+
+chrome_perf.add_config('parrot-chrome-perf',
+  boards=['parrot'],
+  trybot_list=True,
+)
+
+chromium_info_x86 = \
+chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
+  boards=['x86-generic'],
+)
+
+chromium_info_daisy = \
+chromium_info.add_config('daisy-tot-chrome-pfq-informational',
+  non_testable_builder,
+  boards=['daisy'],
+)
+
+chromium_info_amd64 = \
+chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
+  boards=['amd64-generic'],
+)
+
+chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',
+  boards=['x32-generic'],
+)
+
+telemetry_info.add_config('x86-generic-telem-chrome-pfq-informational',
+  boards=['x86-generic'],
+)
+
+telemetry_info.add_config('amd64-generic-telem-chrome-pfq-informational',
+  boards=['amd64-generic'],
+)
+
+chrome_info.add_config('alex-tot-chrome-pfq-informational',
+  boards=['x86-alex'],
+)
+
+chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
+  boards=['lumpy'],
+)
+
+# WebRTC configurations.
+chrome_info.add_config('alex-webrtc-chrome-pfq-informational',
+  boards=['x86-alex'],
+)
+chrome_info.add_config('lumpy-webrtc-chrome-pfq-informational',
+  boards=['lumpy'],
+)
+chrome_info.add_config('daisy-webrtc-chrome-pfq-informational',
+  non_testable_builder,
+  boards=['daisy'],
+)
+chromium_info_x86.add_config('x86-webrtc-chromium-pfq-informational',
+  archive_build_debug=True,
+)
+chromium_info_amd64.add_config('amd64-webrtc-chromium-pfq-informational',
+  archive_build_debug=True,
+)
+chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
+  archive_build_debug=True,
+)
+
 
 #
 # Internal Builds
@@ -1963,7 +1971,7 @@ def _CreatePaladinConfigs():
       continue
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
     paladin_builder_name = '%s %s' % (board, constants.PALADIN_TYPE)
-    base_config = _base_configs[board].copy()
+    base_config = _base_configs[board].derive()
     if board in _paladin_hwtest_boards:
       base_config.update(hw_tests=HWTestConfig.DefaultListCQ())
     if board not in _paladin_important_boards:
@@ -1972,6 +1980,11 @@ def _CreatePaladinConfigs():
       base_config.update(chroot_replace=True)
     if board in _paladin_full_boards:
       base_config.update(full_paladin)
+    if board in _internal_boards:
+      base_config = base_config.derive(
+        internal, official_chrome,
+        manifest=constants.OFFICIAL_MANIFEST
+      )
 
     if board not in _paladin_default_vmtest_boards:
       vm_tests = []
@@ -2083,13 +2096,7 @@ ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
 ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
 # Add a pre-cq config for every board.
-def _AddPreCQConfigs():
-  for board in _all_boards:
-    config_name = '%s-%s' % (board, CONFIG_TYPE_PRECQ)
-    pre_cq.add_config(config_name, _base_configs[board])
-
-_AddPreCQConfigs()
-
+_CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 
 # The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
 # it is important to delay the launch of some builds in order to conserve RAM.
