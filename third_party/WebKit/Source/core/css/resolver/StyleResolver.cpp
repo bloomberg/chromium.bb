@@ -1225,10 +1225,14 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWordSpacing:
         return true;
+    case CSSPropertyTextDecoration:
+        ASSERT(!RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return true;
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
-        return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
+        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return true;
 
     // text-shadow added in text decoration spec:
     // http://www.w3.org/TR/css-text-decor-3/#text-shadow-property
