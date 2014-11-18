@@ -64,7 +64,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
 MockDownloadManager::CreateDownloadItemAdapter::~CreateDownloadItemAdapter() {}
 
 bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
-    const CreateDownloadItemAdapter& rhs) {
+    const CreateDownloadItemAdapter& rhs) const {
   return (id == rhs.id &&
           current_path == rhs.current_path &&
           target_path == rhs.target_path &&

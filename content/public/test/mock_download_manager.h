@@ -67,7 +67,7 @@ class MockDownloadManager : public DownloadManager {
     CreateDownloadItemAdapter(const CreateDownloadItemAdapter& rhs);
     ~CreateDownloadItemAdapter();
 
-    bool operator==(const CreateDownloadItemAdapter& rhs);
+    bool operator==(const CreateDownloadItemAdapter& rhs) const;
   };
 
   MockDownloadManager();
