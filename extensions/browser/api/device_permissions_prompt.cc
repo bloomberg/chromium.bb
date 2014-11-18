@@ -56,7 +56,9 @@ void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
 }
 
 base::string16 DevicePermissionsPrompt::Prompt::GetHeading() const {
-  return l10n_util::GetStringUTF16(IDS_DEVICE_PERMISSIONS_PROMPT_HEADING);
+  return l10n_util::GetStringUTF16(
+      multiple_ ? IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE
+                : IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE);
 }
 
 base::string16 DevicePermissionsPrompt::Prompt::GetPromptMessage() const {

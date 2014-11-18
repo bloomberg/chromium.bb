@@ -87,6 +87,7 @@ DevicePermissionsDialogView::DevicePermissionsDialogView(
 
   views::Label* label = new views::Label(prompt_->GetPromptMessage());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
   AddChildView(label);
 
   std::vector<ui::TableColumn> table_columns;

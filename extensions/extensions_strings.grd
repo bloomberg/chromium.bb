@@ -322,14 +322,17 @@
       <message name="IDS_DEVICE_PERMISSIONS_DEVICE_NAME" desc="String describing a device in a list of devices.">
         <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_HEADING" desc="Title of the device selection dialog.">
-        USB Devices
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the device selection dialog when the app wants only one device selected.">
+        Select a USB device
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the device selection dialog when the app will accept one or more selected devices.">
+        Select USB devices
       </message>
       <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE" desc="Instructions asking the user to select one device for use with an app.">
-        Select a device to use with <ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>.
+        The application "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices.
       </message>
       <message name="IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE" desc="Instructions asking the user to select one or more devices for use with an app.">
-        Select devices to use with <ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>.
+        The application "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices.
       </message>
       <message name="IDS_DEVICE_UNKNOWN_PRODUCT" desc="String used when no human-readable product name is available for a device.">
         Product <ph name="PRODUCT_ID">$1<ex>0x1234</ex></ph>
