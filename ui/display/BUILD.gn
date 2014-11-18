@@ -121,11 +121,10 @@ test("display_unittests") {
     ]
   }
 
-  if (use_ozone) {
+  if (use_ozone && is_chromeos) {
     sources -= [
       "chromeos/x11/display_util_x11_unittest.cc",
       "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
     ]
   }
-      
 }

@@ -155,6 +155,8 @@ source_set("common") {
       "gpu/gpu_memory_buffer_factory_linux.cc",
     ]
     deps += [
+      "//ui/ozone:ozone",
+      "//ui/ozone:ozone_base",
       "//ui/ozone/gpu",
     ]
   } else {

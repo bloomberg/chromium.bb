@@ -130,7 +130,7 @@ static_library("test_support") {
     "//ui/wm",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos || !use_x11) {
     sources -= [
       "test/ui_controls_factory_desktop_aurax11.cc",
       "test/ui_controls_factory_desktop_aurax11.h",
