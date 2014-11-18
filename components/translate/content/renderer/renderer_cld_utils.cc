@@ -4,15 +4,18 @@
 
 #include "components/translate/content/renderer/renderer_cld_utils.h"
 
+#include "base/logging.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
+#include "components/translate/content/renderer/renderer_cld_data_provider_factory.h"
 
 namespace translate {
 
 // static
 void RendererCldUtils::ConfigureDefaultDataProvider() {
-  if (!RendererCldDataProvider::IsInitialized()) {
-    RendererCldDataProvider* provider = NULL;
+  if (!RendererCldDataProviderFactory::IsInitialized()) {
+    DVLOG(1) << "Configuring default RendererCldDataProviderFactory";
+    RendererCldDataProviderFactory* factory = NULL;
     CldDataSource* data_source = NULL;
 
     // Maintainers: Customize platform defaults here as necessary.
@@ -26,12 +29,12 @@ void RendererCldUtils::ConfigureDefaultDataProvider() {
     // - For any other sources, the embedder should already have set a provider
     //   and so this code should never be invoked.
     // -----------------------------------------------------------------------
-    provider = new RendererCldDataProvider();
+    factory = new RendererCldDataProviderFactory();
     data_source = CldDataSource::GetStaticDataSource();
     // -----------------------------------------------------------------------
 
     // Apply the values defined above
-    RendererCldDataProvider::SetDefault(provider);
+    RendererCldDataProviderFactory::SetDefault(factory);
     CldDataSource::SetDefault(data_source);
   }
 }

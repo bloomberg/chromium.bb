@@ -4,6 +4,7 @@
 
 #include "components/translate/content/browser/browser_cld_utils.h"
 
+#include "base/logging.h"
 #include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/cld_data_source.h"
 
@@ -12,6 +13,7 @@ namespace translate {
 // static
 void BrowserCldUtils::ConfigureDefaultDataProvider() {
   if (!BrowserCldDataProviderFactory::IsInitialized()) {
+    DVLOG(1) << "Configuring default BrowserCldDataProviderFactory";
     BrowserCldDataProviderFactory* factory = NULL;
     CldDataSource* data_source = NULL;
 

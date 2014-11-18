@@ -55,8 +55,8 @@ class BrowserCldDataProviderFactory {
 
   // Returns the instance of the factory previously set by Set()/SetDefault().
   // If no instance has been set, a default factory will be returned that
-  // produces no-op BrowserCldDataProviders as described by NewProvider(...)
-  // above.
+  // produces no-op BrowserCldDataProviders as described by
+  // CreateBrowserCldDataProvider(...) above.
   static BrowserCldDataProviderFactory* Get();
 
  private:

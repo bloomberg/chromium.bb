@@ -53,13 +53,13 @@ class CldDataSource {
   // If the data source doesn't need or doesn't support such configuration, this
   // function is a no-op. This is the case for, e.g., the static data source.
   // This method is threadsafe.
-  void SetCldDataFilePath(const base::FilePath& path);
+  virtual void SetCldDataFilePath(const base::FilePath& path);
 
   // Returns the path most recently set by SetCldDataFilePath. The initial value
   // prior to any such call is the empty path. If the data source doesn't
   // support a data file, returns the empty path.
   // This method is threadsafe.
-  base::FilePath GetCldDataFilePath();
+  virtual base::FilePath GetCldDataFilePath();
 
   // Sets the default data source for this process, i.e. the data source to be
   // used unless the embedder calls Set(CldDatasource*). This is the method

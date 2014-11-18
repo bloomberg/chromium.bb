@@ -195,6 +195,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'translate/content/renderer/renderer_cld_data_provider_factory.cc',
+            'translate/content/renderer/renderer_cld_data_provider_factory.h',
             'translate/content/renderer/renderer_cld_data_provider.cc',
             'translate/content/renderer/renderer_cld_data_provider.h',
             'translate/content/renderer/renderer_cld_utils.cc',

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
+#include "components/translate/content/renderer/renderer_cld_data_provider_factory.h"
 #include "components/translate/content/renderer/renderer_cld_utils.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
@@ -70,6 +71,16 @@ const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
 // Whether or not we have set the CLD callback yet.
 bool g_cld_callback_set = false;
 
+// Obtain a new CLD data provider. Defined as a standalone method for ease of
+// use in constructor initialization list.
+scoped_ptr<translate::RendererCldDataProvider> CreateDataProvider(
+    content::RenderViewObserver* render_view_observer) {
+  translate::RendererCldUtils::ConfigureDefaultDataProvider();
+  return scoped_ptr<translate::RendererCldDataProvider>(
+      translate::RendererCldDataProviderFactory::Get()->
+      CreateRendererCldDataProvider(render_view_observer));
+}
+
 }  // namespace
 
 namespace translate {
@@ -84,8 +95,7 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
     : content::RenderViewObserver(render_view),
       page_seq_no_(0),
       translation_pending_(false),
-      cld_data_provider_(
-          static_cast<translate::RendererCldDataProvider*>(NULL)),
+      cld_data_provider_(CreateDataProvider(this)),
       cld_data_polling_started_(false),
       cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
@@ -94,8 +104,6 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
       extension_group_(extension_group),
       extension_scheme_(extension_scheme),
       weak_method_factory_(this) {
-  translate::RendererCldUtils::ConfigureDefaultDataProvider();
-  cld_data_provider_ = translate::RendererCldDataProvider::Get();
 }
 
 TranslateHelper::~TranslateHelper() {
@@ -570,12 +578,16 @@ void TranslateHelper::CancelCldDataPolling() {
 void TranslateHelper::SendCldDataRequest(const int delay_millis,
                                          const int next_delay_millis) {
   // Terminate immediately if told to stop polling.
-  if (cld_data_polling_canceled_)
+  if (cld_data_polling_canceled_) {
+    DVLOG(1) << "Aborting CLD data request (polling canceled)";
     return;
+  }
 
   // Terminate immediately if data is already loaded.
-  if (cld_data_provider_->IsCldDataAvailable())
+  if (cld_data_provider_->IsCldDataAvailable()) {
+    DVLOG(1) << "Aborting CLD data request (data available)";
     return;
+  }
 
   if (!g_cld_callback_set) {
     g_cld_callback_set = true;
@@ -585,6 +597,7 @@ void TranslateHelper::SendCldDataRequest(const int delay_millis,
   }
 
   // Else, make an asynchronous request to get the data we need.
+  DVLOG(1) << "Requesting CLD data from data provider";
   cld_data_provider_->SendCldDataRequest();
 
   // ... and enqueue another delayed task to call again. This will start a

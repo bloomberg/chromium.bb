@@ -28,7 +28,7 @@ namespace translate {
 // "IPCMessageStart" enumerated constant from ipc_message_start.h.
 class RendererCldDataProvider : public IPC::Listener {
  public:
-  RendererCldDataProvider() {}
+  RendererCldDataProvider();
   ~RendererCldDataProvider() override {}
 
   // (Inherited from IPC::Listener)
@@ -64,33 +64,6 @@ class RendererCldDataProvider : public IPC::Listener {
   // must happen on the message loop thread.
   // The default implementation immediately invokes the callback.
   virtual void SetCldAvailableCallback(base::Callback<void(void)> callback);
-
-  // Sets the default data provider for this process, i.e. the provider to be
-  // used unless the embedder calls Set(RendererCldDataProvider*). This is the
-  // method that normal (i.e., non-test) Chromium code should use; embedders can
-  // and should use the unconditional Set(RendererCldDataProvider*) method
-  // instead. If a default provider has already been set, this method does
-  // nothing.
-  static void SetDefault(RendererCldDataProvider* instance);
-
-  // Unconditionally sets the data provider for this process, overwriting any
-  // previously-configured default. Normal Chromium code should never use this
-  // method; it is provided for embedders to inject a provider from outside of
-  // the Chromium code base. Test code can also use this method to force the
-  // runtime to have a desired behavior.
-  //
-  // The caller is responsible for the lifecycle of the instance. In general,
-  // the instance passed here should live throughout the lifetime of the
-  // process.
-  static void Set(RendererCldDataProvider* instance);
-
-  // Returns true if and only if the current instance for this process is not
-  // NULL.
-  static bool IsInitialized();
-
-  // Returns the instance of the provider previously set by Set(...).
-  // If no instance has been set, a default no-op provider will be returned.
-  static RendererCldDataProvider* Get();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererCldDataProvider);

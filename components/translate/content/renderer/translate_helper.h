@@ -244,10 +244,7 @@ class TranslateHelper : public content::RenderViewObserver {
   base::TimeTicks language_determined_time_;
 
   // Provides CLD data for this process.
-  // The pointer is owned by the global in RendererCldDataProvider and has the
-  // same lifetime as the process itself, so this field is simply a raw pointer
-  // instead of a scoped_ptr.
-  RendererCldDataProvider* cld_data_provider_;
+  scoped_ptr<RendererCldDataProvider> cld_data_provider_;
 
   // Whether or not polling for CLD2 data has started.
   bool cld_data_polling_started_;
