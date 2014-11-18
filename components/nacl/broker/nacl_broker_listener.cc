@@ -10,6 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -85,7 +87,6 @@ void NaClBrokerListener::OnChannelError() {
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     const std::string& loader_channel_id) {
-  base::ProcessHandle loader_process = 0;
   base::ProcessHandle loader_handle_in_browser = 0;
 
   // Create the path to the nacl broker/loader executable - it's the executable
@@ -102,8 +103,9 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
                                 loader_channel_id);
 
-    loader_process = content::StartSandboxedProcess(this, cmd_line);
-    if (loader_process) {
+    base::Process loader_process(content::StartSandboxedProcess(this,
+                                                                cmd_line));
+    if (loader_process.IsValid()) {
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.
       // 2) The browser is not the loader's parent, and so only gets the
@@ -112,11 +114,11 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
       //    the loader.
       // 4) The target process handle to DuplicateHandle needs to have
       //    PROCESS_DUP_HANDLE access rights.
-      DuplicateHandle(::GetCurrentProcess(), loader_process,
+      DuplicateHandle(
+          ::GetCurrentProcess(), loader_process.Handle(),
           browser_handle_, &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
           FALSE, 0);
-      base::CloseProcessHandle(loader_process);
     }
   }
   channel_->Send(new NaClProcessMsg_LoaderLaunched(loader_channel_id,
