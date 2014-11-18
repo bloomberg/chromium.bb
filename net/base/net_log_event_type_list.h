@@ -2398,3 +2398,11 @@ EVENT_TYPE(SDCH_DICTIONARY_ERROR)
 // This event is created when SdchDictionaryFetcher starts fetch.  It contains
 // no parameters.
 EVENT_TYPE(SDCH_DICTIONARY_FETCH)
+
+// This event is created if the SdchDictionaryFetcher URLRequest returns
+// no error, but signals an error through bytes_read < 0.
+// It contains the following parameters:
+//   {
+//     "net_error": <error created>
+//   }
+EVENT_TYPE(SDCH_DICTIONARY_FETCH_IMPLIED_ERROR)

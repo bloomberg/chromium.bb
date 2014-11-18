@@ -199,33 +199,29 @@ int SdchDictionaryFetcher::DoRead(int rv) {
 
   next_state_ = STATE_REQUEST_READING;
   int bytes_read = 0;
-  if (!current_request_->Read(buffer_.get(), kBufferSize, &bytes_read)) {
-    if (current_request_->status().is_io_pending())
-      return ERR_IO_PENDING;
+  current_request_->Read(buffer_.get(), kBufferSize, &bytes_read);
+  if (current_request_->status().is_io_pending())
+    return ERR_IO_PENDING;
 
-    if (current_request_->status().error() == OK) {
-      // This "should never happen", but if it does the result will be
-      // an infinite loop.  It's not clear how to handle a read failure
-      // without a promise to invoke the callback at some point in the future,
-      // so the request is failed.
-      SdchManager::SdchErrorRecovery(SDCH_DICTIONARY_FETCH_READ_FAILED);
-      current_request_->net_log().AddEvent(
-          NetLog::TYPE_SDCH_DICTIONARY_ERROR,
-          base::Bind(&NetLogSdchDictionaryFetchProblemCallback,
-                     SDCH_DICTIONARY_FETCH_READ_FAILED, current_request_->url(),
-                     true));
-      DLOG(FATAL)
-          << "URLRequest::Read() returned false without IO pending or error!";
-      return ERR_FAILED;
-    }
+  if (bytes_read < 0 || !current_request_->status().is_success()) {
+    if (current_request_->status().error() != OK)
+      return current_request_->status().error();
 
-    return current_request_->status().error();
+    // An error with request status of OK should not happen,
+    // but there's enough machinery underneath URLRequest::Read()
+    // that this routine checks for that case.
+    net::Error error =
+        current_request_->status().status() == URLRequestStatus::CANCELED ?
+        ERR_ABORTED : ERR_FAILED;
+    current_request_->net_log().AddEventWithNetErrorCode(
+        NetLog::TYPE_SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, error);
+    return error;
   }
 
-  if (bytes_read != 0)
-    dictionary_.append(buffer_->data(), bytes_read);
-  else
+  if (bytes_read == 0)
     next_state_ = STATE_REQUEST_COMPLETE;
+  else
+    dictionary_.append(buffer_->data(), bytes_read);
 
   return OK;
 }
