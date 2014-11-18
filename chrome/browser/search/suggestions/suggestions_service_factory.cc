@@ -28,7 +28,7 @@ namespace suggestions {
 
 // static
 SuggestionsService* SuggestionsServiceFactory::GetForProfile(Profile* profile) {
-  if (!SuggestionsService::IsEnabled() || profile->IsOffTheRecord())
+  if (profile->IsOffTheRecord())
     return NULL;
 
   return static_cast<SuggestionsService*>(

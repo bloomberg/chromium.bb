@@ -38,11 +38,6 @@ using ::testing::_;
 
 namespace {
 
-const char kFakeSuggestionsURL[] = "https://mysuggestions.com/proto";
-const char kFakeSuggestionsCommonParams[] = "foo=bar";
-const char kFakeBlacklistPath[] = "/blacklist";
-const char kFakeBlacklistUrlParam[] = "baz";
-
 const char kTestTitle[] = "a title";
 const char kTestUrl[] = "http://go.com";
 const char kBlacklistUrl[] = "http://blacklist.com";
@@ -67,9 +62,8 @@ scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
 
 std::string GetExpectedBlacklistRequestUrl(const GURL& blacklist_url) {
   std::stringstream request_url;
-  request_url << kFakeSuggestionsURL << kFakeBlacklistPath << "?"
-              << kFakeSuggestionsCommonParams << "&" << kFakeBlacklistUrlParam
-              << "=" << net::EscapeQueryParamValue(blacklist_url.spec(), true);
+  request_url << "https://www.google.com/chromesuggestions/blacklist?t=2&url="
+              << net::EscapeQueryParamValue(blacklist_url.spec(), true);
   return request_url.str();
 }
 
@@ -118,19 +112,19 @@ class TestSuggestionsStore : public suggestions::SuggestionsStore {
     cached_suggestions = CreateSuggestionsProfile();
   }
   virtual ~TestSuggestionsStore() {}
-  virtual bool LoadSuggestions(SuggestionsProfile* suggestions) override {
+  bool LoadSuggestions(SuggestionsProfile* suggestions) override {
     if (cached_suggestions.suggestions_size()) {
       *suggestions = cached_suggestions;
       return true;
     }
     return false;
   }
-  virtual bool StoreSuggestions(const SuggestionsProfile& suggestions)
+  bool StoreSuggestions(const SuggestionsProfile& suggestions)
       override {
     cached_suggestions = suggestions;
     return true;
   }
-  virtual void ClearSuggestions() override {
+  void ClearSuggestions() override {
     cached_suggestions = SuggestionsProfile();
   }
 
@@ -188,12 +182,8 @@ class SuggestionsServiceTest : public testing::Test {
         io_message_loop_.message_loop_proxy());
   }
 
-  // Enables the "ChromeSuggestions.Group1" field trial.
-  void EnableFieldTrial(const std::string& url,
-                        const std::string& common_params,
-                        const std::string& blacklist_path,
-                        const std::string& blacklist_url_param,
-                        bool control_group) {
+  // Enables the control group in the "ChromeSuggestions.Group1" field trial.
+  void EnableFieldTrialControlGroup() {
     // Clear the existing |field_trial_list_| to avoid firing a DCHECK.
     field_trial_list_.reset(NULL);
     field_trial_list_.reset(
@@ -201,16 +191,8 @@ class SuggestionsServiceTest : public testing::Test {
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> params;
-    params[kSuggestionsFieldTrialStateParam] =
+    params[kSuggestionsFieldTrialControlParam] =
         kSuggestionsFieldTrialStateEnabled;
-    if (control_group) {
-      params[kSuggestionsFieldTrialControlParam] =
-          kSuggestionsFieldTrialStateEnabled;
-    }
-    params[kSuggestionsFieldTrialURLParam] = url;
-    params[kSuggestionsFieldTrialCommonParamsParam] = common_params;
-    params[kSuggestionsFieldTrialBlacklistPathParam] = blacklist_path;
-    params[kSuggestionsFieldTrialBlacklistUrlParam] = blacklist_url_param;
     variations::AssociateVariationParams(kSuggestionsFieldTrialName, "Group1",
                                          params);
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
@@ -219,9 +201,6 @@ class SuggestionsServiceTest : public testing::Test {
   }
 
   void FetchSuggestionsDataHelper(SyncState sync_state) {
-    // Field trial enabled with a specific suggestions URL.
-    EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                     kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
     scoped_ptr<SuggestionsService> suggestions_service(
         CreateSuggestionsServiceWithMocks());
     EXPECT_TRUE(suggestions_service != NULL);
@@ -232,9 +211,7 @@ class SuggestionsServiceTest : public testing::Test {
     test_suggestions_store_->LoadSuggestions(&suggestions_profile);
 
     // Set up net::FakeURLFetcherFactory.
-    std::string expected_url =
-        (std::string(kFakeSuggestionsURL) + "?") + kFakeSuggestionsCommonParams;
-    factory_.SetFakeResponse(GURL(expected_url),
+    factory_.SetFakeResponse(GURL(kSuggestionsURL),
                              suggestions_profile.SerializeAsString(),
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
@@ -292,11 +269,9 @@ class SuggestionsServiceTest : public testing::Test {
 };
 
 TEST_F(SuggestionsServiceTest, IsControlGroup) {
-  // Field trial enabled.
-  EnableFieldTrial("", "", "", "", false);
   EXPECT_FALSE(SuggestionsService::IsControlGroup());
 
-  EnableFieldTrial("", "", "", "", true);
+  EnableFieldTrialControlGroup();
   EXPECT_TRUE(SuggestionsService::IsControlGroup());
 }
 
@@ -309,9 +284,6 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
-  // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -330,33 +302,25 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
-  // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
 
   // Fake a request error.
-  std::string expected_url =
-      (std::string(kFakeSuggestionsURL) + "?") + kFakeSuggestionsCommonParams;
-  factory_.SetFakeResponse(GURL(expected_url), "irrelevant", net::HTTP_OK,
+  factory_.SetFakeResponse(GURL(kSuggestionsURL), "irrelevant", net::HTTP_OK,
                            net::URLRequestStatus::FAILED);
 
   EXPECT_CALL(*mock_blacklist_store_, GetFirstUrlFromBlacklist(_))
       .WillOnce(Return(false));
 
   // Send the request. Empty data will be returned to the callback.
-  suggestions_service->IssueRequestIfNoneOngoing(GURL(expected_url));
+  suggestions_service->IssueRequestIfNoneOngoing(GURL(kSuggestionsURL));
 
   // (Testing only) wait until suggestion fetch is complete.
   io_message_loop_.RunUntilIdle();
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
-  // Field trial enabled with a specific suggestions URL.
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -365,9 +329,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
   FillSuggestionsStore();
 
   // Fake a non-200 response code.
-  std::string expected_url =
-      (std::string(kFakeSuggestionsURL) + "?") + kFakeSuggestionsCommonParams;
-  factory_.SetFakeResponse(GURL(expected_url), "irrelevant",
+  factory_.SetFakeResponse(GURL(kSuggestionsURL), "irrelevant",
                            net::HTTP_BAD_REQUEST,
                            net::URLRequestStatus::SUCCESS);
 
@@ -376,7 +338,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
       .WillOnce(Return(false));
 
   // Send the request. Empty data will be returned to the callback.
-  suggestions_service->IssueRequestIfNoneOngoing(GURL(expected_url));
+  suggestions_service->IssueRequestIfNoneOngoing(GURL(kSuggestionsURL));
 
   // (Testing only) wait until suggestion fetch is complete.
   io_message_loop_.RunUntilIdle();
@@ -387,8 +349,6 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -427,8 +387,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 // Initial blacklist request fails, triggering a scheduled upload which
 // succeeds.
 TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
@@ -480,9 +438,6 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
 }
 
 TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
-  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
-                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
-
   scoped_ptr<GURL> request_url;
   scoped_ptr<net::FakeURLFetcher> fetcher;
   GURL retrieved_url;
@@ -497,8 +452,7 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
   string blacklisted_url = "http://blacklisted.com/a?b=c&d=e";
   string encoded_blacklisted_url =
       "http%3A%2F%2Fblacklisted.com%2Fa%3Fb%3Dc%26d%3De";
-  string blacklist_request_prefix =
-      "https://mysuggestions.com/proto/blacklist?foo=bar&baz=";
+  string blacklist_request_prefix(kSuggestionsBlacklistURLPrefix);
   request_url.reset(
       new GURL(blacklist_request_prefix + encoded_blacklisted_url));
   fetcher.reset();

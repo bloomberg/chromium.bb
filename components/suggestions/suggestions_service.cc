@@ -4,7 +4,6 @@
 
 #include "components/suggestions/suggestions_service.h"
 
-#include <sstream>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -90,30 +89,17 @@ const int kBlacklistMaxDelaySec = 300;  // 5 minutes
 }  // namespace
 
 const char kSuggestionsFieldTrialName[] = "ChromeSuggestions";
-const char kSuggestionsFieldTrialURLParam[] = "url";
-const char kSuggestionsFieldTrialCommonParamsParam[] = "common_params";
-const char kSuggestionsFieldTrialBlacklistPathParam[] = "blacklist_path";
-const char kSuggestionsFieldTrialBlacklistUrlParam[] = "blacklist_url_param";
-const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 
+// TODO(mathp): Put this in TemplateURL.
+const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=2";
+const char kSuggestionsBlacklistURLPrefix[] =
+    "https://www.google.com/chromesuggestions/blacklist?t=2&url=";
+const char kSuggestionsBlacklistURLParam[] = "url";
+
 // The default expiry timeout is 72 hours.
 const int64 kDefaultExpiryUsec = 72 * base::Time::kMicrosecondsPerHour;
-
-namespace {
-
-std::string GetBlacklistUrlPrefix() {
-  std::stringstream blacklist_url_prefix_stream;
-  blacklist_url_prefix_stream
-      << GetExperimentParam(kSuggestionsFieldTrialURLParam)
-      << GetExperimentParam(kSuggestionsFieldTrialBlacklistPathParam) << "?"
-      << GetExperimentParam(kSuggestionsFieldTrialCommonParamsParam) << "&"
-      << GetExperimentParam(kSuggestionsFieldTrialBlacklistUrlParam) << "=";
-  return blacklist_url_prefix_stream.str();
-}
-
-}  // namespace
 
 SuggestionsService::SuggestionsService(
     net::URLRequestContextGetter* url_request_context,
@@ -125,21 +111,11 @@ SuggestionsService::SuggestionsService(
       thumbnail_manager_(thumbnail_manager.Pass()),
       blacklist_store_(blacklist_store.Pass()),
       blacklist_delay_sec_(kBlacklistDefaultDelaySec),
-      weak_ptr_factory_(this) {
-  // Obtain various parameters from Variations.
-  suggestions_url_ =
-      GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) + "?" +
-           GetExperimentParam(kSuggestionsFieldTrialCommonParamsParam));
-  blacklist_url_prefix_ = GetBlacklistUrlPrefix();
-}
+      suggestions_url_(kSuggestionsURL),
+      blacklist_url_prefix_(kSuggestionsBlacklistURLPrefix),
+      weak_ptr_factory_(this) {}
 
 SuggestionsService::~SuggestionsService() {}
-
-// static
-bool SuggestionsService::IsEnabled() {
-  return GetExperimentParam(kSuggestionsFieldTrialStateParam) ==
-         kSuggestionsFieldTrialStateEnabled;
-}
 
 // static
 bool SuggestionsService::IsControlGroup() {
@@ -159,7 +135,6 @@ void SuggestionsService::FetchSuggestionsData(
     DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
   } else if (sync_state == INITIALIZED_ENABLED_HISTORY ||
              sync_state == NOT_INITIALIZED_ENABLED) {
-
     // Sync is enabled. Serve previously cached suggestions if available, else
     // an empty set of suggestions.
     ServeFromCache();
@@ -200,16 +175,18 @@ void SuggestionsService::BlacklistURL(
 bool SuggestionsService::GetBlacklistedUrl(const net::URLFetcher& request,
                                            GURL* url) {
   bool is_blacklist_request = StartsWithASCII(request.GetOriginalURL().spec(),
-                                              GetBlacklistUrlPrefix(), true);
+                                              kSuggestionsBlacklistURLPrefix,
+                                              true);
   if (!is_blacklist_request) return false;
 
   // Extract the blacklisted URL from the blacklist request.
   std::string blacklisted;
   if (!net::GetValueForKeyInQuery(
           request.GetOriginalURL(),
-          GetExperimentParam(kSuggestionsFieldTrialBlacklistUrlParam),
-          &blacklisted))
+          kSuggestionsBlacklistURLParam,
+          &blacklisted)) {
     return false;
+  }
 
   GURL blacklisted_url(blacklisted);
   blacklisted_url.Swap(url);

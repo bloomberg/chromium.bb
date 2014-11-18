@@ -38,13 +38,12 @@ class BlacklistStore;
 class SuggestionsStore;
 
 extern const char kSuggestionsFieldTrialName[];
-extern const char kSuggestionsFieldTrialURLParam[];
-extern const char kSuggestionsFieldTrialCommonParamsParam[];
-extern const char kSuggestionsFieldTrialBlacklistPathParam[];
-extern const char kSuggestionsFieldTrialBlacklistUrlParam[];
-extern const char kSuggestionsFieldTrialStateParam[];
 extern const char kSuggestionsFieldTrialControlParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
+
+extern const char kSuggestionsURL[];
+extern const char kSuggestionsBlacklistURLPrefix[];
+extern const char kSuggestionsBlacklistURLParam[];
 extern const int64 kDefaultExpiryUsec;
 
 // An interface to fetch server suggestions asynchronously.
@@ -60,9 +59,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       scoped_ptr<ImageManager> thumbnail_manager,
       scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
-
-  // Whether this service is enabled.
-  static bool IsEnabled();
 
   // Whether the user is part of a control group.
   static bool IsControlGroup();
