@@ -3363,13 +3363,6 @@ void FrameView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool&
         if (vScroll == ScrollbarAuto)
             newHasVerticalScrollbar = false;
     }
-
-    // If we ever turn one scrollbar off, always turn the other one off too.
-    // Never ever try to both gain/lose a scrollbar in the same pass.
-    if (!newHasHorizontalScrollbar && hasHorizontalScrollbar && vScroll != ScrollbarAlwaysOn)
-        newHasVerticalScrollbar = false;
-    if (!newHasVerticalScrollbar && hasVerticalScrollbar && hScroll != ScrollbarAlwaysOn)
-        newHasHorizontalScrollbar = false;
 }
 
 void FrameView::updateScrollbarGeometry()
