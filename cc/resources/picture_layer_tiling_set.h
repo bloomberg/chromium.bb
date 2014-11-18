@@ -66,8 +66,7 @@ class CC_EXPORT PictureLayerTilingSet {
     return tilings_[idx];
   }
 
-  // TODO(vmpstr): Rename to FindTilingWithScale.
-  PictureLayerTiling* TilingAtScale(float scale) const;
+  PictureLayerTiling* FindTilingWithScale(float scale) const;
   PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
 
   // If a tiling exists whose scale is within |snap_to_existing_tiling_ratio|

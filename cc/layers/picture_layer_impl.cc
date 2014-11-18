@@ -645,7 +645,7 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
   // TODO(danakj): Remove this when no longer swapping tilings.
   if (!twin_layer->tilings_)
     return nullptr;
-  return twin_layer->tilings_->TilingAtScale(tiling->contents_scale());
+  return twin_layer->tilings_->FindTilingWithScale(tiling->contents_scale());
 }
 
 PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
@@ -653,7 +653,7 @@ PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
   PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
   if (!recycled_twin || !recycled_twin->tilings_)
     return nullptr;
-  return recycled_twin->tilings_->TilingAtScale(tiling->contents_scale());
+  return recycled_twin->tilings_->FindTilingWithScale(tiling->contents_scale());
 }
 
 TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {

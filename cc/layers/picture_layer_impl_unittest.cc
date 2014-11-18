@@ -2283,9 +2283,9 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   float new_scale = 1.f;
   active_layer_->ReleaseResources();
   pending_layer_->ReleaseResources();
-  EXPECT_FALSE(active_layer_->tilings()->TilingAtScale(new_scale));
+  EXPECT_FALSE(active_layer_->tilings()->FindTilingWithScale(new_scale));
   pending_layer_->AddTiling(new_scale);
-  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(new_scale));
+  EXPECT_TRUE(active_layer_->tilings()->FindTilingWithScale(new_scale));
 
   // UpdateDrawProperties early-outs if the tree doesn't need it.  It is also
   // responsible for calling ManageTilings.  These checks verify that
@@ -2294,7 +2294,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
   host_impl_.active_tree()->UpdateDrawProperties();
   PictureLayerTiling* high_res =
-      active_layer_->tilings()->TilingAtScale(new_scale);
+      active_layer_->tilings()->FindTilingWithScale(new_scale);
   ASSERT_TRUE(!!high_res);
   EXPECT_EQ(HIGH_RESOLUTION, high_res->resolution());
 }
@@ -2304,8 +2304,8 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
 
   const float kScale = 1.f;
   pending_layer_->AddTiling(kScale);
-  EXPECT_TRUE(pending_layer_->tilings()->TilingAtScale(kScale));
-  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(kScale));
+  EXPECT_TRUE(pending_layer_->tilings()->FindTilingWithScale(kScale));
+  EXPECT_TRUE(active_layer_->tilings()->FindTilingWithScale(kScale));
 
   // Gpu rasterization is disabled by default.
   EXPECT_FALSE(host_impl_.use_gpu_rasterization());
@@ -2317,8 +2317,8 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   // Make sure that we can still add tiling to the pending layer,
   // that gets synced to the active layer.
   pending_layer_->AddTiling(kScale);
-  EXPECT_TRUE(pending_layer_->tilings()->TilingAtScale(kScale));
-  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(kScale));
+  EXPECT_TRUE(pending_layer_->tilings()->FindTilingWithScale(kScale));
+  EXPECT_TRUE(active_layer_->tilings()->FindTilingWithScale(kScale));
 
   // Toggling the gpu rasterization clears all tilings on both trees.
   EXPECT_TRUE(host_impl_.use_gpu_rasterization());
@@ -2347,7 +2347,7 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
 
   // Sanity checks.
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
-  ASSERT_EQ(tiling, active_layer_->tilings()->TilingAtScale(0.5f));
+  ASSERT_EQ(tiling, active_layer_->tilings()->FindTilingWithScale(0.5f));
 
   // Now, set the bounds to be 1x1 (so that minimum contents scale becomes
   // 1.0f). Note that we should also ensure that the pending layer needs post
@@ -2368,12 +2368,12 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   // violate minimum contents scale. At the same time, we should've created a
   // new high res tiling at scale 1.0f.
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
-  ASSERT_TRUE(pending_layer_->tilings()->TilingAtScale(1.0f));
+  ASSERT_TRUE(pending_layer_->tilings()->FindTilingWithScale(1.0f));
   EXPECT_EQ(HIGH_RESOLUTION,
-            pending_layer_->tilings()->TilingAtScale(1.0f)->resolution());
-  ASSERT_TRUE(pending_layer_->tilings()->TilingAtScale(1.5f));
+            pending_layer_->tilings()->FindTilingWithScale(1.0f)->resolution());
+  ASSERT_TRUE(pending_layer_->tilings()->FindTilingWithScale(1.5f));
   EXPECT_EQ(NON_IDEAL_RESOLUTION,
-            pending_layer_->tilings()->TilingAtScale(1.5f)->resolution());
+            pending_layer_->tilings()->FindTilingWithScale(1.5f)->resolution());
 }
 
 TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {

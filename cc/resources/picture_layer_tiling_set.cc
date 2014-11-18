@@ -65,7 +65,7 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
   // Remove any tilings that aren't in |other| or don't meet the minimum.
   for (size_t i = 0; i < tilings_.size(); ++i) {
     float scale = tilings_[i]->contents_scale();
-    if (scale >= minimum_contents_scale && !!other.TilingAtScale(scale))
+    if (scale >= minimum_contents_scale && !!other.FindTilingWithScale(scale))
       continue;
     // Swap with the last element and remove it.
     tilings_.swap(tilings_.begin() + i, tilings_.end() - 1);
@@ -80,7 +80,7 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
     float contents_scale = other.tilings_[i]->contents_scale();
     if (contents_scale < minimum_contents_scale)
       continue;
-    if (PictureLayerTiling* this_tiling = TilingAtScale(contents_scale)) {
+    if (PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale)) {
       this_tiling->set_resolution(other.tilings_[i]->resolution());
 
       this_tiling->UpdateTilesToCurrentRasterSource(
@@ -134,7 +134,8 @@ int PictureLayerTilingSet::NumHighResTilings() const {
   return num_high_res;
 }
 
-PictureLayerTiling* PictureLayerTilingSet::TilingAtScale(float scale) const {
+PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScale(
+    float scale) const {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     if (tilings_[i]->contents_scale() == scale)
       return tilings_[i];

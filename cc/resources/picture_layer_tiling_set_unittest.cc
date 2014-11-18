@@ -430,14 +430,14 @@ TEST_F(PictureLayerTilingSetSyncTest, KeepExisting) {
   for (size_t i = 0; i < arraysize(target_scales); ++i)
     target_->AddTiling(target_scales[i], target_bounds_);
 
-  PictureLayerTiling* tiling1 = source_->TilingAtScale(1.f);
+  PictureLayerTiling* tiling1 = source_->FindTilingWithScale(1.f);
   ASSERT_TRUE(tiling1);
   tiling1->CreateAllTilesForTesting();
   EXPECT_EQ(tiling1->contents_scale(), 1.f);
   Tile* tile1 = FindTileAtOrigin(tiling1);
   ASSERT_TRUE(tile1);
 
-  PictureLayerTiling* tiling2 = source_->TilingAtScale(2.f);
+  PictureLayerTiling* tiling2 = source_->FindTilingWithScale(2.f);
   tiling2->CreateAllTilesForTesting();
   ASSERT_TRUE(tiling2);
   EXPECT_EQ(tiling2->contents_scale(), 2.f);
@@ -448,11 +448,11 @@ TEST_F(PictureLayerTilingSetSyncTest, KeepExisting) {
   SyncTilings(new_bounds);
   VerifyTargetEqualsSource(new_bounds);
 
-  EXPECT_EQ(tiling1, source_->TilingAtScale(1.f));
+  EXPECT_EQ(tiling1, source_->FindTilingWithScale(1.f));
   EXPECT_EQ(tile1, FindTileAtOrigin(tiling1));
   EXPECT_FALSE(tiling1->live_tiles_rect().IsEmpty());
 
-  EXPECT_EQ(tiling2, source_->TilingAtScale(2.f));
+  EXPECT_EQ(tiling2, source_->FindTilingWithScale(2.f));
   EXPECT_EQ(tile2, FindTileAtOrigin(tiling2));
   EXPECT_FALSE(tiling2->live_tiles_rect().IsEmpty());
 }
