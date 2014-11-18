@@ -837,11 +837,6 @@
       '../extensions/browser/app_window/app_window_interactive_uitest.cc',
       '../ui/base/clipboard/clipboard_android_unittest.cc',
       '../ui/base/clipboard/clipboard_unittest.cc',
-      '../ui/views/controls/webview/webview_interactive_uitest.cc',
-      '../ui/views/corewm/desktop_capture_controller_unittest.cc',
-      '../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc',
-      '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
-      '../ui/views/widget/widget_interactive_uitest.cc',
       'browser/apps/app_browsertest_util.cc',
       'browser/apps/app_browsertest_util.h',
       'browser/apps/app_pointer_lock_interactive_uitest.cc',
@@ -872,8 +867,6 @@
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.h',
       'browser/task_manager/task_manager_browsertest_util.cc',
-      'browser/ui/app_list/app_list_service_interactive_uitest.cc',
-      'browser/ui/app_list/app_list_service_mac_interactive_uitest.mm',
       'browser/ui/autofill/autofill_popup_controller_interactive_uitest.cc',
       'browser/ui/browser_focus_uitest.cc',
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.cc',
@@ -910,6 +903,26 @@
       'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
+      'test/base/interactive_test_utils.cc',
+      'test/base/interactive_test_utils.h',
+      'test/base/interactive_test_utils_aura.cc',
+      'test/base/interactive_test_utils_aura.h',
+      'test/base/interactive_test_utils_mac.mm',
+      'test/base/interactive_test_utils_views.cc',
+      'test/base/interactive_test_utils_win.cc',
+      'test/base/interactive_ui_tests_main.cc',
+      'test/base/view_event_test_platform_part.h',
+      'test/base/view_event_test_platform_part_ash.cc',
+      'test/base/view_event_test_platform_part_chromeos.cc',
+      'test/base/view_event_test_platform_part_mac.mm',
+      'test/ppapi/ppapi_interactive_browsertest.cc',
+    ],
+    'chrome_interactive_ui_test_views_sources': [
+      '../ui/views/controls/webview/webview_interactive_uitest.cc',
+      '../ui/views/corewm/desktop_capture_controller_unittest.cc',
+      '../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc',
+      '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
+      '../ui/views/widget/widget_interactive_uitest.cc',
       'browser/ui/views/ash/tab_scrubber_browsertest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
       'browser/ui/views/frame/browser_view_focus_uitest.cc',
@@ -925,23 +938,26 @@
       'browser/ui/views/panels/panel_view_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
       'browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc',
-      'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
       'browser/ui/views/toolbar/toolbar_button_test.cc',
-      'test/base/interactive_test_utils.cc',
-      'test/base/interactive_test_utils.h',
-      'test/base/interactive_test_utils_aura.cc',
-      'test/base/interactive_test_utils_aura.h',
-      'test/base/interactive_test_utils_mac.mm',
-      'test/base/interactive_test_utils_views.cc',
-      'test/base/interactive_test_utils_win.cc',
-      'test/base/interactive_ui_tests_main.cc',
       'test/base/view_event_test_base.cc',
       'test/base/view_event_test_base.h',
-      'test/base/view_event_test_platform_part.h',
-      'test/base/view_event_test_platform_part_ash.cc',
-      'test/base/view_event_test_platform_part_chromeos.cc',
-      'test/base/view_event_test_platform_part_mac.mm',
-      'test/ppapi/ppapi_interactive_browsertest.cc',
+    ],
+    'chrome_interactive_ui_test_app_list_sources': [
+      'browser/ui/app_list/app_list_service_interactive_uitest.cc',
+      'browser/ui/app_list/app_list_service_mac_interactive_uitest.mm',
+    ],
+    'chrome_interactive_ui_test_win_sources': [
+      '../ui/resources/cursors/aliasb.cur',
+      '../ui/resources/cursors/cell.cur',
+      '../ui/resources/cursors/col_resize.cur',
+      '../ui/resources/cursors/copy.cur',
+      '../ui/resources/cursors/none.cur',
+      '../ui/resources/cursors/row_resize.cur',
+      '../ui/resources/cursors/vertical_text.cur',
+      '../ui/resources/cursors/zoom_in.cur',
+      '../ui/resources/cursors/zoom_out.cur',
+      'app/chrome_dll.rc',
+      'test/data/resource.rc',
     ],
     'chrome_interactive_ui_test_non_mac_sources': [
       'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
@@ -1481,29 +1497,16 @@
           ]
         }],
         ['toolkit_views==1', {
+          'sources': [ '<@(chrome_interactive_ui_test_views_sources)' ],
           'dependencies': [
             '../ui/views/controls/webview/webview_tests.gyp:webview_test_support',
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
           ],
-        }, { # else: toolkit_views == 0
-          'sources!': [
-            'test/base/view_event_test_base.cc',
-            'test/base/view_event_test_base.h',
-          ],
-          'sources/': [
-            ['exclude', '^browser/ui/views/'],
-            ['exclude', '^../ui/views/'],
-          ],
         }],
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash_test_support',
-          ],
-        }],
-        ['use_aura==1', {
-          'sources!': [
-            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
           ],
         }],
         ['use_aura==0 or chromeos==1', {
@@ -1561,18 +1564,7 @@
             'chrome.gyp:chrome_version_resources',
           ],
           'sources': [
-            '../ui/resources/cursors/aliasb.cur',
-            '../ui/resources/cursors/cell.cur',
-            '../ui/resources/cursors/col_resize.cur',
-            '../ui/resources/cursors/copy.cur',
-            '../ui/resources/cursors/none.cur',
-            '../ui/resources/cursors/row_resize.cur',
-            '../ui/resources/cursors/vertical_text.cur',
-            '../ui/resources/cursors/zoom_in.cur',
-            '../ui/resources/cursors/zoom_out.cur',
-
-            'app/chrome_dll.rc',
-            'test/data/resource.rc',
+            '<@(chrome_interactive_ui_test_win_sources)',
 
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
@@ -1581,18 +1573,11 @@
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
-
-            'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [
                  '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-            ['use_aura==1', {
-              'sources!': [
-                'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
               ],
             }],
           ],
@@ -1608,10 +1593,8 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],  # OS != "win"
-        ['enable_app_list==0', {
-          'sources/': [
-            ['exclude', '^browser/ui/app_list/'],
-          ],
+        ['enable_app_list==1', {
+          'sources': [ '<@(chrome_interactive_ui_test_app_list_sources)' ],
         }],
       ],  # conditions
     },
