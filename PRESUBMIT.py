@@ -1611,7 +1611,6 @@ def GetDefaultTryConfigs(bots=None):
           'net_unittests',
           'sql_unittests',
           'ui_base_unittests',
-          'ui_unittests',
       ],
       'ios_rel_device': ['compile'],
       'ios_rel_device_ninja': ['compile'],

@@ -469,8 +469,8 @@ void ConfirmEventsAreKeyAndEqual(ui::Event* e1, ui::Event* e2) {
   ASSERT_NO_FATAL_FAILURE(ConfirmEventsAreKeyAndEqual(e1, e2))
 
 // TODO(mfomitchev): Need to investigate why we don't get mouse enter/exit
-// events when running these tests as part of ui_unittests. We do get them when
-// the tests are run as part of ash unit tests.
+// events when running these tests as part of ui_base_unittests. We do get them
+// when the tests are run as part of ash unit tests.
 
 // If a swipe has been successfully completed, then six key events will be
 // dispatched that correspond to shift+search+direction

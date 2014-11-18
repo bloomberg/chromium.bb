@@ -40,7 +40,6 @@ _ISOLATE_FILE_PATHS = {
     'net_unittests': 'net/net_unittests.isolate',
     'sql_unittests': 'sql/sql_unittests.isolate',
     'ui_base_unittests': 'ui/base/ui_base_tests.isolate',
-    'ui_unittests': 'ui/base/ui_base_tests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
     'webkit_unit_tests':
       'third_party/WebKit/Source/web/WebKitUnitTests.isolate',

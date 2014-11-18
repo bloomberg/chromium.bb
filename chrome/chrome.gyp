@@ -400,7 +400,6 @@
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../net/net.gyp:net_unittests',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-            '../ui/base/ui_base_tests.gyp:ui_unittests',
           ],
         },
         {

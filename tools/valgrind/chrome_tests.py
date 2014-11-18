@@ -470,9 +470,6 @@ class ChromeTests:
   def TestUIBaseUnit(self):
     return self.SimpleTest("chrome", "ui_base_unittests")
 
-  def TestUIUnit(self):
-    return self.SimpleTest("chrome", "ui_unittests")
-
   def TestURL(self):
     return self.SimpleTest("chrome", "url_unittests")
 
@@ -715,7 +712,6 @@ class ChromeTests:
     "sync_integration_tests": TestSyncIntegration,
     "sync_integration": TestSyncIntegration,
     "ui_base_unit": TestUIBaseUnit,       "ui_base_unittests": TestUIBaseUnit,
-    "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "url": TestURL,              "url_unittests": TestURL,
     "views": TestViews,          "views_unittests": TestViews,
