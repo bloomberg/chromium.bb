@@ -32,7 +32,8 @@ class MemoryToughDomMemoryCases(benchmark.Benchmark):
   page_set = page_sets.ToughDomMemoryCasesPageSet
 
 
-@benchmark.Enabled('android', 'has tabs')
+@benchmark.Disabled('chromeos', 'linux', 'mac', 'win')
+@benchmark.Enabled('has tabs')
 class TypicalMobileSites(benchmark.Benchmark):
   """Long memory test."""
   test = memory.Memory
