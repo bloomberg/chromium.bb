@@ -117,9 +117,12 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response);
 
   // Called by DeviceSettingsService when modified and signed device
-  // settings are stored. Notifies observers and tries to store device
-  // settings again.
+  // settings are stored.
   void OnSignedPolicyStored(bool success);
+
+  // Report status to observers and tries to continue storing pending chages to
+  // device settings.
+  void ReportStatusAndContinueStoring(bool success);
 
   DeviceSettingsService* device_settings_service_;
 

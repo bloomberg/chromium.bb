@@ -139,15 +139,6 @@ void DeviceSettingsService::Load() {
   EnqueueLoad(false);
 }
 
-void DeviceSettingsService::SignAndStore(
-    scoped_ptr<em::ChromeDeviceSettingsProto> new_settings,
-    const base::Closure& callback) {
-  scoped_ptr<em::PolicyData> policy =
-      OwnerSettingsServiceChromeOS::AssemblePolicy(
-          GetUsername(), policy_data(), new_settings.get());
-  EnqueueSignAndStore(policy.Pass(), callback);
-}
-
 void DeviceSettingsService::SetManagementSettings(
     em::PolicyData::ManagementMode management_mode,
     const std::string& request_token,

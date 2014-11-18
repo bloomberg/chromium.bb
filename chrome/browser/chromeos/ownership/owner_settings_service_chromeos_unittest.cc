@@ -43,8 +43,6 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
 
   // OwnerSettingsService::Observer implementation:
   virtual void OnSignedPolicyStored(bool success) override {
-    CHECK(success);
-
     if (service_->has_pending_changes())
       return;
 
@@ -57,10 +55,12 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
     loop_.Quit();
   }
 
-  void Set(const std::string& setting, const base::Value& value) {
-    service_->Set(setting, value);
+  bool Set(const std::string& setting, const base::Value& value) {
+    if (!service_->Set(setting, value))
+      return false;
     set_requests_.push(
         SetRequest(setting, linked_ptr<base::Value>(value.DeepCopy())));
+    return true;
   }
 
   void Wait() { loop_.Run(); }
@@ -81,7 +81,8 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
 class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
  public:
   OwnerSettingsServiceChromeOSTest()
-      : local_state_(TestingBrowserProcess::GetGlobal()),
+      : service_(nullptr),
+        local_state_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   virtual void SetUp() override {
@@ -91,6 +92,11 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
     InitOwner(device_policy_.policy_data().username(), true);
     FlushDeviceSettings();
+
+    service_ =
+        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    ASSERT_TRUE(service_);
+    ASSERT_TRUE(service_->IsOwner());
   }
 
   virtual void TearDown() override { DeviceSettingsTestBase::TearDown(); }
@@ -104,6 +110,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     checker.Wait();
   }
 
+  OwnerSettingsServiceChromeOS* service_;
   ScopedTestingLocalState local_state_;
   scoped_ptr<DeviceSettingsProvider> provider_;
   base::ScopedPathOverride user_data_dir_override_;
@@ -113,25 +120,17 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
 };
 
 TEST_F(OwnerSettingsServiceChromeOSTest, SingleSetTest) {
-  OwnerSettingsServiceChromeOS* service =
-      OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
-  ASSERT_TRUE(service);
-  ASSERT_TRUE(service->IsOwner());
-  TestSingleSet(service, kReleaseChannel, base::StringValue("dev-channel"));
-  TestSingleSet(service, kReleaseChannel, base::StringValue("beta-channel"));
-  TestSingleSet(service, kReleaseChannel, base::StringValue("stable-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::StringValue("dev-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::StringValue("beta-channel"));
+  TestSingleSet(service_, kReleaseChannel, base::StringValue("stable-channel"));
 }
 
 TEST_F(OwnerSettingsServiceChromeOSTest, MultipleSetTest) {
-  OwnerSettingsServiceChromeOS* service =
-      OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
-  ASSERT_TRUE(service);
-  ASSERT_TRUE(service->IsOwner());
   base::FundamentalValue allow_guest(false);
   base::StringValue release_channel("stable-channel");
   base::FundamentalValue show_user_names(true);
 
-  PrefsChecker checker(service, provider_.get());
+  PrefsChecker checker(service_, provider_.get());
 
   checker.Set(kAccountsPrefAllowGuest, allow_guest);
   checker.Set(kReleaseChannel, release_channel);
@@ -139,6 +138,51 @@ TEST_F(OwnerSettingsServiceChromeOSTest, MultipleSetTest) {
 
   FlushDeviceSettings();
   checker.Wait();
+}
+
+TEST_F(OwnerSettingsServiceChromeOSTest, FailedSetRequest) {
+  device_settings_test_helper_.set_store_result(false);
+  std::string current_channel;
+  ASSERT_TRUE(provider_->Get(kReleaseChannel)->GetAsString(&current_channel));
+  ASSERT_NE(current_channel, "stable-channel");
+
+  // Check that DeviceSettingsProvider's cache is updated.
+  PrefsChecker checker(service_, provider_.get());
+  checker.Set(kReleaseChannel, base::StringValue("stable-channel"));
+  FlushDeviceSettings();
+  checker.Wait();
+
+  // Check that DeviceSettingsService's policy isn't updated.
+  ASSERT_EQ(current_channel, device_settings_service_.device_settings()
+                                 ->release_channel()
+                                 .release_channel());
+}
+
+class OwnerSettingsServiceChromeOSNoOwnerTest
+    : public OwnerSettingsServiceChromeOSTest {
+ public:
+  OwnerSettingsServiceChromeOSNoOwnerTest() {}
+  virtual ~OwnerSettingsServiceChromeOSNoOwnerTest() {}
+
+  virtual void SetUp() override {
+    DeviceSettingsTestBase::SetUp();
+    provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
+                                               &device_settings_service_));
+    FlushDeviceSettings();
+    service_ =
+        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    ASSERT_TRUE(service_);
+    ASSERT_FALSE(service_->IsOwner());
+  }
+
+  virtual void TearDown() override { DeviceSettingsTestBase::TearDown(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOSNoOwnerTest);
+};
+
+TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, SingleSetTest) {
+  ASSERT_FALSE(service_->SetBoolean(kAccountsPrefAllowGuest, false));
 }
 
 }  // namespace chromeos

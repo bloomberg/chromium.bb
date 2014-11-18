@@ -622,13 +622,13 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
       base::Bind(&OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned,
                  store_settings_factory_.GetWeakPtr()));
   if (!rv)
-    OnSignedPolicyStored(false /* success */);
+    ReportStatusAndContinueStoring(false /* success */);
 }
 
 void OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned(
     scoped_ptr<em::PolicyFetchResponse> policy_response) {
   if (!policy_response.get() || !device_settings_service_) {
-    OnSignedPolicyStored(false /* success */);
+    ReportStatusAndContinueStoring(false /* success */);
     return;
   }
   device_settings_service_->Store(
@@ -639,9 +639,16 @@ void OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned(
 }
 
 void OwnerSettingsServiceChromeOS::OnSignedPolicyStored(bool success) {
+  CHECK(device_settings_service_);
+  ReportStatusAndContinueStoring(success &&
+                                 device_settings_service_->status() !=
+                                     DeviceSettingsService::STORE_SUCCESS);
+}
+
+void OwnerSettingsServiceChromeOS::ReportStatusAndContinueStoring(
+    bool success) {
   store_settings_factory_.InvalidateWeakPtrs();
-  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
-                    observers_,
+  FOR_EACH_OBSERVER(OwnerSettingsService::Observer, observers_,
                     OnSignedPolicyStored(success));
   StorePendingChanges();
 }

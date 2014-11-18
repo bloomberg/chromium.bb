@@ -131,15 +131,6 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // load the device settings.
   void Load();
 
-  // Signs |settings| with the private half of the owner key and sends the
-  // resulting policy blob to session manager for storage. The result of the
-  // operation is reported through |callback|. If successful, the updated device
-  // settings are present in policy_data() and device_settings() when the
-  // callback runs.
-  void SignAndStore(
-      scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> new_settings,
-      const base::Closure& callback);
-
   // Sets the management related settings in PolicyData.
   //
   // TODO (ygorshenin@, crbug.com/230018): move this to the
@@ -197,6 +188,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   void EnqueueLoad(bool force_key_load);
 
   // Enqueues a sign and store operation.
+  //
+  // TODO (ygorshenin@, crbug.com/433840): extract SetManagementSettings() out
+  // of DeviceSettingsService and get rid of the method.
   void EnqueueSignAndStore(scoped_ptr<enterprise_management::PolicyData> policy,
                            const base::Closure& callback);
 
