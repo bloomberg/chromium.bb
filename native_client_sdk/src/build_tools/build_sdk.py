@@ -457,7 +457,7 @@ def GypNinjaBuild_NaCl(rel_out_dir):
   out_dir_arm = MakeNinjaRelPath(rel_out_dir + '-arm')
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir)
   GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
-  GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_new', out_dir)
+  GypNinjaBuild(None, gyp_py, all_gyp, 'ncval_new', out_dir)
 
   platform = getos.GetPlatform()
   if platform == 'win':
@@ -488,7 +488,7 @@ def GypNinjaBuild_Breakpad(rel_out_dir):
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'breakpad', 'breakpad.gyp')
   build_list = ['dump_syms', 'minidump_dump', 'minidump_stackwalk']
-  GypNinjaBuild('ia32', gyp_py, gyp_file, build_list, out_dir)
+  GypNinjaBuild(None, gyp_py, gyp_file, build_list, out_dir)
 
 
 def GypNinjaBuild_PPAPI(arch, rel_out_dir):
@@ -519,7 +519,7 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
   gyp_defines = []
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
-  if arch:
+  if arch is not None:
     gyp_defines.append('target_arch=%s' % arch)
     if arch == 'arm':
       if getos.GetPlatform() == 'linux':
