@@ -28,19 +28,23 @@
 #define SchemeRegistry_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
+using URLSchemesSet = HashSet<String, CaseFoldingHash>;
+
+template <typename T>
+using URLSchemesMap = HashMap<String, T, CaseFoldingHash>;
 
 class PLATFORM_EXPORT SchemeRegistry {
 public:
     static void registerURLSchemeAsLocal(const String&);
     static void removeURLSchemeRegisteredAsLocal(const String&);
-    static const URLSchemesMap& localSchemes();
+    static const URLSchemesSet& localSchemes();
 
     static bool shouldTreatURLSchemeAsLocal(const String&);
 
@@ -87,9 +91,18 @@ public:
 
     // Allow resources from some schemes to load on a page, regardless of its
     // Content Security Policy.
-    static void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
+    // This enum should be kept in sync with public/web/WebSecurityPolicy.h.
+    // Enforced in AssertMatchingEnums.cpp.
+    enum PolicyAreas : uint32_t {
+        PolicyAreaNone = 0,
+        PolicyAreaImage = 1 << 0,
+        PolicyAreaStyle = 1 << 1,
+        // Add more policy areas as needed by clients.
+        PolicyAreaAll = ~static_cast<uint32_t>(0),
+    };
+    static void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas = PolicyAreaAll);
     static void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
-    static bool schemeShouldBypassContentSecurityPolicy(const String& scheme);
+    static bool schemeShouldBypassContentSecurityPolicy(const String& scheme, PolicyAreas = PolicyAreaAll);
 };
 
 } // namespace blink

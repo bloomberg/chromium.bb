@@ -928,6 +928,7 @@
       'weborigin/DatabaseIdentifierTest.cpp',
       'weborigin/KURLTest.cpp',
       'weborigin/OriginAccessEntryTest.cpp',
+      'weborigin/SchemeRegistryTest.cpp',
       'weborigin/SecurityOriginTest.cpp',
       'weborigin/SecurityPolicyTest.cpp',
     ],

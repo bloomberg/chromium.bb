@@ -255,6 +255,7 @@ public:
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
+    void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, const Vector<String>& policyAreas);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
 
     TypeConversions* typeConversions() const;

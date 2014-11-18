@@ -1768,6 +1768,19 @@ void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& 
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);
 }
 
+void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, const Vector<String>& policyAreas)
+{
+    uint32_t policyAreasEnum = SchemeRegistry::PolicyAreaNone;
+    for (const auto& policyArea : policyAreas) {
+        if (policyArea == "img")
+            policyAreasEnum |= SchemeRegistry::PolicyAreaImage;
+        else if (policyArea == "style")
+            policyAreasEnum |= SchemeRegistry::PolicyAreaStyle;
+    }
+    SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
+        scheme, static_cast<SchemeRegistry::PolicyAreas>(policyAreasEnum));
+}
+
 void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(scheme);

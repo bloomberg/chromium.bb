@@ -32,9 +32,9 @@
 
 namespace blink {
 
-static URLSchemesMap& localURLSchemes()
+static URLSchemesSet& localURLSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, localSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, localSchemes, ());
 
     if (localSchemes.isEmpty())
         localSchemes.add("file");
@@ -42,15 +42,15 @@ static URLSchemesMap& localURLSchemes()
     return localSchemes;
 }
 
-static URLSchemesMap& displayIsolatedURLSchemes()
+static URLSchemesSet& displayIsolatedURLSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, displayIsolatedSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, displayIsolatedSchemes, ());
     return displayIsolatedSchemes;
 }
 
-static URLSchemesMap& secureSchemes()
+static URLSchemesSet& secureSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, secureSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, secureSchemes, ());
 
     if (secureSchemes.isEmpty()) {
         secureSchemes.add("https");
@@ -62,9 +62,9 @@ static URLSchemesMap& secureSchemes()
     return secureSchemes;
 }
 
-static URLSchemesMap& schemesWithUniqueOrigins()
+static URLSchemesSet& schemesWithUniqueOrigins()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, schemesWithUniqueOrigins, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, schemesWithUniqueOrigins, ());
 
     if (schemesWithUniqueOrigins.isEmpty()) {
         schemesWithUniqueOrigins.add("about");
@@ -77,9 +77,9 @@ static URLSchemesMap& schemesWithUniqueOrigins()
     return schemesWithUniqueOrigins;
 }
 
-static URLSchemesMap& emptyDocumentSchemes()
+static URLSchemesSet& emptyDocumentSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, emptyDocumentSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, emptyDocumentSchemes, ());
 
     if (emptyDocumentSchemes.isEmpty())
         emptyDocumentSchemes.add("about");
@@ -93,9 +93,9 @@ static HashSet<String>& schemesForbiddenFromDomainRelaxation()
     return schemes;
 }
 
-static URLSchemesMap& canDisplayOnlyIfCanRequestSchemes()
+static URLSchemesSet& canDisplayOnlyIfCanRequestSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, canDisplayOnlyIfCanRequestSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, canDisplayOnlyIfCanRequestSchemes, ());
 
     if (canDisplayOnlyIfCanRequestSchemes.isEmpty()) {
         canDisplayOnlyIfCanRequestSchemes.add("blob");
@@ -105,9 +105,9 @@ static URLSchemesMap& canDisplayOnlyIfCanRequestSchemes()
     return canDisplayOnlyIfCanRequestSchemes;
 }
 
-static URLSchemesMap& notAllowingJavascriptURLsSchemes()
+static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, notAllowingJavascriptURLsSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
     return notAllowingJavascriptURLsSchemes;
 }
 
@@ -123,15 +123,15 @@ void SchemeRegistry::removeURLSchemeRegisteredAsLocal(const String& scheme)
     localURLSchemes().remove(scheme);
 }
 
-const URLSchemesMap& SchemeRegistry::localSchemes()
+const URLSchemesSet& SchemeRegistry::localSchemes()
 {
     return localURLSchemes();
 }
 
-static URLSchemesMap& CORSEnabledSchemes()
+static URLSchemesSet& CORSEnabledSchemes()
 {
     // FIXME: http://bugs.webkit.org/show_bug.cgi?id=77160
-    DEFINE_STATIC_LOCAL(URLSchemesMap, CORSEnabledSchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, CORSEnabledSchemes, ());
 
     if (CORSEnabledSchemes.isEmpty()) {
         CORSEnabledSchemes.add("http");
@@ -142,9 +142,9 @@ static URLSchemesMap& CORSEnabledSchemes()
     return CORSEnabledSchemes;
 }
 
-static URLSchemesMap& LegacySchemes()
+static URLSchemesSet& LegacySchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, LegacySchemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesSet, LegacySchemes, ());
 
     if (LegacySchemes.isEmpty()) {
         LegacySchemes.add("ftp");
@@ -154,9 +154,9 @@ static URLSchemesMap& LegacySchemes()
     return LegacySchemes;
 }
 
-static URLSchemesMap& ContentSecurityPolicyBypassingSchemes()
+static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
-    DEFINE_STATIC_LOCAL(URLSchemesMap, schemes, ());
+    DEFINE_STATIC_LOCAL(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
     return schemes;
 }
 
@@ -272,16 +272,14 @@ bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme)
 String SchemeRegistry::listOfCORSEnabledURLSchemes()
 {
     StringBuilder builder;
-    const URLSchemesMap& corsEnabledSchemes = CORSEnabledSchemes();
-
     bool addSeparator = false;
-    for (URLSchemesMap::const_iterator it = corsEnabledSchemes.begin(); it != corsEnabledSchemes.end(); ++it) {
+    for (const auto& scheme : CORSEnabledSchemes()) {
         if (addSeparator)
             builder.appendLiteral(", ");
         else
             addSeparator = true;
 
-        builder.append(*it);
+        builder.append(scheme);
     }
     return builder.toString();
 }
@@ -298,9 +296,9 @@ bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme)
     return LegacySchemes().contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
+void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)
 {
-    ContentSecurityPolicyBypassingSchemes().add(scheme);
+    ContentSecurityPolicyBypassingSchemes().add(scheme, policyAreas);
 }
 
 void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme)
@@ -308,11 +306,15 @@ void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(c
     ContentSecurityPolicyBypassingSchemes().remove(scheme);
 }
 
-bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(const String& scheme)
+bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)
 {
-    if (scheme.isEmpty())
+    ASSERT(policyAreas != PolicyAreaNone);
+    if (scheme.isEmpty() || policyAreas == PolicyAreaNone)
         return false;
-    return ContentSecurityPolicyBypassingSchemes().contains(scheme);
+
+    // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
+    // Thus by default, schemes do not bypass CSP.
+    return (ContentSecurityPolicyBypassingSchemes().get(scheme) & policyAreas) == policyAreas;
 }
 
 } // namespace blink
