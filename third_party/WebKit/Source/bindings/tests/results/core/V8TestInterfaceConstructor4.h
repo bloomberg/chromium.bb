@@ -23,21 +23,17 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceConstructor4* toImpl(v8::Handle<v8::Object> object)
     {
-        return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceConstructor4>();
+        return blink::toScriptWrappable(object)->toImpl<TestInterfaceConstructor4>();
     }
     static TestInterfaceConstructor4* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappableBase*);
-    static void derefObject(ScriptWrappableBase*);
-    static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
+    static void refObject(ScriptWrappable*);
+    static void derefObject(ScriptWrappable*);
+    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
     {
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceConstructor4* impl)
-    {
-        return impl->toScriptWrappableBase();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 };

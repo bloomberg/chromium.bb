@@ -161,14 +161,14 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeC
 
 TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceGarbageCollected>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceGarbageCollected::refObject(ScriptWrappable* scriptWrappable)
 {
 }
 
-void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappable* scriptWrappable)
 {
 }
 

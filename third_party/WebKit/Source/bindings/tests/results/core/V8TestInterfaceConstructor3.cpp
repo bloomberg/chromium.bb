@@ -102,17 +102,17 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor3::findInstanceInPrototypeChain
 
 TestInterfaceConstructor3* V8TestInterfaceConstructor3::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceConstructor3>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterfaceConstructor3::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceConstructor3::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceConstructor3>()->ref();
+    scriptWrappable->toImpl<TestInterfaceConstructor3>()->ref();
 }
 
-void V8TestInterfaceConstructor3::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceConstructor3::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceConstructor3>()->deref();
+    scriptWrappable->toImpl<TestInterfaceConstructor3>()->deref();
 }
 
 template<>

@@ -290,7 +290,7 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
                 ASSERT(wrapper->IsObject());
             }
 #endif
-            m_visitor->visitNode(toScriptWrappableBase(v8::Persistent<v8::Object>::Cast(*value))->toImpl<Node>());
+            m_visitor->visitNode(toScriptWrappable(v8::Persistent<v8::Object>::Cast(*value))->toImpl<Node>());
         }
 
     private:

@@ -30,25 +30,21 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceWillBeGarbageCollected* toImpl(v8::Handle<v8::Object> object)
     {
-        return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceWillBeGarbageCollected>();
+        return blink::toScriptWrappable(object)->toImpl<TestInterfaceWillBeGarbageCollected>();
     }
     static TestInterfaceWillBeGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappableBase*);
-    static void derefObject(ScriptWrappableBase*);
-    static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
+    static void refObject(ScriptWrappable*);
+    static void derefObject(ScriptWrappable*);
+    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
     {
 #if ENABLE(OILPAN)
-        visitor->trace(scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>());
+        visitor->trace(scriptWrappable->toImpl<TestInterfaceWillBeGarbageCollected>());
 #endif
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
-    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceWillBeGarbageCollected* impl)
-    {
-        return impl->toScriptWrappableBase();
-    }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 };

@@ -206,20 +206,20 @@ v8::Handle<v8::Object> V8TestInterfaceWillBeGarbageCollected::findInstanceInProt
 
 TestInterfaceWillBeGarbageCollected* V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceWillBeGarbageCollected>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappable* scriptWrappable)
 {
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>()->ref();
+    scriptWrappable->toImpl<TestInterfaceWillBeGarbageCollected>()->ref();
 #endif
 }
 
-void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappable* scriptWrappable)
 {
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>()->deref();
+    scriptWrappable->toImpl<TestInterfaceWillBeGarbageCollected>()->deref();
 #endif
 }
 

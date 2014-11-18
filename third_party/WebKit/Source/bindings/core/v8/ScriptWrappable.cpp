@@ -10,37 +10,30 @@
 
 namespace blink {
 
-#if COMPILER(MSVC)
-__declspec(align(4))
-#endif
-struct SameSizeAsScriptWrappableBase { };
-
-COMPILE_ASSERT(sizeof(ScriptWrappableBase) <= sizeof(SameSizeAsScriptWrappableBase), ScriptWrappableBase_should_stay_small);
-
-struct SameSizeAsScriptWrappable : public ScriptWrappableBase {
+struct SameSizeAsScriptWrappable {
     virtual ~SameSizeAsScriptWrappable() { }
-    v8::Object* m_wrapper;
+    v8::Persistent<v8::Object> m_wrapper;
 };
 
 COMPILE_ASSERT(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), ScriptWrappable_should_stay_small);
 
 namespace {
 
-class ScriptWrappableBaseProtector final {
-    WTF_MAKE_NONCOPYABLE(ScriptWrappableBaseProtector);
+class ScriptWrappableProtector final {
+    WTF_MAKE_NONCOPYABLE(ScriptWrappableProtector);
 public:
-    ScriptWrappableBaseProtector(ScriptWrappableBase* scriptWrappableBase, const WrapperTypeInfo* wrapperTypeInfo)
-        : m_scriptWrappableBase(scriptWrappableBase), m_wrapperTypeInfo(wrapperTypeInfo)
+    ScriptWrappableProtector(ScriptWrappable* scriptWrappable, const WrapperTypeInfo* wrapperTypeInfo)
+        : m_scriptWrappable(scriptWrappable), m_wrapperTypeInfo(wrapperTypeInfo)
     {
-        m_wrapperTypeInfo->refObject(m_scriptWrappableBase);
+        m_wrapperTypeInfo->refObject(m_scriptWrappable);
     }
-    ~ScriptWrappableBaseProtector()
+    ~ScriptWrappableProtector()
     {
-        m_wrapperTypeInfo->derefObject(m_scriptWrappableBase);
+        m_wrapperTypeInfo->derefObject(m_scriptWrappable);
     }
 
 private:
-    ScriptWrappableBase* m_scriptWrappableBase;
+    ScriptWrappable* m_scriptWrappable;
     const WrapperTypeInfo* m_wrapperTypeInfo;
 };
 
@@ -53,11 +46,11 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
     // object gets associated with the wrapper.
-    ScriptWrappableBaseProtector protect(this, wrapperTypeInfo);
+    ScriptWrappableProtector protect(this, wrapperTypeInfo);
 
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, toScriptWrappableBase());
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 

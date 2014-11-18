@@ -106,20 +106,20 @@ v8::Handle<v8::Object> V8TestInterfaceEventTarget::findInstanceInPrototypeChain(
 
 TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceEventTarget>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterfaceEventTarget::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceEventTarget::refObject(ScriptWrappable* scriptWrappable)
 {
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<TestInterfaceEventTarget>()->ref();
+    scriptWrappable->toImpl<TestInterfaceEventTarget>()->ref();
 #endif
 }
 
-void V8TestInterfaceEventTarget::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceEventTarget::derefObject(ScriptWrappable* scriptWrappable)
 {
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<TestInterfaceEventTarget>()->deref();
+    scriptWrappable->toImpl<TestInterfaceEventTarget>()->deref();
 #endif
 }
 

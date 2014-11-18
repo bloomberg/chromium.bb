@@ -37,9 +37,9 @@ bool V8Uint8ClampedArray::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate
 TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsUint8ClampedArray());
-    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
-    if (scriptWrappableBase)
-        return scriptWrappableBase->toImpl<TestUint8ClampedArray>();
+    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+    if (scriptWrappable)
+        return scriptWrappable->toImpl<TestUint8ClampedArray>();
 
     v8::Handle<v8::Uint8ClampedArray> v8View = object.As<v8::Uint8ClampedArray>();
     RefPtr<TestUint8ClampedArray> typedArray = TestUint8ClampedArray::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->Length());
@@ -53,14 +53,14 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* iso
     return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8Uint8ClampedArray::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8Uint8ClampedArray::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestUint8ClampedArray>()->ref();
+    scriptWrappable->toImpl<TestUint8ClampedArray>()->ref();
 }
 
-void V8Uint8ClampedArray::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8Uint8ClampedArray::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestUint8ClampedArray>()->deref();
+    scriptWrappable->toImpl<TestUint8ClampedArray>()->deref();
 }
 
 template<>

@@ -470,7 +470,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate* isolate, NPObject* 
     if (value.IsEmpty())
         return value;
 
-    V8DOMWrapper::setNativeInfo(value, npObjectTypeInfo(), npObjectToScriptWrappableBase(object));
+    V8DOMWrapper::setNativeInfo(value, npObjectTypeInfo(), npObjectToScriptWrappable(object));
 
     // KJS retains the object as part of its wrapper (see Bindings::CInstance).
     _NPN_RetainObject(object);

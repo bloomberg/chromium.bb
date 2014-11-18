@@ -171,7 +171,7 @@ v8::Handle<v8::Object> V8TestInterfaceNamedConstructor::findInstanceInPrototypeC
 
 TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceNamedConstructor>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
 ActiveDOMObject* V8TestInterfaceNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
@@ -179,14 +179,14 @@ ActiveDOMObject* V8TestInterfaceNamedConstructor::toActiveDOMObject(v8::Handle<v
     return toImpl(wrapper);
 }
 
-void V8TestInterfaceNamedConstructor::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceNamedConstructor::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceNamedConstructor>()->ref();
+    scriptWrappable->toImpl<TestInterfaceNamedConstructor>()->ref();
 }
 
-void V8TestInterfaceNamedConstructor::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceNamedConstructor::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceNamedConstructor>()->deref();
+    scriptWrappable->toImpl<TestInterfaceNamedConstructor>()->deref();
 }
 
 template<>

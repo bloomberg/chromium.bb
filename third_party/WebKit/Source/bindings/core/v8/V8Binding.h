@@ -1135,7 +1135,7 @@ inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::
 // FIXME: This will be soon embedded in the generated code.
 template<class Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    Collection* collection = toScriptWrappableBase(info.Holder())->toImpl<Collection>();
+    Collection* collection = toScriptWrappable(info.Holder())->toImpl<Collection>();
     int length = collection->length();
     v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
     for (int i = 0; i < length; ++i) {

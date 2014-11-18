@@ -413,16 +413,16 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface2V8Internal
 
-void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
+void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
-    TestInterface2* impl = scriptWrappableBase->toImpl<TestInterface2>();
+    TestInterface2* impl = scriptWrappable->toImpl<TestInterface2>();
     // The ownerNode() method may return a reference or a pointer.
     if (Node* owner = WTF::getPtr(impl->ownerNode())) {
         Node* root = V8GCController::opaqueRootForGC(isolate, owner);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
-    setObjectGroup(isolate, scriptWrappableBase, wrapper);
+    setObjectGroup(isolate, scriptWrappable, wrapper);
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
@@ -497,17 +497,17 @@ v8::Handle<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Handle
 
 TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterface2>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterface2::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterface2::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterface2>()->ref();
+    scriptWrappable->toImpl<TestInterface2>()->ref();
 }
 
-void V8TestInterface2::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterface2::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterface2>()->deref();
+    scriptWrappable->toImpl<TestInterface2>()->deref();
 }
 
 template<>

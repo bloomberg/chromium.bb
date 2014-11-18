@@ -39,72 +39,6 @@
 namespace blink {
 
 /**
- * The base class of all wrappable objects.
- *
- * This class provides the internal pointer to be stored in the wrapper objects,
- * and its conversions from / to the DOM instances.
- *
- * Note that this class must not have vtbl (any virtual function) or any member
- * variable which increase the size of instances. Some of the classes sensitive
- * to the size inherit from this class. So this class must be zero size.
- */
-#if COMPILER(MSVC)
-// VC++ 2013 doesn't support EBCO (Empty Base Class Optimization). It causes
-// that not always pointers to an empty base class are aligned to 4 byte
-// alignment. For example,
-//
-//   class EmptyBase1 {};
-//   class EmptyBase2 {};
-//   class Derived : public EmptyBase1, public EmptyBase2 {};
-//   Derived d;
-//   // &d                           == 0x1000
-//   // static_cast<EmptyBase1*>(&d) == 0x1000
-//   // static_cast<EmptyBase2*>(&d) == 0x1001  // Not 4 byte alignment!
-//
-// This doesn't happen with other compilers which support EBCO. All the
-// addresses in the above example will be 0x1000 with EBCO supported.
-//
-// Since v8::Object::SetAlignedPointerInInternalField requires the pointers to
-// be aligned, we need a hack to specify at least 4 byte alignment to MSVC.
-__declspec(align(4))
-#endif
-class ScriptWrappableBase {
-    WTF_MAKE_NONCOPYABLE(ScriptWrappableBase);
-    friend class ScriptWrappable;
-public:
-    template<typename T>
-    T* toImpl()
-    {
-        // Check if T* is castable to ScriptWrappableBase*, which means T
-        // doesn't have two or more ScriptWrappableBase as superclasses.
-        // If T has two ScriptWrappableBase as superclasses, conversions
-        // from T* to ScriptWrappableBase* are ambiguous.
-        ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(this)));
-        // The internal pointers must be aligned to at least 4 byte alignment.
-        ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
-        return static_cast<T*>(this);
-    }
-    ScriptWrappableBase* toScriptWrappableBase()
-    {
-        ASSERT(this);
-        // The internal pointers must be aligned to at least 4 byte alignment.
-        ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
-        return this;
-    }
-
-    void assertWrapperSanity(v8::Local<v8::Object> object)
-    {
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
-            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == toScriptWrappableBase());
-    }
-
-private:
-    // Do not allow DOM classes to inherit directly from ScriptWrappableBase.
-    // DOM classes must inherit from ScriptWrappable instead.
-    ScriptWrappableBase() { }
-};
-
-/**
  * ScriptWrappable wraps a V8 object and its WrapperTypeInfo.
  *
  * ScriptWrappable acts much like a v8::Persistent<> in that it keeps a
@@ -116,9 +50,21 @@ private:
  *  - disposeWrapper (via setWeakCallback, triggered by V8 garbage collecter):
  *        remove v8::Persistent and become empty.
  */
-class ScriptWrappable : public ScriptWrappableBase {
+class ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(ScriptWrappable);
 public:
     ScriptWrappable() { }
+
+    template<typename T>
+    T* toImpl()
+    {
+        // Check if T* is castable to ScriptWrappable*, which means T doesn't
+        // have two or more ScriptWrappable as superclasses. If T has two
+        // ScriptWrappable as superclasses, conversions from T* to
+        // ScriptWrappable* are ambiguous.
+        ASSERT(static_cast<ScriptWrappable*>(static_cast<T*>(this)));
+        return static_cast<T*>(this);
+    }
 
     // Returns the WrapperTypeInfo of the instance.
     //
@@ -192,6 +138,12 @@ public:
     }
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
+
+    void assertWrapperSanity(v8::Local<v8::Object> object)
+    {
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
+            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == this);
+    }
 
 #if !ENABLE(OILPAN)
 protected:

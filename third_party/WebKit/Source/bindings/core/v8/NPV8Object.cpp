@@ -48,15 +48,15 @@
 
 using namespace blink;
 
+namespace blink {
+
 namespace {
 
-void trace(Visitor*, ScriptWrappableBase*)
+void trace(Visitor*, ScriptWrappable*)
 {
 }
 
 } // namespace
-
-namespace blink {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
@@ -120,16 +120,13 @@ static v8::Local<v8::String> npIdentifierToV8Identifier(v8::Isolate* isolate, NP
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
 {
-    return reinterpret_cast<NPObject*>(toScriptWrappableBase(object));
+    return getInternalField<NPObject, v8DOMWrapperObjectIndex>(object);
 }
 
 bool isWrappedNPObject(v8::Handle<v8::Object> object)
 {
-    if (object->InternalFieldCount() == npObjectInternalFieldCount) {
-        const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
-        return typeInfo == npObjectTypeInfo();
-    }
-    return false;
+    return object->InternalFieldCount() == npObjectInternalFieldCount
+        && toWrapperTypeInfo(object) == npObjectTypeInfo();
 }
 
 NPObject* npCreateV8ScriptObject(v8::Isolate* isolate, NPP npp, v8::Handle<v8::Object> object, LocalDOMWindow* root)
@@ -185,9 +182,9 @@ V8NPObject* npObjectToV8NPObject(NPObject* npObject)
     return v8NpObject;
 }
 
-ScriptWrappableBase* npObjectToScriptWrappableBase(NPObject* npObject)
+ScriptWrappable* npObjectToScriptWrappable(NPObject* npObject)
 {
-    return reinterpret_cast<ScriptWrappableBase*>(npObject);
+    return reinterpret_cast<ScriptWrappable*>(npObject);
 }
 
 void disposeUnderlyingV8Object(v8::Isolate* isolate, NPObject* npObject)

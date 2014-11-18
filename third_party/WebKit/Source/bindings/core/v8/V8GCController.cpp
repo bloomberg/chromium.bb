@@ -285,7 +285,7 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == WrapperTypeInfo::ObjectClassId) {
-            type->visitDOMWrapper(m_isolate, toScriptWrappableBase(*wrapper), v8::Persistent<v8::Object>::Cast(*value));
+            type->visitDOMWrapper(m_isolate, toScriptWrappable(*wrapper), v8::Persistent<v8::Object>::Cast(*value));
         } else {
             ASSERT_NOT_REACHED();
         }
@@ -495,7 +495,7 @@ public:
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
         if (m_visitor)
-            toWrapperTypeInfo(*wrapper)->trace(m_visitor, toScriptWrappableBase(*wrapper));
+            toWrapperTypeInfo(*wrapper)->trace(m_visitor, toScriptWrappable(*wrapper));
     }
 
 private:

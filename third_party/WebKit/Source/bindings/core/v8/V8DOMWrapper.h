@@ -45,22 +45,22 @@ struct WrapperTypeInfo;
 
 class V8DOMWrapper {
 public:
-    static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase*);
+    static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappable*);
 
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, Node*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
-    static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase*);
+    static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappable*);
     static void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
     static bool isDOMWrapper(v8::Handle<v8::Value>);
 };
 
-inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* scriptWrappableBase)
+inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappable* scriptWrappable)
 {
     ASSERT(wrapper->InternalFieldCount() >= 2);
-    ASSERT(scriptWrappableBase);
+    ASSERT(scriptWrappable);
     ASSERT(wrapperTypeInfo);
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, scriptWrappableBase);
+    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, scriptWrappable);
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
 }
 
@@ -76,8 +76,8 @@ inline void V8DOMWrapper::clearNativeInfo(v8::Handle<v8::Object> wrapper, const 
 
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolate* isolate, ScriptWrappable* impl, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
 {
-    wrapperTypeInfo->refObject(impl->toScriptWrappableBase());
-    setNativeInfo(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase());
+    wrapperTypeInfo->refObject(impl);
+    setNativeInfo(wrapper, wrapperTypeInfo, impl);
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper(impl, wrapper, isolate, wrapperTypeInfo);
     return wrapper;
@@ -85,8 +85,8 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isola
 
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolate* isolate, Node* node, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
 {
-    wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node)->toScriptWrappableBase());
-    setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node)->toScriptWrappableBase());
+    wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node));
+    setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node));
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper(node, wrapper, isolate, wrapperTypeInfo);
     return wrapper;

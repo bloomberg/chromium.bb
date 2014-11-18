@@ -107,17 +107,17 @@ v8::Handle<v8::Object> V8TestSpecialOperationsNotEnumerable::findInstanceInProto
 
 TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestSpecialOperationsNotEnumerable>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestSpecialOperationsNotEnumerable::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestSpecialOperationsNotEnumerable::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestSpecialOperationsNotEnumerable>()->ref();
+    scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>()->ref();
 }
 
-void V8TestSpecialOperationsNotEnumerable::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestSpecialOperationsNotEnumerable::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestSpecialOperationsNotEnumerable>()->deref();
+    scriptWrappable->toImpl<TestSpecialOperationsNotEnumerable>()->deref();
 }
 
 template<>

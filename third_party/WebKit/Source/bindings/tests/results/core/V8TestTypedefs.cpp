@@ -344,17 +344,17 @@ v8::Handle<v8::Object> V8TestTypedefs::findInstanceInPrototypeChain(v8::Handle<v
 
 TestTypedefs* V8TestTypedefs::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestTypedefs>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestTypedefs::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestTypedefs::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestTypedefs>()->ref();
+    scriptWrappable->toImpl<TestTypedefs>()->ref();
 }
 
-void V8TestTypedefs::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestTypedefs::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestTypedefs>()->deref();
+    scriptWrappable->toImpl<TestTypedefs>()->deref();
 }
 
 template<>

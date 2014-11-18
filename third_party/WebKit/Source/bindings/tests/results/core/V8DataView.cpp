@@ -36,9 +36,9 @@ bool V8DataView::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate
 TestDataView* V8DataView::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsDataView());
-    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
-    if (scriptWrappableBase)
-        return scriptWrappableBase->toImpl<TestDataView>();
+    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+    if (scriptWrappable)
+        return scriptWrappable->toImpl<TestDataView>();
 
     v8::Handle<v8::DataView> v8View = object.As<v8::DataView>();
     RefPtr<TestDataView> typedArray = TestDataView::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->ByteLength());
@@ -52,14 +52,14 @@ TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v
     return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8DataView::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8DataView::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestDataView>()->ref();
+    scriptWrappable->toImpl<TestDataView>()->ref();
 }
 
-void V8DataView::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8DataView::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestDataView>()->deref();
+    scriptWrappable->toImpl<TestDataView>()->deref();
 }
 
 template<>

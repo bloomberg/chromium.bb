@@ -46,9 +46,9 @@ bool V8ArrayBufferView::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* 
 TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());
-    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
-    if (scriptWrappableBase)
-        return scriptWrappableBase->toImpl<TestArrayBufferView>();
+    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+    if (scriptWrappable)
+        return scriptWrappable->toImpl<TestArrayBufferView>();
 
     if (object->IsInt8Array())
         return V8Int8Array::toImpl(object);
@@ -80,14 +80,14 @@ TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate
     return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8ArrayBufferView::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8ArrayBufferView::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestArrayBufferView>()->ref();
+    scriptWrappable->toImpl<TestArrayBufferView>()->ref();
 }
 
-void V8ArrayBufferView::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8ArrayBufferView::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestArrayBufferView>()->deref();
+    scriptWrappable->toImpl<TestArrayBufferView>()->deref();
 }
 
 template<>

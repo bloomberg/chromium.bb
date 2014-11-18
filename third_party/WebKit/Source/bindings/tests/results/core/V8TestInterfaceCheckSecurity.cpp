@@ -520,17 +520,17 @@ v8::Handle<v8::Object> V8TestInterfaceCheckSecurity::findInstanceInPrototypeChai
 
 TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceCheckSecurity>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterfaceCheckSecurity::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceCheckSecurity::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceCheckSecurity>()->ref();
+    scriptWrappable->toImpl<TestInterfaceCheckSecurity>()->ref();
 }
 
-void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestInterfaceCheckSecurity>()->deref();
+    scriptWrappable->toImpl<TestInterfaceCheckSecurity>()->deref();
 }
 
 template<>

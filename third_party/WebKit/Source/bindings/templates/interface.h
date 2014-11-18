@@ -50,7 +50,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
     {
-        return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
+        return blink::toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
     {% endif %}
     static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
@@ -59,20 +59,20 @@ public:
     {% else %}
     static const WrapperTypeInfo wrapperTypeInfo;
     {% endif %}
-    static void refObject(ScriptWrappableBase*);
-    static void derefObject(ScriptWrappableBase*);
-    static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
+    static void refObject(ScriptWrappable*);
+    static void derefObject(ScriptWrappable*);
+    static void trace(Visitor* visitor, ScriptWrappable* scriptWrappable)
     {
         {% if gc_type == 'GarbageCollectedObject' %}
-        visitor->trace(scriptWrappableBase->toImpl<{{cpp_class}}>());
+        visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());
         {% elif gc_type == 'WillBeGarbageCollectedObject' %}
 #if ENABLE(OILPAN)
-        visitor->trace(scriptWrappableBase->toImpl<{{cpp_class}}>());
+        visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());
 #endif
         {% endif %}
     }
     {% if has_visit_dom_wrapper %}
-    static void visitDOMWrapper(v8::Isolate*, ScriptWrappableBase*, const v8::Persistent<v8::Object>&);
+    static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
     {% endif %}
     {% if is_active_dom_object %}
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
@@ -150,10 +150,6 @@ public:
        * a C++ pointer to the DOM object (if the object is not in oilpan) #}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {# End custom internal fields #}
-    static inline ScriptWrappableBase* toScriptWrappableBase({{cpp_class}}* impl)
-    {
-        return impl->toScriptWrappableBase();
-    }
     {% if interface_name == 'Window' %}
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
     static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);

@@ -41,7 +41,7 @@
 namespace blink {
 
 class LocalDOMWindow;
-class ScriptWrappableBase;
+class ScriptWrappable;
 
 static const int npObjectInternalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 
@@ -74,7 +74,7 @@ bool isWrappedNPObject(v8::Handle<v8::Object>);
 
 V8NPObject* npObjectToV8NPObject(NPObject*);
 
-ScriptWrappableBase* npObjectToScriptWrappableBase(NPObject*);
+ScriptWrappable* npObjectToScriptWrappable(NPObject*);
 
 void disposeUnderlyingV8Object(v8::Isolate*, NPObject*);
 

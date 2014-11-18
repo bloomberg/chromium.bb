@@ -3286,7 +3286,7 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
         return ContainerNode::wrap(creationContext, isolate);
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, toScriptWrappableBase());
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
 

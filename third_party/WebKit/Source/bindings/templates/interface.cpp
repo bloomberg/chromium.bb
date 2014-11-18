@@ -568,9 +568,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% block visit_dom_wrapper %}
 {% if reachable_node_function or set_wrapper_reference_to_list %}
-void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
+void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
-    {{cpp_class}}* impl = scriptWrappableBase->toImpl<{{cpp_class}}>();
+    {{cpp_class}}* impl = scriptWrappable->toImpl<{{cpp_class}}>();
     {% if set_wrapper_reference_to_list %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
@@ -591,7 +591,7 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* sc
         return;
     }
     {% endif %}
-    setObjectGroup(isolate, scriptWrappableBase, wrapper);
+    setObjectGroup(isolate, scriptWrappable, wrapper);
 }
 
 {% endif %}
@@ -774,7 +774,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
         const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
         RELEASE_ASSERT(wrapperTypeInfo);
         RELEASE_ASSERT(wrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink);
-        return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
+        return toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
 
     // Transfer the ownership of the allocated memory to an ArrayBuffer without
@@ -788,16 +788,16 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
         DOMArrayBufferDeallocationObserver::instance());
     buffer->associateWithWrapper(buffer->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
 
-    return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
+    return buffer.get();
 }
 
 {% elif interface_name == 'ArrayBufferView' %}
 {{cpp_class}}* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());
-    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
-    if (scriptWrappableBase)
-        return scriptWrappableBase->toImpl<{{cpp_class}}>();
+    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+    if (scriptWrappable)
+        return scriptWrappable->toImpl<{{cpp_class}}>();
 
     if (object->IsInt8Array())
         return V8Int8Array::toImpl(object);
@@ -828,9 +828,9 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {{cpp_class}}* {{v8_class}}::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->Is{{interface_name}}());
-    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
-    if (scriptWrappableBase)
-        return scriptWrappableBase->toImpl<{{cpp_class}}>();
+    ScriptWrappable* scriptWrappable = toScriptWrappable(object);
+    if (scriptWrappable)
+        return scriptWrappable->toImpl<{{cpp_class}}>();
 
     v8::Handle<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
     RefPtr<{{cpp_class}}> typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
@@ -847,11 +847,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {% block to_impl_with_type_check %}
 {{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    {% if is_array_buffer_or_view %}
     return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
-    {% else %}
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<{{cpp_class}}>() : 0;
-    {% endif %}
 }
 
 {% endblock %}
@@ -927,25 +923,25 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
 
 {##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
-void {{v8_class}}::refObject(ScriptWrappableBase* scriptWrappableBase)
+void {{v8_class}}::refObject(ScriptWrappable* scriptWrappable)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<{{cpp_class}}>()->ref();
+    scriptWrappable->toImpl<{{cpp_class}}>()->ref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    scriptWrappableBase->toImpl<{{cpp_class}}>()->ref();
+    scriptWrappable->toImpl<{{cpp_class}}>()->ref();
 {% endif %}
 }
 
-void {{v8_class}}::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void {{v8_class}}::derefObject(ScriptWrappable* scriptWrappable)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    scriptWrappableBase->toImpl<{{cpp_class}}>()->deref();
+    scriptWrappable->toImpl<{{cpp_class}}>()->deref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    scriptWrappableBase->toImpl<{{cpp_class}}>()->deref();
+    scriptWrappable->toImpl<{{cpp_class}}>()->deref();
 {% endif %}
 }
 

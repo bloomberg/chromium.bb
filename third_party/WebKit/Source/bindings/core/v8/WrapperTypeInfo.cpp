@@ -13,7 +13,7 @@ EventTarget* WrapperTypeInfo::toEventTarget(v8::Handle<v8::Object> object) const
 {
     if (eventTargetInheritance == NotInheritFromEventTarget)
         return 0;
-    return static_cast<EventTarget*>(blink::toScriptWrappableBase(object));
+    return static_cast<EventTarget*>(toScriptWrappable(object));
 }
 
 } // namespace blink

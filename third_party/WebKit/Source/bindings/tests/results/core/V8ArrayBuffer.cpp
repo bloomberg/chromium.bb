@@ -42,7 +42,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
         const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
         RELEASE_ASSERT(wrapperTypeInfo);
         RELEASE_ASSERT(wrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink);
-        return blink::toScriptWrappableBase(object)->toImpl<TestArrayBuffer>();
+        return toScriptWrappable(object)->toImpl<TestArrayBuffer>();
     }
 
     // Transfer the ownership of the allocated memory to an ArrayBuffer without
@@ -56,7 +56,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
         DOMArrayBufferDeallocationObserver::instance());
     buffer->associateWithWrapper(buffer->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
 
-    return blink::toScriptWrappableBase(object)->toImpl<TestArrayBuffer>();
+    return buffer.get();
 }
 
 TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
@@ -64,14 +64,14 @@ TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Ha
     return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8ArrayBuffer::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8ArrayBuffer::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestArrayBuffer>()->ref();
+    scriptWrappable->toImpl<TestArrayBuffer>()->ref();
 }
 
-void V8ArrayBuffer::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8ArrayBuffer::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestArrayBuffer>()->deref();
+    scriptWrappable->toImpl<TestArrayBuffer>()->deref();
 }
 
 template<>

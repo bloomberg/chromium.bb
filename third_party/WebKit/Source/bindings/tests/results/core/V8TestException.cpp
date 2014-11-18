@@ -121,17 +121,17 @@ v8::Handle<v8::Object> V8TestException::findInstanceInPrototypeChain(v8::Handle<
 
 TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestException>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestException::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestException::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestException>()->ref();
+    scriptWrappable->toImpl<TestException>()->ref();
 }
 
-void V8TestException::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestException::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestException>()->deref();
+    scriptWrappable->toImpl<TestException>()->deref();
 }
 
 template<>

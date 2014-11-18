@@ -11029,7 +11029,7 @@ v8::Handle<v8::Object> V8TestObject::findInstanceInPrototypeChain(v8::Handle<v8:
 
 TestObject* V8TestObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestObject>() : 0;
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
 void V8TestObject::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceObject, v8::Isolate* isolate)
@@ -11060,14 +11060,14 @@ void V8TestObject::installConditionallyEnabledMethods(v8::Handle<v8::Object> pro
     }
 }
 
-void V8TestObject::refObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestObject::refObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestObject>()->ref();
+    scriptWrappable->toImpl<TestObject>()->ref();
 }
 
-void V8TestObject::derefObject(ScriptWrappableBase* scriptWrappableBase)
+void V8TestObject::derefObject(ScriptWrappable* scriptWrappable)
 {
-    scriptWrappableBase->toImpl<TestObject>()->deref();
+    scriptWrappable->toImpl<TestObject>()->deref();
 }
 
 template<>
