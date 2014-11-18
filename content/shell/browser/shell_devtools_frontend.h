@@ -39,7 +39,6 @@ class ShellDevToolsFrontend : public WebContentsObserver,
  private:
   // WebContentsObserver overrides
   void RenderViewCreated(RenderViewHost* render_view_host) override;
-  void DocumentOnLoadCompletedInMainFrame() override;
   void WebContentsDestroyed() override;
 
   // content::DevToolsFrontendHost::Delegate implementation.

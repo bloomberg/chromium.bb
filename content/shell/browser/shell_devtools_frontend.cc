@@ -82,11 +82,6 @@ void ShellDevToolsFrontend::RenderViewCreated(
   }
 }
 
-void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
-  web_contents()->GetMainFrame()->ExecuteJavaScript(
-      base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
-}
-
 void ShellDevToolsFrontend::WebContentsDestroyed() {
   agent_host_->DetachClient();
   delete this;
@@ -95,28 +90,29 @@ void ShellDevToolsFrontend::WebContentsDestroyed() {
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   std::string method;
-  std::string browser_message;
   int id = 0;
-
   base::ListValue* params = NULL;
   base::DictionaryValue* dict = NULL;
   scoped_ptr<base::Value> parsed_message(base::JSONReader::Read(message));
   if (!parsed_message ||
       !parsed_message->GetAsDictionary(&dict) ||
-      !dict->GetString("method", &method) ||
-      !dict->GetList("params", &params)) {
+      !dict->GetString("method", &method)) {
+    return;
+  }
+  dict->GetList("params", &params);
+
+  std::string browser_message;
+  if (method == "sendMessageToBrowser" && params &&
+      params->GetSize() == 1 && params->GetString(0, &browser_message)) {
+    agent_host_->DispatchProtocolMessage(browser_message);
+  } else if (method == "loadCompleted") {
+    web_contents()->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
+  } else {
     return;
   }
 
-  if (method != "sendMessageToBrowser" ||
-      params->GetSize() != 1 ||
-      !params->GetString(0, &browser_message)) {
-    return;
-  }
   dict->GetInteger("id", &id);
-
-  agent_host_->DispatchProtocolMessage(browser_message);
-
   if (id) {
     std::string code = "InspectorFrontendAPI.embedderMessageAck(" +
         base::IntToString(id) + ",\"\");";
