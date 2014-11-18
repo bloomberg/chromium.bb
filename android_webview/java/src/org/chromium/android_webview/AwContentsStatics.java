@@ -81,6 +81,10 @@ public class AwContentsStatics {
         nativeRegisterCrashHandler(version);
     }
 
+    public static void setLegacyCacheRemovalDelayForTest(long timeoutMs) {
+        nativeSetLegacyCacheRemovalDelayForTest(timeoutMs);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -90,4 +94,5 @@ public class AwContentsStatics {
     private static native String nativeGetUnreachableWebDataUrl();
     private static native void nativeSetRecordFullDocument(boolean recordFullDocument);
     private static native void nativeRegisterCrashHandler(String version);
+    private static native void nativeSetLegacyCacheRemovalDelayForTest(long timeoutMs);
 }

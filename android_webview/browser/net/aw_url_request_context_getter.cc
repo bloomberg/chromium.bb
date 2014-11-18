@@ -175,10 +175,10 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
-    const base::FilePath& partition_path, net::CookieStore* cookie_store,
+    const base::FilePath& cache_path, net::CookieStore* cookie_store,
     scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
         config_service)
-    : partition_path_(partition_path),
+    : cache_path_(cache_path),
       cookie_store_(cookie_store),
       net_log_(new net::NetLog()) {
   data_reduction_proxy_config_service_ = config_service.Pass();
@@ -226,7 +226,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
           net::CACHE_BACKEND_SIMPLE,
-          partition_path_.Append(FILE_PATH_LITERAL("Cache")),
+          cache_path_,
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
 

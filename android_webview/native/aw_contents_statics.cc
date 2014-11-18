@@ -96,6 +96,11 @@ void RegisterCrashHandler(JNIEnv* env, jclass, jstring version) {
       ConvertJavaStringToUTF8(env, version));
 }
 
+// static
+void SetLegacyCacheRemovalDelayForTest(JNIEnv*, jclass, jlong delay_ms) {
+  AwBrowserContext::SetLegacyCacheRemovalDelayForTest(delay_ms);
+}
+
 bool RegisterAwContentsStatics(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

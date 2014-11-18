@@ -11,7 +11,9 @@
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "base/base_paths_android.h"
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
@@ -43,12 +45,23 @@ namespace {
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
+void DeleteDirRecursively(const base::FilePath& path) {
+  if (!base::DeleteFile(path, true)) {
+    // Deleting a non-existent file is considered successful, so this will
+    // trigger only in case of real errors.
+    LOG(WARNING) << "Failed to delete " << path.AsUTF8Unsafe();
+  }
+}
+
 AwBrowserContext* g_browser_context = NULL;
 
 }  // namespace
 
 // Data reduction proxy is disabled by default.
 bool AwBrowserContext::data_reduction_proxy_enabled_ = false;
+
+// Delete the legacy cache dir (in the app data dir) in 10 seconds after init.
+int AwBrowserContext::legacy_cache_removal_delay_ms_ = 10000;
 
 AwBrowserContext::AwBrowserContext(
     const FilePath path,
@@ -102,6 +115,11 @@ void AwBrowserContext::SetDataReductionProxyEnabled(bool enabled) {
   proxy_settings->SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);
 }
 
+// static
+void AwBrowserContext::SetLegacyCacheRemovalDelayForTest(int delay_ms) {
+  legacy_cache_removal_delay_ms_ = delay_ms;
+}
+
 void AwBrowserContext::PreMainMessageLoopRun() {
   cookie_store_ = CreateCookieStore(this);
   data_reduction_proxy_settings_.reset(
@@ -127,8 +145,24 @@ void AwBrowserContext::PreMainMessageLoopRun() {
         data_reduction_proxy_configurator_.get());
   }
 
+  FilePath cache_path;
+  const FilePath fallback_cache_dir =
+      GetPath().Append(FILE_PATH_LITERAL("Cache"));
+  if (PathService::Get(base::DIR_CACHE, &cache_path)) {
+    cache_path = cache_path.Append(
+        FILE_PATH_LITERAL("org.chromium.android_webview"));
+    // Delay the legacy dir removal to not impact startup performance.
+    BrowserThread::PostDelayedTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DeleteDirRecursively, fallback_cache_dir),
+        base::TimeDelta::FromMilliseconds(legacy_cache_removal_delay_ms_));
+  } else {
+    cache_path = fallback_cache_dir;
+    LOG(WARNING) << "Failed to get cache directory for Android WebView. "
+                 << "Using app data directory as a fallback.";
+  }
   url_request_context_getter_ =
-      new AwURLRequestContextGetter(GetPath(),
+      new AwURLRequestContextGetter(cache_path,
                                     cookie_store_.get(),
                                     data_reduction_proxy_config_service.Pass());
 

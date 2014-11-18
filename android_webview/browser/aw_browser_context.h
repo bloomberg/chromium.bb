@@ -65,6 +65,7 @@ class AwBrowserContext : public content::BrowserContext,
       content::WebContents* web_contents);
 
   static void SetDataReductionProxyEnabled(bool enabled);
+  static void SetLegacyCacheRemovalDelayForTest(int delay_ms);
 
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun();
@@ -121,6 +122,10 @@ class AwBrowserContext : public content::BrowserContext,
  private:
   void CreateDataReductionProxyStatisticsIfNecessary();
   static bool data_reduction_proxy_enabled_;
+
+  // Delay, in milliseconds, before removing the legacy cache dir.
+  // This is non-const for testing purposes.
+  static int legacy_cache_removal_delay_ms_;
 
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;
