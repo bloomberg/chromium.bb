@@ -7,8 +7,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
@@ -23,62 +21,26 @@ namespace {
 
 const char kNetworkingPrivateSequenceTokenName[] = "NetworkingPrivate";
 
-bool GetVerificationCredentials(
-    const NetworkingPrivateDelegate::VerificationProperties& properties,
-    NetworkingPrivateServiceClient::CryptoVerify::Credentials* credentials) {
-  std::vector<std::string> data_parts;
-  data_parts.push_back(properties.device_ssid);
-  data_parts.push_back(properties.device_serial);
-  data_parts.push_back(properties.device_bssid);
-  data_parts.push_back(properties.public_key);
-  data_parts.push_back(properties.nonce);
-  credentials->unsigned_data = JoinString(data_parts, ",");
-  if (!base::Base64Decode(properties.signed_data, &credentials->signed_data)) {
-    LOG(ERROR) << "Failed to decode signed data: " << properties.signed_data;
-    return false;
-  }
-  credentials->certificate = properties.certificate;
-  credentials->device_bssid = properties.device_bssid;
-  if (!base::Base64Decode(properties.public_key, &credentials->public_key)) {
-    LOG(ERROR) << "Failed to decode public key";
-    return false;
-  }
-  return true;
-}
-
-// Deletes WiFiService and CryptoVerify objects on worker thread.
-void ShutdownServicesOnWorkerThread(
-    scoped_ptr<wifi::WiFiService> wifi_service,
-    scoped_ptr<NetworkingPrivateServiceClient::CryptoVerify> crypto_verify) {
+// Deletes WiFiService object on the worker thread.
+void ShutdownWifiServiceOnWorkerThread(
+    scoped_ptr<wifi::WiFiService> wifi_service) {
   DCHECK(wifi_service.get());
-  DCHECK(crypto_verify.get());
-}
-
-// Forwards call back from VerifyAndEncryptCredentials on random thread to
-// |callback| on correct |callback_loop_proxy|.
-void AfterVerifyAndEncryptCredentialsRelay(
-    const NetworkingPrivateServiceClient::CryptoVerify::
-        VerifyAndEncryptCredentialsCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> callback_loop_proxy,
-    const std::string& key_data,
-    const std::string& error) {
-  callback_loop_proxy->PostTask(FROM_HERE,
-                                base::Bind(callback, key_data, error));
 }
 
 }  // namespace
 
-NetworkingPrivateServiceClient::CryptoVerify::CryptoVerify() {}
-NetworkingPrivateServiceClient::CryptoVerify::~CryptoVerify() {}
+NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {
+}
 
-NetworkingPrivateServiceClient::CryptoVerify::Credentials::Credentials() {}
-NetworkingPrivateServiceClient::CryptoVerify::Credentials::~Credentials() {}
+NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
+}
+
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
-    wifi::WiFiService* wifi_service,
-    CryptoVerify* crypto_verify)
-    : crypto_verify_(crypto_verify),
-      wifi_service_(wifi_service),
+    scoped_ptr<wifi::WiFiService> wifi_service,
+    scoped_ptr<VerifyDelegate> verify_delegate)
+    : NetworkingPrivateDelegate(verify_delegate.Pass()),
+      wifi_service_(wifi_service.Pass()),
       weak_factory_(this) {
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(kNetworkingPrivateSequenceTokenName);
@@ -109,28 +71,22 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
 }
 
 NetworkingPrivateServiceClient::~NetworkingPrivateServiceClient() {
-  // Verify that these objects were passed to ShutdownServicesOnWorkerThread to
+  // Verify that wifi_service was passed to ShutdownWifiServiceOnWorkerThread to
   // be deleted after completion of all posted tasks.
   DCHECK(!wifi_service_.get());
-  DCHECK(!crypto_verify_.get());
 }
-
-NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {}
-
-NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {}
 
 void NetworkingPrivateServiceClient::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   // Clear callbacks map to release callbacks from UI thread.
   callbacks_map_.Clear();
-  // Post ShutdownServicesOnWorkerThread task to delete services when all posted
-  // tasks are done.
+  // Post ShutdownWifiServiceOnWorkerThread task to delete services when all
+  // posted tasks are done.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ShutdownServicesOnWorkerThread,
-                 base::Passed(&wifi_service_),
-                 base::Passed(&crypto_verify_)));
+      base::Bind(&ShutdownWifiServiceOnWorkerThread,
+                 base::Passed(&wifi_service_)));
 }
 
 void NetworkingPrivateServiceClient::AddObserver(Observer* observer) {
@@ -368,116 +324,6 @@ void NetworkingPrivateServiceClient::StartDisconnect(
                  base::Owned(error)));
 }
 
-void NetworkingPrivateServiceClient::VerifyDestination(
-    const VerificationProperties& verification_properties,
-    const BoolCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!crypto_verify_) {
-    failure_callback.Run(networking_private::kErrorNotSupported);
-    return;
-  }
-
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->verify_destination_callback = success_callback;
-
-  CryptoVerify::Credentials credentials;
-  if (!GetVerificationCredentials(verification_properties, &credentials)) {
-    failure_callback.Run(networking_private::kErrorEncryptionError);
-    return;
-  }
-
-  bool* result = new bool;
-  std::string* error = new std::string;
-
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&CryptoVerify::VerifyDestination,
-                 base::Unretained(crypto_verify_.get()),
-                 credentials,
-                 result,
-                 error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterVerifyDestination,
-                 weak_factory_.GetWeakPtr(),
-                 service_callbacks->id,
-                 base::Owned(result),
-                 base::Owned(error)));
-}
-
-void NetworkingPrivateServiceClient::VerifyAndEncryptCredentials(
-    const std::string& guid,
-    const VerificationProperties& verification_properties,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!crypto_verify_) {
-    failure_callback.Run(networking_private::kErrorNotSupported);
-    return;
-  }
-
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->verify_and_encrypt_credentials_callback = success_callback;
-
-  CryptoVerify::Credentials credentials;
-  if (!GetVerificationCredentials(verification_properties, &credentials)) {
-    failure_callback.Run(networking_private::kErrorEncryptionError);
-    return;
-  }
-
-  CryptoVerify::VerifyAndEncryptCredentialsCallback callback_relay(base::Bind(
-      &AfterVerifyAndEncryptCredentialsRelay,
-      base::Bind(
-          &NetworkingPrivateServiceClient::AfterVerifyAndEncryptCredentials,
-          weak_factory_.GetWeakPtr(),
-          service_callbacks->id),
-      base::MessageLoopProxy::current()));
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&CryptoVerify::VerifyAndEncryptCredentials,
-                                    base::Unretained(crypto_verify_.get()),
-                                    guid,
-                                    credentials,
-                                    callback_relay));
-}
-
-void NetworkingPrivateServiceClient::VerifyAndEncryptData(
-    const VerificationProperties& verification_properties,
-    const std::string& data,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!crypto_verify_) {
-    failure_callback.Run(networking_private::kErrorNotSupported);
-    return;
-  }
-
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->verify_and_encrypt_data_callback = success_callback;
-
-  CryptoVerify::Credentials credentials;
-  if (!GetVerificationCredentials(verification_properties, &credentials)) {
-    failure_callback.Run(networking_private::kErrorEncryptionError);
-    return;
-  }
-
-  std::string* result = new std::string;
-  std::string* error = new std::string;
-
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&CryptoVerify::VerifyAndEncryptData,
-                 base::Unretained(crypto_verify_.get()),
-                 credentials,
-                 data,
-                 result,
-                 error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterVerifyAndEncryptData,
-                 weak_factory_.GetWeakPtr(),
-                 service_callbacks->id,
-                 base::Owned(result),
-                 base::Owned(error)));
-}
-
 void NetworkingPrivateServiceClient::SetWifiTDLSEnabledState(
     const std::string& ip_or_mac_address,
     bool enabled,
@@ -614,56 +460,6 @@ void NetworkingPrivateServiceClient::AfterStartDisconnect(
   RemoveServiceCallbacks(callback_id);
 }
 
-void NetworkingPrivateServiceClient::AfterVerifyDestination(
-    ServiceCallbacksID callback_id,
-    const bool* result,
-    const std::string* error) {
-  ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
-  DCHECK(service_callbacks);
-  if (!error->empty()) {
-    DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
-  } else {
-    DCHECK(!service_callbacks->verify_destination_callback.is_null());
-    service_callbacks->verify_destination_callback.Run(*result);
-  }
-  RemoveServiceCallbacks(callback_id);
-}
-
-void NetworkingPrivateServiceClient::AfterVerifyAndEncryptCredentials(
-    ServiceCallbacksID callback_id,
-    const std::string& encrypted_data,
-    const std::string& error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
-  DCHECK(service_callbacks);
-  if (!error.empty()) {
-    DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(error);
-  } else {
-    DCHECK(
-        !service_callbacks->verify_and_encrypt_credentials_callback.is_null());
-    service_callbacks->verify_and_encrypt_credentials_callback.Run(
-        encrypted_data);
-  }
-  RemoveServiceCallbacks(callback_id);
-}
-
-void NetworkingPrivateServiceClient::AfterVerifyAndEncryptData(
-    ServiceCallbacksID callback_id,
-    const std::string* result,
-    const std::string* error) {
-  ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
-  DCHECK(service_callbacks);
-  if (!error->empty()) {
-    DCHECK(!service_callbacks->failure_callback.is_null());
-    service_callbacks->failure_callback.Run(*error);
-  } else {
-    DCHECK(!service_callbacks->verify_and_encrypt_data_callback.is_null());
-    service_callbacks->verify_and_encrypt_data_callback.Run(*result);
-  }
-  RemoveServiceCallbacks(callback_id);
-}
 
 void NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {

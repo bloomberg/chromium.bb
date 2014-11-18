@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 
+#include "chrome/browser/extensions/api/networking_private/crypto_verify_impl.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -45,9 +46,11 @@ NetworkingPrivateServiceClientFactory
 KeyedService* NetworkingPrivateServiceClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return new NetworkingPrivateServiceClient(
-      wifi::WiFiService::Create(),
-      NetworkingPrivateServiceClient::CryptoVerify::Create());
+  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+  scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> crypto_verify(
+      new CryptoVerifyImpl);
+  return new NetworkingPrivateServiceClient(wifi_service.Pass(),
+                                            crypto_verify.Pass());
 }
 
 bool NetworkingPrivateServiceClientFactory::ServiceIsCreatedWithBrowserContext()

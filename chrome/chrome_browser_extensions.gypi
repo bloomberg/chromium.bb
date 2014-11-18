@@ -351,6 +351,7 @@
       'browser/extensions/api/networking_private/networking_private_api.h',
       'browser/extensions/api/networking_private/networking_private_chromeos.cc',
       'browser/extensions/api/networking_private/networking_private_chromeos.h',
+      'browser/extensions/api/networking_private/networking_private_delegate.cc',
       'browser/extensions/api/networking_private/networking_private_delegate.h',
       'browser/extensions/api/networking_private/networking_private_event_router.h',
       'browser/extensions/api/networking_private/networking_private_event_router_chromeos.cc',
@@ -358,6 +359,8 @@
       'browser/extensions/api/networking_private/networking_private_event_router_factory.h',
       'browser/extensions/api/networking_private/networking_private_factory_chromeos.cc',
       'browser/extensions/api/networking_private/networking_private_factory_chromeos.h',
+      'browser/extensions/api/networking_private/networking_private_verify_delegate_chromeos.cc',
+      'browser/extensions/api/networking_private/networking_private_verify_delegate_chromeos.h',
       'browser/extensions/api/notification_provider/notification_provider_api.cc',
       'browser/extensions/api/notification_provider/notification_provider_api.h',
       'browser/extensions/api/notifications/notifications_api.cc',
@@ -1053,7 +1056,7 @@
             '<@(chrome_browser_extensions_networking_private_sources_winmac)',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" and chromeos==0', {
           'sources': [
             '<@(chrome_browser_extensions_networking_private_sources_linux)',
           ],

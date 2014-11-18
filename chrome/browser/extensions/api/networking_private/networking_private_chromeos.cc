@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/common/extensions/api/networking_private.h"
-#include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -35,29 +34,12 @@ using extensions::NetworkingPrivateDelegate;
 
 namespace {
 
-chromeos::ShillManagerClient* GetShillManagerClient() {
-  return chromeos::DBusThreadManager::Get()->GetShillManagerClient();
-}
-
 chromeos::NetworkStateHandler* GetStateHandler() {
   return NetworkHandler::Get()->network_state_handler();
 }
 
 chromeos::ManagedNetworkConfigurationHandler* GetManagedConfigurationHandler() {
   return NetworkHandler::Get()->managed_network_configuration_handler();
-}
-
-ShillManagerClient::VerificationProperties ConvertVerificationProperties(
-    const extensions::api::networking_private::VerificationProperties& input) {
-  ShillManagerClient::VerificationProperties output;
-  output.certificate = input.certificate;
-  output.public_key = input.public_key;
-  output.nonce = input.nonce;
-  output.signed_data = input.signed_data;
-  output.device_serial = input.device_serial;
-  output.device_ssid = input.device_ssid;
-  output.device_bssid = input.device_bssid;
-  return output;
 }
 
 bool GetServicePathFromGuid(const std::string& guid,
@@ -111,13 +93,6 @@ void NetworkHandlerFailureCallback(
   callback.Run(error_name);
 }
 
-void ShillFailureCallback(
-    const NetworkingPrivateDelegate::FailureCallback& callback,
-    const std::string& error_name,
-    const std::string& error_message) {
-  callback.Run(error_name);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,8 +100,10 @@ void ShillFailureCallback(
 namespace extensions {
 
 NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    content::BrowserContext* browser_context,
+    scoped_ptr<VerifyDelegate> verify_delegate)
+    : NetworkingPrivateDelegate(verify_delegate.Pass()),
+      browser_context_(browser_context) {
 }
 
 NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
@@ -278,55 +255,6 @@ void NetworkingPrivateChromeOS::StartDisconnect(
       service_path,
       success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
-}
-
-void NetworkingPrivateChromeOS::VerifyDestination(
-    const VerificationProperties& verification_properties,
-    const BoolCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ShillManagerClient::VerificationProperties verification_property_struct =
-      ConvertVerificationProperties(verification_properties);
-
-  GetShillManagerClient()->VerifyDestination(
-      verification_property_struct,
-      success_callback,
-      base::Bind(&ShillFailureCallback, failure_callback));
-}
-
-void NetworkingPrivateChromeOS::VerifyAndEncryptCredentials(
-    const std::string& guid,
-    const VerificationProperties& verification_properties,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  std::string service_path, error;
-  if (!GetServicePathFromGuid(guid, &service_path, &error)) {
-    failure_callback.Run(error);
-    return;
-  }
-
-  ShillManagerClient::VerificationProperties verification_property_struct =
-      ConvertVerificationProperties(verification_properties);
-
-  GetShillManagerClient()->VerifyAndEncryptCredentials(
-      verification_property_struct,
-      service_path,
-      success_callback,
-      base::Bind(&ShillFailureCallback, failure_callback));
-}
-
-void NetworkingPrivateChromeOS::VerifyAndEncryptData(
-    const VerificationProperties& verification_properties,
-    const std::string& data,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ShillManagerClient::VerificationProperties verification_property_struct =
-      ConvertVerificationProperties(verification_properties);
-
-  GetShillManagerClient()->VerifyAndEncryptData(
-      verification_property_struct,
-      data,
-      success_callback,
-      base::Bind(&ShillFailureCallback, failure_callback));
 }
 
 void NetworkingPrivateChromeOS::SetWifiTDLSEnabledState(

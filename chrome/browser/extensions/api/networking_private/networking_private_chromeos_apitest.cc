@@ -77,9 +77,9 @@ class TestListener : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& /* source */,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& /* source */,
+               const content::NotificationDetails& details) override {
     const std::string& message = *content::Details<std::string>(details).ptr();
     if (message == message_)
       callback_.Run();
@@ -108,7 +108,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
@@ -123,7 +123,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     *out = result;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
@@ -196,7 +196,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                               true /* add_to_visible */);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     detector_ = new NetworkPortalDetectorTestImpl();
     NetworkPortalDetector::InitializeForTesting(detector_);
 

@@ -26,15 +26,15 @@ class NetworkingPrivateChromeOSFactory
   friend struct DefaultSingletonTraits<NetworkingPrivateChromeOSFactory>;
 
   NetworkingPrivateChromeOSFactory();
-  virtual ~NetworkingPrivateChromeOSFactory();
+  ~NetworkingPrivateChromeOSFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateChromeOSFactory);
 };

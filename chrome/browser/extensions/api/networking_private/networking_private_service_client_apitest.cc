@@ -21,6 +21,7 @@
 using testing::Return;
 using testing::_;
 
+using extensions::NetworkingPrivateDelegate;
 using extensions::NetworkingPrivateServiceClient;
 using extensions::NetworkingPrivateServiceClientFactory;
 
@@ -34,26 +35,28 @@ namespace {
 
 // Stub Verify* methods implementation to satisfy expectations of
 // networking_private_apitest.
-class CryptoVerifyStub
-    : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
-  void VerifyDestination(const Credentials& verification_properties,
-                         bool* verified,
-                         std::string* error) override {
-    *verified = true;
+class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
+  void VerifyDestination(
+      const VerificationProperties& verification_properties,
+      const BoolCallback& success_callback,
+      const FailureCallback& failure_callback) override {
+    success_callback.Run(true);
   }
 
   void VerifyAndEncryptCredentials(
-      const std::string& network_guid,
-      const Credentials& credentials,
-      const VerifyAndEncryptCredentialsCallback& callback) override {
-    callback.Run("encrypted_credentials", "");
+      const std::string& guid,
+      const VerificationProperties& verification_properties,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) override {
+    success_callback.Run("encrypted_credentials");
   }
 
-  void VerifyAndEncryptData(const Credentials& verification_properties,
-                            const std::string& data,
-                            std::string* base64_encoded_ciphertext,
-                            std::string* error) override {
-    *base64_encoded_ciphertext = "encrypted_data";
+  void VerifyAndEncryptData(
+      const VerificationProperties& verification_properties,
+      const std::string& data,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) override {
+    success_callback.Run("encrypted_data");
   }
 };
 
@@ -81,8 +84,10 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
 
   static KeyedService* CreateNetworkingPrivateServiceClient(
       content::BrowserContext* profile) {
-    return new NetworkingPrivateServiceClient(new wifi::FakeWiFiService(),
-                                              new CryptoVerifyStub());
+    scoped_ptr<wifi::FakeWiFiService> wifi_service(new wifi::FakeWiFiService());
+    scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
+    return new NetworkingPrivateServiceClient(wifi_service.Pass(),
+                                              crypto_verify.Pass());
   }
 
   void SetUpOnMainThread() override {

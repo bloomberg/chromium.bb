@@ -118,8 +118,10 @@ void OnNetworkConnected(
 }  // namespace
 
 NetworkingPrivateLinux::NetworkingPrivateLinux(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
+    content::BrowserContext* browser_context,
+    scoped_ptr<VerifyDelegate> verify_delegate)
+    : NetworkingPrivateDelegate(verify_delegate.Pass()),
+      browser_context_(browser_context),
       dbus_thread_("Networking Private DBus"),
       network_manager_proxy_(NULL) {
   base::Thread::Options thread_options(base::MessageLoop::Type::TYPE_IO, 0);
@@ -364,29 +366,6 @@ void NetworkingPrivateLinux::StartDisconnect(
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   ReportNotSupported("StartDisconnect", failure_callback);
-}
-
-void NetworkingPrivateLinux::VerifyDestination(
-    const VerificationProperties& verification_properties,
-    const BoolCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("VerifyDestination", failure_callback);
-}
-
-void NetworkingPrivateLinux::VerifyAndEncryptCredentials(
-    const std::string& guid,
-    const VerificationProperties& verification_properties,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("VerifyAndEncryptCredentials", failure_callback);
-}
-
-void NetworkingPrivateLinux::VerifyAndEncryptData(
-    const VerificationProperties& verification_properties,
-    const std::string& data,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("VerifyAndEncryptData", failure_callback);
 }
 
 void NetworkingPrivateLinux::SetWifiTDLSEnabledState(

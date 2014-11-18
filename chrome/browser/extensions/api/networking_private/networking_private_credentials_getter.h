@@ -6,12 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CREDENTIALS_GETTER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "base/callback.h"
 
 namespace extensions {
 
@@ -19,6 +16,9 @@ namespace extensions {
 // system and encrypts it with public key.
 class NetworkingPrivateCredentialsGetter {
  public:
+  typedef base::Callback<void(const std::string& key_data,
+                              const std::string& error)> CredentialsCallback;
+
   static NetworkingPrivateCredentialsGetter* Create();
 
   NetworkingPrivateCredentialsGetter() {}
@@ -33,11 +33,9 @@ class NetworkingPrivateCredentialsGetter {
   // Note that there are no guarantees about the thread on which |callback| is
   // run. The caller should make sure that the result is processed on the right
   // thread.
-  virtual void Start(
-      const std::string& network_guid,
-      const std::string& public_key,
-      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback) = 0;
+  virtual void Start(const std::string& network_guid,
+                     const std::string& public_key,
+                     const CredentialsCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCredentialsGetter);

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_chromeos.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_chromeos.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -47,7 +48,9 @@ NetworkingPrivateChromeOSFactory::~NetworkingPrivateChromeOSFactory() {
 KeyedService* NetworkingPrivateChromeOSFactory::BuildServiceInstanceFor(
     BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return new NetworkingPrivateChromeOS(browser_context);
+  scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate(
+      new NetworkingPrivateVerifyDelegateChromeOS);
+  return new NetworkingPrivateChromeOS(browser_context, verify_delegate.Pass());
 }
 
 BrowserContext* NetworkingPrivateChromeOSFactory::GetBrowserContextToUse(

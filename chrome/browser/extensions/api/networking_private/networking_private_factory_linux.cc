@@ -43,9 +43,11 @@ NetworkingPrivateLinuxFactory::~NetworkingPrivateLinuxFactory() {
 }
 
 KeyedService* NetworkingPrivateLinuxFactory::BuildServiceInstanceFor(
-    content::BrowserContext* browser_context) const {
+    BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return new NetworkingPrivateLinux(browser_context);
+  // TODO(zentaro/stevenjb): Consider supporting VerifyDelegate on Linux.
+  return new NetworkingPrivateLinux(browser_context,
+                                    nullptr /* no VerifyDelegtate */);
 }
 
 bool NetworkingPrivateLinuxFactory::ServiceIsCreatedWithBrowserContext() const {

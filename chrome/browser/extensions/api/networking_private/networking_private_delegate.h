@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -28,7 +29,7 @@ struct VerificationProperties;
 // Base class for platform dependent networkingPrivate API implementations.
 // All inputs and results for this class use ONC values. See
 // networking_private.json for descriptions of the expected inputs and results.
-class NetworkingPrivateDelegate {
+class NetworkingPrivateDelegate : public KeyedService {
  public:
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
       DictionaryCallback;
@@ -40,8 +41,47 @@ class NetworkingPrivateDelegate {
   typedef api::networking_private::VerificationProperties
       VerificationProperties;
 
+  // The Verify* methods will be forwarded to a delegate implementation if
+  // provided, otherwise they will fail. A separate delegate it used so that the
+  // current Verify* implementations are not exposed outside of src/chrome.
+  class VerifyDelegate {
+   public:
+    typedef NetworkingPrivateDelegate::VerificationProperties
+        VerificationProperties;
+    typedef NetworkingPrivateDelegate::BoolCallback BoolCallback;
+    typedef NetworkingPrivateDelegate::StringCallback StringCallback;
+    typedef NetworkingPrivateDelegate::FailureCallback FailureCallback;
+
+    VerifyDelegate();
+    virtual ~VerifyDelegate();
+
+    virtual void VerifyDestination(
+        const VerificationProperties& verification_properties,
+        const BoolCallback& success_callback,
+        const FailureCallback& failure_callback) = 0;
+    virtual void VerifyAndEncryptCredentials(
+        const std::string& guid,
+        const VerificationProperties& verification_properties,
+        const StringCallback& success_callback,
+        const FailureCallback& failure_callback) = 0;
+    virtual void VerifyAndEncryptData(
+        const VerificationProperties& verification_properties,
+        const std::string& data,
+        const StringCallback& success_callback,
+        const FailureCallback& failure_callback) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(VerifyDelegate);
+  };
+
   static NetworkingPrivateDelegate* GetForBrowserContext(
       content::BrowserContext* browser_context);
+
+  // If |verify_delegate| is not NULL, the Verify* methods will be forwarded
+  // to the delegate. Otherwise they will fail with a NotSupported error.
+  explicit NetworkingPrivateDelegate(
+      scoped_ptr<VerifyDelegate> verify_delegate);
+  virtual ~NetworkingPrivateDelegate();
 
   // Asynchronous methods
   virtual void GetProperties(const std::string& guid,
@@ -74,20 +114,6 @@ class NetworkingPrivateDelegate {
   virtual void StartDisconnect(const std::string& guid,
                                const VoidCallback& success_callback,
                                const FailureCallback& failure_callback) = 0;
-  virtual void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
-  virtual void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
-  virtual void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
   virtual void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -117,8 +143,27 @@ class NetworkingPrivateDelegate {
   // to complete. The scan may or may not trigger API events when complete.
   virtual bool RequestScan() = 0;
 
- protected:
-  virtual ~NetworkingPrivateDelegate() {}
+  // Verify* methods are forwarded to |verify_delegate_| if not NULL.
+  void VerifyDestination(
+      const VerificationProperties& verification_properties,
+      const BoolCallback& success_callback,
+      const FailureCallback& failure_callback);
+  void VerifyAndEncryptCredentials(
+      const std::string& guid,
+      const VerificationProperties& verification_properties,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback);
+  void VerifyAndEncryptData(
+      const VerificationProperties& verification_properties,
+      const std::string& data,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback);
+
+ private:
+  // Interface for Verify* methods. May be NULL.
+  scoped_ptr<VerifyDelegate> verify_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDelegate);
 };
 
 }  // namespace extensions

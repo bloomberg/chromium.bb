@@ -35,22 +35,22 @@ class NetworkingPrivateEventRouterImpl
       public NetworkPortalDetector::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(Profile* profile);
-  virtual ~NetworkingPrivateEventRouterImpl();
+  ~NetworkingPrivateEventRouterImpl() override;
 
  protected:
   // KeyedService overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // NetworkStateHandlerObserver overrides:
-  virtual void NetworkListChanged() override;
-  virtual void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void NetworkListChanged() override;
+  void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // NetworkPortalDetector::Observer overrides:
-  virtual void OnPortalDetectionCompleted(
+  void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 

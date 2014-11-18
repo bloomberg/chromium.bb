@@ -12,23 +12,25 @@
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 using extensions::NetworkingPrivateCredentialsGetter;
 
 namespace {
 
-class CredentialsGetterHostClient : public content::UtilityProcessHostClient {
+class CredentialsGetterHostClient : public UtilityProcessHostClient {
  public:
   explicit CredentialsGetterHostClient(const std::string& public_key);
 
-  virtual ~CredentialsGetterHostClient();
+  ~CredentialsGetterHostClient() override;
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual void OnProcessLaunchFailed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
 
   // IPC message handlers.
   void OnGotCredentials(const std::string& key_data, bool success);
@@ -36,16 +38,14 @@ class CredentialsGetterHostClient : public content::UtilityProcessHostClient {
   // Starts the utility process that gets wifi passphrase from system.
   void StartProcessOnIOThread(
       const std::string& network_guid,
-      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback);
+      const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback);
 
  private:
   // Public key used to encrypt results
   std::vector<uint8> public_key_;
 
   // Callback for reporting the result.
-  extensions::NetworkingPrivateServiceClient::CryptoVerify::
-      VerifyAndEncryptCredentialsCallback callback_;
+  NetworkingPrivateCredentialsGetter::CredentialsCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialsGetterHostClient);
 };
@@ -96,8 +96,7 @@ void CredentialsGetterHostClient::OnGotCredentials(const std::string& key_data,
 
 void CredentialsGetterHostClient::StartProcessOnIOThread(
     const std::string& network_guid,
-    const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-        VerifyAndEncryptCredentialsCallback& callback) {
+    const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
@@ -115,14 +114,12 @@ class NetworkingPrivateCredentialsGetterWin
  public:
   NetworkingPrivateCredentialsGetterWin();
 
-  virtual void Start(
-      const std::string& network_guid,
-      const std::string& public_key,
-      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback) override;
+  void Start(const std::string& network_guid,
+             const std::string& public_key,
+             const CredentialsCallback& callback) override;
 
  private:
-  virtual ~NetworkingPrivateCredentialsGetterWin();
+  ~NetworkingPrivateCredentialsGetterWin() override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCredentialsGetterWin);
 };
@@ -133,8 +130,7 @@ NetworkingPrivateCredentialsGetterWin::NetworkingPrivateCredentialsGetterWin() {
 void NetworkingPrivateCredentialsGetterWin::Start(
     const std::string& network_guid,
     const std::string& public_key,
-    const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-        VerifyAndEncryptCredentialsCallback& callback) {
+    const CredentialsCallback& callback) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,

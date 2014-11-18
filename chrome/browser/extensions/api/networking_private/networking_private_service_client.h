@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -37,58 +37,13 @@ namespace extensions {
 using wifi::WiFiService;
 
 // Windows / Mac NetworkingPrivateApi implementation. This implements
-// WiFiService and CryptoVerify interfaces and invokes them on the worker
-// thread. Observes |OnNetworkChanged| notifications and posts them to
-// WiFiService on the worker thread to |UpdateConnectedNetwork|. Created and
-// called from the UI thread.
+// NetworkingPrivateDelegate, making WiFiService calls on the worker thead.
+// It also observes |OnNetworkChanged| notifications and posts them to
+// WiFiService on the worker thread. Created and called from the UI thread.
 class NetworkingPrivateServiceClient
-    : public KeyedService,
-      public NetworkingPrivateDelegate,
+    : public NetworkingPrivateDelegate,
       net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // Interface for Verify* methods implementation.
-  class CryptoVerify {
-   public:
-    typedef base::Callback<
-        void(const std::string& key_data, const std::string& error)>
-        VerifyAndEncryptCredentialsCallback;
-
-    // TODO(stevenjb): Remove this when addressing crbug.com/394481
-    struct Credentials {
-      Credentials();
-      ~Credentials();
-      std::string certificate;
-      std::string signed_data;
-      std::string unsigned_data;
-      std::string device_bssid;
-      std::string public_key;
-    };
-
-    CryptoVerify();
-    virtual ~CryptoVerify();
-
-    // Must be provided by the implementation. May return NULL if certificate
-    // verification is unavailable, see NetworkingPrivateServiceClient().
-    static CryptoVerify* Create();
-
-    virtual void VerifyDestination(const Credentials& credentials,
-                                   bool* verified,
-                                   std::string* error) = 0;
-
-    virtual void VerifyAndEncryptCredentials(
-        const std::string& network_guid,
-        const Credentials& credentials,
-        const VerifyAndEncryptCredentialsCallback& callback) = 0;
-
-    virtual void VerifyAndEncryptData(const Credentials& credentials,
-                                      const std::string& data,
-                                      std::string* base64_encoded_ciphertext,
-                                      std::string* error) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(CryptoVerify);
-  };
-
   // Interface for observing Network Events.
   class Observer {
    public:
@@ -104,12 +59,11 @@ class NetworkingPrivateServiceClient
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Takes ownership of |wifi_service| and |crypto_verify|. They are accessed
-  // and deleted on the worker thread. The deletion task is posted during the
-  // NetworkingPrivateServiceClient shutdown. |crypto_verify| may be NULL in
-  // which case Verify* will return a 'not implemented' error.
-  NetworkingPrivateServiceClient(wifi::WiFiService* wifi_service,
-                                 CryptoVerify* crypto_verify);
+  // Takes ownership of |wifi_service| which is accessed and deleted on the
+  // worker thread. The deletion task is posted from the destructor.
+  // |verify_delegate| is passed to NetworkingPrivateDelegate and may be NULL.
+  NetworkingPrivateServiceClient(scoped_ptr<wifi::WiFiService> wifi_service,
+                                 scoped_ptr<VerifyDelegate> verify_delegate);
 
   // KeyedService
   void Shutdown() override;
@@ -144,19 +98,6 @@ class NetworkingPrivateServiceClient
   void StartDisconnect(const std::string& guid,
                        const VoidCallback& success_callback,
                        const FailureCallback& failure_callback) override;
-  void VerifyDestination(const VerificationProperties& verification_properties,
-                         const BoolCallback& success_callback,
-                         const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
   void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -201,10 +142,6 @@ class NetworkingPrivateServiceClient
     NetworkListCallback get_visible_networks_callback;
     FailureCallback failure_callback;
 
-    BoolCallback verify_destination_callback;
-    StringCallback verify_and_encrypt_data_callback;
-    StringCallback verify_and_encrypt_credentials_callback;
-
     ServiceCallbacksID id;
   };
   typedef IDMap<ServiceCallbacks, IDMapOwnPointer> ServiceCallbacksMap;
@@ -227,15 +164,6 @@ class NetworkingPrivateServiceClient
                          const std::string* error);
   void AfterStartDisconnect(ServiceCallbacksID callback_id,
                             const std::string* error);
-  void AfterVerifyDestination(ServiceCallbacksID callback_id,
-                              const bool* result,
-                              const std::string* error);
-  void AfterVerifyAndEncryptData(ServiceCallbacksID callback_id,
-                                 const std::string* result,
-                                 const std::string* error);
-  void AfterVerifyAndEncryptCredentials(ServiceCallbacksID callback_id,
-                                        const std::string& encrypted_data,
-                                        const std::string& error);
 
   void OnNetworksChangedEventOnUIThread(
       const WiFiService::NetworkGuidList& network_guid_list);
@@ -251,16 +179,13 @@ class NetworkingPrivateServiceClient
   ServiceCallbacksMap callbacks_map_;
   // Observers to Network Events.
   ObserverList<Observer> network_events_observers_;
-  // Interface for Verify* methods. Used and deleted on the worker thread.
-  // May be NULL.
-  scoped_ptr<CryptoVerify> crypto_verify_;
   // Interface to WiFiService. Used and deleted on the worker thread.
   scoped_ptr<wifi::WiFiService> wifi_service_;
   // Sequence token associated with wifi tasks.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
   // Task runner for worker tasks.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  // Use WeakPtrs for callbacks from |wifi_service_| and |crypto_verify_|.
+  // Use WeakPtrs for callbacks from |wifi_service_|.
   base::WeakPtrFactory<NetworkingPrivateServiceClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateServiceClient);

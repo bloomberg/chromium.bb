@@ -25,13 +25,13 @@ class Response;
 namespace extensions {
 
 // Linux NetworkingPrivateDelegate implementation.
-class NetworkingPrivateLinux : public KeyedService,
-                               public NetworkingPrivateDelegate {
+class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
  public:
   typedef std::map<base::string16, linked_ptr<base::DictionaryValue>>
       NetworkMap;
 
-  explicit NetworkingPrivateLinux(content::BrowserContext* browser_context);
+  NetworkingPrivateLinux(content::BrowserContext* browser_context,
+                         scoped_ptr<VerifyDelegate> verify_delegate);
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
@@ -63,19 +63,6 @@ class NetworkingPrivateLinux : public KeyedService,
   void StartDisconnect(const std::string& guid,
                        const VoidCallback& success_callback,
                        const FailureCallback& failure_callback) override;
-  void VerifyDestination(const VerificationProperties& verification_properties,
-                         const BoolCallback& success_callback,
-                         const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      const VerificationProperties& verification_properties,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  void VerifyAndEncryptData(
-      const VerificationProperties& verification_properties,
-      const std::string& data,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
   void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
