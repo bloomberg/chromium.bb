@@ -328,6 +328,11 @@
             '../ui/wm/wm.gyp:wm',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',

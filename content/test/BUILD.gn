@@ -112,6 +112,10 @@ static_library("test_support") {
       deps += [ "//ui/compositor" ]
     }
 
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
+
     if (is_win) {
       deps += [ "//third_party/iaccessible2" ]
     }
