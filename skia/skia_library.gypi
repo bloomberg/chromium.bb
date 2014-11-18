@@ -105,7 +105,6 @@
   '../third_party/skia/include/utils/SkParsePaint.h',
   '../third_party/skia/include/utils/SkParsePath.h',
   '../third_party/skia/include/utils/SkRandom.h',
-  '../third_party/skia/include/utils/SkWGL.h',
 
   '../third_party/skia/src/utils/SkBitmapHasher.cpp',
   '../third_party/skia/src/utils/SkBitmapHasher.h',
