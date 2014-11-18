@@ -607,6 +607,54 @@ def HostGccLibsDeps(host):
   return [ForHost(package, host) for package in HOST_GCC_LIBS_DEPS]
 
 
+def SDKLibs(host, target):
+  def H(component_name):
+    return ForHost(component_name, host)
+  components = ['newlib_%s' % target,
+                'gcc_libs_%s' % target,
+                H('binutils_%s' % target),
+                H('gcc_%s' % target),
+                ]
+  sdk_compiler = {
+    H('sdk_compiler_%s' % target): {
+        'type': 'work',
+        'dependencies': components,
+        'commands': [command.CopyRecursive('%(' + item + ')s', '%(output)s')
+                     for item in components],
+    },
+  }
+  sdk_libs = {
+    'sdk_libs_%s' % target: {
+        'type': 'build',
+        'dependencies': [H('sdk_compiler_%s' % target)],
+        'inputs': {
+            'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),
+            'src_include': os.path.join(NACL_DIR, 'src', 'include'),
+            'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+            'site_scons': os.path.join(NACL_DIR, 'site_scons'),
+            'prep_nacl_sdk':
+                os.path.join(NACL_DIR, 'build', 'prep_nacl_sdk.py'),
+        },
+        'commands': [
+          command.Command(
+              [sys.executable, '%(scons.py)s',
+               '--verbose', 'MODE=nacl', '-j%(cores)s', 'naclsdk_validate=0',
+               'platform=%s' % target,
+               'nacl_newlib_dir=%(abs_' + H('sdk_compiler_%s' % target) + ')s',
+               'DESTINATION_ROOT=%(work_dir)s',
+               'includedir=' + command.path.join('%(output)s',
+                                                 target + '-nacl', 'include'),
+               'libdir=' + command.path.join('%(output)s',
+                                             target + '-nacl', 'lib'),
+               'install'],
+              cwd=NACL_DIR),
+        ],
+    },
+  }
+
+  return dict(sdk_compiler.items() + sdk_libs.items())
+
+
 def ConfigureCommand(source_component):
   return [command % {'src': '%(' + source_component + ')s'}
           for command in CONFIGURE_CMD]
@@ -949,6 +997,7 @@ def GetPackageTargets():
       # These packages are added inside of TargetLibs(host, target).
       newlib_package = 'newlib_%s' % target_arch
       gcc_lib_package = 'gcc_libs_%s' % target_arch
+      sdk_lib_packages = ['sdk_libs_%s' % target_arch]
       shared_packages = [newlib_package, gcc_lib_package]
 
       # Each package target contains arm binutils and gcc.
@@ -961,7 +1010,8 @@ def GetPackageTargets():
 
       # Create a list of packages for a target.
       platform_packages = [binutils_package, gcc_package, gdb_package]
-      combined_packages = shared_packages + platform_packages
+      raw_packages = shared_packages + platform_packages
+      all_packages = raw_packages + sdk_lib_packages
 
       os_name = pynacl.platform.GetOS(host_target.os)
       if host_target.differ3264:
@@ -971,9 +1021,12 @@ def GetPackageTargets():
       package_target = '%s_%s' % (os_name, arch_name)
       package_name = '%snacl_%s_newlib' % (package_prefix,
                                            pynacl.platform.GetArch(target_arch))
+      raw_package_name = package_name + '_raw'
 
+      # Toolchains by default are "raw" unless they include the Core SDK
       package_target_dict = package_targets.setdefault(package_target, {})
-      package_target_dict.setdefault(package_name, []).extend(combined_packages)
+      package_target_dict.setdefault(raw_package_name, []).extend(raw_packages)
+      package_target_dict.setdefault(package_name, []).extend(all_packages)
 
   # GDB is a special and shared, we will inject it into various other packages.
   for platform, arch in GDB_INJECT_HOSTS:
@@ -991,12 +1044,14 @@ def GetPackageTargets():
 
   return dict(package_targets)
 
+
 def CollectPackagesForHost(host, targets):
   packages = HostGccLibs(host).copy()
   for target in targets:
     packages.update(HostTools(host, target))
     if BuildTargetLibsOn(host):
       packages.update(TargetLibs(host, target))
+      packages.update(SDKLibs(host, target))
   return packages
 
 
