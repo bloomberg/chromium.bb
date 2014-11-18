@@ -331,8 +331,6 @@
       'common/gpu/stream_texture_android.h',
       'common/gpu/surface_handle_types_mac.cc',
       'common/gpu/surface_handle_types_mac.h',
-      'common/gpu/sync_point_manager.cc',
-      'common/gpu/sync_point_manager.h',
       'common/handle_enumerator_win.cc',
       'common/handle_enumerator_win.h',
       'common/host_discardable_shared_memory_manager.cc',

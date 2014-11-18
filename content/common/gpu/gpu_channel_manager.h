@@ -33,6 +33,7 @@ struct GpuMemoryBufferHandle;
 }
 
 namespace gpu {
+class SyncPointManager;
 namespace gles2 {
 class MailboxManager;
 class ProgramCache;
@@ -53,7 +54,6 @@ class GpuChannel;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
 class MessageRouter;
-class SyncPointManager;
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -97,7 +97,9 @@ class GpuChannelManager : public IPC::Listener,
 
   GpuChannel* LookupChannel(int32 client_id);
 
-  SyncPointManager* sync_point_manager() { return sync_point_manager_.get(); }
+  gpu::SyncPointManager* sync_point_manager() {
+    return sync_point_manager_.get();
+  }
 
   gfx::GLSurface* GetDefaultOffscreenSurface();
 
@@ -150,7 +152,7 @@ class GpuChannelManager : public IPC::Listener,
   GpuMemoryManager gpu_memory_manager_;
   GpuEventsDispatcher gpu_devtools_events_dispatcher_;
   GpuWatchdog* watchdog_;
-  scoped_refptr<SyncPointManager> sync_point_manager_;
+  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;

@@ -103,6 +103,8 @@ source_set("service") {
     "shader_translator_cache.cc",
     "stream_texture_manager_in_process_android.h",
     "stream_texture_manager_in_process_android.cc",
+    "sync_point_manager.h",
+    "sync_point_manager.cc",
     "texture_definition.h",
     "texture_definition.cc",
     "texture_manager.h",

@@ -21,11 +21,11 @@
 #include "content/common/gpu/devtools_gpu_agent.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
@@ -70,10 +70,11 @@ const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
 // - it generates mailbox names for clients of the GPU process on the IO thread.
 class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
-  GpuChannelMessageFilter(base::WeakPtr<GpuChannel> gpu_channel,
-                          scoped_refptr<SyncPointManager> sync_point_manager,
-                          scoped_refptr<base::MessageLoopProxy> message_loop,
-                          bool future_sync_points)
+  GpuChannelMessageFilter(
+      base::WeakPtr<GpuChannel> gpu_channel,
+      scoped_refptr<gpu::SyncPointManager> sync_point_manager,
+      scoped_refptr<base::MessageLoopProxy> message_loop,
+      bool future_sync_points)
       : preemption_state_(IDLE),
         gpu_channel_(gpu_channel),
         sender_(NULL),
@@ -348,7 +349,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
 
   static void InsertSyncPointOnMainThread(
       base::WeakPtr<GpuChannel> gpu_channel,
-      scoped_refptr<SyncPointManager> manager,
+      scoped_refptr<gpu::SyncPointManager> manager,
       int32 routing_id,
       bool retire,
       uint32 sync_point) {
@@ -377,7 +378,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // passed through - therefore the WeakPtr assumptions are respected.
   base::WeakPtr<GpuChannel> gpu_channel_;
   IPC::Sender* sender_;
-  scoped_refptr<SyncPointManager> sync_point_manager_;
+  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 

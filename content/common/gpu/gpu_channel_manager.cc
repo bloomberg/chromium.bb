@@ -10,13 +10,13 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/sync_point_manager.h"
 #include "content/common/message_router.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
@@ -89,11 +89,11 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
-      sync_point_manager_(new SyncPointManager),
+      sync_point_manager_(new gpu::SyncPointManager),
       gpu_memory_buffer_factory_(GpuMemoryBufferFactory::Create()),
       channel_(channel),
-      filter_(new GpuChannelManagerMessageFilter(
-          gpu_memory_buffer_factory_.get())),
+      filter_(
+          new GpuChannelManagerMessageFilter(gpu_memory_buffer_factory_.get())),
       weak_factory_(this) {
   DCHECK(router_);
   DCHECK(io_message_loop);

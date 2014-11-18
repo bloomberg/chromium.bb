@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/sync_point_manager.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 
 #include <climits>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 
-namespace content {
+namespace gpu {
 
 static const int kMaxSyncBase = INT_MAX;
 
@@ -81,4 +81,4 @@ bool SyncPointManager::IsSyncPointRetired(uint32 sync_point) {
   }
 }
 
-}  // namespace content
+}  // namespace gpu

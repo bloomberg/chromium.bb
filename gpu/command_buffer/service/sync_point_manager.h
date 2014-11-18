@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_SYNC_POINT_MANAGER_H_
-#define CONTENT_COMMON_GPU_SYNC_POINT_MANAGER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_SYNC_POINT_MANAGER_H_
+#define GPU_COMMAND_BUFFER_SERVICE_SYNC_POINT_MANAGER_H_
 
 #include <vector>
 
@@ -12,12 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/gpu_export.h"
 
-namespace content {
+namespace gpu {
 
 // This class manages the sync points, which allow cross-channel
 // synchronization.
-class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
+class GPU_EXPORT SyncPointManager
+    : public base::RefCountedThreadSafe<SyncPointManager> {
  public:
   SyncPointManager();
 
@@ -40,7 +42,7 @@ class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
  private:
   friend class base::RefCountedThreadSafe<SyncPointManager>;
   typedef std::vector<base::Closure> ClosureList;
-  typedef base::hash_map<uint32, ClosureList > SyncPointMap;
+  typedef base::hash_map<uint32, ClosureList> SyncPointMap;
 
   ~SyncPointManager();
 
@@ -55,6 +57,6 @@ class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_SYNC_POINT_MANAGER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_SYNC_POINT_MANAGER_H_

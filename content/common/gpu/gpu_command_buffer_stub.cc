@@ -23,7 +23,6 @@
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
-#include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -36,6 +35,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 
