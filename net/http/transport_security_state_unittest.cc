@@ -540,9 +540,7 @@ TEST_F(TransportSecurityStateTest, PreloadedPins) {
   EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
   EXPECT_TRUE(StaticShouldRedirect("facebook.com"));
 
-  EXPECT_TRUE(state.GetStaticDomainState("foo.facebook.com", &domain_state));
-  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
-  EXPECT_FALSE(StaticShouldRedirect("foo.facebook.com"));
+  EXPECT_FALSE(state.GetStaticDomainState("foo.facebook.com", &domain_state));
 
   EXPECT_TRUE(state.GetStaticDomainState("www.facebook.com", &domain_state));
   EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
