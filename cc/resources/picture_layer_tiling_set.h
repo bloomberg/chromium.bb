@@ -5,6 +5,8 @@
 #ifndef CC_RESOURCES_PICTURE_LAYER_TILING_SET_H_
 #define CC_RESOURCES_PICTURE_LAYER_TILING_SET_H_
 
+#include <set>
+
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/resources/picture_layer_tiling.h"
@@ -64,13 +66,27 @@ class CC_EXPORT PictureLayerTilingSet {
     return tilings_[idx];
   }
 
+  // TODO(vmpstr): Rename to FindTilingWithScale.
   PictureLayerTiling* TilingAtScale(float scale) const;
+  PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
+
+  // If a tiling exists whose scale is within |snap_to_existing_tiling_ratio|
+  // ratio of |start_scale|, then return that tiling's scale. Otherwise, return
+  // |start_scale|. If multiple tilings match the criteria, return the one with
+  // the least ratio to |start_scale|.
+  float GetSnappedContentsScale(float start_scale,
+                                float snap_to_existing_tiling_ratio) const;
+
+  // Returns the maximum contents scale of all tilings, or 0 if no tilings
+  // exist.
+  float GetMaximumContentsScale() const;
 
   // Remove all tilings.
   void RemoveAllTilings();
 
   // Remove one tiling.
   void Remove(PictureLayerTiling* tiling);
+  void RemoveTilingWithScale(float scale);
 
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
@@ -81,6 +97,8 @@ class CC_EXPORT PictureLayerTilingSet {
                             double current_frame_time_in_seconds,
                             const Occlusion& occlusion_in_layer_space,
                             bool can_require_tiles_for_activation);
+
+  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
 
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate

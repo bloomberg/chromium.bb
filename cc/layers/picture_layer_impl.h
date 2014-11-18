@@ -168,7 +168,6 @@ class CC_EXPORT PictureLayerImpl
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
-  float SnappedContentsScale(float new_contents_scale);
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;

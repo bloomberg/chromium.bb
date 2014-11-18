@@ -5,6 +5,7 @@
 #include "cc/resources/picture_layer_tiling_set.h"
 
 #include <limits>
+#include <set>
 
 namespace cc {
 
@@ -16,6 +17,12 @@ class LargestToSmallestScaleFunctor {
     return left->contents_scale() > right->contents_scale();
   }
 };
+
+inline float LargerRatio(float float1, float float2) {
+  DCHECK_GT(float1, 0.f);
+  DCHECK_GT(float2, 0.f);
+  return float1 > float2 ? float1 / float2 : float2 / float1;
+}
 
 }  // namespace
 
@@ -135,6 +142,17 @@ PictureLayerTiling* PictureLayerTilingSet::TilingAtScale(float scale) const {
   return NULL;
 }
 
+PictureLayerTiling* PictureLayerTilingSet::FindTilingWithResolution(
+    TileResolution resolution) const {
+  auto iter = std::find_if(tilings_.begin(), tilings_.end(),
+                           [resolution](const PictureLayerTiling* tiling) {
+    return tiling->resolution() == resolution;
+  });
+  if (iter == tilings_.end())
+    return NULL;
+  return *iter;
+}
+
 void PictureLayerTilingSet::RemoveAllTilings() {
   tilings_.clear();
 }
@@ -147,9 +165,43 @@ void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
   tilings_.erase(iter);
 }
 
+void PictureLayerTilingSet::RemoveTilingWithScale(float scale) {
+  auto iter = std::find_if(tilings_.begin(), tilings_.end(),
+                           [scale](const PictureLayerTiling* tiling) {
+    return tiling->contents_scale() == scale;
+  });
+  if (iter == tilings_.end())
+    return;
+  tilings_.erase(iter);
+}
+
 void PictureLayerTilingSet::RemoveAllTiles() {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->Reset();
+}
+
+float PictureLayerTilingSet::GetSnappedContentsScale(
+    float start_scale,
+    float snap_to_existing_tiling_ratio) const {
+  // If a tiling exists within the max snapping ratio, snap to its scale.
+  float snapped_contents_scale = start_scale;
+  float snapped_ratio = snap_to_existing_tiling_ratio;
+  for (const auto* tiling : tilings_) {
+    float tiling_contents_scale = tiling->contents_scale();
+    float ratio = LargerRatio(tiling_contents_scale, start_scale);
+    if (ratio < snapped_ratio) {
+      snapped_contents_scale = tiling_contents_scale;
+      snapped_ratio = ratio;
+    }
+  }
+  return snapped_contents_scale;
+}
+
+float PictureLayerTilingSet::GetMaximumContentsScale() const {
+  if (tilings_.empty())
+    return 0.f;
+  // The first tiling has the largest contents scale.
+  return tilings_[0]->contents_scale();
 }
 
 bool PictureLayerTilingSet::UpdateTilePriorities(
@@ -179,6 +231,12 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
         current_frame_time_in_seconds, occlusion_in_layer_space);
   }
   return true;
+}
+
+void PictureLayerTilingSet::GetAllTilesForTracing(
+    std::set<const Tile*>* tiles) const {
+  for (auto* tiling : tilings_)
+    tiling->GetAllTilesForTracing(tiles);
 }
 
 PictureLayerTilingSet::CoverageIterator::CoverageIterator(
