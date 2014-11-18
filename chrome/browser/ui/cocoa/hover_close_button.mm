@@ -162,8 +162,9 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   if (state != self.hoverState) {
     previousState_ = self.hoverState;
     [super setHoverState:state];
-    // Only animate the HoverStateNone case.
-    if (state == kHoverStateNone) {
+    // Only animate the HoverStateNone case and only if this is still in the
+    // view hierarchy.
+    if (state == kHoverStateNone && [self superview] != nil) {
       DCHECK(fadeOutAnimation_ == nil);
       fadeOutAnimation_ =
           [[GTMKeyValueAnimation alloc] initWithTarget:self
