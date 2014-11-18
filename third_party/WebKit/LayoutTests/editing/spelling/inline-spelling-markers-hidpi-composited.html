@@ -36,14 +36,6 @@ if (window.internals) {
     internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setAsynchronousSpellCheckingEnabled(true);
 }
-
-if (window.testRunner) {
-    testRunner.dumpAsTextWithPixelResults();
-    testRunner.setBackingScaleFactor(2, function () {
-        done();
-    });
-}
-
 </script>
 
 LTR
@@ -107,6 +99,13 @@ function done()
         return window.setTimeout(next, 0);
 
     finishJSTest();
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.setBackingScaleFactor(2, function () {
+        done();
+    });
 }
 </script>
 </body>
