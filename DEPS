@@ -377,7 +377,6 @@ deps_os = {
     'src/chrome/test/data/perf/canvas_bench': None,
     'src/chrome/test/data/perf/frame_rate/content': None,
     'src/native_client': None,
-    'src/third_party/cld_2/src': None,
     'src/third_party/ffmpeg': None,
     'src/third_party/hunspell_dictionaries': None,
     'src/third_party/hunspell': None,

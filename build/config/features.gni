@@ -47,7 +47,7 @@ declare_args() {
 #   0: Don't specify the version. This option is for the Finch testing.
 #   1: Use only CLD1.
 #   2: Use only CLD2.
-if (is_android || is_ios) {
+if (is_android) {
   cld_version = 1
 } else {
   cld_version = 2

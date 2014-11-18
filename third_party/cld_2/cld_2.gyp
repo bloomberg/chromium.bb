@@ -129,7 +129,7 @@
     {
       # GN version: //third_party/cld_2
       'target_name': 'cld_2',
-      'type': 'static_library',
+      'type': 'none',
       'sources': ['<@(cld2_core_sources)'],
       'dependencies': [],
     },
