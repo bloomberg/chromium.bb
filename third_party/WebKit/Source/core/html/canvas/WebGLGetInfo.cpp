@@ -98,13 +98,13 @@ WebGLGetInfo::WebGLGetInfo(unsigned value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer> value)
-    : m_type(kTypeWebGLBuffer)
+WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject> value)
+    : m_type(kTypeWebGLObject)
     , m_bool(false)
     , m_float(0)
     , m_int(0)
     , m_unsignedInt(0)
-    , m_webglBuffer(value)
+    , m_webglObject(value)
 {
 }
 
@@ -118,16 +118,6 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMFloat32Array> value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLFramebuffer> value)
-    : m_type(kTypeWebGLFramebuffer)
-    , m_bool(false)
-    , m_float(0)
-    , m_int(0)
-    , m_unsignedInt(0)
-    , m_webglFramebuffer(value)
-{
-}
-
 WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMInt32Array> value)
     : m_type(kTypeWebGLIntArray)
     , m_bool(false)
@@ -135,36 +125,6 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMInt32Array> value)
     , m_int(0)
     , m_unsignedInt(0)
     , m_webglIntArray(value)
-{
-}
-
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLProgram> value)
-    : m_type(kTypeWebGLProgram)
-    , m_bool(false)
-    , m_float(0)
-    , m_int(0)
-    , m_unsignedInt(0)
-    , m_webglProgram(value)
-{
-}
-
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLRenderbuffer> value)
-    : m_type(kTypeWebGLRenderbuffer)
-    , m_bool(false)
-    , m_float(0)
-    , m_int(0)
-    , m_unsignedInt(0)
-    , m_webglRenderbuffer(value)
-{
-}
-
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture> value)
-    : m_type(kTypeWebGLTexture)
-    , m_bool(false)
-    , m_float(0)
-    , m_int(0)
-    , m_unsignedInt(0)
-    , m_webglTexture(value)
 {
 }
 
@@ -185,16 +145,6 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMUint32Array> value)
     , m_int(0)
     , m_unsignedInt(0)
     , m_webglUnsignedIntArray(value)
-{
-}
-
-WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> value)
-    : m_type(kTypeWebGLVertexArrayObjectOES)
-    , m_bool(false)
-    , m_float(0)
-    , m_int(0)
-    , m_unsignedInt(0)
-    , m_webglVertexArrayObject(value)
 {
 }
 
@@ -239,10 +189,10 @@ unsigned WebGLGetInfo::getUnsignedInt() const
     return m_unsignedInt;
 }
 
-PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLGetInfo::getWebGLBuffer() const
+PassRefPtrWillBeRawPtr<WebGLObject> WebGLGetInfo::getWebGLObject() const
 {
-    ASSERT(getType() == kTypeWebGLBuffer);
-    return m_webglBuffer;
+    ASSERT(getType() == kTypeWebGLObject);
+    return m_webglObject;
 }
 
 PassRefPtr<DOMFloat32Array> WebGLGetInfo::getWebGLFloatArray() const
@@ -251,34 +201,10 @@ PassRefPtr<DOMFloat32Array> WebGLGetInfo::getWebGLFloatArray() const
     return m_webglFloatArray;
 }
 
-PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLGetInfo::getWebGLFramebuffer() const
-{
-    ASSERT(getType() == kTypeWebGLFramebuffer);
-    return m_webglFramebuffer;
-}
-
 PassRefPtr<DOMInt32Array> WebGLGetInfo::getWebGLIntArray() const
 {
     ASSERT(getType() == kTypeWebGLIntArray);
     return m_webglIntArray;
-}
-
-PassRefPtrWillBeRawPtr<WebGLProgram> WebGLGetInfo::getWebGLProgram() const
-{
-    ASSERT(getType() == kTypeWebGLProgram);
-    return m_webglProgram;
-}
-
-PassRefPtrWillBeRawPtr<WebGLRenderbuffer> WebGLGetInfo::getWebGLRenderbuffer() const
-{
-    ASSERT(getType() == kTypeWebGLRenderbuffer);
-    return m_webglRenderbuffer;
-}
-
-PassRefPtrWillBeRawPtr<WebGLTexture> WebGLGetInfo::getWebGLTexture() const
-{
-    ASSERT(getType() == kTypeWebGLTexture);
-    return m_webglTexture;
 }
 
 PassRefPtr<DOMUint8Array> WebGLGetInfo::getWebGLUnsignedByteArray() const
@@ -291,12 +217,6 @@ PassRefPtr<DOMUint32Array> WebGLGetInfo::getWebGLUnsignedIntArray() const
 {
     ASSERT(getType() == kTypeWebGLUnsignedIntArray);
     return m_webglUnsignedIntArray;
-}
-
-PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> WebGLGetInfo::getWebGLVertexArrayObjectOES() const
-{
-    ASSERT(getType() == kTypeWebGLVertexArrayObjectOES);
-    return m_webglVertexArrayObject;
 }
 
 } // namespace blink

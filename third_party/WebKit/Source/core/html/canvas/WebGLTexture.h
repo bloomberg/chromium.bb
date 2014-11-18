@@ -26,14 +26,13 @@
 #ifndef WebGLTexture_h
 #define WebGLTexture_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class WebGLTexture final : public WebGLSharedObject, public ScriptWrappable {
+class WebGLTexture final : public WebGLSharedObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum TextureExtensionFlag {

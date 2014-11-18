@@ -26,7 +26,6 @@
 #ifndef WebGLVertexArrayObjectOES_h
 #define WebGLVertexArrayObjectOES_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLBuffer.h"
 #include "core/html/canvas/WebGLContextObject.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +33,7 @@
 
 namespace blink {
 
-class WebGLVertexArrayObjectOES final : public WebGLContextObject, public ScriptWrappable {
+class WebGLVertexArrayObjectOES final : public WebGLContextObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum VaoType {

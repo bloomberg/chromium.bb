@@ -2227,7 +2227,7 @@ WebGLGetInfo WebGLRenderingContextBase::getFramebufferAttachmentParameter(GLenum
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLGetInfo(GL_TEXTURE);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture>(static_cast<WebGLTexture*>(object)));
+            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(object));
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
             {
@@ -2252,7 +2252,7 @@ WebGLGetInfo WebGLRenderingContextBase::getFramebufferAttachmentParameter(GLenum
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLGetInfo(GL_RENDERBUFFER);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLRenderbuffer>(static_cast<WebGLRenderbuffer*>(object)));
+            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(object));
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
             if (extensionEnabled(EXTsRGBName)) {
                 GLint value = 0;
@@ -2283,7 +2283,7 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_ALPHA_BITS:
         return getIntParameter(pname);
     case GL_ARRAY_BUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer>(m_boundArrayBuffer.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundArrayBuffer.get()));
     case GL_BLEND:
         return getBooleanParameter(pname);
     case GL_BLEND_COLOR:
@@ -2313,7 +2313,7 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_CULL_FACE_MODE:
         return getUnsignedIntParameter(pname);
     case GL_CURRENT_PROGRAM:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLProgram>(m_currentProgram.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_currentProgram.get()));
     case GL_DEPTH_BITS:
         if (!m_framebufferBinding && !m_requestedAttributes->depth())
             return WebGLGetInfo(intZero);
@@ -2331,9 +2331,9 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_DITHER:
         return getBooleanParameter(pname);
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer>(m_boundVertexArrayObject->boundElementArrayBuffer()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject->boundElementArrayBuffer()));
     case GL_FRAMEBUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLFramebuffer>(m_framebufferBinding.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
     case GL_FRONT_FACE:
         return getUnsignedIntParameter(pname);
     case GL_GENERATE_MIPMAP_HINT:
@@ -2382,7 +2382,7 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_RED_BITS:
         return getIntParameter(pname);
     case GL_RENDERBUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLRenderbuffer>(m_renderbufferBinding.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_renderbufferBinding.get()));
     case GL_RENDERER:
         return WebGLGetInfo(String("WebKit WebGL"));
     case GL_SAMPLE_BUFFERS:
@@ -2438,9 +2438,9 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_SUBPIXEL_BITS:
         return getIntParameter(pname);
     case GL_TEXTURE_BINDING_2D:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture>(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
     case GL_TEXTURE_BINDING_CUBE_MAP:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture>(m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get()));
     case GL_UNPACK_ALIGNMENT:
         return getIntParameter(pname);
     case GC3D_UNPACK_FLIP_Y_WEBGL:
@@ -2473,7 +2473,7 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
         if (extensionEnabled(OESVertexArrayObjectName)) {
             if (!m_boundVertexArrayObject->isDefaultObject())
-                return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES>(m_boundVertexArrayObject.get()));
+                return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject.get()));
             return WebGLGetInfo();
         }
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_vertex_array_object not enabled");
@@ -2887,7 +2887,7 @@ WebGLGetInfo WebGLRenderingContextBase::getVertexAttrib(GLuint index, GLenum pna
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
         if (!state.bufferBinding || !state.bufferBinding->object())
             return WebGLGetInfo();
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer>(state.bufferBinding.get()));
+        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(state.bufferBinding.get()));
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
         return WebGLGetInfo(state.enabled);
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:

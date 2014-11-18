@@ -26,14 +26,13 @@
 #ifndef WebGLBuffer_h
 #define WebGLBuffer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class WebGLBuffer final : public WebGLSharedObject, public ScriptWrappable {
+class WebGLBuffer final : public WebGLSharedObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLBuffer();

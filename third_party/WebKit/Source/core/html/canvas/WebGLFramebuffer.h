@@ -26,7 +26,6 @@
 #ifndef WebGLFramebuffer_h
 #define WebGLFramebuffer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLContextObject.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "wtf/PassRefPtr.h"
@@ -37,7 +36,7 @@ namespace blink {
 class WebGLRenderbuffer;
 class WebGLTexture;
 
-class WebGLFramebuffer final : public WebGLContextObject, public ScriptWrappable {
+class WebGLFramebuffer final : public WebGLContextObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class WebGLAttachment : public RefCountedWillBeGarbageCollectedFinalized<WebGLAttachment> {

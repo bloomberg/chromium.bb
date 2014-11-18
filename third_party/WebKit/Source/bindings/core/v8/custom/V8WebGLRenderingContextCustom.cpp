@@ -79,28 +79,18 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8:
         return v8String(isolate, args.getString());
     case WebGLGetInfo::kTypeUnsignedInt:
         return v8::Integer::NewFromUnsigned(isolate, args.getUnsignedInt());
-    case WebGLGetInfo::kTypeWebGLBuffer:
-        return toV8(args.getWebGLBuffer(), creationContext, isolate);
+    case WebGLGetInfo::kTypeWebGLObject:
+        return toV8(args.getWebGLObject(), creationContext, isolate);
     case WebGLGetInfo::kTypeWebGLFloatArray:
         return toV8(args.getWebGLFloatArray(), creationContext, isolate);
-    case WebGLGetInfo::kTypeWebGLFramebuffer:
-        return toV8(args.getWebGLFramebuffer(), creationContext, isolate);
     case WebGLGetInfo::kTypeWebGLIntArray:
         return toV8(args.getWebGLIntArray(), creationContext, isolate);
     // FIXME: implement WebGLObjectArray
     // case WebGLGetInfo::kTypeWebGLObjectArray:
-    case WebGLGetInfo::kTypeWebGLProgram:
-        return toV8(args.getWebGLProgram(), creationContext, isolate);
-    case WebGLGetInfo::kTypeWebGLRenderbuffer:
-        return toV8(args.getWebGLRenderbuffer(), creationContext, isolate);
-    case WebGLGetInfo::kTypeWebGLTexture:
-        return toV8(args.getWebGLTexture(), creationContext, isolate);
     case WebGLGetInfo::kTypeWebGLUnsignedByteArray:
         return toV8(args.getWebGLUnsignedByteArray(), creationContext, isolate);
     case WebGLGetInfo::kTypeWebGLUnsignedIntArray:
         return toV8(args.getWebGLUnsignedIntArray(), creationContext, isolate);
-    case WebGLGetInfo::kTypeWebGLVertexArrayObjectOES:
-        return toV8(args.getWebGLVertexArrayObjectOES(), creationContext, isolate);
     default:
         notImplemented();
         return v8::Undefined(isolate);

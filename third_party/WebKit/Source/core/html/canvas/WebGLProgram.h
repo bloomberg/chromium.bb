@@ -26,7 +26,6 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "core/html/canvas/WebGLShader.h"
 #include "wtf/PassRefPtr.h"
@@ -34,7 +33,7 @@
 
 namespace blink {
 
-class WebGLProgram final : public WebGLSharedObject, public ScriptWrappable {
+class WebGLProgram final : public WebGLSharedObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLProgram();

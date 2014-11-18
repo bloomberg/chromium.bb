@@ -26,14 +26,13 @@
 #ifndef WebGLShader_h
 #define WebGLShader_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class WebGLShader final : public WebGLSharedObject, public ScriptWrappable {
+class WebGLShader final : public WebGLSharedObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLShader();

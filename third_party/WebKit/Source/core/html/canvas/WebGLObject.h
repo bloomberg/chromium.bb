@@ -26,6 +26,7 @@
 #ifndef WebGLObject_h
 #define WebGLObject_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -39,7 +40,7 @@ namespace blink {
 class WebGLContextGroup;
 class WebGLRenderingContextBase;
 
-class WebGLObject : public RefCountedWillBeGarbageCollectedFinalized<WebGLObject> {
+class WebGLObject : public RefCountedWillBeGarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
 public:
     virtual ~WebGLObject();
 
