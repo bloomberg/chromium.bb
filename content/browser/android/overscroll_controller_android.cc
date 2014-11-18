@@ -127,9 +127,8 @@ void OverscrollControllerAndroid::OnGestureEventAck(
   if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
     // The effect should only be allowed if both the causal touch events go
     // unconsumed and the generated scroll events go unconsumed.
-    // TODO(jdduke): Prevent activation if the first touchmove was consumed,
-    // i.e., the first GSU was prevented.
-    bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
+                    event.data.scrollUpdate.previousUpdateInSequencePrevented;
     refresh_effect_.OnScrollUpdateAck(consumed);
   }
 }

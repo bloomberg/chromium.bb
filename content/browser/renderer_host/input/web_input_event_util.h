@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 struct GestureEventData;
+struct GestureEventDetails;
 class MotionEvent;
 }
 
@@ -22,15 +24,19 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
     blink::WebKeyboardEvent* event,
     ui::KeyboardCode windows_key_code);
 
-// Creates a WebTouchEvent from |event|, scaling all size components from
-// |event| by |scale|.
 CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const ui::MotionEvent& event);
 
-// Creates a WebGestureEvent from |event|, scaling all size components from
-// |event| by |scale|.
-CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
-    const ui::GestureEventData& data);
+CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEvent(
+    const ui::GestureEventDetails& details,
+    base::TimeDelta timestamp,
+    const gfx::PointF& location,
+    const gfx::PointF& raw_location,
+    int flags);
+
+// Convenience wrapper for |CreateWebGestureEvent| using the supplied |data|.
+CONTENT_EXPORT blink::WebGestureEvent
+CreateWebGestureEventFromGestureEventData(const ui::GestureEventData& data);
 
 int EventFlagsToWebEventModifiers(int flags);
 

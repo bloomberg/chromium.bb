@@ -19,6 +19,10 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   explicit GestureEventDetails(EventType type);
   GestureEventDetails(EventType type, float delta_x, float delta_y);
 
+  // The caller is responsible for ensuring that the gesture data from |other|
+  // is compatible and sufficient for that expected by gestures of |type|.
+  GestureEventDetails(EventType type, const GestureEventDetails& other);
+
   EventType type() const { return type_; }
 
   int touch_points() const { return touch_points_; }
@@ -46,74 +50,74 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
 
   float scroll_x_hint() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_BEGIN, type_);
-    return data.scroll_begin.x_hint;
+    return data_.scroll_begin.x_hint;
   }
 
   float scroll_y_hint() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_BEGIN, type_);
-    return data.scroll_begin.y_hint;
+    return data_.scroll_begin.y_hint;
   }
 
   float scroll_x() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll_update.x;
+    return data_.scroll_update.x;
   }
 
   float scroll_y() const {
     DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll_update.y;
+    return data_.scroll_update.y;
   }
 
   float velocity_x() const {
     DCHECK_EQ(ET_SCROLL_FLING_START, type_);
-    return data.fling_velocity.x;
+    return data_.fling_velocity.x;
   }
 
   float velocity_y() const {
     DCHECK_EQ(ET_SCROLL_FLING_START, type_);
-    return data.fling_velocity.y;
+    return data_.fling_velocity.y;
   }
 
   float first_finger_width() const {
     DCHECK_EQ(ET_GESTURE_TWO_FINGER_TAP, type_);
-    return data.first_finger_enclosing_rectangle.width;
+    return data_.first_finger_enclosing_rectangle.width;
   }
 
   float first_finger_height() const {
     DCHECK_EQ(ET_GESTURE_TWO_FINGER_TAP, type_);
-    return data.first_finger_enclosing_rectangle.height;
+    return data_.first_finger_enclosing_rectangle.height;
   }
 
   float scale() const {
     DCHECK_EQ(ET_GESTURE_PINCH_UPDATE, type_);
-    return data.scale;
+    return data_.scale;
   }
 
   bool swipe_left() const {
     DCHECK_EQ(ET_GESTURE_SWIPE, type_);
-    return data.swipe.left;
+    return data_.swipe.left;
   }
 
   bool swipe_right() const {
     DCHECK_EQ(ET_GESTURE_SWIPE, type_);
-    return data.swipe.right;
+    return data_.swipe.right;
   }
 
   bool swipe_up() const {
     DCHECK_EQ(ET_GESTURE_SWIPE, type_);
-    return data.swipe.up;
+    return data_.swipe.up;
   }
 
   bool swipe_down() const {
     DCHECK_EQ(ET_GESTURE_SWIPE, type_);
-    return data.swipe.down;
+    return data_.swipe.down;
   }
 
   int tap_count() const {
     DCHECK(type_ == ET_GESTURE_TAP ||
            type_ == ET_GESTURE_TAP_UNCONFIRMED ||
            type_ == ET_GESTURE_DOUBLE_TAP);
-    return data.tap_count;
+    return data_.tap_count;
   }
 
   void set_tap_count(int tap_count) {
@@ -121,13 +125,23 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     DCHECK(type_ == ET_GESTURE_TAP ||
            type_ == ET_GESTURE_TAP_UNCONFIRMED ||
            type_ == ET_GESTURE_DOUBLE_TAP);
-    data.tap_count = tap_count;
+    data_.tap_count = tap_count;
   }
 
   void set_scale(float scale) {
     DCHECK_GE(scale, 0.0f);
     DCHECK_EQ(type_, ET_GESTURE_PINCH_UPDATE);
-    data.scale = scale;
+    data_.scale = scale;
+  }
+
+  void mark_previous_scroll_update_in_sequence_prevented() {
+    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
+    data_.scroll_update.previous_update_in_sequence_prevented = true;
+  }
+
+  bool previous_scroll_update_in_sequence_prevented() const {
+    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
+    return data_.scroll_update.previous_update_in_sequence_prevented;
   }
 
  private:
@@ -144,6 +158,9 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     struct {  // SCROLL delta.
       float x;
       float y;
+      // Whether any previous scroll update in the current scroll sequence was
+      // suppressed because the underlying touch was consumed.
+      bool previous_update_in_sequence_prevented;
     } scroll_update;
 
     float scale;  // PINCH scale.
@@ -170,7 +187,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     // Tap information must be set for ET_GESTURE_TAP,
     // ET_GESTURE_TAP_UNCONFIRMED, and ET_GESTURE_DOUBLE_TAP events.
     int tap_count;  // TAP repeat count.
-  } data;
+  } data_;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

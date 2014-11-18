@@ -179,9 +179,13 @@ class TouchDispositionGestureFilterTest
 
   bool GesturesSent() const { return !sent_gestures_.empty(); }
 
-  base::TimeTicks LastSentGestureTime() const {
+  const GestureEventData& last_sent_gesture() const {
     CHECK(last_sent_gesture_);
-    return last_sent_gesture_->time;
+    return *last_sent_gesture_;
+  }
+
+  base::TimeTicks LastSentGestureTime() const {
+    return last_sent_gesture().time;
   }
 
   base::TimeTicks CurrentTouchTime() const {
@@ -197,18 +201,15 @@ class TouchDispositionGestureFilterTest
   }
 
   gfx::PointF LastSentGestureLocation() const {
-    CHECK(last_sent_gesture_);
-    return gfx::PointF(last_sent_gesture_->x, last_sent_gesture_->y);
+    return gfx::PointF(last_sent_gesture().x, last_sent_gesture().y);
   }
 
   gfx::PointF LastSentGestureRawLocation() const {
-    CHECK(last_sent_gesture_);
-    return gfx::PointF(last_sent_gesture_->raw_x, last_sent_gesture_->raw_y);
+    return gfx::PointF(last_sent_gesture().raw_x, last_sent_gesture().raw_y);
   }
 
   int LastSentGestureFlags() const {
-    CHECK(last_sent_gesture_);
-    return last_sent_gesture_->flags;
+    return last_sent_gesture().flags;
   }
 
   const gfx::RectF& ShowPressBoundingBox() const {
@@ -1146,6 +1147,46 @@ TEST_F(TouchDispositionGestureFilterTest, EventFlagPropagation) {
   EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL),
                             GetAndResetSentGestures()));
   EXPECT_EQ(0, LastSentGestureFlags());
+}
+
+
+TEST_F(TouchDispositionGestureFilterTest, PreviousScrollPrevented) {
+  PushGesture(ET_GESTURE_BEGIN);
+  PressTouchPoint(1, 1);
+  EXPECT_FALSE(GesturesSent());
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_BEGIN), GetAndResetSentGestures()));
+
+  // The sent scroll update should always reflect whether any preceding scroll
+  // update has been dropped.
+  PushGesture(ET_GESTURE_SCROLL_UPDATE);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchNotConsumedAck();
+  ASSERT_TRUE(GesturesSent());
+  EXPECT_FALSE(last_sent_gesture()
+                   .details.previous_scroll_update_in_sequence_prevented());
+  GetAndResetSentGestures();
+
+  PushGesture(ET_GESTURE_SCROLL_UPDATE);
+  MoveTouchPoint(0, -2, -2);
+  SendTouchConsumedAck();
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(ET_GESTURE_SCROLL_UPDATE);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchNotConsumedAck();
+  ASSERT_TRUE(GesturesSent());
+  EXPECT_TRUE(last_sent_gesture()
+                  .details.previous_scroll_update_in_sequence_prevented());
+  GetAndResetSentGestures();
+
+  PushGesture(ET_GESTURE_SCROLL_UPDATE);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchNotConsumedAck();
+  ASSERT_TRUE(GesturesSent());
+  EXPECT_TRUE(last_sent_gesture()
+                  .details.previous_scroll_update_in_sequence_prevented());
 }
 
 }  // namespace ui

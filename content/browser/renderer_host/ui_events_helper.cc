@@ -12,31 +12,6 @@
 
 namespace {
 
-int WebModifiersToUIFlags(int modifiers) {
-  int flags = ui::EF_NONE;
-
-  if (modifiers & blink::WebInputEvent::ShiftKey)
-    flags |= ui::EF_SHIFT_DOWN;
-  if (modifiers & blink::WebInputEvent::ControlKey)
-    flags |= ui::EF_CONTROL_DOWN;
-  if (modifiers & blink::WebInputEvent::AltKey)
-    flags |= ui::EF_ALT_DOWN;
-  if (modifiers & blink::WebInputEvent::MetaKey)
-    flags |= ui::EF_COMMAND_DOWN;
-
-  if (modifiers & blink::WebInputEvent::LeftButtonDown)
-    flags |= ui::EF_LEFT_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::RightButtonDown)
-    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::MiddleButtonDown)
-    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
-
-  if (modifiers & blink::WebInputEvent::CapsLockOn)
-    flags |= ui::EF_CAPS_LOCK_DOWN;
-
-  return flags;
-}
-
 ui::EventType WebTouchPointStateToEventType(
     blink::WebTouchPoint::State state) {
   switch (state) {
@@ -117,7 +92,7 @@ bool MakeUITouchEventsFromWebTouchEvents(
       return false;
   }
 
-  int flags = WebModifiersToUIFlags(touch.modifiers);
+  int flags = WebEventModifiersToEventFlags(touch.modifiers);
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
       static_cast<int64>(touch.timeStampSeconds * 1000000));
   for (unsigned i = 0; i < touch.touchesLength; ++i) {
@@ -147,100 +122,11 @@ bool MakeUITouchEventsFromWebTouchEvents(
 
 blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
     const ui::GestureEvent& event) {
-  blink::WebGestureEvent gesture_event;
-
-  switch (event.type()) {
-    case ui::ET_GESTURE_TAP:
-      gesture_event.type = blink::WebInputEvent::GestureTap;
-      gesture_event.data.tap.tapCount = event.details().tap_count();
-      gesture_event.data.tap.width = event.details().bounding_box().width();
-      gesture_event.data.tap.height = event.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_TAP_DOWN:
-      gesture_event.type = blink::WebInputEvent::GestureTapDown;
-      gesture_event.data.tapDown.width =
-          event.details().bounding_box().width();
-      gesture_event.data.tapDown.height =
-          event.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_SHOW_PRESS:
-      gesture_event.type = blink::WebInputEvent::GestureShowPress;
-      gesture_event.data.showPress.width =
-          event.details().bounding_box().width();
-      gesture_event.data.showPress.height =
-          event.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_TAP_CANCEL:
-      gesture_event.type = blink::WebInputEvent::GestureTapCancel;
-      break;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      gesture_event.type = blink::WebInputEvent::GestureScrollBegin;
-      gesture_event.data.scrollBegin.deltaXHint =
-          event.details().scroll_x_hint();
-      gesture_event.data.scrollBegin.deltaYHint =
-          event.details().scroll_y_hint();
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      gesture_event.type = blink::WebInputEvent::GestureScrollUpdate;
-      gesture_event.data.scrollUpdate.deltaX = event.details().scroll_x();
-      gesture_event.data.scrollUpdate.deltaY = event.details().scroll_y();
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-      gesture_event.type = blink::WebInputEvent::GestureScrollEnd;
-      break;
-    case ui::ET_GESTURE_PINCH_BEGIN:
-      gesture_event.type = blink::WebInputEvent::GesturePinchBegin;
-      break;
-    case ui::ET_GESTURE_PINCH_UPDATE:
-      gesture_event.type = blink::WebInputEvent::GesturePinchUpdate;
-      gesture_event.data.pinchUpdate.scale = event.details().scale();
-      break;
-    case ui::ET_GESTURE_PINCH_END:
-      gesture_event.type = blink::WebInputEvent::GesturePinchEnd;
-      break;
-    case ui::ET_SCROLL_FLING_START:
-      gesture_event.type = blink::WebInputEvent::GestureFlingStart;
-      gesture_event.data.flingStart.velocityX = event.details().velocity_x();
-      gesture_event.data.flingStart.velocityY = event.details().velocity_y();
-      break;
-    case ui::ET_SCROLL_FLING_CANCEL:
-      gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      gesture_event.type = blink::WebInputEvent::GestureLongPress;
-      gesture_event.data.longPress.width =
-          event.details().bounding_box().width();
-      gesture_event.data.longPress.height =
-          event.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_LONG_TAP:
-      gesture_event.type = blink::WebInputEvent::GestureLongTap;
-      gesture_event.data.longPress.width =
-          event.details().bounding_box().width();
-      gesture_event.data.longPress.height =
-          event.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      gesture_event.type = blink::WebInputEvent::GestureTwoFingerTap;
-      gesture_event.data.twoFingerTap.firstFingerWidth =
-          event.details().first_finger_width();
-      gesture_event.data.twoFingerTap.firstFingerHeight =
-          event.details().first_finger_height();
-      break;
-    case ui::ET_GESTURE_BEGIN:
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_SWIPE:
-      gesture_event.type = blink::WebInputEvent::Undefined;
-      break;
-    default:
-      NOTREACHED() << "Unknown gesture type: " << event.type();
-  }
-
-  gesture_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
-  gesture_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
-  gesture_event.timeStampSeconds = event.time_stamp().InSecondsF();
-
-  return gesture_event;
+  return CreateWebGestureEvent(event.details(),
+                               event.time_stamp(),
+                               event.location_f(),
+                               event.root_location_f(),
+                               event.flags());
 }
 
 blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(

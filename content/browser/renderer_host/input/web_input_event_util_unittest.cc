@@ -13,7 +13,10 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
+#include "ui/events/gesture_event_details.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
@@ -56,6 +59,48 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   WebTouchEvent actual_event = CreateWebTouchEventFromMotionEvent(event);
   EXPECT_EQ(WebInputEventTraits::ToString(expected_event),
             WebInputEventTraits::ToString(actual_event));
+}
+
+TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
+  int motion_event_id = 0;
+  MotionEvent::ToolType tool_type = MotionEvent::TOOL_TYPE_UNKNOWN;
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  gfx::Vector2dF delta(-5.f, 10.f);
+  gfx::PointF pos(1.f, 2.f);
+  gfx::PointF raw_pos(11.f, 12.f);
+  size_t touch_points = 1;
+  gfx::RectF rect(pos, gfx::SizeF());
+  int flags = 0;
+  ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE,
+                                  delta.x(),
+                                  delta.y());
+  details.mark_previous_scroll_update_in_sequence_prevented();
+  ui::GestureEventData event(details,
+                             motion_event_id,
+                             tool_type,
+                             timestamp,
+                             pos.x(),
+                             pos.y(),
+                             raw_pos.x(),
+                             raw_pos.y(),
+                             touch_points,
+                             rect,
+                             flags);
+
+  blink::WebGestureEvent web_event =
+      CreateWebGestureEventFromGestureEventData(event);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, web_event.type);
+  EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ((timestamp - base::TimeTicks()).InSecondsF(),
+            web_event.timeStampSeconds);
+  EXPECT_EQ(gfx::ToFlooredInt(pos.x()), web_event.x);
+  EXPECT_EQ(gfx::ToFlooredInt(pos.y()), web_event.y);
+  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.x()), web_event.globalX);
+  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.y()), web_event.globalY);
+  EXPECT_EQ(blink::WebGestureDeviceTouchscreen, web_event.sourceDevice);
+  EXPECT_EQ(delta.x(), web_event.data.scrollUpdate.deltaX);
+  EXPECT_EQ(delta.y(), web_event.data.scrollUpdate.deltaY);
+  EXPECT_TRUE(web_event.data.scrollUpdate.previousUpdateInSequencePrevented);
 }
 
 }  // namespace content

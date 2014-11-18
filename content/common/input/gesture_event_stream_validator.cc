@@ -5,6 +5,8 @@
 #include "content/common/input/gesture_event_stream_validator.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using blink::WebInputEvent;
@@ -22,6 +24,10 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
                                            std::string* error_msg) {
   DCHECK(error_msg);
   error_msg->clear();
+  if (!WebInputEvent::isGestureEventType(event.type)) {
+    error_msg->append(base::StringPrintf(
+        "Invalid gesture type: %s", WebInputEventTraits::GetName(event.type)));
+  }
   switch (event.type) {
     case WebInputEvent::GestureScrollBegin:
       if (scrolling_)

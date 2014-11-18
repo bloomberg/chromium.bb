@@ -267,6 +267,9 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
         event_to_coalesce.data.scrollUpdate.deltaX;
     event->data.scrollUpdate.deltaY +=
         event_to_coalesce.data.scrollUpdate.deltaY;
+    DCHECK_EQ(
+        event->data.scrollUpdate.previousUpdateInSequencePrevented,
+        event_to_coalesce.data.scrollUpdate.previousUpdateInSequencePrevented);
   } else if (event->type == WebInputEvent::GesturePinchUpdate) {
     event->data.pinchUpdate.scale *= event_to_coalesce.data.pinchUpdate.scale;
     // Ensure the scale remains bounded above 0 and below Infinity so that

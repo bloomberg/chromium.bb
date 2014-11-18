@@ -36,7 +36,7 @@ GestureEventData::GestureEventData(const GestureEventDetails& details,
 
 GestureEventData::GestureEventData(EventType type,
                                    const GestureEventData& other)
-    : details(type),
+    : details(type, other.details),
       motion_event_id(other.motion_event_id),
       primary_tool_type(other.primary_tool_type),
       time(other.time),

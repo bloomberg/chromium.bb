@@ -314,6 +314,15 @@ void TouchDispositionGestureFilter::SendGesture(
       ending_event_primary_tool_type_ = event.primary_tool_type;
       needs_scroll_ending_event_ = true;
       break;
+    case ET_GESTURE_SCROLL_UPDATE:
+      if (state_.HasFilteredGestureType(ET_GESTURE_SCROLL_UPDATE)) {
+        GestureEventData modified_event(ET_GESTURE_SCROLL_UPDATE, event);
+        modified_event.details
+            .mark_previous_scroll_update_in_sequence_prevented();
+        client_->ForwardGestureEvent(modified_event);
+        return;
+      }
+      break;
     case ET_GESTURE_SCROLL_END:
       needs_scroll_ending_event_ = false;
       break;
@@ -418,10 +427,17 @@ bool TouchDispositionGestureFilter::GestureHandlingState::Filter(
        last_gesture_of_type_dropped_.has_bit(
            GetGestureTypeIndex(antecedent_event_type)))) {
     last_gesture_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture_type));
+    any_gesture_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture_type));
     return true;
   }
   last_gesture_of_type_dropped_.clear_bit(GetGestureTypeIndex(gesture_type));
   return false;
+}
+
+bool TouchDispositionGestureFilter::GestureHandlingState::
+    HasFilteredGestureType(EventType gesture_type) const {
+  return any_gesture_of_type_dropped_.has_bit(
+      GetGestureTypeIndex(gesture_type));
 }
 
 }  // namespace content
