@@ -225,12 +225,15 @@ class NET_EXPORT_PRIVATE Filter {
   static void FixupEncodingTypes(const FilterContext& filter_context,
                                  std::vector<FilterType>* encoding_types);
 
+  // Returns a string describing the FilterTypes implemented by this filter.
+  std::string OrderedFilterList() const;
+
  protected:
   friend class GZipUnitTest;
   friend class SdchFilterChainingTest;
   FRIEND_TEST_ALL_PREFIXES(FilterTest, ThreeFilterChain);
 
-  Filter();
+  explicit Filter(FilterType type_id);
 
   // Filters the data stored in stream_buffer_ and writes the output into the
   // dest_buffer passed in.
@@ -294,9 +297,13 @@ class NET_EXPORT_PRIVATE Filter {
 
   // An optional filter to process output from this filter.
   scoped_ptr<Filter> next_filter_;
+
   // Remember what status or local filter last returned so we can better handle
   // chained filters.
   FilterStatus last_status_;
+
+  // The filter type this filter was constructed from.
+  FilterType type_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Filter);
 };

@@ -64,6 +64,24 @@ void LogSdchProblem(const FilterContext& filter_context,
       base::Bind(&NetLogSdchResourceProblemCallback, problem));
 }
 
+std::string FilterTypeAsString(Filter::FilterType type_id) {
+  switch (type_id) {
+    case Filter::FILTER_TYPE_DEFLATE:
+      return "FILTER_TYPE_DEFLATE";
+    case Filter::FILTER_TYPE_GZIP:
+      return "FILTER_TYPE_GZIP";
+    case Filter::FILTER_TYPE_GZIP_HELPING_SDCH:
+      return "FILTER_TYPE_GZIP_HELPING_SDCH";
+    case Filter::FILTER_TYPE_SDCH:
+      return "FILTER_TYPE_SDCH";
+    case Filter::FILTER_TYPE_SDCH_POSSIBLE  :
+      return "FILTER_TYPE_SDCH_POSSIBLE  ";
+    case Filter::FILTER_TYPE_UNSUPPORTED:
+      return "FILTER_TYPE_UNSUPPORTED";
+  }
+  return "";
+}
+
 }  // namespace
 
 FilterContext::~FilterContext() {
@@ -340,12 +358,22 @@ void Filter::FixupEncodingTypes(
   return;
 }
 
-Filter::Filter()
+std::string Filter::OrderedFilterList() const {
+  if (next_filter_) {
+    return FilterTypeAsString(type_id_) + "," +
+        next_filter_->OrderedFilterList();
+  } else {
+    return FilterTypeAsString(type_id_);
+  }
+}
+
+Filter::Filter(FilterType type_id)
     : stream_buffer_(NULL),
       stream_buffer_size_(0),
       next_stream_data_(NULL),
       stream_data_len_(0),
-      last_status_(FILTER_NEED_MORE_DATA) {}
+      last_status_(FILTER_NEED_MORE_DATA),
+      type_id_(type_id) {}
 
 Filter::FilterStatus Filter::CopyOut(char* dest_buffer, int* dest_len) {
   int out_len;
@@ -370,7 +398,7 @@ Filter::FilterStatus Filter::CopyOut(char* dest_buffer, int* dest_len) {
 
 // static
 Filter* Filter::InitGZipFilter(FilterType type_id, int buffer_size) {
-  scoped_ptr<GZipFilter> gz_filter(new GZipFilter());
+  scoped_ptr<GZipFilter> gz_filter(new GZipFilter(type_id));
   gz_filter->InitBuffer(buffer_size);
   return gz_filter->InitDecoding(type_id) ? gz_filter.release() : NULL;
 }
@@ -379,7 +407,7 @@ Filter* Filter::InitGZipFilter(FilterType type_id, int buffer_size) {
 Filter* Filter::InitSdchFilter(FilterType type_id,
                                const FilterContext& filter_context,
                                int buffer_size) {
-  scoped_ptr<SdchFilter> sdch_filter(new SdchFilter(filter_context));
+  scoped_ptr<SdchFilter> sdch_filter(new SdchFilter(type_id, filter_context));
   sdch_filter->InitBuffer(buffer_size);
   return sdch_filter->InitDecoding(type_id) ? sdch_filter.release() : NULL;
 }

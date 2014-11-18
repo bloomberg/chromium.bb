@@ -10,8 +10,9 @@
 
 namespace net {
 
-GZipFilter::GZipFilter()
-    : decoding_status_(DECODING_UNINITIALIZED),
+GZipFilter::GZipFilter(FilterType type)
+    : Filter(type),
+      decoding_status_(DECODING_UNINITIALIZED),
       decoding_mode_(DECODE_MODE_UNKNOWN),
       gzip_header_status_(GZIP_CHECK_HEADER_IN_PROGRESS),
       zlib_header_added_(false),

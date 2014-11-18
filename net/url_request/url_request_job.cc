@@ -11,6 +11,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -20,6 +21,18 @@
 #include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+
+namespace {
+
+// Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
+base::Value* FiltersSetCallback(net::Filter* filter,
+                                enum net::NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
+  event_params->SetString("filters", filter->OrderedFilterList());
+  return event_params;
+}
+
+}  // namespace
 
 namespace net {
 
@@ -424,6 +437,10 @@ void URLRequestJob::NotifyHeadersComplete() {
     request_->GetResponseHeaderByName("content-length", &content_length);
     if (!content_length.empty())
       base::StringToInt64(content_length, &expected_content_size_);
+  } else {
+    request_->net_log().AddEvent(
+        NetLog::TYPE_URL_REQUEST_FILTERS_SET,
+        base::Bind(&FiltersSetCallback, base::Unretained(filter_.get())));
   }
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.

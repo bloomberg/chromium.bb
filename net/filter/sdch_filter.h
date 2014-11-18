@@ -54,7 +54,7 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   };
 
   // Only to be instantiated by Filter::Factory.
-  explicit SdchFilter(const FilterContext& filter_context);
+  SdchFilter(FilterType type, const FilterContext& filter_context);
   friend class Filter;
 
   // Identify the suggested dictionary, and initialize underlying decompressor.

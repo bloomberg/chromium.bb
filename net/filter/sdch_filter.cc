@@ -99,8 +99,9 @@ base::Value* NetLogSdchResponseCorruptionDetectionCallback(
 
 }  // namespace
 
-SdchFilter::SdchFilter(const FilterContext& filter_context)
-    : filter_context_(filter_context),
+SdchFilter::SdchFilter(FilterType type, const FilterContext& filter_context)
+    : Filter(type),
+      filter_context_(filter_context),
       decoding_status_(DECODING_UNINITIALIZED),
       dictionary_hash_(),
       dictionary_hash_is_plausible_(false),

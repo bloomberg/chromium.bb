@@ -13,7 +13,7 @@ namespace {
 
 class PassThroughFilter : public Filter {
  public:
-  PassThroughFilter() {}
+  PassThroughFilter() : Filter(FILTER_TYPE_UNSUPPORTED) {}
 
   FilterStatus ReadFilteredData(char* dest_buffer, int* dest_len) override {
     return CopyOut(dest_buffer, dest_len);

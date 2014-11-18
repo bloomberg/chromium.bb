@@ -796,6 +796,14 @@ EVENT_TYPE(URL_REQUEST_FAKE_RESPONSE_HEADERS_CREATED)
 //     "headers": <The list of header:value pairs>,
 //   }
 
+EVENT_TYPE(URL_REQUEST_FILTERS_SET)
+// This event is logged when a URLRequestJob sets up the filters, if any
+// filters were added to the job.  It logs the filters added.
+// The following parameters are attached:
+//   {
+//     "filters": <The list of filter names>
+//   }
+
 // ------------------------------------------------------------------------
 // HttpCache
 // ------------------------------------------------------------------------
