@@ -74,6 +74,7 @@ imported/web-platform-tests/content-security-policy [ Skip ]
 imported/web-platform-tests/cors [ Skip ]
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
+imported/web-platform-tests/docs [ Skip ]
 imported/web-platform-tests/dom [ Skip ]
 imported/web-platform-tests/domparsing [ Skip ]
 imported/web-platform-tests/domxpath [ Skip ]
@@ -161,4 +162,3 @@ imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-tree
 imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-006.html [ Skip ]
 imported/web-platform-tests/shadow-dom/shadow-trees/text-decoration-001.html [ Skip ]
 imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html [ Skip ]
-

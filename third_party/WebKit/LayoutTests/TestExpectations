@@ -1,4 +1,3 @@
-
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
@@ -159,19 +158,12 @@ crbug.com/418884 [ Win7 ] virtual/antialiasedtext/fast/text/emphasis-combined-te
 
 crbug.com/410461 [ Linux ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
-crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
-crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
+crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
+crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
-
-# FIXME: Remove the following test after it has been removed from its location,
-# i.e after the next import of w3c/web-platform-tests/.
-crbug.com/330083 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
 
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
-crbug.com/330083 imported/web-platform-tests/IndexedDB/interfaces.html [ Timeout ]
-crbug.com/330083 imported/web-platform-tests/IndexedDB/key_invalid.htm [ Failure ]
-crbug.com/330083 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Failure ]
 
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 

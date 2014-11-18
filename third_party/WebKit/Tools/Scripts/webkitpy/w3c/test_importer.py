@@ -219,7 +219,8 @@ class TestImporter(object):
 
             for filename in files:
                 path_full = self.filesystem.join(root, filename)
-                path_base = path_full.replace(self.layout_tests_dir + '/', '')
+                path_base = path_full.replace(directory + '/', '')
+                path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if not self.options.dry_run and self.import_in_place:
                         _log.info("  pruning %s" % path_base)
