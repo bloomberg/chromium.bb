@@ -33,21 +33,91 @@
 #include "config.h"
 #include "core/frame/DOMWindowTimers.h"
 
+#include "bindings/core/v8/V8GCForContextDispose.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMTimer.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
 
 namespace DOMWindowTimers {
 
-int setTimeout(EventTarget& eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
+static bool isAllowed(ExecutionContext* executionContext, bool isEval)
 {
-    return DOMTimer::install(eventTarget.executionContext(), action, timeout, true);
+    if (executionContext->isDocument()) {
+        Document* document = static_cast<Document*>(executionContext);
+        if (isEval && !document->contentSecurityPolicy()->allowEval())
+            return false;
+        return true;
+    }
+    if (executionContext->isWorkerGlobalScope()) {
+        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(executionContext);
+        if (!workerGlobalScope->script())
+            return false;
+        ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy();
+        if (isEval && policy && !policy->allowEval())
+            return false;
+        return true;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
-int setInterval(EventTarget& eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
+int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments)
 {
-    return DOMTimer::install(eventTarget.executionContext(), action, timeout, false);
+    ExecutionContext* executionContext = eventTarget.executionContext();
+    if (!isAllowed(executionContext, false))
+        return 0;
+    if (timeout >= 0 && executionContext->isDocument()) {
+        // FIXME: Crude hack that attempts to pass idle time to V8. This should
+        // be done using the scheduler instead.
+        V8GCForContextDispose::instance().notifyIdle();
+    }
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
+    return DOMTimer::install(executionContext, action.release(), timeout, true);
+}
+
+int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
+{
+    ExecutionContext* executionContext = eventTarget.executionContext();
+    if (!isAllowed(executionContext, true))
+        return 0;
+    // Don't allow setting timeouts to run empty functions.  Was historically a
+    // perfomance issue.
+    if (handler.isEmpty())
+        return 0;
+    if (timeout >= 0 && executionContext->isDocument()) {
+        // FIXME: Crude hack that attempts to pass idle time to V8. This should
+        // be done using the scheduler instead.
+        V8GCForContextDispose::instance().notifyIdle();
+    }
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
+    return DOMTimer::install(executionContext, action.release(), timeout, true);
+}
+
+int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments)
+{
+    ExecutionContext* executionContext = eventTarget.executionContext();
+    if (!isAllowed(executionContext, false))
+        return 0;
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
+    return DOMTimer::install(executionContext, action.release(), timeout, false);
+}
+
+int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
+{
+    ExecutionContext* executionContext = eventTarget.executionContext();
+    if (!isAllowed(executionContext, true))
+        return 0;
+    // Don't allow setting timeouts to run empty functions.  Was historically a
+    // perfomance issue.
+    if (handler.isEmpty())
+        return 0;
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
+    return DOMTimer::install(executionContext, action.release(), timeout, false);
 }
 
 void clearTimeout(EventTarget& eventTarget, int timeoutID)

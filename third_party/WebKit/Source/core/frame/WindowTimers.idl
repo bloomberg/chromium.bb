@@ -32,14 +32,13 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface WindowTimers {
-    // FIXME: currently using [Custom] and |any| because overload algorithm
-    // can't handle Function/DOMString overload properly
-    // http://crbug.com/293561
     // FIXME: would be clearer as a union type, like:
     // typedef (Function or DOMString) Handler
     // Needs spec update and better union support: http://crbug.com/240176
-    [Custom] long setTimeout(any handler, [Default=Undefined] optional long timeout);
-    void clearTimeout([Default=Undefined] optional long handle);
-    [Custom] long setInterval(any handler, [Default=Undefined] optional long timeout);
-    void clearInterval([Default=Undefined] optional long handle);
+    [CallWith=ScriptState] long setTimeout(Function handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState] long setTimeout(DOMString handler, optional long timeout = 0, any... arguments);
+    void clearTimeout(optional long handle = 0);
+    [CallWith=ScriptState] long setInterval(Function handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState] long setInterval(DOMString handler, optional long timeout = 0, any... arguments);
+    void clearInterval(optional long handle = 0);
 };

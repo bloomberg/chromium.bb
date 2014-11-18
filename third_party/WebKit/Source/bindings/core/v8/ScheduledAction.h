@@ -47,13 +47,17 @@ class WorkerGlobalScope;
 class ScheduledAction {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
 public:
-    ScheduledAction(ScriptState*, v8::Handle<v8::Function>, int argc, v8::Handle<v8::Value> argv[], v8::Isolate*);
-    ScheduledAction(ScriptState*, const String&, const KURL&, v8::Isolate*);
+    static PassOwnPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
+    static PassOwnPtr<ScheduledAction> create(ScriptState*, const String& handler);
+
     ~ScheduledAction();
 
     void execute(ExecutionContext*);
 
 private:
+    ScheduledAction(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
+    ScheduledAction(ScriptState*, const String& handler);
+
     void execute(LocalFrame*);
     void execute(WorkerGlobalScope*);
     void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles);

@@ -46,22 +46,15 @@
 
 namespace blink {
 
-ScheduledAction::ScheduledAction(ScriptState* scriptState, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], v8::Isolate* isolate)
-    : m_scriptState(scriptState)
-    , m_function(isolate, function)
-    , m_info(isolate)
-    , m_code(String(), KURL(), TextPosition::belowRangePosition())
+PassOwnPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
 {
-    m_info.ReserveCapacity(argc);
-    for (int i = 0; i < argc; ++i)
-        m_info.Append(argv[i]);
+    ASSERT(handler.isFunction());
+    return adoptPtr(new ScheduledAction(scriptState, handler, arguments));
 }
 
-ScheduledAction::ScheduledAction(ScriptState* scriptState, const String& code, const KURL& url, v8::Isolate* isolate)
-    : m_scriptState(scriptState)
-    , m_info(isolate)
-    , m_code(code, url)
+PassOwnPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const String& handler)
 {
+    return adoptPtr(new ScheduledAction(scriptState, handler));
 }
 
 ScheduledAction::~ScheduledAction()
@@ -85,6 +78,25 @@ void ScheduledAction::execute(ExecutionContext* context)
         WTF_LOG(Timers, "ScheduledAction::execute %p: worker scope", this);
         execute(toWorkerGlobalScope(context));
     }
+}
+
+ScheduledAction::ScheduledAction(ScriptState* scriptState, const ScriptValue& function, const Vector<ScriptValue>& arguments)
+    : m_scriptState(scriptState)
+    , m_info(scriptState->isolate())
+    , m_code(String(), KURL(), TextPosition::belowRangePosition())
+{
+    ASSERT(function.isFunction());
+    m_function.set(scriptState->isolate(), v8::Handle<v8::Function>::Cast(function.v8Value()));
+    m_info.ReserveCapacity(arguments.size());
+    for (const ScriptValue& argument : arguments)
+        m_info.Append(argument.v8Value());
+}
+
+ScheduledAction::ScheduledAction(ScriptState* scriptState, const String& code)
+    : m_scriptState(scriptState)
+    , m_info(scriptState->isolate())
+    , m_code(code, KURL())
+{
 }
 
 void ScheduledAction::execute(LocalFrame* frame)

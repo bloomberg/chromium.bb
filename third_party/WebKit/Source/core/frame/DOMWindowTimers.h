@@ -34,15 +34,19 @@
 #define DOMWindowTimers_h
 
 #include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
 class EventTarget;
-class ScheduledAction;
+class ScriptState;
+class ScriptValue;
 
 namespace DOMWindowTimers {
-int setTimeout(EventTarget&, PassOwnPtr<ScheduledAction>, int timeout);
-int setInterval(EventTarget&, PassOwnPtr<ScheduledAction>, int timeout);
+int setTimeout(ScriptState*, EventTarget&, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments);
+int setTimeout(ScriptState*, EventTarget&, const String& handler, int timeout, const Vector<ScriptValue>&);
+int setInterval(ScriptState*, EventTarget&, const ScriptValue& handler, int timeout, const Vector<ScriptValue>&);
+int setInterval(ScriptState*, EventTarget&, const String& handler, int timeout, const Vector<ScriptValue>&);
 void clearTimeout(EventTarget&, int timeoutId);
 void clearInterval(EventTarget&, int timeoutId);
 }

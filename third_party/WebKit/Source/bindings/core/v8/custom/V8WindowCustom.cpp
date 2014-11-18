@@ -34,22 +34,18 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScheduledAction.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8EventListenerList.h"
-#include "bindings/core/v8/V8GCForContextDispose.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
-#include "core/frame/DOMTimer.h"
-#include "core/frame/DOMWindowTimers.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -68,84 +64,6 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
-
-// FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
-// We should refactor this.
-static void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& exceptionState)
-{
-    int argumentCount = info.Length();
-
-    if (argumentCount < 1)
-        return;
-
-    LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-    if (!impl->frame() || !impl->document()) {
-        exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
-        return;
-    }
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    v8::Handle<v8::Value> function = info[0];
-    String functionString;
-    if (!function->IsFunction()) {
-        if (function->IsString()) {
-            functionString = toCoreString(function.As<v8::String>());
-        } else {
-            v8::Handle<v8::String> v8String = function->ToString(info.GetIsolate());
-
-            // Bail out if string conversion failed.
-            if (v8String.IsEmpty())
-                return;
-
-            functionString = toCoreString(v8String);
-        }
-
-        // Don't allow setting timeouts to run empty functions!
-        // (Bug 1009597)
-        if (!functionString.length())
-            return;
-    }
-
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState))
-        return;
-
-    OwnPtr<ScheduledAction> action;
-    if (function->IsFunction()) {
-        int paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        OwnPtr<v8::Local<v8::Value>[]> params;
-        if (paramCount > 0) {
-            params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
-            for (int i = 0; i < paramCount; i++) {
-                // parameters must be globalized
-                params[i] = info[i+2];
-            }
-        }
-
-        // params is passed to action, and released in action's destructor
-        ASSERT(impl->frame());
-        action = adoptPtr(new ScheduledAction(scriptState, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
-    } else {
-        if (impl->document() && !impl->document()->contentSecurityPolicy()->allowEval()) {
-            v8SetReturnValue(info, 0);
-            return;
-        }
-        ASSERT(impl->frame());
-        action = adoptPtr(new ScheduledAction(scriptState, functionString, KURL(), info.GetIsolate()));
-    }
-
-    int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
-    int timerId;
-    if (singleShot)
-        timerId = DOMWindowTimers::setTimeout(*impl, action.release(), timeout);
-    else
-        timerId = DOMWindowTimers::setInterval(*impl, action.release(), timeout);
-
-    // FIXME: Crude hack that attempts to pass idle time to V8. This should be
-    // done using the scheduler instead.
-    if (timeout >= 0)
-        V8GCForContextDispose::instance().notifyIdle();
-
-    v8SetReturnValue(info, timerId);
-}
 
 void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -436,22 +354,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
             }
         }
     }
-}
-
-
-void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "setTimeout", "Window", info.Holder(), info.GetIsolate());
-    windowSetTimeoutImpl(info, true, exceptionState);
-    exceptionState.throwIfNeeded();
-}
-
-
-void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "setInterval", "Window", info.Holder(), info.GetIsolate());
-    windowSetTimeoutImpl(info, false, exceptionState);
-    exceptionState.throwIfNeeded();
 }
 
 bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)

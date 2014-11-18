@@ -45,65 +45,6 @@
 
 namespace blink {
 
-static void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
-{
-    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toImpl(info.Holder());
-    ASSERT(workerGlobalScope);
-
-    int argumentCount = info.Length();
-    if (argumentCount < 1)
-        return;
-
-    v8::Handle<v8::Value> function = info[0];
-
-    WorkerScriptController* script = workerGlobalScope->script();
-    if (!script)
-        return;
-
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    OwnPtr<ScheduledAction> action;
-    if (function->IsString()) {
-        if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {
-            if (!policy->allowEval()) {
-                v8SetReturnValue(info, 0);
-                return;
-            }
-        }
-        action = adoptPtr(new ScheduledAction(scriptState, toCoreString(function.As<v8::String>()), KURL(), info.GetIsolate()));
-    } else if (function->IsFunction()) {
-        size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        OwnPtr<v8::Local<v8::Value>[]> params;
-        if (paramCount > 0) {
-            params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
-            for (size_t i = 0; i < paramCount; ++i)
-                params[i] = info[i+2];
-        }
-        // ScheduledAction takes ownership of actual params and releases them in its destructor.
-        action = adoptPtr(new ScheduledAction(scriptState, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
-    } else {
-        return;
-    }
-
-    int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
-    int timerId;
-    if (singleShot)
-        timerId = DOMWindowTimers::setTimeout(*workerGlobalScope, action.release(), timeout);
-    else
-        timerId = DOMWindowTimers::setInterval(*workerGlobalScope, action.release(), timeout);
-
-    v8SetReturnValue(info, timerId);
-}
-
-void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    return setTimeoutOrInterval(info, true);
-}
-
-void V8WorkerGlobalScope::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    return setTimeoutOrInterval(info, false);
-}
-
 v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // Notice that we explicitly ignore creationContext because the WorkerGlobalScope is its own creationContext.
