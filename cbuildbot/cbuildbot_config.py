@@ -750,11 +750,10 @@ class HWTestConfig(object):
     """Returns a default list of HWTestConfig's for a AFDO build, with overrides
     for optional args.
     """
-    afdo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
+    afdo_dict = dict(pool=constants.HWTEST_SUITES_POOL,
                      timeout=120 * 60, num=1, async=True, retry=False)
     afdo_dict.update(kwargs)
-    return [cls('pyauto_perf', **afdo_dict),
-            cls('perf_v2', **afdo_dict)]
+    return [cls('perf_v2', **afdo_dict)]
 
   @classmethod
   def DefaultListNonCanary(cls, **kwargs):
@@ -2277,7 +2276,7 @@ _config.add_group('parrot-release-group',
 
 release_afdo = _release.derive(
   trybot_list=False,
-  hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
+  hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_SUITES_POOL,
                                     num=4) +
            HWTestConfig.AFDOList(),
   push_image=False,
