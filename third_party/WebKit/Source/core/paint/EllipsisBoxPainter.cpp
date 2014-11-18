@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/EllipsisBoxPainter.h"
 
+#include "core/paint/TextPainter.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RootInlineBox.h"
-#include "core/rendering/TextPainter.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 

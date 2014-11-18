@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/TextPainter.h"
+#include "core/paint/TextPainter.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"

@@ -14,12 +14,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DrawingRecorder.h"
+#include "core/paint/TextPainter.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderTheme.h"
-#include "core/rendering/TextPainter.h"
 
 namespace blink {
 
