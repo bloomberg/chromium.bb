@@ -29,7 +29,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_paths.h"
@@ -45,9 +44,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::Mock;
 using ::testing::ReturnPointee;
 
 namespace chromeos {
@@ -119,26 +115,6 @@ class MockTimeTickClock : public base::TickClock {
   DISALLOW_COPY_AND_ASSIGN(MockTimeTickClock);
 };
 
-class MockAutomaticRebootManagerObserver
-    : public AutomaticRebootManagerObserver {
- public:
-  MockAutomaticRebootManagerObserver();
-  ~MockAutomaticRebootManagerObserver() override;
-
-  void Init(AutomaticRebootManager* automatic_reboot_manger);
-
-  // AutomaticRebootManagerObserver:
-  MOCK_METHOD1(OnRebootRequested, void(Reason));
-  MOCK_METHOD0(WillDestroyAutomaticRebootManager, void());
-
- private:
-  void StopObserving();
-
-  AutomaticRebootManager* automatic_reboot_manger_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutomaticRebootManagerObserver);
-};
-
 }  // namespace
 
 class AutomaticRebootManagerBasicTest : public testing::Test {
@@ -162,20 +138,12 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   void FastForwardBy(const base::TimeDelta& delta, bool expect_reboot);
   void FastForwardUntilNoTasksRemain(bool expect_reboot);
 
-  void ExpectRebootRequest(AutomaticRebootManagerObserver::Reason reason);
-  void ExpectNoRebootRequest();
-
   void CreateAutomaticRebootManager(bool expect_reboot);
 
   bool ReadUpdateRebootNeededUptimeFromFile(base::TimeDelta* uptime);
-  void VerifyRebootRequested(AutomaticRebootManagerObserver::Reason reason);
-  void VerifyNoRebootRequested() const;
   void VerifyLoginScreenIdleTimerIsStopped() const;
   void VerifyNoGracePeriod() const;
   void VerifyGracePeriod(const base::TimeDelta& start_uptime) const;
-
-  // Sets the status of |update_engine_client_| to NEED_REBOOT for tests.
-  void SetUpdateStatusNeedReboot();
 
   bool is_user_logged_in_;
   bool is_logged_in_as_kiosk_app_;
@@ -191,8 +159,14 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
 
   scoped_refptr<MockTimeSingleThreadTaskRunner> task_runner_;
 
-  MockAutomaticRebootManagerObserver automatic_reboot_manager_observer_;
   scoped_ptr<AutomaticRebootManager> automatic_reboot_manager_;
+
+ protected:
+  FakePowerManagerClient* power_manager_client_;  // Not owned.
+  FakeUpdateEngineClient* update_engine_client_;  // Not owned.
+
+  // Sets the status of |update_engine_client_| to NEED_REBOOT for tests.
+  void SetUpdateStatusNeedReboot();
 
  private:
   void VerifyTimerIsStopped(const Timer* timer) const;
@@ -210,9 +184,6 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   MockUserManager* mock_user_manager_;  // Not owned.
   ScopedUserManagerEnabler user_manager_enabler_;
-
-  FakePowerManagerClient* power_manager_client_;  // Not owned.
-  FakeUpdateEngineClient* update_engine_client_;  // Not owned.
 };
 
 enum AutomaticRebootManagerTestScenario {
@@ -354,42 +325,16 @@ base::TimeTicks MockTimeTickClock::NowTicks() {
   return task_runner_->Now();
 }
 
-MockAutomaticRebootManagerObserver::MockAutomaticRebootManagerObserver()
-    : automatic_reboot_manger_(nullptr) {
-  ON_CALL(*this, WillDestroyAutomaticRebootManager())
-      .WillByDefault(
-          Invoke(this,
-                 &MockAutomaticRebootManagerObserver::StopObserving));
-}
-
-void MockAutomaticRebootManagerObserver::Init(
-    AutomaticRebootManager* automatic_reboot_manger) {
-  EXPECT_FALSE(automatic_reboot_manger_);
-  automatic_reboot_manger_ = automatic_reboot_manger;
-  automatic_reboot_manger_->AddObserver(this);
-}
-
-MockAutomaticRebootManagerObserver::~MockAutomaticRebootManagerObserver() {
-  if (automatic_reboot_manger_)
-    automatic_reboot_manger_->RemoveObserver(this);
-}
-
-void MockAutomaticRebootManagerObserver::StopObserving() {
-  ASSERT_TRUE(automatic_reboot_manger_);
-  automatic_reboot_manger_->RemoveObserver(this);
-  automatic_reboot_manger_ = nullptr;
-}
-
 AutomaticRebootManagerBasicTest::AutomaticRebootManagerBasicTest()
     : is_user_logged_in_(false),
       is_logged_in_as_kiosk_app_(false),
       task_runner_(new MockTimeSingleThreadTaskRunner),
+      power_manager_client_(NULL),
+      update_engine_client_(NULL),
       reboot_after_update_(false),
       ui_thread_task_runner_handle_(task_runner_),
       mock_user_manager_(new MockUserManager),
-      user_manager_enabler_(mock_user_manager_),
-      power_manager_client_(NULL),
-      update_engine_client_(NULL) {
+      user_manager_enabler_(mock_user_manager_) {
 }
 
 AutomaticRebootManagerBasicTest::~AutomaticRebootManagerBasicTest() {
@@ -427,17 +372,10 @@ void AutomaticRebootManagerBasicTest::SetUp() {
 }
 
 void AutomaticRebootManagerBasicTest::TearDown() {
-  if (automatic_reboot_manager_) {
-    Mock::VerifyAndClearExpectations(&automatic_reboot_manager_observer_);
-    EXPECT_CALL(automatic_reboot_manager_observer_,
-                WillDestroyAutomaticRebootManager()).Times(1);
-    EXPECT_CALL(automatic_reboot_manager_observer_,
-                OnRebootRequested(_)).Times(0);
-    // Let the AutomaticRebootManager, if any, unregister itself as an observer
-    // of several subsystems.
-    automatic_reboot_manager_.reset();
-    task_runner_->RunUntilIdle();
-  }
+  // Let the AutomaticRebootManager, if any, unregister itself as an observer of
+  // several subsystems.
+  automatic_reboot_manager_.reset();
+  task_runner_->RunUntilIdle();
 
   DBusThreadManager::Shutdown();
   TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
@@ -448,6 +386,7 @@ void AutomaticRebootManagerBasicTest::SetUpdateRebootNeededUptime(
   update_reboot_needed_uptime_ = uptime;
   SaveUptimeToFile(update_reboot_needed_uptime_file_, uptime);
 }
+
 
 void AutomaticRebootManagerBasicTest::SetRebootAfterUpdate(
     bool reboot_after_update,
@@ -516,30 +455,10 @@ void AutomaticRebootManagerBasicTest::FastForwardUntilNoTasksRemain(
             power_manager_client_->num_request_restart_calls());
 }
 
-void AutomaticRebootManagerBasicTest::ExpectRebootRequest(
-    AutomaticRebootManagerObserver::Reason reason) {
-  Mock::VerifyAndClearExpectations(&automatic_reboot_manager_observer_);
-  EXPECT_CALL(automatic_reboot_manager_observer_,
-              WillDestroyAutomaticRebootManager()).Times(0);
-  EXPECT_CALL(automatic_reboot_manager_observer_,
-              OnRebootRequested(_)).Times(0);
-  EXPECT_CALL(automatic_reboot_manager_observer_,
-              OnRebootRequested(reason)).Times(1);
-}
-
-void AutomaticRebootManagerBasicTest::ExpectNoRebootRequest() {
-  Mock::VerifyAndClearExpectations(&automatic_reboot_manager_observer_);
-  EXPECT_CALL(automatic_reboot_manager_observer_,
-              WillDestroyAutomaticRebootManager()).Times(0);
-  EXPECT_CALL(automatic_reboot_manager_observer_,
-              OnRebootRequested(_)).Times(0);
-}
-
 void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
     bool expect_reboot) {
   automatic_reboot_manager_.reset(new AutomaticRebootManager(
       scoped_ptr<base::TickClock>(new MockTimeTickClock(task_runner_))));
-  automatic_reboot_manager_observer_.Init(automatic_reboot_manager_.get());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
             power_manager_client_->num_request_restart_calls());
@@ -569,16 +488,6 @@ bool AutomaticRebootManagerBasicTest::ReadUpdateRebootNeededUptimeFromFile(
   }
   *uptime = base::TimeDelta::FromMilliseconds(seconds * 1000.0);
   return true;
-}
-
-void AutomaticRebootManagerBasicTest::VerifyRebootRequested(
-    AutomaticRebootManagerObserver::Reason reason) {
-  EXPECT_TRUE(automatic_reboot_manager_->reboot_requested());
-  EXPECT_EQ(reason, automatic_reboot_manager_->reboot_reason());
-}
-
-void AutomaticRebootManagerBasicTest::VerifyNoRebootRequested() const {
-  EXPECT_FALSE(automatic_reboot_manager_->reboot_requested());
 }
 
 void AutomaticRebootManagerBasicTest::
@@ -612,12 +521,6 @@ void AutomaticRebootManagerBasicTest::VerifyGracePeriod(
   }
 }
 
-void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
-  UpdateEngineClient::Status client_status;
-  client_status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  update_engine_client_->set_default_status(client_status);
-}
-
 void AutomaticRebootManagerBasicTest::VerifyTimerIsStopped(
     const Timer* timer) const {
   if (timer)
@@ -638,6 +541,12 @@ void AutomaticRebootManagerBasicTest::
   VerifyTimerIsRunning(
       automatic_reboot_manager_->login_screen_idle_timer_.get(),
       base::TimeDelta::FromSeconds(60));
+}
+
+void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
+  UpdateEngineClient::Status client_status;
+  client_status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_engine_client_->set_default_status(client_status);
 }
 
 AutomaticRebootManagerTest::AutomaticRebootManagerTest() {
@@ -666,11 +575,9 @@ AutomaticRebootManagerTest::~AutomaticRebootManagerTest() {
 TEST_F(AutomaticRebootManagerBasicTest, LoginStopsIdleTimer) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested, the device does not reboot immediately
-  // and the login screen idle timer is started.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately and the login screen
+  // idle timer is started.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that a kiosk app session has been started.
   is_user_logged_in_ = true;
@@ -683,7 +590,7 @@ TEST_F(AutomaticRebootManagerBasicTest, LoginStopsIdleTimer) {
   // Verify that the login screen idle timer is stopped.
   VerifyLoginScreenIdleTimerIsStopped();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -693,11 +600,9 @@ TEST_F(AutomaticRebootManagerBasicTest, LoginStopsIdleTimer) {
 TEST_F(AutomaticRebootManagerBasicTest, NonKioskLoginStopsIdleTimer) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested, the device does not reboot immediately
-  // and the login screen idle timer is started.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately and the login screen
+  // idle timer is started.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that a non-kiosk-app session has been started.
   is_user_logged_in_ = true;
@@ -709,7 +614,7 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskLoginStopsIdleTimer) {
   // Verify that the login screen idle timer is stopped.
   VerifyLoginScreenIdleTimerIsStopped();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -720,15 +625,11 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskLoginStopsIdleTimer) {
 TEST_F(AutomaticRebootManagerBasicTest, UserActivityResetsIdleTimer) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested, the device does not reboot immediately
-  // and the login screen idle timer is started.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately and the login screen
+  // idle timer is started.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -758,20 +659,17 @@ TEST_F(AutomaticRebootManagerBasicTest, ResumeNoPolicy) {
   is_logged_in_as_kiosk_app_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Notify that the device has resumed from 1 hour of sleep. Verify that no
-  // reboot is requested and the device does not reboot immediately.
+  // Notify that the device has resumed from 1 hour of sleep. Verify that the
+  // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -782,20 +680,17 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeAppNoPolicy) {
   is_user_logged_in_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Notify that the device has resumed from 1 hour of sleep. Verify that no
-  // reboot is requested and the device does not reboot immediately.
+  // Notify that the device has resumed from 1 hour of sleep. Verify that the
+  // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -808,25 +703,20 @@ TEST_F(AutomaticRebootManagerBasicTest, ResumeBeforeGracePeriod) {
   is_logged_in_as_kiosk_app_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Notify that the device has resumed from 1 hour of sleep. Verify that no
-  // reboot is requested and the device does not reboot immediately.
+  // Notify that the device has resumed from 1 hour of sleep. Verify that the
+  // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify a reboot is requested and the device reboots eventually.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that the device eventually reboots.
   FastForwardUntilNoTasksRemain(true);
 }
 
@@ -838,25 +728,20 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeBeforeGracePeriod) {
   is_user_logged_in_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Notify that the device has resumed from 1 hour of sleep. Verify that no
-  // reboot is requested and the device does not reboot immediately.
+  // Notify that the device has resumed from 1 hour of sleep. Verify that the
+  // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify that a reboot is requested eventually but the device never reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -869,15 +754,10 @@ TEST_F(AutomaticRebootManagerBasicTest, ResumeInGracePeriod) {
   is_logged_in_as_kiosk_app_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -896,15 +776,10 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeInGracePeriod) {
   is_user_logged_in_ = true;
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -914,7 +789,7 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeInGracePeriod) {
   // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -928,15 +803,10 @@ TEST_F(AutomaticRebootManagerBasicTest, ResumeAfterGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(29) +
                           base::TimeDelta::FromMinutes(30));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -956,15 +826,10 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeAfterGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(29) +
                           base::TimeDelta::FromMinutes(30));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -974,7 +839,7 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeAfterGracePeriod) {
   // device does not reboot immediately.
   NotifyResumed(false);
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -984,20 +849,17 @@ TEST_F(AutomaticRebootManagerBasicTest, NonKioskResumeAfterGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, TerminateNoPolicy) {
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Notify that the browser is terminating. Verify that no reboot is requested
-  // and the device does not reboot immediately.
+  // Notify that the browser is terminating. Verify that the device does not
+  // reboot immediately.
   NotifyTerminating(false);
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1007,26 +869,21 @@ TEST_P(AutomaticRebootManagerTest, TerminateNoPolicy) {
 TEST_P(AutomaticRebootManagerTest, TerminateBeforeGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Notify that the browser is terminating. Verify that no reboot is requested
-  // and the device does not reboot immediately.
+  // Notify that the browser is terminating. Verify that the device does not
+  // reboot immediately.
   NotifyTerminating(false);
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1038,15 +895,10 @@ TEST_P(AutomaticRebootManagerTest, TerminateBeforeGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, TerminateInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -1056,8 +908,8 @@ TEST_P(AutomaticRebootManagerTest, TerminateInGracePeriod) {
   // reboots if a kiosk app session is in progress.
   NotifyTerminating(is_logged_in_as_kiosk_app_);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1068,25 +920,20 @@ TEST_P(AutomaticRebootManagerTest, TerminateInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, BeforeUptimeLimitGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1097,18 +944,13 @@ TEST_P(AutomaticRebootManagerTest, BeforeUptimeLimitGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, InUptimeLimitGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -1127,23 +969,19 @@ TEST_P(AutomaticRebootManagerTest, InUptimeLimitGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, AfterUptimeLimitGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Set the uptime limit. Verify that a reboot is requested and unless a
-  // non-kiosk-app session is in progress, the the device immediately reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that unless a non-kiosk-app session is in
+  // progress, the the device immediately reboots.
   SetUptimeLimit(base::TimeDelta::FromHours(6), !is_user_logged_in_ ||
                                                 is_logged_in_as_kiosk_app_);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1154,31 +992,27 @@ TEST_P(AutomaticRebootManagerTest, AfterUptimeLimitGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, UptimeLimitOffBeforeGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(6));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(12), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Fast forward the uptime by 1 hour. Verify that no reboot is requested and
-  // the device does not reboot immediately.
+  // Fast forward the uptime by 1 hour. Verify that the device does not reboot
+  // immediately.
   FastForwardBy(base::TimeDelta::FromHours(1), false);
 
-  // Remove the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Remove the uptime limit. Verify that the device does not reboot
+  // immediately.
   SetUptimeLimit(base::TimeDelta(), false);
 
   // Verify that the grace period has been removed.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1188,15 +1022,10 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffBeforeGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, UptimeLimitOffInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(24));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(12), false);
 
   // Verify that a grace period has started.
@@ -1213,7 +1042,7 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffInGracePeriod) {
   // Verify that the grace period has been removed.
   VerifyNoGracePeriod();
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1224,34 +1053,29 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, ExtendUptimeLimitBeforeGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(6));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(12), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Fast forward the uptime by 20 seconds. Verify that no reboot is requested
-  // and the device does not reboot immediately.
+  // Fast forward the uptime by 20 seconds. Verify that the device does not
+  // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
-  // Extend the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Extend the uptime limit. Verify that the device does not reboot
+  // immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that the grace period has been rescheduled to start further in the
   // future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1263,15 +1087,10 @@ TEST_P(AutomaticRebootManagerTest, ExtendUptimeLimitBeforeGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, ExtendUptimeLimitInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(18));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(12), false);
 
   // Verify that a grace period has started.
@@ -1288,9 +1107,8 @@ TEST_P(AutomaticRebootManagerTest, ExtendUptimeLimitInGracePeriod) {
   // Verify that the grace period has been rescheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Verify that a reboot is requested again eventually and unless a
-  // non-kiosk-app session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1302,26 +1120,21 @@ TEST_P(AutomaticRebootManagerTest, ExtendUptimeLimitInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitBeforeToInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(18), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Fast forward the uptime by 20 seconds. Verify that no reboot is requested
-  // and the device does not reboot immediately.
+  // Fast forward the uptime by 20 seconds. Verify that the device does not
+  // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
-  // Shorten the uptime limit. Verify that a reboot is requested but the device
-  // does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Shorten the uptime limit. Verify that the device does not reboot
+  // immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that the grace period has been rescheduled and has started already.
@@ -1340,15 +1153,10 @@ TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitBeforeToInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(36));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has started.
@@ -1358,9 +1166,8 @@ TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToInGracePeriod) {
   // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
-  // Shorten the uptime limit. Verify that a reboot is requested again but the
-  // device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Shorten the uptime limit. Verify that the device does not reboot
+  // immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(18), false);
 
   // Verify that the grace period has been rescheduled to have started earlier.
@@ -1380,15 +1187,10 @@ TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToAfterGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(36));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has started.
@@ -1398,15 +1200,13 @@ TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToAfterGracePeriod) {
   // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
-  // Shorten the uptime limit. Verify that a reboot is requested again and
-  // unless a non-kiosk-app session is in progress, the the device immediately
-  // reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Shorten the uptime limit. Verify that unless a non-kiosk-app session is in
+  // progress, the the device immediately reboots.
   SetUptimeLimit(base::TimeDelta::FromHours(6), !is_user_logged_in_ ||
                                                 is_logged_in_as_kiosk_app_);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1419,17 +1219,14 @@ TEST_P(AutomaticRebootManagerTest, ShortenUptimeLimitInToAfterGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, UpdateNoPolicy) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that no reboot is requested and the device does not reboot immediately.
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1441,7 +1238,7 @@ TEST_P(AutomaticRebootManagerTest, UpdateNoPolicy) {
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1454,18 +1251,14 @@ TEST_P(AutomaticRebootManagerTest, Update) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1485,24 +1278,20 @@ TEST_P(AutomaticRebootManagerTest, Update) {
 
 // Chrome is running. The current uptime is 12 hours.
 // Verifies that when Chrome is notified twice that an update has been applied,
-// the second notification is ignored and the uptime at which it occurred does
+// the second notification is ignored and the uptime at which it occured does
 // not get persisted as the time at which an update became necessary.
 TEST_P(AutomaticRebootManagerTest, UpdateAfterUpdate) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1537,7 +1326,7 @@ TEST_P(AutomaticRebootManagerTest, UpdateAfterUpdate) {
 
 // Chrome is running. The current uptime is 10 minutes.
 // Verifies that when the policy to automatically reboot after an update is
-// enabled, no reboot occurs and a grace period is scheduled to begin after the
+// enabled, no reboot occurs a grace period is scheduled to begin after the
 // minimum of 1 hour of uptime. Further verifies that when an update is applied,
 // the current uptime is persisted as the time at which a reboot became
 // necessary.
@@ -1545,17 +1334,14 @@ TEST_P(AutomaticRebootManagerTest, UpdateBeforeMinimumUptime) {
   task_runner_->SetUptime(base::TimeDelta::FromMinutes(10));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that no reboot is requested and the device does not reboot immediately.
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1567,9 +1353,8 @@ TEST_P(AutomaticRebootManagerTest, UpdateBeforeMinimumUptime) {
   // Verify that a grace period has been scheduled to begin in the future.
   VerifyGracePeriod(base::TimeDelta::FromHours(1));
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1583,26 +1368,22 @@ TEST_P(AutomaticRebootManagerTest, UpdateBeforeMinimumUptime) {
 TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateInGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(6));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that no reboot is requested and the device does not reboot immediately.
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
-  // Fast forward the uptime to 12 hours. Verify that no reboot is requested and
-  // the device does not reboot immediately.
+  // Fast forward the uptime to 12 hours. Verify that the device does not reboot
+  // immediately.
   FastForwardBy(base::TimeDelta::FromHours(6), false);
 
   // Simulate user activity.
   automatic_reboot_manager_->OnUserActivity(NULL);
 
-  // Enable automatic reboot after an update has been applied. Verify that a
-  // reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Enable automatic reboot after an update has been applied. Verify that the
+  // device does not reboot immediately.
   SetRebootAfterUpdate(true, false);
 
   // Verify that a grace period has started.
@@ -1623,18 +1404,15 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateInGracePeriod) {
 TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateAfterGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(6));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that no reboot is requested and the device does not reboot immediately.
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
-  // Fast forward the uptime to 12 hours. Verify that no reboot is requested and
-  // the device does not reboot immediately.
+  // Fast forward the uptime to 12 hours. Verify that the device does not reboot
+  // immediately.
   FastForwardBy(base::TimeDelta::FromDays(10) - base::TimeDelta::FromHours(6),
                 false);
 
@@ -1642,13 +1420,12 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateAfterGracePeriod) {
   automatic_reboot_manager_->OnUserActivity(NULL);
 
   // Enable automatic rebooting after an update has been applied. Verify that
-  // a reboot is requested and unless a non-kiosk-app session is in progress,
-  // the the device immediately reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // unless a non-kiosk-app session is in progress, the the device immediately
+  // reboots.
   SetRebootAfterUpdate(true, !is_user_logged_in_ || is_logged_in_as_kiosk_app_);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1663,15 +1440,11 @@ TEST_P(AutomaticRebootManagerTest, PolicyOffAfterUpdate) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(6));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that a grace period has started.
@@ -1682,13 +1455,13 @@ TEST_P(AutomaticRebootManagerTest, PolicyOffAfterUpdate) {
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
   // Disable automatic rebooting after an update has been applied. Verify that
-  // no reboot is requested and the device does not reboot immediately.
+  // the device does not reboot immediately.
   SetRebootAfterUpdate(false, false);
 
   // Verify that the grace period has been removed.
   VerifyNoGracePeriod();
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1698,28 +1471,24 @@ TEST_P(AutomaticRebootManagerTest, PolicyOffAfterUpdate) {
 // occurs and no grace period is scheduled. Further verifies that no time is
 // persisted as the time at which a reboot became necessary.
 TEST_P(AutomaticRebootManagerTest, NoUptime) {
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Enable automatic rebooting after an update has been applied. Verify that
-  // no reboot is requested and the device does not reboot immediately.
+  // the device does not reboot immediately.
   SetRebootAfterUpdate(true, false);
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that no reboot is requested and the device does not reboot immediately.
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that no time is persisted as the time at which a reboot became
@@ -1730,7 +1499,7 @@ TEST_P(AutomaticRebootManagerTest, NoUptime) {
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1744,15 +1513,10 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitBeforeUpdate) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has been scheduled to start in the future.
@@ -1763,9 +1527,7 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitBeforeUpdate) {
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested again but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1793,26 +1555,21 @@ TEST_P(AutomaticRebootManagerTest, UpdateBeforeUptimeLimit) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Fast forward the uptime by 20 seconds. Verify that no reboot is requested
-  // and the device does not reboot immediately.
+  // Fast forward the uptime by 20 seconds. Verify that the device does not
+  // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1836,28 +1593,23 @@ TEST_P(AutomaticRebootManagerTest, UpdateBeforeUptimeLimit) {
 // The policy to automatically reboot after an update is enabled. The current
 // uptime is 12 hours 20 seconds.
 // Verifies that when the policy to reboot after an update is disabled, the
-// grace period is rescheduled to start after 12 hours of uptime. Further
+// grace period is rescheduled to start after 24 hours of uptime. Further
 // verifies that when the uptime limit is removed, the grace period is removed.
 TEST_P(AutomaticRebootManagerTest, PolicyOffThenUptimeLimitOff) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that no reboot is requested and the device
-  // does not reboot immediately.
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
 
-  // Verify that a grace period has been scheduled to start in the future.
+  // Verify that the grace period has started.
   VerifyGracePeriod(uptime_limit_);
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1888,7 +1640,7 @@ TEST_P(AutomaticRebootManagerTest, PolicyOffThenUptimeLimitOff) {
   // Verify that the grace period has been removed.
   VerifyNoGracePeriod();
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1904,15 +1656,11 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffThenPolicyOff) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Notify that an update has been applied and a reboot is necessary. Verify
-  // that a reboot is requested but the device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // that the device does not reboot immediately.
   NotifyUpdateRebootNeeded();
 
   // Verify that the current uptime has been persisted as the time at which a
@@ -1924,9 +1672,7 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffThenPolicyOff) {
   // Verify that the grace period has started.
   VerifyGracePeriod(update_reboot_needed_uptime_ + uptime_processing_delay_);
 
-  // Set the uptime limit. Verify that a reboot is requested again but the
-  // device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that the grace period has been rescheduled to have started after
@@ -1937,9 +1683,8 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffThenPolicyOff) {
   // reboot immediately.
   FastForwardBy(base::TimeDelta::FromSeconds(20), false);
 
-  // Remove the uptime limit. Verify that a reboot is requested again but the
-  // device does not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Remove the uptime limit. Verify that the device does not reboot
+  // immediately.
   SetUptimeLimit(base::TimeDelta(), false);
 
   // Verify that a grace period has been rescheduled to have started after 12
@@ -1953,7 +1698,7 @@ TEST_P(AutomaticRebootManagerTest, UptimeLimitOffThenPolicyOff) {
   // Verify that the grace period has been removed.
   VerifyNoGracePeriod();
 
-  // Verify that the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -1966,15 +1711,10 @@ TEST_P(AutomaticRebootManagerTest, GracePeriodEnd) {
                           base::TimeDelta::FromMinutes(59) +
                           base::TimeDelta::FromSeconds(59));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
-  // Set the uptime limit. Verify that a reboot is requested but the device does
-  // not reboot immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Set the uptime limit. Verify that the device does not reboot immediately.
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
 
   // Verify that a grace period has started.
@@ -1985,8 +1725,8 @@ TEST_P(AutomaticRebootManagerTest, GracePeriodEnd) {
   FastForwardBy(base::TimeDelta::FromSeconds(1), !is_user_logged_in_ ||
                                                  is_logged_in_as_kiosk_app_);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -1997,16 +1737,13 @@ TEST_P(AutomaticRebootManagerTest, GracePeriodEnd) {
 TEST_P(AutomaticRebootManagerTest, StartNoPolicy) {
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -2018,18 +1755,14 @@ TEST_P(AutomaticRebootManagerTest, StartBeforeUptimeLimitGracePeriod) {
   SetUptimeLimit(base::TimeDelta::FromHours(24), false);
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(uptime_limit_);
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -2042,15 +1775,13 @@ TEST_P(AutomaticRebootManagerTest, StartAfterUptimeLimitGracePeriod) {
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that a reboot is requested and unless a non-kiosk-app session is in
-  // progress, the the device immediately reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that unless a non-kiosk-app session is in progress, the the device
+  // immediately reboots.
   CreateAutomaticRebootManager(!is_user_logged_in_ ||
                                is_logged_in_as_kiosk_app_);
-  VerifyRebootRequested(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -2063,11 +1794,8 @@ TEST_P(AutomaticRebootManagerTest, StartInUptimeLimitGracePeriod) {
   SetUptimeLimit(base::TimeDelta::FromHours(6), false);
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
 
-  // Verify that a reboot is requested but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyRebootRequested(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
 
   // Verify that a grace period has started.
   VerifyGracePeriod(uptime_limit_);
@@ -2090,16 +1818,13 @@ TEST_P(AutomaticRebootManagerTest, StartAfterUpdateGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that a reboot is requested and unless a non-kiosk-app session is in
-  // progress, the the device immediately reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // reboots immediately.
   CreateAutomaticRebootManager(!is_user_logged_in_ ||
                                is_logged_in_as_kiosk_app_);
-  VerifyRebootRequested(
-      AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
 
-  // Verify that if a non-kiosk-app session is in progress, the device never
-  // reboots.
+  // Verify that if a non-kiosk-app session is in progress, the device does not
+  // reboot eventually.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -2116,12 +1841,8 @@ TEST_P(AutomaticRebootManagerTest, StartInUpdateGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that a reboot is requested but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyRebootRequested(
-      AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
 
   // Verify that a grace period has started.
   VerifyGracePeriod(update_reboot_needed_uptime_);
@@ -2144,18 +1865,14 @@ TEST_P(AutomaticRebootManagerTest, StartBeforeUpdateGracePeriod) {
   task_runner_->SetUptime(base::TimeDelta::FromMinutes(20));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that a grace period has been scheduled to start in the future.
   VerifyGracePeriod(base::TimeDelta::FromHours(1));
 
-  // Verify that a reboot is requested eventually and unless a non-kiosk-app
-  // session is in progress, the device eventually reboots.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that unless a non-kiosk-app session is in progress, the device
+  // eventually reboots.
   FastForwardUntilNoTasksRemain(!is_user_logged_in_ ||
                                 is_logged_in_as_kiosk_app_);
 }
@@ -2170,16 +1887,13 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicy) {
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -2195,12 +1909,8 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateTimeLost) {
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that a reboot is requested but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyRebootRequested(
-      AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
 
   // Verify that the current uptime has been persisted as the time at which a
   // reboot became necessary.
@@ -2228,11 +1938,8 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicyTimeLost) {
   SetUpdateStatusNeedReboot();
   task_runner_->SetUptime(base::TimeDelta::FromDays(10));
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that the current uptime has been persisted as the time at which a
   // reboot became necessary.
@@ -2243,7 +1950,7 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateNoPolicyTimeLost) {
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -2256,11 +1963,8 @@ TEST_P(AutomaticRebootManagerTest, StartNoUpdate) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no time is persisted as the time at which a reboot became
   // necessary.
@@ -2270,7 +1974,7 @@ TEST_P(AutomaticRebootManagerTest, StartNoUpdate) {
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 
@@ -2287,11 +1991,8 @@ TEST_P(AutomaticRebootManagerTest, StartUptimeLimitBeforeUpdate) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that a reboot is requested but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyRebootRequested(AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC);
 
   // Verify that a grace period has started.
   VerifyGracePeriod(uptime_limit_);
@@ -2315,12 +2016,8 @@ TEST_P(AutomaticRebootManagerTest, StartUpdateBeforeUptimeLimit) {
   task_runner_->SetUptime(base::TimeDelta::FromHours(12));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that a reboot is requested but the device does not reboot
-  // immediately.
-  ExpectRebootRequest(AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyRebootRequested(
-      AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE);
 
   // Verify that a grace period has started.
   VerifyGracePeriod(update_reboot_needed_uptime_);
@@ -2342,16 +2039,13 @@ TEST_P(AutomaticRebootManagerTest, StartNoUptime) {
   SetUpdateRebootNeededUptime(base::TimeDelta::FromHours(6));
   SetRebootAfterUpdate(true, false);
 
-  // Verify that no reboot is requested and the device does not reboot
-  // immediately.
-  ExpectNoRebootRequest();
+  // Verify that the device does not reboot immediately.
   CreateAutomaticRebootManager(false);
-  VerifyNoRebootRequested();
 
   // Verify that no grace period has started.
   VerifyNoGracePeriod();
 
-  // Verify that a reboot is never requested and the device never reboots.
+  // Verify that the device does not reboot eventually.
   FastForwardUntilNoTasksRemain(false);
 }
 

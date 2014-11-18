@@ -16,8 +16,8 @@ class AutomaticRebootManagerObserver {
     REBOOT_REASON_PERIODIC,
   };
 
-  // Invoked when a reboot is requested.
-  virtual void OnRebootRequested(Reason reason) = 0;
+  // Invoked when a reboot is scheduled.
+  virtual void OnRebootScheduled(Reason reason) = 0;
 
   // Invoked before the automatic reboot manager is destroyed.
   virtual void WillDestroyAutomaticRebootManager() = 0;
