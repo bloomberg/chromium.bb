@@ -241,6 +241,95 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ("bar", supports_quic2.address);
 }
 
+TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
+  ExpectCacheUpdate();
+  // The prefs are automaticalls updated in the case corruption is detected.
+  ExpectPrefsUpdate();
+
+  base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
+
+  // Set supports_spdy for www.google.com:65536.
+  server_pref_dict->SetBoolean("supports_spdy", true);
+
+  // Set up alternate_protocol for www.google.com:65536.
+  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
+  alternate_protocol->SetInteger("port", 80);
+  alternate_protocol->SetString("protocol_str", "npn-spdy/3");
+  server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
+                                            alternate_protocol);
+
+  // Set up SupportsQuic for www.google.com:65536.
+  base::DictionaryValue* supports_quic = new base::DictionaryValue;
+  supports_quic->SetBoolean("used_quic", true);
+  supports_quic->SetString("address", "foo");
+  server_pref_dict->SetWithoutPathExpansion("supports_quic", supports_quic);
+
+  // Set the server preference for www.google.com:65536.
+  base::DictionaryValue* servers_dict = new base::DictionaryValue;
+  servers_dict->SetWithoutPathExpansion("www.google.com:65536",
+                                        server_pref_dict);
+
+  base::DictionaryValue* http_server_properties_dict =
+      new base::DictionaryValue;
+  HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
+  http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+
+  // Set up the pref.
+  pref_service_.SetManagedPref(kTestHttpServerProperties,
+                               http_server_properties_dict);
+
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  // Verify that nothing is set.
+  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
+      net::HostPortPair::FromString("www.google.com:65536")));
+  EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
+      net::HostPortPair::FromString("www.google.com:65536")));
+  net::SupportsQuic supports_quic2 =
+      http_server_props_manager_->GetSupportsQuic(
+          net::HostPortPair::FromString("www.google.com:65536"));
+  EXPECT_FALSE(supports_quic2.used_quic);
+}
+
+TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
+  ExpectCacheUpdate();
+  // The prefs are automaticalls updated in the case corruption is detected.
+  ExpectPrefsUpdate();
+
+  base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
+
+  // Set supports_spdy for www.google.com:80.
+  server_pref_dict->SetBoolean("supports_spdy", true);
+
+  // Set up alternate_protocol for www.google.com:80.
+  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
+  alternate_protocol->SetInteger("port", 65536);
+  alternate_protocol->SetString("protocol_str", "npn-spdy/3");
+  server_pref_dict->SetWithoutPathExpansion("alternate_protocol",
+                                            alternate_protocol);
+
+  // Set the server preference for www.google.com:80.
+  base::DictionaryValue* servers_dict = new base::DictionaryValue;
+  servers_dict->SetWithoutPathExpansion("www.google.com:80", server_pref_dict);
+
+  base::DictionaryValue* http_server_properties_dict =
+      new base::DictionaryValue;
+  HttpServerPropertiesManager::SetVersion(http_server_properties_dict, -1);
+  http_server_properties_dict->SetWithoutPathExpansion("servers", servers_dict);
+
+  // Set up the pref.
+  pref_service_.SetManagedPref(kTestHttpServerProperties,
+                               http_server_properties_dict);
+
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  // Verify AlternateProtocol is not set.
+  EXPECT_FALSE(http_server_props_manager_->HasAlternateProtocol(
+      net::HostPortPair::FromString("www.google.com:80")));
+}
+
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
   ExpectPrefsUpdate();
 

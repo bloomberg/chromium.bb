@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "net/base/net_util.h"
 
 namespace net {
 
@@ -419,7 +420,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       int port = 0;
       if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(
               "port", &port) ||
-          (port > (1 << 16))) {
+          !IsPortValid(port)) {
         DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
         detected_corrupted_prefs = true;
         continue;
