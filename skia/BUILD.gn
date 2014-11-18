@@ -318,7 +318,6 @@ component("skia") {
   sources += gypi_skia_core.sources
   sources += gypi_skia_effects.sources
   sources += gypi_skia_utils.sources
-  sources += gypi_skia_pdf.sources
   sources += gypi_values.skia_library_sources
 
   if (cpu_arch == "arm") {
@@ -557,6 +556,7 @@ component("skia") {
 
   if (skia_support_pdf) {
     deps += [ "//third_party/sfntly" ]
+    sources += gypi_skia_pdf.sources
   }
 
   if (is_android && !is_debug) {

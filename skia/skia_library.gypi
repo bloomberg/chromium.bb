@@ -188,7 +188,8 @@
     }],
     ['skia_support_pdf == 0', {
       'sources/': [
-        ['exclude', '../third_party/skia/src/pdf/']
+        ['exclude', '../third_party/skia/src/doc/SkDocument_PDF.cpp'],
+        ['exclude', '../third_party/skia/src/pdf/'],
       ],
     }],
     ['skia_support_pdf == 1', {
