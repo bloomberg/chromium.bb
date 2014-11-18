@@ -835,6 +835,10 @@ const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
 // A boolean pref set to true if the virtual keyboard should be enabled.
 const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
 
+// An integer pref that controls the wake on wifi features that should be
+// enabled.
+const char kWakeOnWiFiEnabled[] = "settings.internet.wake_on_wifi";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

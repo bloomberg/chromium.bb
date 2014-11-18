@@ -14,6 +14,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -23,7 +24,7 @@ namespace {
 // The ShillDeviceClient implementation.
 class ShillDeviceClientImpl : public ShillDeviceClient {
  public:
-  explicit ShillDeviceClientImpl()
+  ShillDeviceClientImpl()
       : bus_(NULL) {
   }
 
@@ -204,6 +205,54 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     writer.AppendString(peer);
     GetHelper(device_path)->CallStringMethodWithErrorCallback(
         &method_call, callback, error_callback);
+  }
+
+  void AddWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override {
+    if (ip_endpoint.address().empty()) {
+      LOG(ERROR) << "AddWakeOnPacketConnection: null address";
+      return;
+    }
+    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
+                                 shill::kAddWakeOnPacketConnectionFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(ip_endpoint.ToStringWithoutPort());
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                            callback,
+                                                            error_callback);
+  }
+
+  void RemoveWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override {
+    if (ip_endpoint.address().empty()) {
+      LOG(ERROR) << "RemoveWakeOnPacketConnection: null address";
+      return;
+    }
+    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
+                                 shill::kRemoveWakeOnPacketConnectionFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(ip_endpoint.ToStringWithoutPort());
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                            callback,
+                                                            error_callback);
+  }
+
+  void RemoveAllWakeOnPacketConnections(
+      const dbus::ObjectPath& device_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(
+        shill::kFlimflamDeviceInterface,
+        shill::kRemoveAllWakeOnPacketConnectionsFunction);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                            callback,
+                                                            error_callback);
   }
 
   virtual TestInterface* GetTestInterface() override {

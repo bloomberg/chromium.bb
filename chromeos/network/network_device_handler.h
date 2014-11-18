@@ -15,6 +15,10 @@ namespace base {
 class Value;
 }
 
+namespace net {
+class IPEndPoint;
+}
+
 namespace chromeos {
 
 // The NetworkDeviceHandler class allows making device specific requests on a
@@ -207,6 +211,26 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
   virtual void GetWifiTDLSStatus(
       const std::string& ip_or_mac_address,
       const network_handler::StringResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback) = 0;
+
+  // Adds |ip_endpoint| to the list of tcp connections that the wifi device
+  // should monitor to wake the system from suspend.
+  virtual void AddWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) = 0;
+
+  // Removes |ip_endpoint| from the list of tcp connections that the wifi device
+  // should monitor to wake the system from suspend.
+  virtual void RemoveWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) = 0;
+
+  // Clears the list of tcp connections that the wifi device should monitor to
+  // wake the system from suspend.
+  virtual void RemoveAllWifiWakeOnPacketConnections(
+      const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
  private:

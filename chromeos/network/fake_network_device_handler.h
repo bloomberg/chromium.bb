@@ -94,6 +94,20 @@ class CHROMEOS_EXPORT FakeNetworkDeviceHandler : public NetworkDeviceHandler {
       const network_handler::StringResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
+  void AddWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
+  void RemoveWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
+  void RemoveAllWifiWakeOnPacketConnections(
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);
 };

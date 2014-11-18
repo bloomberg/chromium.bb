@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -365,6 +366,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
 
   DeviceOAuth2TokenServiceFactory::Initialize();
+
+  wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -724,6 +727,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_prefs_.reset();
   renderer_freezer_.reset();
   light_bar_.reset();
+  wake_on_wifi_manager_.reset();
 
   // Let the ScreenLocker unregister itself from SessionManagerClient before
   // DBusThreadManager is shut down.

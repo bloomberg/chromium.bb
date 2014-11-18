@@ -26,6 +26,12 @@ class ObjectPath;
 
 }  // namespace dbus
 
+namespace net {
+
+class IPEndPoint;
+
+}  // namespace net
+
 namespace chromeos {
 
 class ShillPropertyChangedObserver;
@@ -162,6 +168,29 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
                                     const std::string& peer,
                                     const StringCallback& callback,
                                     const ErrorCallback& error_callback) = 0;
+
+  // Adds |ip_endpoint| to the list of tcp connections that the device should
+  // monitor to wake the system from suspend.
+   virtual void AddWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Removes |ip_endpoint| from the list of tcp connections that the device
+  // should monitor to wake the system from suspend.
+  virtual void RemoveWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Clears the list of tcp connections that the device should monitor to wake
+  // the system from suspend.
+  virtual void RemoveAllWakeOnPacketConnections(
+      const dbus::ObjectPath& device_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns NULL.
   virtual TestInterface* GetTestInterface() = 0;

@@ -81,17 +81,6 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void ConnectToBestServices(
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
-  virtual void AddWakeOnPacketConnection(
-      const net::IPEndPoint& ip_connection,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void RemoveWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void RemoveAllWakeOnPacketConnections(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
 
   virtual ShillManagerClient::TestInterface* GetTestInterface() override;
 

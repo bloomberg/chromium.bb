@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_SHILL_DEVICE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SHILL_DEVICE_CLIENT_H_
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -82,6 +84,20 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
       const std::string& peer,
       const StringCallback& callback,
       const ErrorCallback& error_callback) override;
+  void AddWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+  void RemoveWakeOnPacketConnection(
+      const dbus::ObjectPath& device_path,
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+  void RemoveAllWakeOnPacketConnections(
+      const dbus::ObjectPath& device_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
 
   virtual ShillDeviceClient::TestInterface* GetTestInterface() override;
 
@@ -120,6 +136,10 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
 
   int tdls_busy_count_;  // Number of times to return InProgress for TDLS.
+
+  // Wake on packet connections for each device.
+  std::map<dbus::ObjectPath, std::set<net::IPEndPoint> >
+      wake_on_packet_connections_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

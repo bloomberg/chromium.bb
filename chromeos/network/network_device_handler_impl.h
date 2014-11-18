@@ -102,6 +102,20 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
       const network_handler::StringResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
+  void AddWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
+  void RemoveWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
+  void RemoveAllWifiWakeOnPacketConnections(
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) override;
+
   // NetworkStateHandlerObserver overrides
   virtual void DeviceListChanged() override;
 
@@ -116,6 +130,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   // Apply the current value of |cellular_allow_roaming_| to all existing
   // cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
+
+  // Get the DeviceState for the wifi device, if any.
+  const DeviceState* GetWifiDeviceState(
+      const network_handler::ErrorCallback& error_callback);
 
   NetworkStateHandler* network_state_handler_;
   bool cellular_allow_roaming_;

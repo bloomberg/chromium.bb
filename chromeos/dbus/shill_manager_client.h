@@ -224,24 +224,6 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
   virtual void ConnectToBestServices(const base::Closure& callback,
                                      const ErrorCallback& error_callback) = 0;
 
-  // Requests that shill program the NIC so that packets incoming on
-  // |ip_connection| wake up the CPU.
-  virtual void AddWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // Removes a request to wake up on packets coming on |ip_connection|.
-  virtual void RemoveWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // Clears all requests to wake up on packets.
-  virtual void RemoveAllWakeOnPacketConnections(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
-
   // Returns an interface for testing (stub only), or returns NULL.
   virtual TestInterface* GetTestInterface() = 0;
 

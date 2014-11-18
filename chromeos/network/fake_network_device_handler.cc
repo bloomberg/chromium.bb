@@ -84,4 +84,18 @@ void FakeNetworkDeviceHandler::GetWifiTDLSStatus(
     const network_handler::StringResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {}
 
+void FakeNetworkDeviceHandler::AddWifiWakeOnPacketConnection(
+    const net::IPEndPoint& ip_endpoint,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {}
+
+void FakeNetworkDeviceHandler::RemoveWifiWakeOnPacketConnection(
+    const net::IPEndPoint& ip_endpoint,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {}
+
+void FakeNetworkDeviceHandler::RemoveAllWifiWakeOnPacketConnections(
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {}
+
 }  // namespace chromeos

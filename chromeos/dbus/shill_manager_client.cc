@@ -211,51 +211,6 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                             error_callback);
   }
 
-  virtual void AddWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
-    if (ip_endpoint.address().empty()) {
-      LOG(ERROR) << "AddWakeOnPacketConnection: null address";
-      return;
-    }
-    dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
-                                 shill::kAddWakeOnPacketConnectionFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(net::IPAddressToString(ip_endpoint.address()));
-    helper_->CallVoidMethodWithErrorCallback(&method_call,
-                                             callback,
-                                             error_callback);
-  }
-
-  virtual void RemoveWakeOnPacketConnection(
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
-    if (ip_endpoint.address().empty()) {
-      LOG(ERROR) << "RemoveWakeOnPacketConnection: null address";
-      return;
-    }
-    dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
-                                 shill::kRemoveWakeOnPacketConnectionFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(net::IPAddressToString(ip_endpoint.address()));
-    helper_->CallVoidMethodWithErrorCallback(&method_call,
-                                             callback,
-                                             error_callback);
-  }
-
-  virtual void RemoveAllWakeOnPacketConnections(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
-    dbus::MethodCall method_call(
-        shill::kFlimflamManagerInterface,
-        shill::kRemoveAllWakeOnPacketConnectionsFunction);
-    helper_->CallVoidMethodWithErrorCallback(&method_call,
-                                             callback,
-                                             error_callback);
-  }
-
   virtual TestInterface* GetTestInterface() override {
     return NULL;
   }

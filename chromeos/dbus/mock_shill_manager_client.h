@@ -67,17 +67,6 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD2(ConnectToBestServices,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD3(AddWakeOnPacketConnection,
-               void(const net::IPEndPoint& ip_connection,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
-  MOCK_METHOD3(RemoveWakeOnPacketConnection,
-               void(const net::IPEndPoint& ip_connection,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback));
-  MOCK_METHOD2(RemoveAllWakeOnPacketConnections,
-               void(const base::Closure& callback,
-                    const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());
 
 };

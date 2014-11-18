@@ -2710,8 +2710,6 @@
       # support ChromeOS with enable_plugins==0.
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
-      'browser/services/gcm/chromeos_gcm_connection_observer.cc',
-      'browser/services/gcm/chromeos_gcm_connection_observer.h',
     ],
     # Used everywhere but ChromeOS.
     'chrome_browser_non_chromeos_sources': [

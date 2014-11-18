@@ -17,9 +17,6 @@
 #include "components/gcm_driver/gcm_driver_android.h"
 #else
 #include "base/bind.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/services/gcm/chromeos_gcm_connection_observer.h"
-#endif
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/services/gcm/gcm_account_tracker.h"
@@ -166,11 +163,6 @@ GCMProfileService::GCMProfileService(
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
       profile_->GetRequestContext());
 
-#if defined(OS_CHROMEOS)
-  chromeos_connection_observer_.reset(new gcm::ChromeOSGCMConnectionObserver);
-  driver_->AddConnectionObserver(chromeos_connection_observer_.get());
-#endif
-
   identity_observer_.reset(new IdentityObserver(profile, driver_.get()));
 }
 #endif  // defined(OS_ANDROID)
@@ -188,10 +180,6 @@ void GCMProfileService::Shutdown() {
   identity_observer_.reset();
 #endif  // !defined(OS_ANDROID)
   if (driver_) {
-#if defined(OS_CHROMEOS)
-    driver_->RemoveConnectionObserver(chromeos_connection_observer_.get());
-    chromeos_connection_observer_.reset();
-#endif
     driver_->Shutdown();
     driver_.reset();
   }

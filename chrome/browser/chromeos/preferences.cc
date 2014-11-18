@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -274,6 +275,16 @@ void Preferences::RegisterProfilePrefs(
       language_prefs::kXkbAutoRepeatIntervalInMs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
+  // We don't sync wake-on-wifi related prefs because they are device specific.
+  // TODO(chirantan): Default this to on when we are ready to launch.
+  registry->RegisterIntegerPref(
+      prefs::kWakeOnWiFiEnabled,
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWakeOnPackets)
+          ? WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID
+          : WakeOnWifiManager::WAKE_ON_NONE,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   // Mobile plan notifications default to on.
   registry->RegisterBooleanPref(
       prefs::kShowPlanNotifications,
@@ -348,6 +359,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatDelay, prefs, callback);
   xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
+
+  wake_on_wifi_enabled_.Init(prefs::kWakeOnWiFiEnabled, prefs, callback);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -551,6 +564,13 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       pref_name == prefs::kLanguageXkbAutoRepeatInterval) {
     if (user_is_active)
       UpdateAutoRepeatRate();
+  }
+
+  if (user_is_primary_ && (reason != REASON_PREF_CHANGED ||
+                           pref_name == prefs::kWakeOnWiFiEnabled)) {
+    WakeOnWifiManager::Get()->OnPreferenceChanged(
+        static_cast<WakeOnWifiManager::WakeOnWifiFeature>(
+            wake_on_wifi_enabled_.GetValue()));
   }
 
   if (reason == REASON_INITIALIZATION)

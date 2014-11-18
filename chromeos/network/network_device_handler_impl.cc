@@ -399,16 +399,10 @@ void NetworkDeviceHandlerImpl::SetWifiTDLSEnabled(
     bool enabled,
     const network_handler::StringResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state =
-      network_state_handler_->GetDeviceStateByType(NetworkTypePattern::WiFi());
-  if (!device_state) {
-    if (error_callback.is_null())
-      return;
-    scoped_ptr<base::DictionaryValue> error_data(new base::DictionaryValue);
-    error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
-    error_callback.Run(kErrorDeviceMissing, error_data.Pass());
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
     return;
-  }
+
   TDLSOperationParams params;
   params.operation = enabled ? shill::kTDLSSetupOperation
       : shill::kTDLSTeardownOperation;
@@ -421,21 +415,66 @@ void NetworkDeviceHandlerImpl::GetWifiTDLSStatus(
     const std::string& ip_or_mac_address,
     const network_handler::StringResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
-  const DeviceState* device_state =
-      network_state_handler_->GetDeviceStateByType(NetworkTypePattern::WiFi());
-  if (!device_state) {
-    if (error_callback.is_null())
-      return;
-    scoped_ptr<base::DictionaryValue> error_data(new base::DictionaryValue);
-    error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
-    error_callback.Run(kErrorDeviceMissing, error_data.Pass());
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
     return;
-  }
+
   TDLSOperationParams params;
   params.operation = shill::kTDLSStatusOperation;
   params.ip_or_mac_address = ip_or_mac_address;
   CallPerformTDLSOperation(
       device_state->path(), params, callback, error_callback);
+}
+
+void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
+    return;
+
+  DBusThreadManager::Get()->GetShillDeviceClient()->AddWakeOnPacketConnection(
+      dbus::ObjectPath(device_state->path()),
+      ip_endpoint,
+      callback,
+      base::Bind(&HandleShillCallFailure,
+                 device_state->path(),
+                 error_callback));
+}
+
+void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketConnection(
+      const net::IPEndPoint& ip_endpoint,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
+    return;
+
+  DBusThreadManager::Get()
+      ->GetShillDeviceClient()
+      ->RemoveWakeOnPacketConnection(dbus::ObjectPath(device_state->path()),
+                                     ip_endpoint,
+                                     callback,
+                                     base::Bind(&HandleShillCallFailure,
+                                                device_state->path(),
+                                                error_callback));
+}
+
+void NetworkDeviceHandlerImpl::RemoveAllWifiWakeOnPacketConnections(
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
+    return;
+
+  DBusThreadManager::Get()
+      ->GetShillDeviceClient()
+      ->RemoveAllWakeOnPacketConnections(dbus::ObjectPath(device_state->path()),
+                                         callback,
+                                         base::Bind(&HandleShillCallFailure,
+                                                    device_state->path(),
+                                                    error_callback));
 }
 
 void NetworkDeviceHandlerImpl::DeviceListChanged() {
@@ -482,6 +521,22 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
                               base::Bind(&base::DoNothing),
                               network_handler::ErrorCallback());
   }
+}
+
+const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
+    const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state =
+      network_state_handler_->GetDeviceStateByType(NetworkTypePattern::WiFi());
+  if (!device_state) {
+    if (error_callback.is_null())
+      return NULL;
+    scoped_ptr<base::DictionaryValue> error_data(new base::DictionaryValue);
+    error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
+    error_callback.Run(kErrorDeviceMissing, error_data.Pass());
+    return NULL;
+  }
+
+  return device_state;
 }
 
 }  // namespace chromeos

@@ -34,6 +34,7 @@ class PowerPrefs;
 class RendererFreezer;
 class SessionManagerObserver;
 class SwapMetrics;
+class WakeOnWifiManager;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -75,6 +76,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<DataPromoNotification> data_promo_notification_;
   scoped_ptr<RendererFreezer> renderer_freezer_;
   scoped_ptr<LightBar> light_bar_;
+  scoped_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

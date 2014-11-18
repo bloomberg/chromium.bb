@@ -140,6 +140,8 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
+  IntegerPrefMember wake_on_wifi_enabled_;
+
   // User owning these preferences.
   const user_manager::User* user_;
 
