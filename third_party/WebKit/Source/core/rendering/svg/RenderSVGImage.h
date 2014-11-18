@@ -47,7 +47,6 @@ public:
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
     RefPtr<DisplayList>& bufferedForeground() { return m_bufferedForeground; }
 
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGImage || RenderSVGModelObject::isOfType(type); }
 
@@ -73,7 +72,6 @@ private:
     bool m_needsTransformUpdate : 1;
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
-    FloatRect m_paintInvalidationBoundingBox;
     OwnPtr<RenderImageResource> m_imageResource;
 
     RefPtr<DisplayList> m_bufferedForeground;

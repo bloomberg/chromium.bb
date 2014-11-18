@@ -51,6 +51,8 @@ public:
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
     virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, const PaintInvalidationState*) const override final;
 
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final { return m_paintInvalidationBoundingBox; }
+
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
@@ -77,6 +79,9 @@ private:
     virtual IntRect absoluteFocusRingBoundingBoxRect() const override final;
 
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
+
+protected:
+    FloatRect m_paintInvalidationBoundingBox;
 };
 
 }

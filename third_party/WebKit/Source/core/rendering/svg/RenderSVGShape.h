@@ -65,8 +65,6 @@ public:
 
     virtual bool isShapeEmpty() const { return path().isEmpty(); }
 
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final { return m_paintInvalidationBoundingBox; }
-
     bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
     Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
     AffineTransform nonScalingStrokeTransform() const;
@@ -116,7 +114,6 @@ private:
     void updateLocalTransform();
 
 private:
-    FloatRect m_paintInvalidationBoundingBox;
     OwnPtr<AffineTransform> m_localTransform;
     OwnPtr<Path> m_path;
 

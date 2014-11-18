@@ -47,7 +47,6 @@ public:
     virtual bool didTransformToRootUpdate() { return false; }
     bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
 
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final { return m_paintInvalidationBoundingBox; }
     bool selfWillPaint();
 
 protected:
@@ -85,10 +84,9 @@ private:
 
     RenderObjectChildList m_children;
     FloatRect m_objectBoundingBox;
-    bool m_objectBoundingBoxValid;
     FloatRect m_strokeBoundingBox;
-    FloatRect m_paintInvalidationBoundingBox;
-    bool m_needsBoundariesUpdate : 1;
+    bool m_objectBoundingBoxValid;
+    bool m_needsBoundariesUpdate;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGContainer, isSVGContainer());
