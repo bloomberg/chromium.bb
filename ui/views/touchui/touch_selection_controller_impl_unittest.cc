@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_editing_controller.h"
@@ -21,15 +22,13 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_screen_position_client.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using base::WideToUTF16;
 
 namespace {
-// Should match kSelectionHandlePadding in touch_selection_controller.
-const int kPadding = 10;
-
 // Should match kSelectionHandleBarMinHeight in touch_selection_controller.
 const int kBarMinHeight = 5;
 
@@ -43,18 +42,19 @@ const int kMenuButtonWidth = 63;
 // Should match size of kMenuCommands array in touch_editing_menu.
 const int kMenuCommandCount = 3;
 
-gfx::Image* GetHandleImage() {
-  static gfx::Image* handle_image = NULL;
-  if (!handle_image) {
-    handle_image = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_TEXT_SELECTION_HANDLE);
-  }
-  return handle_image;
+// For selection bounds |b1| and |b2| in a paragraph of text, returns -1 if |b1|
+// is physically before |b2|, +1 if |b2| is before |b1|, and 0 if they are at
+// the same location.
+int CompareTextSelectionBounds(const ui::SelectionBound& b1,
+                               const ui::SelectionBound& b2) {
+  if ((b1.edge_top.y() < b2.edge_top.y()) || b1.edge_top.x() < b2.edge_top.x())
+    return -1;
+  else if (b1 == b2)
+    return 0;
+  else
+    return 1;
 }
 
-gfx::Size GetHandleImageSize() {
-  return GetHandleImage()->Size();
-}
 }  // namespace
 
 namespace views {
@@ -62,9 +62,9 @@ namespace views {
 class TouchSelectionControllerImplTest : public ViewsTestBase {
  public:
   TouchSelectionControllerImplTest()
-      : textfield_widget_(NULL),
-        widget_(NULL),
-        textfield_(NULL),
+      : textfield_widget_(nullptr),
+        widget_(nullptr),
+        textfield_(nullptr),
         views_tsc_factory_(new ViewsTouchSelectionControllerFactory) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchEditing);
@@ -72,10 +72,16 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
   ~TouchSelectionControllerImplTest() override {
-    ui::TouchSelectionControllerFactory::SetInstance(NULL);
+    ui::TouchSelectionControllerFactory::SetInstance(nullptr);
+  }
+
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    SetUpRootWindowClients(GetContext());
   }
 
   void TearDown() override {
+    test_cursor_client_.reset();
     if (textfield_widget_ && !textfield_widget_->IsClosed())
       textfield_widget_->Close();
     if (widget_ && !widget_->IsClosed())
@@ -98,7 +104,6 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->Show();
 
     textfield_->RequestFocus();
-
     textfield_test_api_.reset(new TextfieldTestApi(textfield_));
   }
 
@@ -108,7 +113,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(params);
     widget_->Show();
-  }
+}
 
  protected:
   static bool IsCursorHandleVisibleFor(
@@ -140,37 +145,58 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_test_api_->ResetTouchSelectionController();
   }
 
-  void SimulateSelectionHandleDrag(gfx::Point p, int selection_handle) {
+  void SimulateSelectionHandleDrag(gfx::Vector2d v, int selection_handle) {
     TouchSelectionControllerImpl* controller = GetSelectionController();
-    // Do the work of OnMousePressed().
+    views::WidgetDelegateView* handle = nullptr;
     if (selection_handle == 1)
-      controller->SetDraggingHandle(controller->selection_handle_1_.get());
+      handle = controller->GetHandle1View();
     else
-      controller->SetDraggingHandle(controller->selection_handle_2_.get());
+      handle = controller->GetHandle2View();
 
-    // Offset the drag position by the selection handle radius since it is
-    // supposed to be in the coordinate system of the handle.
-    p.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);
-    controller->SelectionHandleDragged(p);
-
-    // Do the work of OnMouseReleased().
-    controller->dragging_handle_ = NULL;
+    gfx::Point grip_location = gfx::Point(handle->size().width() / 2,
+                                          handle->size().height() / 2);
+    base::TimeDelta time_stamp = base::TimeDelta();
+    {
+      ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_BEGIN);
+      ui::GestureEvent scroll_begin(
+          grip_location.x(), grip_location.y(), 0, time_stamp, details);
+      handle->OnGestureEvent(&scroll_begin);
+    }
+    test_cursor_client_->DisableMouseEvents();
+    {
+      ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE);
+      gfx::Point update_location = grip_location + v;
+      ui::GestureEvent scroll_update(
+          update_location.x(), update_location.y(), 0, time_stamp, details);
+      handle->OnGestureEvent(&scroll_update);
+    }
+    {
+      ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_END);
+      ui::GestureEvent scroll_end(
+          grip_location.x(), grip_location.y(), 0, time_stamp, details);
+      handle->OnGestureEvent(&scroll_end);
+    }
+    test_cursor_client_->EnableMouseEvents();
   }
 
   gfx::NativeView GetCursorHandleNativeView() {
     return GetSelectionController()->GetCursorHandleNativeView();
   }
 
-  gfx::Point GetSelectionHandle1Position() {
-    return GetSelectionController()->GetSelectionHandle1Position();
+  gfx::Rect GetSelectionHandle1Bounds() {
+    return GetSelectionController()->GetSelectionHandle1Bounds();
   }
 
-  gfx::Point GetSelectionHandle2Position() {
-    return GetSelectionController()->GetSelectionHandle2Position();
+  gfx::Rect GetSelectionHandle2Bounds() {
+    return GetSelectionController()->GetSelectionHandle2Bounds();
   }
 
-  gfx::Point GetCursorHandlePosition() {
-    return GetSelectionController()->GetCursorHandlePosition();
+  gfx::Rect GetCursorHandleBounds() {
+    return GetSelectionController()->GetCursorHandleBounds();
+  }
+
+  gfx::Rect GetExpectedHandleBounds(const ui::SelectionBound& bound) {
+    return GetSelectionController()->GetExpectedHandleBounds(bound);
   }
 
   bool IsSelectionHandle1Visible() {
@@ -190,12 +216,59 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
   gfx::Point GetCursorHandleDragPoint() {
-    gfx::Point point = GetCursorHandlePosition();
+    gfx::Rect rect = GetCursorHandleBounds();
     const gfx::SelectionModel& sel = textfield_->GetSelectionModel();
     int cursor_height = GetCursorRect(sel).height();
-    point.Offset(GetHandleImageSize().width() / 2 + kPadding,
-                 GetHandleImageSize().height() / 2 + cursor_height);
+    gfx::Point point = rect.CenterPoint();
+    point.Offset(0, cursor_height);
     return point;
+  }
+
+  // If textfield has selection, this verifies that the selection handles
+  // are visible, at the correct positions (at the end points of selection), and
+  // (if |check_direction| is set to true), that they have the correct
+  // directionality.
+  // |cursor_at_selection_handle_1| is used to decide whether selection
+  // handle 1's position is matched against the start of selection or the end.
+  void VerifyHandlePositions(bool cursor_at_selection_handle_1,
+                             bool check_direction,
+                             const tracked_objects::Location& from_here) {
+    ui::SelectionBound anchor, focus;
+    textfield_->GetSelectionEndPoints(&anchor, &focus);
+    std::string from_str = from_here.ToString();
+    if (textfield_->HasSelection()) {
+      EXPECT_TRUE(IsSelectionHandle1Visible()) << from_str;
+      EXPECT_TRUE(IsSelectionHandle2Visible()) << from_str;
+      EXPECT_FALSE(IsCursorHandleVisible());
+      gfx::Rect sh1_bounds = GetSelectionHandle1Bounds();
+      gfx::Rect sh2_bounds = GetSelectionHandle2Bounds();
+      if (cursor_at_selection_handle_1) {
+        EXPECT_EQ(sh1_bounds, GetExpectedHandleBounds(focus)) << from_str;
+        EXPECT_EQ(sh2_bounds, GetExpectedHandleBounds(anchor)) << from_str;
+      } else {
+        EXPECT_EQ(sh1_bounds, GetExpectedHandleBounds(anchor)) << from_str;
+        EXPECT_EQ(sh2_bounds, GetExpectedHandleBounds(focus)) << from_str;
+      }
+    } else {
+      EXPECT_FALSE(IsSelectionHandle1Visible()) << from_str;
+      EXPECT_FALSE(IsSelectionHandle2Visible()) << from_str;
+      EXPECT_TRUE(IsCursorHandleVisible());
+      gfx::Rect cursor_bounds = GetCursorHandleBounds();
+      DCHECK(anchor == focus);
+      EXPECT_EQ(cursor_bounds, GetExpectedHandleBounds(anchor)) << from_str;
+    }
+    if (check_direction)  {
+      if (CompareTextSelectionBounds(anchor, focus) < 0) {
+        EXPECT_EQ(ui::SelectionBound::LEFT, anchor.type) << from_str;
+        EXPECT_EQ(ui::SelectionBound::RIGHT, focus.type)  << from_str;
+      } else if (CompareTextSelectionBounds(anchor, focus) > 0) {
+        EXPECT_EQ(ui::SelectionBound::LEFT, focus.type)  << from_str;
+        EXPECT_EQ(ui::SelectionBound::RIGHT, anchor.type)  << from_str;
+      } else {
+        EXPECT_EQ(ui::SelectionBound::CENTER, focus.type) << from_str;
+        EXPECT_EQ(ui::SelectionBound::CENTER, anchor.type) << from_str;
+      }
+    }
   }
 
   Widget* textfield_widget_;
@@ -204,47 +277,21 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   Textfield* textfield_;
   scoped_ptr<TextfieldTestApi> textfield_test_api_;
   scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
+  scoped_ptr<wm::DefaultScreenPositionClient> screen_position_client_;
+  scoped_ptr<aura::test::TestCursorClient> test_cursor_client_;
 
  private:
+  void SetUpRootWindowClients(aura::Window* root_window) {
+    if (!screen_position_client_) {
+      screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+      aura::client::SetScreenPositionClient(root_window,
+                                            screen_position_client_.get());
+      test_cursor_client_.reset(new aura::test::TestCursorClient(root_window));
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImplTest);
 };
-
-// If textfield has selection, this macro verifies that the selection handles
-// are visible and at the correct positions (at the end points of selection).
-// |cursor_at_selection_handle_1| is used to decide whether selection
-// handle 1's position is matched against the start of selection or the end.
-#define VERIFY_HANDLE_POSITIONS(cursor_at_selection_handle_1)                  \
-{                                                                              \
-    gfx::SelectionModel sel = textfield_->GetSelectionModel();                 \
-    if (textfield_->HasSelection()) {                                          \
-      EXPECT_TRUE(IsSelectionHandle1Visible());                                \
-      EXPECT_TRUE(IsSelectionHandle2Visible());                                \
-      EXPECT_FALSE(IsCursorHandleVisible());                                   \
-      gfx::SelectionModel sel_start = GetRenderText()->                        \
-                                      GetSelectionModelForSelectionStart();    \
-      gfx::Point selection_start = GetCursorPosition(sel_start);               \
-      gfx::Point selection_end = GetCursorPosition(sel);                       \
-      gfx::Point sh1 = GetSelectionHandle1Position();                          \
-      gfx::Point sh2 = GetSelectionHandle2Position();                          \
-      sh1.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);              \
-      sh2.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);              \
-      if (cursor_at_selection_handle_1) {                                      \
-        EXPECT_EQ(sh1, selection_end);                                         \
-        EXPECT_EQ(sh2, selection_start);                                       \
-      } else {                                                                 \
-        EXPECT_EQ(sh1, selection_start);                                       \
-        EXPECT_EQ(sh2, selection_end);                                         \
-      }                                                                        \
-    } else {                                                                   \
-      EXPECT_FALSE(IsSelectionHandle1Visible());                               \
-      EXPECT_FALSE(IsSelectionHandle2Visible());                               \
-      EXPECT_TRUE(IsCursorHandleVisible());                                    \
-      gfx::Point cursor_pos = GetCursorPosition(sel);                          \
-      gfx::Point ch_pos = GetCursorHandlePosition();                           \
-      ch_pos.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);           \
-      EXPECT_EQ(ch_pos, cursor_pos);                                           \
-    }                                                                          \
-}
 
 // Tests that the selection handles are placed appropriately when selection in
 // a Textfield changes.
@@ -259,15 +306,15 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
 
   // Test selecting a range.
   textfield_->SelectRange(gfx::Range(3, 7));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Test selecting everything.
   textfield_->SelectAll(false);
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Test with no selection.
   textfield_->ClearSelection();
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Test with lost focus.
   textfield_widget_->GetFocusManager()->ClearFocus();
@@ -277,7 +324,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   textfield_widget_->GetFocusManager()->SetFocusedView(textfield_);
   EXPECT_FALSE(GetSelectionController());
   textfield_->OnGestureEvent(&tap);
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 }
 
 // Tests that the selection handles are placed appropriately in bidi text.
@@ -293,39 +340,42 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   // Test cursor at run boundary and with empty selection.
   textfield_->SelectSelectionModel(
       gfx::SelectionModel(3, gfx::CURSOR_BACKWARD));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Test selection range inside one run and starts or ends at run boundary.
   textfield_->SelectRange(gfx::Range(2, 3));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(3, 2));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
+  // TODO(mfomitchev): crbug.com/429705
+  // The correct behavior for handles in mixed ltr/rtl text line is not known,
+  // so passing false for |check_direction| in some of these tests.
   textfield_->SelectRange(gfx::Range(3, 4));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(4, 3));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(3, 6));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(6, 3));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   // Test selection range accross runs.
   textfield_->SelectRange(gfx::Range(0, 6));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(6, 0));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(1, 4));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   textfield_->SelectRange(gfx::Range(4, 1));
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 }
 
 // Tests if the SelectRect callback is called appropriately when selection
@@ -340,33 +390,36 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   textfield_->OnGestureEvent(&tap);
   textfield_->SelectRange(gfx::Range(3, 7));
 
-  EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfie");
-  VERIFY_HANDLE_POSITIONS(false);
+  gfx::Point textfield_origin;
+  textfield_->ConvertPointToScreen(&textfield_origin);
+
+  EXPECT_EQ("tfie", UTF16ToUTF8(textfield_->GetSelectedText()));
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 2 to right by 3 chars.
   const gfx::FontList& font_list = textfield_->GetFontList();
   int x = gfx::Canvas::GetStringWidth(ASCIIToUTF16("ld "), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
-  EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfield ");
-  VERIFY_HANDLE_POSITIONS(false);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
+  EXPECT_EQ("tfield ", UTF16ToUTF8(textfield_->GetSelectedText()));
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 1 to the left by a large amount (selection should
   // just stick to the beginning of the textfield).
-  SimulateSelectionHandleDrag(gfx::Point(-50, 0), 1);
-  EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "textfield ");
-  VERIFY_HANDLE_POSITIONS(true);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-50, 0), 1);
+  EXPECT_EQ("textfield ", UTF16ToUTF8(textfield_->GetSelectedText()));
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Drag selection handle 1 across selection handle 2.
   x = gfx::Canvas::GetStringWidth(ASCIIToUTF16("textfield with "), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
-  EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "with ");
-  VERIFY_HANDLE_POSITIONS(true);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 1);
+  EXPECT_EQ("with ", UTF16ToUTF8(textfield_->GetSelectedText()));
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Drag selection handle 2 across selection handle 1.
   x = gfx::Canvas::GetStringWidth(ASCIIToUTF16("with selected "), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
-  EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "selected ");
-  VERIFY_HANDLE_POSITIONS(false);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
+  EXPECT_EQ("selected ", UTF16ToUTF8(textfield_->GetSelectedText()));
+  VerifyHandlePositions(false, true, FROM_HERE);
 }
 
 TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
@@ -381,42 +434,45 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Select [c] from left to right.
   textfield_->SelectRange(gfx::Range(2, 3));
   EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 2 to right by 1 char.
   const gfx::FontList& font_list = textfield_->GetFontList();
   int x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e3"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 1 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"b"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(true);
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Select [c] from right to left.
   textfield_->SelectRange(gfx::Range(3, 2));
   EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 1 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e3"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(true);
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Drag selection handle 2 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"b"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Select [\x5e1] from right to left.
   textfield_->SelectRange(gfx::Range(3, 4));
   EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  // TODO(mfomitchev): crbug.com/429705
+  // The correct behavior for handles in mixed ltr/rtl text line is not known,
+  // so passing false for |check_direction| in some of these tests.
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   /* TODO(xji): for bidi text "abcDEF" whose display is "abcFEDhij", when click
      right of 'D' and select [D] then move the left selection handle to left
@@ -428,69 +484,69 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
      work around it.
   // Drag selection handle 2 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e2"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
   */
 
   // Drag selection handle 1 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"d"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(true);
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Select [\x5e1] from left to right.
   textfield_->SelectRange(gfx::Range(4, 3));
   EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   /* TODO(xji): see detail of above commented out test case.
   // Drag selection handle 1 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e2"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
   */
 
   // Drag selection handle 2 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"d"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Select [\x05r3] from right to left.
   textfield_->SelectRange(gfx::Range(5, 6));
   EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   // Drag selection handle 2 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"c"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Drag selection handle 1 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e2"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(true);
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Select [\x05r3] from left to right.
   textfield_->SelectRange(gfx::Range(6, 5));
   EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 
   // Drag selection handle 1 to left by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"c"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  SimulateSelectionHandleDrag(gfx::Vector2d(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(true);
+  VerifyHandlePositions(true, true, FROM_HERE);
 
   // Drag selection handle 2 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"\x05e2"), font_list);
-  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, false, FROM_HERE);
 }
 
 TEST_F(TouchSelectionControllerImplTest,
@@ -521,7 +577,8 @@ TEST_F(TouchSelectionControllerImplTest,
   // invisible handle does not change.
   size_t visible_handle_position = textfield_->GetSelectedRange().end();
   for (int i = 0; i < 10; ++i) {
-    SimulateSelectionHandleDrag(gfx::Point(-10, 0), 2);
+    static const int drag_diff = -10;
+    SimulateSelectionHandleDrag(gfx::Vector2d(drag_diff, 0), 2);
     // Make sure that the visible handle is being dragged.
     EXPECT_NE(visible_handle_position, textfield_->GetSelectedRange().end());
     visible_handle_position = textfield_->GetSelectedRange().end();
@@ -541,13 +598,13 @@ TEST_F(TouchSelectionControllerImplTest,
 
   // Cursor handle should be visible.
   EXPECT_FALSE(textfield_->HasSelection());
-  VERIFY_HANDLE_POSITIONS(false);
+  VerifyHandlePositions(false, true, FROM_HERE);
 
   // Double tap on the cursor handle position. We want to check that the cursor
   // handle is not eating the event and that the event is falling through to the
   // textfield.
-  gfx::Point cursor_pos = GetCursorHandlePosition();
-  cursor_pos.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);
+  gfx::Point cursor_pos = GetCursorHandleBounds().origin();
+  cursor_pos.Offset(GetCursorHandleBounds().width() / 2, 0);
   generator.GestureTapAt(cursor_pos);
   generator.GestureTapAt(cursor_pos);
   EXPECT_TRUE(textfield_->HasSelection());
@@ -567,7 +624,9 @@ class TestTouchEditable : public ui::TouchEditable {
   }
 
   void set_cursor_rect(const gfx::Rect& cursor_rect) {
-    cursor_rect_ = cursor_rect;
+    cursor_bound_.edge_top = cursor_rect.origin();
+    cursor_bound_.edge_bottom = cursor_rect.bottom_left();
+    cursor_bound_.type = ui::SelectionBound::Type::CENTER;
   }
 
   ~TestTouchEditable() override {}
@@ -578,8 +637,9 @@ class TestTouchEditable : public ui::TouchEditable {
     NOTREACHED();
   }
   void MoveCaretTo(const gfx::Point& point) override { NOTREACHED(); }
-  void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override {
-    *p1 = *p2 = cursor_rect_;
+  void GetSelectionEndPoints(ui::SelectionBound* anchor,
+                             ui::SelectionBound* focus) override {
+    *anchor = *focus = cursor_bound_;
   }
   gfx::Rect GetBounds() override { return gfx::Rect(bounds_.size()); }
   gfx::NativeView GetNativeView() const override { return window_; }
@@ -623,7 +683,8 @@ class TestTouchEditable : public ui::TouchEditable {
   gfx::Rect bounds_;
 
   // Cursor position inside the client view.
-  gfx::Rect cursor_rect_;
+  //gfx::Rect cursor_rect_;
+  ui::SelectionBound cursor_bound_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditable);
 };
@@ -771,7 +832,7 @@ TEST_F(TouchSelectionControllerImplTest, QuickMenuAdjustsAnchorRect) {
   // Close the widget, hence quick menus, before quick menu controller goes out
   // of scope.
   widget_->CloseNow();
-  widget_ = NULL;
+  widget_ = nullptr;
 }
 
 TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {

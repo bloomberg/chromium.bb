@@ -929,19 +929,45 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
-  if (selection_anchor_rect_ == params.anchor_rect &&
-      selection_focus_rect_ == params.focus_rect)
+  ui::SelectionBound anchor_bound, focus_bound;
+  anchor_bound.edge_top = params.anchor_rect.origin();
+  anchor_bound.edge_bottom = params.anchor_rect.bottom_left();
+  focus_bound.edge_top = params.focus_rect.origin();
+  focus_bound.edge_bottom = params.focus_rect.bottom_left();
+
+  if (params.anchor_rect == params.focus_rect) {
+    anchor_bound.type = focus_bound.type = ui::SelectionBound::CENTER;
+  } else {
+    // Whether text is LTR at the anchor handle.
+    bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
+    // Whether text is LTR at the focus handle.
+    bool focus_LTR = params.focus_dir == blink::WebTextDirectionLeftToRight;
+
+    if ((params.is_anchor_first && anchor_LTR) ||
+        (!params.is_anchor_first && !anchor_LTR)) {
+      anchor_bound.type = ui::SelectionBound::LEFT;
+    } else {
+      anchor_bound.type = ui::SelectionBound::RIGHT;
+    }
+    if ((params.is_anchor_first && focus_LTR) ||
+        (!params.is_anchor_first && !focus_LTR)) {
+      focus_bound.type = ui::SelectionBound::RIGHT;
+    } else {
+      focus_bound.type = ui::SelectionBound::LEFT;
+    }
+  }
+
+  if (anchor_bound == selection_anchor_ && focus_bound == selection_focus_)
     return;
 
-  selection_anchor_rect_ = params.anchor_rect;
-  selection_focus_rect_ = params.focus_rect;
-
+  selection_anchor_ = anchor_bound;
+  selection_focus_ = focus_bound;
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
 
   if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
-        selection_focus_rect_);
+    touch_editing_client_->OnSelectionOrCursorChanged(
+        anchor_bound, focus_bound);
   }
 }
 
@@ -1505,8 +1531,8 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
-  const gfx::Rect rect =
-      gfx::UnionRects(selection_anchor_rect_, selection_focus_rect_);
+  gfx::Rect rect =
+      ui::RectBetweenSelectionBounds(selection_anchor_, selection_focus_);
   return ConvertRectToScreen(rect);
 }
 
@@ -2400,8 +2426,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   host_->WasResized();
   delegated_frame_host_->WasResized();
   if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
-      selection_focus_rect_);
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_,
+                                                      selection_focus_);
   }
 #if defined(OS_WIN)
   if (mouse_locked_)

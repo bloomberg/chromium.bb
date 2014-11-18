@@ -1101,13 +1101,37 @@ void Textfield::MoveCaretTo(const gfx::Point& point) {
   SelectRect(point, point);
 }
 
-void Textfield::GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) {
+void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
+                                      ui::SelectionBound* focus) {
   gfx::RenderText* render_text = GetRenderText();
   const gfx::SelectionModel& sel = render_text->selection_model();
   gfx::SelectionModel start_sel =
       render_text->GetSelectionModelForSelectionStart();
-  *p1 = render_text->GetCursorBounds(start_sel, true);
-  *p2 = render_text->GetCursorBounds(sel, true);
+  gfx::Rect r1 = render_text->GetCursorBounds(start_sel, true);
+  gfx::Rect r2 = render_text->GetCursorBounds(sel, true);
+
+  anchor->edge_top = r1.origin();
+  anchor->edge_bottom = r1.bottom_left();
+  focus->edge_top = r2.origin();
+  focus->edge_bottom = r2.bottom_left();
+
+  // Determine the SelectionBound's type for focus and anchor.
+  // TODO(mfomitchev): Ideally we should have different logical directions for
+  // start and end to support proper handle direction for mixed LTR/RTL text.
+  const bool ltr = GetTextDirection() != base::i18n::RIGHT_TO_LEFT;
+  size_t anchor_position_index = sel.selection().start();
+  size_t focus_position_index = sel.selection().end();
+
+  if (anchor_position_index == focus_position_index) {
+    anchor->type = focus->type = ui::SelectionBound::CENTER;
+  } else if ((ltr && anchor_position_index < focus_position_index) ||
+             (!ltr && anchor_position_index > focus_position_index)) {
+    anchor->type = ui::SelectionBound::LEFT;
+    focus->type = ui::SelectionBound::RIGHT;
+  } else {
+    anchor->type = ui::SelectionBound::RIGHT;
+    focus->type = ui::SelectionBound::LEFT;
+  }
 }
 
 gfx::Rect Textfield::GetBounds() {

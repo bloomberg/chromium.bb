@@ -70,6 +70,7 @@
     'models/tree_node_model_unittest.cc',
     'test/data/resource.h',
     'text/bytes_formatting_unittest.cc',
+    'touch/touch_editing_controller_unittest.cc',
     'view_prop_unittest.cc',
     'webui/web_ui_util_unittest.cc',
     'x/selection_requestor_unittest.cc',
@@ -131,6 +132,9 @@
     ['OS == "android"', {
       'dependencies': [
         '../../testing/android/native_test.gyp:native_test_native_code',
+      ],
+      'sources!': [
+        'touch/touch_editing_controller_unittest.cc',
       ],
     }],
     ['use_pango == 1', {

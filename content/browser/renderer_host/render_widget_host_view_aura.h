@@ -29,6 +29,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -101,8 +102,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     virtual void EndTouchEditing(bool quick) = 0;
 
     // Notifies the client that the selection bounds need to be updated.
-    virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                            const gfx::Rect& focus) = 0;
+    virtual void OnSelectionOrCursorChanged(
+        const ui::SelectionBound& anchor,
+        const ui::SelectionBound& focus) = 0;
 
     // Notifies the client that the current text input type as changed.
     virtual void OnTextInputTypeChanged(ui::TextInputType type) = 0;
@@ -527,9 +529,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   int text_input_flags_;
   bool can_compose_inline_;
 
-  // Rectangles for the selection anchor and focus.
-  gfx::Rect selection_anchor_rect_;
-  gfx::Rect selection_focus_rect_;
+  // Bounds for the selection.
+  ui::SelectionBound selection_anchor_;
+  ui::SelectionBound selection_focus_;
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

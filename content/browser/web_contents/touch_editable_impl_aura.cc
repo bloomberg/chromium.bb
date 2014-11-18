@@ -52,7 +52,7 @@ void TouchEditableImplAura::UpdateEditingController() {
     return;
 
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE ||
-      selection_anchor_rect_ != selection_focus_rect_) {
+      selection_anchor_ != selection_focus_) {
     if (touch_selection_controller_)
       touch_selection_controller_->SelectionChanged();
   } else {
@@ -96,16 +96,17 @@ void TouchEditableImplAura::EndTouchEditing(bool quick) {
   }
 }
 
-void TouchEditableImplAura::OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                                       const gfx::Rect& focus) {
-  selection_anchor_rect_ = anchor;
-  selection_focus_rect_ = focus;
+void TouchEditableImplAura::OnSelectionOrCursorChanged(
+    const ui::SelectionBound& anchor,
+    const ui::SelectionBound& focus) {
+  selection_anchor_ = anchor;
+  selection_focus_ = focus;
 
   // If touch editing handles were not visible, we bring them up only if the
   // current event is a gesture event, no scroll/fling/overscoll is in progress,
   // and there is non-zero selection on the page
   if (selection_gesture_in_process_ && !scrolls_in_progress_ &&
-      selection_anchor_rect_ != selection_focus_rect_) {
+      selection_anchor_ != selection_focus_) {
     StartTouchEditing();
     selection_gesture_in_process_ = false;
   }
@@ -132,13 +133,9 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       // When the user taps, we want to show touch editing handles if user
       // tapped on selected text.
       if (gesture_event->details().tap_count() == 1 &&
-          selection_anchor_rect_ != selection_focus_rect_) {
-        // UnionRects only works for rects with non-zero width.
-        gfx::Rect anchor(selection_anchor_rect_.origin(),
-                         gfx::Size(1, selection_anchor_rect_.height()));
-        gfx::Rect focus(selection_focus_rect_.origin(),
-                        gfx::Size(1, selection_focus_rect_.height()));
-        gfx::Rect selection_rect = gfx::UnionRects(anchor, focus);
+          selection_anchor_ != selection_focus_) {
+        gfx::Rect selection_rect =
+            ui::RectBetweenSelectionBounds(selection_anchor_, selection_focus_);
         if (selection_rect.Contains(gesture_event->location())) {
           StartTouchEditing();
           return true;
@@ -215,10 +212,10 @@ void TouchEditableImplAura::MoveCaretTo(const gfx::Point& point) {
   host->MoveCaret(point);
 }
 
-void TouchEditableImplAura::GetSelectionEndPoints(gfx::Rect* p1,
-                                                  gfx::Rect* p2) {
-  *p1 = selection_anchor_rect_;
-  *p2 = selection_focus_rect_;
+void TouchEditableImplAura::GetSelectionEndPoints(ui::SelectionBound* anchor,
+                                                  ui::SelectionBound* focus) {
+  *anchor = selection_anchor_;
+  *focus = selection_focus_;
 }
 
 gfx::Rect TouchEditableImplAura::GetBounds() {
@@ -353,7 +350,7 @@ void TouchEditableImplAura::ScrollEnded() {
   // If there is no scrolling left in progress, show selection handles if they
   // were hidden due to scroll and there is a selection.
   if (!scrolls_in_progress_ && handles_hidden_due_to_scroll_ &&
-      (selection_anchor_rect_ != selection_focus_rect_ ||
+      (selection_anchor_ != selection_focus_ ||
           text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)) {
     StartTouchEditing();
     UpdateEditingController();

@@ -48,21 +48,24 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void SetDraggingHandle(EditingHandleView* handle);
 
   // Callback to inform the client view that the selection handle has been
-  // dragged, hence selection may need to be updated.
+  // dragged, hence selection may need to be updated. |drag_pos| is the new
+  // position for the edge of the selection corresponding to |dragging_handle_|,
+  // specified in handle's coordinates
   void SelectionHandleDragged(const gfx::Point& drag_pos);
 
   // Convenience method to convert a point from a selection handle's coordinate
   // system to that of the client view.
   void ConvertPointToClientView(EditingHandleView* source, gfx::Point* point);
 
-  // Convenience method to set a handle's selection rect and hide it if it is
+  // Convenience method to set a handle's selection bound and hide it if it is
   // located out of client view.
-  void SetHandleSelectionRect(EditingHandleView* handle, const gfx::Rect& rect,
-                              const gfx::Rect& rect_in_screen);
+  void SetHandleBound(EditingHandleView* handle,
+                      const ui::SelectionBound& bound,
+                      const ui::SelectionBound& bound_in_screen);
 
-  // Checks if handle should be shown for a selection end-point at |rect|.
-  // |rect| should be the clipped version of the selection end-point.
-  bool ShouldShowHandleFor(const gfx::Rect& rect) const;
+  // Checks if handle should be shown for selection bound.
+  // |bound| should be the clipped version of the selection bound.
+  bool ShouldShowHandleFor(const ui::SelectionBound& bound) const;
 
   // Overridden from TouchEditingMenuController.
   bool IsCommandIdEnabled(int command_id) const override;
@@ -99,12 +102,15 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // Convenience methods for testing.
   gfx::NativeView GetCursorHandleNativeView();
-  gfx::Point GetSelectionHandle1Position();
-  gfx::Point GetSelectionHandle2Position();
-  gfx::Point GetCursorHandlePosition();
+  gfx::Rect GetSelectionHandle1Bounds();
+  gfx::Rect GetSelectionHandle2Bounds();
+  gfx::Rect GetCursorHandleBounds();
   bool IsSelectionHandle1Visible();
   bool IsSelectionHandle2Visible();
   bool IsCursorHandleVisible();
+  gfx::Rect GetExpectedHandleBounds(const ui::SelectionBound& bound);
+  views::WidgetDelegateView* GetHandle1View();
+  views::WidgetDelegateView* GetHandle2View();
 
   ui::TouchEditable* client_view_;
   Widget* client_widget_;
@@ -121,16 +127,17 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Pointer to the SelectionHandleView being dragged during a drag session.
   EditingHandleView* dragging_handle_;
 
-  // Selection end points. In cursor mode, the two end points are the same and
-  // correspond to |cursor_handle_|; otherwise, they correspond to
-  // |selection_handle_1_| and |selection_handle_2_|, respectively. These
-  // values should be used when selection end points are needed rather than
-  // position of handles which might be invalid when handles are hidden.
-  gfx::Rect selection_end_point_1_;
-  gfx::Rect selection_end_point_2_;
-  // Selection end points, clipped to client view's boundaries.
-  gfx::Rect selection_end_point_1_clipped_;
-  gfx::Rect selection_end_point_2_clipped_;
+  // In cursor mode, the two selection bounds are the same and correspond to
+  // |cursor_handle_|; otherwise, they correspond to |selection_handle_1_| and
+  // |selection_handle_2_|, respectively. These values should be used when
+  // selection bounds needed rather than position of handles which might be
+  // invalid when handles are hidden.
+  ui::SelectionBound selection_bound_1_;
+  ui::SelectionBound selection_bound_2_;
+
+  // Selection bounds, clipped to client view's boundaries.
+  ui::SelectionBound selection_bound_1_clipped_;
+  ui::SelectionBound selection_bound_2_clipped_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };

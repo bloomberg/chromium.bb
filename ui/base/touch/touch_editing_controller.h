@@ -11,6 +11,36 @@
 
 namespace ui {
 
+// Bound of a selected region.
+struct UI_BASE_EXPORT SelectionBound {
+ public:
+  enum Type {
+    LEFT,
+    RIGHT,
+    CENTER,
+    EMPTY,
+    LAST = EMPTY
+  };
+
+  SelectionBound();
+  ~SelectionBound();
+
+  int GetHeight() const;
+
+  Type type;
+
+  gfx::Point edge_top;
+  gfx::Point edge_bottom;
+};
+
+UI_BASE_EXPORT bool operator==(const SelectionBound& lhs,
+                               const SelectionBound& rhs);
+UI_BASE_EXPORT bool operator!=(const SelectionBound& lhs,
+                               const SelectionBound& rhs);
+
+UI_BASE_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
+                                                    const SelectionBound& b2);
+
 // An interface implemented by widget that has text that can be selected/edited
 // using touch.
 class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
@@ -26,17 +56,18 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   // Move the caret to |point|. |point| is in local coordinates.
   virtual void MoveCaretTo(const gfx::Point& point) = 0;
 
-  // Gets the end points of the current selection. The end points p1 and p2 must
-  // be the cursor rect for the start and end of selection (in local
-  // coordinates):
+  // Gets the end points of the current selection. The end points |anchor| and
+  // |focus| must be the cursor rect for the logical start and logical end of
+  // selection (in local coordinates):
   // ____________________________________
   // | textfield with |selected text|   |
   // ------------------------------------
-  //                  ^p1           ^p2
+  //                  ^anchor       ^focus
   //
-  // p1 should be the logical start and p2 the logical end of selection. Hence,
-  // visually, p1 could be to the right of p2 in the figure above.
-  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) = 0;
+  // Visually, anchor could be to the right of focus in the figure above - it
+  // depends on the selection direction.
+  virtual void GetSelectionEndPoints(ui::SelectionBound* anchor,
+                                     ui::SelectionBound* focus) = 0;
 
   // Gets the bounds of the client view in its local coordinates.
   virtual gfx::Rect GetBounds() = 0;
@@ -94,6 +125,6 @@ class UI_BASE_EXPORT TouchSelectionControllerFactory {
   virtual ~TouchSelectionControllerFactory() {}
 };
 
-}  // namespace views
+}  // namespace ui
 
 #endif  // UI_BASE_TOUCH_TOUCH_EDITING_CONTROLLER_H_

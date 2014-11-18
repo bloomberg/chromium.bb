@@ -44,8 +44,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   // Overridden from RenderWidgetHostViewAura::TouchEditingClient.
   void StartTouchEditing() override;
   void EndTouchEditing(bool quick) override;
-  void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
-                                  const gfx::Rect& focus) override;
+  void OnSelectionOrCursorChanged(const ui::SelectionBound& anchor,
+                                  const ui::SelectionBound& focus) override;
   void OnTextInputTypeChanged(ui::TextInputType type) override;
   bool HandleInputEvent(const ui::Event* event) override;
   void GestureEventAck(int gesture_event_type) override;
@@ -55,7 +55,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   // Overridden from ui::TouchEditable:
   void SelectRect(const gfx::Point& start, const gfx::Point& end) override;
   void MoveCaretTo(const gfx::Point& point) override;
-  void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override;
+  void GetSelectionEndPoints(ui::SelectionBound* anchor,
+                             ui::SelectionBound* focus) override;
   gfx::Rect GetBounds() override;
   gfx::NativeView GetNativeView() const override;
   void ConvertPointToScreen(gfx::Point* point) override;
@@ -81,9 +82,9 @@ class CONTENT_EXPORT TouchEditableImplAura
 
   void Cleanup();
 
-  // Rectangles for the selection anchor and focus.
-  gfx::Rect selection_anchor_rect_;
-  gfx::Rect selection_focus_rect_;
+  // Bounds for the selection.
+  ui::SelectionBound selection_anchor_;
+  ui::SelectionBound selection_focus_;
 
   // The current text input type.
   ui::TextInputType text_input_type_;

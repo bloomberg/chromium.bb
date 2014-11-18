@@ -31,6 +31,7 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -159,6 +160,14 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   }
 
   // ::testing::Test:
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+#if defined(USE_AURA)
+    aura::client::SetScreenPositionClient(GetContext(),
+                                          &screen_position_client_);
+#endif  // !defined(USE_AURA)
+  }
+
   void TearDown() override {
     if (widget_)
       widget_->Close();
@@ -375,6 +384,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
  private:
   ui::ClipboardType copied_to_clipboard_;
+  wm::DefaultScreenPositionClient screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };
