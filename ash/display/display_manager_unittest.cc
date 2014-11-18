@@ -48,7 +48,8 @@ class DisplayManagerTest : public test::AshTestBase,
  public:
   DisplayManagerTest()
       : removed_count_(0U),
-        root_window_destroyed_(false) {
+        root_window_destroyed_(false),
+        changed_metrics_(0U) {
   }
   ~DisplayManagerTest() override {}
 
@@ -68,6 +69,7 @@ class DisplayManagerTest : public test::AshTestBase,
   }
   const vector<gfx::Display>& changed() const { return changed_; }
   const vector<gfx::Display>& added() const { return added_; }
+  uint32_t changed_metrics() const { return changed_metrics_; }
 
   string GetCountSummary() const {
     return StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS,
@@ -78,6 +80,7 @@ class DisplayManagerTest : public test::AshTestBase,
     changed_.clear();
     added_.clear();
     removed_count_ = 0U;
+    changed_metrics_ = 0U;
     root_window_destroyed_ = false;
   }
 
@@ -102,8 +105,10 @@ class DisplayManagerTest : public test::AshTestBase,
   }
 
   // aura::DisplayObserver overrides:
-  void OnDisplayMetricsChanged(const gfx::Display& display, uint32_t) override {
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override {
     changed_.push_back(display);
+    changed_metrics_ |= changed_metrics;
   }
   void OnDisplayAdded(const gfx::Display& new_display) override {
     added_.push_back(new_display);
@@ -123,6 +128,7 @@ class DisplayManagerTest : public test::AshTestBase,
   vector<gfx::Display> added_;
   size_t removed_count_;
   bool root_window_destroyed_;
+  uint32_t changed_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTest);
 };
@@ -227,6 +233,15 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
             display_manager()->GetDisplayAt(0).bounds().ToString());
   EXPECT_EQ("800,0 600x400",
             display_manager()->GetDisplayAt(1).bounds().ToString());
+}
+
+TEST_F(DisplayManagerTest, ScaleOnlyChange) {
+  if (!SupportsMultipleDisplays())
+    return;
+  display_manager()->ToggleDisplayScaleFactor();
+  EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
@@ -1094,7 +1109,6 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
       display_manager()->GetActiveModeForDisplayId(display_id)));
 }
 
-
 TEST_F(DisplayManagerTest, Use125DSFRorUIScaling) {
   int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(display_id);
@@ -1411,7 +1425,6 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("300,500", host1->GetBounds().origin().ToString());
   EXPECT_EQ("200x300", host1->GetBounds().size().ToString());
 }
-
 
 class ScreenShutdownTest : public test::AshTestBase {
  public:

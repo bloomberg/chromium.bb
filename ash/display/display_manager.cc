@@ -798,12 +798,14 @@ void DisplayManager::UpdateDisplays(
       // the layout.
       // Using display.bounds() and display.work_area() would fail most of the
       // time.
-      if (force_bounds_changed_ || (current_display_info.bounds_in_native() !=
-                                    new_display_info.bounds_in_native()) ||
+      if (force_bounds_changed_ ||
+          (current_display_info.bounds_in_native() !=
+           new_display_info.bounds_in_native()) ||
           (current_display_info.size_in_pixel() !=
-           new_display.GetSizeInPixel())) {
+           new_display.GetSizeInPixel()) ||
+          current_display.size() != new_display.size()) {
         metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                   gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+            gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
       }
 
       if (current_display.device_scale_factor() !=
