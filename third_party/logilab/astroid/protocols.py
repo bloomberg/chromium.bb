@@ -1,34 +1,52 @@
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
-# copyright 2003-2010 Sylvain Thenault, all rights reserved.
-# contact mailto:thenault@gmail.com
 #
-# This file is part of logilab-astng.
+# This file is part of astroid.
 #
-# logilab-astng is free software: you can redistribute it and/or modify it
+# astroid is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# logilab-astng is distributed in the hope that it will be useful, but
+# astroid is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
+# with astroid. If not, see <http://www.gnu.org/licenses/>.
 """this module contains a set of functions to handle python protocols for nodes
 where it makes sense.
 """
 
 __doctype__ = "restructuredtext en"
 
-from logilab.astng.exceptions import InferenceError, NoDefault
-from logilab.astng.node_classes import unpack_infer
-from logilab.astng.bases import copy_context, \
-     raise_if_nothing_infered, yes_if_nothing_infered, Instance, Generator, YES
-from logilab.astng.nodes import const_factory
-from logilab.astng import nodes
+from astroid.exceptions import InferenceError, NoDefault, NotFoundError
+from astroid.node_classes import unpack_infer
+from astroid.bases import copy_context, \
+     raise_if_nothing_infered, yes_if_nothing_infered, Instance, YES
+from astroid.nodes import const_factory
+from astroid import nodes
+
+BIN_OP_METHOD = {'+':  '__add__',
+                 '-':  '__sub__',
+                 '/':  '__div__',
+                 '//': '__floordiv__',
+                 '*':  '__mul__',
+                 '**': '__power__',
+                 '%':  '__mod__',
+                 '&':  '__and__',
+                 '|':  '__or__',
+                 '^':  '__xor__',
+                 '<<': '__lshift__',
+                 '>>': '__rshift__',
+                }
+
+UNARY_OP_METHOD = {'+': '__pos__',
+                   '-': '__neg__',
+                   '~': '__invert__',
+                   'not': None, # XXX not '__nonzero__'
+                  }
 
 # unary operations ############################################################
 
@@ -72,7 +90,7 @@ BIN_OP_IMPL = {'+':  lambda a, b: a + b,
                '^':  lambda a, b: a ^ b,
                '<<': lambda a, b: a << b,
                '>>': lambda a, b: a >> b,
-               }
+              }
 for key, impl in BIN_OP_IMPL.items():
     BIN_OP_IMPL[key+'='] = impl
 
@@ -135,6 +153,25 @@ def dict_infer_binary_op(self, operator, other, context):
         # XXX else log TypeError
 nodes.Dict.infer_binary_op = yes_if_nothing_infered(dict_infer_binary_op)
 
+def instance_infer_binary_op(self, operator, other, context):
+    try:
+        methods = self.getattr(BIN_OP_METHOD[operator])
+    except (NotFoundError, KeyError):
+        # Unknown operator
+        yield YES
+    else:
+        for method in methods:
+            if not isinstance(method, nodes.Function):
+                continue
+            for result in method.infer_call_result(self, context):
+                if result is not YES:
+                    yield result
+            # We are interested only in the first infered method,
+            # don't go looking in the rest of the methods of the ancestors.
+            break
+
+Instance.infer_binary_op = yes_if_nothing_infered(instance_infer_binary_op)
+
 
 # assignment ##################################################################
 
@@ -168,7 +205,7 @@ def _resolve_looppart(parts, asspath, context):
                 assigned = stmt.getitem(index, context)
             except (AttributeError, IndexError):
                 continue
-            except TypeError, exc: # stmt is unsubscriptable Const
+            except TypeError: # stmt is unsubscriptable Const
                 continue
             if not asspath:
                 # we achieved to resolved the assignment path,
@@ -233,10 +270,14 @@ def _arguments_infer_argname(self, name, context):
             yield self.parent.parent.frame()
             return
     if name == self.vararg:
-        yield const_factory(())
+        vararg = const_factory(())
+        vararg.parent = self
+        yield vararg
         return
     if name == self.kwarg:
-        yield const_factory({})
+        kwarg = const_factory({})
+        kwarg.parent = self
+        yield kwarg
         return
     # if there is a default value, yield it. And then yield YES to reflect
     # we can't guess given argument value
@@ -312,10 +353,13 @@ nodes.ExceptHandler.assigned_stmts = raise_if_nothing_infered(excepthandler_assi
 
 def with_assigned_stmts(self, node, context=None, asspath=None):
     if asspath is None:
-        for lst in self.vars.infer(context):
-            if isinstance(lst, (nodes.Tuple, nodes.List)):
-                for item in lst.nodes:
-                    yield item
+        for _, vars in self.items:
+            if vars is None:
+                continue
+            for lst in vars.infer(context):
+                if isinstance(lst, (nodes.Tuple, nodes.List)):
+                    for item in lst.nodes:
+                        yield item
 nodes.With.assigned_stmts = raise_if_nothing_infered(with_assigned_stmts)
 
 

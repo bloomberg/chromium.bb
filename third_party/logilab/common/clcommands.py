@@ -22,6 +22,8 @@ e.g called as "tool command [options] args..." where <options> and <args> are
 command'specific
 """
 
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -115,7 +117,7 @@ class CommandLine(dict):
         if arg in ('-h', '--help'):
             self.usage_and_exit(0)
         if self.version is not None and arg in ('--version'):
-            print self.version
+            print(self.version)
             sys.exit(0)
         rcfile = self.rcfile
         if rcfile is not None and arg in ('-C', '--rc-file'):
@@ -127,21 +129,21 @@ class CommandLine(dict):
         try:
             command = self.get_command(arg)
         except KeyError:
-            print 'ERROR: no %s command' % arg
-            print
+            print('ERROR: no %s command' % arg)
+            print()
             self.usage_and_exit(1)
         try:
             sys.exit(command.main_run(args, rcfile))
-        except KeyboardInterrupt, exc:
-            print 'Interrupted',
+        except KeyboardInterrupt as exc:
+            print('Interrupted', end=' ')
             if str(exc):
-                print ': %s' % exc,
-            print
+                print(': %s' % exc, end=' ')
+            print()
             sys.exit(4)
-        except BadCommandUsage, err:
-            print 'ERROR:', err
-            print
-            print command.help()
+        except BadCommandUsage as err:
+            print('ERROR:', err)
+            print()
+            print(command.help())
             sys.exit(1)
 
     def create_logger(self, handler, logthreshold=None):
@@ -164,32 +166,32 @@ class CommandLine(dict):
         """display usage for the main program (i.e. when no command supplied)
         and exit
         """
-        print 'usage:', self.pgm,
+        print('usage:', self.pgm, end=' ')
         if self.rcfile:
-            print '[--rc-file=<configuration file>]',
-        print '<command> [options] <command argument>...'
+            print('[--rc-file=<configuration file>]', end=' ')
+        print('<command> [options] <command argument>...')
         if self.doc:
-            print '\n%s' % self.doc
-        print  '''
+            print('\n%s' % self.doc)
+        print('''
 Type "%(pgm)s <command> --help" for more information about a specific
-command. Available commands are :\n''' % self.__dict__
+command. Available commands are :\n''' % self.__dict__)
         max_len = max([len(cmd) for cmd in self])
         padding = ' ' * max_len
         for cmdname, cmd in sorted(self.items()):
             if not cmd.hidden:
-                print ' ', (cmdname + padding)[:max_len], cmd.short_description()
+                print(' ', (cmdname + padding)[:max_len], cmd.short_description())
         if self.rcfile:
-            print '''
+            print('''
 Use --rc-file=<configuration file> / -C <configuration file> before the command
 to specify a configuration file. Default to %s.
-''' % self.rcfile
-        print  '''%(pgm)s -h/--help
-      display this usage information and exit''' % self.__dict__
+''' % self.rcfile)
+        print('''%(pgm)s -h/--help
+      display this usage information and exit''' % self.__dict__)
         if self.version:
-            print  '''%(pgm)s -v/--version
-      display version configuration and exit''' % self.__dict__
+            print('''%(pgm)s -v/--version
+      display version configuration and exit''' % self.__dict__)
         if self.copyright:
-            print '\n', self.copyright
+            print('\n', self.copyright)
 
     def usage_and_exit(self, status):
         self.usage()
@@ -261,7 +263,7 @@ class Command(Configuration):
         try:
             self.check_args(args)
             self.run(args)
-        except CommandError, err:
+        except CommandError as err:
             self.logger.error(err)
             return 2
         return 0
@@ -283,14 +285,14 @@ class ListCommandsCommand(Command):
             command = args.pop()
             cmd = _COMMANDS[command]
             for optname, optdict in cmd.options:
-                print '--help'
-                print '--' + optname
+                print('--help')
+                print('--' + optname)
         else:
             commands = sorted(_COMMANDS.keys())
             for command in commands:
                 cmd = _COMMANDS[command]
                 if not cmd.hidden:
-                    print command
+                    print(command)
 
 
 # deprecated stuff #############################################################

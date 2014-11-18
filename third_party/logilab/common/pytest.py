@@ -92,6 +92,9 @@ you can filter the function with a simple python expression
  * ``tata`` and ``titi`` match``rouge ^ carre``
  * ``titi`` match ``rouge and not carre``
 """
+
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 
 PYTEST_DOC = """%prog [OPTIONS] [testfile [testpattern]]
@@ -105,9 +108,6 @@ pytest path/to/mytests.py -m '(not long and database) or regr'
 
 pytest one (will run both test_thisone and test_thatone)
 pytest path/to/mytests.py -s not (will skip test_notthisone)
-
-pytest --coverage test_foo.py
-  (only if logilab.devtools is available)
 """
 
 ENABLE_DBC = False
@@ -118,13 +118,13 @@ import os.path as osp
 from time import time, clock
 import warnings
 import types
+from inspect import isgeneratorfunction, isclass
 
 from logilab.common.fileutils import abspath_listdir
 from logilab.common import textutils
 from logilab.common import testlib, STD_BLACKLIST
 # use the same unittest module as testlib
 from logilab.common.testlib import unittest, start_interactive_mode
-from logilab.common.compat import any
 import doctest
 
 import unittest as unittest_legacy
@@ -206,7 +206,7 @@ def load_pytest_conf(path, parser):
     and / or tester.
     """
     namespace = {}
-    execfile(path, namespace)
+    exec(open(path, 'rb').read(), namespace)
     if 'update_parser' in namespace:
         namespace['update_parser'](parser)
     return namespace.get('CustomPyTester', PyTester)
@@ -309,7 +309,7 @@ def remove_local_modules_from_sys(testdir):
     we **have** to clean sys.modules to make sure the correct test_utils
     module is ran in B
     """
-    for modname, mod in sys.modules.items():
+    for modname, mod in list(sys.modules.items()):
         if mod is None:
             continue
         if not hasattr(mod, '__file__'):
@@ -336,8 +336,8 @@ class PyTester(object):
     def show_report(self):
         """prints the report and returns appropriate exitcode"""
         # everything has been ran, print report
-        print "*" * 79
-        print self.report
+        print("*" * 79)
+        print(self.report)
 
     def get_errcode(self):
         # errcode set explicitly
@@ -360,13 +360,13 @@ class PyTester(object):
                     dirs.remove(skipped)
             basename = osp.basename(dirname)
             if this_is_a_testdir(basename):
-                print "going into", dirname
+                print("going into", dirname)
                 # we found a testdir, let's explore it !
                 if not self.testonedir(dirname, exitfirst):
                     break
                 dirs[:] = []
         if self.report.ran == 0:
-            print "no test dir found testing here:", here
+            print("no test dir found testing here:", here)
             # if no test was found during the visit, consider
             # the local directory as a test directory even if
             # it doesn't have a traditional test directory name
@@ -385,10 +385,11 @@ class PyTester(object):
                     try:
                         restartfile = open(FILE_RESTART, "w")
                         restartfile.close()
-                    except Exception, e:
-                        print >> sys.__stderr__, "Error while overwriting \
-succeeded test file :", osp.join(os.getcwd(), FILE_RESTART)
-                        raise e
+                    except Exception:
+                        print("Error while overwriting succeeded test file :",
+                              osp.join(os.getcwd(), FILE_RESTART),
+                              file=sys.__stderr__)
+                        raise
                 # run test and collect information
                 prog = self.testfile(filename, batchmode=True)
                 if exitfirst and (prog is None or not prog.result.wasSuccessful()):
@@ -412,15 +413,13 @@ succeeded test file :", osp.join(os.getcwd(), FILE_RESTART)
             try:
                 restartfile = open(FILE_RESTART, "w")
                 restartfile.close()
-            except Exception, e:
-                print >> sys.__stderr__, "Error while overwriting \
-succeeded test file :", osp.join(os.getcwd(), FILE_RESTART)
-                raise e
+            except Exception:
+                print("Error while overwriting succeeded test file :",
+                      osp.join(os.getcwd(), FILE_RESTART), file=sys.__stderr__)
+                raise
         modname = osp.basename(filename)[:-3]
-        try:
-            print >> sys.stderr, ('  %s  ' % osp.basename(filename)).center(70, '=')
-        except TypeError: # < py 2.4 bw compat
-            print >> sys.stderr, ('  %s  ' % osp.basename(filename)).center(70)
+        print(('  %s  ' % osp.basename(filename)).center(70, '='),
+              file=sys.__stderr__)
         try:
             tstart, cstart = time(), clock()
             try:
@@ -428,16 +427,17 @@ succeeded test file :", osp.join(os.getcwd(), FILE_RESTART)
                                                  options=self.options, outstream=sys.stderr)
             except KeyboardInterrupt:
                 raise
-            except SystemExit, exc:
+            except SystemExit as exc:
                 self.errcode = exc.code
                 raise
             except testlib.SkipTest:
-                print "Module skipped:", filename
+                print("Module skipped:", filename)
                 self.report.skip_module(filename)
                 return None
             except Exception:
                 self.report.failed_to_test_module(filename)
-                print >> sys.stderr, 'unhandled exception occurred while testing', modname
+                print('unhandled exception occurred while testing', modname,
+                      file=sys.stderr)
                 import traceback
                 traceback.print_exc(file=sys.stderr)
                 return None
@@ -488,7 +488,7 @@ class DjangoTester(PyTester):
         from django.test.utils import teardown_test_environment
         from django.test.utils import destroy_test_db
         teardown_test_environment()
-        print 'destroying', self.dbname
+        print('destroying', self.dbname)
         destroy_test_db(self.dbname, verbosity=0)
 
     def testall(self, exitfirst=False):
@@ -506,7 +506,7 @@ class DjangoTester(PyTester):
             else:
                 basename = osp.basename(dirname)
                 if basename in ('test', 'tests'):
-                    print "going into", dirname
+                    print("going into", dirname)
                     # we found a testdir, let's explore it !
                     if not self.testonedir(dirname, exitfirst):
                         break
@@ -547,7 +547,8 @@ class DjangoTester(PyTester):
             os.chdir(dirname)
         self.load_django_settings(dirname)
         modname = osp.basename(filename)[:-3]
-        print >>sys.stderr, ('  %s  ' % osp.basename(filename)).center(70, '=')
+        print(('  %s  ' % osp.basename(filename)).center(70, '='),
+              file=sys.stderr)
         try:
             try:
                 tstart, cstart = time(), clock()
@@ -559,12 +560,12 @@ class DjangoTester(PyTester):
                 return testprog
             except SystemExit:
                 raise
-            except Exception, exc:
+            except Exception as exc:
                 import traceback
                 traceback.print_exc()
                 self.report.failed_to_test_module(filename)
-                print 'unhandled exception occurred while testing', modname
-                print 'error: %s' % exc
+                print('unhandled exception occurred while testing', modname)
+                print('error: %s' % exc)
                 return None
         finally:
             self.after_testfile()
@@ -604,7 +605,7 @@ def make_parser():
                       action="callback", help="Verbose output")
     parser.add_option('-i', '--pdb', callback=rebuild_and_store,
                       dest="pdb", action="callback",
-                      help="Enable test failure inspection (conflicts with --coverage)")
+                      help="Enable test failure inspection")
     parser.add_option('-x', '--exitfirst', callback=rebuild_and_store,
                       dest="exitfirst", default=False,
                       action="callback", help="Exit on first failure "
@@ -631,14 +632,6 @@ def make_parser():
     parser.add_option('-m', '--match', default=None, dest='tags_pattern',
                       help="only execute test whose tag match the current pattern")
 
-    try:
-        from logilab.devtools.lib.coverage import Coverage
-        parser.add_option('--coverage', dest="coverage", default=False,
-                          action="store_true",
-                          help="run tests with pycoverage (conflicts with --pdb)")
-    except ImportError:
-        pass
-
     if DJANGO_FOUND:
         parser.add_option('-J', '--django', dest='django', default=False,
                           action="store_true",
@@ -652,8 +645,6 @@ def parseargs(parser):
     """
     # parse the command line
     options, args = parser.parse_args()
-    if options.pdb and getattr(options, 'coverage', False):
-        parser.error("'pdb' and 'coverage' options are exclusive")
     filenames = [arg for arg in args if arg.endswith('.py')]
     if filenames:
         if len(filenames) > 1:
@@ -683,16 +674,9 @@ def run():
     options, explicitfile = parseargs(parser)
     # mock a new command line
     sys.argv[1:] = parser.newargs
-    covermode = getattr(options, 'coverage', None)
     cvg = None
     if not '' in sys.path:
         sys.path.insert(0, '')
-    if covermode:
-        # control_import_coverage(rootdir)
-        from logilab.devtools.lib.coverage import Coverage
-        cvg = Coverage([rootdir])
-        cvg.erase()
-        cvg.start()
     if DJANGO_FOUND and options.django:
         tester = DjangoTester(cvg, options)
     else:
@@ -710,7 +694,7 @@ def run():
                 prof = hotshot.Profile(options.profile)
                 prof.runcall(cmd, *args)
                 prof.close()
-                print 'profile data saved in', options.profile
+                print('profile data saved in', options.profile)
             else:
                 cmd(*args)
         except SystemExit:
@@ -719,12 +703,7 @@ def run():
             import traceback
             traceback.print_exc()
     finally:
-        if covermode:
-            cvg.stop()
-            cvg.save()
         tester.show_report()
-        if covermode:
-            print 'coverage information stored, use it with pycoverage -ra'
         sys.exit(tester.errcode)
 
 class SkipAwareTestProgram(unittest.TestProgram):
@@ -816,7 +795,7 @@ Examples:
             else:
                 self.testNames = (self.defaultTest, )
             self.createTests()
-        except getopt.error, msg:
+        except getopt.error as msg:
             self.usageExit(msg)
 
     def runTests(self):
@@ -865,7 +844,7 @@ Examples:
                     removeSucceededTests(self.test, succeededtests)
                 finally:
                     restartfile.close()
-            except Exception, ex:
+            except Exception as ex:
                 raise Exception("Error while reading succeeded tests into %s: %s"
                                 % (osp.join(os.getcwd(), FILE_RESTART), ex))
 
@@ -907,17 +886,16 @@ class SkipAwareTextTestRunner(unittest.TextTestRunner):
         else:
             if isinstance(test, testlib.TestCase):
                 meth = test._get_test_method()
-                func = meth.im_func
-                testname = '%s.%s' % (meth.im_class.__name__, func.__name__)
+                testname = '%s.%s' % (test.__name__, meth.__name__)
             elif isinstance(test, types.FunctionType):
                 func = test
                 testname = func.__name__
             elif isinstance(test, types.MethodType):
-                func = test.im_func
-                testname = '%s.%s' % (test.im_class.__name__, func.__name__)
+                cls = test.__self__.__class__
+                testname = '%s.%s' % (cls.__name__, test.__name__)
             else:
                 return True # Not sure when this happens
-            if testlib.is_generator(test) and skipgenerator:
+            if isgeneratorfunction(test) and skipgenerator:
                 return self.does_match_tags(test) # Let inner tests decide at run time
         if self._this_is_skipped(testname):
             return False # this was explicitly skipped
@@ -1025,8 +1003,7 @@ class NonStrictTestLoader(unittest.TestLoader):
     def _collect_tests(self, module):
         tests = {}
         for obj in vars(module).values():
-            if (issubclass(type(obj), (types.ClassType, type)) and
-                 issubclass(obj, unittest.TestCase)):
+            if isclass(obj) and issubclass(obj, unittest.TestCase):
                 classname = obj.__name__
                 if classname[0] == '_' or self._this_is_skipped(classname):
                     continue

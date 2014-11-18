@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2012 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -36,6 +36,9 @@ If no non-option arguments are present, prefixes used are 'test',
 'regrtest', 'smoketest' and 'unittest'.
 
 """
+
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 # modified copy of some functions from test/regrtest.py from PyXml
 # disable camel case warning
@@ -52,9 +55,13 @@ import math
 import warnings
 from shutil import rmtree
 from operator import itemgetter
-from ConfigParser import ConfigParser
-from logilab.common.deprecation import deprecated
 from itertools import dropwhile
+from inspect import isgeneratorfunction
+
+from six import string_types
+from six.moves import builtins, range, configparser, input
+
+from logilab.common.deprecation import deprecated
 
 import unittest as unittest_legacy
 if not getattr(unittest_legacy, "__package__", None):
@@ -62,31 +69,13 @@ if not getattr(unittest_legacy, "__package__", None):
         import unittest2 as unittest
         from unittest2 import SkipTest
     except ImportError:
-        sys.exit("You have to install python-unittest2 to use this module")
+        raise ImportError("You have to install python-unittest2 to use %s" % __name__)
 else:
     import unittest
     from unittest import SkipTest
 
-try:
-    from functools import wraps
-except ImportError:
-    def wraps(wrapped):
-        def proxy(callable):
-            callable.__name__ = wrapped.__name__
-            return callable
-        return proxy
-try:
-    from test import test_support
-except ImportError:
-    # not always available
-    class TestSupport:
-        def unload(self, test):
-            pass
-    test_support = TestSupport()
+from functools import wraps
 
-# pylint: disable=W0622
-from logilab.common.compat import any, InheritableSet, callable
-# pylint: enable=W0622
 from logilab.common.debugger import Debugger, colorize_source
 from logilab.common.decorators import cached, classproperty
 from logilab.common import textutils
@@ -97,23 +86,7 @@ __all__ = ['main', 'unittest_main', 'find_tests', 'run_test', 'spawn']
 DEFAULT_PREFIXES = ('test', 'regrtest', 'smoketest', 'unittest',
                     'func', 'validation')
 
-
-if sys.version_info >= (2, 6):
-    # FIXME : this does not work as expected / breaks tests on testlib
-    # however testlib does not work on py3k for many reasons ...
-    from inspect import CO_GENERATOR
-else:
-    from compiler.consts import CO_GENERATOR
-
-if sys.version_info >= (3, 0):
-    def is_generator(function):
-        flags = function.__code__.co_flags
-        return flags & CO_GENERATOR
-
-else:
-    def is_generator(function):
-        flags = function.func_code.co_flags
-        return flags & CO_GENERATOR
+is_generator = deprecated('[lgc 0.63] use inspect.isgeneratorfunction')(isgeneratorfunction)
 
 # used by unittest to count the number of relevant levels in the traceback
 __unittest = 1
@@ -122,6 +95,21 @@ __unittest = 1
 def with_tempdir(callable):
     """A decorator ensuring no temporary file left when the function return
     Work only for temporary file create with the tempfile module"""
+    if isgeneratorfunction(callable):
+        def proxy(*args, **kwargs):
+            old_tmpdir = tempfile.gettempdir()
+            new_tmpdir = tempfile.mkdtemp(prefix="temp-lgc-")
+            tempfile.tempdir = new_tmpdir
+            try:
+                for x in callable(*args, **kwargs):
+                    yield x
+            finally:
+                try:
+                    rmtree(new_tmpdir, ignore_errors=True)
+                finally:
+                    tempfile.tempdir = old_tmpdir
+        return proxy
+
     @wraps(callable)
     def proxy(*args, **kargs):
 
@@ -190,27 +178,27 @@ def start_interactive_mode(result):
     else:
         while True:
             testindex = 0
-            print "Choose a test to debug:"
+            print("Choose a test to debug:")
             # order debuggers in the same way than errors were printed
-            print "\n".join(['\t%s : %s' % (i, descr) for i, (_, descr)
-                in enumerate(descrs)])
-            print "Type 'exit' (or ^D) to quit"
-            print
+            print("\n".join(['\t%s : %s' % (i, descr) for i, (_, descr)
+                  in enumerate(descrs)]))
+            print("Type 'exit' (or ^D) to quit")
+            print()
             try:
-                todebug = raw_input('Enter a test name: ')
+                todebug = input('Enter a test name: ')
                 if todebug.strip().lower() == 'exit':
-                    print
+                    print()
                     break
                 else:
                     try:
                         testindex = int(todebug)
                         debugger = debuggers[descrs[testindex][0]]
                     except (ValueError, IndexError):
-                        print "ERROR: invalid test number %r" % (todebug, )
+                        print("ERROR: invalid test number %r" % (todebug, ))
                     else:
                         debugger.start()
             except (EOFError, KeyboardInterrupt):
-                print
+                print()
                 break
 
 
@@ -364,7 +352,7 @@ def _handleModuleTearDown(self, result):
     if tearDownModule is not None:
         try:
             tearDownModule()
-        except Exception, e:
+        except Exception as e:
             if isinstance(result, _DebugResult):
                 raise
             errorName = 'tearDownModule (%s)' % previousModule
@@ -392,7 +380,7 @@ def _handleModuleFixture(self, test, result):
     if setUpModule is not None:
         try:
             setUpModule()
-        except Exception, e:
+        except Exception as e:
             if isinstance(result, _DebugResult):
                 raise
             result._moduleSetUpFailed = True
@@ -448,7 +436,7 @@ class InnerTest(tuple):
         instance.name = name
         return instance
 
-class Tags(InheritableSet): # 2.4 compat
+class Tags(set):
     """A set of tag able validate an expression"""
 
     def __init__(self, *tags, **kwargs):
@@ -456,7 +444,7 @@ class Tags(InheritableSet): # 2.4 compat
         if kwargs:
            raise TypeError("%s are an invalid keyword argument for this function" % kwargs.keys())
 
-        if len(tags) == 1 and not isinstance(tags[0], basestring):
+        if len(tags) == 1 and not isinstance(tags[0], string_types):
             tags = tags[0]
         super(Tags, self).__init__(tags, **kwargs)
 
@@ -484,14 +472,8 @@ class TestCase(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         super(TestCase, self).__init__(methodName)
-        # internal API changed in python2.4 and needed by DocTestCase
-        if sys.version_info >= (2, 4):
-            self.__exc_info = sys.exc_info
-            self.__testMethodName = self._testMethodName
-        else:
-            # let's give easier access to _testMethodName to every subclasses
-            if hasattr(self, "__testMethodName"):
-                self._testMethodName = self.__testMethodName
+        self.__exc_info = sys.exc_info
+        self.__testMethodName = self._testMethodName
         self._current_test_descr = None
         self._options_ = None
 
@@ -533,6 +515,14 @@ class TestCase(unittest.TestCase):
             func(*args, **kwargs)
         except (KeyboardInterrupt, SystemExit):
             raise
+        except unittest.SkipTest as e:
+            if hasattr(result, 'addSkip'):
+                result.addSkip(self, str(e))
+            else:
+                warnings.warn("TestResult has no addSkip method, skips not reported",
+                              RuntimeWarning, 2)
+                result.addSuccess(self)
+            return False
         except:
             result.addError(self, self.__exc_info())
             return False
@@ -559,13 +549,23 @@ class TestCase(unittest.TestCase):
         # if result.cvg:
         #     result.cvg.start()
         testMethod = self._get_test_method()
+        if (getattr(self.__class__, "__unittest_skip__", False) or
+            getattr(testMethod, "__unittest_skip__", False)):
+            # If the class or method was skipped.
+            try:
+                skip_why = (getattr(self.__class__, '__unittest_skip_why__', '')
+                            or getattr(testMethod, '__unittest_skip_why__', ''))
+                self._addSkip(result, skip_why)
+            finally:
+                result.stopTest(self)
+            return
         if runcondition and not runcondition(testMethod):
             return # test is skipped
         result.startTest(self)
         try:
             if not self.quiet_run(result, self.setUp):
                 return
-            generative = is_generator(testMethod.im_func)
+            generative = isgeneratorfunction(testMethod)
             # generative tests
             if generative:
                 self._proceed_generative(result, testMethod,
@@ -587,10 +587,11 @@ class TestCase(unittest.TestCase):
                             restartfile.write(descr+os.linesep)
                         finally:
                             restartfile.close()
-                    except Exception, ex:
-                        print >> sys.__stderr__, "Error while saving \
-succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
-                        raise ex
+                    except Exception:
+                        print("Error while saving succeeded test into",
+                              osp.join(os.getcwd(), FILE_RESTART),
+                              file=sys.__stderr__)
+                        raise
                 result.addSuccess(self)
         finally:
             # if result.cvg:
@@ -647,10 +648,10 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
             return 1
         except KeyboardInterrupt:
             raise
-        except InnerTestSkipped, e:
+        except InnerTestSkipped as e:
             result.addSkip(self, e)
             return 1
-        except SkipTest, e:
+        except SkipTest as e:
             result.addSkip(self, e)
             return 0
         except:
@@ -704,7 +705,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
                 base = ''
             self.fail(base + '\n'.join(msgs))
 
-    @deprecated('Please use assertItemsEqual instead.')
+    @deprecated('Please use assertCountEqual instead.')
     def assertUnorderedIterableEquals(self, got, expected, msg=None):
         """compares two iterable and shows difference between both
 
@@ -826,10 +827,10 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
             parser = make_parser()
             try:
                 parser.parse(stream)
-            except SAXParseException, ex:
+            except SAXParseException as ex:
                 if msg is None:
                     stream.seek(0)
-                    for _ in xrange(ex.getLineNumber()):
+                    for _ in range(ex.getLineNumber()):
                         line = stream.readline()
                     pointer = ('' * (ex.getLineNumber() - 1)) + '^'
                     msg = 'XML stream not well formed: %s\n%s%s' % (ex, line, pointer)
@@ -867,7 +868,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
             ParseError = ExpatError
         try:
             parse(data)
-        except (ExpatError, ParseError), ex:
+        except (ExpatError, ParseError) as ex:
             if msg is None:
                 if hasattr(data, 'readlines'): #file like object
                     data.seek(0)
@@ -888,11 +889,11 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
                     line_number_length = len('%i' % end)
                     line_pattern = " %%%ii: %%s" % line_number_length
 
-                    for line_no in xrange(start, ex.lineno):
+                    for line_no in range(start, ex.lineno):
                         context_lines.append(line_pattern % (line_no, lines[line_no-1]))
                     context_lines.append(line_pattern % (ex.lineno, lines[ex.lineno-1]))
                     context_lines.append('%s^\n' % (' ' * (1 + line_number_length + 2 +ex.offset)))
-                    for line_no in xrange(ex.lineno+1, end+1):
+                    for line_no in range(ex.lineno+1, end+1):
                         context_lines.append(line_pattern % (line_no, lines[line_no-1]))
 
                 rich_context = ''.join(context_lines)
@@ -920,7 +921,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
                 self.fail( "tuple %s has %i children%s (%i expected)"%(tup,
                     len(tup[2]),
                         ('', 's')[len(tup[2])>1], len(element)))
-            for index in xrange(len(tup[2])):
+            for index in range(len(tup[2])):
                 self.assertXMLEqualsTuple(element[index], tup[2][index])
         #check text
         if element.text or len(tup)>3:
@@ -950,7 +951,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
     def assertTextEquals(self, text1, text2, junk=None,
             msg_prefix='Text differ', striplines=False):
         """compare two multiline strings (using difflib and splitlines())
-        
+
         :param text1: a Python BaseString
         :param text2: a second Python Basestring
         :param junk: List of Caracters
@@ -958,9 +959,9 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
         :param striplines: Boolean to trigger line stripping before comparing
         """
         msg = []
-        if not isinstance(text1, basestring):
+        if not isinstance(text1, string_types):
             msg.append('text1 is not a string (%s)'%(type(text1)))
-        if not isinstance(text2, basestring):
+        if not isinstance(text2, string_types):
             msg.append('text2 is not a string (%s)'%(type(text2)))
         if msg:
             self.fail('\n'.join(msg))
@@ -1016,13 +1017,13 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
         ipath_a, idirs_a, ifiles_a = data_a = None, None, None
         while True:
             try:
-                ipath_a, idirs_a, ifiles_a = datas_a = iter_a.next()
+                ipath_a, idirs_a, ifiles_a = datas_a = next(iter_a)
                 partial_iter = False
-                ipath_b, idirs_b, ifiles_b = datas_b = iter_b.next()
+                ipath_b, idirs_b, ifiles_b = datas_b = next(iter_b)
                 partial_iter = True
 
 
-                self.assert_(ipath_a == ipath_b,
+                self.assertTrue(ipath_a == ipath_b,
                     "unexpected %s in %s while looking %s from %s" %
                     (ipath_a, path_a, ipath_b, path_b))
 
@@ -1040,7 +1041,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
 
 
                 msgs = [ "%s: %s"% (name, items)
-                    for name, items in errors.iteritems() if items]
+                    for name, items in errors.items() if items]
 
                 if msgs:
                     msgs.insert(0, "%s and %s differ :" % (
@@ -1080,9 +1081,9 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
                 msg = '%r is not an instance of %s but of %s'
             msg = msg % (obj, klass, type(obj))
         if strict:
-            self.assert_(obj.__class__ is klass, msg)
+            self.assertTrue(obj.__class__ is klass, msg)
         else:
-            self.assert_(isinstance(obj, klass), msg)
+            self.assertTrue(isinstance(obj, klass), msg)
 
     @deprecated('Please use assertIsNone instead.')
     def assertNone(self, obj, msg=None):
@@ -1092,14 +1093,14 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
         """
         if msg is None:
             msg = "reference to %r when None expected"%(obj,)
-        self.assert_( obj is None, msg )
+        self.assertTrue( obj is None, msg )
 
     @deprecated('Please use assertIsNotNone instead.')
     def assertNotNone(self, obj, msg=None):
         """assert obj is not None"""
         if msg is None:
             msg = "unexpected reference to None"
-        self.assert_( obj is not None, msg )
+        self.assertTrue( obj is not None, msg )
 
     @deprecated('Non-standard. Please use assertAlmostEqual instead.')
     def assertFloatAlmostEquals(self, obj, other, prec=1e-5,
@@ -1117,7 +1118,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
             msg = "%r != %r" % (obj, other)
         if relative:
             prec = prec*math.fabs(obj)
-        self.assert_(math.fabs(obj - other) < prec, msg)
+        self.assertTrue(math.fabs(obj - other) < prec, msg)
 
     def failUnlessRaises(self, excClass, callableObj=None, *args, **kwargs):
         """override default failUnlessRaises method to return the raised
@@ -1146,7 +1147,7 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
             return _assert(excClass, callableObj, *args, **kwargs)
         try:
             callableObj(*args, **kwargs)
-        except excClass, exc:
+        except excClass as exc:
             class ProxyException:
                 def __init__(self, obj):
                     self._obj = obj
@@ -1166,6 +1167,16 @@ succeeded test into", osp.join(os.getcwd(), FILE_RESTART)
 
     assertRaises = failUnlessRaises
 
+    if sys.version_info >= (3,2):
+        assertItemsEqual = unittest.TestCase.assertCountEqual
+    else:
+        assertCountEqual = unittest.TestCase.assertItemsEqual
+        if sys.version_info < (2,7):
+            def assertIsNotNone(self, value, *args, **kwargs):
+                self.assertNotEqual(None, value, *args, **kwargs)
+
+TestCase.assertItemsEqual = deprecated('assertItemsEqual is deprecated, use assertCountEqual')(
+    TestCase.assertItemsEqual)
 
 import doctest
 
@@ -1184,10 +1195,6 @@ class DocTestFinder(doctest.DocTestFinder):
     def _get_test(self, obj, name, module, globs, source_lines):
         """override default _get_test method to be able to skip tests
         according to skipped attribute's value
-
-        Note: Python (<=2.4) use a _name_filter which could be used for that
-              purpose but it's no longer available in 2.5
-              Python 2.5 seems to have a [SKIP] flag
         """
         if getattr(obj, '__name__', '') in self.skipped:
             return None
@@ -1205,16 +1212,19 @@ class DocTest(TestCase):
         # pylint: disable=W0613
         try:
             finder = DocTestFinder(skipped=self.skipped)
-            if sys.version_info >= (2, 4):
-                suite = doctest.DocTestSuite(self.module, test_finder=finder)
-                if sys.version_info >= (2, 5):
-                    # XXX iirk
-                    doctest.DocTestCase._TestCase__exc_info = sys.exc_info
-            else:
-                suite = doctest.DocTestSuite(self.module)
+            suite = doctest.DocTestSuite(self.module, test_finder=finder)
+            # XXX iirk
+            doctest.DocTestCase._TestCase__exc_info = sys.exc_info
         except AttributeError:
             suite = SkippedSuite()
-        return suite.run(result)
+        # doctest may gork the builtins dictionnary
+        # This happen to the "_" entry used by gettext
+        old_builtins = builtins.__dict__.copy()
+        try:
+            return suite.run(result)
+        finally:
+            builtins.__dict__.clear()
+            builtins.__dict__.update(old_builtins)
     run = __call__
 
     def test(self):
@@ -1242,11 +1252,11 @@ class MockSMTP:
         """ignore quit"""
 
 
-class MockConfigParser(ConfigParser):
+class MockConfigParser(configparser.ConfigParser):
     """fake ConfigParser.ConfigParser"""
 
     def __init__(self, options):
-        ConfigParser.__init__(self)
+        configparser.ConfigParser.__init__(self)
         for section, pairs in options.iteritems():
             self.add_section(section)
             for key, value in pairs.iteritems():

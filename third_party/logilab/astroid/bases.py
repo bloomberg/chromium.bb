@@ -1,43 +1,43 @@
-# -*- coding: utf-8 -*-
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
-# copyright 2003-2010 Sylvain Thenault, all rights reserved.
-# contact mailto:thenault@gmail.com
 #
-# This file is part of logilab-astng.
+# This file is part of astroid.
 #
-# logilab-astng is free software: you can redistribute it and/or modify it
+# astroid is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# logilab-astng is distributed in the hope that it will be useful, but
+# astroid is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
+# with astroid. If not, see <http://www.gnu.org/licenses/>.
 """This module contains base classes and functions for the nodes and some
 inference utils.
 """
 
 __docformat__ = "restructuredtext en"
 
+import sys
 from contextlib import contextmanager
 
-from logilab.common.compat import builtins
+from astroid.exceptions import (InferenceError, AstroidError, NotFoundError,
+                                UnresolvableName, UseInferenceDefault)
 
-from logilab.astng import BUILTINS_MODULE
-from logilab.astng.exceptions import InferenceError, ASTNGError, \
-                                       NotFoundError, UnresolvableName
-from logilab.astng.as_string import as_string
 
-BUILTINS_NAME = builtins.__name__
+if sys.version_info >= (3, 0):
+    BUILTINS = 'builtins'
+else:
+    BUILTINS = '__builtin__'
+
 
 class Proxy(object):
     """a simple proxy object"""
-    _proxied = None
+
+    _proxied = None # proxied object may be set by class or by instance
 
     def __init__(self, proxied=None):
         if proxied is not None:
@@ -72,7 +72,7 @@ class InferenceContext(object):
         name = self.lookupname
         if (node, name) in self.path:
             raise StopIteration()
-        self.path.add( (node, name) )
+        self.path.add((node, name))
 
     def clone(self):
         # XXX copy lookupname/callcontext ?
@@ -131,6 +131,8 @@ class _Yes(object):
     def __repr__(self):
         return 'YES'
     def __getattribute__(self, name):
+        if name == 'next':
+            raise AttributeError('next method should not be called')
         if name.startswith('__') and name.endswith('__'):
             # to avoid inspection pb
             return super(_Yes, self).__getattribute__(name)
@@ -169,6 +171,9 @@ class Instance(Proxy):
     def igetattr(self, name, context=None):
         """inferred getattr"""
         try:
+            # avoid recursively inferring the same attr on the same class
+            if context:
+                context.push((self._proxied, name))
             # XXX frame should be self._proxied, or not ?
             get_attr = self.getattr(name, context, lookupclass=False)
             return _infer_stmts(self._wrap_attr(get_attr, context), context,
@@ -186,7 +191,7 @@ class Instance(Proxy):
         """wrap bound methods of attrs in a InstanceMethod proxies"""
         for attr in attrs:
             if isinstance(attr, UnboundMethod):
-                if BUILTINS_NAME + '.property' in attr.decoratornames():
+                if BUILTINS + '.property' in attr.decoratornames():
                     for infered in attr.infer_call_result(self, context):
                         yield infered
                 else:
@@ -198,6 +203,8 @@ class Instance(Proxy):
         """infer what a class instance is returning when called"""
         infered = False
         for node in self._proxied.igetattr('__call__', context):
+            if node is YES:
+                continue
             for res in node.infer_call_result(caller, context):
                 infered = True
                 yield res
@@ -251,14 +258,15 @@ class UnboundMethod(Proxy):
         # If we're unbound method __new__ of builtin object, the result is an
         # instance of the class given as first argument.
         if (self._proxied.name == '__new__' and
-                self._proxied.parent.frame().qname() == '%s.object' % BUILTINS_MODULE):
-            return (x is YES and x or Instance(x) for x in caller.args[0].infer())
+                self._proxied.parent.frame().qname() == '%s.object' % BUILTINS):
+            infer = caller.args[0].infer() if caller.args else []
+            return ((x is YES and x or Instance(x)) for x in infer)
         return self._proxied.infer_call_result(caller, context)
 
 
 class BoundMethod(UnboundMethod):
     """a special node representing a method bound to an instance"""
-    def __init__(self,  proxy, bound):
+    def __init__(self, proxy, bound):
         UnboundMethod.__init__(self, proxy)
         self.bound = bound
 
@@ -272,12 +280,15 @@ class BoundMethod(UnboundMethod):
 
 
 class Generator(Instance):
-    """a special node representing a generator"""
+    """a special node representing a generator.
+
+    Proxied class is set once for all in raw_building.
+    """
     def callable(self):
-        return True
+        return False
 
     def pytype(self):
-        return '%s.generator' % BUILTINS_MODULE
+        return '%s.generator' % BUILTINS
 
     def display_type(self):
         return 'Generator'
@@ -334,7 +345,7 @@ def raise_if_nothing_infered(func):
 # Node  ######################################################################
 
 class NodeNG(object):
-    """Base Class for all ASTNG node classes.
+    """Base Class for all Astroid node classes.
 
     It represents a node of the new abstract syntax tree.
     """
@@ -349,7 +360,24 @@ class NodeNG(object):
     # parent node in the tree
     parent = None
     # attributes containing child node(s) redefined in most concrete classes:
-    _astng_fields = ()
+    _astroid_fields = ()
+    # instance specific inference function infer(node, context)
+    _explicit_inference = None
+
+    def infer(self, context=None, **kwargs):
+        """main interface to the interface system, return a generator on infered
+        values.
+
+        If the instance has some explicit inference function set, it will be
+        called instead of the default interface.
+        """
+        if self._explicit_inference is not None:
+            # explicit_inference is not bound, give it self explicitly
+            try:
+                return self._explicit_inference(self, context, **kwargs)
+            except UseInferenceDefault:
+                pass
+        return self._infer(context, **kwargs)
 
     def _repr_name(self):
         """return self.name or self.attrname or '' for nice representation"""
@@ -359,20 +387,19 @@ class NodeNG(object):
         return '%s(%s)' % (self.__class__.__name__, self._repr_name())
 
     def __repr__(self):
-        return '<%s(%s) l.%s [%s] at Ox%x>' % (self.__class__.__name__,
-                                           self._repr_name(),
-                                           self.fromlineno,
-                                           self.root().name,
-                                           id(self))
+        return '<%s(%s) l.%s [%s] at 0x%x>' % (self.__class__.__name__,
+                                               self._repr_name(),
+                                               self.fromlineno,
+                                               self.root().name,
+                                               id(self))
 
 
     def accept(self, visitor):
-        klass = self.__class__.__name__
         func = getattr(visitor, "visit_" + self.__class__.__name__.lower())
         return func(self)
 
     def get_children(self):
-        for field in self._astng_fields:
+        for field in self._astroid_fields:
             attr = getattr(self, field)
             if attr is None:
                 continue
@@ -384,7 +411,7 @@ class NodeNG(object):
 
     def last_child(self):
         """an optimized version of list(get_children())[-1]"""
-        for field in self._astng_fields[::-1]:
+        for field in self._astroid_fields[::-1]:
             attr = getattr(self, field)
             if not attr: # None or empty listy / tuple
                 continue
@@ -428,7 +455,7 @@ class NodeNG(object):
 
     def child_sequence(self, child):
         """search for the right sequence where the child lies in"""
-        for field in self._astng_fields:
+        for field in self._astroid_fields:
             node_or_sequence = getattr(self, field)
             if node_or_sequence is child:
                 return [node_or_sequence]
@@ -436,20 +463,20 @@ class NodeNG(object):
             if isinstance(node_or_sequence, (tuple, list)) and child in node_or_sequence:
                 return node_or_sequence
         else:
-            msg = 'Could not found %s in %s\'s children'
-            raise ASTNGError(msg % (repr(child), repr(self)))
+            msg = 'Could not find %s in %s\'s children'
+            raise AstroidError(msg % (repr(child), repr(self)))
 
     def locate_child(self, child):
         """return a 2-uple (child attribute name, sequence or node)"""
-        for field in self._astng_fields:
+        for field in self._astroid_fields:
             node_or_sequence = getattr(self, field)
             # /!\ compiler.ast Nodes have an __iter__ walking over child nodes
             if child is node_or_sequence:
                 return field, child
             if isinstance(node_or_sequence, (tuple, list)) and child in node_or_sequence:
                 return field, node_or_sequence
-        msg = 'Could not found %s in %s\'s children'
-        raise ASTNGError(msg % (repr(child), repr(self)))
+        msg = 'Could not find %s in %s\'s children'
+        raise AstroidError(msg % (repr(child), repr(self)))
     # FIXME : should we merge child_sequence and locate_child ? locate_child
     # is only used in are_exclusive, child_sequence one time in pylint.
 
@@ -538,7 +565,7 @@ class NodeNG(object):
         # overridden for From, Import, Global, TryExcept and Arguments
         return None
 
-    def infer(self, context=None):
+    def _infer(self, context=None):
         """we don't know how to resolve a statement by default"""
         # this method is overridden by most concrete classes
         raise InferenceError(self.__class__.__name__)
@@ -561,15 +588,12 @@ class NodeNG(object):
         return False
 
     def as_string(self):
-        return as_string(self)
+        from astroid.as_string import to_code
+        return to_code(self)
 
     def repr_tree(self, ids=False):
-        """print a nice astng tree representation.
-
-        :param ids: if true, we also print the ids (usefull for debugging)"""
-        result = []
-        _repr_tree(self, result, ids=ids)
-        return "\n".join(result)
+        from astroid.as_string import dump
+        return dump(self)
 
 
 class Statement(NodeNG):
@@ -591,39 +615,3 @@ class Statement(NodeNG):
         index = stmts.index(self)
         if index >= 1:
             return stmts[index -1]
-
-INDENT = "    "
-
-def _repr_tree(node, result, indent='', _done=None, ids=False):
-    """built a tree representation of a node as a list of lines"""
-    if _done is None:
-        _done = set()
-    if not hasattr(node, '_astng_fields'): # not a astng node
-        return
-    if node in _done:
-        result.append( indent + 'loop in tree: %s' % node )
-        return
-    _done.add(node)
-    node_str = str(node)
-    if ids:
-        node_str += '  . \t%x' % id(node)
-    result.append( indent + node_str )
-    indent += INDENT
-    for field in node._astng_fields:
-        value = getattr(node, field)
-        if isinstance(value, (list, tuple) ):
-            result.append(  indent + field + " = [" )
-            for child in value:
-                if isinstance(child, (list, tuple) ):
-                    # special case for Dict # FIXME
-                    _repr_tree(child[0], result, indent, _done, ids)
-                    _repr_tree(child[1], result, indent, _done, ids)
-                    result.append(indent + ',')
-                else:
-                    _repr_tree(child, result, indent, _done, ids)
-            result.append(  indent + "]" )
-        else:
-            result.append(  indent + field + " = " )
-            _repr_tree(value, result, indent, _done, ids)
-
-

@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 LOGILAB S.A. (Paris, FRANCE).
+# Copyright (c) 2002-2013 LOGILAB S.A. (Paris, FRANCE).
 # http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """
 generic classes/functions for pyreverse core/extensions
 """
@@ -50,7 +50,7 @@ def insert_default_options():
 
 
 
-# astng utilities ###########################################################
+# astroid utilities ###########################################################
 
 SPECIAL = re.compile('^__[A-Za-z0-9]+[A-Za-z0-9_]*__$')
 PRIVATE = re.compile('^__[_A-Za-z0-9]*[A-Za-z0-9]+_?$')
@@ -106,10 +106,10 @@ MODES = {
     'SPECIAL'   : _SPECIAL,
     'OTHER'     : _PROTECTED + _PRIVATE,
 }
-VIS_MOD = {'special': _SPECIAL, 'protected': _PROTECTED, \
-            'private': _PRIVATE, 'public': 0 }
+VIS_MOD = {'special': _SPECIAL, 'protected': _PROTECTED,
+           'private': _PRIVATE, 'public': 0}
 
-class FilterMixIn:
+class FilterMixIn(object):
     """filter nodes according to a mode and nodes' visibility
     """
     def __init__(self, mode):
@@ -127,5 +127,5 @@ class FilterMixIn:
         """return true if the node should be treated
         """
         visibility = get_visibility(getattr(node, 'name', node))
-        return not (self.__mode & VIS_MOD[visibility] )
+        return not (self.__mode & VIS_MOD[visibility])
 
