@@ -22,9 +22,13 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
-  void Update() override;
+  void OnContainerSelected(bool from_bottom) override;
 
  private:
+  // Overridden from SearchResultContainerView:
+  int Update() override;
+  void UpdateSelectedIndex(int old_selected, int new_selected) override;
+
   std::vector<SearchResultTileItemView*> tile_views_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);

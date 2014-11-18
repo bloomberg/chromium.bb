@@ -38,9 +38,7 @@ SearchResultListView::SearchResultListView(
     : delegate_(delegate),
       view_delegate_(view_delegate),
       results_container_(new views::View),
-      auto_launch_indicator_(new views::View),
-      last_visible_index_(0),
-      selected_index_(-1) {
+      auto_launch_indicator_(new views::View) {
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
@@ -62,36 +60,13 @@ SearchResultListView::SearchResultListView(
 SearchResultListView::~SearchResultListView() {
 }
 
-void SearchResultListView::SetSelectedIndex(int selected_index) {
-  if (selected_index_ == selected_index)
-    return;
-
-  if (selected_index_ >= 0) {
-    SearchResultView* selected_view  = GetResultViewAt(selected_index_);
-    selected_view->ClearSelectedAction();
-    selected_view->SchedulePaint();
-  }
-
-  selected_index_ = selected_index;
-
-  if (selected_index_ >= 0) {
-    SearchResultView* selected_view  = GetResultViewAt(selected_index_);
-    selected_view->ClearSelectedAction();
-    selected_view->SchedulePaint();
-    selected_view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS,
-                                            true);
-  }
-  if (auto_launch_animation_)
-    CancelAutoLaunchTimeout();
-}
-
 bool SearchResultListView::IsResultViewSelected(
     const SearchResultView* result_view) const {
-  if (selected_index_ < 0)
+  if (selected_index() < 0)
     return false;
 
   return static_cast<const SearchResultView*>(
-      results_container_->child_at(selected_index_)) == result_view;
+             results_container_->child_at(selected_index())) == result_view;
 }
 
 void SearchResultListView::UpdateAutoLaunchState() {
@@ -99,26 +74,34 @@ void SearchResultListView::UpdateAutoLaunchState() {
 }
 
 bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (selected_index_ >= 0 &&
-      results_container_->child_at(selected_index_)->OnKeyPressed(event)) {
+  if (selected_index() >= 0 &&
+      results_container_->child_at(selected_index())->OnKeyPressed(event)) {
     return true;
   }
 
+  int selection_index = -1;
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown())
-        SetSelectedIndex(std::max(selected_index_ - 1, 0));
+        selection_index = selected_index() - 1;
       else
-        SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
-      return true;
+        selection_index = selected_index() + 1;
+      break;
     case ui::VKEY_UP:
-      SetSelectedIndex(std::max(selected_index_ - 1, 0));
-      return true;
+      selection_index = selected_index() - 1;
+      break;
     case ui::VKEY_DOWN:
-      SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
-      return true;
+      selection_index = selected_index() + 1;
+      break;
     default:
       break;
+  }
+
+  if (IsValidSelectionIndex(selection_index)) {
+    SetSelectedIndex(selection_index);
+    if (auto_launch_animation_)
+      CancelAutoLaunchTimeout();
+    return true;
   }
 
   return false;
@@ -157,13 +140,20 @@ void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   SearchResultContainerView::ListItemsRemoved(start, count);
 }
 
-void SearchResultListView::Update() {
+void SearchResultListView::OnContainerSelected(bool from_bottom) {
+  if (num_results() == 0)
+    return;
+
+  // TODO(calamity): select result based on |from_bottom|.
+  SetSelectedIndex(0);
+}
+
+int SearchResultListView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(),
           SearchResult::DISPLAY_LIST,
           results_container_->child_count());
-  last_visible_index_ = display_results.size() - 1;
 
   for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
        ++i) {
@@ -176,10 +166,25 @@ void SearchResultListView::Update() {
       result_view->SetVisible(false);
     }
   }
-  if (selected_index_ > last_visible_index_)
-    SetSelectedIndex(last_visible_index_);
-
   UpdateAutoLaunchState();
+
+  return display_results.size();
+}
+
+void SearchResultListView::UpdateSelectedIndex(int old_selected,
+                                               int new_selected) {
+  if (old_selected >= 0) {
+    SearchResultView* selected_view = GetResultViewAt(old_selected);
+    selected_view->ClearSelectedAction();
+    selected_view->SchedulePaint();
+  }
+
+  if (new_selected >= 0) {
+    SearchResultView* selected_view = GetResultViewAt(new_selected);
+    selected_view->ClearSelectedAction();
+    selected_view->SchedulePaint();
+    selected_view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  }
 }
 
 void SearchResultListView::ForceAutoLaunchForTest() {

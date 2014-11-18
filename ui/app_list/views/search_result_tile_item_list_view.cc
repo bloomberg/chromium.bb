@@ -34,7 +34,10 @@ SearchResultTileItemListView::SearchResultTileItemListView() {
 SearchResultTileItemListView::~SearchResultTileItemListView() {
 }
 
-void SearchResultTileItemListView::Update() {
+void SearchResultTileItemListView::OnContainerSelected(bool from_bottom) {
+}
+
+int SearchResultTileItemListView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_TILE, kNumSearchResultTiles);
@@ -43,6 +46,12 @@ void SearchResultTileItemListView::Update() {
         i < display_results.size() ? display_results[i] : nullptr;
     tile_views_[i]->SetSearchResult(item);
   }
+  return display_results.size();
+}
+
+void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
+                                                       int new_selected) {
+  // TODO(calamity): implement selection for the tile item list.
 }
 
 }  // namespace app_list

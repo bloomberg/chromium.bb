@@ -194,7 +194,7 @@ void ContentsView::ActivePageChanged() {
   // TODO(xiyuan): Highlight default match instead of the first.
   if (IsStateActive(AppListModel::STATE_SEARCH_RESULTS) &&
       search_results_list_view_ && search_results_list_view_->visible()) {
-    search_results_list_view_->SetSelectedIndex(0);
+    search_results_list_view_->OnContainerSelected(false);
   }
 
   if (search_results_list_view_)

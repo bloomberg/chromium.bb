@@ -68,11 +68,13 @@ SearchResultPageView::~SearchResultPageView() {
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  return results_view_->OnKeyPressed(event);
+  // Capture the Tab key to prevent defocusing of the search box.
+  return results_view_->OnKeyPressed(event) || event.key_code() == ui::VKEY_TAB;
 }
 
 void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
+  results_view_->OnContainerSelected(false);
 }
 
 }  // namespace app_list

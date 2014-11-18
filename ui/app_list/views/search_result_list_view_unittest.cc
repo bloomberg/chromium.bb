@@ -33,7 +33,6 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     views::ViewsTestBase::SetUp();
     view_.reset(new SearchResultListView(this, &view_delegate_));
     view_->SetResults(view_delegate_.GetModel()->results());
-    view_->SetSelectedIndex(0);
   }
 
  protected:
@@ -59,6 +58,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
     // Adding results will schedule Update().
     RunPendingMessages();
+    view_->OnContainerSelected(false);
   }
 
   int GetOpenResultCountAndReset(int ranking) {
@@ -67,11 +67,9 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     return result;
   }
 
-  int GetResultCount() { return view_->last_visible_index_ + 1; }
+  int GetResultCount() { return view_->num_results(); }
 
-  int GetSelectedIndex() {
-    return view_->selected_index_;
-  }
+  int GetSelectedIndex() { return view_->selected_index(); }
 
   void ResetSelectedIndex() {
     view_->SetSelectedIndex(0);
@@ -135,16 +133,17 @@ TEST_F(SearchResultListViewTest, Basic) {
     EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
     EXPECT_EQ(i, GetSelectedIndex());
   }
-  // Doesn't rotate.
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  // When navigating off the end of the list, pass the event to the parent to
+  // handle.
+  EXPECT_FALSE(KeyPress(ui::VKEY_DOWN));
   EXPECT_EQ(results - 1, GetSelectedIndex());
 
   for (int i = 1; i < results; ++i) {
     EXPECT_TRUE(KeyPress(ui::VKEY_UP));
     EXPECT_EQ(results - i - 1, GetSelectedIndex());
   }
-  // Doesn't rotate.
-  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
+  // Navigate off top of list.
+  EXPECT_FALSE(KeyPress(ui::VKEY_UP));
   EXPECT_EQ(0, GetSelectedIndex());
   ResetSelectedIndex();
 
@@ -152,8 +151,8 @@ TEST_F(SearchResultListViewTest, Basic) {
     EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
     EXPECT_EQ(i, GetSelectedIndex());
   }
-  // Doesn't rotate.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  // Navigate off bottom of list.
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
   EXPECT_EQ(results - 1, GetSelectedIndex());
 }
 

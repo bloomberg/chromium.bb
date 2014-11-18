@@ -172,7 +172,10 @@ void StartPageView::Layout() {
   tiles_container_->SetBoundsRect(bounds);
 }
 
-void StartPageView::Update() {
+void StartPageView::OnContainerSelected(bool from_bottom) {
+}
+
+int StartPageView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_TILE, kNumStartPageTiles);
@@ -187,6 +190,10 @@ void StartPageView::Update() {
 
   tiles_container_->Layout();
   Layout();
+  return display_results.size();
+}
+
+void StartPageView::UpdateSelectedIndex(int old_selected, int new_selected) {
 }
 
 void StartPageView::QueryChanged(SearchBoxView* sender) {

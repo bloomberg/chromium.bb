@@ -40,9 +40,13 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
   void Layout() override;
 
   // Overridden from SearchResultContainerView:
-  void Update() override;
+  void OnContainerSelected(bool from_bottom) override;
 
  private:
+  // Overridden from SearchResultContainerView:
+  int Update() override;
+  void UpdateSelectedIndex(int old_selected, int new_selected) override;
+
   void InitInstantContainer();
   void InitTilesContainer();
 
