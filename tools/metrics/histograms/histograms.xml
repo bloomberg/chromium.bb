@@ -55045,18 +55045,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="101" label="ALPN, SPDY 3.0"/>
   <int value="102" label="ALPN, SPDY 3.1"/>
   <int value="103" label="ALPN, HTTP/2 draft-14"/>
+  <int value="104" label="ALPN, HTTP/2 draft-15"/>
   <int value="200" label="ALPN, QUIC/1 + SPDY/3"/>
   <int value="501" label="NPN, HTTP/1.1"/>
   <int value="600" label="NPN, SPDY 2.0"/>
   <int value="601" label="NPN, SPDY 3.0"/>
   <int value="602" label="NPN, SPDY 3.1"/>
   <int value="603" label="NPN, HTTP/2 draft-14"/>
+  <int value="604" label="NPN, HTTP/2 draft-15"/>
   <int value="700" label="NPN, QUIC/1 + SPDY/3"/>
   <int value="1001" label="NPN, fallback to HTTP/1.1"/>
   <int value="1100" label="NPN, fallback to SPDY 2.0"/>
   <int value="1101" label="NPN, fallback to SPDY 3.0"/>
   <int value="1102" label="NPN, fallback to SPDY 3.1"/>
   <int value="1103" label="NPN, fallback to HTTP/2 draft-14"/>
+  <int value="1104" label="NPN, fallback to HTTP/2 draft-15"/>
   <int value="1200" label="NPN, fallback to QUIC/1 + SPDY/3"/>
 </enum>
 
