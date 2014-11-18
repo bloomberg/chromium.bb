@@ -16,7 +16,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/url_info.h"
-#include "chrome/common/net/predictor_common.h"
+#include "components/dns_prefetch/common/prefetch_common.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/load_flags.h"

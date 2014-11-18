@@ -14,6 +14,7 @@ include_rules = [
   "+components/password_manager/content/renderer",
   "+components/pdf/renderer",
   "+components/plugins/renderer",
+  "+components/dns_prefetch/renderer",
   "+components/signin/core/common",
   "+components/translate/content/common",
   "+components/translate/content/renderer",

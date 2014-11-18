@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/dns_prefetch.gypi:predictor_renderer
+source_set("renderer") {
+  sources = [
+    "predictor_queue.cc",
+    "predictor_queue.h",
+    "renderer_net_predictor.cc",
+    "renderer_net_predictor.h",
+  ]
+
+  public_deps = [
+    "//components/dns_prefetch/common",
+    "//content/public/renderer",
+  ]
+}

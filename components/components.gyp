@@ -21,6 +21,7 @@
     'cronet.gypi',
     'crx_file.gypi',
     'data_reduction_proxy.gypi',
+    'dns_prefetch.gypi',
     'dom_distiller.gypi',
     'domain_reliability.gypi',
     'enhanced_bookmarks.gypi',

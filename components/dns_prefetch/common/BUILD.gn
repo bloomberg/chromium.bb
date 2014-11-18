@@ -1,0 +1,19 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/dns_prefetch.gypi:predictor
+source_set("common") {
+  sources = [
+    "prefetch_common.cc",
+    "prefetch_common.h",
+    "prefetch_message_generator.cc",
+    "prefetch_message_generator.h",
+    "prefetch_messages.cc",
+    "prefetch_messages.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}

@@ -113,6 +113,7 @@ enum IPCMessageStart {
   ExtensionUtilityMsgStart,
   GeofencingMsgStart,
   LayoutTestMsgStart,
+  DnsPrefetchMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file has shared types used across IPC between render_dns_master.cc
-// and dns_master.cc
-
-#ifndef CHROME_COMMON_NET_PREDICTOR_COMMON_H_
-#define CHROME_COMMON_NET_PREDICTOR_COMMON_H_
+#ifndef COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_
+#define COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_
 
 #include <string>
 #include <vector>
 
 #include "url/gurl.h"
 
-namespace chrome_common_net {
+namespace dns_prefetch {
 
 // IPC messages are passed from the renderer to the browser in the form of
 // Namelist instances.
@@ -24,6 +21,21 @@ typedef std::vector<std::string> NameList;
 // instead of NameList, from renderer (where content of pages are scanned for
 // links) to browser (where we perform predictive actions).
 typedef std::vector<GURL> UrlList;
+
+struct LookupRequest {
+  LookupRequest();
+  ~LookupRequest();
+
+  NameList hostname_list;
+};
+
+// The maximum number of hostnames submitted to the browser DNS resolver per
+// IPC call.
+extern const size_t kMaxDnsHostnamesPerRequest;
+
+// The maximum length for a given DNS hostname to resolve.
+extern const size_t kMaxDnsHostnameLength;
+
 }
 
-#endif  // CHROME_COMMON_NET_PREDICTOR_COMMON_H_
+#endif  // COMPONENTS_DNS_PREFETCH_COMMON_PREFETCH_COMMON_H_

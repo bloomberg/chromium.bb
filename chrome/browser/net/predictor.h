@@ -33,7 +33,7 @@
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/timed_cache.h"
 #include "chrome/browser/net/url_info.h"
-#include "chrome/common/net/predictor_common.h"
+#include "components/dns_prefetch/common/prefetch_common.h"
 #include "net/base/host_port_pair.h"
 
 class IOThread;
@@ -60,8 +60,8 @@ class PrefRegistrySyncable;
 
 namespace chrome_browser_net {
 
-typedef chrome_common_net::UrlList UrlList;
-typedef chrome_common_net::NameList NameList;
+typedef dns_prefetch::UrlList UrlList;
+typedef dns_prefetch::NameList NameList;
 typedef std::map<GURL, UrlInfo> Results;
 
 // An observer for testing.

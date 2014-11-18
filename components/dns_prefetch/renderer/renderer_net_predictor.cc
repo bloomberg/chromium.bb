@@ -4,23 +4,21 @@
 
 // See header file for description of RendererNetPredictor class
 
-#include "chrome/renderer/net/renderer_net_predictor.h"
+#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
 
 #include <ctype.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/common/net/predictor_common.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/net/predictor_queue.h"
+#include "components/dns_prefetch/common/prefetch_common.h"
+#include "components/dns_prefetch/common/prefetch_messages.h"
+#include "components/dns_prefetch/renderer/predictor_queue.h"
 #include "content/public/renderer/render_thread.h"
 
 using content::RenderThread;
 
-// The number of hostnames submitted to Browser DNS resolver per call to
-// SubmitHostsnames() (which reads names from our queue).
-static const size_t kMAX_SUBMISSION_PER_TASK = 30;
+namespace dns_prefetch {
 
 RendererNetPredictor::RendererNetPredictor()
     : c_string_queue_(1000),
@@ -84,9 +82,9 @@ void RendererNetPredictor::SubmitHostnames() {
   // page.
 
   // Don't overload the browser DNS lookup facility, or take too long here,
-  // by only sending off kMAX_SUBMISSION_PER_TASK names to the Browser.
+  // by only sending off kMaxDnsHostnamesPerRequest names to the Browser.
   // This will help to avoid overloads when a page has a TON of links.
-  DnsPrefetchNames(kMAX_SUBMISSION_PER_TASK);
+  DnsPrefetchNames(kMaxDnsHostnamesPerRequest);
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
     weak_factory_.InvalidateWeakPtrs();
     RenderThread::Get()->GetMessageLoop()->PostDelayedTask(
@@ -130,7 +128,7 @@ void RendererNetPredictor::ExtractBufferedNames(size_t size_goal) {
 
 void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   // We are on the renderer thread, and just need to send things to the browser.
-  chrome_common_net::NameList names;
+  NameList names;
   for (DomainUseMap::iterator it = domain_map_.begin();
     it != domain_map_.end();
     ++it) {
@@ -146,7 +144,9 @@ void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   DCHECK_GE(new_name_count_, names.size());
   new_name_count_ -= names.size();
 
-  RenderThread::Get()->Send(new ChromeViewHostMsg_DnsPrefetch(names));
+  dns_prefetch::LookupRequest request;
+  request.hostname_list = names;
+  RenderThread::Get()->Send(new DnsPrefetchMsg_RequestPrefetch(request));
 }
 
 // is_numeric_ip() checks to see if all characters in name are either numeric,
@@ -161,3 +161,5 @@ bool RendererNetPredictor::is_numeric_ip(const char* name, size_t length) {
   }
   return true;
 }
+
+}  // namespcae predictor

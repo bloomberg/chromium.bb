@@ -21,7 +21,6 @@ class ChromeRenderProcessObserver;
 class ChromePDFPrintClient;
 #endif
 class PrescientNetworkingDispatcher;
-class RendererNetPredictor;
 class SearchBouncer;
 #if defined(ENABLE_SPELLCHECK)
 class SpellCheck;
@@ -33,6 +32,10 @@ struct ChromeViewHostMsg_GetPluginInfo_Output;
 namespace content {
 class BrowserPluginDelegate;
 struct WebPluginInfo;
+}
+
+namespace dns_prefetch {
+class RendererNetPredictor;
 }
 
 namespace extensions {
@@ -219,7 +222,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #endif
 
   scoped_ptr<PrescientNetworkingDispatcher> prescient_networking_dispatcher_;
-  scoped_ptr<RendererNetPredictor> net_predictor_;
+  scoped_ptr<dns_prefetch::RendererNetPredictor> net_predictor_;
   scoped_ptr<password_manager::CredentialManagerClient>
       credential_manager_client_;
 #if defined(ENABLE_SPELLCHECK)

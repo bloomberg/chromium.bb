@@ -1344,8 +1344,6 @@
       'renderer/instant_restricted_id_cache_unittest.cc',
       'renderer/media/cast_ipc_dispatcher_unittest.cc',
       'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
-      'renderer/net/predictor_queue_unittest.cc',
-      'renderer/net/renderer_predictor_unittest.cc',
       'renderer/plugins/plugin_uma_unittest.cc',
       'renderer/prerender/prerender_dispatcher_unittest.cc',
       'renderer/resources/extensions/notifications_custom_bindings.js',

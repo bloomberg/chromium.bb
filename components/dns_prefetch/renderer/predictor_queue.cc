@@ -4,10 +4,12 @@
 
 // See header file for description of DnsQueue class
 
-#include "chrome/renderer/net/predictor_queue.h"
+#include "components/dns_prefetch/renderer/predictor_queue.h"
 
 #include "base/logging.h"
 #include "base/metrics/stats_counters.h"
+
+namespace dns_prefetch {
 
 DnsQueue::DnsQueue(BufferSize size)
     : buffer_(new char[size + 2]),
@@ -150,3 +152,5 @@ bool DnsQueue::Validate() {
           '\0' == buffer_[buffer_sentinel_] &&
           ((0 == size_) == (readable_ == writeable_));
 }
+
+}  // namespace dns_prefetch

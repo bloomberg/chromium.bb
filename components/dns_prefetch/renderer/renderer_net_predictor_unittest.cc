@@ -4,12 +4,13 @@
 
 // Single threaded tests of RendererNetPredictor functionality.
 
-#include "chrome/renderer/net/renderer_net_predictor.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
 
 #include <algorithm>
 
-namespace {
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace dns_prefetch {
 
 class RenderDnsMasterTest : public testing::Test {
 };
@@ -33,4 +34,4 @@ TEST(RenderDnsMasterTest, NumericIpDiscardCheck) {
 #undef TESTNAME
 }
 
-}  // namespace anonymous
+}  // namespace dns_prefetch

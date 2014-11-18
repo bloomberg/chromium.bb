@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_NET_PRESCIENT_NETWORKING_DISPATCHER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/net/renderer_net_predictor.h"
+#include "components/dns_prefetch/renderer/renderer_net_predictor.h"
 #include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
 
 class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
@@ -16,7 +16,7 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
 
   virtual void prefetchDNS(const blink::WebString& hostname) override;
  private:
-  RendererNetPredictor net_predictor_;
+  dns_prefetch::RendererNetPredictor net_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(PrescientNetworkingDispatcher);
 };

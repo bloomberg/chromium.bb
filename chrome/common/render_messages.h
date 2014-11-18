@@ -529,11 +529,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
                      int /* size of heap (allocated from the OS) */,
                      int /* bytes in use */)
 
-// Request for a DNS prefetch of the names in the array.
-// NameList is typedef'ed std::vector<std::string>
-IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
-                     std::vector<std::string> /* hostnames */)
-
 // Request for preconnect to host providing resource specified by URL
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_Preconnect,
                      GURL /* preconnect target url */)

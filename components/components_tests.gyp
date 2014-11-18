@@ -500,6 +500,8 @@
             ['OS != "ios"', {
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
+                'dns_prefetch/renderer/predictor_queue_unittest.cc',
+                'dns_prefetch/renderer/renderer_net_predictor_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
                 'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
                 'error_page/renderer/net_error_helper_core_unittest.cc',
@@ -512,6 +514,9 @@
                 'components.gyp:autofill_content_browser',
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
+
+                # Dependencies of dns_prefetch
+                'components.gyp:dns_prefetch_renderer',
 
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',

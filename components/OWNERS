@@ -44,6 +44,9 @@ per-file data_reduction_proxy*=bolian@chromium.org
 per-file devtools_bridge.gyp=mnaganov@chromium.org
 per-file devtools_bridge.gyp=serya@chromium.org
 
+per-file dns_prefetch*=jar@chromium.org
+per-file dns_prefetch*=ttuttle@chromium.org
+
 per-file dom_distiller*=bengr@chromium.org
 per-file dom_distiller*=cjhopman@chromium.org
 per-file dom_distiller*=nyquist@chromium.org

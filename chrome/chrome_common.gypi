@@ -587,7 +587,6 @@
       'sources': [
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
-        'common/net/predictor_common.h',
         'common/net/url_util.cc',
         'common/net/url_util.h',
         'common/net/x509_certificate_model.cc',
@@ -599,6 +598,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
+        '<(DEPTH)/components/components.gyp:dns_prefetch_common',
         '<(DEPTH)/components/components.gyp:error_page_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net_resources',
