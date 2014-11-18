@@ -16,6 +16,7 @@
           '../content/test/data/gpu/',
           # For GpuProcess.video
           '../content/test/data/media/bear.ogv',
+          '../third_party/trace-viewer/',
           # For webgl_conformance
           '../third_party/webgl/',
         ],
