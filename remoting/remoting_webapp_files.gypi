@@ -33,6 +33,7 @@
     ],
     # Auth (Google account) JavaScript files.
     'remoting_webapp_js_auth_google_files': [
+      'webapp/base/js/auth_dialog.js',
       'webapp/crd/js/identity.js',
       'webapp/crd/js/oauth2.js',
       'webapp/crd/js/oauth2_api.js',
