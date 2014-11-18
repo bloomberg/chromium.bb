@@ -8,8 +8,11 @@
 Test that &lt;xml-stylesheet> processing instructions only have stylesheets when in document.</p>
 <pre id="result"></pre>
 <script>
-if (window.testRunner)
+<![CDATA[
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 
 sheet = document.styleSheets[0];
 pi = document.firstChild;
@@ -22,13 +25,25 @@ function finishTest()
     result.innerHTML += "Not in document: " + ((pi.sheet === null) ? "PASS" : ("FAIL: " + pi.sheet)) + "\n";
 
     document.appendChild(pi);
-
-    // This subtest fails in Firefox 4.0b8 - apparently, adding a processing instruction doens't trigger load.
-    result.innerHTML += "After adding to document: " + ((pi.sheet === null) ? ("FAIL: " + pi.sheet) : "PASS") + "\n";
-
-    result.innerHTML += "DONE";
+    window.requestAnimationFrame(finishTest2);
 }
 
+var retryCount = 0;
+
+function finishTest2() {
+    // This subtest may fail because loading the resource may not complete immediately after
+    // appendChild().
+    if (pi.sheet === null && ++retryCount < 10) {
+        window.requestAnimationFrame(finishTest2);
+        return;
+    }
+
+    result.innerHTML += "After adding to document: " + ((pi.sheet === null) ? ("FAIL: " + pi.sheet) : "PASS") + "\n";
+    result.innerHTML += "DONE";
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+]]>
 </script>
 </body>
 </html>

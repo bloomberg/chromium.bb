@@ -283,6 +283,10 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     if (m_sheet) {
         ASSERT(m_sheet->ownerNode() == this);
         clearSheet();
+    } else if (resource()) {
+        ASSERT(m_loading);
+        document().styleEngine()->removePendingSheet(this);
+        clearResource();
     }
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
