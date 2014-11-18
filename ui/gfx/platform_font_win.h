@@ -13,7 +13,7 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
 
-__interface IDWriteFactory;
+struct IDWriteFactory;
 
 namespace gfx {
 
