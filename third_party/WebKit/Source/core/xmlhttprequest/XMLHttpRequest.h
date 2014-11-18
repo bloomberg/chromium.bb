@@ -48,12 +48,12 @@ class DOMFormData;
 class Document;
 class DocumentParser;
 class ExceptionState;
+class ReadableStream;
 class SecurityOrigin;
 class SharedBuffer;
 class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
-class UnderlyingSource;
 class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;
@@ -151,6 +151,7 @@ public:
 
 private:
     class BlobLoader;
+    class ReadableStreamSource;
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
     Document* document() const;
@@ -254,8 +255,8 @@ private:
     unsigned long m_timeoutMilliseconds;
     PersistentWillBeMember<Blob> m_responseBlob;
     RefPtrWillBeMember<Stream> m_responseLegacyStream;
-    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> > > m_responseStream;
-    PersistentWillBeMember<UnderlyingSource> m_streamSource;
+    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_responseStream;
+    PersistentWillBeMember<ReadableStreamSource> m_responseStreamSource;
 
     RefPtr<ThreadableLoader> m_loader;
     unsigned long m_loaderIdentifier;
