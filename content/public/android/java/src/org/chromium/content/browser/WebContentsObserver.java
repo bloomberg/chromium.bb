@@ -22,6 +22,14 @@ public abstract class WebContentsObserver {
         mNativeWebContentsObserverAndroid = nativeInit(webContents);
     }
 
+    /**
+     * Called when the RenderView of the current RenderViewHost is ready, e.g. because we recreated
+     * it after a crash.
+     */
+    @CalledByNative
+    public void renderViewReady() {
+    }
+
     @CalledByNative
     public void renderProcessGone(boolean wasOomProtected) {
     }
@@ -96,6 +104,13 @@ public abstract class WebContentsObserver {
      */
     @CalledByNative
     public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
+    }
+
+    /**
+     * Called once the window.document object of the main frame was created.
+     */
+    @CalledByNative
+    public void documentAvailableInMainFrame() {
     }
 
     /**

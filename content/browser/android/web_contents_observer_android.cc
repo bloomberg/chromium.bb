@@ -63,6 +63,14 @@ void WebContentsObserverAndroid::WebContentsDestroyed() {
   }
 }
 
+void WebContentsObserverAndroid::RenderViewReady() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserver_renderViewReady(env, obj.obj());
+}
+
 void WebContentsObserverAndroid::RenderProcessGone(
     base::TerminationStatus termination_status) {
   JNIEnv* env = AttachCurrentThread();
@@ -172,6 +180,14 @@ void WebContentsObserverAndroid::DidNavigateAnyFrame(
   Java_WebContentsObserver_didNavigateAnyFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       jboolean_is_reload);
+}
+
+void WebContentsObserverAndroid::DocumentAvailableInMainFrame() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserver_documentAvailableInMainFrame(env, obj.obj());
 }
 
 void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(

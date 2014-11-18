@@ -32,6 +32,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   void Destroy(JNIEnv* env, jobject obj);
 
  private:
+  virtual void RenderViewReady() override;
   virtual void RenderProcessGone(
       base::TerminationStatus termination_status) override;
   virtual void DidStartLoading(RenderViewHost* render_view_host) override;
@@ -50,6 +51,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
                                    const LoadCommittedDetails& details,
                                    const FrameNavigateParams& params) override;
+  virtual void DocumentAvailableInMainFrame() override;
   virtual void DidFirstVisuallyNonEmptyPaint() override;
   virtual void DidStartProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
