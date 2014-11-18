@@ -9,7 +9,7 @@ async_test(function(t) {
           assert_equals(
             e.message,
             'Failed to execute \'fetch\' on \'ServiceWorkerGlobalScope\': ' +
-            'Invalid URL');
+            'Failed to parse URL from http://');
           t.done();
         })
       .catch(unreached_rejection(t));

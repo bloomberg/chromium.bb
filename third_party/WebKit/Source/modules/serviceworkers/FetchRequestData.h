@@ -57,7 +57,6 @@ public:
 
     static FetchRequestData* create();
     static FetchRequestData* create(const blink::WebServiceWorkerRequest&);
-    FetchRequestData* createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
     FetchRequestData* createCopy() const;
     ~FetchRequestData();
 
@@ -66,16 +65,23 @@ public:
     void setURL(const KURL& url) { m_url = url; }
     const KURL& url() const { return m_url; }
     bool unsafeRequestFlag() const { return m_unsafeRequestFlag; }
+    void setUnsafeRequestFlag(bool flag) { m_unsafeRequestFlag = flag; }
+    WebURLRequest::RequestContext context() const { return m_context; }
+    void setContext(WebURLRequest::RequestContext context) { m_context = context; }
     PassRefPtr<SecurityOrigin> origin() { return m_origin; }
+    void setOrigin(PassRefPtr<SecurityOrigin> origin) { m_origin = origin; }
     bool sameOriginDataURLFlag() { return m_sameOriginDataURLFlag; }
+    void setSameOriginDataURLFlag(bool flag) { m_sameOriginDataURLFlag = flag; }
     const Referrer& referrer() const { return m_referrer; }
+    Referrer* mutableReferrer() { return &m_referrer; }
     void setMode(WebURLRequest::FetchRequestMode mode) { m_mode = mode; }
     WebURLRequest::FetchRequestMode mode() const { return m_mode; }
     void setCredentials(WebURLRequest::FetchCredentialsMode credentials) { m_credentials = credentials; }
     WebURLRequest::FetchCredentialsMode credentials() const { return m_credentials; }
     void setResponseTainting(Tainting tainting) { m_responseTainting = tainting; }
     Tainting tainting() const { return m_responseTainting; }
-    FetchHeaderList* headerList() { return m_headerList.get(); }
+    FetchHeaderList* headerList() const { return m_headerList.get(); }
+    void setHeaderList(FetchHeaderList* headerList) { m_headerList = headerList; }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     void setBlobDataHandle(PassRefPtr<BlobDataHandle> blobHandle) { m_blobDataHandle = blobHandle; }
 

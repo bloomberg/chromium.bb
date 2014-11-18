@@ -67,7 +67,7 @@ private:
     Request(ExecutionContext*, FetchRequestData*);
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
 
-    static Request* createRequestWithRequestData(ExecutionContext*, FetchRequestData*, const RequestInit&, WebURLRequest::FetchRequestMode, WebURLRequest::FetchCredentialsMode, ExceptionState&);
+    static Request* createRequestWithRequestOrString(ExecutionContext*, Request*, const String&, const RequestInit&, ExceptionState&);
     void clearHeaderList();
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;

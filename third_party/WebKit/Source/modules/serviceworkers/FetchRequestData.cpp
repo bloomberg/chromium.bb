@@ -5,7 +5,6 @@
 #include "config.h"
 #include "FetchRequestData.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
@@ -32,29 +31,6 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());
-    return request;
-}
-
-FetchRequestData* FetchRequestData::createRestrictedCopy(ExecutionContext* context, PassRefPtr<SecurityOrigin> origin) const
-{
-    // "To make a restricted copy of a request |request|, run these steps:
-    // 1. Let |r| be a new request whose url is |request|'s url, method is
-    // |request|'s method, header list is a copy of |request|'s header list,
-    // body is a tee of |request|'s body, client is entry settings object's
-    // global object, origin is entry settings object's origin, referrer is
-    // |client|, context is |connect|, mode is |request|'s mode, and credentials
-    //  mode is |request|'s credentials mode."
-    FetchRequestData* request = FetchRequestData::create();
-    request->m_url = m_url;
-    request->m_method = m_method;
-    request->m_headerList = m_headerList->createCopy();
-    request->m_blobDataHandle = m_blobDataHandle;
-    request->m_origin = origin;
-    request->m_referrer.setClient();
-    request->m_context = WebURLRequest::RequestContextFetch;
-    request->m_mode = m_mode;
-    request->m_credentials = m_credentials;
-    // "2. Return |r|."
     return request;
 }
 
