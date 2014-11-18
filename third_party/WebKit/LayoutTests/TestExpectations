@@ -1420,3 +1420,5 @@ crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing
 # Temporarily skip tests and rebaseline after next V8 roll.
 crbug.com/427868 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
 crbug.com/427868 inspector/console/console-format-es6.html [ NeedsManualRebaseline ]
+
+crbug.com/434090 inspector/tracing/worker-js-profile.html [ Pass Timeout ]
