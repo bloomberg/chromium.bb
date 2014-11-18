@@ -50,6 +50,11 @@ void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
     tilings_[i]->RemoveTilesInRegion(region);
 }
 
+void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
+  for (auto* tiling : tilings_)
+    tiling->set_resolution(NON_IDEAL_RESOLUTION);
+}
+
 bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
                                         const gfx::Size& new_layer_bounds,
                                         const Region& layer_invalidation,

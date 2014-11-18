@@ -69,6 +69,8 @@ class CC_EXPORT PictureLayerTilingSet {
   PictureLayerTiling* FindTilingWithScale(float scale) const;
   PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
 
+  void MarkAllTilingsNonIdeal();
+
   // If a tiling exists whose scale is within |snap_to_existing_tiling_ratio|
   // ratio of |start_scale|, then return that tiling's scale. Otherwise, return
   // |start_scale|. If multiple tilings match the criteria, return the one with

@@ -903,34 +903,31 @@ void PictureLayerImpl::RemoveAllTilings() {
 }
 
 void PictureLayerImpl::AddTilingsForRasterScale() {
-  PictureLayerTiling* high_res = nullptr;
-  PictureLayerTiling* low_res = nullptr;
+  // Reset all resolution enums on tilings, we'll be setting new values in this
+  // function.
+  tilings_->MarkAllTilingsNonIdeal();
 
-  // TODO(vmpstr): Put this logic into PictureLayerTilingSet.
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(i);
-    if (tiling->contents_scale() == raster_contents_scale_)
-      high_res = tiling;
-    if (tiling->contents_scale() == low_res_raster_contents_scale_)
-      low_res = tiling;
-
-    // Reset all tilings to non-ideal until the end of this function.
-    tiling->set_resolution(NON_IDEAL_RESOLUTION);
-  }
-
-  if (!high_res) {
+  PictureLayerTiling* high_res =
+      tilings_->FindTilingWithScale(raster_contents_scale_);
+  // We always need a high res tiling, so create one if it doesn't exist.
+  if (!high_res)
     high_res = AddTiling(raster_contents_scale_);
-    if (raster_contents_scale_ == low_res_raster_contents_scale_)
-      low_res = high_res;
-  }
+
+  // Try and find a low res tiling.
+  PictureLayerTiling* low_res = nullptr;
+  if (raster_contents_scale_ == low_res_raster_contents_scale_)
+    low_res = high_res;
+  else
+    low_res = tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
 
   // Only create new low res tilings when the transform is static.  This
   // prevents wastefully creating a paired low res tiling for every new high res
   // tiling during a pinch or a CSS animation.
+  bool can_have_low_res = layer_tree_impl()->create_low_res_tiling();
+  bool needs_low_res = !low_res;
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
-  if (layer_tree_impl()->create_low_res_tiling() && !is_pinching &&
-      !draw_properties().screen_space_transform_is_animating && !low_res &&
-      low_res != high_res)
+  bool is_animating = draw_properties().screen_space_transform_is_animating;
+  if (can_have_low_res && needs_low_res && !is_pinching && !is_animating)
     low_res = AddTiling(low_res_raster_contents_scale_);
 
   // Set low-res if we have one.
