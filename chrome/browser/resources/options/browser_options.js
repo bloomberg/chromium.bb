@@ -116,7 +116,7 @@ cr.define('options', function() {
       window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
       if (loadTimeData.getBoolean('allowAdvancedSettings')) {
-        $('advanced-settings-expander').onclick = function() {
+        $('advanced-settings-expander').onclick = function(e) {
           var showAdvanced =
               BrowserOptions.shouldShowSection_($('advanced-settings'));
           if (showAdvanced) {
@@ -127,11 +127,10 @@ cr.define('options', function() {
               $('advanced-settings'),
               $('advanced-settings-container'));
 
-          // If the link was focused (i.e., it was activated using the keyboard)
-          // and it was used to show the section (rather than hiding it), focus
-          // the first element in the container.
-          if (document.activeElement === $('advanced-settings-expander') &&
-              showAdvanced) {
+          // If the click was triggered using the keyboard and it showed the
+          // section (rather than hiding it), focus the first element in the
+          // container.
+          if (e.detail == 0 && showAdvanced) {
             var focusElement = $('advanced-settings-container').querySelector(
                 'button, input, list, select, a[href]');
             if (focusElement)
