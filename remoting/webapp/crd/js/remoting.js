@@ -35,6 +35,14 @@ function consentRequired_(authContinue) {
     remoting.windowShape.updateClientWindowShape();
   };
   dialog.hidden = false;
+
+  /** @type {HTMLElement} */
+  var dialog_border = document.getElementById('auth-dialog-border');
+  // TODO(garykac): Refactor to remove auth dialog from the main html file
+  // and place in a separate window.
+  remoting.authDialog = new remoting.AuthDialog(dialog_border);
+  remoting.windowShape.addCallback(remoting.authDialog);
+
   button.addEventListener('click', consentGranted, false);
 }
 
