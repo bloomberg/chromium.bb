@@ -208,8 +208,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       Whether the feature being tested is FirstRunExperience.
     """
-    annotations = self.test_pkg.GetTestAnnotations(test)
-    return ('FirstRunExperience' == annotations.get('Feature', None))
+    freFeature = 'Feature:FirstRunExperience'
+    return freFeature in self.test_pkg.GetTestAnnotations(test)
 
   def _IsPerfTest(self, test):
     """Determines whether a test is a performance test.
@@ -329,11 +329,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     annotations = self.test_pkg.GetTestAnnotations(test)
     timeout_scale = 1
     if 'TimeoutScale' in annotations:
-      try:
-        timeout_scale = int(annotations['TimeoutScale'])
-      except ValueError:
-        logging.warning('Non-integer value of TimeoutScale ignored. (%s)'
-                        % annotations['TimeoutScale'])
+      for annotation in annotations:
+        scale_match = re.match('TimeoutScale:([0-9]+)', annotation)
+        if scale_match:
+          timeout_scale = int(scale_match.group(1))
     if self.options.wait_for_debugger:
       timeout_scale *= 100
     return timeout_scale
