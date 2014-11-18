@@ -81,7 +81,7 @@ class ApacheHTTP(server_base.ServerBase):
             ]
 
         if self._is_win:
-            start_cmd += ['-c', "ThreadsPerChild %d" % (self._number_of_servers * 2)]
+            start_cmd += ['-c', "ThreadsPerChild %d" % (self._number_of_servers * 4)]
         else:
             start_cmd += ['-c', "StartServers %d" % self._number_of_servers,
                           '-c', "MinSpareServers %d" % self._number_of_servers,
