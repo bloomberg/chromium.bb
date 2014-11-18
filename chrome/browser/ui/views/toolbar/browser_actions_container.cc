@@ -28,7 +28,6 @@
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -127,7 +126,7 @@ void BrowserActionsContainer::Init() {
   container_width_ = toolbar_actions_bar_->GetPreferredSize().width();
 }
 
-const std::string& BrowserActionsContainer::GetIdAt(size_t index) {
+const std::string& BrowserActionsContainer::GetIdAt(size_t index) const {
   return toolbar_action_views_[index]->view_controller()->GetId();
 }
 
@@ -625,6 +624,11 @@ void BrowserActionsContainer::AnimationProgressed(
   resize_amount_ = static_cast<int>(resize_animation_->GetCurrentValue() *
       (container_width_ - animation_target_size_));
   Redraw(false);
+}
+
+void BrowserActionsContainer::AnimationCanceled(
+    const gfx::Animation* animation) {
+  AnimationEnded(animation);
 }
 
 void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {

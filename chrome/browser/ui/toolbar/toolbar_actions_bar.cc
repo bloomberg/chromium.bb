@@ -313,19 +313,16 @@ void ToolbarActionsBar::ToolbarExtensionAdded(
     return;
 
   // If this is just an upgrade, then don't worry about resizing.
-  if (!extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
+  if (extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
           IsBeingUpgraded(extension)) {
+    delegate_->Redraw(false);
+  } else {
     // We may need to resize (e.g. to show the new icon, or the chevron).
-    int preferred_width = GetPreferredSize().width();
-    if (preferred_width != delegate_->GetWidth()) {
-      delegate_->ResizeAndAnimate(gfx::Tween::LINEAR,
-                                  preferred_width,
-                                  true);  // suppress chevron
-      return;
-    }
+    // We suppress the chevron during animation because, if we're expanding to
+    // show a new icon, we don't want to have the chevron visible only for the
+    // duration of the animation.
+    ResizeDelegate(gfx::Tween::LINEAR, true);
   }
-
-  delegate_->Redraw(false);
 }
 
 void ToolbarActionsBar::ToolbarExtensionRemoved(
@@ -354,9 +351,7 @@ void ToolbarActionsBar::ToolbarExtensionRemoved(
       delegate_->SetChevronVisibility(false);
       // Either we went from overflow to no-overflow, or we shrunk the no-
       // overflow container by 1.  Either way the size changed, so animate.
-      delegate_->ResizeAndAnimate(gfx::Tween::EASE_OUT,
-                                  GetPreferredSize().width(),
-                                  false);  // don't suppress chevron
+      ResizeDelegate(gfx::Tween::EASE_OUT, false);
     }
   }
 }
@@ -401,19 +396,25 @@ bool ToolbarActionsBar::ShowExtensionActionPopup(
 }
 
 void ToolbarActionsBar::ToolbarVisibleCountChanged() {
+  ResizeDelegate(gfx::Tween::EASE_OUT, false);
+}
+
+void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
+                                       bool suppress_chevron) {
   int desired_width = GetPreferredSize().width();
   if (desired_width != delegate_->GetWidth()) {
-    delegate_->ResizeAndAnimate(gfx::Tween::EASE_OUT,
-                                desired_width,
-                                false);  // don't suppress chevron
+    delegate_->ResizeAndAnimate(tween_type, desired_width, suppress_chevron);
   } else if (delegate_->IsAnimating()) {
     // It's possible that we're right where we're supposed to be in terms of
     // width, but that we're also currently resizing. If this is the case, end
     // the current animation with the current width.
     delegate_->StopAnimating();
-  } else if (in_overflow_mode_) {
-    // In overflow mode, our desired width may not change, even if we need to
-    // redraw (since we have a fixed width).
+  } else {
+    // We may already be at the right size (this can happen frequently with
+    // overflow, where we have a fixed width, and in tests, where we skip
+    // animations). If this is the case, we still need to Redraw(), because the
+    // icons within the toolbar may have changed (e.g. if we removed one
+    // action and added a different one in quick succession).
     delegate_->Redraw(false);
   }
 }
@@ -425,9 +426,9 @@ void ToolbarActionsBar::ToolbarHighlightModeChanged(bool is_highlighting) {
   // only the new actions.
   DeleteActions();
   CreateActions();
-  delegate_->ResizeAndAnimate(gfx::Tween::LINEAR,
-                              GetPreferredSize().width(),
-                              true);  // suppress chevron
+  // Resize the delegate. We suppress the chevron so that we don't risk showing
+  // it only for the duration of the animation.
+  ResizeDelegate(gfx::Tween::LINEAR, true);
 }
 
 void ToolbarActionsBar::OnToolbarModelInitialized() {
@@ -437,7 +438,7 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   CreateActions();
   if (!toolbar_actions_.empty()) {
     delegate_->Redraw(false);
-    ToolbarVisibleCountChanged();
+    ResizeDelegate(gfx::Tween::EASE_OUT, false);
   }
 }
 
@@ -484,7 +485,7 @@ void ToolbarActionsBar::ReorderActions() {
 
   // Our visible browser actions may have changed - re-Layout() and check the
   // size.
-  ToolbarVisibleCountChanged();
+  ResizeDelegate(gfx::Tween::EASE_OUT, false);
   delegate_->Redraw(true);
 }
 

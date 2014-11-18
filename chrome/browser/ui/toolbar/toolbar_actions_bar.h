@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -139,6 +140,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   void OnToolbarModelInitialized() override;
   void OnToolbarReorderNecessary(content::WebContents* web_contents) override;
   Browser* GetBrowser() override;
+
+  // Resizes the delegate (if necessary) to the preferred size using the given
+  // |tween_type| and optionally suppressing the chevron.
+  void ResizeDelegate(gfx::Tween::Type tween_type, bool suppress_chevron);
 
   // Returns the action for the given |id|, if one exists.
   ToolbarActionViewController* GetActionForId(const std::string& id);

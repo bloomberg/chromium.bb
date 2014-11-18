@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
@@ -25,10 +26,6 @@ namespace extensions {
 class ActiveTabPermissionGranter;
 class Command;
 class Extension;
-}
-
-namespace gfx {
-class SlideAnimation;
 }
 
 namespace views {
@@ -141,9 +138,6 @@ class BrowserActionsContainer
   // Get the number of toolbar actions being displayed.
   size_t num_toolbar_actions() const { return toolbar_action_views_.size(); }
 
-  // Whether we are performing resize animation on the container.
-  bool animating() const { return animation_target_size_ > 0; }
-
   // Returns the chevron, if any.
   views::View* chevron() { return chevron_; }
   const views::View* chevron() const { return chevron_; }
@@ -165,8 +159,13 @@ class BrowserActionsContainer
     return toolbar_action_views_[index];
   }
 
+  // Whether we are performing resize animation on the container.
+  bool animating() const {
+    return resize_animation_ && resize_animation_->is_animating();
+  }
+
   // Returns the ID of the action represented by the view at |index|.
-  const std::string& GetIdAt(size_t index);
+  const std::string& GetIdAt(size_t index) const;
 
   // Returns the ToolbarActionView* associated with the given |extension|, or
   // NULL if none exists.
@@ -221,6 +220,7 @@ class BrowserActionsContainer
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
   // Overridden from ToolbarActionView::Delegate:
