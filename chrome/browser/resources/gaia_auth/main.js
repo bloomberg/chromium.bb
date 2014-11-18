@@ -356,9 +356,16 @@ Authenticator.prototype = {
    */
   onCompleteLogin_: function(msg) {
     if (!msg.email || !msg.gaiaId || !msg.sessionIndex) {
-      console.error('Missing fields to complete login.');
-      window.parent.postMessage({method: 'missingGaiaInfo'}, this.parentPage_);
-      return;
+      // On desktop, if the skipForNow message field is set, send it to handler.
+      // This does not require the email, gaiaid or session to be valid.
+      if (this.desktopMode_ && msg.skipForNow) {
+        this.completeLogin_(msg);
+      } else {
+        console.error('Missing fields to complete login.');
+        window.parent.postMessage({method: 'missingGaiaInfo'},
+                                  this.parentPage_);
+        return;
+      }
     }
 
     // Skip SAML extra steps for desktop flow and non-SAML flow.
