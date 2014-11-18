@@ -518,20 +518,18 @@ class ReportStage(generic_stages.BuilderStage,
     else:
       final_status = constants.FINAL_STATUS_FAILED
 
-    release_tag = getattr(self._run.attrs, 'release_tag', None)
+    if not hasattr(self._run.attrs, 'release_tag'):
+      # If, for some reason, sync stage was not completed and
+      # release_tag was not set. Set it to None here because
+      # ArchiveResults() depends the existence of this attr.
+      self._run.attrs.release_tag = None
 
-    # Because we use the release_tag as part of the archive path, we
-    # can't archive if we didn't get far enough to learn what it is.
-    if release_tag is None:
-      cros_build_lib.Warning('Build results not archived, no release_tag.')
-      archive_urls = None
-      metadata_url = None
-    else:
-      archive_urls = self.ArchiveResults(final_status)
-      metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+    archive_urls = self.ArchiveResults(final_status)
+    metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
 
-    results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
-                               current_version=release_tag)
+    results_lib.Results.Report(
+        sys.stdout, archive_urls=archive_urls,
+      current_version=(self._run.attrs.release_tag or ''))
 
     retry_stats.ReportStats(sys.stdout)
 
