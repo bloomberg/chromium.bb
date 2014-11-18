@@ -1956,6 +1956,13 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwording)
   },
+  {
+    "enable-hotword-hardware",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwordHardware)
+  },
 #if defined(ENABLE_EXTENSIONS)
   {
     "enable-embedded-extension-options",

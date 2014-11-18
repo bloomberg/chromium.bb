@@ -4,9 +4,11 @@
 
 #include "chrome/browser/search/hotword_service_factory.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -43,8 +45,10 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
   // TODO(rlp, dgreid): return has_hotword_hardware()
   // Fill in once the hardware has the correct interface implemented.
-  // In the meantime, this function can be used to get other parts moving.
-  return true;
+  // In the meantime, this function can be used to get other parts moving
+  // based on a flag.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware);
 }
 
 // static

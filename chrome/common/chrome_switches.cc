@@ -451,10 +451,13 @@ const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 // installing in Chrome.
 const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";
 
-// Enables experimental hotword detection features. These features include
+// Enables v2 hotword detection features. These features include
 // using a new component extension for performing hotword detection, new UI
 // flows, and always-on detection.
 const char kEnableExperimentalHotwording[]  = "enable-experimental-hotwording";
+
+// Enables experimental hotword features specific to always-on.
+const char kEnableExperimentalHotwordHardware[] = "enable-hotword-hardware";
 
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =

@@ -348,6 +348,10 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   if (extension_id_ != extension_misc::kHotwordSharedModuleId)
     return;
 
+  // Turn on Always On
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalHotwordHardware);
+
   // Set the field trial to a valid one.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       hotword_internal::kHotwordFieldTrialName, "Install"));

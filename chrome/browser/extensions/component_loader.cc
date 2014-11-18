@@ -310,7 +310,8 @@ void ComponentLoader::AddHangoutServicesExtension() {
 }
 
 void ComponentLoader::AddHotwordAudioVerificationApp() {
-  if (HotwordService::IsExperimentalHotwordingEnabled()) {
+  if (HotwordService::IsExperimentalHotwordingEnabled() &&
+      HotwordServiceFactory::IsHotwordHardwareAvailable()) {
     Add(IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword_audio_verification")));
   }

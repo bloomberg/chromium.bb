@@ -456,7 +456,8 @@ bool HotwordService::IsOptedIntoAudioLogging() {
 bool HotwordService::IsAlwaysOnEnabled() {
   return
       profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled) &&
-      profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled);
+      profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled) &&
+      HotwordServiceFactory::IsHotwordHardwareAvailable();
 }
 
 void HotwordService::EnableHotwordExtension(
