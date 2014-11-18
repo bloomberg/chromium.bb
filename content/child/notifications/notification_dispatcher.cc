@@ -54,8 +54,10 @@ bool NotificationDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (!ShouldHandleMessage(msg))
     return false;
 
-  NotificationManager::ThreadSpecificInstance(thread_safe_sender_.get(), this)
-      ->OnMessageReceived(msg);
+  NotificationManager::ThreadSpecificInstance(
+      thread_safe_sender_.get(),
+      main_thread_loop_proxy_.get(),
+      this)->OnMessageReceived(msg);
   return true;
 }
 

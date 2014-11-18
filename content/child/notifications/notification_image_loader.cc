@@ -5,7 +5,9 @@
 #include "content/child/notifications/notification_image_loader.h"
 
 #include "base/logging.h"
+#include "content/child/child_thread.h"
 #include "content/child/image_decoder.h"
+#include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
@@ -25,18 +27,27 @@ NotificationImageLoader::NotificationImageLoader(
       callback_(callback),
       completed_(false) {}
 
-NotificationImageLoader::~NotificationImageLoader() {
-  completed_ = true;
-}
+NotificationImageLoader::~NotificationImageLoader() {}
 
-void NotificationImageLoader::Start(const WebURL& image_url) {
-  DCHECK(!loader_);
+void NotificationImageLoader::StartOnMainThread(const WebURL& image_url,
+                                                int worker_thread_id) {
+  DCHECK(ChildThread::current());
+  DCHECK(!url_loader_);
+
+  worker_thread_id_ = worker_thread_id;
 
   WebURLRequest request(image_url);
   request.setRequestContext(WebURLRequest::RequestContextImage);
 
-  loader_.reset(blink::Platform::current()->createURLLoader());
-  loader_->loadAsynchronously(request, this);
+  url_loader_.reset(blink::Platform::current()->createURLLoader());
+  url_loader_->loadAsynchronously(request, this);
+}
+
+void NotificationImageLoader::Cancel() {
+  DCHECK(url_loader_);
+
+  completed_ = true;
+  url_loader_->cancel();
 }
 
 void NotificationImageLoader::didReceiveData(
@@ -62,8 +73,7 @@ void NotificationImageLoader::didFinishLoading(
     image = decoder.Decode(&buffer_[0], buffer_.size());
   }
 
-  completed_ = true;
-  callback_.Run(delegate_, image);
+  RunCallbackOnWorkerThread(image);
 }
 
 void NotificationImageLoader::didFail(WebURLLoader* loader,
@@ -71,8 +81,19 @@ void NotificationImageLoader::didFail(WebURLLoader* loader,
   if (completed_)
     return;
 
-  completed_ = true;
-  callback_.Run(delegate_, SkBitmap());
+  RunCallbackOnWorkerThread(SkBitmap());
+}
+
+void NotificationImageLoader::RunCallbackOnWorkerThread(
+    const SkBitmap& image) const {
+  if (!worker_thread_id_) {
+    callback_.Run(delegate_, image);
+    return;
+  }
+
+  WorkerTaskRunner::Instance()->PostTask(
+      worker_thread_id_,
+      base::Bind(callback_, delegate_, image));
 }
 
 }  // namespace content

@@ -33,9 +33,12 @@ static base::LazyInstance<base::ThreadLocalPointer<NotificationManager>>::Leaky
 
 NotificationManager::NotificationManager(
     ThreadSafeSender* thread_safe_sender,
+    base::SingleThreadTaskRunner* main_thread_task_runner,
     NotificationDispatcher* notification_dispatcher)
     : thread_safe_sender_(thread_safe_sender),
-      notification_dispatcher_(notification_dispatcher) {
+      main_thread_task_runner_(main_thread_task_runner),
+      notification_dispatcher_(notification_dispatcher),
+      weak_factory_(this) {
   g_notification_manager_tls.Pointer()->Set(this);
 }
 
@@ -45,13 +48,14 @@ NotificationManager::~NotificationManager() {
 
 NotificationManager* NotificationManager::ThreadSpecificInstance(
     ThreadSafeSender* thread_safe_sender,
+    base::SingleThreadTaskRunner* main_thread_task_runner,
     NotificationDispatcher* notification_dispatcher) {
   if (g_notification_manager_tls.Pointer()->Get())
     return g_notification_manager_tls.Pointer()->Get();
 
   NotificationManager* manager = new NotificationManager(
-      thread_safe_sender, notification_dispatcher);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
+      thread_safe_sender, main_thread_task_runner, notification_dispatcher);
+  if (CurrentWorkerId())
     WorkerTaskRunner::Instance()->AddStopObserver(manager);
   return manager;
 }
@@ -69,16 +73,27 @@ void NotificationManager::show(
     return;
   }
 
-  scoped_ptr<NotificationImageLoader> pending_notification(
+  scoped_refptr<NotificationImageLoader> pending_notification(
       new NotificationImageLoader(
           delegate,
           base::Bind(&NotificationManager::DisplayNotification,
-                     base::Unretained(this),
+                     weak_factory_.GetWeakPtr(),
                      origin,
                      notification_data)));
 
-  pending_notification->Start(notification_data.icon);
-  pending_notifications_.push_back(pending_notification.release());
+  // Image downloads have to be started on the main thread, but it's possible
+  // for a race to occur where a worker terminates whilst the image download
+  // has not been started yet. When this happens, the refcounting semantics
+  // will ensure that the loader gets cancelled immediately after starting.
+  main_thread_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&NotificationImageLoader::StartOnMainThread,
+                 pending_notification,
+                 notification_data.icon,
+                 CurrentWorkerId()),
+      base::Bind(&NotificationManager::DidStartImageLoad,
+                 weak_factory_.GetWeakPtr(),
+                 pending_notification));
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
@@ -165,6 +180,11 @@ void NotificationManager::OnClick(int id) {
   iter->second->dispatchClickEvent();
 }
 
+void NotificationManager::DidStartImageLoad(
+    const scoped_refptr<NotificationImageLoader>& pending_notification) {
+  pending_notifications_.insert(pending_notification);
+}
+
 void NotificationManager::DisplayNotification(
     const blink::WebSerializedOrigin& origin,
     const blink::WebNotificationData& notification_data,
@@ -195,10 +215,9 @@ void NotificationManager::DisplayNotification(
 
 bool NotificationManager::RemovePendingNotification(
     blink::WebNotificationDelegate* delegate) {
-  auto iter = pending_notifications_.begin();
-  for (; iter != pending_notifications_.end(); ++iter) {
-    if ((*iter)->delegate() == delegate) {
-      pending_notifications_.erase(iter);
+  for (auto& pending_notification : pending_notifications_) {
+    if (pending_notification->delegate() == delegate) {
+      pending_notifications_.erase(pending_notification);
       return true;
     }
   }
