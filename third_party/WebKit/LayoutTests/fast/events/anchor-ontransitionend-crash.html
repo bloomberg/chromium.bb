@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<style>
+    #link:after{ content:"pseudo"; transition: color 1ms; } 
+</style>
+<script src="../../resources/js-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+window.onload = function(){
+    var link = document.getElementById("link");
+    link.addEventListener("transitionend", function() {
+        document.body.innerHTML = "";
+        testPassed('Test for crbug.com/433542: This test passes if it does not crash');
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
+    link.style.color = "red";
+};
+</script>
+<a id="link" href="#"/>

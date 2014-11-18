@@ -148,10 +148,9 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
 void HTMLAnchorElement::defaultEventHandler(Event* event)
 {
     if (isLiveLink()) {
-        ASSERT(event->target());
-        Node* target = event->target()->toNode();
-        ASSERT(target);
-        if ((focused() || target->focused()) && isEnterKeyKeypressEvent(event)) {
+        Node* target = event->target() ? event->target()->toNode() : 0;
+        bool hasFocus = focused() || (target && target->focused());
+        if (hasFocus && isEnterKeyKeypressEvent(event)) {
             event->setDefaultHandled();
             dispatchSimulatedClick(event);
             return;
