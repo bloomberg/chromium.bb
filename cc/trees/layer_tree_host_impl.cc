@@ -2567,7 +2567,18 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   bool consume_by_top_controls = ShouldTopControlsConsumeScroll(scroll_delta);
 
-  for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
+  // There's an edge case where the outer viewport isn't scrollable when the
+  // scroll starts, however, as the top controls show the outer viewport becomes
+  // scrollable. Therefore, always try scrolling the outer viewport before the
+  // inner.
+  // TODO(bokan): Move the top controls logic out of the loop since the scroll
+  // that causes the outer viewport to become scrollable will still be applied
+  // to the inner viewport.
+  LayerImpl* start_layer = CurrentlyScrollingLayer();
+  if (start_layer == InnerViewportScrollLayer() && OuterViewportScrollLayer())
+      start_layer = OuterViewportScrollLayer();
+
+  for (LayerImpl* layer_impl = start_layer;
        layer_impl;
        layer_impl = layer_impl->parent()) {
     if (!layer_impl->scrollable())
