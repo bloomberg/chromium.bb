@@ -40,13 +40,13 @@ function test()
                 InspectorTest.assertEquals(invalidations.length, 3);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
-                InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[0].cause.reason, "StyleSheetChange");
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
-                InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[1].cause.reason, "StyleSheetChange");
                 InspectorTest.assertEquals(invalidations[2].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[2].nodeName, "DIV id='testElement'");
-                InspectorTest.assertGreaterOrEqual(invalidations[2].stackTrace.length, 1);
+                InspectorTest.assertGreaterOrEqual(invalidations[2].cause.stackTrace.length, 1);
 
                 next();
             });
@@ -66,13 +66,13 @@ function test()
                 InspectorTest.assertEquals(secondInvalidations.length, 3);
                 InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
-                InspectorTest.assertEquals(secondInvalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "StyleSheetChange");
                 InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(secondInvalidations[2].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[2].nodeName, "#document");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[2].stackTrace.length, 1);
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[2].cause.stackTrace.length, 1);
 
                 next();
             });

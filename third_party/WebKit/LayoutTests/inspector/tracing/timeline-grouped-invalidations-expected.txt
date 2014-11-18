@@ -1,0 +1,6 @@
+Tests grouped invalidations on the timeline.
+
+P
+A
+S
+S
