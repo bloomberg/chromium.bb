@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
-#define UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
+#ifndef UI_BASE_TEST_TEST_CLIPBOARD_H_
+#define UI_BASE_TEST_TEST_CLIPBOARD_H_
 
+#include <map>
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
-
-#include "base/memory/scoped_ptr.h"
 
 namespace ui {
 
-class ClipboardAuraX11 : public Clipboard {
- private:
-  friend class Clipboard;
+class TestClipboard : public Clipboard {
+ public:
+  TestClipboard();
+  ~TestClipboard() override;
 
-  ClipboardAuraX11();
-  ~ClipboardAuraX11() override;
+  static void UseForCurrentThread();
 
-  // Clipboard overrides:
+  // Clipboard overrides.
   uint64 GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;
@@ -57,14 +57,30 @@ class ClipboardAuraX11 : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
 
-  // TODO(dcheng): Is this still needed now that each platform clipboard has its
-  // own class derived from Clipboard?
-  class AuraX11Details;
-  scoped_ptr<AuraX11Details> aurax11_details_;
+ private:
+  struct DataStore {
+    DataStore();
+    ~DataStore();
+    void Clear();
+    uint64 sequence_number;
+    std::map<FormatType, std::string> data;
+    std::string url_title;
+    std::string html_src_url;
+    SkBitmap image;
+  };
 
-  DISALLOW_COPY_AND_ASSIGN(ClipboardAuraX11);
+  // The non-const versions increment the sequence number as a side effect.
+  const DataStore& GetStore(ClipboardType type) const;
+  const DataStore& GetDefaultStore() const;
+  DataStore& GetStore(ClipboardType type);
+  DataStore& GetDefaultStore();
+
+  ClipboardType default_store_type_;
+  mutable std::map<ClipboardType, DataStore> stores_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestClipboard);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
+#endif  // UI_BASE_TEST_TEST_CLIPBOARD_H_

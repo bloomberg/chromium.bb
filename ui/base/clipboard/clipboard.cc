@@ -7,10 +7,8 @@
 #include <iterator>
 #include <limits>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
@@ -35,41 +33,32 @@ bool ValidateAndMapSharedBitmap(size_t bitmap_bytes,
   return true;
 }
 
-// A list of allowed threads. By default, this is empty and no thread checking
-// is done (in the unit test case), but a user (like content) can set which
-// threads are allowed to call this method.
-typedef std::vector<base::PlatformThreadId> AllowedThreadsVector;
-static base::LazyInstance<AllowedThreadsVector> g_allowed_threads =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Mapping from threads to clipboard objects.
-typedef std::map<base::PlatformThreadId, Clipboard*> ClipboardMap;
-static base::LazyInstance<ClipboardMap> g_clipboard_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Mutex that controls access to |g_clipboard_map|.
-static base::LazyInstance<base::Lock>::Leaky
-    g_clipboard_map_lock = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
+
+base::LazyInstance<Clipboard::AllowedThreadsVector>
+    Clipboard::allowed_threads_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Clipboard::ClipboardMap> Clipboard::clipboard_map_ =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky Clipboard::clipboard_map_lock_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 void Clipboard::SetAllowedThreads(
     const std::vector<base::PlatformThreadId>& allowed_threads) {
-  base::AutoLock lock(g_clipboard_map_lock.Get());
+  base::AutoLock lock(clipboard_map_lock_.Get());
 
-  g_allowed_threads.Get().clear();
+  allowed_threads_.Get().clear();
   std::copy(allowed_threads.begin(), allowed_threads.end(),
-            std::back_inserter(g_allowed_threads.Get()));
+            std::back_inserter(allowed_threads_.Get()));
 }
 
 // static
 Clipboard* Clipboard::GetForCurrentThread() {
-  base::AutoLock lock(g_clipboard_map_lock.Get());
+  base::AutoLock lock(clipboard_map_lock_.Get());
 
   base::PlatformThreadId id = base::PlatformThread::CurrentId();
 
-  AllowedThreadsVector* allowed_threads = g_allowed_threads.Pointer();
+  AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
   if (!allowed_threads->empty()) {
     bool found = false;
     for (AllowedThreadsVector::const_iterator it = allowed_threads->begin();
@@ -83,8 +72,8 @@ Clipboard* Clipboard::GetForCurrentThread() {
     DCHECK(found);
   }
 
-  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
-  ClipboardMap::iterator it = clipboard_map->find(id);
+  ClipboardMap* clipboard_map = clipboard_map_.Pointer();
+  ClipboardMap::const_iterator it = clipboard_map->find(id);
   if (it != clipboard_map->end())
     return it->second;
 
@@ -94,9 +83,9 @@ Clipboard* Clipboard::GetForCurrentThread() {
 }
 
 void Clipboard::DestroyClipboardForCurrentThread() {
-  base::AutoLock lock(g_clipboard_map_lock.Get());
+  base::AutoLock lock(clipboard_map_lock_.Get());
 
-  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
+  ClipboardMap* clipboard_map = clipboard_map_.Pointer();
   base::PlatformThreadId id = base::PlatformThread::CurrentId();
   ClipboardMap::iterator it = clipboard_map->find(id);
   if (it != clipboard_map->end()) {

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/test/test_clipboard.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
 
-struct PlatformClipboardTraits {
-  static Clipboard* Create() { return Clipboard::GetForCurrentThread(); }
+struct TestClipboardTraits {
+  static Clipboard* Create() {
+    TestClipboard::UseForCurrentThread();
+    return Clipboard::GetForCurrentThread();
+  }
 
   static void Destroy(Clipboard* clipboard) {
     ASSERT_EQ(Clipboard::GetForCurrentThread(), clipboard);
@@ -17,7 +20,7 @@ struct PlatformClipboardTraits {
   }
 };
 
-typedef PlatformClipboardTraits TypesToTest;
+typedef TestClipboardTraits TypesToTest;
 
 }  // namespace ui
 

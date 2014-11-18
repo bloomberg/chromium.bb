@@ -670,7 +670,7 @@ ClipboardAuraX11::~ClipboardAuraX11() {
   aurax11_details_->StoreCopyPasteDataAndWait();
 }
 
-uint64 ClipboardAuraX11::GetSequenceNumber(ClipboardType type) {
+uint64 ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();

@@ -705,6 +705,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'test/test_clipboard.cc',
+        'test/test_clipboard.h',
         'test/ui_controls.h',
         'test/ui_controls_aura.cc',
         'test/ui_controls_internal_win.cc',

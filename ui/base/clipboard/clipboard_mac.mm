@@ -184,7 +184,7 @@ ClipboardMac::~ClipboardMac() {
   DCHECK(CalledOnValidThread());
 }
 
-uint64 ClipboardMac::GetSequenceNumber(ClipboardType type) {
+uint64 ClipboardMac::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 

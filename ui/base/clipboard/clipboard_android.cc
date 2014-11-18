@@ -35,6 +35,7 @@ namespace ui {
 
 namespace {
 // Various formats we support.
+const char kURLFormat[] = "url";
 const char kPlainTextFormat[] = "text";
 const char kHTMLFormat[] = "html";
 const char kRTFFormat[] = "rtf";
@@ -198,6 +199,10 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
   return FormatType(serialization);
 }
 
+bool Clipboard::FormatType::operator<(const FormatType& other) const {
+  return data_ < other.data_;
+}
+
 bool Clipboard::FormatType::Equals(const FormatType& other) const {
   return data_ == other.data_;
 }
@@ -207,6 +212,12 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
   return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kURLFormat));
+  return type;
 }
 
 // static
@@ -272,7 +283,7 @@ ClipboardAndroid::~ClipboardAndroid() {
   DCHECK(CalledOnValidThread());
 }
 
-uint64 ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) {
+uint64 ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) const {
   DCHECK(CalledOnValidThread());
   // TODO: implement this. For now this interface will advertise
   // that the clipboard never changes. That's fine as long as we

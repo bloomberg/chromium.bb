@@ -19,7 +19,7 @@ class ClipboardWin : public Clipboard {
   ~ClipboardWin() override;
 
   // Clipboard overrides:
-  uint64 GetSequenceNumber(ClipboardType type) override;
+  uint64 GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;

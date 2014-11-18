@@ -656,6 +656,8 @@ component("base") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/test_clipboard.cc",
+    "test/test_clipboard.h",
     "test/ui_controls.h",
     "test/ui_controls_aura.cc",
     "test/ui_controls_internal_win.cc",
@@ -728,6 +730,7 @@ test("ui_unittests") {
     "resource/data_pack_literal.cc",
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
+    "test/test_clipboard_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

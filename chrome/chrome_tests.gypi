@@ -835,6 +835,7 @@
     'chrome_interactive_ui_test_sources': [
       '../chrome/browser/ui/webui/options/language_options_interactive_uitest.cc',
       '../extensions/browser/app_window/app_window_interactive_uitest.cc',
+      '../ui/base/clipboard/clipboard_android_unittest.cc',
       '../ui/base/clipboard/clipboard_unittest.cc',
       '../ui/views/controls/webview/webview_interactive_uitest.cc',
       '../ui/views/corewm/desktop_capture_controller_unittest.cc',

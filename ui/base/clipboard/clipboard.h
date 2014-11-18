@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "ui/base/clipboard/clipboard_types.h"
@@ -50,6 +52,7 @@ class NSString;
 namespace ui {
 template <typename T>
 class ClipboardTest;
+class TestClipboard;
 class ScopedClipboardWriter;
 
 class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
@@ -71,10 +74,8 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     std::string Serialize() const;
     static FormatType Deserialize(const std::string& serialization);
 
-#if !defined(OS_ANDROID)
     // FormatType can be used in a set on some platforms.
     bool operator<(const FormatType& other) const;
-#endif
 
 #if defined(OS_WIN)
     const FORMATETC& ToFormatEtc() const { return data_; }
@@ -195,7 +196,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
-  virtual uint64 GetSequenceNumber(ClipboardType type) = 0;
+  virtual uint64 GetSequenceNumber(ClipboardType type) const = 0;
 
   // Tests whether the clipboard contains a certain format
   virtual bool IsFormatAvailable(const FormatType& format,
@@ -325,6 +326,20 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // TODO(dcheng): Remove the temporary exception for content.
   friend class content::ClipboardMessageFilter;
   friend class ScopedClipboardWriter;
+  friend class TestClipboard;
+
+  // A list of allowed threads. By default, this is empty and no thread checking
+  // is done (in the unit test case), but a user (like content) can set which
+  // threads are allowed to call this method.
+  typedef std::vector<base::PlatformThreadId> AllowedThreadsVector;
+  static base::LazyInstance<AllowedThreadsVector> allowed_threads_;
+
+  // Mapping from threads to clipboard objects.
+  typedef std::map<base::PlatformThreadId, Clipboard*> ClipboardMap;
+  static base::LazyInstance<ClipboardMap> clipboard_map_;
+
+  // Mutex that controls access to |g_clipboard_map|.
+  static base::LazyInstance<base::Lock>::Leaky clipboard_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };

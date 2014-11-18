@@ -68,6 +68,7 @@
     'models/list_model_unittest.cc',
     'models/list_selection_model_unittest.cc',
     'models/tree_node_model_unittest.cc',
+    'test/test_clipboard_unittest.cc',
     'test/data/resource.h',
     'text/bytes_formatting_unittest.cc',
     'touch/touch_editing_controller_unittest.cc',

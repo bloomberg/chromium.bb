@@ -528,7 +528,7 @@ ClipboardAura::~ClipboardAura() {
   DeleteClipboard();
 }
 
-uint64 ClipboardAura::GetSequenceNumber(ClipboardType type) {
+uint64 ClipboardAura::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   return GetClipboard()->sequence_number();
 }
