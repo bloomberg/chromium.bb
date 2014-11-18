@@ -117,7 +117,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   VertexArrayObject* bound_vertex_array_object_;
   VertexArrayObjectMap vertex_array_objects_;
 
-  bool support_client_side_arrays_;
+  const bool support_client_side_arrays_;
 
   DISALLOW_COPY_AND_ASSIGN(VertexArrayObjectManager);
 };

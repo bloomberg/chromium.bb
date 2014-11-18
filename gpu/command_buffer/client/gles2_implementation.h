@@ -671,10 +671,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool debug_;
 
   // When true, the context is lost when a GL_OUT_OF_MEMORY error occurs.
-  bool lose_context_when_out_of_memory_;
+  const bool lose_context_when_out_of_memory_;
 
   // Whether or not to support client side arrays.
-  bool support_client_side_arrays_;
+  const bool support_client_side_arrays_;
 
   // Used to check for single threaded access.
   int use_count_;
