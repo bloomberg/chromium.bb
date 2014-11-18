@@ -14,7 +14,7 @@ check out one or both.
 Learn how easy it is to edit, build, and run NaCl applications
 all in your desktop web browser or on a Chromebook.
 
-Codelab #1 - What a difference Python Makes
+Codelab #1 - What a Difference Python Makes
 -------------------------------------------
 
 .. include:: python_summary.inc
