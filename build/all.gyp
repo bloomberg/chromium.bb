@@ -856,7 +856,6 @@
             ['enable_webrtc==1 and "<(libpeer_target_type)"=="static_library"', {
               'dependencies': [
                 '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
-                '../components/devtools_bridge.gyp:devtools_bridge_tests2_apk',
               ],
             }],
           ],
@@ -872,7 +871,6 @@
             '../tools/android/android_tools.gyp:memconsumer',
             # Unit test bundles packaged as an apk.
             '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
-            '../components/devtools_bridge.gyp:devtools_bridge_tests2_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
           ],
         },  # target_name: android_builder_chromium_webrtc

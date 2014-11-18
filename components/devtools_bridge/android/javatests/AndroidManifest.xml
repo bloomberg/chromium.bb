@@ -6,7 +6,8 @@
        doesn't ignore this. -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.components.devtools_bridge.tests">
-    <application>
+    <application
+            android:name=".TestApplication">
         <uses-library android:name="android.test.runner" />
         <service
                 android:name=".DebugService" >

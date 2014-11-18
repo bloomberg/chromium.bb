@@ -15,19 +15,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * Tests for {@link SessionDependencyFactoryNative}
+ * Tests for {@link SessionDependencyFactory}
  */
-public class SessionDependencyFactoryNativeTest extends InstrumentationTestCase {
+public class SessionDependencyFactoryTest extends InstrumentationTestCase {
     private static final int DATA_CHANNEL_ID = 0;
 
-    private SessionDependencyFactoryNative mInstance;
+    private SessionDependencyFactory mInstance;
     private AbstractPeerConnection mConnection;
     private ObserverMock mObserver;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.loadLibrary("devtools_bridge_natives_so");
         mObserver = new ObserverMock();
     }
 
@@ -189,8 +188,8 @@ public class SessionDependencyFactoryNativeTest extends InstrumentationTestCase 
         mInstance.dispose();
     }
 
-    private SessionDependencyFactoryNative newFactory() {
-        return new SessionDependencyFactoryNative();
+    private SessionDependencyFactory newFactory() {
+        return SessionDependencyFactory.newInstance();
     }
 
     private AbstractPeerConnection newConnection() {
@@ -214,7 +213,7 @@ public class SessionDependencyFactoryNativeTest extends InstrumentationTestCase 
         final AbstractDataChannel mDataChannel1;
         final AbstractDataChannel mDataChannel2;
 
-        Pipe(SessionDependencyFactoryNative factory) {
+        Pipe(SessionDependencyFactory factory) {
             RTCConfiguration config = new RTCConfiguration();
             mConnection1 = factory.createPeerConnection(config, mObserver1);
             mConnection2 = factory.createPeerConnection(config, mObserver2);
