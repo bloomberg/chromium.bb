@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/service_provider_test_helper.h"
+#include "chromeos/dbus/services/service_provider_test_helper.h"
 
 #include "base/bind.h"
 #include "dbus/message.h"

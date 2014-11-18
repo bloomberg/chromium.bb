@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
+#include "chromeos/dbus/services/liveness_service_provider.h"
 
 #include "base/bind.h"
 #include "dbus/bus.h"

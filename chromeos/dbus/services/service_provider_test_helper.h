@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DBUS_SERVICE_PROVIDER_TEST_HELPER_H_
-#define CHROME_BROWSER_CHROMEOS_DBUS_SERVICE_PROVIDER_TEST_HELPER_H_
+#ifndef CHROMEOS_DBUS_SERVICES_SERVICE_PROVIDER_TEST_HELPER_H_
+#define CHROMEOS_DBUS_SERVICES_SERVICE_PROVIDER_TEST_HELPER_H_
 
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/mock_exported_object.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_proxy.h"
@@ -95,4 +95,4 @@ class ServiceProviderTestHelper {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DBUS_SERVICE_PROVIDER_TEST_HELPER_H_
+#endif  // CHROMEOS_DBUS_SERVICES_SERVICE_PROVIDER_TEST_HELPER_H_

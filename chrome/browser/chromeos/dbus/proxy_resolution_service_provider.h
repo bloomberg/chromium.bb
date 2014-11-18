@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
 namespace dbus {

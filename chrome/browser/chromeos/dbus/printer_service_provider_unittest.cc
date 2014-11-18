@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 
-#include "chrome/browser/chromeos/dbus/service_provider_test_helper.h"
+#include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/dbus/service_provider_test_helper.h"
+#include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "dbus/mock_exported_object.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

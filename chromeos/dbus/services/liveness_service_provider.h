@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DBUS_LIVENESS_SERVICE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_DBUS_LIVENESS_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
 
 #include <string>
 
@@ -11,7 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
 namespace dbus {
@@ -33,7 +34,7 @@ namespace chromeos {
 // -> method return sender=:1.9 -> dest=:1.27 reply_serial=2
 //
 // (An empty response should be returned.)
-class LivenessServiceProvider
+class CHROMEOS_EXPORT LivenessServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   LivenessServiceProvider();
@@ -63,4 +64,4 @@ class LivenessServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DBUS_LIVENESS_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
