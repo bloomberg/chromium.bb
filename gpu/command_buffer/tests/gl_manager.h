@@ -13,6 +13,10 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace gfx {
 
 class GLContext;
@@ -66,6 +70,8 @@ class GLManager : private GpuControl {
       gfx::GpuMemoryBuffer::Format format);
 
   void Initialize(const Options& options);
+  void InitializeWithCommandLine(const Options& options,
+                                 base::CommandLine* command_line);
   void Destroy();
 
   void MakeCurrent();

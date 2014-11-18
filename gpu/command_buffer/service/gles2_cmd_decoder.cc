@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
@@ -1840,6 +1841,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
 #endif
 
   scoped_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
+  scoped_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
 
   // Cached values of the currently assigned viewport dimensions.
   GLsizei viewport_max_width_;
@@ -2764,6 +2766,14 @@ bool GLES2DecoderImpl::Initialize(
       AsyncPixelTransferManager::Create(context.get()));
   async_pixel_transfer_manager_->Initialize(texture_manager());
 
+  if (workarounds().gl_clear_broken) {
+    DCHECK(!clear_framebuffer_blit_.get());
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glClearWorkaroundInit");
+    clear_framebuffer_blit_.reset(new ClearFramebufferResourceManager(this));
+    if (LOCAL_PEEK_GL_ERROR("glClearWorkaroundInit") != GL_NO_ERROR)
+      return false;
+  }
+
   framebuffer_manager()->AddObserver(this);
 
   return true;
@@ -3549,6 +3559,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       copy_texture_CHROMIUM_.reset();
     }
 
+    clear_framebuffer_blit_.reset();
+
     if (state_.current_program.get()) {
       program_manager()->UnuseProgram(shader_manager(),
                                       state_.current_program.get());
@@ -3614,6 +3626,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.current_program = NULL;
 
   copy_texture_CHROMIUM_.reset();
+  clear_framebuffer_blit_.reset();
 
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);
@@ -5106,6 +5119,19 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   if (CheckBoundFramebuffersValid("glClear")) {
     ApplyDirtyState();
     ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
+    if (workarounds().gl_clear_broken) {
+      ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
+                                         GetErrorState());
+      if (!BoundFramebufferHasDepthAttachment())
+        mask &= ~GL_DEPTH_BUFFER_BIT;
+      if (!BoundFramebufferHasStencilAttachment())
+        mask &= ~GL_STENCIL_BUFFER_BIT;
+      clear_framebuffer_blit_->ClearFramebuffer(
+          this, GetBoundReadFrameBufferSize(), mask, state_.color_clear_red,
+          state_.color_clear_green, state_.color_clear_blue,
+          state_.color_clear_alpha, state_.depth_clear, state_.stencil_clear);
+      return error::kNoError;
+    }
     glClear(mask);
   }
   return error::kNoError;

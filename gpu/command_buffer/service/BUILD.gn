@@ -44,6 +44,8 @@ source_set("service") {
     "feature_info.cc",
     "framebuffer_manager.h",
     "framebuffer_manager.cc",
+    "gles2_cmd_clear_framebuffer.cc",
+    "gles2_cmd_clear_framebuffer.h",
     "gles2_cmd_copy_texture_chromium.cc",
     "gles2_cmd_copy_texture_chromium.h",
     "gles2_cmd_decoder.h",

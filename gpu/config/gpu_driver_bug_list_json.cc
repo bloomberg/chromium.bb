@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.8",
+  "version": "7.9",
   "entries": [
     {
       "id": 1,
@@ -1066,6 +1066,23 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_egl_khr_wait_sync"
+      ]
+    },
+    {
+      "id": 95,
+      "cr_bugs": [421271],
+      "description": "glClear does not always work on these drivers",
+      "os": {
+        "type": "android"
+      },
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
+      "gl_vendor": "Imagination.*",
+      "features": [
+        "gl_clear_broken"
       ]
     }
   ]

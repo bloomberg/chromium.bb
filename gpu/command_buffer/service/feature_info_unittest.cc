@@ -134,6 +134,7 @@ TEST_F(FeatureInfoTest, Basic) {
 #undef GPU_OP
   EXPECT_EQ(0, info_->workarounds().max_texture_size);
   EXPECT_EQ(0, info_->workarounds().max_cube_map_texture_size);
+  EXPECT_FALSE(info_->workarounds().gl_clear_broken);
 
   // Test good types.
   {

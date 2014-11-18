@@ -62,6 +62,8 @@
     'command_buffer/service/feature_info.cc',
     'command_buffer/service/framebuffer_manager.h',
     'command_buffer/service/framebuffer_manager.cc',
+    'command_buffer/service/gles2_cmd_clear_framebuffer.cc',
+    'command_buffer/service/gles2_cmd_clear_framebuffer.h',
     'command_buffer/service/gles2_cmd_copy_texture_chromium.cc',
     'command_buffer/service/gles2_cmd_copy_texture_chromium.h',
     'command_buffer/service/gles2_cmd_decoder.h',
