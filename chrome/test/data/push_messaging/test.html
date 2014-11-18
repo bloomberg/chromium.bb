@@ -48,6 +48,12 @@
       }
     };
 
+    function requestNotificationPermission() {
+      Notification.requestPermission(function(permission) {
+        sendResultToTest('permission status - ' + permission);
+      });
+    }
+
     function registerServiceWorker() {
       navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(
           function(swRegistration) {

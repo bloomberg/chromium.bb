@@ -78,27 +78,27 @@ class PermissionContextBase : public KeyedService {
   // Decide whether the permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an infobar.
-  void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedder_origin,
-                        bool user_gesture,
-                        const BrowserPermissionCallback& callback);
+  virtual void DecidePermission(content::WebContents* web_contents,
+                                const PermissionRequestID& id,
+                                const GURL& requesting_origin,
+                                const GURL& embedding_origin,
+                                bool user_gesture,
+                                const BrowserPermissionCallback& callback);
 
   // Called when permission is granted without interactively asking the user.
   void PermissionDecided(const PermissionRequestID& id,
                          const GURL& requesting_origin,
-                         const GURL& embedder_origin,
+                         const GURL& embedding_origin,
                          const BrowserPermissionCallback& callback,
                          bool persist,
                          bool allowed);
 
-  void NotifyPermissionSet(const PermissionRequestID& id,
-                           const GURL& requesting_origin,
-                           const GURL& embedder_origin,
-                           const BrowserPermissionCallback& callback,
-                           bool persist,
-                           bool allowed);
+  virtual void NotifyPermissionSet(const PermissionRequestID& id,
+                                   const GURL& requesting_origin,
+                                   const GURL& embedding_origin,
+                                   const BrowserPermissionCallback& callback,
+                                   bool persist,
+                                   bool allowed);
 
   // Implementors can override this method to update the icons on the
   // url bar with the result of the new permission.
@@ -113,11 +113,10 @@ class PermissionContextBase : public KeyedService {
   // virtual since the permission might be stored with different restrictions
   // (for example for desktop notifications).
   virtual void UpdateContentSetting(const GURL& requesting_origin,
-                                    const GURL& embedder_origin,
+                                    const GURL& embedding_origin,
                                     bool allowed);
 
  private:
-
   // Called when a bubble is no longer used so it can be cleaned up.
   void CleanUpBubble(const PermissionRequestID& id);
 

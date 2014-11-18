@@ -146,6 +146,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
   ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("requestNotificationPermission()", &script_result));
+  ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
@@ -155,13 +157,28 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoPermission) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       RegisterFailureNoPushPermission) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ("AbortError - Registration failed - permission denied",
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       RegisterFailureNotificationsBlocked) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder cancelling_responder(browser(), false);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  ASSERT_EQ("permission status - denied", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ("AbortError - Registration failed - permission denied",
@@ -175,6 +192,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoSenderId) {
   ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("removeManifest()", &script_result));
   ASSERT_EQ("manifest removed", script_result);
@@ -191,6 +210,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  ASSERT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
