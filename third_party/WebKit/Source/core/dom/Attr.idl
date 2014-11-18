@@ -32,7 +32,7 @@ interface Attr : Node {
 
     // DOM Level 2
 
-    [DeprecateAs=AttributeOwnerElement] readonly attribute Element ownerElement;
+    [MeasureAs=AttributeOwnerElement] readonly attribute Element ownerElement;
 
     // DOM 4
 

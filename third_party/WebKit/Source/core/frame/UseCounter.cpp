@@ -754,12 +754,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedCancelRequestAnimationFrame:
         return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
 
-    case DocumentCreateAttributeNS:
-        return "'Document.createAttributeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
-
-    case AttributeOwnerElement:
-        return "'Attr.ownerElement' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
-
     case ElementSetAttributeNodeNS:
         return "'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
 
