@@ -106,22 +106,34 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
 
         @Override
         public void registerObserver(Observer observer) {
-            throw new UnsupportedOperationException("Not implemented yet");
+            nativeRegisterDataChannelObserver(mChannelPtr, observer);
         }
 
         @Override
         public void unregisterObserver() {
-            throw new UnsupportedOperationException("Not implemented yet");
+            nativeUnregisterDataChannelObserver(mChannelPtr);
         }
 
         @Override
         public void send(ByteBuffer message, MessageType type) {
-            throw new UnsupportedOperationException("Not implemented yet");
+            assert message.position() == 0;
+            int length = message.limit();
+            assert length > 0;
+
+            switch (type) {
+                case BINARY:
+                    nativeSendBinaryMessage(mChannelPtr, message, length);
+                    break;
+
+                case TEXT:
+                    nativeSendTextMessage(mChannelPtr, message, length);
+                    break;
+            }
         }
 
         @Override
         public void close() {
-            throw new UnsupportedOperationException("Not implemented yet");
+            nativeCloseDataChannel(mChannelPtr);
         }
 
         @Override
@@ -129,6 +141,8 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
             nativeDestroyDataChannel(mChannelPtr);
         }
     }
+
+    // Peer connection callbacks.
 
     @CalledByNative
     private static void notifyLocalOfferCreatedAndSetSet(Object observer, String description) {
@@ -166,6 +180,26 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
                 .onIceConnectionChange(connected);
     }
 
+    // Data channel callbacks.
+
+    @CalledByNative
+    private static void notifyChannelOpen(Object observer) {
+        ((AbstractDataChannel.Observer) observer)
+                .onStateChange(AbstractDataChannel.State.OPEN);
+    }
+
+    @CalledByNative
+    private static void notifyChannelClose(Object observer) {
+        ((AbstractDataChannel.Observer) observer)
+                .onStateChange(AbstractDataChannel.State.CLOSED);
+    }
+
+    @CalledByNative
+    private static void notifyMessage(Object observer, ByteBuffer message) {
+        ((AbstractDataChannel.Observer) observer)
+                .onMessage(message);
+    }
+
     private static native long nativeCreateFactory();
     private static native void nativeDestroyFactory(long factoryPtr);
 
@@ -187,4 +221,12 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
 
     private static native long nativeCreateDataChannel(long connectionPtr, int channelId);
     private static native void nativeDestroyDataChannel(long channelPtr);
+
+    private static native void nativeRegisterDataChannelObserver(
+            long channelPtr, Object observer);
+    private static native void nativeUnregisterDataChannelObserver(long channelPtr);
+    private static native void nativeSendBinaryMessage(
+            long channelPtr, ByteBuffer message, int size);
+    private static native void nativeSendTextMessage(long channelPtr, ByteBuffer message, int size);
+    private static native void nativeCloseDataChannel(long channelPtr);
 }

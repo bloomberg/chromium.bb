@@ -68,15 +68,89 @@ class MediaConstraints
   Constraints optional_;
 };
 
+class DataChannelObserverImpl : public webrtc::DataChannelObserver {
+ public:
+  DataChannelObserverImpl(
+      webrtc::DataChannelInterface* data_channel,
+      scoped_ptr<AbstractDataChannel::Observer> observer)
+      : data_channel_(data_channel),
+        observer_(observer.Pass()) {
+  }
+
+  void InitState() {
+    open_ = data_channel_->state() == webrtc::DataChannelInterface::kOpen;
+  }
+
+  virtual void OnStateChange() override {
+    bool open = data_channel_->state() == webrtc::DataChannelInterface::kOpen;
+
+    if (open == open_) return;
+
+    open_ = open;
+    if (open) {
+      observer_->OnOpen();
+    } else {
+      observer_->OnClose();
+    }
+  }
+
+  virtual void OnMessage(const webrtc::DataBuffer& buffer) override {
+    observer_->OnMessage(buffer.data.data(), buffer.size());
+  }
+
+ private:
+  webrtc::DataChannelInterface* const data_channel_;
+  scoped_ptr<AbstractDataChannel::Observer> const observer_;
+  bool open_;
+};
+
 class DataChannelImpl : public AbstractDataChannel {
  public:
   explicit DataChannelImpl(
-      rtc::scoped_refptr<webrtc::DataChannelInterface> impl) : impl_(impl) {
+      rtc::Thread* const signaling_thread,
+      rtc::scoped_refptr<webrtc::DataChannelInterface> impl)
+      : signaling_thread_(signaling_thread),
+        impl_(impl) {
   }
 
-  // TODO(serya): Implement.
+  virtual void RegisterObserver(scoped_ptr<Observer> observer) override {
+    observer_.reset(new DataChannelObserverImpl(impl_.get(), observer.Pass()));
+    signaling_thread_->Invoke<void>(rtc::Bind(
+        &DataChannelImpl::RegisterObserverOnSignalingThread, this));
+  }
+
+  virtual void UnregisterObserver() override {
+    DCHECK(observer_.get() != NULL);
+    impl_->UnregisterObserver();
+    observer_.reset();
+  }
+
+  virtual void SendBinaryMessage(void* data, size_t length) override {
+    SendMessage(data, length, true);
+  }
+
+  virtual void SendTextMessage(void* data, size_t length) override {
+    SendMessage(data, length, false);
+  }
+
+  void SendMessage(void* data, size_t length, bool is_binary) {
+    impl_->Send(webrtc::DataBuffer(rtc::Buffer(data, length), is_binary));
+  }
+
+  void Close() override {
+    impl_->Close();
+  }
 
  private:
+  void RegisterObserverOnSignalingThread() {
+    // State initialization and observer registration happen atomically
+    // if done on the signaling thread (see rtc::Thread::Send).
+    observer_->InitState();
+    impl_->RegisterObserver(observer_.get());
+  }
+
+  rtc::Thread* const signaling_thread_;
+  scoped_ptr<DataChannelObserverImpl> observer_;
   const rtc::scoped_refptr<webrtc::DataChannelInterface> impl_;
 };
 
@@ -315,12 +389,12 @@ class PeerConnectionImpl : public AbstractPeerConnection {
   virtual scoped_ptr<AbstractDataChannel> CreateDataChannel(
       int channelId) override {
     webrtc::DataChannelInit init;
-    init.reliable = true;
     init.ordered = true;
     init.negotiated = true;
     init.id = channelId;
 
     return make_scoped_ptr(new DataChannelImpl(
+        signaling_thread_,
         connection_->CreateDataChannel("", &init)));
   }
 

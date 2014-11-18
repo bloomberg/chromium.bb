@@ -13,14 +13,37 @@
 namespace devtools_bridge {
 
 /**
- * WebRTC DataChannel adapter for DevTools bridge.
+ * WebRTC DataChannel adapter for DevTools bridge. Not thread safe.
  */
 class AbstractDataChannel {
  public:
   AbstractDataChannel() {}
   virtual ~AbstractDataChannel() {}
 
-  // TODO(serya): Implement
+  /**
+   * Called on WebRTC signaling thread.
+   */
+  class Observer {
+   public:
+    Observer() {}
+    virtual ~Observer() {}
+
+    virtual void OnOpen() = 0;
+    virtual void OnClose() = 0;
+
+    virtual void OnMessage(const void* data, size_t length) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
+  virtual void RegisterObserver(scoped_ptr<Observer> observer) = 0;
+  virtual void UnregisterObserver() = 0;
+
+  virtual void SendBinaryMessage(void* data, size_t length) = 0;
+  virtual void SendTextMessage(void* data, size_t length) = 0;
+
+  virtual void Close() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AbstractDataChannel);
