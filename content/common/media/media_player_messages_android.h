@@ -163,10 +163,6 @@ IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaTimeUpdate,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaPlayerReleased,
                     int /* player_id */)
 
-// The player has entered fullscreen mode.
-IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidEnterFullscreen,
-                    int /* player_id */)
-
 // The player exited fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidExitFullscreen,
                     int /* player_id */)

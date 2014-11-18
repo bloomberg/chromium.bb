@@ -144,6 +144,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
               : base::MessageLoopProxy::current()),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
+      is_fullscreen_(false),
       video_frame_provider_client_(NULL),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
@@ -327,7 +328,7 @@ void WebMediaPlayerAndroid::play() {
   // texture is bind to it. See http://crbug.com/400145.
 #if defined(VIDEO_HOLE)
   if ((hasVideo() || IsHLSStream()) && needs_external_surface_ &&
-      !player_manager_->IsInFullscreen(frame_)) {
+      !is_fullscreen_) {
     DCHECK(!needs_establish_peer_);
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
@@ -337,7 +338,7 @@ void WebMediaPlayerAndroid::play() {
   // There is no need to establish the surface texture peer for fullscreen
   // video.
   if ((hasVideo() || IsHLSStream()) && needs_establish_peer_ &&
-      !player_manager_->IsInFullscreen(frame_)) {
+      !is_fullscreen_) {
     EstablishSurfaceTexturePeer();
   }
 
@@ -848,7 +849,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
       (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted() &&
        player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
     needs_external_surface_ = true;
-    if (!paused() && !player_manager_->IsInFullscreen(frame_))
+    if (!paused() && !is_fullscreen_)
       player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   } else if (stream_texture_proxy_ && !stream_id_) {
     // Do deferred stream texture creation finally.
@@ -931,11 +932,6 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
   client_->disconnectedFromRemoteDevice();
 }
 
-void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
-  if (!player_manager_->IsInFullscreen(frame_))
-    player_manager_->DidEnterFullscreen(frame_);
-}
-
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   // |needs_external_surface_| is always false on non-TV devices.
   if (!needs_external_surface_)
@@ -949,8 +945,7 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   if (!paused() && needs_external_surface_)
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
 #endif  // defined(VIDEO_HOLE)
-
-  player_manager_->DidExitFullscreen();
+  is_fullscreen_ = false;
   client_->repaint();
 }
 
@@ -1065,8 +1060,8 @@ void WebMediaPlayerAndroid::InitializePlayer(
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
       frame_->document().url(), allow_stored_credentials);
-  if (player_manager_->ShouldEnterFullscreen(frame_))
-    player_manager_->EnterFullscreen(player_id_, frame_);
+  if (is_fullscreen_)
+    player_manager_->EnterFullscreen(player_id_);
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
@@ -1281,7 +1276,7 @@ void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
   }
   stream_texture_proxy_.reset();
   needs_establish_peer_ = !needs_external_surface_ && !is_remote_ &&
-                          !player_manager_->IsInFullscreen(frame_) &&
+                          !is_fullscreen_ &&
                           (hasVideo() || IsHLSStream());
 
   TryCreateStreamTextureProxyIfNeeded();
@@ -1813,14 +1808,9 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
 }
 
 void WebMediaPlayerAndroid::enterFullscreen() {
-  if (player_manager_->CanEnterFullscreen(frame_)) {
-    player_manager_->EnterFullscreen(player_id_, frame_);
-    SetNeedsEstablishPeer(false);
-  }
-}
-
-bool WebMediaPlayerAndroid::canEnterFullscreen() const {
-  return player_manager_->CanEnterFullscreen(frame_);
+  player_manager_->EnterFullscreen(player_id_);
+  SetNeedsEstablishPeer(false);
+  is_fullscreen_ = true;
 }
 
 bool WebMediaPlayerAndroid::IsHLSStream() const {

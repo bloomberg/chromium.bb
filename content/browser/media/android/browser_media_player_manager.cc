@@ -209,7 +209,6 @@ void BrowserMediaPlayerManager::SetVideoSurface(
   if (empty_surface)
     return;
 
-  Send(new MediaPlayerMsg_DidEnterFullscreen(RoutingID(), player->player_id()));
   if (RenderWidgetHostViewAndroid* view_android =
       static_cast<RenderWidgetHostViewAndroid*>(
           web_contents_->GetRenderWidgetHostView())) {
@@ -415,10 +414,6 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   }
 
   // Force the second video to exit fullscreen.
-  // TODO(qinmin): There is no need to send DidEnterFullscreen message.
-  // However, if we don't send the message, page layers will not be
-  // correctly restored. http:crbug.com/367346.
-  Send(new MediaPlayerMsg_DidEnterFullscreen(RoutingID(), player_id));
   Send(new MediaPlayerMsg_DidExitFullscreen(RoutingID(), player_id));
   video_view_.reset();
 }

@@ -17,9 +17,7 @@ namespace content {
 RendererMediaPlayerManager::RendererMediaPlayerManager(
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      next_media_player_id_(0),
-      fullscreen_frame_(NULL),
-      pending_fullscreen_frame_(NULL) {
+      next_media_player_id_(0) {
 }
 
 RendererMediaPlayerManager::~RendererMediaPlayerManager() {
@@ -51,7 +49,6 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
                         OnDisconnectedFromRemoteDevice)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_RequestFullscreen,
                         OnRequestFullscreen)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidEnterFullscreen, OnDidEnterFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
@@ -210,12 +207,6 @@ void RendererMediaPlayerManager::OnDisconnectedFromRemoteDevice(int player_id) {
     player->OnDisconnectedFromRemoteDevice();
 }
 
-void RendererMediaPlayerManager::OnDidEnterFullscreen(int player_id) {
-  WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
-  if (player)
-    player->OnDidEnterFullscreen();
-}
-
 void RendererMediaPlayerManager::OnDidExitFullscreen(int player_id) {
   WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
   if (player)
@@ -248,15 +239,11 @@ void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
     player->OnRemoteRouteAvailabilityChanged(routes_available);
 }
 
-void RendererMediaPlayerManager::EnterFullscreen(int player_id,
-                                                 blink::WebFrame* frame) {
-  pending_fullscreen_frame_ = frame;
+void RendererMediaPlayerManager::EnterFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_EnterFullscreen(routing_id(), player_id));
 }
 
 void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
-  pending_fullscreen_frame_ = NULL;
-  fullscreen_frame_ = NULL;
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
@@ -297,28 +284,6 @@ WebMediaPlayerAndroid* RendererMediaPlayerManager::GetMediaPlayer(
   if (iter != media_players_.end())
     return iter->second;
   return NULL;
-}
-
-bool RendererMediaPlayerManager::CanEnterFullscreen(blink::WebFrame* frame) {
-  return (!fullscreen_frame_ && !pending_fullscreen_frame_)
-      || ShouldEnterFullscreen(frame);
-}
-
-void RendererMediaPlayerManager::DidEnterFullscreen(blink::WebFrame* frame) {
-  pending_fullscreen_frame_ = NULL;
-  fullscreen_frame_ = frame;
-}
-
-void RendererMediaPlayerManager::DidExitFullscreen() {
-  fullscreen_frame_ = NULL;
-}
-
-bool RendererMediaPlayerManager::IsInFullscreen(blink::WebFrame* frame) {
-  return fullscreen_frame_ == frame;
-}
-
-bool RendererMediaPlayerManager::ShouldEnterFullscreen(blink::WebFrame* frame) {
-  return fullscreen_frame_ == frame || pending_fullscreen_frame_ == frame;
 }
 
 #if defined(VIDEO_HOLE)

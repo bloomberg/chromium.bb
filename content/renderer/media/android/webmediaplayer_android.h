@@ -96,7 +96,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // blink::WebMediaPlayer implementation.
   virtual void enterFullscreen();
-  virtual bool canEnterFullscreen() const;
 
   // Resource loading.
   virtual void load(LoadType load_type,
@@ -196,7 +195,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Functions called when media player status changes.
   void OnConnectedToRemoteDevice(const std::string& remote_playback_message);
   void OnDisconnectedFromRemoteDevice();
-  void OnDidEnterFullscreen();
   void OnDidExitFullscreen();
   void OnMediaPlayerPlay();
   void OnMediaPlayerPause();
@@ -435,6 +433,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether media player needs external surface.
   // Only used for the VIDEO_HOLE logic.
   bool needs_external_surface_;
+
+  // Whether the player is in fullscreen.
+  bool is_fullscreen_;
 
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
