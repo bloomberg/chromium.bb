@@ -10,13 +10,13 @@
 
 namespace blink {
 
-class Dictionary;
+class CircularGeofencingRegionInit;
 
 class CircularGeofencingRegion final : public GeofencingRegion {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CircularGeofencingRegion);
 public:
-    static CircularGeofencingRegion* create(const Dictionary& init);
+    static CircularGeofencingRegion* create(const CircularGeofencingRegionInit&);
     static CircularGeofencingRegion* create(const WebString& id, const WebCircularGeofencingRegion&);
     virtual ~CircularGeofencingRegion() { }
 

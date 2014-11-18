@@ -5,20 +5,21 @@
 #include "config.h"
 #include "modules/geofencing/CircularGeofencingRegion.h"
 
-#include "bindings/core/v8/Dictionary.h"
+#include "modules/geofencing/CircularGeofencingRegionInit.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
 
-CircularGeofencingRegion* CircularGeofencingRegion::create(const Dictionary& dictionary)
+CircularGeofencingRegion* CircularGeofencingRegion::create(const CircularGeofencingRegionInit& init)
 {
-    String id;
-    DictionaryHelper::get(dictionary, "id", id);
     WebCircularGeofencingRegion region;
-    DictionaryHelper::get(dictionary, "latitude", region.latitude);
-    DictionaryHelper::get(dictionary, "longitude", region.longitude);
-    DictionaryHelper::get(dictionary, "radius", region.radius);
-    return new CircularGeofencingRegion(id, region);
+    if (init.hasLatitude())
+        region.latitude = init.latitude();
+    if (init.hasLongitude())
+        region.longitude = init.longitude();
+    if (init.hasRadius())
+        region.radius = init.radius();
+    return new CircularGeofencingRegion(init.id(), region);
 }
 
 CircularGeofencingRegion* CircularGeofencingRegion::create(const WebString& id, const WebCircularGeofencingRegion& region)
