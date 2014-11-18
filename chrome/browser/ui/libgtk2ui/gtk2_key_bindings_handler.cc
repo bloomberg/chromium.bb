@@ -115,7 +115,11 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
     // XKB. GDK has a fallback here that does some complicated stuff to detect
     // whether a modifier key affects the keybinding, but that should be
     // extremely rare.
-    NOTIMPLEMENTED();
+    static bool logged = false;
+    if (!logged) {
+      NOTIMPLEMENTED();
+      logged = true;
+    }
     gdk_event->group = 0;
   }
 
