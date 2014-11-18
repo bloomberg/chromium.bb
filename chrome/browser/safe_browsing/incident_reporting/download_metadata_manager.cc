@@ -453,6 +453,11 @@ void DownloadMetadataManager::ManagerContext::RemoveMetadata() {
   }
   // Remove any metadata.
   download_metadata_.reset();
+  // Stop observing this item.
+  if (item_) {
+    item_->RemoveObserver(this);
+    item_= nullptr;
+  }
   write_runner_->PostTask(
       FROM_HERE, base::Bind(&DeleteMetadataOnWorkerPool, metadata_path_));
   // Run callbacks (only present in case of a transition to LOAD_COMPLETE).
