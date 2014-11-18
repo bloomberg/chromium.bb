@@ -138,6 +138,9 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
                 chrome::GetBrowserCount(browser()->profile(),
                                         browser()->host_desktop_type()));
       ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+      // Check that we always create foreground tabs.
+      ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
     }
 
     ASSERT_EQ(0, GetBlockedContentsCount());
@@ -202,6 +205,8 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     } else {
       new_browser = browser;
       EXPECT_EQ(2, browser->tab_strip_model()->count());
+      // Check that we always create foreground tabs.
+      EXPECT_EQ(1, browser->tab_strip_model()->active_index());
       web_contents = browser->tab_strip_model()->GetWebContentsAt(1);
     }
 
@@ -230,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       browser(),
       "/popup_blocker/popup-blocked-to-post-blank.html",
-      ExpectPopup,
+      ExpectTab,
       DontCheckTitle);
 }
 
@@ -245,13 +250,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       CreateIncognitoBrowser(),
       "/popup_blocker/popup-blocked-to-post-blank.html",
-      ExpectPopup,
+      ExpectTab,
       DontCheckTitle);
 }
 
-// Temporary. http://crbug.com/431335
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       DISABLED_PopupBlockedFakeClickOnAnchor) {
+                       PopupBlockedFakeClickOnAnchor) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -386,7 +390,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 #if defined(USE_AURA) && defined(OS_LINUX)
 #define MAYBE_WindowFeatures DISABLED_WindowFeatures
 #else
-#define MAYBE_WindowFeatures WindowFeatures
+// TODO(jochen): Temporarily disabled, renable again after next blink roll.
+#define MAYBE_WindowFeatures DISABLED_WindowFeatures
 #endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   WebContents* popup =
@@ -404,28 +409,30 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-referrer.html",
-               ExpectPopup,
+               ExpectTab,
                CheckTitle);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
+// TODO(jochen): Temporarily disabled, renable again after next blink roll.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       DISABLED_WindowFeaturesBarProps) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-windowfeatures.html",
-               ExpectPopup,
+               ExpectTab,
                CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, SessionStorage) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-sessionstorage.html",
-               ExpectPopup,
+               ExpectTab,
                CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Opener) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-opener.html",
-               ExpectPopup,
+               ExpectTab,
                CheckTitle);
 }
 
@@ -436,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   WebContents* popup =
       RunCheckTest(browser(),
                    "/popup_blocker/popup-opener.html",
-                   ExpectPopup,
+                   ExpectTab,
                    CheckTitle);
 
   // Navigate it elsewhere.
@@ -452,8 +459,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   close_observer.Wait();
 }
 
-// Temporary. http://crbug.com/431335
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DISABLED_OpenerSuppressed) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-openersuppressed.html",
                ExpectTab,
@@ -472,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
   WebContents* popup =
       RunCheckTest(browser(),
                    "/popup_blocker/popup-webui.html",
-                   ExpectPopup,
+                   ExpectTab,
                    DontCheckTitle);
 
   // Check that the new popup displays about:blank.

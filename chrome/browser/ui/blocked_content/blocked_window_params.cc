@@ -55,11 +55,7 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
   if (features_.heightSet)
     nav_params.window_bounds.set_height(features_.height);
 
-  // Compare RenderViewImpl::show().
-  if (!user_gesture_ && disposition_ != NEW_BACKGROUND_TAB)
-    nav_params.disposition = NEW_POPUP;
-  else
-    nav_params.disposition = disposition_;
+  nav_params.disposition = disposition_;
 
   return nav_params;
 }
