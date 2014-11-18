@@ -91,6 +91,7 @@ protected:
     // Check object role or purpose.
     virtual bool isAnchor() const override final;
     virtual bool isControl() const override;
+    bool isControllingVideoElement() const;
     virtual bool isEmbeddedObject() const override final;
     virtual bool isFieldset() const override final;
     virtual bool isHeading() const override final;

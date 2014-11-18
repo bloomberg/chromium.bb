@@ -38,9 +38,11 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLLegendElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/shadow/MediaControlElements.h"
 #include "core/rendering/RenderObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
@@ -513,6 +515,15 @@ bool AXNodeObject::isControl() const
 
     return ((node->isElementNode() && toElement(node)->isFormControlElement())
         || AXObject::isARIAControl(ariaRoleAttribute()));
+}
+
+bool AXNodeObject::isControllingVideoElement() const
+{
+    Node* node = this->node();
+    if (!node)
+        return true;
+
+    return isHTMLVideoElement(toParentMediaElement(node));
 }
 
 bool AXNodeObject::isEmbeddedObject() const

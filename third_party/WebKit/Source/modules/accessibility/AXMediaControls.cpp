@@ -30,7 +30,6 @@
 #include "config.h"
 #include "modules/accessibility/AXMediaControls.h"
 
-#include "core/html/HTMLMediaElement.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -205,21 +204,12 @@ PassRefPtr<AXObject> AXMediaControlsContainer::create(RenderObject* renderer)
 
 String AXMediaControlsContainer::accessibilityDescription() const
 {
-    return queryString(controllingVideoElement() ? WebLocalizedString::AXMediaVideoElement : WebLocalizedString::AXMediaAudioElement);
+    return queryString(isControllingVideoElement() ? WebLocalizedString::AXMediaVideoElement : WebLocalizedString::AXMediaAudioElement);
 }
 
 String AXMediaControlsContainer::helpText() const
 {
-    return queryString(controllingVideoElement() ? WebLocalizedString::AXMediaVideoElementHelp : WebLocalizedString::AXMediaAudioElementHelp);
-}
-
-bool AXMediaControlsContainer::controllingVideoElement() const
-{
-    Node* node = m_renderer->node();
-    if (!node)
-        return true;
-
-    return isHTMLVideoElement(toParentMediaElement(node));
+    return queryString(isControllingVideoElement() ? WebLocalizedString::AXMediaVideoElementHelp : WebLocalizedString::AXMediaAudioElementHelp);
 }
 
 bool AXMediaControlsContainer::computeAccessibilityIsIgnored() const
@@ -258,7 +248,7 @@ String AccessibilityMediaTimeline::valueDescription() const
 
 String AccessibilityMediaTimeline::helpText() const
 {
-    return queryString(WebLocalizedString::AXMediaSliderHelp);
+    return queryString(isControllingVideoElement() ? WebLocalizedString::AXMediaVideoSliderHelp : WebLocalizedString::AXMediaAudioSliderHelp);
 }
 
 
