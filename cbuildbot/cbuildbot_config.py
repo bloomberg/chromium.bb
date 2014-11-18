@@ -1044,9 +1044,9 @@ brillo = _config(
   hw_tests=[],
 )
 
-moblab = brillo.derive(
-  sync_chrome=None,
-  chrome_sdk=True,
+moblab = _config(
+  vm_tests=[],
+  hw_tests=[],
 )
 
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
@@ -1732,12 +1732,8 @@ pre_cq = internal_paladin.derive(
   prebuilts=False,
   cpe_export=False,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-  description='Verifies compilation, vm/unit tests, and building an image',
-)
-
-non_testable_pre_cq = pre_cq.derive(
-  non_testable_builder,
-  description='Verifies compilation and building an image.'
+  description='Verifies compilation, building an image, and vm/unit tests '
+              'if supported.',
 )
 
 # Pre-CQ targets that only check compilation and unit tests.
@@ -1750,89 +1746,6 @@ unittest_only_pre_cq = pre_cq.derive(
 compile_only_pre_cq = unittest_only_pre_cq.derive(
   description='Verifies compilation only',
   unittests=False,
-)
-
-
-unittest_only_pre_cq.add_config('duck-pre-cq', brillo,
-                                 boards=['duck'])
-
-non_testable_pre_cq.add_config('storm-pre-cq', brillo,
-                               boards=['storm'])
-
-non_testable_pre_cq.add_config('whirlwind-pre-cq', brillo,
-                               boards=['whirlwind'])
-
-non_testable_pre_cq.add_config('rush-pre-cq',
-                               boards=['rush'],
-                               usepkg_toolchain=False)
-
-non_testable_pre_cq.add_config('rush_ryu-pre-cq',
-                               boards=['rush_ryu'],
-                               usepkg_toolchain=False)
-
-non_testable_pre_cq.add_config('urara-pre-cq',
-                               boards=['urara'],
-                               usepkg_toolchain=False)
-
-
-def _AddPreCQConfigs():
-  for board in _all_release_boards:
-    if board in _x86_release_boards:
-      base = pre_cq
-    else:
-      base = non_testable_pre_cq
-    config_name = '%s-%s' % (board, CONFIG_TYPE_PRECQ)
-    if config_name not in config:
-      base.add_config(config_name, boards=(board,))
-
-_AddPreCQConfigs()
-
-
-# The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
-# it is important to delay the launch of some builds in order to conserve RAM.
-# We build rambi and daisy_spring and duck in parallel first. When duck finishes
-# BuildPackages, the remaining boards start BuildPackages. Because Rambi runs
-# VMTest and this takes a long time, the remaining boards still finish well
-# before Rambi finishes.
-# TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
-# TODO(davidjames): Update daisy_spring and duck to build images again.
-_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
-  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
-  # the slowest one.
-  pre_cq.add_config('rambi-grouped-pre-cq', boards=['rambi']),
-
-  # daisy_spring w/kernel 3.8.
-  compile_only_pre_cq.add_config('daisy_spring-grouped-pre-cq',
-                                 non_testable_builder,
-                                 boards=['daisy_spring']),
-
-  # brillo config. We set build_packages_in_background=False here, so
-  # that subsequent boards (samus, lumpy, parrot) don't get launched until
-  # after duck finishes BuildPackages.
-  unittest_only_pre_cq.add_config('duck-grouped-pre-cq', brillo,
-                                  boards=['duck'],
-                                  build_packages_in_background=False),
-
-  # samus w/kernel 3.14.
-  compile_only_pre_cq.add_config('samus-grouped-pre-cq', boards=['samus']),
-
-  # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-grouped-pre-cq', boards=['lumpy']),
-
-  # amd64 w/kernel 3.4.
-  compile_only_pre_cq.add_config('parrot-grouped-pre-cq', boards=['parrot']),
-)
-
-internal_paladin.add_config('pre-cq-launcher',
-  boards=[],
-  build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-  description='Launcher for Pre-CQ builders',
-  trybot_list=False,
-  manifest_version=False,
-  # Every Pre-CQ launch failure should send out an alert.
-  health_threshold=1,
-  health_alert_recipients=['chromeos-build-alerts@google.com',
-                           'tree', 'build'],
 )
 
 internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
@@ -2168,6 +2081,64 @@ ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
 ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
 ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
 ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
+
+# Add a pre-cq config for every board.
+def _AddPreCQConfigs():
+  for board in _all_boards:
+    config_name = '%s-%s' % (board, CONFIG_TYPE_PRECQ)
+    pre_cq.add_config(config_name, _base_configs[board])
+
+_AddPreCQConfigs()
+
+
+# The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
+# it is important to delay the launch of some builds in order to conserve RAM.
+# We build rambi and daisy_spring and duck in parallel first. When duck finishes
+# BuildPackages, the remaining boards start BuildPackages. Because Rambi runs
+# VMTest and this takes a long time, the remaining boards still finish well
+# before Rambi finishes.
+# TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
+# TODO(davidjames): Update daisy_spring and duck to build images again.
+_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
+  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
+  # the slowest one.
+  pre_cq.add_config('rambi-grouped-pre-cq', _base_configs['rambi']),
+
+  # daisy_spring w/kernel 3.8.
+  compile_only_pre_cq.add_config('daisy_spring-grouped-pre-cq',
+                                 _base_configs['daisy_spring']),
+
+  # brillo config. We set build_packages_in_background=False here, so
+  # that subsequent boards (samus, lumpy, parrot) don't get launched until
+  # after duck finishes BuildPackages.
+  unittest_only_pre_cq.add_config('duck-grouped-pre-cq',
+                                  _base_configs['duck'],
+                                  build_packages_in_background=False),
+
+  # samus w/kernel 3.14.
+  compile_only_pre_cq.add_config('samus-grouped-pre-cq',
+                                 _base_configs['samus']),
+
+  # lumpy w/kernel 3.8.
+  compile_only_pre_cq.add_config('lumpy-grouped-pre-cq',
+                                 _base_configs['lumpy']),
+
+  # amd64 w/kernel 3.4.
+  compile_only_pre_cq.add_config('parrot-grouped-pre-cq',
+                                 _base_configs['parrot']),
+)
+
+internal_paladin.add_config('pre-cq-launcher',
+  boards=[],
+  build_type=constants.PRE_CQ_LAUNCHER_TYPE,
+  description='Launcher for Pre-CQ builders',
+  trybot_list=False,
+  manifest_version=False,
+  # Every Pre-CQ launch failure should send out an alert.
+  health_threshold=1,
+  health_alert_recipients=['chromeos-build-alerts@google.com',
+                           'tree', 'build'],
+)
 
 
 internal_incremental.add_config('mario-incremental',

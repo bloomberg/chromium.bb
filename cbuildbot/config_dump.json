@@ -287,6 +287,35 @@
             "smoke_suite"
         ]
     },
+    "amd64-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "amd64-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "amd64-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "amd64-generic-telem-chrome-pfq-informational": {
         "boards": [
             "amd64-generic"
@@ -418,6 +447,35 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
+    "amd64-generic_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "amd64-generic_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "amd64-generic_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "amd64-generic_freon-tot-chromium-pfq-informational": {
         "boards": [
             "amd64-generic_freon"
@@ -512,6 +570,35 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
+    "arm-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "arm-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "arm-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "arm-generic-telemetry": {
         "boards": [
             "arm-generic"
@@ -603,6 +690,35 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
+    "arm-generic_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "arm-generic_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "arm-generic_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "arm-generic_freon-tot-chromium-pfq-informational": {
         "boards": [
             "arm-generic_freon"
@@ -661,6 +777,35 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "arm64-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "arm64-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "arm64-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "arm64-generic-tot-chromium-pfq-informational": {
@@ -984,7 +1129,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1646,7 +1791,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2096,7 +2241,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2641,7 +2786,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3962,7 +4107,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4411,7 +4556,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4420,6 +4565,7 @@
         "name": "bobcat-pre-cq",
         "overlays": "both",
         "pre_cq": true,
+        "profile": "minimal",
         "trybot_list": true,
         "upload_standalone_images": false,
         "useflags": [
@@ -4937,7 +5083,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5505,7 +5651,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6098,7 +6244,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6628,7 +6774,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7342,7 +7488,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8058,7 +8204,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8571,7 +8717,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9111,7 +9257,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9539,10 +9685,9 @@
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and unit tests only",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9804,7 +9949,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10372,7 +10517,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10888,7 +11033,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11338,7 +11483,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11740,6 +11885,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "fox_wtm2-pre-cq": {
+        "archive": false,
+        "boards": [
+            "fox_wtm2"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "fox_wtm2-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "fox_wtm2-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -11835,6 +12009,34 @@
         "sync_chrome": false,
         "trybot_list": true,
         "upload_standalone_images": false,
+        "vm_tests": []
+    },
+    "gizmo-pre-cq": {
+        "archive": false,
+        "boards": [
+            "gizmo"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "gizmo-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "sync_chrome": false,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "gizmo-release": {
@@ -12094,7 +12296,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12662,7 +12864,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13597,7 +13799,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14055,7 +14257,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14064,14 +14266,13 @@
         "name": "lemmings-pre-cq",
         "overlays": "both",
         "pre_cq": true,
+        "sync_chrome": false,
         "trybot_list": true,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "lemmings-release": {
         "archive_build_debug": true,
@@ -14611,7 +14812,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15184,7 +15385,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15685,7 +15886,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16279,7 +16480,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16896,7 +17097,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17305,6 +17506,35 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipseb-n32-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipseb-n32-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipseb-n32-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "mipseb-n32-generic-tot-chromium-pfq-informational": {
         "boards": [
             "mipseb-n32-generic"
@@ -17363,6 +17593,35 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "mipseb-n64-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipseb-n64-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipseb-n64-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "mipseb-n64-generic-tot-chromium-pfq-informational": {
@@ -17425,6 +17684,35 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipseb-o32-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipseb-o32-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipseb-o32-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "mipseb-o32-generic-tot-chromium-pfq-informational": {
         "boards": [
             "mipseb-o32-generic"
@@ -17485,6 +17773,35 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipsel-n32-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipsel-n32-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipsel-n32-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "mipsel-n32-generic-tot-chromium-pfq-informational": {
         "boards": [
             "mipsel-n32-generic"
@@ -17543,6 +17860,35 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "mipsel-n64-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipsel-n64-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipsel-n64-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "mipsel-n64-generic-tot-chromium-pfq-informational": {
@@ -17636,6 +17982,36 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "mipsel-o32-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mipsel-o32-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mipsel-o32-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "sync_chrome": false,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "mipsel-o32-generic-release": {
@@ -17842,7 +18218,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18466,7 +18842,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19181,7 +19557,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19629,7 +20005,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20102,7 +20478,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20549,7 +20925,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21046,7 +21422,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21564,7 +21940,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22038,7 +22414,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22052,9 +22428,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "panther_moblab-release": {
         "archive_build_debug": true,
@@ -22599,7 +22973,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23210,7 +23584,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23776,7 +24150,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24510,7 +24884,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25023,7 +25397,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25523,7 +25897,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25973,7 +26347,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26811,7 +27185,7 @@
                 "chroot_replace": true,
                 "cpe_export": false,
                 "debug_symbols": false,
-                "description": "Verifies compilation, vm/unit tests, and building an image",
+                "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
                 "grouped": true,
                 "important": true,
                 "internal": true,
@@ -26991,7 +27365,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27238,7 +27612,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29180,7 +29554,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29250,7 +29624,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29703,7 +30077,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29719,7 +30093,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-release": {
@@ -30170,7 +30543,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30186,7 +30559,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-release": {
@@ -30754,7 +31126,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31813,7 +32185,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32696,7 +33068,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33148,7 +33520,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33357,7 +33729,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33869,7 +34241,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34284,6 +34656,33 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "stumpy_moblab-pre-cq": {
+        "archive": false,
+        "boards": [
+            "stumpy_moblab"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy_moblab-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "stumpy_moblab-release": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -34535,7 +34934,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35076,7 +35475,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35476,7 +35875,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35485,6 +35884,7 @@
         "name": "urara-pre-cq",
         "overlays": "both",
         "pre_cq": true,
+        "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
@@ -35492,7 +35892,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "urara-release": {
@@ -35867,7 +36266,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36340,7 +36739,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36743,7 +37142,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and building an image.",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37008,7 +37407,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37520,7 +37919,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37976,6 +38375,35 @@
         "trybot_list": true,
         "upload_standalone_images": false
     },
+    "x32-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x32-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x32-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x32-generic-tot-chrome-pfq-informational": {
         "boards": [
             "x32-generic"
@@ -38119,7 +38547,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38723,7 +39151,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39209,6 +39637,35 @@
             "smoke_suite"
         ]
     },
+    "x86-generic-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-generic"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-generic-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-generic-telem-chrome-pfq-informational": {
         "boards": [
             "x86-generic"
@@ -39496,7 +39953,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39899,6 +40356,35 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "x86-pineview-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-pineview"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-pineview-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-pineview-tot-chromium-pfq-informational": {
         "boards": [
             "x86-pineview"
@@ -40043,7 +40529,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40647,7 +41133,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41186,7 +41672,7 @@
         "chroot_replace": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
