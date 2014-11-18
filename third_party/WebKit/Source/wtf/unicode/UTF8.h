@@ -32,16 +32,6 @@
 namespace WTF {
 namespace Unicode {
 
-    // Given a first byte, gives the length of the UTF-8 sequence it begins.
-    // Returns 0 for bytes that are not legal starts of UTF-8 sequences.
-    // Only allows sequences of up to 4 bytes, since that works for all Unicode characters (U-00000000 to U-0010FFFF).
-    WTF_EXPORT int UTF8SequenceLength(char);
-
-    // Takes a null-terminated C-style string with a UTF-8 sequence in it and converts it to a character.
-    // Only allows Unicode characters (U-00000000 to U-0010FFFF).
-    // Returns -1 if the sequence is not valid (including presence of extra bytes).
-    WTF_EXPORT int decodeUTF8Sequence(const char*);
-
     typedef enum {
             conversionOK,       // conversion successful
             sourceExhausted,    // partial character in source, but hit end
