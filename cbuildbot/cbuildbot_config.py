@@ -1371,6 +1371,7 @@ _moblab_boards = frozenset([
 _freon_boards = frozenset([
   'link_freon',
   'peppy_freon',
+  'samus',
 ])
 
 _minimal_profile_boards = frozenset([
