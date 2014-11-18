@@ -237,6 +237,7 @@ private:
     bool parseTextEmphasisStyle(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
+    PassRefPtrWillBeRawPtr<CSSValue> parseScrollBlocksOn();
 
     void addTextDecorationProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
     bool parseTextDecoration(CSSPropertyID propId, bool important);

@@ -954,9 +954,9 @@ public:
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 
     TouchAction touchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
-    TouchActionDelay touchActionDelay() const { return static_cast<TouchActionDelay>(rareInheritedData->m_touchActionDelay); }
 
     ScrollBehavior scrollBehavior() const { return static_cast<ScrollBehavior>(rareNonInheritedData->m_scrollBehavior); }
+    ScrollBlocksOn scrollBlocksOn() const { return static_cast<ScrollBlocksOn>(rareNonInheritedData->m_scrollBlocksOn); }
 
     const Vector<CSSPropertyID>& willChangeProperties() const { return rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
@@ -1376,9 +1376,9 @@ public:
     void setTapHighlightColor(const Color& c) { SET_VAR(rareInheritedData, tapHighlightColor, c); }
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
     void setTouchAction(TouchAction t) { SET_VAR(rareNonInheritedData, m_touchAction, t); }
-    void setTouchActionDelay(TouchActionDelay t) { SET_VAR(rareInheritedData, m_touchActionDelay, t); }
 
     void setScrollBehavior(ScrollBehavior b) { SET_VAR(rareNonInheritedData, m_scrollBehavior, b); }
+    void setScrollBlocksOn(ScrollBlocksOn b) { SET_VAR(rareNonInheritedData, m_scrollBlocksOn, b); }
 
     void setWillChangeProperties(const Vector<CSSPropertyID>& properties) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_properties, properties); }
     void setWillChangeContents(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_contents, b); }
@@ -1653,10 +1653,10 @@ public:
     static StyleImage* initialMaskBoxImageSource() { return 0; }
     static PrintColorAdjust initialPrintColorAdjust() { return PrintColorAdjustEconomy; }
     static TouchAction initialTouchAction() { return TouchActionAuto; }
-    static TouchActionDelay initialTouchActionDelay() { return TouchActionDelayScript; }
     static ShadowList* initialBoxShadow() { return 0; }
     static ShadowList* initialTextShadow() { return 0; }
     static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorInstant; }
+    static ScrollBlocksOn initialScrollBlocksOn() { return ScrollBlocksOnNone; }
 
     // The initial value is 'none' for grid tracks.
     static Vector<GridTrackSize> initialGridTemplateColumns() { return Vector<GridTrackSize>(); }

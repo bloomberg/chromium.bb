@@ -274,9 +274,6 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueNormal || valueID == CSSValueEmbed
             || valueID == CSSValueBidiOverride || valueID == CSSValueWebkitIsolate
             || valueID == CSSValueWebkitIsolateOverride || valueID == CSSValueWebkitPlaintext;
-    case CSSPropertyTouchActionDelay: // none | script
-        ASSERT(RuntimeEnabledFeatures::cssTouchActionDelayEnabled());
-        return valueID == CSSValueScript || valueID == CSSValueNone;
     case CSSPropertyVisibility: // visible | hidden | collapse
         return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse;
     case CSSPropertyWebkitAppearance:
@@ -407,7 +404,6 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTextOverflow:
     case CSSPropertyTextRendering:
     case CSSPropertyTextTransform:
-    case CSSPropertyTouchActionDelay:
     case CSSPropertyUnicodeBidi:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:

@@ -195,6 +195,7 @@ quotes
 resize
 right
 scrollBehavior
+scrollBlocksOn
 shapeImageThreshold
 shapeMargin
 shapeOutside
@@ -230,7 +231,6 @@ textTransform
 textUnderlinePosition
 top
 touchAction
-touchActionDelay
 transform
 transformOrigin
 transformStyle

@@ -484,7 +484,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyShapeImageThreshold: return 439;
     case CSSPropertyColumnFill: return 440;
     case CSSPropertyTextJustify: return 441;
-    case CSSPropertyTouchActionDelay: return 442;
+    // CSSPropertyTouchActionDelay was 442
     case CSSPropertyJustifySelf: return 443;
     case CSSPropertyScrollBehavior: return 444;
     case CSSPropertyWillChange: return 445;
@@ -498,6 +498,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGrid: return 453;
     case CSSPropertyAll: return 454;
     case CSSPropertyJustifyItems: return 455;
+    case CSSPropertyScrollBlocksOn: return 456;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -514,7 +515,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 455; }
+static int maximumCSSSampleId() { return 456; }
 
 void UseCounter::muteForInspector()
 {

@@ -507,7 +507,16 @@ inline TouchAction& operator&= (TouchAction& a, TouchAction b) { return a = a & 
 
 enum EIsolation { IsolationAuto, IsolationIsolate };
 
-enum TouchActionDelay { TouchActionDelayNone, TouchActionDelayScript };
+enum ScrollBlocksOn {
+    ScrollBlocksOnNone = 0x0,
+    ScrollBlocksOnStartTouch = 0x1,
+    ScrollBlocksOnWheelEvent = 0x2,
+    ScrollBlocksOnScrollEvent = 0x4,
+};
+inline ScrollBlocksOn operator| (ScrollBlocksOn a, ScrollBlocksOn b) { return ScrollBlocksOn(int(a) | int(b)); }
+inline ScrollBlocksOn& operator|= (ScrollBlocksOn& a, ScrollBlocksOn b) { return a = a | b; }
+inline ScrollBlocksOn operator& (ScrollBlocksOn a, ScrollBlocksOn b) { return ScrollBlocksOn(int(a) & int(b)); }
+inline ScrollBlocksOn& operator&= (ScrollBlocksOn& a, ScrollBlocksOn b) { return a = a & b; }
 
 enum ItemPosition {
     ItemPositionAuto,

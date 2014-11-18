@@ -943,9 +943,11 @@ markers
 // auto
 isolate
 
-// touch-action-delay
+// scroll-blocks-on
 // none
-script
+start-touch
+wheel-event
+scroll-event
 
 // touch-action
 pan-x

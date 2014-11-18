@@ -237,6 +237,7 @@ quotes inherited, converter=convertQuotes
 resize custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
+scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<ScrollBlocksOn>
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
 shape-outside animatable, converter=convertShapeValue
@@ -271,7 +272,6 @@ text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top animatable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>
-touch-action-delay runtime_flag=CSSTouchActionDelay, inherited, type_name=TouchActionDelay
 transform animatable, custom_value
 transform-origin animatable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D

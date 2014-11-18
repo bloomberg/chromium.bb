@@ -90,6 +90,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_justifySelf(RenderStyle::initialJustifySelf())
     , m_justifySelfOverflowAlignment(RenderStyle::initialJustifySelfOverflowAlignment())
     , m_scrollBehavior(RenderStyle::initialScrollBehavior())
+    , m_scrollBlocksOn(RenderStyle::initialScrollBlocksOn())
     , m_requiresAcceleratedCompositingForExternalReasons(false)
     , m_hasInlineTransform(false)
     , m_resize(RenderStyle::initialResize())
@@ -171,6 +172,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_justifySelf(o.m_justifySelf)
     , m_justifySelfOverflowAlignment(o.m_justifySelfOverflowAlignment)
     , m_scrollBehavior(o.m_scrollBehavior)
+    , m_scrollBlocksOn(o.m_scrollBlocksOn)
     , m_requiresAcceleratedCompositingForExternalReasons(o.m_requiresAcceleratedCompositingForExternalReasons)
     , m_hasInlineTransform(o.m_hasInlineTransform)
     , m_resize(o.m_resize)
@@ -256,6 +258,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_justifySelf == o.m_justifySelf
         && m_justifySelfOverflowAlignment == o.m_justifySelfOverflowAlignment
         && m_scrollBehavior == o.m_scrollBehavior
+        && m_scrollBlocksOn == o.m_scrollBlocksOn
         && m_requiresAcceleratedCompositingForExternalReasons == o.m_requiresAcceleratedCompositingForExternalReasons
         && m_hasInlineTransform == o.m_hasInlineTransform
         && m_resize == o.m_resize;
