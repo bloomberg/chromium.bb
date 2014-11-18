@@ -49,8 +49,13 @@ class WorkAreaWatcherObserver;
   scoped_ptr<AppControllerProfileObserver> profileInfoCacheObserver_;
 
   // Management of the bookmark menu which spans across all windows
-  // (and Browser*s).
-  scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
+  // (and Browser*s). |profileBookmarkMenuBridgeMap_| is a cache that owns one
+  // pointer to a BookmarkMenuBridge for each profile. |bookmarkMenuBridge_| is
+  // a weak pointer that is updated to match the corresponding cache entry
+  // during a profile switch.
+  BookmarkMenuBridge* bookmarkMenuBridge_;
+  std::map<Profile*, BookmarkMenuBridge*> profileBookmarkMenuBridgeMap_;
+
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
 
   // Controller that manages main menu items for packaged apps.

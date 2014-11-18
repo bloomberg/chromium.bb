@@ -11,6 +11,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #include "ui/base/window_open_disposition.h"
 
 class BookmarkNode;
@@ -19,7 +20,7 @@ class BookmarkMenuBridge;
 @interface BookmarkMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
   BookmarkMenuBridge* bridge_;  // weak; owns me
-  NSMenu *menu_;
+  base::scoped_nsobject<NSMenu> menu_;
 }
 
 // The Bookmarks menu

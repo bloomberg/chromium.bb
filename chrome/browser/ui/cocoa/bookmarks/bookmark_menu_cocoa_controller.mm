@@ -51,7 +51,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   if ((self = [super init])) {
     bridge_ = bridge;
     DCHECK(bridge_);
-    menu_ = menu;
+    menu_.reset([menu retain]);
     [[self menu] setDelegate:self];
   }
   return self;

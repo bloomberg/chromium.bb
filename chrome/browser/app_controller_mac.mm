@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -480,6 +481,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [self unregisterEventHandlers];
 
   appShimMenuController_.reset();
+
+  STLDeleteContainerPairSecondPointers(profileBookmarkMenuBridgeMap_.begin(),
+                                       profileBookmarkMenuBridgeMap_.end());
 }
 
 - (void)didEndMainMessageLoop {
@@ -887,6 +891,14 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // to the old profile.
   if (profilePath == lastProfile->GetPath())
     lastProfile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
+
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfile(profilePath);
+  auto it = profileBookmarkMenuBridgeMap_.find(profile);
+  if (it != profileBookmarkMenuBridgeMap_.end()) {
+    delete it->second;
+    profileBookmarkMenuBridgeMap_.erase(it);
+  }
 }
 
 // Returns true if there is a modal window (either window- or application-
@@ -1520,7 +1532,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge {
-  return bookmarkMenuBridge_.get();
+  return bookmarkMenuBridge_;
 }
 
 - (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
@@ -1540,18 +1552,26 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (lastProfile_ == profile)
     return;
 
-  // Before tearing down the menu controller bridges, return the Cocoa menus to
-  // their initial state.
-  if (bookmarkMenuBridge_.get())
-    bookmarkMenuBridge_->ResetMenu();
-  if (historyMenuBridge_.get())
+  // Before tearing down the menu controller bridges, return the history menu to
+  // its initial state.
+  if (historyMenuBridge_)
     historyMenuBridge_->ResetMenu();
 
   // Rebuild the menus with the new profile.
   lastProfile_ = profile;
 
-  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(lastProfile_,
-      [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu]));
+  auto it = profileBookmarkMenuBridgeMap_.find(profile);
+  if (it == profileBookmarkMenuBridgeMap_.end()) {
+    base::scoped_nsobject<NSMenu> submenu(
+        [[[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu] copy]);
+    bookmarkMenuBridge_ = new BookmarkMenuBridge(lastProfile_, submenu);
+    profileBookmarkMenuBridgeMap_[profile] = bookmarkMenuBridge_;
+  } else {
+    bookmarkMenuBridge_ = it->second;
+  }
+
+  [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] setSubmenu:
+      bookmarkMenuBridge_->BookmarkMenu()];
   // No need to |BuildMenu| here.  It is done lazily upon menu access.
 
   historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));

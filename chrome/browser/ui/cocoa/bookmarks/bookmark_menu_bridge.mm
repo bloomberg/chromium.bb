@@ -40,10 +40,6 @@ BookmarkMenuBridge::~BookmarkMenuBridge() {
   [controller_ release];
 }
 
-NSMenu* BookmarkMenuBridge::BookmarkMenu() {
-  return [controller_ menu];
-}
-
 void BookmarkMenuBridge::BookmarkModelLoaded(BookmarkModel* model,
                                              bool ids_reassigned) {
   InvalidateMenu();
@@ -200,6 +196,10 @@ BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {
 
 Profile* BookmarkMenuBridge::GetProfile() {
   return profile_;
+}
+
+NSMenu* BookmarkMenuBridge::BookmarkMenu() {
+  return [controller_ menu];
 }
 
 void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {

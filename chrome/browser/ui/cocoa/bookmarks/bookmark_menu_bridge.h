@@ -78,6 +78,9 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
 
+  // Return the Bookmark menu.
+  virtual NSMenu* BookmarkMenu();
+
  protected:
   // Rebuilds the bookmark content of supplied menu.
   void UpdateMenuInternal(NSMenu* bookmark_menu, bool is_submenu);
@@ -125,9 +128,6 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
 
   // Returns the NSMenuItem for a given BookmarkNode.
   NSMenuItem* MenuItemForNode(const BookmarkNode* node);
-
-  // Return the Bookmark menu.
-  virtual NSMenu* BookmarkMenu();
 
   // Start watching the bookmarks for changes.
   void ObserveBookmarkModel();

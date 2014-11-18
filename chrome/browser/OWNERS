@@ -27,6 +27,11 @@ per-file *.mm=mark@chromium.org
 per-file *.mm=rsesek@chromium.org
 per-file *.mm=thakis@chromium.org
 
+per-file *_mac.h=avi@chromium.org
+per-file *_mac.h=mark@chromium.org
+per-file *_mac.h=rsesek@chromium.org
+per-file *_mac.h=thakis@chromium.org
+
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=erg@chromium.org

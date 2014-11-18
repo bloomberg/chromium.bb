@@ -14,14 +14,19 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -30,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -410,6 +416,68 @@ IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
                 ->tab_strip_model()
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL());
+}
+
+class AppControllerMainMenuBrowserTest : public InProcessBrowserTest {
+ protected:
+  AppControllerMainMenuBrowserTest() {
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
+    BookmarksMenuIsRestoredAfterProfileSwitch) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
+  [ac awakeFromNib];
+
+  // Constants for bookmarks that we will create later.
+  const base::string16 title1(base::ASCIIToUTF16("Dinosaur Comics"));
+  const GURL url1("http://qwantz.com//");
+
+  const base::string16 title2(base::ASCIIToUTF16("XKCD"));
+  const GURL url2("https://www.xkcd.com/");
+
+  // Use the existing profile as profile 1.
+  Profile* profile1 = browser()->profile();
+  bookmarks::test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile1));
+
+  // Create profile 2.
+  base::FilePath path2 = profile_manager->GenerateNextProfileDirectoryPath();
+  Profile* profile2 =
+      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  profile_manager->RegisterTestingProfile(profile2, false, true);
+  bookmarks::test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile2));
+
+  // Switch to profile 1, create bookmark 1 and force the menu to build.
+  [ac windowChangedToProfile:profile1];
+  [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
+      [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
+      0, title1, url1);
+  [ac bookmarkMenuBridge]->BuildMenu();
+
+  // Switch to profile 2, create bookmark 2 and force the menu to build.
+  [ac windowChangedToProfile:profile2];
+  [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
+      [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
+      0, title2, url2);
+  [ac bookmarkMenuBridge]->BuildMenu();
+
+  // Test that only bookmark 2 is shown.
+  EXPECT_FALSE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
+      SysUTF16ToNSString(title1)]);
+  EXPECT_TRUE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
+      SysUTF16ToNSString(title2)]);
+
+  // Switch *back* to profile 1 and *don't* force the menu to build.
+  [ac windowChangedToProfile:profile1];
+
+  // Test that only bookmark 1 is shown in the restored menu.
+  EXPECT_TRUE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
+      SysUTF16ToNSString(title1)]);
+  EXPECT_FALSE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
+      SysUTF16ToNSString(title2)]);
 }
 
 }  // namespace
