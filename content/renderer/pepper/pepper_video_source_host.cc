@@ -224,16 +224,24 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   const uint8* src_v = frame->data(media::VideoFrame::kVPlane) +
                        (center * vert_crop + horiz_crop) / 2;
 
-  libyuv::I420ToARGB(src_y,
-                     frame->stride(media::VideoFrame::kYPlane),
-                     src_u,
-                     frame->stride(media::VideoFrame::kUPlane),
-                     src_v,
-                     frame->stride(media::VideoFrame::kVPlane),
-                     bitmap_pixels,
-                     bitmap->rowBytes(),
-                     dst_width,
-                     dst_height);
+  // TODO(magjed): Chrome OS is not ready for switching from BGRA to ARGB.
+  // Remove this once http://crbug/434007 is fixed. We have a corresponding
+  // problem when we receive frames from the effects plugin in PpFrameWriter.
+#if defined(OS_CHROMEOS)
+  auto libyuv_i420_to_xxxx = &libyuv::I420ToBGRA;
+#else
+  auto libyuv_i420_to_xxxx = &libyuv::I420ToARGB;
+#endif
+  libyuv_i420_to_xxxx(src_y,
+                      frame->stride(media::VideoFrame::kYPlane),
+                      src_u,
+                      frame->stride(media::VideoFrame::kUPlane),
+                      src_v,
+                      frame->stride(media::VideoFrame::kVPlane),
+                      bitmap_pixels,
+                      bitmap->rowBytes(),
+                      dst_width,
+                      dst_height);
 
   ppapi::HostResource host_resource;
   host_resource.SetHostResource(pp_instance(), shared_image_->GetReference());
