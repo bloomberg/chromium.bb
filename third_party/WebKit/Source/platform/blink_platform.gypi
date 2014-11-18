@@ -390,8 +390,6 @@
       'fonts/opentype/OpenTypeSanitizer.cpp',
       'fonts/opentype/OpenTypeSanitizer.h',
       'fonts/opentype/OpenTypeTypes.h',
-      'fonts/opentype/OpenTypeUtilities.cpp',
-      'fonts/opentype/OpenTypeUtilities.h',
       'fonts/opentype/OpenTypeVerticalData.cpp',
       'fonts/opentype/OpenTypeVerticalData.h',
       'fonts/shaping/HarfBuzzFace.cpp',

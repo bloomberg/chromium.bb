@@ -112,7 +112,6 @@ const unsigned char   cRangeTertiaryTable  = 145; // leave room for 16 subtable 
 
 
 PLATFORM_EXPORT unsigned findCharUnicodeRange(UChar32);
-PLATFORM_EXPORT const char* langGroupFromUnicodeRange(unsigned char unicodeRange);
 
 }
 

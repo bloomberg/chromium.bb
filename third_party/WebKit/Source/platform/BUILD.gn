@@ -269,8 +269,6 @@ component("platform") {
   } else {
     sources -= [
       "clipboard/ClipboardUtilitiesWin.cpp",
-      "fonts/opentype/OpenTypeUtilities.cpp",
-      "fonts/opentype/OpenTypeUtilities.h",
       "text/LocaleWin.cpp",
     ]
   }

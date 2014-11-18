@@ -45,26 +45,4 @@ unsigned numGraphemeClusters(const String& string)
     return num;
 }
 
-unsigned numCharactersInGraphemeClusters(const String& string, unsigned numGraphemeClusters)
-{
-    unsigned stringLength = string.length();
-
-    if (!stringLength)
-        return 0;
-
-    // The only Latin-1 Extended Grapheme Cluster is CR LF
-    if (string.is8Bit() && !string.contains('\r'))
-        return std::min(stringLength, numGraphemeClusters);
-
-    NonSharedCharacterBreakIterator it(string);
-    if (!it)
-        return std::min(stringLength, numGraphemeClusters);
-
-    for (unsigned i = 0; i < numGraphemeClusters; ++i) {
-        if (it.next() == TextBreakDone)
-            return stringLength;
-    }
-    return it.current();
-}
-
 } // namespace blink

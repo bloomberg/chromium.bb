@@ -37,35 +37,6 @@
 
 namespace blink {
 
-// This table depends on unicode range definitions.
-// Each item's index must correspond to a unicode range value
-// eg. x-cyrillic = LangGroupTable[cRangeCyrillic]
-static const char* const gUnicodeRangeToLangGroupTable[] =
-{
-  "x-cyrillic",
-  "el",
-  "tr",
-  "he",
-  "ar",
-  "x-baltic",
-  "th",
-  "ko",
-  "ja",
-  "zh-CN",
-  "zh-TW",
-  "x-devanagari",
-  "x-tamil",
-  "x-armn",
-  "x-beng",
-  "x-cans",
-  "x-ethi",
-  "x-geor",
-  "x-gujr",
-  "x-guru",
-  "x-khmr",
-  "x-mlym"
-};
-
 /**********************************************************************
  * Unicode subranges as defined in unicode 3.0
  * x-western, x-central-euro, tr, x-baltic  -> latin
@@ -450,13 +421,6 @@ unsigned findCharUnicodeRange(UChar32 ch)
 
     // Yet another table to look at : U+0700 - U+16FF : 128 code point blocks
     return gUnicodeTertiaryRangeTable[(ch - 0x0700) >> 7];
-}
-
-const char* langGroupFromUnicodeRange(unsigned char unicodeRange)
-{
-    if (cRangeSpecificItemNum > unicodeRange)
-        return gUnicodeRangeToLangGroupTable[unicodeRange];
-    return 0;
 }
 
 }
