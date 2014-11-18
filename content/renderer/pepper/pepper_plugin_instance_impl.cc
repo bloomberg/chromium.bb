@@ -1650,7 +1650,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     return;
 
   // When plugin is throttled, send ViewData indicating it's in the background.
-  const ppapi::ViewData& view_data = throttler_->is_throttled()
+  const ppapi::ViewData& view_data = (throttler_ && throttler_->is_throttled())
                                          ? throttler_->throttled_view_data()
                                          : view_data_;
 
