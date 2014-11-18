@@ -164,6 +164,7 @@ namespace cc {
 PicturePile::PicturePile()
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
+      can_use_lcd_text_(true),
       has_any_recordings_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
@@ -181,16 +182,28 @@ PicturePile::~PicturePile() {
 bool PicturePile::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
+    bool can_use_lcd_text,
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     Picture::RecordingMode recording_mode) {
+  bool can_use_lcd_text_changed = can_use_lcd_text_ != can_use_lcd_text;
+  can_use_lcd_text_ = can_use_lcd_text;
+
   bool updated = false;
 
-  Region resize_invalidation;
+  Region synthetic_invalidation;
   gfx::Size old_tiling_size = GetSize();
   if (old_tiling_size != layer_size) {
     tiling_.SetTilingSize(layer_size);
+    updated = true;
+  }
+  if (can_use_lcd_text_changed) {
+    // When LCD text is enabled/disabled, we must drop any raster tiles for
+    // the pile, so they can be recreated in a manner consistent with the new
+    // setting. We do this with |synthetic_invalidation| since we don't need to
+    // do a new recording, just invalidate rastered content.
+    synthetic_invalidation.Union(gfx::Rect(GetSize()));
     updated = true;
   }
 
@@ -356,11 +369,11 @@ bool PicturePile::UpdateAndExpandInvalidation(
                              exposed_top,
                              exposed_left_until - exposed_left,
                              exposed_bottom - exposed_top);
-      resize_invalidation.Union(left_rect);
-      resize_invalidation.Union(right_rect);
-      resize_invalidation.Union(top_rect);
-      resize_invalidation.Union(bottom_rect);
-      resize_invalidation.Union(exposed_rect);
+      synthetic_invalidation.Union(left_rect);
+      synthetic_invalidation.Union(right_rect);
+      synthetic_invalidation.Union(top_rect);
+      synthetic_invalidation.Union(bottom_rect);
+      synthetic_invalidation.Union(exposed_rect);
     }
     if (min_toss_y < tiling_.num_tiles_y()) {
       // The same thing occurs here as in the case above, but the invalidation
@@ -392,11 +405,11 @@ bool PicturePile::UpdateAndExpandInvalidation(
                              exposed_top,
                              exposed_right - exposed_left,
                              exposed_top_until - exposed_top);
-      resize_invalidation.Union(left_rect);
-      resize_invalidation.Union(right_rect);
-      resize_invalidation.Union(top_rect);
-      resize_invalidation.Union(bottom_rect);
-      resize_invalidation.Union(exposed_rect);
+      synthetic_invalidation.Union(left_rect);
+      synthetic_invalidation.Union(right_rect);
+      synthetic_invalidation.Union(top_rect);
+      synthetic_invalidation.Union(bottom_rect);
+      synthetic_invalidation.Union(exposed_rect);
     }
   }
 
@@ -458,7 +471,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
     invalidation->Union(invalidation_expanded_to_full_tiles);
   }
 
-  invalidation->Union(resize_invalidation);
+  invalidation->Union(synthetic_invalidation);
 
   // Make a list of all invalid tiles; we will attempt to
   // cluster these into multiple invalidation regions.

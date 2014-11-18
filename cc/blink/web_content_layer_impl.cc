@@ -19,13 +19,12 @@ using cc::PictureLayer;
 namespace cc_blink {
 
 WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
-    : client_(client), ignore_lcd_text_change_(false) {
+    : client_(client) {
   if (WebLayerImpl::UsingPictureLayer())
     layer_ = make_scoped_ptr(new WebLayerImpl(PictureLayer::Create(this)));
   else
     layer_ = make_scoped_ptr(new WebLayerImpl(ContentLayer::Create(this)));
   layer_->layer()->SetIsDrawable(true);
-  can_use_lcd_text_ = layer_->layer()->can_use_lcd_text();
 }
 
 WebContentLayerImpl::~WebContentLayerImpl() {
@@ -54,28 +53,14 @@ void WebContentLayerImpl::PaintContents(
   if (!client_)
     return;
 
+  // TODO(danakj): Stop passing this to blink it should always use LCD when it
+  // wants to. crbug.com/430617
+  bool can_use_lcd_text = true;
   client_->paintContents(
-      canvas,
-      clip,
-      can_use_lcd_text_,
+      canvas, clip, can_use_lcd_text,
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
-}
-
-void WebContentLayerImpl::DidChangeLayerCanUseLCDText() {
-  // It is important to make this comparison because the LCD text status
-  // here can get out of sync with that in the layer.
-  if (can_use_lcd_text_ == layer_->layer()->can_use_lcd_text())
-    return;
-
-  // LCD text cannot be enabled once disabled.
-  if (layer_->layer()->can_use_lcd_text() && ignore_lcd_text_change_)
-    return;
-
-  can_use_lcd_text_ = layer_->layer()->can_use_lcd_text();
-  ignore_lcd_text_change_ = true;
-  layer_->invalidate();
 }
 
 bool WebContentLayerImpl::FillsBoundsCompletely() const {

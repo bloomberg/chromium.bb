@@ -28,6 +28,7 @@ class CC_EXPORT RecordingSource {
   virtual bool UpdateAndExpandInvalidation(
       ContentLayerClient* painter,
       Region* invalidation,
+      bool can_use_lcd_text,
       const gfx::Size& layer_size,
       const gfx::Rect& visible_layer_rect,
       int frame_number,

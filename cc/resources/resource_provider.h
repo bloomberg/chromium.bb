@@ -335,9 +335,13 @@ class CC_EXPORT ResourceProvider {
                       ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGr();
 
-    SkSurface* GetSkSurface(bool use_distance_field_text);
+    SkSurface* GetSkSurface(bool use_distance_field_text,
+                            bool can_use_lcd_text);
 
    private:
+    bool SurfaceHasMatchingProperties(bool use_distance_field_text,
+                                      bool can_use_lcd_text) const;
+
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
     base::ThreadChecker thread_checker_;

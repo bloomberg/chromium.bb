@@ -59,8 +59,6 @@ class BlueYellowLayerClient : public ContentLayerClient {
   explicit BlueYellowLayerClient(gfx::Rect layer_rect)
       : layer_rect_(layer_rect) {}
 
-  void DidChangeLayerCanUseLCDText() override {}
-
   bool FillsBoundsCompletely() const override { return false; }
 
   void PaintContents(

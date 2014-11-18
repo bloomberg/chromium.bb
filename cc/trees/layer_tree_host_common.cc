@@ -1269,6 +1269,7 @@ struct SubtreeGlobals {
   const LayerType* page_scale_application_layer;
   bool can_adjust_raster_scales;
   bool can_render_to_separate_surface;
+  bool layers_always_allowed_lcd_text;
 };
 
 template<typename LayerType>
@@ -1791,13 +1792,15 @@ static void CalculateDrawPropertiesInternal(
   // causes jank.
   bool adjust_text_aa =
       !animating_opacity_to_screen && !animating_transform_to_screen;
-  // To avoid color fringing, LCD text should only be used on opaque layers with
-  // just integral translation.
-  bool layer_can_use_lcd_text =
-      data_from_ancestor.subtree_can_use_lcd_text &&
-      accumulated_draw_opacity == 1.f &&
-      layer_draw_properties.target_space_transform.
-          IsIdentityOrIntegerTranslation();
+  bool layer_can_use_lcd_text = true;
+  if (!globals.layers_always_allowed_lcd_text) {
+    // To avoid color fringing, LCD text should only be used on opaque layers
+    // with just integral translation.
+    layer_can_use_lcd_text = data_from_ancestor.subtree_can_use_lcd_text &&
+                             accumulated_draw_opacity == 1.f &&
+                             layer_draw_properties.target_space_transform
+                                 .IsIdentityOrIntegerTranslation();
+  }
 
   gfx::Rect content_rect(layer->content_bounds());
 
@@ -2374,6 +2377,8 @@ static void ProcessCalcDrawPropsInputs(
   globals->can_render_to_separate_surface =
       inputs.can_render_to_separate_surface;
   globals->can_adjust_raster_scales = inputs.can_adjust_raster_scales;
+  globals->layers_always_allowed_lcd_text =
+      inputs.layers_always_allowed_lcd_text;
 
   data_for_recursion->parent_matrix = scaled_device_transform;
   data_for_recursion->full_hierarchy_matrix = identity_matrix;

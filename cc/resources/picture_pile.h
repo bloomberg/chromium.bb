@@ -25,6 +25,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   bool UpdateAndExpandInvalidation(
       ContentLayerClient* painter,
       Region* invalidation,
+      bool can_use_lcd_text,
       const gfx::Size& layer_size,
       const gfx::Rect& visible_layer_rect,
       int frame_number,
@@ -94,6 +95,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   float min_contents_scale_;
   SkTileGridFactory::TileGridInfo tile_grid_info_;
   int slow_down_raster_scale_factor_for_debug_;
+  bool can_use_lcd_text_;
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;

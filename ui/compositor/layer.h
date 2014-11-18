@@ -339,7 +339,6 @@ class COMPOSITOR_EXPORT Layer
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override;
-  void DidChangeLayerCanUseLCDText() override {}
   bool FillsBoundsCompletely() const override;
 
   cc::Layer* cc_layer() { return cc_layer_; }

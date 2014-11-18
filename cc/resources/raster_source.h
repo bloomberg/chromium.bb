@@ -93,6 +93,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual void AsValueInto(base::debug::TracedValue* array) const = 0;
   virtual skia::RefPtr<SkPicture> GetFlattenedPicture() = 0;
 
+  // Return true if LCD anti-aliasing may be used when rastering text.
+  virtual bool CanUseLCDText() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 

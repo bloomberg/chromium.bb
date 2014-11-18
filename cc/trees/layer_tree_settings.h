@@ -54,6 +54,7 @@ class CC_EXPORT LayerTreeSettings {
   bool timeout_and_draw_when_animation_checkerboards;
   int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool layer_transforms_should_scale_layer_contents;
+  bool layers_always_allowed_lcd_text;
   float minimum_contents_scale;
   float low_res_contents_scale_factor;
   float top_controls_height;

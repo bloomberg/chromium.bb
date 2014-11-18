@@ -27,7 +27,6 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override;
-  void DidChangeLayerCanUseLCDText() override {}
   bool FillsBoundsCompletely() const override;
 
  protected:

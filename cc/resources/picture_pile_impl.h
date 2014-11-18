@@ -61,6 +61,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   bool IsSolidColor() const override;
   SkColor GetSolidColor() const override;
   bool HasRecordings() const override;
+  bool CanUseLCDText() const override;
 
   // Tracing functionality.
   void DidBeginTracing() override;
@@ -110,6 +111,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   TilingData tiling_;
   SkColor background_color_;
   bool requires_clear_;
+  bool can_use_lcd_text_;
   bool is_solid_color_;
   SkColor solid_color_;
   gfx::Rect recorded_viewport_;
