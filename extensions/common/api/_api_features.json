@@ -302,11 +302,6 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
-  "usb.getUserSelectedDevices": {
-    "channel": "dev",
-    "dependencies": ["permission:usb"],
-    "contexts": ["blessed_extension"]
-  },
   "vpnProvider": {
     "dependencies": ["permission:vpnProvider"],
     "contexts": ["blessed_extension"]
