@@ -1,4 +1,3 @@
-DESKTOP NOTIFICATION SHOWN: Hello, world!
 Tests that notifications can be displayed when permission has been granted. The text "notification.onshow fired" should be displayed. When running this test manually, accept the permission request.
 
 PASS successfullyParsed is true

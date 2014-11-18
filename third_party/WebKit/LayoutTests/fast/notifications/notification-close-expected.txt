@@ -1,5 +1,3 @@
-DESKTOP NOTIFICATION SHOWN: Notification
-DESKTOP NOTIFICATION CLOSED: Notification
 Tests that Notification.close() closes the notification, and the Notification.onclose event gets called.
 
 PASS successfullyParsed is true

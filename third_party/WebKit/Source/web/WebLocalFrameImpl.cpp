@@ -149,7 +149,6 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/timing/Performance.h"
 #include "modules/geolocation/GeolocationController.h"
-#include "modules/notifications/NotificationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
@@ -1578,13 +1577,9 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
 
     // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
     if (m_frame) {
-        OwnPtr<NotificationPresenterImpl> notificationPresenter = adoptPtr(new NotificationPresenterImpl());
-        if (m_client) {
-            notificationPresenter->initialize(m_client->notificationPresenter());
+        if (m_client)
             providePushControllerTo(*m_frame, m_client->pushClient());
-        }
 
-        provideNotification(*m_frame, notificationPresenter.release());
         provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
         provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
         provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());

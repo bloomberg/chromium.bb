@@ -28,7 +28,7 @@ public:
     virtual void permissionRequestComplete(WebNotificationPermission permission) override
     {
         if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
+            m_callback->handleEvent(Notification::permissionString(permission));
     }
 
 private:

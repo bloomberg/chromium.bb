@@ -55,8 +55,6 @@
       'NavigatorContentUtilsClientImpl.h',
       'NotificationPermissionClientImpl.cpp',
       'NotificationPermissionClientImpl.h',
-      'NotificationPresenterImpl.cpp',
-      'NotificationPresenterImpl.h',
       'OpenedFrameTracker.cpp',
       'OpenedFrameTracker.h',
       'PageOverlay.cpp',

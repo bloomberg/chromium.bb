@@ -36,17 +36,26 @@
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
-#include "modules/notifications/NotificationClient.h"
-#include "modules/notifications/NotificationController.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebNotificationData.h"
+#include "public/platform/WebNotificationManager.h"
+#include "public/platform/WebSerializedOrigin.h"
 
 namespace blink {
+namespace {
+
+WebNotificationManager* notificationManager()
+{
+    return Platform::current()->notificationManager();
+}
+
+} // namespace
 
 Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options)
 {
-    NotificationClient& client = NotificationController::clientFrom(context);
-    Notification* notification = new Notification(title, context, &client);
+    Notification* notification = new Notification(title, context);
 
     notification->setBody(options.body());
     notification->setTag(options.tag());
@@ -67,15 +76,14 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     return notification;
 }
 
-Notification::Notification(const String& title, ExecutionContext* context, NotificationClient* client)
+Notification::Notification(const String& title, ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_dir("auto")
     , m_state(NotificationStateIdle)
-    , m_client(client)
     , m_asyncRunner(this, &Notification::show)
 {
-    ASSERT(m_client);
+    ASSERT(notificationManager());
 
     m_asyncRunner.runAsync();
 }
@@ -87,29 +95,29 @@ Notification::~Notification()
 void Notification::show()
 {
     ASSERT(m_state == NotificationStateIdle);
-    if (!toDocument(executionContext())->page())
-        return;
-
-    if (m_client->checkPermission(executionContext()) != NotificationClient::PermissionAllowed) {
+    if (Notification::checkPermission(executionContext()) != WebNotificationPermissionAllowed) {
         dispatchErrorEvent();
         return;
     }
 
-    if (m_client->show(this))
-        m_state = NotificationStateShowing;
+    SecurityOrigin* origin = executionContext()->securityOrigin();
+    ASSERT(origin);
+
+    // FIXME: Associate the appropriate text direction with the notification.
+    // FIXME: Do CSP checks on the associated notification icon.
+    WebNotificationData notificationData(m_title, WebNotificationData::DirectionLeftToRight, m_lang, m_body, m_tag, m_iconUrl);
+    notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
+
+    m_state = NotificationStateShowing;
 }
 
 void Notification::close()
 {
-    switch (m_state) {
-    case NotificationStateIdle:
-        break;
-    case NotificationStateShowing:
-        m_client->close(this);
-        break;
-    case NotificationStateClosed:
-        break;
-    }
+    if (m_state != NotificationStateShowing)
+        return;
+
+    m_state = NotificationStateClosed;
+    notificationManager()->close(this);
 }
 
 void Notification::dispatchShowEvent()
@@ -141,18 +149,18 @@ TextDirection Notification::direction() const
     return dir() == "rtl" ? RTL : LTR;
 }
 
-const String& Notification::permissionString(NotificationClient::Permission permission)
+const String& Notification::permissionString(WebNotificationPermission permission)
 {
     DEFINE_STATIC_LOCAL(const String, allowedPermission, ("granted"));
     DEFINE_STATIC_LOCAL(const String, deniedPermission, ("denied"));
     DEFINE_STATIC_LOCAL(const String, defaultPermission, ("default"));
 
     switch (permission) {
-    case NotificationClient::PermissionAllowed:
+    case WebNotificationPermissionAllowed:
         return allowedPermission;
-    case NotificationClient::PermissionDenied:
+    case WebNotificationPermissionDenied:
         return deniedPermission;
-    case NotificationClient::PermissionNotAllowed:
+    case WebNotificationPermissionDefault:
         return defaultPermission;
     }
 
@@ -162,23 +170,28 @@ const String& Notification::permissionString(NotificationClient::Permission perm
 
 const String& Notification::permission(ExecutionContext* context)
 {
-    return permissionString(NotificationController::clientFrom(context).checkPermission(context));
+    return permissionString(checkPermission(context));
+}
+
+WebNotificationPermission Notification::checkPermission(ExecutionContext* context)
+{
+    SecurityOrigin* origin = context->securityOrigin();
+    ASSERT(origin);
+
+    return notificationManager()->checkPermission(WebSerializedOrigin(*origin));
 }
 
 void Notification::requestPermission(ExecutionContext* context, NotificationPermissionCallback* callback)
 {
     // FIXME: Assert that this code-path will only be reached for Document environments
     // when Blink supports [Exposed] annotations on class members in IDL definitions.
-    if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context)) {
+    if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context))
         permissionClient->requestPermission(context, callback);
-        return;
-    }
 }
 
 bool Notification::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
-    ASSERT(m_state != NotificationStateClosed);
-
+    ASSERT(executionContext()->isContextThread());
     return EventTarget::dispatchEvent(event);
 }
 
@@ -189,12 +202,9 @@ const AtomicString& Notification::interfaceName() const
 
 void Notification::stop()
 {
-    m_state = NotificationStateClosed;
+    notificationManager()->notifyDelegateDestroyed(this);
 
-    if (m_client) {
-        m_client->notificationObjectDestroyed(this);
-        m_client = 0;
-    }
+    m_state = NotificationStateClosed;
 
     m_asyncRunner.stop();
 }

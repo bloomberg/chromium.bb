@@ -33,11 +33,12 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
-#include "modules/notifications/NotificationClient.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebNotificationDelegate.h"
+#include "public/platform/WebNotificationPermission.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -47,7 +48,7 @@ class ExecutionContext;
 class NotificationOptions;
 class NotificationPermissionCallback;
 
-class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData {
+class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData, public WebNotificationDelegate {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
@@ -63,10 +64,11 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
 
-    void dispatchShowEvent();
-    void dispatchClickEvent();
-    void dispatchErrorEvent();
-    void dispatchCloseEvent();
+    // WebNotificationDelegate implementation.
+    void dispatchShowEvent() override;
+    void dispatchClickEvent() override;
+    void dispatchErrorEvent() override;
+    void dispatchCloseEvent() override;
 
     String title() const { return m_title; }
     String dir() const { return m_dir; }
@@ -78,8 +80,9 @@ public:
     TextDirection direction() const;
     KURL iconURL() const { return m_iconUrl; }
 
-    static const String& permissionString(NotificationClient::Permission);
+    static const String& permissionString(WebNotificationPermission);
     static const String& permission(ExecutionContext*);
+    static WebNotificationPermission checkPermission(ExecutionContext*);
     static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
 
     // EventTarget interface.
@@ -92,7 +95,7 @@ public:
     virtual bool hasPendingActivity() const override;
 
 private:
-    Notification(const String& title, ExecutionContext*, NotificationClient*);
+    Notification(const String& title, ExecutionContext*);
 
     // Calling show() may start asynchronous operation. If this object has
     // a V8 wrapper, hasPendingActivity() prevents the wrapper from being
@@ -123,8 +126,6 @@ private:
     };
 
     NotificationState m_state;
-
-    NotificationClient* m_client;
 
     AsyncMethodRunner<Notification> m_asyncRunner;
 };

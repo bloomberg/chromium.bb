@@ -61,7 +61,6 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "modules/notifications/NotificationClient.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "platform/Cursor.h"
@@ -121,7 +120,6 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebNavigatorContentUtilsClient.h"
-#include "public/web/WebNotificationPresenter.h"
 #include "public/web/WebPageVisibilityState.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
 #include "public/web/WebSettings.h"
@@ -443,10 +441,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonNone, NoButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonLeft, LeftButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonMiddle, MiddleButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonRight, RightButton);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionAllowed, NotificationClient::PermissionAllowed);
-COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionNotAllowed, NotificationClient::PermissionNotAllowed);
-COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionDenied, NotificationClient::PermissionDenied);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::Horizontal, HorizontalScrollbar);
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::Vertical, VerticalScrollbar);
