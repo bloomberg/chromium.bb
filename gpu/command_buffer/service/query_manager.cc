@@ -408,6 +408,7 @@ class CommandsCompletedQuery : public QueryManager::Query {
 
  private:
   scoped_ptr<gfx::GLFence> fence_;
+  base::TimeTicks begin_time_;
 };
 
 CommandsCompletedQuery::CommandsCompletedQuery(QueryManager* manager,
@@ -416,7 +417,10 @@ CommandsCompletedQuery::CommandsCompletedQuery(QueryManager* manager,
                                                uint32 shm_offset)
     : Query(manager, target, shm_id, shm_offset) {}
 
-bool CommandsCompletedQuery::Begin() { return true; }
+bool CommandsCompletedQuery::Begin() {
+  begin_time_ = base::TimeTicks::HighResNow();
+  return true;
+}
 
 bool CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   fence_.reset(gfx::GLFence::Create());
@@ -428,13 +432,11 @@ bool CommandsCompletedQuery::Process(bool did_finish) {
   // Note: |did_finish| guarantees that the GPU has passed the fence but
   // we cannot assume that GLFence::HasCompleted() will return true yet as
   // that's not guaranteed by all GLFence implementations.
-  //
-  // TODO(reveman): Add UMA stats to determine how common it is that glFinish()
-  // needs to be called for these queries to complete. crbug.com/431845
   if (!did_finish && fence_ && !fence_->HasCompleted())
     return true;
 
-  return MarkAsCompleted(0);
+  base::TimeDelta elapsed = base::TimeTicks::HighResNow() - begin_time_;
+  return MarkAsCompleted(elapsed.InMicroseconds());
 }
 
 void CommandsCompletedQuery::Destroy(bool have_context) {

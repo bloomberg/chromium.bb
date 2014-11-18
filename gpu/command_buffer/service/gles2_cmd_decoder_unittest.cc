@@ -666,8 +666,6 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
 
   EXPECT_TRUE(process_success);
   EXPECT_FALSE(query->pending());
-  QuerySync* sync = static_cast<QuerySync*>(shared_memory_address_);
-  EXPECT_EQ(static_cast<GLenum>(0), static_cast<GLenum>(sync->result));
 
 #if DCHECK_IS_ON
   EXPECT_CALL(*gl_, IsSync(kGlSync))

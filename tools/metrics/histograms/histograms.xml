@@ -28364,6 +28364,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.TextureCopyLatency" units="microseconds">
+  <owner>reveman@chromium.org</owner>
+  <summary>
+    Time between the issue of a texture copy operation and detecting that it has
+    completed as measured by the GPU process.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.TextureGpuUploadTimeUS">
   <owner>wiltzius@chromium.org</owner>
   <summary>

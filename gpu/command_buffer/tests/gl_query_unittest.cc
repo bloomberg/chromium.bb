@@ -63,7 +63,7 @@ TEST_F(QueryTest, MultipleQueries) {
   glGetQueryObjectuivEXT(commands_issue_query, GL_QUERY_RESULT_EXT, &result);
   // Sanity check - the resulting delta is shorter than the time it took to
   // run this test.
-  EXPECT_LT(result, base::TimeDelta(after - before).InMicroseconds());
+  EXPECT_LE(result, base::TimeDelta(after - before).InMicroseconds());
 
   result = 0;
   available = 0;
@@ -152,6 +152,8 @@ TEST_F(QueryTest, CommandsCompleted) {
     return;
   }
 
+  base::TimeTicks before = base::TimeTicks::HighResNow();
+
   GLuint query;
   glGenQueriesEXT(1, &query);
   glBeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query);
@@ -161,7 +163,12 @@ TEST_F(QueryTest, CommandsCompleted) {
   glFlush();
   GLuint result = 0;
   glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &result);
-  EXPECT_EQ(0u, result);
+
+  base::TimeTicks after = base::TimeTicks::HighResNow();
+  // Sanity check - the resulting delta is shorter than the time it took to
+  // run this test.
+  EXPECT_LE(result, base::TimeDelta(after - before).InMicroseconds());
+
   glDeleteQueriesEXT(1, &query);
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }

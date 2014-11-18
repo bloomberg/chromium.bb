@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -198,11 +199,11 @@ class BufferIdAllocator : public IdAllocator {
   DISALLOW_COPY_AND_ASSIGN(BufferIdAllocator);
 };
 
-// Generic fence implementation for query objects. Fence has passed when query
-// result is available.
-class QueryFence : public ResourceProvider::Fence {
+// Query object based fence implementation used to detect completion of copy
+// texture operations. Fence has passed when query result is available.
+class CopyTextureFence : public ResourceProvider::Fence {
  public:
-  QueryFence(gpu::gles2::GLES2Interface* gl, unsigned query_id)
+  CopyTextureFence(gpu::gles2::GLES2Interface* gl, unsigned query_id)
       : gl_(gl), query_id_(query_id) {}
 
   // Overridden from ResourceProvider::Fence:
@@ -211,20 +212,31 @@ class QueryFence : public ResourceProvider::Fence {
     unsigned available = 1;
     gl_->GetQueryObjectuivEXT(
         query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-    return !!available;
+    if (!available)
+      return false;
+
+    ProcessResult();
+    return true;
   }
   void Wait() override {
-    unsigned result = 0;
-    gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
+    // ProcessResult() will wait for result to become available.
+    ProcessResult();
   }
 
  private:
-  ~QueryFence() override {}
+  ~CopyTextureFence() override {}
+
+  void ProcessResult() {
+    unsigned time_elapsed_us = 0;
+    gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &time_elapsed_us);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.CopyTextureLatency", time_elapsed_us,
+                                0, 256000, 50);
+  }
 
   gpu::gles2::GLES2Interface* gl_;
   unsigned query_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(QueryFence);
+  DISALLOW_COPY_AND_ASSIGN(CopyTextureFence);
 };
 
 }  // namespace
@@ -2077,7 +2089,7 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
     // source resource until CopyTextureCHROMIUM command has completed.
     gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
     source_resource->read_lock_fence = make_scoped_refptr(
-        new QueryFence(gl, source_resource->gl_read_lock_query_id));
+        new CopyTextureFence(gl, source_resource->gl_read_lock_query_id));
   } else {
     // Create a SynchronousFence when CHROMIUM_sync_query extension is missing.
     // Try to use one synchronous fence for as many CopyResource operations as
