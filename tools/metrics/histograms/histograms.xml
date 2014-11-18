@@ -49200,6 +49200,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="453" label="grid"/>
   <int value="454" label="all"/>
   <int value="455" label="justify-items"/>
+  <int value="456" label="scroll-blocks-on"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
