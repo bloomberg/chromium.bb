@@ -143,14 +143,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Don't use this. This will be deleted soon. Use getProfilePath() instead.
-     * TODO(newt): delete this once all callers are updated.
-     */
-    public String getProfilePathValue() {
-        return "";
-    }
-
-    /**
      * Returns the path to the user's profile directory via a callback. The callback may be
      * called synchronously or asynchronously.
      */
@@ -635,13 +627,6 @@ public final class PrefServiceBridge {
      */
     public AboutVersionStrings getAboutVersionStrings() {
         return nativeGetAboutVersionStrings();
-    }
-
-    /**
-     * Don't use this. Will be deleted soon.
-     * TODO(newt): delete this once all callers are updated.
-     */
-    public void setPathValuesForAboutChrome() {
     }
 
     /**
