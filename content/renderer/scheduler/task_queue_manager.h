@@ -87,13 +87,13 @@ class CONTENT_EXPORT TaskQueueManager {
   // sequence number for it.
   void DidQueueTask(base::PendingTask* pending_task);
 
-  // Post a task to call DoWork() on the main task runner, unless DoWork() is
-  // executing a task.  This check prevents the number of DoWork tasks from
-  // exploding.
+  // Post a task to call DoWork() on the main task runner.  Only one pending
+  // DoWork is allowed from the main thread, to prevent an explosion of pending
+  // DoWorks.
   void MaybePostDoWorkOnMainRunner();
 
   // Use the selector to choose a pending task and run it.
-  void DoWork();
+  void DoWork(bool posted_from_main_thread);
 
   // Reloads any empty work queues which have automatic pumping enabled.
   // Returns true if any work queue has tasks after doing this.
@@ -131,8 +131,9 @@ class CONTENT_EXPORT TaskQueueManager {
   base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
-  // Only the main thread can access this member.
-  bool executing_task_;
+  // The pending_dowork_count_ is only tracked on the main thread since that's
+  // where re-entrant problems happen.
+  int pending_dowork_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);
 };

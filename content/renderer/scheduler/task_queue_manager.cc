@@ -4,7 +4,6 @@
 
 #include "content/renderer/scheduler/task_queue_manager.h"
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
@@ -249,7 +248,7 @@ TaskQueueManager::TaskQueueManager(
     : main_task_runner_(main_task_runner),
       selector_(selector),
       weak_factory_(this),
-      executing_task_(false) {
+      pending_dowork_count_(0) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
@@ -315,18 +314,26 @@ bool TaskQueueManager::UpdateWorkQueues() {
 }
 
 void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
-  // DoWork needs to re-post itself, but we do not want the payload task to
-  // cause yet another DoWork to be posted, or we risk an explosion of DoWork
-  // tasks.
-  if (main_task_runner_->BelongsToCurrentThread() && executing_task_) {
-    return;
+  bool on_main_thread = main_task_runner_->BelongsToCurrentThread();
+  if (on_main_thread) {
+    // We only want one pending DoWork posted from the main thread, or we risk
+    // an explosion of pending DoWorks which could starve out everything else.
+    if (pending_dowork_count_ > 0) {
+      return;
+    }
+    pending_dowork_count_++;
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE, Bind(&TaskQueueManager::DoWork, task_queue_manager_weak_ptr_));
+      FROM_HERE, Bind(&TaskQueueManager::DoWork, task_queue_manager_weak_ptr_,
+                      on_main_thread));
 }
 
-void TaskQueueManager::DoWork() {
+void TaskQueueManager::DoWork(bool posted_from_main_thread) {
+  if (posted_from_main_thread) {
+    pending_dowork_count_--;
+    DCHECK_GE(pending_dowork_count_, 0);
+  }
   main_thread_checker_.CalledOnValidThread();
   if (!UpdateWorkQueues())
     return;
@@ -335,8 +342,6 @@ void TaskQueueManager::DoWork() {
   if (!SelectWorkQueueToService(&queue_index))
     return;
   MaybePostDoWorkOnMainRunner();
-
-  base::AutoReset<bool> resetter(&executing_task_, true);
   RunTaskFromWorkQueue(queue_index);
 }
 
