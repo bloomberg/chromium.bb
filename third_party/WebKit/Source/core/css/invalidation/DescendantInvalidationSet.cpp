@@ -42,9 +42,9 @@ namespace blink {
 
 static const unsigned char* s_tracingEnabled = nullptr;
 
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, reason, singleSelectorPart) \
+#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, reason, invalidationSet, singleSelectorPart) \
     if (UNLIKELY(*s_tracingEnabled)) \
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, singleSelectorPart);
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, invalidationSet, singleSelectorPart);
 
 void DescendantInvalidationSet::cacheTracingFlag()
 {
@@ -65,12 +65,12 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
         return true;
 
     if (m_tagNames && m_tagNames->contains(element.tagQName().localName())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedTagName, element.tagQName().localName());
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedTagName, *this, element.tagQName().localName());
         return true;
     }
 
     if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedId, element.idForStyleResolution());
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedId, *this, element.idForStyleResolution());
         return true;
     }
 
@@ -78,7 +78,7 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
         const SpaceSplitString& classNames = element.classNames();
         for (const auto& className : *m_classes) {
             if (classNames.contains(className)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedClass, className);
+                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedClass, *this, className);
                 return true;
             }
         }
@@ -87,7 +87,7 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
     if (element.hasAttributes() && m_attributes) {
         for (const auto& attribute : *m_attributes) {
             if (element.hasAttribute(attribute)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedAttribute, attribute);
+                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedAttribute, *this, attribute);
                 return true;
             }
         }
