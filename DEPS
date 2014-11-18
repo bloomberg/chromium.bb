@@ -154,7 +154,7 @@ deps = {
     Var('chromium_git') + '/external/google-cache-invalidation-api/src.git' + '@' + 'c91bd9d9fed06bf440be64f87b94a2effdb32bc4', # from svn revision 341
 
   'src/third_party/leveldatabase/src':
-    Var('chromium_git') + '/external/leveldb.git' + '@' + '3f77584eb3f9754bbb7079070873ece3f30a1e6b',
+    Var('chromium_git') + '/external/leveldb.git' + '@' + '803d69203a62faf50f1b77897310a3a1fcae712b',
 
   'src/third_party/libc++/trunk':
    Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +  Var('libcxx_revision'),
