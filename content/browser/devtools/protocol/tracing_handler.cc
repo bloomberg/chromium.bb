@@ -144,7 +144,12 @@ void TracingHandler::OnRecordingEnabled(
 
 void TracingHandler::OnBufferUsage(float percent_full,
                                    size_t approximate_event_count) {
-  client_->BufferUsage(BufferUsageParams::Create()->set_value(percent_full));
+  // TODO(crbug426117): remove set_value once all clients have switched to
+  // the new interface of the event.
+  client_->BufferUsage(BufferUsageParams::Create()
+                           ->set_value(percent_full)
+                           ->set_percent_full(percent_full)
+                           ->set_event_count(approximate_event_count));
 }
 
 void TracingHandler::OnCategoriesReceived(
