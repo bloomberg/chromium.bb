@@ -201,13 +201,19 @@ public:
     struct NavigationPolicyInfo {
         WebLocalFrame* frame;
         WebDataSource::ExtraData* extraData;
-        const WebURLRequest& urlRequest;
+
+        // Note: if browser side navigations are enabled, the client may modify
+        // the urlRequest. However, should this happen, the client should change
+        // the WebNavigationPolicy to WebNavigationPolicyIgnore, and the load
+        // should stop in blink. In all other cases, the urlRequest should not
+        // be modified.
+        WebURLRequest& urlRequest;
         WebNavigationType navigationType;
         WebNavigationPolicy defaultPolicy;
         bool isRedirect;
         bool isTransitionNavigation;
 
-        NavigationPolicyInfo(const WebURLRequest& urlRequest)
+        NavigationPolicyInfo(WebURLRequest& urlRequest)
             : frame(0)
             , extraData(0)
             , urlRequest(urlRequest)

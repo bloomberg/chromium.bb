@@ -60,6 +60,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setFetchRequestMode(data->m_fetchRequestMode);
     request->setFetchCredentialsMode(data->m_fetchCredentialsMode);
     request->m_referrerPolicy = data->m_referrerPolicy;
+    request->m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
     return request.release();
 }
 
@@ -91,6 +92,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_fetchRequestMode = m_fetchRequestMode;
     data->m_fetchCredentialsMode = m_fetchCredentialsMode;
     data->m_referrerPolicy = m_referrerPolicy;
+    data->m_checkForBrowserSideNavigation = m_checkForBrowserSideNavigation;
     return data.release();
 }
 
@@ -427,6 +429,7 @@ void ResourceRequest::initialize(const KURL& url)
     // context which requires it.
     m_fetchCredentialsMode = WebURLRequest::FetchCredentialsModeSameOrigin;
     m_referrerPolicy = ReferrerPolicyDefault;
+    m_checkForBrowserSideNavigation = true;
 }
 
 // This is used by the loader to control the number of issued parallel load requests.

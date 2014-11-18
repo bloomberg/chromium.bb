@@ -372,6 +372,16 @@ void WebURLRequest::setPriority(WebURLRequest::Priority priority)
         static_cast<ResourceLoadPriority>(priority));
 }
 
+bool WebURLRequest::checkForBrowserSideNavigation() const
+{
+    return m_private->m_resourceRequest->checkForBrowserSideNavigation();
+}
+
+void WebURLRequest::setCheckForBrowserSideNavigation(bool check)
+{
+    m_private->m_resourceRequest->setCheckForBrowserSideNavigation(check);
+}
+
 const ResourceRequest& WebURLRequest::toResourceRequest() const
 {
     ASSERT(m_private);

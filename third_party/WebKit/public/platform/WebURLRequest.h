@@ -252,6 +252,13 @@ public:
     BLINK_PLATFORM_EXPORT Priority priority() const;
     BLINK_PLATFORM_EXPORT void setPriority(Priority);
 
+    // PlzNavigate: whether the FrameLoader should try to send the request to
+    // the browser (if browser-side navigations are enabled).
+    // Note: WebURLRequests created by RenderFrameImpl::OnCommitNavigation must
+    // not be sent to the browser.
+    BLINK_PLATFORM_EXPORT bool checkForBrowserSideNavigation() const;
+    BLINK_PLATFORM_EXPORT void setCheckForBrowserSideNavigation(bool);
+
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
     BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;

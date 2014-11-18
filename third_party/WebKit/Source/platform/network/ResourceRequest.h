@@ -205,6 +205,9 @@ public:
 
     static bool compare(const ResourceRequest&, const ResourceRequest&);
 
+    bool checkForBrowserSideNavigation() const { return m_checkForBrowserSideNavigation; }
+    void setCheckForBrowserSideNavigation(bool check) { m_checkForBrowserSideNavigation = check; }
+
 private:
     void initialize(const KURL&);
 
@@ -235,6 +238,7 @@ private:
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
+    bool m_checkForBrowserSideNavigation;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
 
@@ -275,6 +279,7 @@ public:
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
+    bool m_checkForBrowserSideNavigation;
 };
 
 unsigned initializeMaximumHTTPConnectionCountPerHost();
