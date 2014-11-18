@@ -38,7 +38,12 @@ const char kAccessToken[] = "some-access-token";
 const char kContentTypeValue[] = "application/octet-stream";
 const char kXGoogHash[] = "X-Goog-Hash";
 const char kAttachments[] = "/attachments/";
-const char kStoreBirthday[] = "z00000000-0000-007b-0000-0000000004d2";
+const char kStoreBirthday[] =
+    "\x46\xFF\xDD\xE0\x74\x3A\x48\xFD\x9D\x06\x93\x3C\x61\x8E\xA5\x70\x09\x59"
+    "\x99\x05\x61\x46\x21\x61\x1B\x03\xD3\x02\x60\xCD\x41\x55\xFE\x26\x15\xD7"
+    "\x0C";
+const char kBase64URLSafeStoreBirthday[] =
+    "Rv_d4HQ6SP2dBpM8YY6lcAlZmQVhRiFhGwPTAmDNQVX-JhXXDA";
 const char kSyncStoreBirthdayHeader[] = "X-Sync-Store-Birthday";
 
 }  // namespace
@@ -494,11 +499,9 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_Headers) {
   EXPECT_THAT(
       http_request.headers,
       testing::Contains(testing::Key(net::HttpRequestHeaders::kUserAgent)));
-  std::string encoded_store_birthday;
-  base::Base64Encode(kStoreBirthday, &encoded_store_birthday);
   EXPECT_THAT(http_request.headers,
               testing::Contains(testing::Pair(kSyncStoreBirthdayHeader,
-                                              encoded_store_birthday)));
+                                              kBase64URLSafeStoreBirthday)));
 }
 
 // Verify two overlapping calls to upload the same attachment result in only one
