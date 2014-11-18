@@ -26,13 +26,12 @@
 #ifndef OESStandardDerivatives_h
 #define OESStandardDerivatives_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class OESStandardDerivatives final : public WebGLExtension, public ScriptWrappable {
+class OESStandardDerivatives final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESStandardDerivatives> create(WebGLRenderingContextBase*);

@@ -26,13 +26,12 @@
 #ifndef WebGLDepthTexture_h
 #define WebGLDepthTexture_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class WebGLDepthTexture final : public WebGLExtension, public ScriptWrappable {
+class WebGLDepthTexture final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLDepthTexture> create(WebGLRenderingContextBase*);

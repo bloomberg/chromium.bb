@@ -26,7 +26,6 @@
 #ifndef OESVertexArrayObject_h
 #define OESVertexArrayObject_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
@@ -35,7 +34,7 @@ namespace blink {
 class WebGLRenderingContextBase;
 class WebGLVertexArrayObjectOES;
 
-class OESVertexArrayObject final : public WebGLExtension, public ScriptWrappable {
+class OESVertexArrayObject final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);

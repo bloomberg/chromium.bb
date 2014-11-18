@@ -30,7 +30,6 @@
 #ifndef ANGLEInstancedArrays_h
 #define ANGLEInstancedArrays_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
@@ -38,7 +37,7 @@ namespace blink {
 
 class WebGLRenderingContextBase;
 
-class ANGLEInstancedArrays final : public WebGLExtension, public ScriptWrappable {
+class ANGLEInstancedArrays final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ANGLEInstancedArrays> create(WebGLRenderingContextBase*);

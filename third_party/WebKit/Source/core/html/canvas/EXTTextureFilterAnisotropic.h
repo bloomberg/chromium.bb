@@ -26,13 +26,12 @@
 #ifndef EXTTextureFilterAnisotropic_h
 #define EXTTextureFilterAnisotropic_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class EXTTextureFilterAnisotropic final : public WebGLExtension, public ScriptWrappable {
+class EXTTextureFilterAnisotropic final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<EXTTextureFilterAnisotropic> create(WebGLRenderingContextBase*);

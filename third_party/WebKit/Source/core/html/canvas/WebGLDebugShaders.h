@@ -26,7 +26,6 @@
 #ifndef WebGLDebugShaders_h
 #define WebGLDebugShaders_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
@@ -34,7 +33,7 @@ namespace blink {
 
 class WebGLShader;
 
-class WebGLDebugShaders final : public WebGLExtension, public ScriptWrappable {
+class WebGLDebugShaders final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLDebugShaders> create(WebGLRenderingContextBase*);
