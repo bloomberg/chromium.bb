@@ -1927,7 +1927,8 @@ class AndroidCommands(object):
     # to the device.
     while True:
       if t0 + timeout - time.time() < 0:
-        raise pexpect.TIMEOUT('Unable to enable USB charging in time.')
+        raise pexpect.TIMEOUT('Unable to disable USB charging in time: %s' % (
+            self.GetBatteryInfo()))
       self.RunShellCommand(disable_command)
       if not self.IsDeviceCharging():
         break
