@@ -262,7 +262,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       // allow front discard padding on the first buffer.  Otherwise the discard
       // helper can't figure out which data to discard.  See AudioDiscardHelper.
       int discard_front_samples = base::ByteSwapToLE32(*skip_samples_ptr);
-      if (last_packet_timestamp_ != kNoTimestamp()) {
+      if (last_packet_timestamp_ != kNoTimestamp() && discard_front_samples) {
         DLOG(ERROR) << "Skip samples are only allowed for the first packet.";
         discard_front_samples = 0;
       }

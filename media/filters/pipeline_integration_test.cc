@@ -998,7 +998,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
   ASSERT_TRUE(WaitUntilOnEnded());
 
   // Verify codec delay and preroll are stripped.
-  EXPECT_EQ("3.05,2.87,3.00,3.32,3.58,4.08,", GetAudioHash());
+  EXPECT_EQ("1.30,2.72,4.56,5.08,3.74,2.03,", GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
