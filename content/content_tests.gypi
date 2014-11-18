@@ -339,9 +339,13 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            '../gin/gin.gyp:gin',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             'content.gyp:content_v8_external_data',
+          ],
+        }],
+        ['v8_use_external_startup_data==1', {
+          'dependencies': [
+            '../gin/gin.gyp:gin',
           ],
         }],
       ],
