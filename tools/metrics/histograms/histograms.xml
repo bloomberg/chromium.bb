@@ -9827,6 +9827,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.FenceSupport" enum="BooleanAvailable">
+  <owner>reveman@chromium.org</owner>
+  <summary>
+    Whether GLFence support is available. Recorded each time a new context group
+    is initialized and extensions are detected.
+  </summary>
+</histogram>
+
 <histogram name="GPU.InitializeOneOffTime" units="microseconds">
   <owner>vangelis@chromium.org</owner>
   <summary>
