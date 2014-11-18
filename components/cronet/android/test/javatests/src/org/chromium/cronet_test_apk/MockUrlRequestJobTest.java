@@ -26,18 +26,16 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     private static final String MOCK_CRONET_TEST_FAILED_URL =
             "http://mock.failed.request/-2";
 
+    private CronetTestActivity mActivity;
+    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
+
     // Helper function to create a HttpUrlRequest with the specified url.
     private TestHttpUrlRequestListener createUrlRequestAndWaitForComplete(
             String url, boolean disableRedirects) {
-        CronetTestActivity activity = launchCronetTestApp();
-        assertNotNull(activity);
-        // AddUrlInterceptors() after native application context is initialized.
-        MockUrlRequestJobUtil.addUrlInterceptors();
-
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
-        HttpUrlRequest request = activity.mRequestFactory.createRequest(
+        HttpUrlRequest request = mActivity.mRequestFactory.createRequest(
                 url,
                 HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
                 headers,
@@ -48,6 +46,23 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         request.start();
         listener.blockForComplete();
         return listener;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mActivity = launchCronetTestApp();
+        waitForActiveShellToBeDoneLoading();
+        // Add url interceptors after native application context is initialized.
+        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
+                getInstrumentation().getTargetContext());
+        mMockUrlRequestJobFactory.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mMockUrlRequestJobFactory.tearDown();
+        super.tearDown();
     }
 
     @SmallTest

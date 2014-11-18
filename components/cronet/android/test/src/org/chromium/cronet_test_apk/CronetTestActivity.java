@@ -6,12 +6,10 @@ package org.chromium.cronet_test_apk;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
-import org.chromium.base.PathUtils;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestListener;
@@ -19,9 +17,7 @@ import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestContextConfig;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -65,11 +61,6 @@ public class CronetTestActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (!loadTestFiles()) {
-            Log.e(TAG, "Loading test files failed");
-            return;
-        }
 
         try {
             System.loadLibrary("cronet_tests");
@@ -123,62 +114,6 @@ public class CronetTestActivity extends Activity {
 
         return HttpUrlRequestFactory.createFactory(getApplicationContext(),
                                                    config);
-    }
-
-    private boolean loadTestFiles() {
-        String testFilePath = "test";
-        String toPath = PathUtils.getDataDirectory(getApplicationContext());
-        AssetManager assetManager = getAssets();
-        try {
-            String[] files = assetManager.list(testFilePath);
-            Log.i(TAG, "Begin loading " + files.length + " test files.");
-            for (String file : files) {
-                Log.i(TAG, "Loading " + file);
-                if (!copyTestFile(assetManager,
-                                  testFilePath + "/" + file,
-                                  toPath + "/" + file)) {
-                    return false;
-                }
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Helper function to copy a file to a destination.
-    private static boolean copyTestFile(AssetManager assetManager,
-                                        String testFile,
-                                        String testFileCopy) {
-        OutputStream out;
-        try {
-            out = new FileOutputStream(testFileCopy);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        try {
-            InputStream in = assetManager.open(testFile);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
-            return true;
-        } catch (Exception e) {
-            try {
-                out.close();
-            } catch (Exception closeException) {
-                closeException.printStackTrace();
-            }
-            e.printStackTrace();
-            return false;
-        }
     }
 
     private static String getUrlFromIntent(Intent intent) {

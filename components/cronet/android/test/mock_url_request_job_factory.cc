@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mock_url_request_job_util.h"
+#include "mock_url_request_job_factory.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "jni/MockUrlRequestJobUtil_jni.h"
+#include "jni/MockUrlRequestJobFactory_jni.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
@@ -42,7 +42,7 @@ jstring GetMockUrlWithFailure(JNIEnv* jenv,
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }
 
-bool RegisterMockUrlRequestJobUtil(JNIEnv* env) {
+bool RegisterMockUrlRequestJobFactory(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

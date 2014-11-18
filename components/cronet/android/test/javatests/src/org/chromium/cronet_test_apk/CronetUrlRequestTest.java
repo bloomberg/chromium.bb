@@ -37,7 +37,8 @@ public class CronetUrlRequestTest extends CronetTestBase {
     private static final String MOCK_CRONET_TEST_FAILED_URL =
             "http://mock.failed.request/-2";
 
-    CronetTestActivity mActivity;
+    private CronetTestActivity mActivity;
+    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
 
     @Override
     protected void setUp() throws Exception {
@@ -46,14 +47,17 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Make sure the activity was created as expected.
         waitForActiveShellToBeDoneLoading();
         assertTrue(UploadTestServer.startUploadTestServer());
-        // AddUrlInterceptors() after native application context is initialized.
-        MockUrlRequestJobUtil.addUrlInterceptors();
+        // Add url interceptors after native application context is initialized.
+        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
+                getInstrumentation().getTargetContext());
+        mMockUrlRequestJobFactory.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        mActivity.mUrlRequestContext.shutdown();
+        mMockUrlRequestJobFactory.tearDown();
         UploadTestServer.shutdownUploadTestServer();
+        mActivity.mUrlRequestContext.shutdown();
         super.tearDown();
     }
 
@@ -372,9 +376,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
     public void testMockStartAsyncError() throws Exception {
         final int arbitraryNetError = -3;
         TestUrlRequestListener listener = startAndWaitForComplete(
-                MockUrlRequestJobUtil.getMockUrlWithFailure(
+                mMockUrlRequestJobFactory.getMockUrlWithFailure(
                         MOCK_SUCCESS_PATH,
-                        MockUrlRequestJobUtil.FailurePhase.START,
+                        MockUrlRequestJobFactory.FailurePhase.START,
                         arbitraryNetError));
         assertNull(listener.mResponseInfo);
         assertNotNull(listener.mError);
@@ -389,9 +393,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
     public void testMockReadDataSyncError() throws Exception {
         final int arbitraryNetError = -4;
         TestUrlRequestListener listener = startAndWaitForComplete(
-                MockUrlRequestJobUtil.getMockUrlWithFailure(
+                mMockUrlRequestJobFactory.getMockUrlWithFailure(
                         MOCK_SUCCESS_PATH,
-                        MockUrlRequestJobUtil.FailurePhase.READ_SYNC,
+                        MockUrlRequestJobFactory.FailurePhase.READ_SYNC,
                         arbitraryNetError));
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
         assertNotNull(listener.mError);
@@ -406,9 +410,9 @@ public class CronetUrlRequestTest extends CronetTestBase {
     public void testMockReadDataAsyncError() throws Exception {
         final int arbitraryNetError = -5;
         TestUrlRequestListener listener = startAndWaitForComplete(
-                MockUrlRequestJobUtil.getMockUrlWithFailure(
+                mMockUrlRequestJobFactory.getMockUrlWithFailure(
                         MOCK_SUCCESS_PATH,
-                        MockUrlRequestJobUtil.FailurePhase.READ_ASYNC,
+                        MockUrlRequestJobFactory.FailurePhase.READ_ASYNC,
                         arbitraryNetError));
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
         assertNotNull(listener.mError);
