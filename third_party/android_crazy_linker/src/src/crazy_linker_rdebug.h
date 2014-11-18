@@ -171,10 +171,21 @@ class RDebug {
   ~RDebug() {}
 
   // Add entries to and remove entries from the list. If post for later
-  // execution is enabled, schedule callbacks and return. Otherwise
-  // action immediately.
-  void AddEntry(link_map_t* entry) { RunOrDelay(&AddEntryInternal, entry); }
-  void DelEntry(link_map_t* entry) { RunOrDelay(&DelEntryInternal, entry); }
+  // execution is enabled, schedule callbacks, otherwise action immediately.
+  //
+  // Callbacks may be blocking or non-blocking. On a blocking callback
+  // we wait for the other thread to call the callback before proceeding;
+  // on a non-blocking one, we proceed without waiting. Adding an entry
+  // requires a non-blocking callback, because the loop that invokes the
+  // callback is not started until after libraries are loaded. Deleting an
+  // entry requires a blocking callback, so that the objects referenced
+  // by the callback code are not destroyed before the callback is invoked.
+  void AddEntry(link_map_t* entry) {
+    RunOrDelay(&AddEntryInternal, entry, false);
+  }
+  void DelEntry(link_map_t* entry) {
+    RunOrDelay(&DelEntryInternal, entry, true);
+  }
 
   // Assign the function used to request a callback from another thread.
   // The context here is opaque, but is the API's crazy_context.
@@ -207,12 +218,18 @@ class RDebug {
   }
 
   // Post handler for delayed execution. Return true if delayed execution
-  // is enabled and posting succeeded.
-  bool PostCallback(rdebug_callback_handler_t handler, link_map_t* entry);
+  // is enabled and posting succeeded. If is_blocking, waits until the
+  // callback is received before returning.
+  bool PostCallback(rdebug_callback_handler_t handler,
+                    link_map_t* entry,
+                    bool is_blocking);
 
-  // Run handler as a callback if enabled, otherwise immediately.
-  void RunOrDelay(rdebug_callback_handler_t handler, link_map_t* entry) {
-    if (!PostCallback(handler, entry))
+  // Run handler as a callback if enabled, otherwise immediately. Posts
+  // either a blocking or a non-blocking callback.
+  void RunOrDelay(rdebug_callback_handler_t handler,
+                  link_map_t* entry,
+                  bool is_blocking) {
+    if (!PostCallback(handler, entry, is_blocking))
       (*handler)(this, entry);
   }
 

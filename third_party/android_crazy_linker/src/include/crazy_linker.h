@@ -182,6 +182,14 @@ typedef bool (*crazy_callback_poster_t)(
 // |crazy_callback_poster_t| function, that will be called during library
 // loading to let the user record callbacks for delayed operations.
 // Callers must copy the |crazy_callback_t| passed to |poster|.
+//
+// Note: If client code calls this function to supply a callback poster,
+// it must guarantee to invoke any callback requested through the poster.
+// The call will be (typically) on another thread, but may instead be
+// immediate from the poster. However, the callback must be invoked,
+// otherwise if it is a blocking callback the crazy linker will deadlock
+// waiting for it.
+//
 // |poster_opaque| is an opaque value for client code use, passed back
 // on each call to |poster|.
 // |poster| can be NULL to disable the feature.

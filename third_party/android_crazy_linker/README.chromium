@@ -64,3 +64,5 @@ Local Modifications:
 
 - Control static_assert invocations with a new COMPILE_ASSERT macro.
 
+- Fix unit test crash caused by use of deleted data inside an unload callback.
+
