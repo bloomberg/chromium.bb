@@ -215,7 +215,8 @@ void Picture::Record(ContentLayerClient* painter,
 
   skia::RefPtr<SkCanvas> canvas;
   canvas = skia::SharePtr(recorder.beginRecording(
-      layer_rect_.width(), layer_rect_.height(), &factory));
+      layer_rect_.width(), layer_rect_.height(), &factory,
+      SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag));
 
   ContentLayerClient::GraphicsContextStatus graphics_context_status =
       ContentLayerClient::GRAPHICS_CONTEXT_ENABLED;

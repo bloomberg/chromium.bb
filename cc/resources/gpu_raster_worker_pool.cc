@@ -48,8 +48,11 @@ class RasterBufferImpl : public RasterBuffer {
 
     SkPictureRecorder recorder;
     gfx::Size size = resource_->size();
+    const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
     skia::RefPtr<SkCanvas> canvas =
-        skia::SharePtr(recorder.beginRecording(size.width(), size.height()));
+        skia::SharePtr(recorder.beginRecording(size.width(), size.height(),
+                                               NULL, flags));
+
 
     canvas->save();
     raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
