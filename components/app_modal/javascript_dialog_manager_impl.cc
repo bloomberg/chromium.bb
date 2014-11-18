@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/javascript_dialog_manager_impl.h"
+#include "components/app_modal/javascript_dialog_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/app_modal_dialogs/app_modal_dialog.h"
-#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "components/app_modal_dialogs/javascript_dialog_extensions_client.h"
-#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
-#include "components/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog_queue.h"
+#include "components/app_modal/javascript_dialog_extensions_client.h"
+#include "components/app_modal/javascript_native_dialog_factory.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/javascript_message_type.h"

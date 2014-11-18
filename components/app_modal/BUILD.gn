@@ -4,13 +4,12 @@
 
 import("//build/config/ui.gni")
 
-static_library("app_modal_dialogs") {
+static_library("app_modal") {
   sources = [
     "app_modal_dialog.cc",
     "app_modal_dialog.h",
     "app_modal_dialog_queue.cc",
     "app_modal_dialog_queue.h",
-    "app_modal_dialog_test_util.h",
     "javascript_app_modal_dialog.cc",
     "javascript_app_modal_dialog.h",
     "javascript_dialog_extension_client.h",

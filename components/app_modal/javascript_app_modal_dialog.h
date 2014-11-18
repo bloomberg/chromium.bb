@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_APP_MODAL_DIALOG_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_APP_MODAL_DIALOG_H_
+#ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_APP_MODAL_DIALOG_H_
+#define COMPONENTS_APP_MODAL_JAVASCRIPT_APP_MODAL_DIALOG_H_
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 // Extra data for JavaScript dialogs to add Chrome-only features.
@@ -98,4 +98,4 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_APP_MODAL_DIALOG_H_
+#endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_APP_MODAL_DIALOG_H_

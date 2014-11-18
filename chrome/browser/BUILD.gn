@@ -200,7 +200,7 @@ static_library("browser") {
       "//cc",
       "//chrome/browser/devtools",
       "//chrome/installer/util",
-      "//components/app_modal_dialogs",
+      "//components/app_modal",
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
       "//components/keyed_service/content",

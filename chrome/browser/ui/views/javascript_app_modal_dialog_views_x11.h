@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_X11_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/app_modal_dialogs/views/javascript_app_modal_dialog_views.h"
+#include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 
 class JavascriptAppModalEventBlockerX11;
 

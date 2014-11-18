@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 
-#include "components/app_modal_dialogs/javascript_dialog_extensions_client.h"
-#include "components/app_modal_dialogs/javascript_dialog_manager_impl.h"
-#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
+#include "components/app_modal/javascript_dialog_extensions_client.h"
+#include "components/app_modal/javascript_dialog_manager_impl.h"
+#include "components/app_modal/javascript_native_dialog_factory.h"
 
 content::JavaScriptDialogManager* GetJavaScriptDialogManagerInstance() {
   return JavaScriptDialogManagerImpl::GetInstance();

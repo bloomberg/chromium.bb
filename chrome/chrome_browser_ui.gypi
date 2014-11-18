@@ -71,7 +71,7 @@
       'browser/ui/app_list/app_list_util.cc',
       'browser/ui/app_list/app_list_util.h',
       # All other browser/ui/app_list files go in chrome_browser_ui_app_list_sources.
-      'browser/ui/app_modal_dialogs/chrome_javascript_native_dialog_factory.h',
+      'browser/ui/app_modal/chrome_javascript_native_dialog_factory.h',
       'browser/ui/autofill/autofill_dialog_controller.cc',
       'browser/ui/autofill/autofill_dialog_controller.h',
       'browser/ui/autofill/autofill_dialog_models.cc',
@@ -2666,7 +2666,7 @@
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
             'debugger',
             'installer_util',
-            '../components/components.gyp:app_modal_dialogs',
+            '../components/components.gyp:app_modal',
             '../components/components.gyp:autofill_content_risk_proto',
             '../components/components.gyp:translate_content_common',
             '../content/app/resources/content_resources.gyp:content_resources',

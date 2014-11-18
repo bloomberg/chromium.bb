@@ -149,7 +149,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"

@@ -196,7 +196,7 @@ group("all_components") {
   }
 
   if (!is_ios) {
-    deps += [ "//components/app_modal_dialogs" ]
+    deps += [ "//components/app_modal" ]
   }
 
   if (toolkit_views) {

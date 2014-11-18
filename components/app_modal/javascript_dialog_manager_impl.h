@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_IMPL_H_
+#define COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_IMPL_H_
+
 #include "content/public/browser/javascript_dialog_manager.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 
 class JavaScriptDialogExtensionsClient;
 class JavaScriptNativeDialogFactory;
@@ -73,3 +76,4 @@ class JavaScriptDialogManagerImpl : public content::JavaScriptDialogManager {
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogManagerImpl);
 };
 
+#endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_IMPL_H_

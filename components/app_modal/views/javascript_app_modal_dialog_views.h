@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
+#ifndef COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
+#define COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class JavaScriptAppModalDialog;
@@ -56,4 +56,4 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogViews);
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
+#endif  // COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_

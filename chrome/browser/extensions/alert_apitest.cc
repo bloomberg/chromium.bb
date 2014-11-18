@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"

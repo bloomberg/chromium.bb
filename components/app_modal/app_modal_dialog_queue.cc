@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "components/app_modal/app_modal_dialog_queue.h"
 
 #include "base/memory/singleton.h"
-#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
 
 // static
 AppModalDialogQueue* AppModalDialogQueue::GetInstance() {

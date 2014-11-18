@@ -9,7 +9,7 @@ static_library("javascript_dialog_extensions_client") {
   ]
 
   deps = [
-    "//components/app_modal_dialogs",
+    "//components/app_modal",
     "//content/public/browser",
     "//extensions/browser",
     "//extensions/common",

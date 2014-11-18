@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 
 #if __OBJC__
 @class NSAlert;

@@ -4,8 +4,8 @@
 
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 
-#include "components/app_modal_dialogs/javascript_dialog_extensions_client.h"
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_dialog_extensions_client.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 
-#include "components/app_modal_dialogs/javascript_dialog_manager_impl.h"
-#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
+#include "components/app_modal/javascript_dialog_manager_impl.h"
+#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
 

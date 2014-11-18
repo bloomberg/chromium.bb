@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"

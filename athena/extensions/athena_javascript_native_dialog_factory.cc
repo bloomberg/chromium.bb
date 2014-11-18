@@ -5,9 +5,9 @@
 #include "athena/extensions/athena_javascript_native_dialog_factory.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
-#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
-#include "components/app_modal_dialogs/views/javascript_app_modal_dialog_views.h"
+#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_native_dialog_factory.h"
+#include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 class JavaScriptAppModalDialog;

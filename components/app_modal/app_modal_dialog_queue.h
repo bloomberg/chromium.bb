@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
+#ifndef COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_
+#define COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_
 
 #include <deque>
 
@@ -86,4 +86,4 @@ class AppModalDialogQueue {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogQueue);
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
+#endif  // COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_
+#ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_
+#define COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_
 
 #include <string>
 
@@ -35,4 +35,4 @@ class JavaScriptDialogExtensionsClient {
                                 std::string* name_out) = 0;
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_
+#endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_

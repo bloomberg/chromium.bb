@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

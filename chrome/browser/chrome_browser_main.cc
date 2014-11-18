@@ -185,7 +185,7 @@
 #endif
 
 #if !defined(OS_IOS)
-#include "chrome/browser/ui/app_modal_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 #endif
 
 #if !defined(DISABLE_NACL)

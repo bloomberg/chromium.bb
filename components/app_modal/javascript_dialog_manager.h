@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_MANAGER_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_MANAGER_H_
+#ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
+#define COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -30,4 +30,4 @@ void SetJavaScriptNativeDialogFactory(
 void SetJavaScriptDialogExtensionsClient(
     scoped_ptr<JavaScriptDialogExtensionsClient> client);
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_MANAGER_H_
+#endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_

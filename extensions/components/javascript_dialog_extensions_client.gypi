@@ -7,7 +7,7 @@
       'target_name': 'javascript_dialog_extensions_client',
       'type': 'static_library',
       'dependencies': [
-        '../../components/components.gyp:app_modal_dialogs',
+        '../../components/components.gyp:app_modal',
         '../../skia/skia.gyp:skia',
         '../extensions.gyp:extensions_browser',
         '../extensions.gyp:extensions_common',

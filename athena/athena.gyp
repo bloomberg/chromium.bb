@@ -133,7 +133,7 @@
       'dependencies': [
         'athena_lib',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../components/components.gyp:app_modal_dialogs',
+        '../components/components.gyp:app_modal',
         '../components/components.gyp:constrained_window',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:omnibox',

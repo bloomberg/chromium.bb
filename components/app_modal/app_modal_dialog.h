@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
+#ifndef COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_H_
+#define COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_H_
 
 #include <string>
 
@@ -102,4 +102,4 @@ class AppModalDialogObserver {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
+#endif  // COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_H_

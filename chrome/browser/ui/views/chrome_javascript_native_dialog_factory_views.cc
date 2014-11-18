@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_modal_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 
-#include "components/app_modal_dialogs/javascript_dialog_manager.h"
-#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
+#include "components/app_modal/javascript_dialog_manager.h"
+#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
 #else
-#include "components/app_modal_dialogs/views/javascript_app_modal_dialog_views.h"
+#include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 #endif
 
 namespace {

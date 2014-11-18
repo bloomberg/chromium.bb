@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
-#define COMPONENTS_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
+#ifndef COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_
+#define COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_
 
 #include "ui/gfx/native_widget_types.h"
 
@@ -29,4 +29,4 @@ class NativeAppModalDialog {
   virtual void CancelAppModalDialog() = 0;
 };
 
-#endif  // COMPONENTS_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
+#endif  // COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_

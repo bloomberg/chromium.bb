@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/views/javascript_app_modal_dialog_views.h"
+#include "components/app_modal/views/javascript_app_modal_dialog_views.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog.h"
 
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "components/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal/app_modal_dialog_queue.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
