@@ -26,12 +26,13 @@
 #ifndef WebGLDrawBuffers_h
 #define WebGLDrawBuffers_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class WebGLDrawBuffers final : public WebGLExtension {
+class WebGLDrawBuffers final : public WebGLExtension, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLDrawBuffers> create(WebGLRenderingContextBase*);

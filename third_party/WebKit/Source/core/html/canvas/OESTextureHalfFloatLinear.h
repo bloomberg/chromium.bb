@@ -26,12 +26,13 @@
 #ifndef OESTextureHalfFloatLinear_h
 #define OESTextureHalfFloatLinear_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class OESTextureHalfFloatLinear final : public WebGLExtension {
+class OESTextureHalfFloatLinear final : public WebGLExtension, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESTextureHalfFloatLinear> create(WebGLRenderingContextBase*);

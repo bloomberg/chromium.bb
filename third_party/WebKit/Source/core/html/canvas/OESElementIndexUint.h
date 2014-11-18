@@ -26,12 +26,13 @@
 #ifndef OESElementIndexUint_h
 #define OESElementIndexUint_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class OESElementIndexUint final : public WebGLExtension {
+class OESElementIndexUint final : public WebGLExtension, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESElementIndexUint> create(WebGLRenderingContextBase*);

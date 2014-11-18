@@ -32,8 +32,14 @@
 #include "bindings/core/v8/V8WebGLRenderingContext.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/V8ANGLEInstancedArrays.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8EXTBlendMinMax.h"
+#include "bindings/core/v8/V8EXTFragDepth.h"
+#include "bindings/core/v8/V8EXTShaderTextureLOD.h"
+#include "bindings/core/v8/V8EXTTextureFilterAnisotropic.h"
+#include "bindings/core/v8/V8EXTsRGB.h"
 #include "bindings/core/v8/V8Float32Array.h"
 #include "bindings/core/v8/V8HTMLCanvasElement.h"
 #include "bindings/core/v8/V8HTMLImageElement.h"
@@ -41,10 +47,26 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8Int32Array.h"
+#include "bindings/core/v8/V8OESElementIndexUint.h"
+#include "bindings/core/v8/V8OESStandardDerivatives.h"
+#include "bindings/core/v8/V8OESTextureFloat.h"
+#include "bindings/core/v8/V8OESTextureFloatLinear.h"
+#include "bindings/core/v8/V8OESTextureHalfFloat.h"
+#include "bindings/core/v8/V8OESTextureHalfFloatLinear.h"
+#include "bindings/core/v8/V8OESVertexArrayObject.h"
 #include "bindings/core/v8/V8Uint32Array.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/V8WebGLBuffer.h"
+#include "bindings/core/v8/V8WebGLCompressedTextureATC.h"
+#include "bindings/core/v8/V8WebGLCompressedTextureETC1.h"
+#include "bindings/core/v8/V8WebGLCompressedTexturePVRTC.h"
+#include "bindings/core/v8/V8WebGLCompressedTextureS3TC.h"
+#include "bindings/core/v8/V8WebGLDebugRendererInfo.h"
+#include "bindings/core/v8/V8WebGLDebugShaders.h"
+#include "bindings/core/v8/V8WebGLDepthTexture.h"
+#include "bindings/core/v8/V8WebGLDrawBuffers.h"
 #include "bindings/core/v8/V8WebGLFramebuffer.h"
+#include "bindings/core/v8/V8WebGLLoseContext.h"
 #include "bindings/core/v8/V8WebGLProgram.h"
 #include "bindings/core/v8/V8WebGLRenderbuffer.h"
 #include "bindings/core/v8/V8WebGLShader.h"
@@ -95,6 +117,110 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8:
         notImplemented();
         return v8::Undefined(isolate);
     }
+}
+
+static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8::Object> contextObject, v8::Isolate* isolate)
+{
+    if (!extension)
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> extensionObject;
+    const char* referenceName = 0;
+    switch (extension->name()) {
+    case ANGLEInstancedArraysName:
+        extensionObject = toV8(static_cast<ANGLEInstancedArrays*>(extension), contextObject, isolate);
+        referenceName = "angleInstancedArraysName";
+        break;
+    case EXTBlendMinMaxName:
+        extensionObject = toV8(static_cast<EXTBlendMinMax*>(extension), contextObject, isolate);
+        referenceName = "extBlendMinMaxName";
+        break;
+    case EXTFragDepthName:
+        extensionObject = toV8(static_cast<EXTFragDepth*>(extension), contextObject, isolate);
+        referenceName = "extFragDepthName";
+        break;
+    case EXTShaderTextureLODName:
+        extensionObject = toV8(static_cast<EXTShaderTextureLOD*>(extension), contextObject, isolate);
+        referenceName = "extShaderTextureLODName";
+        break;
+    case EXTsRGBName:
+        extensionObject = toV8(static_cast<EXTsRGB*>(extension), contextObject, isolate);
+        referenceName = "extsRGBName";
+        break;
+    case EXTTextureFilterAnisotropicName:
+        extensionObject = toV8(static_cast<EXTTextureFilterAnisotropic*>(extension), contextObject, isolate);
+        referenceName = "extTextureFilterAnisotropicName";
+        break;
+    case OESElementIndexUintName:
+        extensionObject = toV8(static_cast<OESElementIndexUint*>(extension), contextObject, isolate);
+        referenceName = "oesElementIndexUintName";
+        break;
+    case OESStandardDerivativesName:
+        extensionObject = toV8(static_cast<OESStandardDerivatives*>(extension), contextObject, isolate);
+        referenceName = "oesStandardDerivativesName";
+        break;
+    case OESTextureFloatName:
+        extensionObject = toV8(static_cast<OESTextureFloat*>(extension), contextObject, isolate);
+        referenceName = "oesTextureFloatName";
+        break;
+    case OESTextureFloatLinearName:
+        extensionObject = toV8(static_cast<OESTextureFloatLinear*>(extension), contextObject, isolate);
+        referenceName = "oesTextureFloatLinearName";
+        break;
+    case OESTextureHalfFloatName:
+        extensionObject = toV8(static_cast<OESTextureHalfFloat*>(extension), contextObject, isolate);
+        referenceName = "oesTextureHalfFloatName";
+        break;
+    case OESTextureHalfFloatLinearName:
+        extensionObject = toV8(static_cast<OESTextureHalfFloatLinear*>(extension), contextObject, isolate);
+        referenceName = "oesTextureHalfFloatLinearName";
+        break;
+    case OESVertexArrayObjectName:
+        extensionObject = toV8(static_cast<OESVertexArrayObject*>(extension), contextObject, isolate);
+        referenceName = "oesVertexArrayObjectName";
+        break;
+    case WebGLCompressedTextureATCName:
+        extensionObject = toV8(static_cast<WebGLCompressedTextureATC*>(extension), contextObject, isolate);
+        referenceName = "webGLCompressedTextureATCName";
+        break;
+    case WebGLCompressedTextureETC1Name:
+        extensionObject = toV8(static_cast<WebGLCompressedTextureETC1*>(extension), contextObject, isolate);
+        referenceName = "webGLCompressedTextureETC1Name";
+        break;
+    case WebGLCompressedTexturePVRTCName:
+        extensionObject = toV8(static_cast<WebGLCompressedTexturePVRTC*>(extension), contextObject, isolate);
+        referenceName = "webGLCompressedTexturePVRTCName";
+        break;
+    case WebGLCompressedTextureS3TCName:
+        extensionObject = toV8(static_cast<WebGLCompressedTextureS3TC*>(extension), contextObject, isolate);
+        referenceName = "webGLCompressedTextureS3TCName";
+        break;
+    case WebGLDebugRendererInfoName:
+        extensionObject = toV8(static_cast<WebGLDebugRendererInfo*>(extension), contextObject, isolate);
+        referenceName = "webGLDebugRendererInfoName";
+        break;
+    case WebGLDebugShadersName:
+        extensionObject = toV8(static_cast<WebGLDebugShaders*>(extension), contextObject, isolate);
+        referenceName = "webGLDebugShadersName";
+        break;
+    case WebGLDepthTextureName:
+        extensionObject = toV8(static_cast<WebGLDepthTexture*>(extension), contextObject, isolate);
+        referenceName = "webGLDepthTextureName";
+        break;
+    case WebGLDrawBuffersName:
+        extensionObject = toV8(static_cast<WebGLDrawBuffers*>(extension), contextObject, isolate);
+        referenceName = "webGLDrawBuffersName";
+        break;
+    case WebGLLoseContextName:
+        extensionObject = toV8(static_cast<WebGLLoseContext*>(extension), contextObject, isolate);
+        referenceName = "webGLLoseContextName";
+        break;
+    case WebGLExtensionNameCount:
+        notImplemented();
+        return v8::Undefined(isolate);
+    }
+    ASSERT(!extensionObject.IsEmpty());
+    V8HiddenValue::setHiddenValue(isolate, contextObject, v8AtomicString(isolate, referenceName), extensionObject);
+    return extensionObject;
 }
 
 enum ObjectType {
@@ -149,6 +275,20 @@ void V8WebGLRenderingContext::getBufferParameterMethodCustom(const v8::FunctionC
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "getBufferParameter", "WebGLRenderingContext", info.Holder(), info.GetIsolate());
     getObjectParameter(info, kBuffer, exceptionState);
+}
+
+void V8WebGLRenderingContext::getExtensionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "getExtension", "WebGLRenderingContext", info.Holder(), info.GetIsolate());
+    WebGLRenderingContext* impl = V8WebGLRenderingContext::toImpl(info.Holder());
+    if (info.Length() < 1) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TOSTRING_VOID(V8StringResource<>, name, info[0]);
+    RefPtrWillBeRawPtr<WebGLExtension> extension(impl->getExtension(name));
+    v8SetReturnValue(info, toV8Object(extension.get(), info.Holder(), info.GetIsolate()));
 }
 
 void V8WebGLRenderingContext::getFramebufferAttachmentParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
