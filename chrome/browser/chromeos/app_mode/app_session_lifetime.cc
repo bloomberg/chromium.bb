@@ -139,7 +139,7 @@ void InitAppSession(Profile* profile, const std::string& app_id) {
       KioskAppUpdateServiceFactory::GetForProfile(profile);
   DCHECK(update_service);
   if (update_service)
-    update_service->set_app_id(app_id);
+    update_service->Init(app_id);
 
   // Start to monitor external update from usb stick.
   KioskAppManager::Get()->MonitorKioskExternalUpdate();

@@ -40,7 +40,8 @@ class KioskAppUpdateService : public KeyedService,
       system::AutomaticRebootManager* automatic_reboot_manager);
   virtual ~KioskAppUpdateService();
 
-  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+  void Init(const std::string& app_id);
+
   std::string get_app_id() const { return app_id_; }
 
  private:
@@ -58,7 +59,7 @@ class KioskAppUpdateService : public KeyedService,
   virtual void OnChromeUpdateAvailable() override {}
 
   // system::AutomaticRebootManagerObserver overrides:
-  virtual void OnRebootScheduled(Reason reason) override;
+  virtual void OnRebootRequested(Reason reason) override;
   virtual void WillDestroyAutomaticRebootManager() override;
 
   // KioskAppManagerObserver overrides:
