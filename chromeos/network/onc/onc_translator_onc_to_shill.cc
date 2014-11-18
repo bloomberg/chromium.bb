@@ -90,10 +90,10 @@ class LocalTranslator {
   void AddValueAccordingToSignature(const std::string& onc_field_name,
                                     scoped_ptr<base::Value> value);
 
-  // If existent, translates the entry at |onc_field_name| in |onc_object_|
-  // using |table|. It is an error if no matching table entry is found. Writes
-  // the result as entry at |shill_property_name| in |shill_dictionary_|.
-  void TranslateWithTableAndSet(const std::string& onc_field_name,
+  // Translates the value |onc_value| using |table|. It is an error if no
+  // matching table entry is found. Writes the result as entry at
+  // |shill_property_name| in |shill_dictionary_|.
+  void TranslateWithTableAndSet(const std::string& onc_value,
                                 const StringTranslationEntry table[],
                                 const std::string& shill_property_name);
 
