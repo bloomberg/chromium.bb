@@ -61,6 +61,8 @@ For more information of cros build usage:
     # The installation root of packages.
     self.root = None
     self.ping = True
+    self.board = None
+    self.sysroot = None
 
   @classmethod
   def AddParser(cls, parser):
@@ -102,10 +104,9 @@ For more information of cros build usage:
         '--no-ping', dest='ping', action='store_false', default=True,
         help='Do not ping the device before attempting to connect to it.')
 
-  def GetLatestPackage(self, board, pkg):
-    """Returns the path to the latest |pkg| for |board|."""
-    sysroot = cros_build_lib.GetSysroot(board=board)
-    matches = portage_util.FindPackageNameMatches(pkg, board=board)
+  def _FindPackageCPV(self, pkg):
+    """Returns the CPV of a package matching |pkg|."""
+    matches = portage_util.FindPackageNameMatches(pkg, board=self.board)
     if not matches:
       raise ValueError('Package %s is not installed!' % pkg)
 
@@ -116,36 +117,41 @@ For more information of cros build usage:
           'Multiple matches found for %s: ' % pkg,
           [os.path.join(x.category, x.pv) for x in matches])
 
-    cpv = matches[idx]
+    return matches[idx]
+
+  def _GetPackageByCPV(self, cpv):
+    """Returns the path to a binary package corresponding to |cpv|."""
     packages_dir = None
     if self.strip:
       try:
         cros_build_lib.RunCommand(
-            ['strip_package', '--board', board,
+            ['strip_package', '--board', self.board,
              os.path.join(cpv.category, '%s' % (cpv.pv))])
         packages_dir = self.STRIPPED_PACKAGES_DIR
       except cros_build_lib.RunCommandError:
-        logging.error('Cannot strip package %s', pkg)
+        logging.error('Cannot strip package %s', cpv)
         raise
 
     return portage_util.GetBinaryPackagePath(
-        cpv.category, cpv.package, cpv.version, sysroot=sysroot,
+        cpv.category, cpv.package, cpv.version, sysroot=self.sysroot,
         packages_dir=packages_dir)
 
-  def _Emerge(self, device, board, pkg, root, extra_args=None):
+  def _GetLatestPackage(self, pkg):
+    """Returns the path to latest binary package matching |pkg|."""
+    return self._GetPackageByCPV(self._FindPackageCPV(pkg))
+
+  def _Emerge(self, device, pkg, extra_args=None):
     """Copies |pkg| to |device| and emerges it.
 
     Args:
       device: A ChromiumOSDevice object.
-      board: The board to use for retrieving |pkg|.
       pkg: A package name.
-      root: The installation root of |pkg|.
       extra_args: Extra arguments to pass to emerge.
     """
     if os.path.isfile(pkg):
       latest_pkg = pkg
     else:
-      latest_pkg = self.GetLatestPackage(board, pkg)
+      latest_pkg = self._GetLatestPackage(pkg)
 
     if not latest_pkg:
       cros_build_lib.Die('Missing package %s.' % pkg)
@@ -180,8 +186,7 @@ For more information of cros build usage:
         'PORTDIR': device.work_dir,
         'CONFIG_PROTECT': '-*',
     }
-    cmd = ['emerge', '--usepkg', pkg_path]
-    cmd.append('--root=%s' % root)
+    cmd = ['emerge', '--usepkg', pkg_path, '--root=%s' % self.root]
     if extra_args:
       cmd.append(extra_args)
 
@@ -199,13 +204,12 @@ For more information of cros build usage:
       device.RunCommand(['rm', '-rf', portage_tmpdir, pkg_dir],
                         error_code_ok=True, remote_sudo=True)
 
-  def _Unmerge(self, device, pkg, root):
+  def _Unmerge(self, device, pkg):
     """Unmerges |pkg| on |device|.
 
     Args:
       device: A RemoteDevice object.
       pkg: A package name.
-      root: The installation root of |pkg|.
     """
     logging.info('Unmerging %s...', pkg)
     cmd = ['qmerge', '--yes']
@@ -214,7 +218,7 @@ For more information of cros build usage:
         ['qmerge', '--version'], error_code_ok=True).returncode != 0:
       cmd = ['emerge']
 
-    cmd.extend(['--unmerge', pkg, '--root=%s' % root])
+    cmd.extend(['--unmerge', pkg, '--root=%s' % self.root])
     try:
       # Always showing the qmerge/emerge output for clarity.
       device.RunCommand(cmd, capture_output=False, remote_sudo=True,
@@ -257,13 +261,14 @@ For more information of cros build usage:
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
           private_key=self.ssh_private_key, base_dir=self.DEVICE_BASE_DIR,
           ping=self.ping) as device:
-        board = cros_build_lib.GetBoard(device_board=device.board,
-                                        override_board=self.options.board)
-        logging.info('Board is %s', board)
+        self.board = cros_build_lib.GetBoard(device_board=device.board,
+                                             override_board=self.options.board)
+        logging.info('Board is %s', self.board)
+        self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
         if self.clean_binpkg:
-          logging.info('Cleaning outdated binary packages for %s', board)
-          portage_util.CleanOutdatedBinaryPackages(board)
+          logging.info('Cleaning outdated binary packages for %s', self.board)
+          portage_util.CleanOutdatedBinaryPackages(self.board)
 
         if not device.IsPathWritable(self.root):
           # Only remounts rootfs if the given root is not writable.
@@ -272,10 +277,9 @@ For more information of cros build usage:
 
         for pkg in self.options.packages:
           if self.emerge:
-            self._Emerge(device, board, pkg, self.root,
-                         extra_args=self.options.emerge_args)
+            self._Emerge(device, pkg, extra_args=self.options.emerge_args)
           else:
-            self._Unmerge(device, pkg, self.root)
+            self._Unmerge(device, pkg)
 
     except (Exception, KeyboardInterrupt) as e:
       logging.error(e)
