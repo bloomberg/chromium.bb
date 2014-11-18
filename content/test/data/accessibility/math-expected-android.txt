@@ -1,1 +1,3 @@
-#<skip - blink side patch is required>
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.view.View clickable name='a2+b2'
