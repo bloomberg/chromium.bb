@@ -475,6 +475,8 @@ cr.define('options', function() {
         };
 
         $('bluetooth-reconnect-device').onclick = function(event) {
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_BluetoothConnectPairedDevice']);
           var device = $('bluetooth-paired-devices-list').selectedItem;
           var address = device.address;
           chrome.send('updateBluetoothDevice', [address, 'connect']);
@@ -1602,6 +1604,8 @@ cr.define('options', function() {
      * @private
      */
     handleAddBluetoothDevice_: function() {
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_BluetoothShowAddDevice']);
       chrome.send('findBluetoothDevices');
       PageManager.showPageByName('bluetooth', false);
     },

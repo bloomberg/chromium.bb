@@ -8313,6 +8313,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_BluetoothConnectNewDevice">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Bluetooth: Add a device: Connect</description>
+</action>
+
+<action name="Options_BluetoothConnectPairedDevice">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Bluetooth: Connect</description>
+</action>
+
+<action name="Options_BluetoothEnabled_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Sets the Settings:Enable Bluetooth state to false.</description>
+</action>
+
+<action name="Options_BluetoothEnabled_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Sets the Settings:Enable Bluetooth state to true.</description>
+</action>
+
+<action name="Options_BluetoothRemoveDevice">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Bluetooth: remove a device from the list</description>
+</action>
+
+<action name="Options_BluetoothShowAddDevice">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Bluetooth: Add a device</description>
+</action>
+
 <action name="Options_ChangeDefaultZoomLevel">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

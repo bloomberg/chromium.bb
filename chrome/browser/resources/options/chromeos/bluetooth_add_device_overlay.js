@@ -42,6 +42,8 @@ cr.define('options', function() {
 
       var self = this;
       $('bluetooth-add-device-apply-button').onclick = function(event) {
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_BluetoothConnectNewDevice']);
         var device = self.deviceList_.selectedItem;
         var address = device.address;
         PageManager.closeOverlay();

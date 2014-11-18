@@ -299,6 +299,9 @@ cr.define('options.system.bluetooth', function() {
         // forgetting the device.
         chrome.send('updateBluetoothDevice',
           [item.data.address, item.connected ? 'disconnect' : 'forget']);
+
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_BluetoothRemoveDevice']);
       }
     },
 
