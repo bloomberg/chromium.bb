@@ -35,6 +35,8 @@ class FakePictureLayer : public PictureLayer {
     always_update_resources_ = always_update_resources;
   }
 
+  void disable_lcd_text() { disable_lcd_text_ = true; }
+
   bool Update(ResourceUpdateQueue* queue,
               const OcclusionTracker<Layer>* occlusion) override;
 
@@ -55,6 +57,7 @@ class FakePictureLayer : public PictureLayer {
   size_t push_properties_count_;
   size_t output_surface_created_count_;
   bool always_update_resources_;
+  bool disable_lcd_text_;
 };
 
 }  // namespace cc

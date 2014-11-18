@@ -5430,6 +5430,9 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
+    // Avoid LCD text on the layer so we don't cause extra commits when we
+    // pinch.
+    layer->disable_lcd_text();
     pinch->AddChild(layer);
 
     layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
@@ -5476,11 +5479,6 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         PostNextAfterDraw(host_impl);
         break;
       case 2:
-        // Wait for any activations that need to occur due to starting a pinch,
-        // and drawing with a non-identity transform (for eg. LCD text being
-        // disabled).
-        if (host_impl->pending_tree())
-          break;
         if (quad_scale_delta != 1.f)
           break;
         // Drew at page scale 1.5 after pinching in.
@@ -5625,7 +5623,6 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
   void SetupTree() override {
     step_ = 1;
     continuous_draws_ = 0;
-    expect_draw_ = false;
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_refptr<Layer> root = Layer::Create();
@@ -5643,6 +5640,9 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
+    // Avoid LCD text on the layer so we don't cause extra commits when we
+    // pinch.
+    layer->disable_lcd_text();
     pinch->AddChild(layer);
 
     layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
@@ -5705,18 +5705,17 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         EXPECT_EQ(1.f, quad_scale_delta);
         break;
       case 5:
-        // TODO(danakj): We may get one more draw because the NotifyReadyToDraw
-        // is asynchronous from the previous draw and happens late.
+        // TODO(danakj): We get more draws before the NotifyReadyToDraw
+        // because it is asynchronous from the previous draw and happens late.
         break;
       case 6:
-        // We may get another draw if we activate due to the pinch (eg LCD text
-        // gets disabled).
-        if (expect_draw_)
-          break;
+        // NotifyReadyToDraw happened. If we were already inside a frame, we may
+        // try to draw once more.
+        break;
+      case 7:
         NOTREACHED() << "No draws should happen once we have a complete frame.";
         break;
     }
-    expect_draw_ = false;
     return draw_result;
   }
 
@@ -5744,8 +5743,13 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         }
         break;
       case 4:
-        // TODO(danakj): Now we wait for NotifyReadyToDraw to avoid flakiness
-        // since it happens asynchronously.
+        ++step_;
+        break;
+      case 5:
+        // Waiting for NotifyReadyToDraw.
+        break;
+      case 6:
+        // NotifyReadyToDraw happened.
         ++step_;
         break;
     }
@@ -5753,19 +5757,15 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
 
   void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) override {
     if (step_ == 5) {
-      // We should not continue to draw any more. End the test after a timeout
-      // to watch for any extraneous draws.
+      ++step_;
+      // NotifyReadyToDraw has happened, we may draw once more, but should not
+      // get any more draws after that. End the test after a timeout to watch
+      // for any extraneous draws.
       // TODO(brianderson): We could remove this delay and instead wait until
       // the BeginFrameSource decides it doesn't need to send frames anymore,
       // or test that it already doesn't here.
       EndTestAfterDelayMs(16 * 4);
-      ++step_;
-      expect_draw_ = true;
     }
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    expect_draw_ = true;
   }
 
   void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
@@ -5782,7 +5782,6 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
   FakeContentLayerClient client_;
   int step_;
   int continuous_draws_;
-  bool expect_draw_;
   base::WaitableEvent playback_allowed_event_;
 };
 
