@@ -23,15 +23,15 @@ function test()
             }
 
             var view;
-            function addNodeHighlightSniffer(constructorName, nodeId, onSuccess)
+            function addNodeSelectSniffer(constructorName, nodeId, onSuccess)
             {
-                InspectorTest.addSniffer(view, "_didHighlightById", checkNodeIsHighlighted.bind(view, constructorName, nodeId, onSuccess));
+                InspectorTest.addSniffer(view, "_selectRevealedNode", checkNodeIsSelected.bind(view, constructorName, nodeId, onSuccess));
             }
 
             function step2()
             {
                 view = InspectorTest.currentProfileView();
-                addNodeHighlightSniffer("A", "101", step3);
+                addNodeSelectSniffer("A", "101", step3);
                 view.performSearch({query:"@101", caseSensitive: false});
             }
 
@@ -43,78 +43,49 @@ function test()
                     return next();
                 }
                 InspectorTest.addResult("PASS: node @a was not found");
-                InspectorTest.addSniffer(view, "_didHighlightById", step5);
+                InspectorTest.addSniffer(view, "_selectRevealedNode", step5);
                 view.performSearch({query: "@999", caseSensitive: false}, step5);
             }
 
-            function step5(found)
+            function step5(callback, parentNode, node)
             {
-                if (found) {
+                if (node) {
                     InspectorTest.addResult("FAIL: found node @999");
                     return next();
                 }
                 InspectorTest.addResult("PASS: node @999 was not found");
-                addNodeHighlightSniffer("B", "100", step6);
+                addNodeSelectSniffer("B", "100", step6);
                 view.performSearch({query: "@100", caseSensitive: false});
             }
 
             function step6()
             {
-                addNodeHighlightSniffer("B", "400", step7);
+                addNodeSelectSniffer("B", "400", step7);
                 view.performSearch({query: "@400", caseSensitive: false});
             }
 
             function step7()
             {
-                addNodeHighlightSniffer("A", "401", next);
+                addNodeSelectSniffer("A", "401", next);
                 view.performSearch({query: "@401", caseSensitive: false});
             }
 
-            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, found)
+            function checkNodeIsSelected(constructorName, nodeId, onSuccess, parentNode, node)
             {
-                if (!found) {
+                if (!node) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
                     return next();
                 }
-                try {
-                    var constructorsGrid = InspectorTest.currentProfileView()._dataGrid;
-                    var constructorNodes = constructorsGrid.rootNode().children;
-                    var constructorNode;
-                    for (var i = 0; i < constructorNodes.length; i++) {
-                        if (constructorNodes[i].data.object === constructorName) {
-                            constructorNode = constructorNodes[i];
-                            break;
-                        }
-                    }
-                    if (!constructorNode) {
-                        InspectorTest.addResult("FAIL: constructor " + constructorName + " not found in viewport");
-                        return next();
-                    }
-                    var instanceNodes = constructorNode.children;
-                    for (var i = 0; i < instanceNodes.length; i++) {
-                        if (instanceNodes[i].snapshotNodeId == nodeId) {
-                            if (!instanceNodes[i].element().classList.contains("highlighted-row")) {
-                                if (constructorsGrid._nodeToHighlightAfterScroll === instanceNodes[i]) {
-                                    function afterScroll(nodeToHighlight)
-                                    {
-                                        InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
-                                        onSuccess();
-                                    }
-                                    InspectorTest.addSniffer(WebInspector.HeapSnapshotSortableDataGrid.prototype, "highlightNode", afterScroll);
-                                    return;
-                                } else {
-                                    InspectorTest.addResult("FAIL: node is not highlighted");
-                                    return next();
-                                }
-                            }
-                            InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
-                            return onSuccess();
-                        }
-                    }
-                } catch (e) {
-                    InspectorTest.addResult("EXCEPTION: " + e);
+                if (constructorName !== parentNode._name) {
+                    InspectorTest.addResult("FAIL: constructor name doesn't match. " + constructorName + " !== " + parentNode._name);
+                    next();
                 }
-                return next();
+                if (nodeId != node.snapshotNodeId) {
+                    InspectorTest.addResult("FAIL: snapshot node id doesn't match. " + nodeId + " !== " + node.snapshotNodeId);
+                    next();
+                }
+                InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
+                return onSuccess();
             }
         }
     ]);

@@ -25,9 +25,9 @@ function test()
                 InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_jumpToSearchResult", jumpToSearchResult);
             }
 
-            function addNodeHighlightSniffer(callback)
+            function addNodeSelectedSniffer(callback)
             {
-                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_didHighlightById", callback);
+                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_selectRevealedNode", callback);
             }
 
             function step1a()
@@ -66,20 +66,20 @@ function test()
             function step4(resultCount)
             {
                 InspectorTest.assertEquals(0, resultCount, "Search for not-existing node");
-                addNodeHighlightSniffer(step5);
+                addNodeSelectedSniffer(step5);
                 InspectorTest.currentProfileView().performSearch({query: "@999", caseSensitive: false});
             }
 
-            function step5(found)
+            function step5(parentNode, node)
             {
-                InspectorTest.assertEquals(false, found, "Search for not-existing node by id");
-                addNodeHighlightSniffer(step6);
+                InspectorTest.assertEquals(false, !!node, "Search for not-existing node by id");
+                addNodeSelectedSniffer(step6);
                 InspectorTest.currentProfileView().performSearch({query: "@83", caseSensitive:false});
             }
 
-            function step6(found)
+            function step6(parentNode, node)
             {
-                InspectorTest.assertEquals(true, found, "Search for existing node by id");
+                InspectorTest.assertEquals(true, !!node, "Search for existing node by id");
                 next();
             }
         }
