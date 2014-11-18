@@ -2340,6 +2340,7 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(10, 10));
+    root_layer->SetContentsOpaque(true);
 
     layer_tree_host()->SetRootLayer(root_layer);
 

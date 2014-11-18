@@ -5658,6 +5658,10 @@ class LCDTextTest
     child_->AddChild(grand_child_.get());
     root_->AddChild(child_.get());
 
+    root_->SetContentsOpaque(true);
+    child_->SetContentsOpaque(true);
+    grand_child_->SetContentsOpaque(true);
+
     gfx::Transform identity_matrix;
     SetLayerPropertiesForTesting(root_.get(),
                                  identity_matrix,
@@ -5769,6 +5773,22 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 8: Sanity check: restore transform and opacity.
   child_->SetTransform(identity_matrix);
   child_->SetOpacity(1.f);
+  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+                                 layers_always_allowed_lcd_text_);
+  EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
+  EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
+  EXPECT_EQ(expect_lcd_text, grand_child_->can_use_lcd_text());
+
+  // Case 9: Non-opaque content.
+  child_->SetContentsOpaque(false);
+  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+                                 layers_always_allowed_lcd_text_);
+  EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
+  EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
+  EXPECT_EQ(expect_lcd_text, grand_child_->can_use_lcd_text());
+
+  // Case 10: Sanity check: restore content opaqueness.
+  child_->SetContentsOpaque(true);
   ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
