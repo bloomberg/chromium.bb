@@ -381,6 +381,11 @@ source_set("browser") {
     ]
   }
 
+  if (use_aura || is_mac || is_android) {
+    sources += rebase_path(
+      content_browser_gypi_values.compositor_browser_surface_sources,
+      ".", "//content")
+  }
   if (use_aura || is_mac) {
     sources += rebase_path(
       content_browser_gypi_values.compositor_browser_sources,

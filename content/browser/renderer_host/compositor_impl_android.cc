@@ -28,10 +28,15 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/child_process_launcher_android.h"
+#include "content/browser/compositor/onscreen_display_client.h"
+#include "content/browser/compositor/surface_display_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
@@ -70,6 +75,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
                        base::Unretained(this))) {
     capabilities_.adjust_deadline_for_parent = false;
+    capabilities_.max_frames_pending = 2;
     compositor_impl_ = compositor_impl;
     main_thread_ = base::MessageLoopProxy::current();
   }
@@ -129,6 +135,18 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
 static bool g_initialized = false;
 
+bool g_use_surface_manager = false;
+base::LazyInstance<cc::SurfaceManager> g_surface_manager =
+    LAZY_INSTANCE_INITIALIZER;
+
+cc::SurfaceManager* GetSurfaceManager() {
+  if (!g_use_surface_manager)
+    return nullptr;
+  return g_surface_manager.Pointer();
+}
+
+int g_surface_id_namespace = 0;
+
 } // anonymous namespace
 
 // static
@@ -141,6 +159,7 @@ Compositor* Compositor::Create(CompositorClient* client,
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
   g_initialized = true;
+  g_use_surface_manager = UseSurfacesEnabled();
 }
 
 // static
@@ -151,6 +170,8 @@ bool CompositorImpl::IsInitialized() {
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
+      surface_id_allocator_(
+        new cc::SurfaceIdAllocator(++g_surface_id_namespace)),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
@@ -380,6 +401,7 @@ void CompositorImpl::SetVisible(bool visible) {
       CancelComposite();
     ui_resource_provider_.SetLayerTreeHost(NULL);
     host_.reset();
+    display_client_.reset();
     if (current_composite_task_) {
       current_composite_task_->Cancel();
       current_composite_task_.reset();
@@ -533,9 +555,25 @@ void CompositorImpl::CreateOutputSurface(bool fallback) {
     return;
   }
 
-  host_->SetOutputSurface(
-      scoped_ptr<cc::OutputSurface>(new OutputSurfaceWithoutParent(
-          context_provider, weak_factory_.GetWeakPtr())));
+  scoped_ptr<cc::OutputSurface> real_output_surface(
+      new OutputSurfaceWithoutParent(context_provider,
+                                     weak_factory_.GetWeakPtr()));
+
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  if (manager) {
+    display_client_.reset(
+        new OnscreenDisplayClient(real_output_surface.Pass(), manager,
+                                  base::MessageLoopProxy::current()));
+    scoped_ptr<SurfaceDisplayOutputSurface> surface_output_surface(
+        new SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),
+                                        context_provider));
+
+    display_client_->set_surface_output_surface(surface_output_surface.get());
+    surface_output_surface->set_display_client(display_client_.get());
+    host_->SetOutputSurface(surface_output_surface.Pass());
+  } else {
+    host_->SetOutputSurface(real_output_surface.Pass());
+  }
 }
 
 void CompositorImpl::PopulateGpuCapabilities(

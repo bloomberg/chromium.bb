@@ -28,10 +28,12 @@ struct ANativeWindow;
 namespace cc {
 class Layer;
 class LayerTreeHost;
+class SurfaceIdAllocator;
 }
 
 namespace content {
 class CompositorClient;
+class OnscreenDisplayClient;
 class UIResourceProvider;
 
 // -----------------------------------------------------------------------------
@@ -141,6 +143,9 @@ class CONTENT_EXPORT CompositorImpl
 
   scoped_ptr<cc::LayerTreeHost> host_;
   content::UIResourceProviderImpl ui_resource_provider_;
+
+  scoped_ptr<OnscreenDisplayClient> display_client_;
+  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
 
   gfx::Size size_;
   bool has_transparent_background_;

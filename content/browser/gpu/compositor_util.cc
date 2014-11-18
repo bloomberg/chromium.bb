@@ -268,10 +268,14 @@ bool IsForceGpuRasterizationEnabled() {
 }
 
 bool UseSurfacesEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
   return command_line.HasSwitch(switches::kUseSurfaces);
+#endif
 }
 
 base::DictionaryValue* GetFeatureStatus() {

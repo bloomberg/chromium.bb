@@ -1489,8 +1489,6 @@
       'browser/compositor/io_surface_layer_mac.mm',
       'browser/compositor/io_surface_texture_mac.h',
       'browser/compositor/io_surface_texture_mac.mm',
-      'browser/compositor/onscreen_display_client.cc',
-      'browser/compositor/onscreen_display_client.h',
       'browser/compositor/overlay_candidate_validator_ozone.cc',
       'browser/compositor/overlay_candidate_validator_ozone.h',
       'browser/compositor/owned_mailbox.h',
@@ -1515,9 +1513,13 @@
       'browser/compositor/software_output_device_win.h',
       'browser/compositor/software_output_device_x11.cc',
       'browser/compositor/software_output_device_x11.h',
+      'browser/context_factory.cc',
+    ],
+    'compositor_browser_surface_sources': [
+      'browser/compositor/onscreen_display_client.cc',
+      'browser/compositor/onscreen_display_client.h',
       'browser/compositor/surface_display_output_surface.cc',
       'browser/compositor/surface_display_output_surface.h',
-      'browser/context_factory.cc',
     ],
     'plugin_browser_sources': [
       'browser/pepper_flash_settings_helper_impl.cc',
@@ -1692,6 +1694,9 @@
       'dependencies': [
         '../sandbox/sandbox.gyp:sandbox',
       ],
+    }],
+    ['OS!="ios"', {
+      'sources': [ '<@(compositor_browser_surface_sources)' ],
     }],
     ['OS!="android" and OS!="ios"', {
       'dependencies': [
