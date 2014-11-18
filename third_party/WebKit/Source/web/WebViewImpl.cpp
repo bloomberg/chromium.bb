@@ -2815,17 +2815,17 @@ void WebViewImpl::clearFocusedElement()
         localFrame->selection().clear();
 }
 
-void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
+bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
 {
     LocalFrame* frame = page()->mainFrame() && page()->mainFrame()->isLocalFrame()
         ? page()->deprecatedLocalMainFrame() : 0;
     Element* element = focusedElement();
     if (!frame || !frame->view() || !element)
-        return;
+        return false;
 
     if (!m_webSettings->autoZoomFocusedNodeToLegibleScale()) {
         frame->view()->scrollElementToRect(element, IntRect(rect.x, rect.y, rect.width, rect.height));
-        return;
+        return false;
     }
 
     float scale;
@@ -2833,7 +2833,9 @@ void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
     bool needAnimation;
     computeScaleAndScrollForFocusedNode(element, scale, scroll, needAnimation);
     if (needAnimation)
-        startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
+        return startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
+
+    return false;
 }
 
 void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& newScale, IntPoint& newScroll, bool& needAnimation)

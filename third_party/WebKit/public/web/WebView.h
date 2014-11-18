@@ -181,8 +181,8 @@ public:
     virtual void clearFocusedElement() = 0;
 
     // Scrolls the node currently in focus into |rect|, where |rect| is in
-    // window space.
-    virtual void scrollFocusedNodeIntoRect(const WebRect&) { }
+    // window space. Returns true if an animation was started.
+    virtual bool scrollFocusedNodeIntoRect(const WebRect&) { return false; }
 
     // Advance the focus of the WebView forward to the next element or to the
     // previous element in the tab sequence (if reverse is true).

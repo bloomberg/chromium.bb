@@ -183,7 +183,7 @@ public:
     virtual void setFocusedFrame(WebFrame*) override;
     virtual void setInitialFocus(bool reverse) override;
     virtual void clearFocusedElement() override;
-    virtual void scrollFocusedNodeIntoRect(const WebRect&) override;
+    virtual bool scrollFocusedNodeIntoRect(const WebRect&) override;
     virtual void zoomToFindInPageRect(const WebRect&) override;
     virtual void advanceFocus(bool reverse) override;
     virtual double zoomLevel() override;
