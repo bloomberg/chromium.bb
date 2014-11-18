@@ -223,18 +223,21 @@ void RecordSSLBlockingPageDetailedStats(bool proceed,
 }
 
 void LaunchDateAndTimeSettings() {
-#if defined(OS_CHROMEOS)
+  // The code for each OS is completely separate, in order to avoid bugs like
+  // https://crbug.com/430877 .
+#if defined(OS_ANDROID)
+  chrome::android::OpenDateAndTimeSettings();
+
+#elif defined(OS_CHROMEOS)
   std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
       l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   chrome::ShowSettingsSubPageForProfile(
       ProfileManager::GetActiveUserProfile(), sub_page);
-  return;
-#elif defined(OS_ANDROID)
-  chrome::android::OpenDateAndTimeSettings();
-  return;
+
 #elif defined(OS_IOS)
   // iOS does not have a way to launch the date and time settings.
   NOTREACHED();
+
 #elif defined(OS_LINUX)
   struct ClockCommand {
     const char* pathname;
@@ -269,9 +272,20 @@ void LaunchDateAndTimeSettings() {
     // Alas, there is nothing we can do.
     return;
   }
+
+  base::LaunchOptions options;
+  options.wait = false;
+  options.allow_new_privs = true;
+  base::LaunchProcess(command, options, NULL);
+
 #elif defined(OS_MACOSX)
   CommandLine command(base::FilePath("/usr/bin/open"));
   command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
+
+  base::LaunchOptions options;
+  options.wait = false;
+  base::LaunchProcess(command, options, NULL);
+
 #elif defined(OS_WIN)
   base::FilePath path;
   PathService::Get(base::DIR_SYSTEM, &path);
@@ -280,18 +294,16 @@ void LaunchDateAndTimeSettings() {
   CommandLine command(path);
   command.AppendArg(std::string("/name"));
   command.AppendArg(std::string("Microsoft.DateAndTime"));
-#else
-  return;
-#endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   base::LaunchOptions options;
   options.wait = false;
-#if defined(OS_LINUX)
-  options.allow_new_privs = true;
-#endif
   base::LaunchProcess(command, options, NULL);
+
+#else
+  NOTREACHED();
+
 #endif
+  // Don't add code here! (See the comment at the beginning of the function.)
 }
 
 bool IsErrorDueToBadClock(const base::Time& now, int error) {
