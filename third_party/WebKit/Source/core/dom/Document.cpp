@@ -994,7 +994,9 @@ PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep,
             if (!importContainerNodeChildren(oldElement, newElement, exceptionState))
                 return nullptr;
             if (isHTMLTemplateElement(*oldElement)
-                && !importContainerNodeChildren(toHTMLTemplateElement(oldElement)->content(), toHTMLTemplateElement(newElement)->content(), exceptionState))
+                && !ensureTemplateDocument().importContainerNodeChildren(
+                    toHTMLTemplateElement(oldElement)->content(),
+                    toHTMLTemplateElement(newElement)->content(), exceptionState))
                 return nullptr;
         }
 
