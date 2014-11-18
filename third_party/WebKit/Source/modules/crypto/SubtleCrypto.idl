@@ -55,16 +55,16 @@ typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
     [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBuffer data);
     [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBufferView data);
 
-    [CallWith=ScriptState] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [CallWith=ScriptState] Promise generateKey(Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 
-    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
-    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
-    [CallWith=ScriptState] Promise importKey(KeyFormat format, Dictionary keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, Dictionary keyData, Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 
     [CallWith=ScriptState] Promise exportKey(KeyFormat format, CryptoKey key);
 
     [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, Dictionary wrapAlgorithm);
 
-    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
-    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 };
