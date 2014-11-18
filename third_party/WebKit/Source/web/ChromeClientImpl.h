@@ -33,6 +33,7 @@
 #define ChromeClientImpl_h
 
 #include "core/page/ChromeClient.h"
+#include "core/page/WindowFeatures.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/PopupMenu.h"
 #include "platform/weborigin/KURL.h"
@@ -177,15 +178,11 @@ public:
 private:
     virtual bool isChromeClientImpl() const override { return true; }
 
-    WebNavigationPolicy getNavigationPolicy();
+    WebNavigationPolicy getNavigationPolicy(const WindowFeatures&);
     void setCursor(const WebCursorInfo&);
 
     WebViewImpl* m_webView;  // weak pointer
-    bool m_toolbarsVisible;
-    bool m_statusbarVisible;
-    bool m_scrollbarsVisible;
-    bool m_menubarVisible;
-    bool m_resizable;
+    WindowFeatures m_windowFeatures;
 
     PagePopupDriver* m_pagePopupDriver;
 };

@@ -49,7 +49,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupDriver.h"
-#include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
@@ -128,11 +127,6 @@ static WebSelectionBound toWebSelectionBound(const CompositedSelectionBound& bou
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     : m_webView(webView)
-    , m_toolbarsVisible(true)
-    , m_statusbarVisible(true)
-    , m_scrollbarsVisible(true)
-    , m_menubarVisible(true)
-    , m_resizable(true)
     , m_pagePopupDriver(webView)
 {
 }
@@ -228,8 +222,8 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
 
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
-        policy = getNavigationPolicy();
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy() != WebNavigationPolicyNewBackgroundTab)
+        policy = getNavigationPolicy(features);
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab)
         policy = WebNavigationPolicyNewForegroundTab;
 
     ASSERT(frame->document());
@@ -276,16 +270,16 @@ static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, Navigat
     *policy = userPolicy;
 }
 
-WebNavigationPolicy ChromeClientImpl::getNavigationPolicy()
+WebNavigationPolicy ChromeClientImpl::getNavigationPolicy(const WindowFeatures& features)
 {
     // If our default configuration was modified by a script or wasn't
     // created by a user gesture, then show as a popup. Else, let this
     // new window be opened as a toplevel window.
-    bool asPopup = !m_toolbarsVisible
-        || !m_statusbarVisible
-        || !m_scrollbarsVisible
-        || !m_menubarVisible
-        || !m_resizable;
+    bool asPopup = !features.toolBarVisible
+        || !features.statusBarVisible
+        || !features.scrollbarsVisible
+        || !features.menuBarVisible
+        || !features.resizable;
 
     NavigationPolicy policy = NavigationPolicyNewForegroundTab;
     if (asPopup)
@@ -302,8 +296,8 @@ void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
 
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
-        policy = getNavigationPolicy();
-    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy() != WebNavigationPolicyNewBackgroundTab)
+        policy = getNavigationPolicy(m_windowFeatures);
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy(m_windowFeatures) != WebNavigationPolicyNewBackgroundTab)
         policy = WebNavigationPolicyNewForegroundTab;
     m_webView->client()->show(policy);
 }
@@ -321,27 +315,27 @@ void ChromeClientImpl::runModal()
 
 void ChromeClientImpl::setToolbarsVisible(bool value)
 {
-    m_toolbarsVisible = value;
+    m_windowFeatures.toolBarVisible = value;
 }
 
 bool ChromeClientImpl::toolbarsVisible()
 {
-    return m_toolbarsVisible;
+    return m_windowFeatures.toolBarVisible;
 }
 
 void ChromeClientImpl::setStatusbarVisible(bool value)
 {
-    m_statusbarVisible = value;
+    m_windowFeatures.statusBarVisible = value;
 }
 
 bool ChromeClientImpl::statusbarVisible()
 {
-    return m_statusbarVisible;
+    return m_windowFeatures.statusBarVisible;
 }
 
 void ChromeClientImpl::setScrollbarsVisible(bool value)
 {
-    m_scrollbarsVisible = value;
+    m_windowFeatures.scrollbarsVisible = value;
     WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
     if (webFrame)
         webFrame->setCanHaveScrollbars(value);
@@ -349,22 +343,22 @@ void ChromeClientImpl::setScrollbarsVisible(bool value)
 
 bool ChromeClientImpl::scrollbarsVisible()
 {
-    return m_scrollbarsVisible;
+    return m_windowFeatures.scrollbarsVisible;
 }
 
 void ChromeClientImpl::setMenubarVisible(bool value)
 {
-    m_menubarVisible = value;
+    m_windowFeatures.menuBarVisible = value;
 }
 
 bool ChromeClientImpl::menubarVisible()
 {
-    return m_menubarVisible;
+    return m_windowFeatures.menuBarVisible;
 }
 
 void ChromeClientImpl::setResizable(bool value)
 {
-    m_resizable = value;
+    m_windowFeatures.resizable = value;
 }
 
 bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
