@@ -439,11 +439,11 @@ void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
 
 namespace {
 
-class ChromeJavaScritpNativeDialogCocoaFactory
+class ChromeJavaScriptNativeDialogCocoaFactory
     : public JavaScriptNativeDialogFactory {
  public:
-  ChromeJavaScritpNativeDialogCocoaFactory() {}
-  ~ChromeJavaScritpNativeDialogCocoaFactory() override {}
+  ChromeJavaScriptNativeDialogCocoaFactory() {}
+  ~ChromeJavaScriptNativeDialogCocoaFactory() override {}
 
  private:
   NativeAppModalDialog* CreateNativeJavaScriptDialog(
@@ -452,12 +452,12 @@ class ChromeJavaScritpNativeDialogCocoaFactory
     return new JavaScriptAppModalDialogCocoa(dialog);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScritpNativeDialogCocoaFactory);
+  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptNativeDialogCocoaFactory);
 };
 
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
   SetJavaScriptNativeDialogFactory(
-      make_scoped_ptr(new ChromeJavaScritpNativeDialogCocoaFactory));
+      make_scoped_ptr(new ChromeJavaScriptNativeDialogCocoaFactory));
 }
