@@ -17,31 +17,13 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
-
-  # Trusted architecture
-  use_trusted_x86 = (cpu_arch == "x86")
-  use_trusted_x64 = ((cpu_arch == "x64") || (os == "win"))
-  use_trusted_arm = (cpu_arch == "arm")
-
-  # Untrusted architecture
-  use_nacl_x86 = (cpu_arch == "x86")
-  use_nacl_x64 = ((cpu_arch == "x64") || (os == "win"))
-  use_nacl_arm = (cpu_arch == "arm")
-
-  # Untrusted libc
-  use_gcc_newlib = true
-  use_gcc_glibc = false
-  use_clang_newlib = false
-  use_pnacl_newlib = false
-
-  is_android_webview_build = false
-
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
   #   1 means minimal symbols, usually enough for backtraces only.
   #   0 means no symbols.
-  symbol_level = 2
+  #   -1 means auto-set (off in release, regular in debug).
+  symbol_level = -1
 
   # Component build.
   is_component_build = false
@@ -50,7 +32,8 @@ declare_args() {
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
-  is_clang = false
+  # NACL CHANGE: don't use clang on Linux because we don't DEPS it in.
+  is_clang = (os == "mac" || os == "ios" || os == "chromeos")
 
   # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
   # we build 32-bit on Windows regardless of the current host OS bit depth.
@@ -82,6 +65,23 @@ declare_args() {
 
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
+
+  if (os == "chromeos") {
+    # Allows the target toolchain to be injected as arguments. This is needed
+    # to support the CrOS build system which supports per-build-configuration
+    # toolchains.
+    cros_use_custom_toolchain = false
+  }
+
+  # TODO(cjhopman): Make target_arch work for all platforms.
+
+  # Architecture of the target device. For Android builds, this will be equal to
+  # the cpu_arch of the default toolchain. When checking the CPU architecture
+  # for source files and build dependencies you should almost alway use cpu_arch
+  # instead. cpu_arch is the architecture of the current toolchain and allows
+  # cross-compiles (compiling the same target for multiple toolchains in the
+  # same build) to work.
+  target_arch = "arm"
 }
 
 # =============================================================================
@@ -120,9 +120,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_clang) {
-    is_clang = true  # Always use clang on Mac.
-  }
 } else if (os == "android") {
   is_android = true
   is_chromeos = false
@@ -161,10 +158,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_gyp_xcode_generator) {
-    # Always use clang on iOS when using ninja
-    is_clang = true
-  }
 } else if (os == "linux") {
   is_android = false
   is_chromeos = false
@@ -190,6 +183,14 @@ if (is_win) {
   } else {
     cpu_arch = "x86"
   }
+}
+
+if (is_android) {
+  # TODO(cjhopman): enable this assert once bots are updated to not set
+  # cpu_arch.
+  #assert(cpu_arch == build_cpu_arch, "Android device target architecture should
+  #    be set with 'target_arch', not 'cpu_arch'")
+  cpu_arch = target_arch
 }
 
 # =============================================================================
@@ -309,57 +310,10 @@ set_sources_assignment_filter(sources_assignment_filter)
 # BUILD OPTIONS
 # =============================================================================
 
-if (is_component_build) {
-  component_mode = "shared_library"
-} else {
-  component_mode = "source_set"
-}
-
 # These Sanitizers all imply using the Clang compiler. On Windows they either
 # don't work or work differently.
 if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
   is_clang = true
-}
-
-# ==============================================================================
-# TOOLCHAIN SETUP
-# ==============================================================================
-#
-# Here we set the default toolchain, as well as the variable host_toolchain
-# which will identify the toolchain corresponding to the local system when
-# doing cross-compiles. When not cross-compiling, this will be the same as the
-# default toolchain.
-
-if (is_nacl) {
-  if (build_os == "mac") {
-    host_toolchain = "//native_client/build/toolchain/mac:clang"
-  }
-  else {
-    host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
-  }
-} else if (is_win) {
-  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
-  # to eliminate these conditionals.
-  if (build_cpu_arch == "x64") {
-    host_toolchain = "//native_client/build/toolchain/win:64"
-  } else if (build_cpu_arch == "x86") {
-    host_toolchain = "//native_client/build/toolchain/win:32"
-  }
-
-  if (cpu_arch == "x64") {
-    set_default_toolchain("//native_client/build/toolchain/win:64")
-  } else if (cpu_arch == "x86") {
-    set_default_toolchain("//native_client/build/toolchain/win:32")
-  }
-} else if (is_linux) {
-  host_toolchain = "//native_client/build/toolchain/linux:$build_cpu_arch"
-  set_default_toolchain("//native_client/build/toolchain/linux:$cpu_arch")
-} else if (is_mac) {
-  host_toolchain = "//native_client/build/toolchain/mac:clang"
-  set_default_toolchain(host_toolchain)
-} else if (is_ios) {
-  host_toolchain = "//native_client/build/toolchain/mac:host_clang"
-  set_default_toolchain("//native_client/build/toolchain/mac:clang")
 }
 
 # =============================================================================
@@ -405,23 +359,28 @@ if (is_debug) {
 
 _native_compiler_configs += [ _default_optimization_config ]
 
+# If it wasn't manually set, set to an appropriate default.
+if (symbol_level == -1) {
+  # Linux is slowed by having symbols as part of the target binary, whereas
+  # Mac and Windows have them separate, so in Release Linux, default them off.
+  if (is_debug || !is_linux) {
+    symbol_level = 2
+  } else {
+    symbol_level = 0
+  }
+}
+
 # Symbol setup.
-if (is_clang && is_linux) {
-  # Clang creates chubby debug information, which makes linking very slow.
-  # For now, don't create debug information with clang.
-  # See http://crbug.com/70000
-  # TODO(brettw) This just copies GYP. Why not do this on Mac as well?
-  default_symbols_config = "//native_client/build/config/compiler:no_symbols"
-} else if (symbol_level == 2) {
-  default_symbols_config = "//native_client/build/config/compiler:symbols"
+if (symbol_level == 2) {
+  _default_symbols_config = "//native_client/build/config/compiler:symbols"
 } else if (symbol_level == 1) {
-  default_symbols_config = "//native_client/build/config/compiler:minimal_symbols"
+  _default_symbols_config = "//native_client/build/config/compiler:minimal_symbols"
 } else if (symbol_level == 0) {
-  default_symbols_config = "//native_client/build/config/compiler:no_symbols"
+  _default_symbols_config = "//native_client/build/config/compiler:no_symbols"
 } else {
   assert(false, "Bad value for symbol_level.")
 }
-_native_compiler_configs += [ default_symbols_config ]
+_native_compiler_configs += [ _default_symbols_config ]
 
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
@@ -496,4 +455,232 @@ set_defaults("source_set") {
   }
 }
 
+# ==============================================================================
+# TOOLCHAIN SETUP
+# ==============================================================================
+#
+# Here we set the default toolchain, as well as the variable host_toolchain
+# which will identify the toolchain corresponding to the local system when
+# doing cross-compiles. When not cross-compiling, this will be the same as the
+# default toolchain.
 
+if (is_nacl) {
+  if (build_os == "mac") {
+    host_toolchain = "//native_client/build/toolchain/mac:clang"
+  }
+  else {
+    host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
+  }
+} else if (is_win) {
+  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
+  # to eliminate these conditionals.
+  if (build_cpu_arch == "x64") {
+    host_toolchain = "//native_client/build/toolchain/win:64"
+  } else if (build_cpu_arch == "x86") {
+    host_toolchain = "//native_client/build/toolchain/win:32"
+  }
+
+  if (cpu_arch == "x64") {
+    set_default_toolchain("//native_client/build/toolchain/win:64")
+  } else if (cpu_arch == "x86") {
+    set_default_toolchain("//native_client/build/toolchain/win:32")
+  }
+} else if (is_linux) {
+  host_toolchain = "//native_client/build/toolchain/linux:$build_cpu_arch"
+  set_default_toolchain("//native_client/build/toolchain/linux:$cpu_arch")
+} else if (is_mac) {
+  host_toolchain = "//native_client/build/toolchain/mac:clang"
+  set_default_toolchain(host_toolchain)
+} else if (is_ios) {
+  host_toolchain = "//native_client/build/toolchain/mac:host_clang"
+  set_default_toolchain("//native_client/build/toolchain/mac:clang")
+}
+
+# ==============================================================================
+# COMPONENT SETUP
+# ==============================================================================
+
+# TODO(brettw) erase this once the built-in "component" function is removed.
+if (is_component_build) {
+  component_mode = "shared_library"
+} else {
+  component_mode = "source_set"
+}
+
+template("component") {
+  if (is_component_build) {
+    shared_library(target_name) {
+      # Configs will always be defined since we set_defaults for a component
+      # above. We want to use those rather than whatever came with the nested
+      # shared/static library inside the component.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      # The sources assignment filter will have already been applied when the
+      # code was originally executed. We don't want to apply it again, since
+      # the original target may have override it for some assignments.
+      set_sources_assignment_filter([])
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      # All shared libraries must have the sanitizer deps to properly link in
+      # asan mode (this target will be empty in other cases).
+      if (defined(invoker.deps)) {
+        deps = invoker.deps + [ "//build/config/sanitizers:deps" ]
+      } else {
+        deps = [ "//build/config/sanitizers:deps" ]
+      }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.testonly)) { testonly = invoker.testonly }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  } else {
+    source_set(target_name) {
+      # See above.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      # See above call.
+      set_sources_assignment_filter([])
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.testonly)) { testonly = invoker.testonly }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  }
+}
+
+# ==============================================================================
+# TEST SETUP
+# ==============================================================================
+
+# Define a test as an executable (or shared_library on Android) with the
+# "testonly" flag set.
+template("test") {
+  if (is_android) {
+    shared_library(target_name) {
+      # Configs will always be defined since we set_defaults for a component
+      # above. We want to use those rather than whatever came with the nested
+      # shared/static library inside the component.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      # See above call.
+      set_sources_assignment_filter([])
+
+      testonly = true
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  } else {
+    executable(target_name) {
+      # See above.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      # See above call.
+      set_sources_assignment_filter([])
+
+      testonly = true
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      # All shared libraries must have the sanitizer deps to properly link in
+      # asan mode (this target will be empty in other cases).
+      if (defined(invoker.deps)) {
+        deps = invoker.deps + [ "//build/config/sanitizers:deps" ]
+      } else {
+        deps = [ "//build/config/sanitizers:deps" ]
+      }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.public_configs)) { public_configs = invoker.public_configs }
+      if (defined(invoker.public_deps)) { public_deps = invoker.public_deps }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  }
+}
