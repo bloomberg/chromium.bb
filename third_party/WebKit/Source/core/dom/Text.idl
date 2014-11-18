@@ -26,7 +26,6 @@
 
     // Introduced in DOM Level 3:
     [MeasureAs=TextWholeText] readonly attribute DOMString wholeText;
-    [MeasureAs=TextReplaceWholeText] Text replaceWholeText(DOMString content); // Removed from DOM4.
 
     // Shadow DOM API
     NodeList getDestinationInsertionPoints();

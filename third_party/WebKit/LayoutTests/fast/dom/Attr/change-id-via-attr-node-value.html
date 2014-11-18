@@ -135,7 +135,7 @@ shouldBe('document.body.getAttributeNode("id").childNodes.length', '1');
 
 debug("\n15. Changing Attr.nodeValue.");
 attrNode.nodeValue = "foo";
-attrNode.firstChild.replaceWholeText("j");
+attrNode.firstChild.data = "j";
 shouldBe('document.getElementById("hi")', 'null');
 shouldBe('document.getElementById("j")', 'document.body');
 shouldBe('document.body.id', '"j"');

@@ -132,7 +132,6 @@ public:
         LineClamp = 96,
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
-        TextReplaceWholeText = 100,
         ConsoleMarkTimeline = 102,
         ElementGetAttributeNode = 107,
         ElementSetAttributeNode = 108,
