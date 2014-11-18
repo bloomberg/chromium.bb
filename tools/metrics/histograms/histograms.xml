@@ -11685,12 +11685,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Login.FailureReason" enum="LoginFailureReason">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
 
 <histogram name="Login.LeastUsedAccountDays" units="days">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>antrim@chromium.org</owner>
   <summary>
     Chrome OS histogram that keeps track of the days since the least frequently
     used account signed in. Reported on every boot and once a day after that.
@@ -11703,7 +11703,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Login.PromptToCompleteLoginTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Time from first display of the login prompt until the user completes signing
     in.
@@ -11711,7 +11711,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Login.SuccessReason" enum="LoginSuccessReason">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>Chrome OS login success reason.</summary>
 </histogram>
 
@@ -38414,7 +38414,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UserImage.ChangeChoice" enum="ChromeOSUserImageId">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Distribution of the default images that users choose in Change Picture
     dialog (Chrome OS). One sample is taken each time the user changes picture.
@@ -38422,7 +38422,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UserImage.FirstTimeChoice" enum="ChromeOSUserImageId">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Distribution of the default images chosen on user image screen during
     out-of-the-box experience (Chrome OS). One sample is taken each time the
@@ -38431,7 +38431,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UserImage.LoggedIn" enum="ChromeOSUserImageId">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Distribution of the default images that existing users login with (Chrome
     OS). One sample is taken each time the user logs in.
@@ -38440,7 +38440,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="UserImage.ProfileDownloadResult"
     enum="ProfileImageDownloadResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Profile image download result for UserManager (either on behalf of the
     Change Picture prefs page, OOBE or scheduled refresh after user login).
@@ -38448,19 +38448,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UserImage.ProfileDownloadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>The time it took to download user's profile picture.</summary>
 </histogram>
 
 <histogram name="UserImage.ScreenIsShownTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     Time histogram of the &quot;Choose Picture&quot; OOBE screen display delay.
   </summary>
 </histogram>
 
 <histogram name="UserManager.LoginUserType" enum="UserType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nkostylev@chromium.org</owner>
   <summary>
     The number of users of different types that log in to the system (Chrome
     OS).
@@ -38468,6 +38468,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UserManager.LogoutToLoginDelay" units="seconds">
+  <owner>alemate@chromium.org</owner>
+  <owner>nkostylev@chromium.org</owner>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The time between one regular user logging out and a different regular user
