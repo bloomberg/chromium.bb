@@ -46,8 +46,8 @@ const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const SkColor kFolderBubbleColor = SK_ColorWHITE;
 // Color of the folder bubble shadow.
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
-const float kFolderBubbleRadius = 22;
-const float kFolderShadowRadius = 22.5;
+const float kFolderBubbleRadius = 23;
+const float kFolderShadowRadius = 23.5;
 const float kFolderShadowOffsetY = 1;
 
 const int kCardShadowBlur = 4;
