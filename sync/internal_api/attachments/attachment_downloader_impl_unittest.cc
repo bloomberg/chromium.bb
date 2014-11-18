@@ -28,6 +28,7 @@ const char kAccountId[] = "attachments@gmail.com";
 const char kAccessToken[] = "access.token";
 const char kAttachmentServerUrl[] = "http://attachments.com/";
 const char kAttachmentContent[] = "attachment.content";
+const char kStoreBirthday[] = "z00000000-0000-007b-0000-0000000004d2";
 
 // MockOAuth2TokenService remembers last request for access token and verifies
 // that only one request is active at a time.
@@ -202,12 +203,9 @@ void AttachmentDownloaderImplTest::SetUp() {
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  attachment_downloader_ =
-      AttachmentDownloader::Create(GURL(kAttachmentServerUrl),
-                                   url_request_context_getter_,
-                                   kAccountId,
-                                   scopes,
-                                   token_service_provider);
+  attachment_downloader_ = AttachmentDownloader::Create(
+      GURL(kAttachmentServerUrl), url_request_context_getter_, kAccountId,
+      scopes, token_service_provider, std::string(kStoreBirthday));
 }
 
 void AttachmentDownloaderImplTest::TearDown() {

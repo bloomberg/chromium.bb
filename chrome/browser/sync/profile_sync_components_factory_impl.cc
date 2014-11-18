@@ -613,6 +613,7 @@ scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     const scoped_refptr<syncer::AttachmentStore>& attachment_store,
     const syncer::UserShare& user_share,
+    const std::string& store_birthday,
     syncer::AttachmentService::Delegate* delegate) {
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader;
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader;
@@ -630,22 +631,20 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     // AttachmentUploader and AttachmentDownloader instead of creating a new one
     // per AttachmentService (bug 369536).
     attachment_uploader.reset(new syncer::AttachmentUploaderImpl(
-        sync_service_url_,
-        url_request_context_getter_,
+        sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
-        user_share.sync_credentials.scope_set,
-        token_service_provider));
+        user_share.sync_credentials.scope_set, token_service_provider,
+        store_birthday));
 
     token_service_provider = new TokenServiceProvider(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),
         token_service_);
     attachment_downloader = syncer::AttachmentDownloader::Create(
-        sync_service_url_,
-        url_request_context_getter_,
+        sync_service_url_, url_request_context_getter_,
         user_share.sync_credentials.email,
-        user_share.sync_credentials.scope_set,
-        token_service_provider);
+        user_share.sync_credentials.scope_set, token_service_provider,
+        store_birthday);
   }
 
   // It is important that the initial backoff delay is relatively large.  For

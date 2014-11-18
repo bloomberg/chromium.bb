@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +19,7 @@
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -33,12 +35,11 @@ namespace {
 const char kAttachmentData[] = "some data";
 const char kAccountId[] = "some-account-id";
 const char kAccessToken[] = "some-access-token";
-const char kAuthorization[] = "Authorization";
-const char kContentLength[] = "Content-Length";
-const char kContentType[] = "Content-Type";
 const char kContentTypeValue[] = "application/octet-stream";
 const char kXGoogHash[] = "X-Goog-Hash";
 const char kAttachments[] = "/attachments/";
+const char kStoreBirthday[] = "z00000000-0000-007b-0000-0000000004d2";
+const char kSyncStoreBirthdayHeader[] = "X-Sync-Store-Birthday";
 
 }  // namespace
 
@@ -284,11 +285,9 @@ void AttachmentUploaderImplTest::SetUp() {
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  uploader().reset(new AttachmentUploaderImpl(url,
-                                              url_request_context_getter_,
-                                              kAccountId,
-                                              scopes,
-                                              token_service_provider));
+  uploader().reset(new AttachmentUploaderImpl(
+      url, url_request_context_getter_, kAccountId, scopes,
+      token_service_provider, std::string(kStoreBirthday)));
 
   upload_callback_ = base::Bind(&AttachmentUploaderImplTest::UploadDone,
                                 base::Unretained(this));
@@ -479,19 +478,27 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_Headers) {
   ASSERT_EQ(1U, http_requests_received().size());
   const HttpRequest& http_request = http_requests_received().front();
 
-  const std::string auth_header_name(kAuthorization);
   const std::string auth_header_value(std::string("Bearer ") + kAccessToken);
 
-  EXPECT_THAT(
-      http_request.headers,
-      testing::Contains(testing::Pair(kAuthorization, auth_header_value)));
   EXPECT_THAT(http_request.headers,
-              testing::Contains(testing::Key(kContentLength)));
+              testing::Contains(testing::Pair(
+                  net::HttpRequestHeaders::kAuthorization, auth_header_value)));
   EXPECT_THAT(
       http_request.headers,
-      testing::Contains(testing::Pair(kContentType, kContentTypeValue)));
+      testing::Contains(testing::Key(net::HttpRequestHeaders::kContentLength)));
+  EXPECT_THAT(http_request.headers,
+              testing::Contains(testing::Pair(
+                  net::HttpRequestHeaders::kContentType, kContentTypeValue)));
   EXPECT_THAT(http_request.headers,
               testing::Contains(testing::Key(kXGoogHash)));
+  EXPECT_THAT(
+      http_request.headers,
+      testing::Contains(testing::Key(net::HttpRequestHeaders::kUserAgent)));
+  std::string encoded_store_birthday;
+  base::Base64Encode(kStoreBirthday, &encoded_store_birthday);
+  EXPECT_THAT(http_request.headers,
+              testing::Contains(testing::Pair(kSyncStoreBirthdayHeader,
+                                              encoded_store_birthday)));
 }
 
 // Verify two overlapping calls to upload the same attachment result in only one

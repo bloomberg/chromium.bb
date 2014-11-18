@@ -47,17 +47,20 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
-        token_service_provider)
+        token_service_provider,
+    const std::string& store_birthday)
     : OAuth2TokenService::Consumer("attachment-downloader-impl"),
       sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       oauth2_scopes_(scopes),
-      token_service_provider_(token_service_provider) {
+      token_service_provider_(token_service_provider),
+      raw_store_birthday_(store_birthday) {
+  DCHECK(url_request_context_getter_.get());
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
   DCHECK(token_service_provider_.get());
-  DCHECK(url_request_context_getter_.get());
+  DCHECK(!raw_store_birthday_.empty());
 }
 
 AttachmentDownloaderImpl::~AttachmentDownloaderImpl() {
@@ -182,15 +185,9 @@ scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
     const std::string& access_token) {
   scoped_ptr<net::URLFetcher> url_fetcher(
       net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
-  url_fetcher->SetAutomaticallyRetryOn5xx(false);
-  const std::string auth_header("Authorization: Bearer " + access_token);
-  url_fetcher->AddExtraRequestHeader(auth_header);
-  url_fetcher->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                            net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DISABLE_CACHE);
-  // TODO(maniscalco): Set an appropriate headers (User-Agent, what else?) on
-  // the request (bug 371521).
+  AttachmentUploaderImpl::ConfigureURLFetcherCommon(
+      url_fetcher.get(), access_token, raw_store_birthday_,
+      url_request_context_getter_.get());
   return url_fetcher.Pass();
 }
 

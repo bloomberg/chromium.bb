@@ -67,6 +67,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
+      const std::string& store_birthday,
       syncer::AttachmentService::Delegate* delegate) override;
 
   // Legacy datatypes that need to be converted to the SyncableService API.

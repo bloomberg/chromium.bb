@@ -104,8 +104,13 @@ GenericChangeProcessor::GenericChangeProcessor(
   DCHECK(CalledOnValidThread());
   DCHECK_NE(type_, syncer::UNSPECIFIED);
   if (attachment_store.get()) {
+    std::string store_birthday;
+    {
+      syncer::ReadTransaction trans(FROM_HERE, share_handle());
+      store_birthday = trans.GetStoreBirthday();
+    }
     attachment_service_ = sync_factory->CreateAttachmentService(
-        attachment_store, *user_share, this);
+        attachment_store, *user_share, store_birthday, this);
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));

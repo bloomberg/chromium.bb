@@ -21,13 +21,11 @@ scoped_ptr<AttachmentDownloader> AttachmentDownloader::Create(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet scopes,
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
-        token_service_provider) {
-  return scoped_ptr<AttachmentDownloader>(
-      new AttachmentDownloaderImpl(sync_service_url,
-                                   url_request_context_getter,
-                                   account_id,
-                                   scopes,
-                                   token_service_provider));
+        token_service_provider,
+    const std::string& store_birthday) {
+  return scoped_ptr<AttachmentDownloader>(new AttachmentDownloaderImpl(
+      sync_service_url, url_request_context_getter, account_id, scopes,
+      token_service_provider, store_birthday));
 }
 
 }  // namespace syncer

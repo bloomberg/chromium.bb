@@ -48,10 +48,14 @@ void ReadTransaction::GetDataTypeContext(
 }
 
 void ReadTransaction::GetAttachmentIdsToUpload(ModelType type,
-                                               AttachmentIdSet* id_set) {
+                                               AttachmentIdSet* id_set) const {
   DCHECK(id_set);
   transaction_->directory()->GetAttachmentIdsToUpload(
       transaction_, type, id_set);
+}
+
+std::string ReadTransaction::GetStoreBirthday() const {
+  return transaction_->directory()->store_birthday();
 }
 
 }  // namespace syncer

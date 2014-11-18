@@ -25,6 +25,7 @@ namespace {
 
 const char kContentType[] = "application/octet-stream";
 const char kAttachments[] = "attachments/";
+const char kSyncStoreBirthday[] = "X-Sync-Store-Birthday";
 
 }  // namespace
 
@@ -52,6 +53,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
+      const std::string& raw_store_birthday,
       const base::WeakPtr<AttachmentUploaderImpl>& owner);
 
   ~UploadState() override;
@@ -98,6 +100,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   std::string account_id_;
   OAuth2TokenService::ScopeSet scopes_;
   std::string access_token_;
+  std::string raw_store_birthday_;
   OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider_;
   // Pointer to the AttachmentUploaderImpl that owns this object.
   base::WeakPtr<AttachmentUploaderImpl> owner_;
@@ -115,6 +118,7 @@ AttachmentUploaderImpl::UploadState::UploadState(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
+    const std::string& raw_store_birthday,
     const base::WeakPtr<AttachmentUploaderImpl>& owner)
     : OAuth2TokenService::Consumer("attachment-uploader-impl"),
       is_stopped_(false),
@@ -124,6 +128,7 @@ AttachmentUploaderImpl::UploadState::UploadState(
       user_callbacks_(1, user_callback),
       account_id_(account_id),
       scopes_(scopes),
+      raw_store_birthday_(raw_store_birthday),
       token_service_provider_(token_service_provider),
       owner_(owner) {
   DCHECK(upload_url_.is_valid());
@@ -131,6 +136,7 @@ AttachmentUploaderImpl::UploadState::UploadState(
   DCHECK(!account_id_.empty());
   DCHECK(!scopes_.empty());
   DCHECK(token_service_provider_);
+  DCHECK(!raw_store_birthday_.empty());
   GetToken();
 }
 
@@ -195,8 +201,13 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   access_token_ = access_token;
   fetcher_.reset(
       net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
-  fetcher_->SetAutomaticallyRetryOn5xx(false);
-  fetcher_->SetRequestContext(url_request_context_getter_.get());
+  ConfigureURLFetcherCommon(fetcher_.get(), access_token_, raw_store_birthday_,
+                            url_request_context_getter_.get());
+
+  const uint32_t crc32c = attachment_.GetCrc32c();
+  fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      "X-Goog-Hash: crc32c=%s", FormatCrc32cHash(crc32c).c_str()));
+
   // TODO(maniscalco): Is there a better way?  Copying the attachment data into
   // a string feels wrong given how large attachments may be (several MBs).  If
   // we may end up switching from URLFetcher to URLRequest, this copy won't be
@@ -204,16 +215,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   scoped_refptr<base::RefCountedMemory> memory = attachment_.GetData();
   const std::string upload_content(memory->front_as<char>(), memory->size());
   fetcher_->SetUploadData(kContentType, upload_content);
-  const std::string auth_header("Authorization: Bearer " + access_token_);
-  fetcher_->AddExtraRequestHeader(auth_header);
-  const uint32_t crc32c = attachment_.GetCrc32c();
-  fetcher_->AddExtraRequestHeader(base::StringPrintf(
-      "X-Goog-Hash: crc32c=%s", FormatCrc32cHash(crc32c).c_str()));
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DISABLE_CACHE);
-  // TODO(maniscalco): Set appropriate headers (e.g. User-Agent) on the request
-  // and include the "sync birthday" (bug 371521).
+
   fetcher_->Start();
 }
 
@@ -264,17 +266,20 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
-        token_service_provider)
+        token_service_provider,
+    const std::string& store_birthday)
     : sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       scopes_(scopes),
       token_service_provider_(token_service_provider),
+      raw_store_birthday_(store_birthday),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
   DCHECK(token_service_provider_.get());
+  DCHECK(!raw_store_birthday_.empty());
 }
 
 AttachmentUploaderImpl::~AttachmentUploaderImpl() {
@@ -304,14 +309,9 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
 
   const GURL url = GetURLForAttachmentId(sync_service_url_, attachment_id);
   scoped_ptr<UploadState> upload_state(
-      new UploadState(url,
-                      url_request_context_getter_,
-                      attachment,
-                      callback,
-                      account_id_,
-                      scopes_,
-                      token_service_provider_.get(),
-                      weak_ptr_factory_.GetWeakPtr()));
+      new UploadState(url, url_request_context_getter_, attachment, callback,
+                      account_id_, scopes_, token_service_provider_.get(),
+                      raw_store_birthday_, weak_ptr_factory_.GetWeakPtr()));
   state_map_.add(unique_id, upload_state.Pass());
 }
 
@@ -348,6 +348,29 @@ std::string AttachmentUploaderImpl::FormatCrc32cHash(uint32_t crc32c) {
   std::string encoded;
   base::Base64Encode(raw, &encoded);
   return encoded;
+}
+
+void AttachmentUploaderImpl::ConfigureURLFetcherCommon(
+    net::URLFetcher* fetcher,
+    const std::string& access_token,
+    const std::string& raw_store_birthday,
+    net::URLRequestContextGetter* request_context_getter) {
+  DCHECK(request_context_getter);
+  DCHECK(fetcher);
+  fetcher->SetAutomaticallyRetryOn5xx(false);
+  fetcher->SetRequestContext(request_context_getter);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DISABLE_CACHE);
+  fetcher->AddExtraRequestHeader(base::StringPrintf(
+      "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
+      access_token.c_str()));
+  // Encode the birthday.  Birthday is opaque so we assume it could contain
+  // anything.  Encode it so that it's safe to pass as an HTTP header value.
+  std::string encoded_store_birthday;
+  base::Base64Encode(raw_store_birthday, &encoded_store_birthday);
+  fetcher->AddExtraRequestHeader(base::StringPrintf(
+      "%s: %s", kSyncStoreBirthday, encoded_store_birthday.c_str()));
 }
 
 }  // namespace syncer

@@ -66,6 +66,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
+      const std::string& store_birthday,
       syncer::AttachmentService::Delegate* delegate) override {
     // Shouldn't be called for this test.
     NOTREACHED();

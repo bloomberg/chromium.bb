@@ -53,6 +53,7 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
+      const std::string& store_birthday,
       syncer::AttachmentService::Delegate* delegate) override;
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,

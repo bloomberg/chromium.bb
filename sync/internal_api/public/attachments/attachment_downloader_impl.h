@@ -38,6 +38,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   // |scopes| is the set of scopes to use for downloads.
   //
   // |token_service_provider| provides an OAuth2 token service.
+  //
+  // |store_birthday| is the raw, sync store birthday.
   AttachmentDownloaderImpl(
       const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
@@ -45,7 +47,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
-          token_service_provider);
+          token_service_provider,
+      const std::string& store_birthday);
   ~AttachmentDownloaderImpl() override;
 
   // AttachmentDownloader implementation.
@@ -101,6 +104,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::string raw_store_birthday_;
 
   StateMap state_map_;
   // |requests_waiting_for_access_token_| only keeps references to DownloadState

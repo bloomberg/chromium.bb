@@ -33,6 +33,8 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   // |scopes| is the set of scopes to use for uploads.
   //
   // |token_service_provider| provides an OAuth2 token service.
+  //
+  // |store_birthday| is the raw, sync store birthday.
   AttachmentUploaderImpl(
       const GURL& sync_service_url,
       const scoped_refptr<net::URLRequestContextGetter>&
@@ -40,7 +42,8 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
-          token_service_provider);
+          token_service_provider,
+      const std::string& store_birthday);
   ~AttachmentUploaderImpl() override;
 
   // AttachmentUploader implementation.
@@ -58,6 +61,14 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   // (https://cloud.google.com/storage/docs/reference-headers#xgooghash).
   static std::string FormatCrc32cHash(uint32_t crc32c);
 
+  // Apply common settings to |fetcher|, suitable for both uploads and
+  // downloads.
+  static void ConfigureURLFetcherCommon(
+      net::URLFetcher* fetcher,
+      const std::string& auth_token,
+      const std::string& raw_store_birthday,
+      net::URLRequestContextGetter* request_context_getter);
+
  private:
   class UploadState;
   typedef std::string UniqueId;
@@ -71,6 +82,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   OAuth2TokenService::ScopeSet scopes_;
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider_;
+  std::string raw_store_birthday_;
   StateMap state_map_;
 
   // Must be last data member.
