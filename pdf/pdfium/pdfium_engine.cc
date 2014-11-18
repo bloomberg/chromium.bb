@@ -655,7 +655,7 @@ PDFiumEngine::~PDFiumEngine() {
     }
     FPDF_CloseDocument(doc_);
     if (form_) {
-      FPDFDOC_ExitFormFillEnviroument(form_);
+      FPDFDOC_ExitFormFillEnvironment(form_);
     }
   }
 
@@ -2540,7 +2540,7 @@ void PDFiumEngine::ContinueLoadingDocument(
       return;
     }
 
-    form_ = FPDFDOC_InitFormFillEnviroument(
+    form_ = FPDFDOC_InitFormFillEnvironment(
         doc_, static_cast<FPDF_FORMFILLINFO*>(this));
 #ifdef PDF_USE_XFA
     FPDF_LoadXFA(doc_);
