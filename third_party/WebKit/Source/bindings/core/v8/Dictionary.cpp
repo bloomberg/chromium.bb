@@ -90,7 +90,7 @@ bool Dictionary::hasProperty(const String& key) const
 {
     if (isUndefinedOrNull())
         return false;
-    v8::Local<v8::Object> options = m_options->ToObject();
+    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
     ASSERT(!options.IsEmpty());
 
     ASSERT(m_isolate);
@@ -106,7 +106,7 @@ bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 {
     if (isUndefinedOrNull())
         return false;
-    v8::Local<v8::Object> options = m_options->ToObject();
+    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
     ASSERT(!options.IsEmpty());
 
     ASSERT(m_isolate);
@@ -144,7 +144,7 @@ bool Dictionary::set(const String& key, const v8::Handle<v8::Value>& value)
 {
     if (isUndefinedOrNull())
         return false;
-    v8::Local<v8::Object> options = m_options->ToObject();
+    v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
     ASSERT(!options.IsEmpty());
 
     return options->Set(v8String(m_isolate, key), value);
@@ -188,7 +188,7 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
     if (!isObject())
         return false;
 
-    v8::Handle<v8::Object> options = m_options->ToObject();
+    v8::Handle<v8::Object> options = m_options->ToObject(m_isolate);
     if (options.IsEmpty())
         return false;
 
@@ -215,7 +215,7 @@ bool Dictionary::getPropertyNames(Vector<String>& names) const
     if (!isObject())
         return false;
 
-    v8::Handle<v8::Object> options = m_options->ToObject();
+    v8::Handle<v8::Object> options = m_options->ToObject(m_isolate);
     if (options.IsEmpty())
         return false;
 
@@ -223,7 +223,7 @@ bool Dictionary::getPropertyNames(Vector<String>& names) const
     if (properties.IsEmpty())
         return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
-        v8::Local<v8::String> key = properties->Get(i)->ToString();
+        v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
         if (!options->Has(key))
             continue;
         TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);

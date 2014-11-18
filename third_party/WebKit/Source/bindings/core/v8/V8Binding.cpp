@@ -204,9 +204,10 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
         return static_cast<T>(result > LimitsTrait::maxValue ? result - LimitsTrait::numberOfValues : result);
     }
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -252,9 +253,10 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
         return static_cast<T>(result);
     }
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -330,9 +332,10 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (value->IsInt32())
         return value->Int32Value();
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -383,9 +386,10 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         return result;
     }
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -425,9 +429,10 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (value->IsInt32())
         return value->Int32Value();
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -475,9 +480,10 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         return result;
     }
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -521,8 +527,9 @@ double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     if (value->IsNumber())
         return value->NumberValue();
 
-    v8::TryCatch block;
-    v8::Local<v8::Number> numberObject(value->ToNumber());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
@@ -542,8 +549,9 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
         return String();
 
     // 1. Let x be ToString(v)
-    v8::TryCatch block;
-    v8::Local<v8::String> stringObject(value->ToString());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::TryCatch block(isolate);
+    v8::Local<v8::String> stringObject(value->ToString(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return String();
@@ -672,8 +680,9 @@ String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     if (value.IsEmpty())
         return String();
 
-    v8::TryCatch block;
-    v8::Local<v8::String> stringObject(value->ToString());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::TryCatch block(isolate);
+    v8::Local<v8::String> stringObject(value->ToString(isolate));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return String();
@@ -692,7 +701,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, 
     if (V8XPathNSResolver::hasInstance(value, isolate))
         resolver = V8XPathNSResolver::toImpl(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
-        resolver = V8CustomXPathNSResolver::create(value->ToObject(), isolate);
+        resolver = V8CustomXPathNSResolver::create(value->ToObject(isolate), isolate);
     return resolver;
 }
 

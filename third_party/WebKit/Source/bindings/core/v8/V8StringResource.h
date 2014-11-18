@@ -199,7 +199,7 @@ public:
         if (prepareFast())
             return true;
 
-        m_v8Object = m_v8Object->ToString();
+        m_v8Object = m_v8Object->ToString(v8::Isolate::GetCurrent());
         // Handle the case where an exception is thrown as part of invoking toString on the object.
         if (m_v8Object.IsEmpty())
             return false;
@@ -211,8 +211,9 @@ public:
         if (prepareFast())
             return true;
 
-        v8::TryCatch block;
-        m_v8Object = m_v8Object->ToString();
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::TryCatch block(isolate);
+        m_v8Object = m_v8Object->ToString(isolate);
         // Handle the case where an exception is thrown as part of invoking toString on the object.
         if (block.HasCaught()) {
             exceptionState.rethrowV8Exception(block.Exception());

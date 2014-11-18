@@ -46,7 +46,7 @@ WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value>
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;
-    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject());
+    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject(isolate));
     return new WebArrayBuffer(buffer->buffer());
 }
 

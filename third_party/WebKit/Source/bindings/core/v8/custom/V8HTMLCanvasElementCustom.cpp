@@ -58,7 +58,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     if (contextId == "webgl" || contextId == "experimental-webgl") {
         RefPtrWillBeRawPtr<WebGLContextAttributes> webGLAttributes = WebGLContextAttributes::create();
         if (info.Length() > 1 && info[1]->IsObject()) {
-            v8::Handle<v8::Object> jsAttributes = info[1]->ToObject();
+            v8::Handle<v8::Object> jsAttributes = info[1]->ToObject(isolate);
             v8::Handle<v8::String> alpha = v8AtomicString(isolate, "alpha");
             if (jsAttributes->Has(alpha) && !isUndefinedOrNull(jsAttributes->Get(alpha)))
                 webGLAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());
@@ -85,7 +85,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     } else {
         RefPtrWillBeRawPtr<Canvas2DContextAttributes> canvas2DAttributes = Canvas2DContextAttributes::create();
         if (info.Length() > 1 && info[1]->IsObject()) {
-            v8::Handle<v8::Object> jsAttributes = info[1]->ToObject();
+            v8::Handle<v8::Object> jsAttributes = info[1]->ToObject(isolate);
             v8::Handle<v8::String> alpha = v8AtomicString(isolate, "alpha");
             if (jsAttributes->Has(alpha) && !isUndefinedOrNull(jsAttributes->Get(alpha)))
                 canvas2DAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());

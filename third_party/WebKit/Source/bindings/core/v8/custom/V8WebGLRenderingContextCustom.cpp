@@ -363,7 +363,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
 
     const int indexArrayArgument = 1;
     if (V8Float32Array::hasInstance(info[indexArrayArgument], info.GetIsolate())) {
-        DOMFloat32Array* array = V8Float32Array::toImpl(info[indexArrayArgument]->ToObject());
+        DOMFloat32Array* array = V8Float32Array::toImpl(info[indexArrayArgument]->ToObject(info.GetIsolate()));
         ASSERT(array);
         switch (functionToCall) {
         case kUniform1v: context->uniform1fv(location, array); break;
@@ -434,7 +434,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
 
     const int indexArrayArgumentIndex = 1;
     if (V8Int32Array::hasInstance(info[indexArrayArgumentIndex], info.GetIsolate())) {
-        DOMInt32Array* array = V8Int32Array::toImpl(info[indexArrayArgumentIndex]->ToObject());
+        DOMInt32Array* array = V8Int32Array::toImpl(info[indexArrayArgumentIndex]->ToObject(info.GetIsolate()));
         ASSERT(array);
         switch (functionToCall) {
         case kUniform1v: context->uniform1iv(location, array); break;
@@ -546,7 +546,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
     bool transpose = info[1]->BooleanValue();
     const int arrayArgumentIndex = 2;
     if (V8Float32Array::hasInstance(info[arrayArgumentIndex], info.GetIsolate())) {
-        DOMFloat32Array* array = V8Float32Array::toImpl(info[arrayArgumentIndex]->ToObject());
+        DOMFloat32Array* array = V8Float32Array::toImpl(info[arrayArgumentIndex]->ToObject(info.GetIsolate()));
         ASSERT(array);
         switch (matrixSize) {
         case 2: context->uniformMatrix2fv(location, transpose, array); break;

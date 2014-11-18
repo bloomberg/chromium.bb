@@ -90,7 +90,7 @@ static void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info
         if (function->IsString()) {
             functionString = toCoreString(function.As<v8::String>());
         } else {
-            v8::Handle<v8::String> v8String = function->ToString();
+            v8::Handle<v8::String> v8String = function->ToString(info.GetIsolate());
 
             // Bail out if string conversion failed.
             if (v8String.IsEmpty())

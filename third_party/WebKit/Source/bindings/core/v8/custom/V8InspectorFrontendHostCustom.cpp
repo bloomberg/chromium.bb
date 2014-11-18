@@ -91,13 +91,13 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
                 &subMenu);
             menu.appendItem(item);
         } else {
-            ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
+            ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32(isolate)->Value());
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString);
             if (checked->IsBoolean())
-                menuItem.setChecked(checked->ToBoolean()->Value());
+                menuItem.setChecked(checked->ToBoolean(isolate)->Value());
             if (enabled->IsBoolean())
-                menuItem.setEnabled(enabled->ToBoolean()->Value());
+                menuItem.setEnabled(enabled->ToBoolean(isolate)->Value());
             menu.appendItem(menuItem);
         }
     }
@@ -174,7 +174,7 @@ static void histogramEnumeration(const char* name, const v8::FunctionCallbackInf
     if (info.Length() < 1 || !info[0]->IsInt32())
         return;
 
-    int sample = info[0]->ToInt32()->Value();
+    int sample = info[0]->ToInt32(info.GetIsolate())->Value();
     if (sample < boundaryValue)
         blink::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
 }
