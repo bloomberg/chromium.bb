@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
@@ -49,10 +50,26 @@ void AppListShower::CreateViewForProfile(Profile* requested_profile) {
 
   profile_ = requested_profile->GetOriginalProfile();
   if (HasView()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 AppListShower::CreateViewForProfile1"));
+
     UpdateViewForNewProfile();
     return;
   }
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListShower::CreateViewForProfile2"));
+
   app_list_ = MakeViewForCurrentProfile();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListShower::CreateViewForProfile3"));
+
   delegate_->OnViewCreated();
 }
 
