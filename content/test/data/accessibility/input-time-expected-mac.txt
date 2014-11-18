@@ -1,6 +1,6 @@
 AXWebArea AXRoleDescription='HTML content'
     AXGroup AXRoleDescription='group'
-        AXUnknown AXRoleDescription='unknown'
+        AXTimeField AXRoleDescription='time field'
             AXGroup AXRoleDescription='group'
                 AXGroup AXRoleDescription='group'
                     AXIncrementor AXRoleDescription='stepper' AXValue='0'

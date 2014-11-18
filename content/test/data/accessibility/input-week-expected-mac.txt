@@ -1,13 +1,13 @@
-AXWebArea
-    AXGroup
-        AXUnknown
-            AXGroup
-                AXGroup
-                    AXStaticText AXValue='Week '
-                    AXIncrementor AXValue='0'
-                    AXStaticText AXValue=', '
-                    AXIncrementor AXValue='0'
-            AXPopUpButton
-            AXIncrementor AXValue='0'
-                AXButton
-                AXButton
+AXWebArea AXRoleDescription='HTML content'
+    AXGroup AXRoleDescription='group'
+        AXTextField AXRoleDescription='text field'
+            AXGroup AXRoleDescription='group'
+                AXGroup AXRoleDescription='group'
+                    AXStaticText AXRoleDescription='text' AXValue='Week '
+                    AXIncrementor AXRoleDescription='stepper' AXValue='0'
+                    AXStaticText AXRoleDescription='text' AXValue=', '
+                    AXIncrementor AXRoleDescription='stepper' AXValue='0'
+            AXPopUpButton AXRoleDescription='pop up button'
+            AXIncrementor AXRoleDescription='stepper' AXValue='0'
+                AXButton AXRoleDescription='button'
+                AXButton AXRoleDescription='button'

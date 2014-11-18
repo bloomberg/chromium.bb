@@ -3439,7 +3439,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state_ |= IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_COLOR_WELL:
-      ia_role_ = ROLE_SYSTEM_CLIENT;
+      ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_COLOR_CHOOSER;
       break;
     case ui::AX_ROLE_COLUMN:
@@ -3460,9 +3460,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
     case ui::AX_ROLE_DATE:
-      ia_role_ = ROLE_SYSTEM_DROPLIST;
-      ia2_role_ = IA2_ROLE_DATE_EDITOR;
-      break;
     case ui::AX_ROLE_DATE_TIME:
       ia_role_ = ROLE_SYSTEM_DROPLIST;
       ia2_role_ = IA2_ROLE_DATE_EDITOR;
