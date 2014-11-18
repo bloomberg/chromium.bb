@@ -215,7 +215,7 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     }
 
     // 6. paint continuation outlines.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines))
+    if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
         paintContinuationOutlines(paintInfo, paintOffset);
 
     // 7. paint caret.

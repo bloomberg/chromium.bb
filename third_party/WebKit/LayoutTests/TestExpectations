@@ -778,6 +778,9 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/015.html [
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/016.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/018.html [ NeedsManualRebaseline ]
 
+# Recheck this when rebaseline lands.
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/inline/justify-emphasis-inline-box.html [ NeedsManualRebaseline ]
+
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]

@@ -141,5 +141,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/block",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/inline",
+    "args": ["--enable-slimming-paint"]
   }
 ]

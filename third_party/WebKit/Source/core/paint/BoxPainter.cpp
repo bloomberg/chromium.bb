@@ -54,11 +54,18 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, cons
     RenderStyle* style = m_renderBox.style();
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), paintInfo.context);
 
-    IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    // The document element is specified to paint its background infinitely.
-    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase,
-        m_renderBox.isDocumentElement() ? m_renderBox.view()->backgroundRect(&m_renderBox) : snappedPaintRect);
-
+    LayoutRect bounds;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        if (m_renderBox.isDocumentElement()) {
+            // The document element is specified to paint its background infinitely.
+            bounds = m_renderBox.view()->backgroundRect(&m_renderBox);
+        } else {
+            // Use the visual overflow rect here, because it will include overflow introduced by the theme.
+            bounds = m_renderBox.visualOverflowRect();
+            bounds.moveBy(paintOffset);
+        }
+    }
+    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, bounds);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
@@ -74,6 +81,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, cons
 
     // If we have a native theme appearance, paint that before painting our background.
     // The theme will tell us whether or not we should also paint the CSS background.
+    IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
     bool themePainted = boxDecorationData.hasAppearance && !RenderTheme::theme().paint(&m_renderBox, paintInfo, snappedPaintRect);
     if (!themePainted) {
         if (boxDecorationData.bleedAvoidance() == BackgroundBleedBackgroundOverBorder)
