@@ -15,6 +15,10 @@ namespace cc {
 
 class FakePicturePile : public PicturePile {
  public:
+  using PictureInfo = PicturePile::PictureInfo;
+  using PictureMapKey = PicturePile::PictureMapKey;
+  using PictureMap = PicturePile::PictureMap;
+
   FakePicturePile() : playback_allowed_event_(nullptr) {}
   ~FakePicturePile() override {}
 
@@ -24,6 +28,8 @@ class FakePicturePile : public PicturePile {
   using PicturePile::buffer_pixels;
   using PicturePile::CanRasterSlowTileCheck;
   using PicturePile::Clear;
+  using PicturePile::SetMinContentsScale;
+  using PicturePile::SetTileGridSize;
 
   PictureMap& picture_map() { return picture_map_; }
   const gfx::Rect& recorded_viewport() const { return recorded_viewport_; }
@@ -55,10 +61,6 @@ class FakePicturePile : public PicturePile {
   SkColor solid_color() const { return solid_color_; }
 
   void SetPixelRecordDistance(int d) { pixel_record_distance_ = d; }
-
-  typedef PicturePile::PictureInfo PictureInfo;
-  typedef PicturePile::PictureMapKey PictureMapKey;
-  typedef PicturePile::PictureMap PictureMap;
 
  private:
   base::WaitableEvent* playback_allowed_event_;

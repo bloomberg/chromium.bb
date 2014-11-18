@@ -17,11 +17,7 @@ namespace {
 
 class PicturePileTestBase {
  public:
-  PicturePileTestBase()
-      : background_color_(SK_ColorBLUE),
-        min_scale_(0.125),
-        frame_number_(0),
-        contents_opaque_(false) {}
+  PicturePileTestBase() : min_scale_(0.125), frame_number_(0) {}
 
   void InitializeData() {
     pile_.SetTileGridSize(gfx::Size(1000, 1000));
@@ -43,10 +39,9 @@ class PicturePileTestBase {
                                    const gfx::Size& layer_size,
                                    const gfx::Rect& visible_layer_rect) {
     frame_number_++;
-    return pile_.UpdateAndExpandInvalidation(
-        &client_, invalidation, background_color_, contents_opaque_, false,
-        layer_size, visible_layer_rect, frame_number_,
-        Picture::RECORD_NORMALLY);
+    return pile_.UpdateAndExpandInvalidation(&client_, invalidation, layer_size,
+                                             visible_layer_rect, frame_number_,
+                                             Picture::RECORD_NORMALLY);
   }
 
   bool UpdateWholePile() {
@@ -59,10 +54,8 @@ class PicturePileTestBase {
 
   FakeContentLayerClient client_;
   FakePicturePile pile_;
-  SkColor background_color_;
   float min_scale_;
   int frame_number_;
-  bool contents_opaque_;
 };
 
 class PicturePileTest : public PicturePileTestBase, public testing::Test {

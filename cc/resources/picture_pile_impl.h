@@ -54,12 +54,13 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   bool CoversRect(const gfx::Rect& content_rect,
                   float contents_scale) const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
+  void SetBackgoundColor(SkColor background_color) override;
+  void SetRequiresClear(bool requires_clear) override;
   bool ShouldAttemptToUseDistanceFieldText() const override;
   gfx::Size GetSize() const override;
   bool IsSolidColor() const override;
   SkColor GetSolidColor() const override;
   bool HasRecordings() const override;
-  bool IsMask() const override;
 
   // Tracing functionality.
   void DidBeginTracing() override;
@@ -108,13 +109,11 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   PictureMap picture_map_;
   TilingData tiling_;
   SkColor background_color_;
-  bool contents_opaque_;
-  bool contents_fill_bounds_completely_;
+  bool requires_clear_;
   bool is_solid_color_;
   SkColor solid_color_;
   gfx::Rect recorded_viewport_;
   bool has_any_recordings_;
-  bool is_mask_;
   bool clear_canvas_with_debug_color_;
   float min_contents_scale_;
   int slow_down_raster_scale_factor_for_debug_;

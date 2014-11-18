@@ -68,14 +68,6 @@ class FakePicturePileImpl : public PicturePileImpl {
     background_color_ = color;
   }
 
-  void set_contents_opaque(bool contents_opaque) {
-    contents_opaque_ = contents_opaque;
-  }
-
-  void set_contents_fill_bounds_completely(bool fills) {
-    contents_fill_bounds_completely_ = fills;
-  }
-
   void set_clear_canvas_with_debug_color(bool clear) {
     clear_canvas_with_debug_color_ = clear;
   }
@@ -85,7 +77,6 @@ class FakePicturePileImpl : public PicturePileImpl {
   }
 
   bool HasRecordingAt(int x, int y) const;
-  void SetIsMask(bool mask) { is_mask_ = mask; }
 
   int num_tiles_x() const { return tiling_.num_tiles_x(); }
   int num_tiles_y() const { return tiling_.num_tiles_y(); }

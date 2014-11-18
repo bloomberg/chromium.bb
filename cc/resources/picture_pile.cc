@@ -26,11 +26,6 @@ const int kOpCountThatIsOkToAnalyze = 10;
 // the base picture in each tile.
 const int kBasePictureSize = 512;
 const int kTileGridBorderPixels = 1;
-#ifdef NDEBUG
-const bool kDefaultClearCanvasSetting = false;
-#else
-const bool kDefaultClearCanvasSetting = true;
-#endif
 
 // Invalidation frequency settings. kInvalidationFrequencyThreshold is a value
 // between 0 and 1 meaning invalidation frequency between 0% and 100% that
@@ -169,11 +164,7 @@ namespace cc {
 PicturePile::PicturePile()
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
-      contents_opaque_(false),
-      contents_fill_bounds_completely_(false),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       has_any_recordings_(false),
-      is_mask_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
@@ -190,17 +181,10 @@ PicturePile::~PicturePile() {
 bool PicturePile::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
-    SkColor background_color,
-    bool contents_opaque,
-    bool contents_fill_bounds_completely,
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     Picture::RecordingMode recording_mode) {
-  background_color_ = background_color;
-  contents_opaque_ = contents_opaque;
-  contents_fill_bounds_completely_ = contents_fill_bounds_completely;
-
   bool updated = false;
 
   Region resize_invalidation;
@@ -569,6 +553,11 @@ bool PicturePile::UpdateAndExpandInvalidation(
   return true;
 }
 
+scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
+  return scoped_refptr<RasterSource>(
+      PicturePileImpl::CreateFromPicturePile(this));
+}
+
 gfx::Size PicturePile::GetSize() const {
   return tiling_.tiling_size();
 }
@@ -599,6 +588,14 @@ void PicturePile::SetMinContentsScale(float min_contents_scale) {
   min_contents_scale_ = min_contents_scale;
 }
 
+void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
+  slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+bool PicturePile::IsSuitableForGpuRasterization() const {
+  return is_suitable_for_gpu_rasterization_;
+}
+
 // static
 void PicturePile::ComputeTileGridInfo(const gfx::Size& tile_grid_size,
                                       SkTileGridFactory::TileGridInfo* info) {
@@ -618,25 +615,8 @@ void PicturePile::SetTileGridSize(const gfx::Size& tile_grid_size) {
   ComputeTileGridInfo(tile_grid_size, &tile_grid_info_);
 }
 
-void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
-  slow_down_raster_scale_factor_for_debug_ = factor;
-}
-
-void PicturePile::SetIsMask(bool is_mask) {
-  is_mask_ = is_mask;
-}
-
 void PicturePile::SetUnsuitableForGpuRasterizationForTesting() {
   is_suitable_for_gpu_rasterization_ = false;
-}
-
-bool PicturePile::IsSuitableForGpuRasterization() const {
-  return is_suitable_for_gpu_rasterization_;
-}
-
-scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
-  return scoped_refptr<RasterSource>(
-      PicturePileImpl::CreateFromPicturePile(this));
 }
 
 SkTileGridFactory::TileGridInfo PicturePile::GetTileGridInfoForTesting() const {

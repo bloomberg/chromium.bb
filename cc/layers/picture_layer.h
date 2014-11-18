@@ -65,6 +65,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   int update_source_frame_number_;
   bool can_use_lcd_text_last_frame_;
+  bool is_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };

@@ -23,7 +23,8 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       recording_source_(new PicturePile),
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
-      can_use_lcd_text_last_frame_(can_use_lcd_text()) {
+      can_use_lcd_text_last_frame_(can_use_lcd_text()),
+      is_mask_(false) {
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client,
@@ -66,13 +67,18 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(&recording_invalidation_);
-  layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource());
+  layer_impl->set_is_mask(is_mask_);
+  scoped_refptr<RasterSource> raster_source =
+      recording_source_->CreateRasterSource();
+  raster_source->SetBackgoundColor(SafeOpaqueBackgroundColor());
+  raster_source->SetRequiresClear(!contents_opaque() &&
+                                  !client_->FillsBoundsCompletely());
+  layer_impl->UpdateRasterSource(raster_source);
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
   if (host) {
-    // TODO(hendrikw): Perhaps use and initialization function to do this work.
     recording_source_->SetMinContentsScale(
         host->settings().minimum_contents_scale);
     recording_source_->SetTileGridSize(host->settings().default_tile_grid_size);
@@ -135,10 +141,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   // for them.
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      client_, &recording_invalidation_, SafeOpaqueBackgroundColor(),
-      contents_opaque(), client_->FillsBoundsCompletely(), layer_size,
-      visible_layer_rect, update_source_frame_number_,
-      Picture::RECORD_NORMALLY);
+      client_, &recording_invalidation_, layer_size, visible_layer_rect,
+      update_source_frame_number_, Picture::RECORD_NORMALLY);
   last_updated_visible_content_rect_ = visible_content_rect();
 
   if (updated) {
@@ -153,7 +157,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {
-  recording_source_->SetIsMask(is_mask);
+  is_mask_ = is_mask;
 }
 
 bool PictureLayer::SupportsLCDText() const {

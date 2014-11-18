@@ -1188,8 +1188,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   ResetTilingsAndRasterScales();
 
   // Mask layers dont create low res since they always fit on one tile.
-  pending_pile->SetIsMask(true);
-  active_pile->SetIsMask(true);
+  pending_layer_->set_is_mask(true);
+  active_layer_->set_is_mask(true);
   SetContentsScaleOnBothLayers(contents_scale,
                                device_scale,
                                page_scale,
@@ -1204,8 +1204,8 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
 
   scoped_refptr<FakePicturePileImpl> valid_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
-  valid_pile->SetIsMask(true);
   SetupPendingTree(valid_pile);
+  pending_layer_->set_is_mask(true);
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
@@ -1231,8 +1231,8 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   scoped_refptr<FakePicturePileImpl> huge_pile =
       FakePicturePileImpl::CreateFilledPile(
           tile_size, gfx::Size(max_texture_size + 1, 10));
-  huge_pile->SetIsMask(true);
   SetupPendingTree(huge_pile);
+  pending_layer_->set_is_mask(true);
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
   EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
@@ -1256,8 +1256,8 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
 
   scoped_refptr<FakePicturePileImpl> valid_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
-  valid_pile->SetIsMask(true);
   SetupPendingTree(valid_pile);
+  pending_layer_->set_is_mask(true);
 
   float ideal_contents_scale = 1.3f;
   SetupDrawPropertiesAndUpdateTiles(
@@ -3716,10 +3716,10 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
-  pending_pile->SetIsMask(true);
   scoped_ptr<FakePictureLayerImpl> mask =
       FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 3,
                                                    pending_pile);
+  mask->set_is_mask(true);
 
   mask->SetBounds(bounds);
   mask->SetContentBounds(bounds);
@@ -4504,8 +4504,8 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
 
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation, SK_ColorWHITE, false, false, layer_bounds,
-      layer_rect, frame_number++, Picture::RECORD_NORMALLY);
+      &client, &invalidation, layer_bounds, layer_rect, frame_number++,
+      Picture::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> pending_raster_source =
       recording_source->CreateRasterSource();
@@ -4571,8 +4571,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   Region invalidation1(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation1, SK_ColorWHITE, false, false, layer_bounds,
-      layer_rect, frame_number++, Picture::RECORD_NORMALLY);
+      &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
+      Picture::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source1 =
       recording_source->CreateRasterSource();
@@ -4589,8 +4589,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   Region invalidation2(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation2, SK_ColorWHITE, false, false, layer_bounds,
-      layer_rect, frame_number++, Picture::RECORD_NORMALLY);
+      &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
+      Picture::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source2 =
       recording_source->CreateRasterSource();

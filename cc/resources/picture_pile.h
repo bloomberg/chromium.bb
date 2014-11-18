@@ -25,21 +25,17 @@ class CC_EXPORT PicturePile : public RecordingSource {
   bool UpdateAndExpandInvalidation(
       ContentLayerClient* painter,
       Region* invalidation,
-      SkColor background_color,
-      bool contents_opaque,
-      bool contents_fill_bounds_completely,
       const gfx::Size& layer_size,
       const gfx::Rect& visible_layer_rect,
       int frame_number,
       Picture::RecordingMode recording_mode) override;
+  scoped_refptr<RasterSource> CreateRasterSource() const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetMinContentsScale(float min_contents_scale) override;
-  void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetSlowdownRasterScaleFactor(int factor) override;
-  void SetIsMask(bool is_mask) override;
   bool IsSuitableForGpuRasterization() const override;
-  scoped_refptr<RasterSource> CreateRasterSource() const override;
+  void SetTileGridSize(const gfx::Size& tile_grid_size) override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
   SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
 
@@ -97,15 +93,10 @@ class CC_EXPORT PicturePile : public RecordingSource {
   gfx::Rect recorded_viewport_;
   float min_contents_scale_;
   SkTileGridFactory::TileGridInfo tile_grid_info_;
-  SkColor background_color_;
   int slow_down_raster_scale_factor_for_debug_;
-  bool contents_opaque_;
-  bool contents_fill_bounds_completely_;
-  bool clear_canvas_with_debug_color_;
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;
-  bool is_mask_;
   bool is_solid_color_;
   SkColor solid_color_;
   int pixel_record_distance_;

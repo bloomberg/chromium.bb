@@ -87,7 +87,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       was_screen_space_transform_animating_(false),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
-      only_used_low_res_last_append_quads_(false) {
+      only_used_low_res_last_append_quads_(false),
+      is_mask_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -618,7 +619,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   // memory savings that we can get. Note that we don't handle solid color
   // masks, so we shouldn't bother analyzing those.
   // Bugs: crbug.com/397198, crbug.com/396908
-  if (!raster_source_->IsMask())
+  if (!is_mask_)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
@@ -690,7 +691,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int max_texture_size =
       layer_tree_impl()->resource_provider()->max_texture_size();
 
-  if (raster_source_->IsMask()) {
+  if (is_mask_) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
     // don't make any tiles at all. Returning an empty size signals this.
     if (content_bounds.width() > max_texture_size ||

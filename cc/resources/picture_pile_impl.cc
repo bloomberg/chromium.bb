@@ -14,6 +14,16 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+namespace {
+
+#ifdef NDEBUG
+const bool kDefaultClearCanvasSetting = false;
+#else
+const bool kDefaultClearCanvasSetting = true;
+#endif
+
+}  // namespace
+
 namespace cc {
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
@@ -27,13 +37,11 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromPicturePile(
 
 PicturePileImpl::PicturePileImpl()
     : background_color_(SK_ColorTRANSPARENT),
-      contents_opaque_(false),
-      contents_fill_bounds_completely_(false),
+      requires_clear_(true),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
       has_any_recordings_(false),
-      is_mask_(false),
-      clear_canvas_with_debug_color_(false),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       min_contents_scale_(0.f),
       slow_down_raster_scale_factor_for_debug_(0),
       should_attempt_to_use_distance_field_text_(false) {
@@ -42,15 +50,13 @@ PicturePileImpl::PicturePileImpl()
 PicturePileImpl::PicturePileImpl(const PicturePile* other)
     : picture_map_(other->picture_map_),
       tiling_(other->tiling_),
-      background_color_(other->background_color_),
-      contents_opaque_(other->contents_opaque_),
-      contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
+      background_color_(SK_ColorTRANSPARENT),
+      requires_clear_(true),
       is_solid_color_(other->is_solid_color_),
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
       has_any_recordings_(other->has_any_recordings_),
-      is_mask_(other->is_mask_),
-      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       min_contents_scale_(other->min_contents_scale_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
@@ -88,7 +94,12 @@ void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
   // If this picture has opaque contents, it is guaranteeing that it will
   // draw an opaque rect the size of the layer.  If it is not, then we must
   // clear this canvas ourselves.
-  if (contents_opaque_ || contents_fill_bounds_completely_) {
+  if (requires_clear_) {
+    TRACE_EVENT_INSTANT0("cc", "SkCanvas::clear", TRACE_EVENT_SCOPE_THREAD);
+    // Clearing is about ~4x faster than drawing a rect even if the content
+    // isn't covering a majority of the canvas.
+    canvas->clear(SK_ColorTRANSPARENT);
+  } else {
     // Even if completely covered, for rasterizations that touch the edge of the
     // layer, we also need to raster the background color underneath the last
     // texel (since the recording won't cover it) and outside the last texel
@@ -129,11 +140,6 @@ void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
       canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
       canvas->restore();
     }
-  } else {
-    TRACE_EVENT_INSTANT0("cc", "SkCanvas::clear", TRACE_EVENT_SCOPE_THREAD);
-    // Clearing is about ~4x faster than drawing a rect even if the content
-    // isn't covering a majority of the canvas.
-    canvas->clear(SK_ColorTRANSPARENT);
   }
 
   RasterCommon(canvas,
@@ -401,6 +407,14 @@ void PicturePileImpl::SetShouldAttemptToUseDistanceFieldText() {
   should_attempt_to_use_distance_field_text_ = true;
 }
 
+void PicturePileImpl::SetBackgoundColor(SkColor background_color) {
+  background_color_ = background_color;
+}
+
+void PicturePileImpl::SetRequiresClear(bool requires_clear) {
+  requires_clear_ = requires_clear;
+}
+
 bool PicturePileImpl::ShouldAttemptToUseDistanceFieldText() const {
   return should_attempt_to_use_distance_field_text_;
 }
@@ -421,10 +435,6 @@ void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
       TracedValue::AppendIDRef(picture, pictures);
     }
   }
-}
-
-bool PicturePileImpl::IsMask() const {
-  return is_mask_;
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(

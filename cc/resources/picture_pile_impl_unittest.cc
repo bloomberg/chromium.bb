@@ -634,17 +634,11 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsBaseNonDiscardable) {
   }
 }
 
-class FullContentsTest : public ::testing::TestWithParam<bool> {};
-
-TEST_P(FullContentsTest, RasterFullContents) {
+TEST(PicturePileImplTest, RasterFullContents) {
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(3, 5);
   float contents_scale = 1.5f;
   float raster_divisions = 2.f;
-  // Param in this case is whether the content is fully opaque
-  // or just filled completely. For this test they should behave the same.
-  bool contents_opaque = GetParam();
-  bool fills_content = !GetParam();
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -656,8 +650,7 @@ TEST_P(FullContentsTest, RasterFullContents) {
 
   pile->SetMinContentsScale(contents_scale);
   pile->set_background_color(SK_ColorBLACK);
-  pile->set_contents_opaque(contents_opaque);
-  pile->set_contents_fill_bounds_completely(fills_content);
+  pile->SetRequiresClear(false);
   pile->set_clear_canvas_with_debug_color(false);
   pile->RerecordPile();
 
@@ -705,10 +698,6 @@ TEST_P(FullContentsTest, RasterFullContents) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(PicturePileImpl,
-                        FullContentsTest,
-                        ::testing::Values(false, true));
-
 TEST(PicturePileImpl, RasterContentsTransparent) {
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(5, 3);
@@ -717,7 +706,7 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
   pile->set_background_color(SK_ColorTRANSPARENT);
-  pile->set_contents_opaque(false);
+  pile->SetRequiresClear(true);
   pile->SetMinContentsScale(contents_scale);
   pile->set_clear_canvas_with_debug_color(false);
   pile->RerecordPile();
@@ -757,7 +746,7 @@ TEST_P(OverlapTest, NoOverlap) {
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
   pile->set_background_color(SK_ColorTRANSPARENT);
-  pile->set_contents_opaque(false);
+  pile->SetRequiresClear(true);
   pile->SetMinContentsScale(MinContentsScale());
   pile->set_clear_canvas_with_debug_color(true);
   SkPaint color_paint;
