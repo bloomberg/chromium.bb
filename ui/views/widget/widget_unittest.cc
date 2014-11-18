@@ -855,6 +855,53 @@ TEST_F(WidgetObserverTest, WidgetBoundsChanged) {
   EXPECT_EQ(child2, widget_bounds_changed());
 }
 
+// An extension to WidgetBoundsChanged to ensure notifications are forwarded
+// by the NativeWidget implementation.
+TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
+  // Don't use NewWidget(), so that the Init() flow can be observed to ensure
+  // consistency across platforms.
+  Widget* widget = new Widget();  // Note: owned by NativeWidget.
+  widget->AddObserver(this);
+
+  EXPECT_FALSE(widget_bounds_changed());
+
+  // Init causes a bounds change, even while not showing.
+  widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  EXPECT_TRUE(widget_bounds_changed());
+  reset();
+
+  // Resizing while hidden, triggers a change.
+  widget->SetSize(gfx::Size(160, 100));
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_TRUE(widget_bounds_changed());
+  reset();
+
+  // Setting the same size does nothing.
+  widget->SetSize(gfx::Size(160, 100));
+  EXPECT_FALSE(widget_bounds_changed());
+  reset();
+
+  // Showing does nothing to the bounds.
+  widget->Show();
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_FALSE(widget_bounds_changed());
+  reset();
+
+  // Resizing while shown.
+  widget->SetSize(gfx::Size(170, 100));
+  EXPECT_TRUE(widget_bounds_changed());
+  reset();
+
+  // Resize to the same thing while shown does nothing.
+  widget->SetSize(gfx::Size(170, 100));
+  EXPECT_FALSE(widget_bounds_changed());
+  reset();
+
+  // No bounds change when closing.
+  widget->CloseNow();
+  EXPECT_FALSE(widget_bounds_changed());
+}
+
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
 // widget is visible and not maximized or fullscreen.
 TEST_F(WidgetTest, GetWindowBoundsInScreen) {

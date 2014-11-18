@@ -282,9 +282,8 @@ gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
-  [GetNativeWindow() setFrame:gfx::ScreenRectToNSRect(bounds)
-                      display:YES
-                      animate:NO];
+  if (bridge_)
+    bridge_->SetBounds(bounds);
 }
 
 void NativeWidgetMac::SetSize(const gfx::Size& size) {

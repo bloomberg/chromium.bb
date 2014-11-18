@@ -45,6 +45,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // This does NOT take ownership of |focus_manager|.
   void SetFocusManager(FocusManager* focus_manager);
 
+  // Changes the bounds of the window and the hosted layer if present.
+  void SetBounds(const gfx::Rect& new_bounds);
+
   // Set or clears the views::View bridged by the content view. This does NOT
   // take ownership of |view|.
   void SetRootView(views::View* view);
@@ -64,6 +67,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // Transition the window into or out of fullscreen. This will immediately
   // invert the value of target_fullscreen_state().
   void ToggleDesiredFullscreenState();
+
+  // Called by the NSWindowDelegate when the size of the window changes.
+  void OnSizeChanged();
 
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();

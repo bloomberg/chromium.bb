@@ -75,6 +75,12 @@ void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
   focus_manager_ = focus_manager;
 }
 
+void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
+  [window_ setFrame:gfx::ScreenRectToNSRect(new_bounds)
+            display:YES
+            animate:NO];
+}
+
 void BridgedNativeWidget::SetRootView(views::View* view) {
   if (view == [bridged_view_ hostedView])
     return;
@@ -155,6 +161,13 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
   [window_ setCollectionBehavior:behavior];
 }
 
+void BridgedNativeWidget::OnSizeChanged() {
+  NSSize new_size = [window_ frame].size;
+  native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(
+      gfx::Size(new_size.width, new_size.height));
+  // TODO(tapted): If there's a layer, resize it here.
+}
+
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
   if (switches::IsTextInputFocusManagerEnabled())
     return new NullInputMethod();
@@ -189,6 +202,9 @@ void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   if (!key.handled())
     focus_manager_->OnKeyEvent(key);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, FocusChangeListener:
 
 void BridgedNativeWidget::OnWillChangeFocus(View* focused_before,
                                             View* focused_now) {

@@ -49,6 +49,10 @@
   DCHECK(!parent_->target_fullscreen_state());
 }
 
+- (void)windowDidResize:(NSNotification*)notification {
+  parent_->OnSizeChanged();
+}
+
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   parent_->native_widget_mac()->GetWidget()->OnNativeWidgetActivationChanged(
       true);
