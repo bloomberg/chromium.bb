@@ -5,6 +5,7 @@
 #include "cc/layers/layer_impl.h"
 
 #include "cc/layers/painted_scrollbar_layer_impl.h"
+#include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -14,6 +15,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/tree_synchronizer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -734,6 +736,132 @@ TEST_F(LayerImplScrollTest, SetNewScrollbarParameters) {
       layer()->bounds().width() - tree()->root_layer()->bounds().width();
   EXPECT_EQ(expected_horizontal_maximum, horizontal_scrollbar->maximum());
   EXPECT_EQ(scroll_offset.x(), horizontal_scrollbar->current_pos());
+}
+
+class LayerImplScrollbarSyncTest : public testing::Test {
+ public:
+  enum {
+    ROOT = 1,
+    IV_CLIP = 2,
+    PAGE = 3,
+    IV_SCROLL = 4,
+    SCROLLBAR = 5,
+    OLD_ROOT = 6,
+    OV_CLIP = 7,
+    OV_SCROLL = 8,
+  };
+  enum TreeID {
+    PENDING,
+    ACTIVE
+  };
+
+  LayerImplScrollbarSyncTest()
+      : host_impl_(settings(), &proxy_, &shared_bitmap_manager_) {
+    host_impl_.CreatePendingTree();
+
+    CreateLayers(host_impl_.pending_tree());
+    CreateLayers(host_impl_.active_tree());
+  }
+
+  void CreateLayers(LayerTreeImpl * tree) {
+    tree->SetRootLayer(LayerImpl::Create(tree, ROOT));
+    LayerImpl * root = tree->root_layer();
+    ASSERT_TRUE(root != nullptr);
+
+    int hierarchy[] = {IV_CLIP, PAGE, IV_SCROLL, OLD_ROOT, OV_CLIP, OV_SCROLL};
+    LayerImpl * parent = root;
+    for (int child_id : hierarchy) {
+      parent->AddChild(LayerImpl::Create(tree, child_id));
+      parent = tree->LayerById(child_id);
+      ASSERT_TRUE(parent != nullptr);
+    }
+
+    root->AddChild(
+        SolidColorScrollbarLayerImpl::Create(tree, SCROLLBAR, HORIZONTAL,
+                                             5, 5, false, true));
+  }
+
+  LayerImpl* layer(int id, TreeID tree_id) {
+    LayerTreeImpl* tree =
+        ((tree_id == PENDING) ?
+         host_impl_.pending_tree() : host_impl_.active_tree());
+
+    assert(tree);
+    return tree->LayerById(id);
+  }
+
+  bool LayerHasScrollbar(int id, TreeID tree_id) {
+    return layer(id, tree_id)->HasScrollbar(HORIZONTAL);
+  }
+
+  ScrollbarLayerImplBase* pending_scrollbar() {
+    LayerImpl* layer_impl = layer(SCROLLBAR, PENDING);
+    assert(layer_impl);
+    return layer_impl->ToScrollbarLayer();
+  }
+
+  LayerImpl* pending_root() {
+    LayerImpl * result = layer(ROOT, PENDING);
+    assert(result);
+    return result;
+  }
+
+  LayerImpl* active_root() {
+    LayerImpl * result = layer(ROOT, ACTIVE);
+    assert(result);
+    return result;
+  }
+
+  LayerTreeSettings settings() {
+    LayerTreeSettings settings;
+    settings.use_pinch_virtual_viewport = true;
+    return settings;
+  }
+
+ private:
+  FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
+  FakeLayerTreeHostImpl host_impl_;
+};
+
+TEST_F(LayerImplScrollbarSyncTest, LayerImplBecomesScrollable) {
+  // In the beginning IV_SCROLL layer is not scrollable.
+  ASSERT_FALSE(layer(IV_SCROLL, PENDING)->scrollable());
+
+  // For pinch virtual viewport the clip layer is the inner viewport
+  // clip layer (IV_CLIP) and the scroll one is the outer viewport
+  // scroll layer (OV_SCROLL).
+  pending_scrollbar()->SetScrollLayerAndClipLayerByIds(OV_SCROLL, IV_CLIP);
+
+  ASSERT_TRUE(LayerHasScrollbar(OV_SCROLL, PENDING));
+  ASSERT_TRUE(LayerHasScrollbar(IV_CLIP, PENDING));
+
+  // Synchronize with the active tree.
+  TreeSynchronizer::PushProperties(pending_root(), active_root());
+
+  ASSERT_TRUE(LayerHasScrollbar(OV_SCROLL, ACTIVE));
+  ASSERT_TRUE(LayerHasScrollbar(IV_CLIP, ACTIVE));
+
+  // Make IV_SCROLL layer scrollable.
+  layer(IV_SCROLL, PENDING)->SetScrollClipLayer(IV_CLIP);
+  layer(IV_SCROLL, PENDING)->SetNeedsPushProperties();
+  ASSERT_TRUE(layer(IV_SCROLL, PENDING)->scrollable());
+
+  pending_scrollbar()->SetScrollLayerAndClipLayerByIds(OV_SCROLL, IV_CLIP);
+
+  // Now IV_CLIP layer should also receive the scrollbar.
+  ASSERT_TRUE(LayerHasScrollbar(OV_SCROLL, PENDING));
+  ASSERT_TRUE(LayerHasScrollbar(IV_CLIP, PENDING));
+  ASSERT_TRUE(LayerHasScrollbar(IV_SCROLL, PENDING));
+
+  // Synchronize with the active tree.
+  TreeSynchronizer::PushProperties(pending_root(), active_root());
+
+  ASSERT_TRUE(layer(IV_SCROLL, ACTIVE)->scrollable());
+
+  ASSERT_TRUE(LayerHasScrollbar(OV_SCROLL, ACTIVE));
+  ASSERT_TRUE(LayerHasScrollbar(IV_CLIP, ACTIVE));
+  ASSERT_TRUE(LayerHasScrollbar(IV_SCROLL, ACTIVE));
 }
 
 }  // namespace
