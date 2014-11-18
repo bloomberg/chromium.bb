@@ -52,6 +52,10 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
 
   virtual ~PepperPluginInstanceThrottler();
 
+  bool needs_representative_keyframe() const {
+    return needs_representative_keyframe_;
+  }
+
   // Called when the plugin flushes it's graphics context. Supplies the
   // throttler with a candidate to use as the representative keyframe.
   void OnImageFlush(const SkBitmap* bitmap);
