@@ -78,6 +78,7 @@ public:
         , m_propertyRangeStart(UINT_MAX)
         , m_selectorRangeStart(UINT_MAX)
         , m_commentRangeStart(UINT_MAX)
+        , m_mediaQueryExpValueRangeStart(UINT_MAX)
     {
         ASSERT(m_result);
     }

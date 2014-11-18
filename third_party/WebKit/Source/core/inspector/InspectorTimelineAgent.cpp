@@ -234,7 +234,7 @@ private:
 struct TimelineThreadState {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    TimelineThreadState() { }
+    TimelineThreadState() : TimelineThreadState(nullptr) { }
 
     TimelineThreadState(InspectorTimelineAgent* timelineAgent)
         : recordStack(timelineAgent)
@@ -1223,6 +1223,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
     , m_platformInstrumentationClientInstalledAtStackDepth(0)
     , m_imageBeingPainted(0)
     , m_paintSetupStart(0)
+    , m_paintSetupEnd(0)
     , m_mayEmitFirstPaint(false)
     , m_lastProgressTimestamp(0)
 {

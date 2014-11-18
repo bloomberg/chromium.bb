@@ -35,9 +35,7 @@
 namespace blink {
 
 struct ScriptBreakpoint {
-    ScriptBreakpoint()
-    {
-    }
+    ScriptBreakpoint() : ScriptBreakpoint(0, 0, String()) { }
 
     ScriptBreakpoint(int lineNumber, int columnNumber, const String& condition)
         : lineNumber(lineNumber)

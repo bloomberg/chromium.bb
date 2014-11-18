@@ -224,7 +224,8 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
     class HeapSnapshotProgress final : public ScriptProfiler::HeapSnapshotProgress {
     public:
         explicit HeapSnapshotProgress(InspectorFrontend::HeapProfiler* frontend)
-            : m_frontend(frontend) { }
+            : m_frontend(frontend)
+            , m_totalWork(0) { }
         virtual void Start(int totalWork) override
         {
             m_totalWork = totalWork;

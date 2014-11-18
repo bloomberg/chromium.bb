@@ -72,7 +72,8 @@ NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const 
     , m_base64Encoded(false)
     , m_isContentEvicted(false)
     , m_type(InspectorPageAgent::OtherResource)
-    , m_cachedResource(0)
+    , m_httpStatusCode(0)
+    , m_cachedResource(nullptr)
 {
 }
 

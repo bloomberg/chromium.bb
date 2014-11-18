@@ -49,12 +49,6 @@ class TraceEventDispatcher {
 public:
     class TraceEvent {
     public:
-        TraceEvent()
-            : m_name(0)
-            , m_argumentCount(0)
-        {
-        }
-
         TraceEvent(double timestamp, char phase, const char* name, unsigned long long id, ThreadIdentifier threadIdentifier,
             int argumentCount, const char* const* argumentNames, const unsigned char* argumentTypes, const unsigned long long* argumentValues)
             : m_timestamp(timestamp)
