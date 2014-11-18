@@ -83,13 +83,7 @@ html[dir='rtl'] #search-field {
 }
 
 .no-results-message {
-  margin-bottom: 1em;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.search-results .no-results-message {
-  margin-top: 1em;
+  padding: 24px 16px;
 }
 
 #notification-bar.alone {
@@ -206,8 +200,19 @@ input {
   line-height: 1.3;
 }
 
+.entry .visit-entry :-webkit-any(a, .domain) {
+  display: block;
+  margin-left: 0;
+  margin-right: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 0;
+  padding-right: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .entry .domain {
-  -webkit-padding-start: 0;
   font-size: 14px;
 }
 
