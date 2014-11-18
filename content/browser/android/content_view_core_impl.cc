@@ -1028,11 +1028,17 @@ void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
 
 void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jfloat x, jfloat y) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureTap, time_ms, x, y);
-  event.data.tap.tapCount = 1;
+  // Tap gestures should always be preceded by a TapDown, ensuring consistency
+  // with the touch-based gesture detection pipeline.
+  WebGestureEvent tap_down_event = MakeGestureEvent(
+      WebInputEvent::GestureTapDown, time_ms, x, y);
+  tap_down_event.data.tap.tapCount = 1;
+  SendGestureEvent(tap_down_event);
 
-  SendGestureEvent(event);
+  WebGestureEvent tap_event = MakeGestureEvent(
+      WebInputEvent::GestureTap, time_ms, x, y);
+  tap_event.data.tap.tapCount = 1;
+  SendGestureEvent(tap_event);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
