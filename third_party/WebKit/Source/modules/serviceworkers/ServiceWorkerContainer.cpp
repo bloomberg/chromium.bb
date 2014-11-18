@@ -108,7 +108,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "No associated provider is available"));
+        resolver->reject(DOMException::create(InvalidStateError, "The document is in an invalid state."));
         return promise;
     }
 
@@ -170,6 +170,11 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    if (!m_provider) {
+        resolver->reject(DOMException::create(InvalidStateError, "The document is in an invalid state."));
+        return promise;
+    }
 
     // FIXME: This should use the container's execution context, not
     // the callers.
