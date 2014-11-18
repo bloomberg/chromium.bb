@@ -14,6 +14,9 @@
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
       Desktop bookmarks
     </message>
+    <message name="IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder when enhanced bookmark is enabled.">
+      Bookmarks Bar
+    </message>
   </if>
   <if expr="is_ios">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">

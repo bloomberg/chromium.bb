@@ -28,7 +28,9 @@
 #include "components/query_parser/query_parser.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/components_strings.h"
 #include "jni/BookmarksBridge_jni.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -52,19 +54,23 @@ class BookmarkNodeCreationTimeCompareFunctor {
 
 class BookmarkTitleComparer {
  public:
-  explicit BookmarkTitleComparer(const icu::Collator* collator)
-      : collator_(collator) {}
+  explicit BookmarkTitleComparer(BookmarksBridge* bookmarks_bridge,
+                                 const icu::Collator* collator)
+      : bookmarks_bridge_(bookmarks_bridge),
+        collator_(collator) {}
 
   bool operator()(const BookmarkNode* lhs, const BookmarkNode* rhs) {
     if (collator_) {
       return base::i18n::CompareString16WithCollator(
-          collator_, lhs->GetTitle(), rhs->GetTitle()) == UCOL_LESS;
+          collator_, bookmarks_bridge_->GetTitle(lhs),
+          bookmarks_bridge_->GetTitle(rhs)) == UCOL_LESS;
     } else {
       return lhs->GetTitle() < rhs->GetTitle();
     }
   }
 
 private:
+  BookmarksBridge* bookmarks_bridge_;  // weak
   const icu::Collator* collator_;
 };
 
@@ -253,7 +259,7 @@ void BookmarksBridge::GetTopLevelFolderIDs(JNIEnv* env,
     scoped_ptr<icu::Collator> collator = GetICUCollator();
     std::stable_sort(top_level_folders.begin() + special_count,
                      top_level_folders.end(),
-                     BookmarkTitleComparer(collator.get()));
+                     BookmarkTitleComparer(this, collator.get()));
   }
 
   for (std::vector<const BookmarkNode*>::const_iterator it =
@@ -322,7 +328,7 @@ void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
   bookmarkList.push_back(desktop);
   std::stable_sort(bookmarkList.begin(),
                    bookmarkList.end(),
-                   BookmarkTitleComparer(collator.get()));
+                   BookmarkTitleComparer(this, collator.get()));
 
   // Push all sorted top folders in stack and give them depth of 0.
   // Note the order to push folders to stack should be opposite to the order in
@@ -352,7 +358,7 @@ void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
     }
     std::stable_sort(bookmarkList.begin(),
                      bookmarkList.end(),
-                     BookmarkTitleComparer(collator.get()));
+                     BookmarkTitleComparer(this, collator.get()));
     for (std::vector<const BookmarkNode*>::reverse_iterator it =
              bookmarkList.rbegin();
          it != bookmarkList.rend();
@@ -726,6 +732,18 @@ void BookmarksBridge::EndGroupingUndos(JNIEnv* env, jobject obj) {
   grouped_bookmark_actions_.reset();
 }
 
+base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return partner_bookmarks_shim_->GetTitle(node);
+
+  if (node == bookmark_model_->bookmark_bar_node()
+      && IsEnhancedBookmarksEnabled(profile_->GetPrefs())) {
+    return l10n_util::GetStringUTF16(IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME);
+  }
+
+  return node->GetTitle();
+}
+
 ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
     const BookmarkNode* node) {
   JNIEnv* env = AttachCurrentThread();
@@ -814,12 +832,6 @@ int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
     return BookmarkType::BOOKMARK_TYPE_PARTNER;
   else
     return BookmarkType::BOOKMARK_TYPE_NORMAL;
-}
-
-base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
-  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
-    return partner_bookmarks_shim_->GetTitle(node);
-  return node->GetTitle();
 }
 
 bool BookmarksBridge::IsReachable(const BookmarkNode* node) const {

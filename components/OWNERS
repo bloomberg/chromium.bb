@@ -11,6 +11,7 @@ per-file autofill.gypi=isherman@chromium.org
 per-file autofill_strings.grdp=estade@chromium.org
 per-file autofill_strings.grdp=isherman@chromium.org
 
+per-file bookmark_bar_strings.grdp=sky@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
 
 per-file cloud_devices*=gene@chromium.org

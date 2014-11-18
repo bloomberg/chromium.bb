@@ -152,6 +152,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
 
   void EndGroupingUndos(JNIEnv* env, jobject obj);
 
+  base::string16 GetTitle(const BookmarkNode* node) const;
+
  private:
   virtual ~BookmarksBridge();
 
@@ -168,7 +170,6 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   bool IsManaged(const BookmarkNode* node) const;
   const BookmarkNode* GetParentNode(const BookmarkNode* node);
   int GetBookmarkType(const BookmarkNode* node);
-  base::string16 GetTitle(const BookmarkNode* node) const;
   bool IsReachable(const BookmarkNode* node) const;
   bool IsLoaded() const;
   bool IsFolderAvailable(const BookmarkNode* folder) const;
