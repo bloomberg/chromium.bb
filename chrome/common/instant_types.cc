@@ -4,6 +4,19 @@
 
 #include "chrome/common/instant_types.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "net/base/escape.h"
+
+namespace {
+
+std::string GetComponent(const std::string& url,
+                         const url::Component component) {
+  return (component.len > 0) ? url.substr(component.begin, component.len) :
+      std::string();
+}
+
+}  // namespace
+
 InstantSuggestion::InstantSuggestion() {
 }
 
@@ -67,4 +80,51 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
       image_height == rhs.image_height &&
       has_attribution == rhs.has_attribution &&
       logo_alternate == rhs.logo_alternate;
+}
+
+const char kSearchQueryKey[] = "q";
+const char kOriginalQueryKey[] = "oq";
+const char kRLZParameterKey[] = "rlz";
+const char kInputEncodingKey[] = "ie";
+const char kAssistedQueryStatsKey[] = "aqs";
+
+EmbeddedSearchRequestParams::EmbeddedSearchRequestParams() {
+}
+
+EmbeddedSearchRequestParams::EmbeddedSearchRequestParams(const GURL& url) {
+  const std::string& url_params(url.query());
+  url::Component query, key, value;
+  query.len = static_cast<int>(url_params.size());
+
+  const net::UnescapeRule::Type unescape_rules =
+      net::UnescapeRule::CONTROL_CHARS | net::UnescapeRule::SPACES |
+      net::UnescapeRule::URL_SPECIAL_CHARS | net::UnescapeRule::NORMAL |
+      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
+
+  while (url::ExtractQueryKeyValue(url_params.c_str(), &query, &key, &value)) {
+    if (!key.is_nonempty())
+      continue;
+
+    std::string key_param(GetComponent(url_params, key));
+    std::string value_param(GetComponent(url_params, value));
+    if (key_param == kSearchQueryKey) {
+      search_query = base::UTF8ToUTF16(net::UnescapeURLComponent(
+          value_param, unescape_rules));
+    } else if (key_param == kOriginalQueryKey) {
+      original_query = base::UTF8ToUTF16(net::UnescapeURLComponent(
+          value_param, unescape_rules));
+    } else if (key_param == kRLZParameterKey) {
+      rlz_parameter_value = net::UnescapeAndDecodeUTF8URLComponent(
+          value_param, net::UnescapeRule::NORMAL);
+    } else if (key_param == kInputEncodingKey) {
+      input_encoding = net::UnescapeAndDecodeUTF8URLComponent(
+          value_param, net::UnescapeRule::NORMAL);
+    } else if (key_param == kAssistedQueryStatsKey) {
+      assisted_query_stats = net::UnescapeAndDecodeUTF8URLComponent(
+          value_param, net::UnescapeRule::NORMAL);
+    }
+  }
+}
+
+EmbeddedSearchRequestParams::~EmbeddedSearchRequestParams() {
 }

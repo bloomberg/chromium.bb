@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -73,6 +74,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
 
   const base::string16& search_terms =
       chrome::ExtractSearchTermsFromURL(profile(), url);
+  EmbeddedSearchRequestParams request_params(url);
   if (search_terms.empty())
     return false;
 
@@ -82,7 +84,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
     if (prerenderer->CanCommitQuery(GetActiveWebContents(), search_terms)) {
       // Submit query to render the prefetched results. Browser will swap the
       // prerendered contents with the active tab contents.
-      prerenderer->Commit(search_terms);
+      prerenderer->Commit(search_terms, request_params);
       return false;
     } else {
       prerenderer->Cancel();
@@ -93,8 +95,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
   // InstantController.
   if (!chrome::IsQueryExtractionAllowedForURL(profile(), url))
     return false;
-
-  return instant_.SubmitQuery(search_terms);
+  return instant_.SubmitQuery(search_terms, request_params);
 }
 
 Profile* BrowserInstantController::profile() const {

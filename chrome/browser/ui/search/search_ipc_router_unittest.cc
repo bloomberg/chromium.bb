@@ -871,7 +871,7 @@ TEST_F(SearchIPCRouterTest, SendSubmitMsg) {
       .WillOnce(testing::Return(true));
 
   process()->sink().ClearMessages();
-  GetSearchIPCRouter().Submit(base::string16());
+  GetSearchIPCRouter().Submit(base::string16(), EmbeddedSearchRequestParams());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }
 
@@ -883,7 +883,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
       .WillOnce(testing::Return(false));
 
   process()->sink().ClearMessages();
-  GetSearchIPCRouter().Submit(base::string16());
+  GetSearchIPCRouter().Submit(base::string16(), EmbeddedSearchRequestParams());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }
 

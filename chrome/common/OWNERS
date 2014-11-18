@@ -36,9 +36,9 @@ per-file spellcheck_result.h=rlp@chromium.org
 per-file spellcheck_result.h=rouslan@chromium.org
 
 # Instant/Search files.
-per-file instant_types.*=kmadhusu@chromium.org
-per-file instant_types.*=jered@chromium.org
-per-file instant_types.*=samarth@chromium.org
+per-file instant_types*=kmadhusu@chromium.org
+per-file instant_types*=jered@chromium.org
+per-file instant_types*=samarth@chromium.org
 per-file search_types.*=kmadhusu@chromium.org
 per-file search_types.*=jered@chromium.org
 per-file search_types.*=samarth@chromium.org

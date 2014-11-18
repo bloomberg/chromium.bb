@@ -125,6 +125,14 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(EmbeddedSearchRequestParams)
+  IPC_STRUCT_TRAITS_MEMBER(search_query)
+  IPC_STRUCT_TRAITS_MEMBER(original_query)
+  IPC_STRUCT_TRAITS_MEMBER(rlz_parameter_value)
+  IPC_STRUCT_TRAITS_MEMBER(input_encoding)
+  IPC_STRUCT_TRAITS_MEMBER(assisted_query_stats)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(text)
   IPC_STRUCT_TRAITS_MEMBER(metadata)
@@ -267,8 +275,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
                     InstantSuggestion /* suggestion */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
-                    base::string16 /* value */)
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxSubmit,
+                    base::string16 /* value */,
+                    EmbeddedSearchRequestParams /* params */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)

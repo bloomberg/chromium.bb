@@ -255,8 +255,9 @@ void SearchTabHelper::SetSuggestionToPrefetch(
   ipc_router_.SetSuggestionToPrefetch(suggestion);
 }
 
-void SearchTabHelper::Submit(const base::string16& text) {
-  ipc_router_.Submit(text);
+void SearchTabHelper::Submit(const base::string16& text,
+                             const EmbeddedSearchRequestParams& params) {
+  ipc_router_.Submit(text, params);
 }
 
 void SearchTabHelper::OnTabActivated() {

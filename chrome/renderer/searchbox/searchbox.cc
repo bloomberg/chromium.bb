@@ -237,6 +237,10 @@ const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
 }
 
+const EmbeddedSearchRequestParams& SearchBox::GetEmbeddedSearchRequestParams() {
+  return embedded_search_request_params_;
+}
+
 void SearchBox::Focus() {
   render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
       render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_VISIBLE));
@@ -426,8 +430,10 @@ void SearchBox::OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
   }
 }
 
-void SearchBox::OnSubmit(const base::string16& query) {
+void SearchBox::OnSubmit(const base::string16& query,
+                         const EmbeddedSearchRequestParams& params) {
   query_ = query;
+  embedded_search_request_params_ = params;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnSubmit";
     extensions_v8::SearchBoxExtension::DispatchSubmit(
@@ -463,6 +469,7 @@ GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
 
 void SearchBox::Reset() {
   query_.clear();
+  embedded_search_request_params_ = EmbeddedSearchRequestParams();
   suggestion_ = InstantSuggestion();
   start_margin_ = 0;
   is_focused_ = false;

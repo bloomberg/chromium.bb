@@ -17,6 +17,7 @@ if (!chrome.embeddedSearch) {
       native function GetDisplayInstantResults();
       native function GetMostVisitedItemData();
       native function GetQuery();
+      native function GetSearchRequestParams();
       native function GetRightToLeft();
       native function GetStartMargin();
       native function GetSuggestionToPrefetch();
@@ -37,6 +38,8 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('startMargin', GetStartMargin);
       this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
       this.__defineGetter__('value', GetQuery);
+      Object.defineProperty(this, 'requestParams',
+                            { get: GetSearchRequestParams });
 
       this.focus = function() {
         Focus();

@@ -383,6 +383,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Returns true if the Searchbox itself is oriented right-to-left.
   static void GetRightToLeft(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Gets the Embedded Search request params. Used for logging purposes.
+  static void GetSearchRequestParams(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets the start-edge margin to use with extended Instant.
   static void GetStartMargin(const v8::FunctionCallbackInfo<v8::Value>& args);
 
@@ -561,6 +565,8 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, GetQuery);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetRightToLeft")))
     return v8::FunctionTemplate::New(isolate, GetRightToLeft);
+  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSearchRequestParams")))
+    return v8::FunctionTemplate::New(isolate, GetSearchRequestParams);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetStartMargin")))
     return v8::FunctionTemplate::New(isolate, GetStartMargin);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSuggestionToPrefetch")))
@@ -743,6 +749,39 @@ void SearchBoxExtensionWrapper::GetQuery(
 void SearchBoxExtensionWrapper::GetRightToLeft(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(base::i18n::IsRTL());
+}
+
+// static
+void SearchBoxExtensionWrapper::GetSearchRequestParams(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return;
+
+  const EmbeddedSearchRequestParams& params =
+      SearchBox::Get(render_view)->GetEmbeddedSearchRequestParams();
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::Handle<v8::Object> data = v8::Object::New(isolate);
+  if (!params.search_query.empty()) {
+    data->Set(v8::String::NewFromUtf8(isolate, kSearchQueryKey),
+              UTF16ToV8String(isolate, params.search_query));
+  }
+  if (!params.original_query.empty()) {
+    data->Set(v8::String::NewFromUtf8(isolate, kOriginalQueryKey),
+              UTF16ToV8String(isolate, params.original_query));
+  }
+  if (!params.rlz_parameter_value.empty()) {
+    data->Set(v8::String::NewFromUtf8(isolate, kRLZParameterKey),
+              UTF16ToV8String(isolate, params.rlz_parameter_value));
+  }
+  if (!params.input_encoding.empty()) {
+    data->Set(v8::String::NewFromUtf8(isolate, kInputEncodingKey),
+              UTF16ToV8String(isolate, params.input_encoding));
+  }
+  if (!params.assisted_query_stats.empty()) {
+    data->Set(v8::String::NewFromUtf8(isolate, kAssistedQueryStatsKey),
+              UTF16ToV8String(isolate, params.assisted_query_stats));
+  }
+  args.GetReturnValue().Set(data);
 }
 
 // static

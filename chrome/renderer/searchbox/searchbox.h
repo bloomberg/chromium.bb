@@ -86,6 +86,7 @@ class SearchBox : public content::RenderViewObserver,
   void Paste(const base::string16& text);
 
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
+  const EmbeddedSearchRequestParams& GetEmbeddedSearchRequestParams();
 
   // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.
   void SetVoiceSearchSupported(bool supported);
@@ -129,7 +130,8 @@ class SearchBox : public content::RenderViewObserver,
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnSetInputInProgress(bool input_in_progress);
   void OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion);
-  void OnSubmit(const base::string16& query);
+  void OnSubmit(const base::string16& query,
+                const EmbeddedSearchRequestParams& params);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnToggleVoiceSearch();
 
@@ -151,6 +153,7 @@ class SearchBox : public content::RenderViewObserver,
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
   base::string16 query_;
+  EmbeddedSearchRequestParams embedded_search_request_params_;
   int start_margin_;
   InstantSuggestion suggestion_;
 

@@ -136,11 +136,12 @@ void SearchIPCRouter::ToggleVoiceSearch() {
   Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
 }
 
-void SearchIPCRouter::Submit(const base::string16& text) {
+void SearchIPCRouter::Submit(const base::string16& text,
+                             const EmbeddedSearchRequestParams& params) {
   if (!policy_->ShouldSubmitQuery())
     return;
 
-  Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
+  Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text, params));
 }
 
 void SearchIPCRouter::OnTabActivated() {

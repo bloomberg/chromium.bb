@@ -100,10 +100,12 @@ void InstantSearchPrerenderer::Prerender(const InstantSuggestion& suggestion) {
       SetSuggestionToPrefetch(suggestion);
 }
 
-void InstantSearchPrerenderer::Commit(const base::string16& query) {
+void InstantSearchPrerenderer::Commit(
+    const base::string16& query,
+    const EmbeddedSearchRequestParams& params) {
   DCHECK(prerender_handle_);
   DCHECK(prerender_contents());
-  SearchTabHelper::FromWebContents(prerender_contents())->Submit(query);
+  SearchTabHelper::FromWebContents(prerender_contents())->Submit(query, params);
 }
 
 bool InstantSearchPrerenderer::CanCommitQuery(

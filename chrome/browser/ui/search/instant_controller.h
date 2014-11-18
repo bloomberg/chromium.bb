@@ -23,6 +23,7 @@ class GURL;
 class InstantService;
 class InstantTab;
 class Profile;
+struct EmbeddedSearchRequestParams;
 
 namespace content {
 class WebContents;
@@ -49,7 +50,8 @@ class InstantController : public InstantPage::Delegate {
   // Called if the browser is navigating to a search URL for |search_terms| with
   // search-term-replacement enabled. If |instant_tab_| can be used to process
   // the search, this does so and returns true. Else, returns false.
-  bool SubmitQuery(const base::string16& search_terms);
+  bool SubmitQuery(const base::string16& search_terms,
+                   const EmbeddedSearchRequestParams& params);
 
   // The search mode in the active tab has changed. Bind |instant_tab_| if the
   // |new_mode| reflects an Instant search results page.

@@ -80,7 +80,8 @@ class SearchTabHelper : public content::WebContentsObserver,
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
   // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const base::string16& text);
+  void Submit(const base::string16& text,
+              const EmbeddedSearchRequestParams& params);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
