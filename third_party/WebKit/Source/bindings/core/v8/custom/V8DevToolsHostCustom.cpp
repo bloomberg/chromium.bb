@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/V8InspectorFrontendHost.h"
+#include "bindings/core/v8/V8DevToolsHost.h"
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
@@ -37,16 +37,16 @@
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/DevToolsHost.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
-#include "core/inspector/InspectorFrontendHost.h"
 #include "platform/ContextMenu.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8DevToolsHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 #if OS(MACOSX)
     v8SetReturnValue(info, v8AtomicString(info.GetIsolate(), "mac"));
@@ -57,7 +57,7 @@ void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInf
 #endif
 }
 
-void V8InspectorFrontendHost::portMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&)
+void V8DevToolsHost::portMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&)
 {
 }
 
@@ -104,7 +104,7 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
     return true;
 }
 
-void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8DevToolsHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 2)
         return;
@@ -122,12 +122,12 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
     if (!populateContextMenuItems(array, menu, info.GetIsolate()))
         return;
 
-    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
+    DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
-    frontendHost->showContextMenu(event, items);
+    devtoolsHost->showContextMenu(event, items);
 }
 
-void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 3)
         return;
@@ -164,9 +164,9 @@ void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::Funct
     if (!document || !document->page())
         return;
 
-    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
+    DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
-    frontendHost->showContextMenu(document->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
+    devtoolsHost->showContextMenu(document->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }
 
 static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& info, int boundaryValue)
@@ -179,12 +179,12 @@ static void histogramEnumeration(const char* name, const v8::FunctionCallbackInf
         blink::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
 }
 
-void V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8DevToolsHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     histogramEnumeration("DevTools.ActionTaken", info, 100);
 }
 
-void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8DevToolsHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     histogramEnumeration("DevTools.PanelShown", info, 20);
 }

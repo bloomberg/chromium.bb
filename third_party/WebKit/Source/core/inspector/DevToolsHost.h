@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorFrontendHost_h
-#define InspectorFrontendHost_h
+#ifndef DevToolsHost_h
+#define DevToolsHost_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
@@ -42,15 +42,15 @@ class FrontendMenuProvider;
 class InspectorFrontendClient;
 class Page;
 
-class InspectorFrontendHost : public RefCountedWillBeGarbageCollectedFinalized<InspectorFrontendHost>, public ScriptWrappable {
+class DevToolsHost : public RefCountedWillBeGarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<InspectorFrontendHost> create(InspectorFrontendClient* client, Page* frontendPage)
+    static PassRefPtrWillBeRawPtr<DevToolsHost> create(InspectorFrontendClient* client, Page* frontendPage)
     {
-        return adoptRefWillBeNoop(new InspectorFrontendHost(client, frontendPage));
+        return adoptRefWillBeNoop(new DevToolsHost(client, frontendPage));
     }
 
-    ~InspectorFrontendHost();
+    ~DevToolsHost();
     void trace(Visitor*);
     void disconnectClient();
 
@@ -78,7 +78,7 @@ public:
     void clearMenuProvider() { m_menuProvider = nullptr; }
 
 private:
-    InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage);
+    DevToolsHost(InspectorFrontendClient*, Page* frontendPage);
 
     InspectorFrontendClient* m_client;
     RawPtrWillBeMember<Page> m_frontendPage;
@@ -87,4 +87,4 @@ private:
 
 } // namespace blink
 
-#endif // InspectorFrontendHost_h
+#endif // DevToolsHost_h

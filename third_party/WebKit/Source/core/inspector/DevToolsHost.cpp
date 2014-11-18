@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorFrontendHost.h"
+#include "core/inspector/DevToolsHost.h"
 
 #include "bindings/core/v8/ScriptFunctionCall.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -59,37 +59,37 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
 public:
-    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
+    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
     {
-        return adoptRefWillBeNoop(new FrontendMenuProvider(frontendHost, frontendApiObject, items));
+        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, frontendApiObject, items));
     }
 
     virtual ~FrontendMenuProvider()
     {
         // Verify that this menu provider has been detached.
-        ASSERT(!m_frontendHost);
+        ASSERT(!m_devtoolsHost);
     }
 
     virtual void trace(Visitor* visitor) override
     {
-        visitor->trace(m_frontendHost);
+        visitor->trace(m_devtoolsHost);
         ContextMenuProvider::trace(visitor);
     }
 
     void disconnect()
     {
         m_frontendApiObject = ScriptValue();
-        m_frontendHost = nullptr;
+        m_devtoolsHost = nullptr;
     }
 
     virtual void contextMenuCleared() override
     {
-        if (m_frontendHost) {
+        if (m_devtoolsHost) {
             ScriptFunctionCall function(m_frontendApiObject, "contextMenuCleared");
             function.call();
 
-            m_frontendHost->clearMenuProvider();
-            m_frontendHost = nullptr;
+            m_devtoolsHost->clearMenuProvider();
+            m_devtoolsHost = nullptr;
         }
         m_items.clear();
     }
@@ -102,7 +102,7 @@ public:
 
     virtual void contextMenuItemSelected(const ContextMenuItem* item) override
     {
-        if (!m_frontendHost)
+        if (!m_devtoolsHost)
             return;
 
         UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
@@ -114,14 +114,14 @@ public:
     }
 
 private:
-    FrontendMenuProvider(InspectorFrontendHost* frontendHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
-        : m_frontendHost(frontendHost)
+    FrontendMenuProvider(DevToolsHost* devtoolsHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
+        : m_devtoolsHost(devtoolsHost)
         , m_frontendApiObject(frontendApiObject)
         , m_items(items)
     {
     }
 
-    RawPtrWillBeMember<InspectorFrontendHost> m_frontendHost;
+    RawPtrWillBeMember<DevToolsHost> m_devtoolsHost;
     ScriptValue m_frontendApiObject;
 
     // FIXME: Oilpan: remove when http://crbug.com/424962 Blink GC plugin
@@ -130,25 +130,25 @@ private:
     Vector<ContextMenuItem> m_items;
 };
 
-InspectorFrontendHost::InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage)
+DevToolsHost::DevToolsHost(InspectorFrontendClient* client, Page* frontendPage)
     : m_client(client)
     , m_frontendPage(frontendPage)
     , m_menuProvider(nullptr)
 {
 }
 
-InspectorFrontendHost::~InspectorFrontendHost()
+DevToolsHost::~DevToolsHost()
 {
     ASSERT(!m_client);
 }
 
-void InspectorFrontendHost::trace(Visitor* visitor)
+void DevToolsHost::trace(Visitor* visitor)
 {
     visitor->trace(m_frontendPage);
     visitor->trace(m_menuProvider);
 }
 
-void InspectorFrontendHost::disconnectClient()
+void DevToolsHost::disconnectClient()
 {
     m_client = 0;
     if (m_menuProvider) {
@@ -158,7 +158,7 @@ void InspectorFrontendHost::disconnectClient()
     m_frontendPage = nullptr;
 }
 
-void InspectorFrontendHost::setZoomFactor(float zoom)
+void DevToolsHost::setZoomFactor(float zoom)
 {
     if (!m_frontendPage)
         return;
@@ -166,7 +166,7 @@ void InspectorFrontendHost::setZoomFactor(float zoom)
         frame->setPageAndTextZoomFactors(zoom, 1);
 }
 
-float InspectorFrontendHost::zoomFactor()
+float DevToolsHost::zoomFactor()
 {
     if (!m_frontendPage)
         return 1;
@@ -175,14 +175,14 @@ float InspectorFrontendHost::zoomFactor()
     return 1;
 }
 
-void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
+void DevToolsHost::setInjectedScriptForOrigin(const String& origin, const String& script)
 {
     if (!m_frontendPage)
         return;
     m_frontendPage->inspectorController().setInjectedScriptForOrigin(origin, script);
 }
 
-void InspectorFrontendHost::copyText(const String& text)
+void DevToolsHost::copyText(const String& text)
 {
     Pasteboard::generalPasteboard()->writePlainText(text, Pasteboard::CannotSmartReplace);
 }
@@ -212,19 +212,19 @@ static String escapeUnicodeNonCharacters(const String& str)
     return dst.toString();
 }
 
-void InspectorFrontendHost::sendMessageToBackend(const String& message)
+void DevToolsHost::sendMessageToBackend(const String& message)
 {
     if (m_client)
         m_client->sendMessageToBackend(escapeUnicodeNonCharacters(message));
 }
 
-void InspectorFrontendHost::sendMessageToEmbedder(const String& message)
+void DevToolsHost::sendMessageToEmbedder(const String& message)
 {
     if (m_client)
         m_client->sendMessageToEmbedder(escapeUnicodeNonCharacters(message));
 }
 
-void InspectorFrontendHost::showContextMenu(Page* page, float x, float y, const Vector<ContextMenuItem>& items)
+void DevToolsHost::showContextMenu(Page* page, float x, float y, const Vector<ContextMenuItem>& items)
 {
     ASSERT(m_frontendPage);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
@@ -237,7 +237,7 @@ void InspectorFrontendHost::showContextMenu(Page* page, float x, float y, const 
     page->inspectorController().showContextMenu(x * zoom, y * zoom, menuProvider);
 }
 
-void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
+void DevToolsHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
 {
     if (!event)
         return;
@@ -259,22 +259,22 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
     m_menuProvider = menuProvider.get();
 }
 
-String InspectorFrontendHost::getSelectionBackgroundColor()
+String DevToolsHost::getSelectionBackgroundColor()
 {
     return RenderTheme::theme().activeSelectionBackgroundColor().serialized();
 }
 
-String InspectorFrontendHost::getSelectionForegroundColor()
+String DevToolsHost::getSelectionForegroundColor()
 {
     return RenderTheme::theme().activeSelectionForegroundColor().serialized();
 }
 
-bool InspectorFrontendHost::isUnderTest()
+bool DevToolsHost::isUnderTest()
 {
     return m_client && m_client->isUnderTest();
 }
 
-bool InspectorFrontendHost::isHostedMode()
+bool DevToolsHost::isHostedMode()
 {
     return false;
 }

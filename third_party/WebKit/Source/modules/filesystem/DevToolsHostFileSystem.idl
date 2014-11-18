@@ -4,7 +4,7 @@
 
 [
     RuntimeEnabled=FileSystem,
-] partial interface InspectorFrontendHost {
+] partial interface DevToolsHost {
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
     void upgradeDraggedFileSystemPermissions(DOMFileSystem domFileSystem);
 };

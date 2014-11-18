@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class InspectorFrontendHost;
+class DevToolsHost;
 class WebViewImpl;
 
 class WebDevToolsFrontendImpl final : public WebDevToolsFrontend, public InspectorFrontendClient {
@@ -62,7 +62,7 @@ public:
 private:
     WebViewImpl* m_webViewImpl;
     WebDevToolsFrontendClient* m_client;
-    RefPtrWillBePersistent<InspectorFrontendHost> m_frontendHost;
+    RefPtrWillBePersistent<DevToolsHost> m_devtoolsHost;
 };
 
 } // namespace blink

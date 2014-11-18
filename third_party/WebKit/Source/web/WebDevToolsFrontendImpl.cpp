@@ -32,10 +32,10 @@
 #include "web/WebDevToolsFrontendImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8InspectorFrontendHost.h"
+#include "bindings/core/v8/V8DevToolsHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/DevToolsHost.h"
 #include "core/inspector/InspectorController.h"
-#include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsFrontendClient.h"
@@ -62,14 +62,14 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
 {
-    ASSERT(!m_frontendHost);
+    ASSERT(!m_devtoolsHost);
 }
 
 void WebDevToolsFrontendImpl::dispose()
 {
-    if (m_frontendHost) {
-        m_frontendHost->disconnectClient();
-        m_frontendHost = nullptr;
+    if (m_devtoolsHost) {
+        m_devtoolsHost->disconnectClient();
+        m_devtoolsHost = nullptr;
     }
     m_client = 0;
 }
@@ -82,13 +82,13 @@ void WebDevToolsFrontendImpl::windowObjectCleared()
     ScriptState* scriptState = ScriptState::forMainWorld(page->deprecatedLocalMainFrame());
     ScriptState::Scope scope(scriptState);
 
-    if (m_frontendHost)
-        m_frontendHost->disconnectClient();
-    m_frontendHost = InspectorFrontendHost::create(this, page);
+    if (m_devtoolsHost)
+        m_devtoolsHost->disconnectClient();
+    m_devtoolsHost = DevToolsHost::create(this, page);
     v8::Handle<v8::Object> global = scriptState->context()->Global();
-    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, scriptState->isolate());
+    v8::Handle<v8::Value> devtoolsHostObj = toV8(m_devtoolsHost.get(), global, scriptState->isolate());
 
-    global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
+    global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), devtoolsHostObj);
     ScriptController* scriptController = page->mainFrame() ? &page->deprecatedLocalMainFrame()->script() : 0;
     if (scriptController) {
         String installAdditionalAPI =
