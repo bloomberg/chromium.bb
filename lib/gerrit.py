@@ -370,6 +370,10 @@ class GerritHelper(object):
       return
     gob_util.DeleteDraft(self.host, self._to_changenum(change))
 
+  def GetAccount(self):
+    """Get information about the user account."""
+    return gob_util.GetAccount(self.host)
+
 
 def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information using string queries.

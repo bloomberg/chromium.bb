@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import inspect
 import os
+import pprint
 import re
 
 from chromite.cbuildbot import constants
@@ -327,6 +328,12 @@ def UserActDeletedraft(opts, *args):
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.DeleteDraft(cl, dryrun=opts.dryrun)
+
+
+def UserActAccount(opts):
+  """Get user account information."""
+  helper, _ = GetGerrit(opts)
+  pprint.PrettyPrinter().pprint(helper.GetAccount())
 
 
 def main(argv):

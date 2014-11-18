@@ -493,3 +493,8 @@ def GetTipOfTrunkRevision(git_url):
     msg = ('The json returned by https://%s%s has an unfamiliar structure:\n'
            '%s\n' % (parsed_url[1], path, j))
     raise GOBError(msg)
+
+
+def GetAccount(host):
+  """Get information about the user account."""
+  return FetchUrlJson(host, 'accounts/self')
