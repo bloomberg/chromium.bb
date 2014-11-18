@@ -33,6 +33,7 @@ class SourceBufferRange;
 class MEDIA_EXPORT SourceBufferStream {
  public:
   typedef StreamParser::BufferQueue BufferQueue;
+  typedef std::list<SourceBufferRange*> RangeList;
 
   // Status returned by GetNextBuffer().
   // kSuccess: Indicates that the next buffer was returned.
@@ -147,8 +148,6 @@ class MEDIA_EXPORT SourceBufferStream {
 
  private:
   friend class SourceBufferStreamTest;
-
-  typedef std::list<SourceBufferRange*> RangeList;
 
   // Frees up space if the SourceBufferStream is taking up too much memory.
   void GarbageCollectIfNeeded();
