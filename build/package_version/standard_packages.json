@@ -66,17 +66,6 @@
       "pnacl_translator"
     ],
 
-    # These two targets are placeholders.
-    # TODO(dyen): integrate these into linux_x86 according to which distro
-    # is being used.
-    "linux_trusty_x86": [
-      "arm_trusted"
-    ],
-
-    "linux_precise_x86": [
-      "arm_trusted"
-    ],
-
     "linux_x86": [
       "arm_trusted",
       "nacl_arm_newlib",
@@ -87,6 +76,26 @@
     ],
 
     "linux_arm": [
+      "pnacl_translator"
+    ]
+  },
+
+  # Modes specify a subset of packages to be used, this is a convenient way
+  # to filter packages for groups of users to get just what they need.
+  # Each mode has a list of packages associated with the mode. When you
+  # specify "--mode mode_name" under package_version, it will only operate
+  # on the list of packages specified under that mode.
+  # For example, say normally "package_version sync" syncs packages 1,2,3,4 for
+  # a platform. If you create a mode "evens_only" which only contains "2,4,6",
+  # then "package_version --mode evens_only sync" will only sync packages "2,4".
+  # (Notice 6 was not part of the original list of packages to sync so it is
+  # ignored. This can happen if 6 would have been synced for another platform.)
+  "modes": {
+    "nacl_core_sdk": [
+      "nacl_arm_newlib",
+      "nacl_x86_glibc",
+      "nacl_x86_newlib",
+      "pnacl_newlib",
       "pnacl_translator"
     ]
   }

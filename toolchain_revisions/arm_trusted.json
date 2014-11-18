@@ -1,32 +1,6 @@
 {
   "package_name": "arm_trusted",
   "package_targets": {
-    "linux_precise_x86": {
-      "archives": [
-        {
-          "extract_dir": "",
-          "hash": "ab4051372568ed54353dd99a87134a131a35c99e",
-          "log_url": null,
-          "name": "sysroot_arm_trusted_precise.tgz",
-          "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13541/sysroot_arm_trusted_precise.tgz"
-        }
-      ],
-      "version": 1
-    },
-    "linux_trusty_x86": {
-      "archives": [
-        {
-          "extract_dir": "",
-          "hash": "be354a03c0bad2786775511f33f7d613c978fb6a",
-          "log_url": null,
-          "name": "sysroot_arm_trusted_trusty.tgz",
-          "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13541/sysroot_arm_trusted_trusty.tgz"
-        }
-      ],
-      "version": 1
-    },
     "linux_x86": {
       "archives": [
         {
@@ -42,5 +16,5 @@
     }
   },
   "revision": 13541,
-  "revision_hash": "8c60efae60ab638947f6bc3b2405019a40afb0db"
+  "revision_hash": "1ea1e23a71f5f0dd8e845e85d36911b6c74eabac"
 }

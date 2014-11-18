@@ -38,8 +38,9 @@ class PackagesInfo(object):
         "Invalid packages file: %s" % packages_file)
 
     self._platform_targets = packages_json.get('package_targets', {})
-    self._shared_packages = set(packages_json.get('shared',[]))
-    self._packages = packages_json.get('packages',{})
+    self._shared_packages = set(packages_json.get('shared', []))
+    self._packages = packages_json.get('packages', {})
+    self._modes = packages_json.get('modes', {})
 
   def IsSharedPackage(self, package_name):
     """Returns whether or not a package is shared between all host platforms.
@@ -84,3 +85,15 @@ class PackagesInfo(object):
             for package_target, packages
             in self._packages.iteritems()
             if package in packages]
+
+  def GetPackageModes(self):
+    """Returns a list of modes specified within the packages description.
+
+    A mode is a subset of packages for a given name. The modes dictionary
+    is specified in the following format:
+      { 'mode_name': [mode_package1, mode_package2...] }
+
+    Returns:
+      Modes dictionary.
+    """
+    return self._modes

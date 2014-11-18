@@ -644,11 +644,26 @@ def _DoListCmd(arguments):
   for package_target, package in arguments.package_target_packages:
     package_targets[package_target].append(package)
 
+  modes_dict = arguments.packages_desc.GetPackageModes()
+  if not modes_dict:
+    print 'No Package Modes Found.'
+  else:
+    print 'Listing Modes:'
+    for mode, package_list in modes_dict.iteritems():
+      print ' [%s]' % mode
+      for package in package_list:
+        print '  ', package
+
+  if arguments.mode:
+    print
+    print 'Current Mode Selected:', arguments.mode
+
+  print
   print 'Listing Package Targets and Packages:'
   for package_target, packages in package_targets.iteritems():
-    print '\n%s:' % package_target
+    print ' [%s]:' % package_target
     for package in sorted(packages):
-      print ' ', package
+      print '  ', package
 
 
 def _ArchiveCmdArgParser(subparser):
@@ -1051,6 +1066,11 @@ def ParseArgs(args):
          ' to package targets defined for host platform and architecture inside'
          ' of the packages json file.')
   parser.add_argument(
+    '--mode', dest='mode',
+    default=None,
+    help='Specify a package mode to filter by, modes are specified within'
+         ' the packages json file. For a list of modes use the "list" command.')
+  parser.add_argument(
     '--packages', dest='packages',
     default=None,
     help='Custom packages specified as comma separated package names. Custom'
@@ -1131,6 +1151,16 @@ def ParseArgs(args):
       packages_set.update(packages)
   else:
     packages_set.update(arguments.packages.split(','))
+
+  # If a mode was set, only use packages listed in the mode.
+  if arguments.mode:
+    modes_dict = packages_desc.GetPackageModes()
+    if arguments.mode not in modes_dict:
+      logging.info('Valid Package Modes:')
+      for mode in modes_dict:
+        logging.info('  %s', mode)
+      raise error.Error('Invalid Package Mode: %s.' % arguments.mode)
+    packages_set.intersection_update(modes_dict[arguments.mode])
 
   # Append/exclude any extra packages that were specified.
   packages_set.update(arguments.append_packages)
