@@ -70,6 +70,11 @@
       'dependencies': [
         'libchromeshell_base',
       ],
+      'includes': [
+        # File 'protection' is based on non-trivial linker magic. TODO(pasko):
+        # remove it when crbug.com/424562 is fixed.
+        '../base/files/protect_file_posix.gypi',
+      ],
     },
     {
       # GN: //chrome/android:chrome_sync_shell

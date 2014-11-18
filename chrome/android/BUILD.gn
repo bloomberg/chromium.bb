@@ -198,6 +198,13 @@ shared_library("chrome_shell") {
   deps = [
     ":chrome_shell_base",
   ]
+  # GYP: via base/files/protect_file_posix.gypi
+  # TODO(pasko): Remove this non-trivial linker wrapping as soon as
+  # crbug.com/424562 is fixed.
+  if (!is_component_build) {
+    ldflags = [ "-Wl,--wrap=close" ]
+    deps += [ "//base:protect_file_posix" ]
+  }
 }
 
 # GYP: //chrome/chrome_shell.gypi:libchromesyncshell

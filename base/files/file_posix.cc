@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "base/files/file_path.h"
+#include "base/files/file_posix_hooks_internal.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/posix/eintr_wrapper.h"
@@ -166,6 +167,14 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
                                   Time::kNanosecondsPerMicrosecond);
 }
 
+// Default implementations of Protect/Unprotect hooks defined as weak symbols
+// where possible.
+void ProtectFileDescriptor(int fd) {
+}
+
+void UnprotectFileDescriptor(int fd) {
+}
+
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
 // TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
@@ -252,6 +261,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
   error_details_ = FILE_OK;
   file_.reset(descriptor);
+  ProtectFileDescriptor(descriptor);
 }
 #endif  // !defined(OS_NACL)
 
@@ -264,6 +274,8 @@ PlatformFile File::GetPlatformFile() const {
 }
 
 PlatformFile File::TakePlatformFile() {
+  if (IsValid())
+    UnprotectFileDescriptor(GetPlatformFile());
   return file_.release();
 }
 
@@ -272,6 +284,7 @@ void File::Close() {
     return;
 
   base::ThreadRestrictions::AssertIOAllowed();
+  UnprotectFileDescriptor(GetPlatformFile());
   file_.reset();
 }
 
@@ -527,8 +540,10 @@ void File::MemoryCheckingScopedFD::UpdateChecksum() {
 }
 
 void File::SetPlatformFile(PlatformFile file) {
-  DCHECK(!file_.is_valid());
+  CHECK(!file_.is_valid());
   file_.reset(file);
+  if (file_.is_valid())
+    ProtectFileDescriptor(GetPlatformFile());
 }
 
 }  // namespace base
