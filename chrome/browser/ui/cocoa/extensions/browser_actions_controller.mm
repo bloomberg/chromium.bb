@@ -499,8 +499,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kBrowserActionVisibilityChangedNotification
                       object:self];
+    [self redraw];
   }
-  [self redraw];
 }
 
 - (BOOL)updateContainerVisibility {
