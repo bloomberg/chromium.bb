@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_watcher/watcher_win.h"
+#include "components/browser_watcher/exit_code_watcher_win.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"

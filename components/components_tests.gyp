@@ -72,7 +72,8 @@
             'bookmarks/browser/bookmark_index_unittest.cc',
             'bookmarks/browser/bookmark_model_unittest.cc',
             'bookmarks/browser/bookmark_utils_unittest.cc',
-            'browser_watcher/watcher_win_unittest.cc',
+            'browser_watcher/exit_code_watcher_win_unittest.cc',
+            'browser_watcher/watcher_client_win_unittest.cc',
             'crash/app/crash_keys_win_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
@@ -484,6 +485,7 @@
             ['OS=="win"', {
               'dependencies': [
                  # Dependencies of browser_watcher, windows only.
+                 'components.gyp:browser_watcher_client',
                  'components.gyp:browser_watcher_lib',
               ]
             }],

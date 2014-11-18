@@ -1,8 +1,8 @@
 // Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef COMPONENTS_BROWSER_WATCHER_WATCHER_WIN_H_
-#define COMPONENTS_BROWSER_WATCHER_WATCHER_WIN_H_
+#ifndef COMPONENTS_BROWSER_WATCHER_EXIT_CODE_WATCHER_WIN_H_
+#define COMPONENTS_BROWSER_WATCHER_EXIT_CODE_WATCHER_WIN_H_
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -59,4 +59,4 @@ class ExitCodeWatcher {
 
 }  // namespace browser_watcher
 
-#endif  // COMPONENTS_BROWSER_WATCHER_WATCHER_WIN_H_
+#endif  // COMPONENTS_BROWSER_WATCHER_EXIT_CODE_WATCHER_WIN_H_

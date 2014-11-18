@@ -1,0 +1,210 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/browser_watcher/watcher_client_win.h"
+
+#include <string>
+
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "base/process/process_handle.h"
+#include "base/process/kill.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/multiprocess_test.h"
+#include "base/test/test_reg_util_win.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
+#include "components/browser_watcher/exit_code_watcher_win.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
+
+namespace browser_watcher {
+
+namespace {
+
+// Command line switches used to communiate to the child test.
+const char kParentPid[] = "parent-pid";
+const char kLeakHandle[] = "leak-handle";
+const char kNoLeakHandle[] = "no-leak-handle";
+
+bool IsValidParentProcessHandle(base::CommandLine& cmd_line,
+                                const char* switch_name) {
+  std::string str_handle =
+      cmd_line.GetSwitchValueASCII(switch_name);
+
+  unsigned int_handle = 0;
+  if (!base::StringToUint(str_handle, &int_handle))
+    return false;
+
+  int parent_pid = 0;
+  if (!base::StringToInt(cmd_line.GetSwitchValueASCII(kParentPid),
+                         &parent_pid)) {
+    return false;
+  }
+
+  base::ProcessHandle handle =
+      reinterpret_cast<base::ProcessHandle>(int_handle);
+  // Verify that we can get the associated process id.
+  base::ProcessId parent_id = base::GetProcId(handle);
+  if (parent_id == 0) {
+    // Unable to get the parent pid - perhaps insufficient permissions.
+    return false;
+  }
+
+  // Make sure the handle grants SYNCHRONIZE by waiting on it.
+  DWORD err = ::WaitForSingleObject(handle, 0);
+  if (err != WAIT_OBJECT_0 && err != WAIT_TIMEOUT) {
+    // Unable to wait on the handle - perhaps insufficient permissions.
+    return false;
+  }
+
+  return true;
+}
+
+MULTIPROCESS_TEST_MAIN(VerifyParentHandle) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  // Make sure we got a valid parent process handle from the watcher client.
+  if (!IsValidParentProcessHandle(*cmd_line,
+                                  ExitCodeWatcher::kParenthHandleSwitch)) {
+    LOG(ERROR) << "Invalid or missing parent-handle.";
+    return 1;
+  }
+
+  // If in the legacy mode, we expect this second handle will leak into the
+  // child process. This mainly serves to verify that the legacy mode is
+  // getting tested.
+  if (cmd_line->HasSwitch(kLeakHandle) &&
+      !IsValidParentProcessHandle(*cmd_line, kLeakHandle)) {
+    LOG(ERROR) << "Parent process handle unexpectedly didn't leak.";
+    return 1;
+  }
+
+  // If not in the legacy mode, this second handle should not leak into the
+  // child process.
+  if (cmd_line->HasSwitch(kNoLeakHandle) &&
+      IsValidParentProcessHandle(*cmd_line, kLeakHandle)) {
+    LOG(ERROR) << "Parent process handle unexpectedly leaked.";
+    return 1;
+  }
+
+  return 0;
+}
+
+class BrowserWatcherClientTest : public base::MultiProcessTest {
+ public:
+  virtual void SetUp() {
+    // Open an inheritable handle on our own process to test handle leakage.
+    self_.Set(::OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION,
+                            TRUE,  // Ineritable handle.
+                            base::GetCurrentProcId()));
+
+    ASSERT_TRUE(self_.IsValid());
+  }
+
+  enum HandlePolicy {
+    LEAK_HANDLE,
+    NO_LEAK_HANDLE
+  };
+
+  // Get a base command line to launch back into this test fixture.
+  base::CommandLine GetBaseCommandLine(HandlePolicy handle_policy) {
+    base::CommandLine ret = base::GetMultiProcessTestChildBaseCommandLine();
+
+    ret.AppendSwitchASCII(switches::kTestChildProcess, "VerifyParentHandle");
+    ret.AppendSwitchASCII(kParentPid,
+                          base::StringPrintf("%d", base::GetCurrentProcId()));
+
+    switch (handle_policy) {
+      case LEAK_HANDLE:
+        ret.AppendSwitchASCII(kLeakHandle,
+                              base::StringPrintf("%d", self_.Get()));
+        break;
+
+      case NO_LEAK_HANDLE:
+        ret.AppendSwitchASCII(kNoLeakHandle,
+                              base::StringPrintf("%d", self_.Get()));
+        break;
+
+      default:
+        ADD_FAILURE() << "Impossible handle_policy";
+    }
+
+    return ret;
+  }
+
+  void AssertSuccessfulExitCode(base::ProcessHandle handle) {
+    ASSERT_NE(base::kNullProcessHandle, handle);
+
+    // Duplicate the process handle to work around the fact that
+    // WaitForExitCode closes it(!!!).
+    base::ProcessHandle dupe = NULL;
+    ASSERT_TRUE(::DuplicateHandle(base::GetCurrentProcessHandle(),
+                                  handle,
+                                  base::GetCurrentProcessHandle(),
+                                  &dupe,
+                                  SYNCHRONIZE | PROCESS_QUERY_INFORMATION,
+                                  FALSE,
+                                  0));
+    ASSERT_NE(base::kNullProcessHandle, dupe);
+    int exit_code = 0;
+    if (!base::WaitForExitCode(dupe, &exit_code)) {
+      base::CloseProcessHandle(dupe);
+      FAIL() << "WaitForExitCode failed.";
+    }
+    ASSERT_EQ(0, exit_code);
+  }
+
+  // Inheritable process handle used for testing.
+  base::win::ScopedHandle self_;
+};
+
+}  // namespace
+
+// TODO(siggi): More testing - test WatcherClient base implementation.
+
+TEST_F(BrowserWatcherClientTest, LaunchWatcherSucceeds) {
+  // We can only use the non-legacy launch method on Windows Vista or better.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+
+  WatcherClient client(GetBaseCommandLine(NO_LEAK_HANDLE));
+  ASSERT_FALSE(client.use_legacy_launch());
+
+  client.LaunchWatcher();
+
+  ASSERT_NO_FATAL_FAILURE(AssertSuccessfulExitCode(client.process()));
+}
+
+TEST_F(BrowserWatcherClientTest, LaunchWatcherLegacyModeSucceeds) {
+  // Test the XP-compatible legacy launch mode. This is expected to leak
+  // a handle to the child process.
+  WatcherClient client(GetBaseCommandLine(LEAK_HANDLE));
+
+  // Use the legacy launch mode.
+  client.set_use_legacy_launch(true);
+
+  client.LaunchWatcher();
+
+  ASSERT_NO_FATAL_FAILURE(AssertSuccessfulExitCode(client.process()));
+}
+
+TEST_F(BrowserWatcherClientTest, LegacyModeDetectedOnXP) {
+  // This test only works on Windows XP.
+  if (base::win::GetVersion() > base::win::VERSION_XP)
+    return;
+
+  // Test that the client detects the need to use legacy launch mode, and that
+  // it works on Windows XP.
+  WatcherClient client(GetBaseCommandLine(LEAK_HANDLE));
+  ASSERT_TRUE(client.use_legacy_launch());
+
+  client.LaunchWatcher();
+
+  ASSERT_NO_FATAL_FAILURE(AssertSuccessfulExitCode(client.process()));
+}
+
+}  // namespace browser_watcher
