@@ -14,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/canvas.h"
 
 using testing::_;
 using testing::Return;
@@ -115,6 +116,41 @@ TEST_F(PepperPluginInstanceThrottlerTest, ThrottleAndUnthrottleByClick) {
 
   // MouseUp while throttled should be consumed and disengage throttling.
   SendEventAndTest(blink::WebInputEvent::Type::MouseUp, true, false, 2);
+}
+
+TEST_F(PepperPluginInstanceThrottlerTest, ThrottleByKeyframe) {
+  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_EQ(0, change_callback_calls());
+
+  SkBitmap boring_bitmap;
+  gfx::Canvas canvas(gfx::Size(20, 10), 1.0f, true);
+  canvas.FillRect(gfx::Rect(20, 10), SK_ColorBLACK);
+  canvas.FillRect(gfx::Rect(10, 10), SK_ColorWHITE);
+  SkBitmap interesting_bitmap =
+      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+
+  // Don't throttle for a boring frame.
+  throttler()->OnImageFlush(&boring_bitmap);
+  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_EQ(0, change_callback_calls());
+
+  // Don't throttle for non-consecutive interesting frames.
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&boring_bitmap);
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&boring_bitmap);
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&boring_bitmap);
+  EXPECT_FALSE(throttler()->is_throttled());
+  EXPECT_EQ(0, change_callback_calls());
+
+  // Throttle after consecutive interesting frames.
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&interesting_bitmap);
+  throttler()->OnImageFlush(&interesting_bitmap);
+  EXPECT_TRUE(throttler()->is_throttled());
+  EXPECT_EQ(1, change_callback_calls());
 }
 
 TEST_F(PepperPluginInstanceThrottlerTest, IgnoreThrottlingAfterMouseUp) {

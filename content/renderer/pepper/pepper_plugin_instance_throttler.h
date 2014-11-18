@@ -17,12 +17,31 @@ class WebInputEvent;
 }
 
 class GURL;
+class SkBitmap;
 
 namespace content {
 
 class PluginPowerSaverHelper;
 
 // Manages the Plugin Power Saver feature for a single Pepper plugin instance.
+//
+// A plugin must meet certain criteria in order to be throttled (e.g. it must
+// be a Flash plugin, it must meet certain size criteria, etc.). The process
+// for throttling a plugin is as follows:
+// 1) Attempt to find a representative keyframe to display as a placeholder for
+//    the plugin.
+// 2) a) If a representative keyframe is found, throttle the plugin at that
+//       keyframe.
+//    b) If a representative keyframe is not found, throttle the plugin after a
+//       certain period of time.
+//
+// The plugin will then be unthrottled by receiving a mouse click from the user.
+//
+// To choose a representative keyframe, we first wait for a certain number of
+// "interesting" frames to be displayed by the plugin. A frame is called
+// interesting if it meets some heuristic. After we have seen a certain number
+// of interesting frames, we throttle the plugin and use that frame as the
+// representative keyframe.
 class CONTENT_EXPORT PepperPluginInstanceThrottler {
  public:
   PepperPluginInstanceThrottler(PluginPowerSaverHelper* power_saver_helper,
@@ -32,6 +51,10 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
                                 const base::Closure& throttle_change_callback);
 
   virtual ~PepperPluginInstanceThrottler();
+
+  // Called when the plugin flushes it's graphics context. Supplies the
+  // throttler with a candidate to use as the representative keyframe.
+  void OnImageFlush(const SkBitmap* bitmap);
 
   bool is_throttled() const { return plugin_throttled_; }
   const ppapi::ViewData& throttled_view_data() const {
@@ -54,6 +77,12 @@ class CONTENT_EXPORT PepperPluginInstanceThrottler {
   base::Closure throttle_change_callback_;
 
   bool is_flash_plugin_;
+
+  // True if throttler is still waiting to find a representative keyframe.
+  bool needs_representative_keyframe_;
+
+  // Number of consecutive interesting frames we've encountered.
+  int consecutive_interesting_frames_;
 
   // Set to true first time plugin is clicked. Used to collect metrics.
   bool has_been_clicked_;

@@ -15,6 +15,7 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_bool.h"
@@ -689,6 +690,9 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
   } else {
     need_flush_ack_ = true;
   }
+
+  if (bound_instance_ && bound_instance_->throttler())
+    bound_instance_->throttler()->OnImageFlush(image_data_->GetMappedBitmap());
 
   return PP_OK_COMPLETIONPENDING;
 }

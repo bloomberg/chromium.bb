@@ -136,6 +136,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   blink::WebPluginContainer* container() const { return container_; }
 
+  PepperPluginInstanceThrottler* throttler() const { return throttler_.get(); }
+
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }

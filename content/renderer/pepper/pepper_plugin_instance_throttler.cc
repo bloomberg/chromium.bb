@@ -14,6 +14,7 @@
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/color_utils.h"
 
 namespace content {
 
@@ -96,6 +97,13 @@ void RecordFlashClickSizeMetric(int width, int height) {
 // the plugin where it's at. In milliseconds.
 const int kThrottleTimeout = 5000;
 
+// Threshold for 'boring' score to accept a frame as good enough to be a
+// representative keyframe. Units are the ratio of all pixels that are within
+// the most common luma bin. The same threshold is used for history thumbnails.
+const double kAcceptableFrameMaximumBoringness = 0.94;
+
+const int kMinimumConsecutiveInterestingFrames = 4;
+
 }  // namespace
 
 PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
@@ -107,6 +115,8 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
     : bounds_(bounds),
       throttle_change_callback_(throttle_change_callback),
       is_flash_plugin_(module_name == kFlashPluginName),
+      needs_representative_keyframe_(false),
+      consecutive_interesting_frames_(0),
       has_been_clicked_(false),
       power_saver_enabled_(false),
       is_peripheral_content_(false),
@@ -138,6 +148,7 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
                                    weak_factory_.GetWeakPtr()));
 
     if (power_saver_enabled_) {
+      needs_representative_keyframe_ = true;
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&PepperPluginInstanceThrottler::SetPluginThrottled,
@@ -150,6 +161,20 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
 }
 
 PepperPluginInstanceThrottler::~PepperPluginInstanceThrottler() {
+}
+
+void PepperPluginInstanceThrottler::OnImageFlush(const SkBitmap* bitmap) {
+  if (!needs_representative_keyframe_ || !bitmap)
+    return;
+
+  double boring_score = color_utils::CalculateBoringScore(*bitmap);
+  if (boring_score <= kAcceptableFrameMaximumBoringness)
+    ++consecutive_interesting_frames_;
+  else
+    consecutive_interesting_frames_ = 0;
+
+  if (consecutive_interesting_frames_ >= kMinimumConsecutiveInterestingFrames)
+    SetPluginThrottled(true);
 }
 
 bool PepperPluginInstanceThrottler::ConsumeInputEvent(
@@ -179,6 +204,9 @@ void PepperPluginInstanceThrottler::SetPluginThrottled(bool throttled) {
   // Do not throttle if we've already disabled power saver.
   if (!power_saver_enabled_ && throttled)
     return;
+
+  // Once we change the throttle state, we will never need the snapshot again.
+  needs_representative_keyframe_ = false;
 
   plugin_throttled_ = throttled;
   throttle_change_callback_.Run();
