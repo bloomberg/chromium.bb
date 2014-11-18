@@ -31,6 +31,7 @@ scoped_ptr<NavigationURLLoader> NavigationURLLoader::Create(
 
 void NavigationURLLoader::SetFactoryForTesting(
     NavigationURLLoaderFactory* factory) {
+  DCHECK(g_factory == nullptr || factory == nullptr);
   g_factory = factory;
 }
 

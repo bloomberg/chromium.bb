@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -15,17 +11,14 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
-#include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/navigation_url_loader_delegate.h"
-#include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_registry.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/stream_handle.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/test/browser_side_navigation_test_utils.h"
+#include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
@@ -36,97 +29,23 @@
 
 namespace content {
 
-namespace {
-
-class TestNavigationURLLoader
-    : public NavigationURLLoader,
-      public base::SupportsWeakPtr<TestNavigationURLLoader> {
+class NavigatorTestWithBrowserSideNavigation
+    : public RenderViewHostImplTestHarness {
  public:
-  TestNavigationURLLoader(const CommonNavigationParams& common_params,
-                          scoped_ptr<NavigationRequestInfo> request_info,
-                          NavigationURLLoaderDelegate* delegate)
-      : common_params_(common_params),
-        request_info_(request_info.Pass()),
-        delegate_(delegate),
-        redirect_count_(0) {
-  }
-
-  // NavigationURLLoader implementation.
-  void FollowRedirect() override { redirect_count_++; }
-
-  const CommonNavigationParams& common_params() const { return common_params_; }
-  NavigationRequestInfo* request_info() const { return request_info_.get(); }
-
-  void CallOnRequestRedirected(
-      const net::RedirectInfo& redirect_info,
-      const scoped_refptr<ResourceResponse>& response) {
-    delegate_->OnRequestRedirected(redirect_info, response);
-  }
-
-  void CallOnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
-      scoped_ptr<StreamHandle> body) {
-    delegate_->OnResponseStarted(response, body.Pass());
-  }
-
-  int redirect_count() { return redirect_count_; }
-
- private:
-  CommonNavigationParams common_params_;
-  scoped_ptr<NavigationRequestInfo> request_info_;
-  NavigationURLLoaderDelegate* delegate_;
-  int redirect_count_;
-};
-
-class TestNavigationURLLoaderFactory : public NavigationURLLoaderFactory {
- public:
-  // NavigationURLLoaderFactory implementation.
-  scoped_ptr<NavigationURLLoader> CreateLoader(
-      BrowserContext* browser_context,
-      int64 frame_tree_node_id,
-      const CommonNavigationParams& common_params,
-      scoped_ptr<NavigationRequestInfo> request_info,
-      ResourceRequestBody* request_body,
-      NavigationURLLoaderDelegate* delegate) override {
-    return scoped_ptr<NavigationURLLoader>(new TestNavigationURLLoader(
-        common_params, request_info.Pass(), delegate));
-  }
-};
-
-}  // namespace
-
-class NavigatorTest : public RenderViewHostImplTestHarness {
- public:
-  NavigatorTest() : stream_registry_(new StreamRegistry) {}
-
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    loader_factory_.reset(new TestNavigationURLLoaderFactory);
-    NavigationURLLoader::SetFactoryForTesting(loader_factory_.get());
+    BrowserSideNavigationSetUp();
+    EnableBrowserSideNavigation();
   }
 
   void TearDown() override {
-    NavigationURLLoader::SetFactoryForTesting(nullptr);
-    loader_factory_.reset();
+    BrowserSideNavigationTearDown();
     RenderViewHostImplTestHarness::TearDown();
-  }
-
-  NavigationRequest* GetNavigationRequestForFrameTreeNode(
-      FrameTreeNode* frame_tree_node) const {
-    NavigatorImpl* navigator =
-        static_cast<NavigatorImpl*>(frame_tree_node->navigator());
-    return navigator->navigation_request_map_.get(
-            frame_tree_node->frame_tree_node_id());
   }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
       NavigationRequest* request) const {
     return static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-  }
-
-  void EnableBrowserSideNavigation() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableBrowserSideNavigation);
   }
 
   void SendRequestNavigation(FrameTreeNode* node,
@@ -155,30 +74,23 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
         node, *entry, reload_type, base::TimeTicks::Now());
   }
 
-  scoped_ptr<StreamHandle> MakeEmptyStream() {
-    GURL url(std::string(url::kBlobScheme) + "://" + base::GenerateGUID());
-    scoped_refptr<Stream> stream(new Stream(stream_registry_.get(), NULL, url));
-    stream->Finalize();
-    return stream->CreateHandle();
+  NavigationRequest* GetNavigationRequestForFrameTreeNode(
+      FrameTreeNode* frame_tree_node) {
+    return static_cast<NavigatorImpl*>(frame_tree_node->navigator())
+        ->GetNavigationRequestForNodeForTesting(frame_tree_node);
   }
-
- private:
-  scoped_ptr<StreamRegistry> stream_registry_;
-  scoped_ptr<TestNavigationURLLoaderFactory> loader_factory_;
 };
 
 // PlzNavigate: Test that a proper NavigationRequest is created by
 // BeginNavigation.
 // Note that all PlzNavigate methods on the browser side require the use of the
 // flag kEnableBrowserSideNavigation.
-TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kUrl3("http://www.gmail.com/");
 
   contents()->NavigateAndCommit(kUrl1);
-
-  EnableBrowserSideNavigation();
 
   // Add a subframe.
   FrameTreeNode* root = contents()->GetFrameTree()->root();
@@ -220,10 +132,9 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
 
 // PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
 // RenderFrameHost is not modified when the navigation commits.
-TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, NoLiveRenderer) {
   const GURL kUrl("http://www.google.com/");
 
-  EnableBrowserSideNavigation();
   EXPECT_FALSE(main_test_rfh()->render_view_host()->IsRenderViewLive());
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
   SendRequestNavigation(node, kUrl);
@@ -248,7 +159,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
 
 // PlzNavigate: Test that commiting an HTTP 204 or HTTP 205 response cancels the
 // navigation.
-TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -257,8 +168,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
   RenderFrameHostImpl* rfh = main_test_rfh();
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-
-  EnableBrowserSideNavigation();
 
   // Navigate to a different site.
   SendRequestNavigation(node, kUrl2);
@@ -301,7 +210,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
 
 // PlzNavigate: Test that a new RenderFrameHost is created when doing a cross
 // site navigation.
-TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -309,8 +218,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
   RenderFrameHostImpl* rfh = main_test_rfh();
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-
-  EnableBrowserSideNavigation();
 
   // Navigate to a different site.
   SendRequestNavigation(node, kUrl2);
@@ -330,7 +237,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
 }
 
 // PlzNavigate: Test that redirects are followed.
-TEST_F(NavigatorTest, BrowserSideNavigationRedirectCrossSite) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, RedirectCrossSite) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -338,8 +245,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationRedirectCrossSite) {
   RenderFrameHostImpl* rfh = main_test_rfh();
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-
-  EnableBrowserSideNavigation();
 
   // Navigate to a URL on the same site.
   SendRequestNavigation(node, kUrl1);
@@ -374,7 +279,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationRedirectCrossSite) {
 
 // PlzNavigate: Test that a navigation is cancelled if another request has been
 // issued in the meantime.
-TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, ReplacePendingNavigation) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl0_site = SiteInstance::GetSiteForURL(browser_context(), kUrl0);
   const GURL kUrl1("http://www.chromium.org/");
@@ -384,7 +289,6 @@ TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
   // Initialization.
   contents()->NavigateAndCommit(kUrl0);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-  EnableBrowserSideNavigation();
   EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
 
   // Request navigation to the 1st URL.
@@ -417,39 +321,12 @@ TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
   EXPECT_EQ(kUrl2_site, pending_rfh->GetSiteInstance()->GetSiteURL());
 }
 
-// PlzNavigate: Tests that the navigation histograms are correctly tracked both
-// when PlzNavigate is enabled and disabled, and also ignores in-tab renderer
-// initiated navigation for the non-enabled case.
-// Note: the related histogram, Navigation.TimeToURLJobStart, cannot be tracked
-// by this test as the IO thread is not running.
-TEST_F(NavigatorTest, BrowserSideNavigationHistogramTest) {
-  const GURL kUrl0("http://www.google.com/");
-  const GURL kUrl1("http://www.chromium.org/");
-  base::HistogramTester histo_tester;
-
-  // Performs a "normal" non-PlzNavigate navigation
-  contents()->NavigateAndCommit(kUrl0);
-  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 1);
-
-  // Performs an in-tab renderer initiated navigation
-  int32 new_page_id = 1 + contents()->GetMaxPageIDForSiteInstance(
-      main_test_rfh()->GetSiteInstance());
-  main_test_rfh()->SendNavigate(new_page_id, kUrl0);
-  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 1);
-
-  // Performs a PlzNavigate navigation
-  EnableBrowserSideNavigation();
-  contents()->NavigateAndCommit(kUrl1);
-  histo_tester.ExpectTotalCount("Navigation.TimeToCommit", 2);
-}
-
 // PlzNavigate: Test that a reload navigation is properly signaled to the
 // renderer when the navigation can commit.
-TEST_F(NavigatorTest, BrowserSideNavigationReload) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   const GURL kUrl("http://www.google.com/");
   contents()->NavigateAndCommit(kUrl);
 
-  EnableBrowserSideNavigation();
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
   SendRequestNavigationWithParameters(
       node, kUrl, Referrer(), ui::PAGE_TRANSITION_LINK,

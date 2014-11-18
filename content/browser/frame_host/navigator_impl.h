@@ -82,11 +82,16 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const base::TimeTicks& renderer_before_unload_end_time) override;
   void CancelNavigation(FrameTreeNode* frame_tree_node) override;
 
+  // PlzNavigate
+  // Returns the navigation request for a given node. Used in tests.
+  NavigationRequest* GetNavigationRequestForNodeForTesting(
+      FrameTreeNode* frame_tree_node);
+
  private:
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;
 
-  friend class NavigatorTest;
+  friend class NavigatorTestWithBrowserSideNavigation;
   ~NavigatorImpl() override;
 
   // Navigates to the given entry, which must be the pending entry.  Private

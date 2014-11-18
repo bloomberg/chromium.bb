@@ -784,6 +784,12 @@ void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
 }
 
+// PlzNavigate
+NavigationRequest* NavigatorImpl::GetNavigationRequestForNodeForTesting(
+    FrameTreeNode* frame_tree_node) {
+  return navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+}
+
 void NavigatorImpl::LogResourceRequestTime(
     base::TimeTicks timestamp, const GURL& url) {
   if (navigation_data_ && navigation_data_->url_ == url) {
