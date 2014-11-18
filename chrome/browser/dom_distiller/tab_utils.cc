@@ -64,15 +64,18 @@ class SelfDeletingRequestDelegate : public ViewRequestDelegate,
 void SelfDeletingRequestDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  Observe(NULL);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SelfDeletingRequestDelegate::RenderProcessGone(
     base::TerminationStatus status) {
+  Observe(NULL);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SelfDeletingRequestDelegate::WebContentsDestroyed() {
+  Observe(NULL);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
