@@ -583,6 +583,8 @@
       'browser/safe_browsing/safe_browsing_tab_observer.h',
       'browser/safe_browsing/srt_global_error_win.cc',
       'browser/safe_browsing/srt_global_error_win.h',
+      'browser/search/contextual_search_policy_handler_android.cc',
+      'browser/search/contextual_search_policy_handler_android.h',
       'browser/search/contextual_search_promo_source_android.cc',
       'browser/search/contextual_search_promo_source_android.h',
       'browser/search/iframe_source.cc',

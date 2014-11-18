@@ -692,6 +692,7 @@
       'browser/safe_browsing/safe_browsing_store_unittest.cc',
       'browser/safe_browsing/safe_browsing_util_unittest.cc',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
+      'browser/search/contextual_search_policy_handler_android_unittest.cc',
       'browser/search/hotword_service_unittest.cc',
       'browser/search/iframe_source_unittest.cc',
       'browser/search/instant_service_unittest.cc',

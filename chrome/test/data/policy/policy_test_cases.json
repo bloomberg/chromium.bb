@@ -353,6 +353,10 @@
     ]
   },
 
+  "ContextualSearchEnabled": {
+    "os": ["android"]
+  },
+
   "AutoFillEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

@@ -43774,6 +43774,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="278" label="Extension Settings"/>
   <int value="279" label="SSL minimum version"/>
   <int value="280" label="SSL fallback minimum version"/>
+  <int value="281"
+      label="Control the availability of the Contextual Search feature."/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 280
+#   For your editing convenience: highest ID currently used: 281
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6954,6 +6954,28 @@
       A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.
 
       Note that, despite the number, "sslv3" is an earier version than "tls1".''',
+    },
+    {
+      'name': 'ContextualSearchEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [
+        'android:40-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 281,
+      'caption': '''Enable Touch to Search''',
+      'desc': '''Enables the availability of Touch to Search in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s content view.
+
+      If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
+
+      If you disable this setting, Touch to Search will be disabled completely.
+
+      If this policy is left not set, it is equivalent to being enabled, see description above.''',
     },
   ],
   'messages': {

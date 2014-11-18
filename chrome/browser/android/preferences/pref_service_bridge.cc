@@ -545,6 +545,11 @@ static jstring GetContextualSearchPreference(JNIEnv* env, jobject obj) {
           Release();
 }
 
+static jboolean GetContextualSearchPreferenceIsManaged(JNIEnv* env,
+                                                       jobject obj) {
+  return GetPrefService()->IsManagedPreference(prefs::kContextualSearchEnabled);
+}
+
 static void SetContextualSearchPreference(JNIEnv* env, jobject obj,
                                           jstring pref) {
   GetPrefService()->SetString(prefs::kContextualSearchEnabled,
