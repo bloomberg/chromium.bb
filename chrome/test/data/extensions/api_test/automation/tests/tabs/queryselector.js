@@ -10,8 +10,8 @@ var allTests = [
       assertEq(queryResult, cancelButton);
       chrome.test.succeed();
     }
-    rootNode.querySelector('body > button:nth-of-type(2)',
-                           assertCorrectResult);
+    rootNode.domQuerySelector('body > button:nth-of-type(2)',
+                              assertCorrectResult);
   },
 
   function testQuerySelectorNoMatch() {
@@ -19,8 +19,8 @@ var allTests = [
       assertEq(null, queryResult);
       chrome.test.succeed();
     }
-    rootNode.querySelector('#nonexistent',
-                           assertCorrectResult);
+    rootNode.domQuerySelector('#nonexistent',
+                              assertCorrectResult);
   },
 
   // Demonstrates that a query from a non-root element queries inside that
@@ -33,7 +33,7 @@ var allTests = [
       assertEq(queryResult, p);
       chrome.test.succeed();
     }
-    main.querySelector('p', assertCorrectResult);
+    main.domQuerySelector('p', assertCorrectResult);
   },
 
   // Demonstrates that a query for an element which is ignored for accessibility
@@ -44,7 +44,7 @@ var allTests = [
       assertEq(queryResult, okButton);
       chrome.test.succeed();
     }
-    rootNode.querySelector('#span-in-button', assertCorrectResult);
+    rootNode.domQuerySelector('#span-in-button', assertCorrectResult);
   },
 
   // Demonstrates that querying from an anonymous node may have unexpected
@@ -56,7 +56,7 @@ var allTests = [
       assertEq(h1, queryResult);
       chrome.test.succeed();
     }
-    group.querySelector('h1', assertCorrectResult);
+    group.domQuerySelector('h1', assertCorrectResult);
   },
 
   function testQuerySelectorFromRemovedNode() {
@@ -64,14 +64,14 @@ var allTests = [
     function assertCorrectResult(queryResult) {
       assertEq(null, queryResult);
       var errorMsg =
-          'querySelector sent on node which is no longer in the tree.';
+          'domQuerySelector sent on node which is no longer in the tree.';
       assertEq(errorMsg, chrome.extension.lastError.message);
       assertEq(errorMsg, chrome.runtime.lastError.message);
 
       chrome.test.succeed();
     }
     function afterRemoveChild() {
-      group.querySelector('h1', assertCorrectResult);
+      group.domQuerySelector('h1', assertCorrectResult);
     }
     chrome.tabs.executeScript(
         { code: 'document.body.removeChild(document.body.firstElementChild)' },

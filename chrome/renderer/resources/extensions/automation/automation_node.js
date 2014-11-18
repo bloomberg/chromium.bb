@@ -93,12 +93,12 @@ AutomationNodeImpl.prototype = {
                           endIndex: endIndex });
   },
 
-  querySelector: function(selector, callback) {
+  domQuerySelector: function(selector, callback) {
     automationInternal.querySelector(
       { treeID: this.rootImpl.treeID,
         automationNodeID: this.id,
         selector: selector },
-      this.querySelectorCallback_.bind(this, callback));
+      this.domQuerySelectorCallback_.bind(this, callback));
   },
 
   find: function(params) {
@@ -238,7 +238,7 @@ AutomationNodeImpl.prototype = {
                                      opt_args || {});
   },
 
-  querySelectorCallback_: function(userCallback, resultAutomationNodeID) {
+  domQuerySelectorCallback_: function(userCallback, resultAutomationNodeID) {
     // resultAutomationNodeID could be zero or undefined or (unlikely) null;
     // they all amount to the same thing here, which is that no node was
     // returned.
@@ -729,7 +729,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'setSelection',
                                                 'addEventListener',
                                                 'removeEventListener',
-                                                'querySelector',
+                                                'domQuerySelector',
                                                 'toJSON'],
                                     readonly: ['isRootNode',
                                                'role',

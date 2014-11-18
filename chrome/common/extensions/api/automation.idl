@@ -333,7 +333,7 @@
     // is hidden from accessibility via hiding it using CSS or using
     // aria-hidden), this will return the nearest ancestor which does correspond
     // to an automation node.
-    static void querySelector(DOMString selector, QueryCallback callback);
+    static void domQuerySelector(DOMString selector, QueryCallback callback);
 
     // Finds the first AutomationNode in this node's subtree which matches the
     // given search parameters.
