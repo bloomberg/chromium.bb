@@ -21,8 +21,8 @@
   "#define SamplerType sampler2D\n" \
   "#define TextureLookup texture2D\n" SHADER(src)
 #define SHADER_RECTANGLE_ARB(src)     \
-  "#define SamplerType samplerRect\n" \
-  "#define TextureLookup textureRect\n" SHADER(src)
+  "#define SamplerType sampler2DRect\n" \
+  "#define TextureLookup texture2DRect\n" SHADER(src)
 #define SHADER_EXTERNAL_OES(src)                     \
   "#extension GL_OES_EGL_image_external : require\n" \
   "#define SamplerType samplerExternalOES\n"         \
