@@ -122,7 +122,7 @@ TEST(TransformOperationsTest, EmpiricalAnimatedTranslatedBoundsTest)
             TransformOperations toOps;
             fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], blink::Fixed), Length(testTransforms[i][0][1], blink::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
             toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], blink::Fixed), Length(testTransforms[i][1][1], blink::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
-            EmpiricallyTestBounds(fromOps, toOps, 0, 1);
+            EmpiricallyTestBounds(fromOps, toOps, progress[j][0], progress[j][1]);
         }
     }
 }
@@ -177,7 +177,7 @@ TEST(TransformOperationsTest, EmpiricalAnimatedScaleBoundsTest)
             TransformOperations toOps;
             fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], blink::Fixed), Length(testTransforms[i][0][1], blink::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
             toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], blink::Fixed), Length(testTransforms[i][1][1], blink::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
-            EmpiricallyTestBounds(fromOps, toOps, 0, 1);
+            EmpiricallyTestBounds(fromOps, toOps, progress[j][0], progress[j][1]);
         }
     }
 }

@@ -1389,8 +1389,8 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
         Address headerAddress = m_currentAllocationPoint;
         m_currentAllocationPoint += allocationSize;
         m_remainingAllocationSize -= allocationSize;
-        Header* header = new (NotNull, headerAddress) Header(allocationSize, gcInfo);
-        Address result = headerAddress + sizeof(*header);
+        new (NotNull, headerAddress) Header(allocationSize, gcInfo);
+        Address result = headerAddress + sizeof(Header);
         ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
 
         // Unpoison the memory used for the object (payload).
