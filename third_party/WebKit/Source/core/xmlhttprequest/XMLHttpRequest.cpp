@@ -1578,7 +1578,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
 
         // This protection seems needed to keep |this| alive after changeState
         // calling which may call event listeners.
-        RefPtr<XMLHttpRequest> protect(this);
+        RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
         changeState(HEADERS_RECEIVED);
         if (m_error) {
             // We need to check for |m_error| because |changeState| may trigger
