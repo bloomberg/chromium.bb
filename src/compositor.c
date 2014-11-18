@@ -4155,7 +4155,9 @@ WL_EXPORT void
 weston_compositor_exit_with_code(struct weston_compositor *compositor,
 				 int exit_code)
 {
-	compositor->exit_code = exit_code;
+	if (compositor->exit_code == EXIT_SUCCESS)
+		compositor->exit_code = exit_code;
+
 	wl_display_terminate(compositor->wl_display);
 }
 
