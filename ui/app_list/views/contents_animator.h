@@ -37,11 +37,20 @@ class ContentsAnimator {
   virtual void Update(double progress, int from_page, int to_page) = 0;
 
  protected:
-  ContentsView* contents_view() { return contents_view_; }
+  const ContentsView* contents_view() const { return contents_view_; }
 
   // Gets the origin (the off-screen resting place) for a given launcher page
   // with index |page_index|.
   gfx::Rect GetOffscreenPageBounds(int page_index) const;
+
+  // Updates the position of the custom launcher page view (if it exists), in
+  // the default way for start page <-> other page transitions. This places it
+  // into collapsed state on the start page, and hidden on any other page. Any
+  // other behaviour should be implemented with a custom animator. |progress|,
+  // |from_page| and |to_page| are parameters from Update().
+  void UpdateCustomPageForDefaultAnimation(double progress,
+                                           int from_page,
+                                           int to_page) const;
 
  private:
   ContentsView* contents_view_;
@@ -76,6 +85,17 @@ class StartToAppsAnimator : public ContentsAnimator {
   void Update(double progress, int start_page, int apps_page) override;
 
   DISALLOW_COPY_AND_ASSIGN(StartToAppsAnimator);
+};
+
+// Animator from start page to custom page.
+class StartToCustomAnimator : public ContentsAnimator {
+ public:
+  StartToCustomAnimator(ContentsView* contents_view);
+
+  std::string NameForTests() const override;
+  void Update(double progress, int start_page, int custom_page) override;
+
+  DISALLOW_COPY_AND_ASSIGN(StartToCustomAnimator);
 };
 
 }  // app_list

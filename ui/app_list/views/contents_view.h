@@ -91,13 +91,14 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
   StartPageView* start_page_view() { return start_page_view_; }
+  views::View* custom_page_view() { return custom_page_view_; }
   SearchResultListView* search_results_list_view() {
     return search_results_list_view_;
   }
   SearchResultPageView* search_results_page_view() {
     return search_results_page_view_;
   }
-  views::View* GetPageView(int index);
+  views::View* GetPageView(int index) const;
 
   // Adds a blank launcher page. For use in tests only.
   void AddBlankPageForTesting();
@@ -112,6 +113,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the content area bounds to use for content views that do not
   // specify their own custom layout.
   gfx::Rect GetDefaultContentsBounds() const;
+
+  // Gets the location of the custom launcher page in "collapsed" state. This is
+  // where the page is peeking in from the bottom of the launcher (neither full
+  // on-screen or off-screen).
+  gfx::Rect GetCustomPageCollapsedBounds() const;
 
   // Exposes GetAnimatorForTransition for tests.
   ContentsAnimator* GetAnimatorForTransitionForTests(int from_page,
@@ -193,6 +199,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Only used in the experimental app list.
   SearchResultPageView* search_results_page_view_;
   StartPageView* start_page_view_;
+  views::View* custom_page_view_;
 
   AppListMainView* app_list_main_view_;     // Parent view, owns this.
   // Sibling view, owned by |app_list_main_view_|.

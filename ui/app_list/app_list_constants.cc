@@ -70,6 +70,9 @@ const int kFolderTransitionInDurationMs = 400;
 // a folder.
 const int kFolderTransitionOutDurationMs = 30;
 
+// The height of the custom page widget when collapsed on the start page.
+const int kCustomPageCollapsedHeight = 78;
+
 // Animation curve used for fading in the target page when opening or closing
 // a folder.
 const gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;

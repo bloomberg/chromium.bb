@@ -33,6 +33,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
       search_results_list_view_(nullptr),
       search_results_page_view_(nullptr),
       start_page_view_(nullptr),
+      custom_page_view_(nullptr),
       app_list_main_view_(app_list_main_view),
       contents_switcher_view_(nullptr),
       view_model_(new views::ViewModel),
@@ -63,6 +64,8 @@ void ContentsView::Init(AppListModel* model) {
       // Only the first launcher page is considered to represent
       // STATE_CUSTOM_LAUNCHER_PAGE.
       if (it == custom_page_views.begin()) {
+        custom_page_view_ = *it;
+
         AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON,
                         AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
       } else {
@@ -104,6 +107,9 @@ void ContentsView::Init(AppListModel* model) {
   // Populate the contents animators.
   AddAnimator(AppListModel::STATE_START, AppListModel::STATE_APPS,
               scoped_ptr<ContentsAnimator>(new StartToAppsAnimator(this)));
+  AddAnimator(AppListModel::STATE_START,
+              AppListModel::STATE_CUSTOM_LAUNCHER_PAGE,
+              scoped_ptr<ContentsAnimator>(new StartToCustomAnimator(this)));
   default_animator_.reset(new DefaultAnimator(this));
 }
 
@@ -292,7 +298,7 @@ void ContentsView::Prerender() {
   apps_container_view_->apps_grid_view()->Prerender();
 }
 
-views::View* ContentsView::GetPageView(int index) {
+views::View* ContentsView::GetPageView(int index) const {
   return view_model_->view_at(index);
 }
 
@@ -343,6 +349,13 @@ gfx::Rect ContentsView::GetDefaultContentsBounds() const {
   return bounds;
 }
 
+gfx::Rect ContentsView::GetCustomPageCollapsedBounds() const {
+  gfx::Rect bounds(GetContentsBounds());
+  int page_height = bounds.height();
+  bounds.set_y(page_height - kCustomPageCollapsedHeight);
+  return bounds;
+}
+
 gfx::Size ContentsView::GetDefaultContentsSize() const {
   const gfx::Size container_size =
       apps_container_view_->apps_grid_view()->GetPreferredSize();
@@ -379,9 +392,19 @@ void ContentsView::Layout() {
   gfx::Rect offscreen_target(rect);
   offscreen_target.set_x(-rect.width());
 
+  int current_page = GetActivePageIndex();
+
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    view_model_->view_at(i)->SetBoundsRect(
-        i == pagination_model_.SelectedTargetPage() ? rect : offscreen_target);
+    view_model_->view_at(i)
+        ->SetBoundsRect(i == current_page ? rect : offscreen_target);
+  }
+
+  // Custom locations of pages in certain states.
+  // Within the start page, the custom page is given its collapsed bounds.
+  int start_page_index = GetPageIndexForState(AppListModel::STATE_START);
+  if (current_page == start_page_index) {
+    if (custom_page_view_)
+      custom_page_view_->SetBoundsRect(GetCustomPageCollapsedBounds());
   }
 }
 

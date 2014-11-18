@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/contents_animator.h"
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +34,41 @@ gfx::Rect ContentsAnimator::GetOffscreenPageBounds(int page_index) const {
   return bounds;
 }
 
+void ContentsAnimator::UpdateCustomPageForDefaultAnimation(double progress,
+                                                           int from_page,
+                                                           int to_page) const {
+  int custom_page_index = contents_view()->GetPageIndexForState(
+      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+  if (custom_page_index < 0)
+    return;
+
+  int start_page_index =
+      contents_view()->GetPageIndexForState(AppListModel::STATE_START);
+  if (from_page != start_page_index && to_page != start_page_index)
+    return;
+
+  views::View* custom_page = contents_view()->GetPageView(custom_page_index);
+  gfx::Rect custom_page_collapsed(
+      contents_view()->GetCustomPageCollapsedBounds());
+  gfx::Rect custom_page_origin(GetOffscreenPageBounds(custom_page_index));
+  gfx::Rect custom_page_rect;
+
+  if (from_page == start_page_index) {
+    // When transitioning from start page -> any other page, move the custom
+    // page from collapsed to hidden. (This method is not used by the start page
+    // -> custom page transition.)
+    custom_page_rect = gfx::Tween::RectValueBetween(
+        progress, custom_page_collapsed, custom_page_origin);
+  } else {
+    // When transitioning from any page -> start page, move the custom page from
+    // hidden to collapsed.
+    custom_page_rect = gfx::Tween::RectValueBetween(
+        progress, custom_page_origin, custom_page_collapsed);
+  }
+
+  custom_page->SetBoundsRect(custom_page_rect);
+}
+
 // DefaultAnimator
 
 DefaultAnimator::DefaultAnimator(ContentsView* contents_view)
@@ -56,6 +92,8 @@ void DefaultAnimator::Update(double progress, int from_page, int to_page) {
 
   contents_view()->GetPageView(from_page)->SetBoundsRect(from_page_rect);
   contents_view()->GetPageView(to_page)->SetBoundsRect(to_page_rect);
+
+  UpdateCustomPageForDefaultAnimation(progress, from_page, to_page);
 }
 
 // StartToAppsAnimator
@@ -83,6 +121,34 @@ void StartToAppsAnimator::Update(double progress,
 
   contents_view()->GetPageView(start_page)->SetBoundsRect(from_page_rect);
   contents_view()->GetPageView(apps_page)->SetBoundsRect(to_page_rect);
+
+  UpdateCustomPageForDefaultAnimation(progress, start_page, apps_page);
+}
+
+// StartToCustomAnimator
+
+StartToCustomAnimator::StartToCustomAnimator(ContentsView* contents_view)
+    : ContentsAnimator(contents_view) {
+}
+
+std::string StartToCustomAnimator::NameForTests() const {
+  return "StartToCustomAnimator";
+}
+
+void StartToCustomAnimator::Update(double progress,
+                                   int start_page,
+                                   int custom_page) {
+  gfx::Rect start_page_on_screen(contents_view()->GetDefaultContentsBounds());
+  gfx::Rect custom_page_on_screen(contents_view()->GetContentsBounds());
+  gfx::Rect start_page_origin(GetOffscreenPageBounds(start_page));
+  gfx::Rect custom_page_origin(contents_view()->GetCustomPageCollapsedBounds());
+  gfx::Rect start_page_rect(gfx::Tween::RectValueBetween(
+      progress, start_page_on_screen, start_page_origin));
+  gfx::Rect custom_page_rect(gfx::Tween::RectValueBetween(
+      progress, custom_page_origin, custom_page_on_screen));
+
+  contents_view()->GetPageView(start_page)->SetBoundsRect(start_page_rect);
+  contents_view()->GetPageView(custom_page)->SetBoundsRect(custom_page_rect);
 }
 
 }  // app_list
