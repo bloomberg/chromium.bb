@@ -28,7 +28,8 @@ void PasswordManagerClient::OnLogRouterAvailabilityChanged(
     bool router_can_be_used) {
 }
 
-void PasswordManagerClient::LogSavePasswordProgress(const std::string& text) {
+void PasswordManagerClient::LogSavePasswordProgress(
+    const std::string& text) const {
 }
 
 bool PasswordManagerClient::IsLoggingActive() const {

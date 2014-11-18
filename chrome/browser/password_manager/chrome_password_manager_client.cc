@@ -275,7 +275,7 @@ void ChromePasswordManagerClient::OnLogRouterAvailabilityChanged(
 }
 
 void ChromePasswordManagerClient::LogSavePasswordProgress(
-    const std::string& text) {
+    const std::string& text) const {
   if (!IsLoggingActive())
     return;
   PasswordManagerInternalsService* service =

@@ -25,7 +25,7 @@ class TestLogger : public BrowserSavePasswordProgressLogger {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_METHOD1(LogSavePasswordProgress, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
 };
 
 }  // namespace

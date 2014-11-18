@@ -63,7 +63,7 @@ class ChromePasswordManagerClient
   bool IsPasswordSyncEnabled(
       password_manager::CustomPassphraseState state) override;
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
-  void LogSavePasswordProgress(const std::string& text) override;
+  void LogSavePasswordProgress(const std::string& text) const override;
   bool IsLoggingActive() const override;
 
   // Hides any visible generation UI.

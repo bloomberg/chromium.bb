@@ -18,7 +18,8 @@ class PasswordManagerClient;
 class BrowserSavePasswordProgressLogger
     : public autofill::SavePasswordProgressLogger {
  public:
-  explicit BrowserSavePasswordProgressLogger(PasswordManagerClient* client);
+  explicit BrowserSavePasswordProgressLogger(
+      const PasswordManagerClient* client);
   ~BrowserSavePasswordProgressLogger() override;
 
  protected:
@@ -28,7 +29,7 @@ class BrowserSavePasswordProgressLogger
  private:
   // The PasswordManagerClient to which logs can be sent for display. The client
   // must outlive this logger.
-  PasswordManagerClient* const client_;
+  const PasswordManagerClient* const client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSavePasswordProgressLogger);
 };

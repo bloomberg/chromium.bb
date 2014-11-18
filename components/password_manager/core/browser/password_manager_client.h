@@ -108,7 +108,7 @@ class PasswordManagerClient {
   virtual void OnLogRouterAvailabilityChanged(bool router_can_be_used);
 
   // Forward |text| for display to the LogRouter (if registered with one).
-  virtual void LogSavePasswordProgress(const std::string& text);
+  virtual void LogSavePasswordProgress(const std::string& text) const;
 
   // Returns true if logs recorded via LogSavePasswordProgress will be
   // displayed, and false otherwise.
