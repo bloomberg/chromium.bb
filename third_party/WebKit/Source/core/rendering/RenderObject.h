@@ -846,10 +846,10 @@ public:
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
     // If |paintInvalidationContainer| is 0, invalidate paints via the view.
     // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
-    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
+    void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
-    void invalidatePaintRectangle(const LayoutRect&) const;
+    void invalidatePaintRectangle(const LayoutRect&);
 
     void invalidateSelectionIfNeeded(const RenderLayerModelObject&, PaintInvalidationReason);
 
@@ -1047,6 +1047,8 @@ public:
         return layoutDidGetCalledSinceLastFrame() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
     }
 
+    bool needsPaint() const { return m_bitfields.needsPaint(); }
+
     bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->slowIsFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
@@ -1177,6 +1179,9 @@ protected:
     virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState);
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
+    void setNeedsPaint() { m_bitfields.setNeedsPaint(true); }
+    void clearNeedsPaint() { m_bitfields.setNeedsPaint(false); }
+
 private:
     void setLayoutDidGetCalledSinceLastFrame()
     {
@@ -1267,6 +1272,7 @@ private:
             , m_floating(false)
             , m_selfNeedsOverflowRecalcAfterStyleChange(false)
             , m_childNeedsOverflowRecalcAfterStyleChange(false)
+            , m_needsPaint(false)
             , m_isAnonymous(!node)
             , m_isText(false)
             , m_isBox(false)
@@ -1294,7 +1300,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 14 in the second.
+        // 32 bits have been used in the first word, and 15 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
@@ -1308,6 +1314,7 @@ private:
         ADD_BOOLEAN_BITFIELD(floating, Floating);
         ADD_BOOLEAN_BITFIELD(selfNeedsOverflowRecalcAfterStyleChange, SelfNeedsOverflowRecalcAfterStyleChange);
         ADD_BOOLEAN_BITFIELD(childNeedsOverflowRecalcAfterStyleChange, ChildNeedsOverflowRecalcAfterStyleChange);
+        ADD_BOOLEAN_BITFIELD(needsPaint, NeedsPaint);
 
         ADD_BOOLEAN_BITFIELD(isAnonymous, IsAnonymous);
         ADD_BOOLEAN_BITFIELD(isText, IsText);

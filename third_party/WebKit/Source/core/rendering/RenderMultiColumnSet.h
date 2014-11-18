@@ -113,7 +113,7 @@ public:
     void attachRegion();
     void detachRegion();
 
-    void paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect) const;
+    void paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect);
 
     // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
     // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or

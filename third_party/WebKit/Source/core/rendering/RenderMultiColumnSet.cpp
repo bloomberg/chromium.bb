@@ -431,7 +431,7 @@ void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& 
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-void RenderMultiColumnSet::paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect) const
+void RenderMultiColumnSet::paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect)
 {
     // Figure out the start and end columns and only check within that range so that we don't walk the
     // entire column set. Put the paint invalidation rect into flow thread coordinates by flipping it first.

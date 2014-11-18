@@ -74,7 +74,7 @@ protected:
 
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
     void paintInvalidationOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect,
-        const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
+        const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation);
 
 private:
     virtual void layoutBlock(bool relayoutChildren) override final;
