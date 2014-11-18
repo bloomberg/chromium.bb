@@ -45,36 +45,39 @@ class SearchCardView : public views::View {
 }  // namespace
 
 SearchResultPageView::SearchResultPageView(AppListMainView* app_list_main_view,
-                                           AppListViewDelegate* view_delegate)
-    : results_view_(
-          new SearchResultListView(app_list_main_view, view_delegate)),
-      tiles_view_(new SearchResultTileItemListView()) {
+                                           AppListViewDelegate* view_delegate) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kExperimentalWindowPadding, kTopPadding,
                                         kGroupSpacing));
 
-  // The view containing the search results.
-  AddChildView(new SearchCardView(results_view_));
-
-  // The view containing the start page tiles.
-  AddChildView(new SearchCardView(tiles_view_));
-
-  AppListModel::SearchResults* model = view_delegate->GetModel()->results();
-  results_view_->SetResults(model);
-  tiles_view_->SetResults(model);
+  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
+  AddSearchResultContainerView(
+      results, new SearchResultListView(app_list_main_view, view_delegate));
+  AddSearchResultContainerView(results, new SearchResultTileItemListView());
 }
 
 SearchResultPageView::~SearchResultPageView() {
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
+  DCHECK(!result_container_views_.empty());
   // Capture the Tab key to prevent defocusing of the search box.
-  return results_view_->OnKeyPressed(event) || event.key_code() == ui::VKEY_TAB;
+  return result_container_views_[0]->OnKeyPressed(event) ||
+         event.key_code() == ui::VKEY_TAB;
 }
 
 void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
+  DCHECK(!result_container_views_.empty());
   Layout();
-  results_view_->OnContainerSelected(false);
+  result_container_views_[0]->OnContainerSelected(false);
+}
+
+void SearchResultPageView::AddSearchResultContainerView(
+    AppListModel::SearchResults* results_model,
+    SearchResultContainerView* result_container) {
+  AddChildView(new SearchCardView(result_container));
+  result_container_views_.push_back(result_container);
+  result_container->SetResults(results_model);
 }
 
 }  // namespace app_list

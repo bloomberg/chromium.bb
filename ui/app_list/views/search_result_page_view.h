@@ -9,15 +9,13 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/views/search_result_container_view.h"
 #include "ui/views/view.h"
 
 namespace app_list {
 
 class AppListMainView;
 class AppListViewDelegate;
-class SearchResultListView;
-class SearchResultTileItemListView;
+class SearchResultContainerView;
 
 // The start page for the experimental app list.
 class APP_LIST_EXPORT SearchResultPageView : public views::View {
@@ -31,8 +29,13 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
-  SearchResultListView* results_view_;  // Owned by views hierarchy.
-  SearchResultTileItemListView* tiles_view_;  // Owned by views hierarchy.
+  void AddSearchResultContainerView(
+      AppListModel::SearchResults* result_model,
+      SearchResultContainerView* result_container);
+
+  // The SearchResultContainerViews that compose the search page. All owned by
+  // the views hierarchy.
+  std::vector<SearchResultContainerView*> result_container_views_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
