@@ -70,10 +70,9 @@ public:
     bool determineViewport(FloatSize&) const;
 
 private:
-    SVGLengthContext(const SVGElement*, const FloatRect& viewport);
-
     float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, ExceptionState&) const;
     float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, ExceptionState&) const;
+    static float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, const FloatSize&);
 
     float convertValueFromUserUnitsToEMS(float value, ExceptionState&) const;
     float convertValueFromEMSToUserUnits(float value, ExceptionState&) const;
@@ -82,7 +81,6 @@ private:
     float convertValueFromEXSToUserUnits(float value, ExceptionState&) const;
 
     RawPtrWillBeMember<const SVGElement> m_context;
-    FloatRect m_overridenViewport;
 };
 
 } // namespace blink

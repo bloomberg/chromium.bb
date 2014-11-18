@@ -41,12 +41,6 @@ SVGLengthContext::SVGLengthContext(const SVGElement* context)
 {
 }
 
-SVGLengthContext::SVGLengthContext(const SVGElement* context, const FloatRect& viewport)
-    : m_context(context)
-    , m_overridenViewport(viewport)
-{
-}
-
 FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY, PassRefPtrWillBeRawPtr<SVGLength> passWidth, PassRefPtrWillBeRawPtr<SVGLength> passHeight)
 {
     RefPtrWillBeRawPtr<SVGLength> x = passX;
@@ -55,17 +49,17 @@ FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitT
     RefPtrWillBeRawPtr<SVGLength> height = passHeight;
 
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
-    if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
-        SVGLengthContext lengthContext(context);
-        return FloatRect(x->value(lengthContext), y->value(lengthContext), width->value(lengthContext), height->value(lengthContext));
+    if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE && !viewport.isEmpty()) {
+        const FloatSize& viewportSize = viewport.size();
+        return FloatRect(
+            convertValueFromPercentageToUserUnits(x->valueAsPercentage(), x->unitMode(), viewportSize) + viewport.x(),
+            convertValueFromPercentageToUserUnits(y->valueAsPercentage(), y->unitMode(), viewportSize) + viewport.y(),
+            convertValueFromPercentageToUserUnits(width->valueAsPercentage(), width->unitMode(), viewportSize),
+            convertValueFromPercentageToUserUnits(height->valueAsPercentage(), height->unitMode(), viewportSize));
     }
 
-    SVGLengthContext lengthContext(context, viewport);
-    return FloatRect(
-        x->value(lengthContext) + viewport.x(),
-        y->value(lengthContext) + viewport.y(),
-        width->value(lengthContext),
-        height->value(lengthContext));
+    SVGLengthContext lengthContext(context);
+    return FloatRect(x->value(lengthContext), y->value(lengthContext), width->value(lengthContext), height->value(lengthContext));
 }
 
 FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY)
@@ -99,14 +93,6 @@ float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::S
 
 float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit, ExceptionState& exceptionState) const
 {
-    // If the SVGLengthContext carries a custom viewport, force resolving against it.
-    if (!m_overridenViewport.isEmpty()) {
-        // 100% = 100.0 instead of 1.0 for historical reasons, this could eventually be changed
-        if (fromUnit == LengthTypePercentage)
-            value /= 100;
-        return convertValueFromPercentageToUserUnits(value, mode, exceptionState);
-    }
-
     switch (fromUnit) {
     case LengthTypeUnknown:
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(3, "SVGLengthType"));
@@ -197,7 +183,11 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
         exceptionState.throwDOMException(NotSupportedError, "The viewport could not be determined.");
         return 0;
     }
+    return convertValueFromPercentageToUserUnits(value, mode, viewportSize);
+}
 
+float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, const FloatSize& viewportSize)
+{
     switch (mode) {
     case LengthModeWidth:
         return value * viewportSize.width();
@@ -292,12 +282,6 @@ bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
 {
     if (!m_context)
         return false;
-
-    // If an overriden viewport is given, it has precedence.
-    if (!m_overridenViewport.isEmpty()) {
-        viewportSize = m_overridenViewport.size();
-        return true;
-    }
 
     // Root <svg> element lengths are resolved against the top level viewport.
     if (m_context->isOutermostSVGSVGElement()) {
