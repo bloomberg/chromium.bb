@@ -1505,7 +1505,7 @@ def GetParser():
   mode.add_argument('--override-ss-key', action='store', default=None,
                     dest='ss_key',
                     help='Override spreadsheet key.')
-  parser.add_argument('cred_dir', action='store',
+  parser.add_argument('--cred-dir', action='store', required=True,
                       metavar='CIDB_CREDENTIALS_DIR',
                       help='Database credentials directory with certificates '
                            'and other connection information. Obtain your '
