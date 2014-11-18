@@ -178,7 +178,7 @@ class ExtensionLoadedNotificationObserver
   [self removePageActionPreviewIfNecessary];
   extension_ = NULL;
   browser_ = NULL;
-
+  [closeButton_ setTrackingEnabled:NO];
   [super windowWillClose:notification];
 }
 

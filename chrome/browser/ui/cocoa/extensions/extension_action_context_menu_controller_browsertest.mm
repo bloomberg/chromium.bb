@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -135,6 +136,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuControllerTest,
     [BrowserWindowController browserWindowControllerForWindow:window];
   ASSERT_TRUE(wc != NULL);
   [wc destroyBrowser];
+  // Wait for the browser to be fully destroyed, so that the browsertest doesn't
+  // also try to close it.
+  base::RunLoop().RunUntilIdle();
+  chrome::testing::NSRunLoopRunAllPending();
 }
 
 namespace {
