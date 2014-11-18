@@ -81,6 +81,7 @@ struct PaintInfo {
     }
 
     bool forceBlackText() const { return paintBehavior & PaintBehaviorForceBlackText; }
+    bool isRenderingClipPathAsMaskImage() const { return paintBehavior & PaintBehaviorRenderingClipPathAsMask; }
 
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }

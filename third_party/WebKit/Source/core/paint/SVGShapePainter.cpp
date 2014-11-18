@@ -68,7 +68,7 @@ void SVGShapePainter::paint(PaintInfo& paintInfo)
             switch (svgStyle.paintOrderType(i)) {
             case PT_FILL: {
                 GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
-                if (!SVGRenderSupport::updateGraphicsContext(stateSaver, m_renderSVGShape.style(), m_renderSVGShape, ApplyToFillMode))
+                if (!SVGRenderSupport::updateGraphicsContext(childPaintInfo, stateSaver, m_renderSVGShape.style(), m_renderSVGShape, ApplyToFillMode))
                     break;
                 fillShape(childPaintInfo.context);
                 break;
@@ -88,7 +88,7 @@ void SVGShapePainter::paint(PaintInfo& paintInfo)
                         additionalPaintServerTransform = &nonScalingTransform;
                     }
 
-                    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, m_renderSVGShape.style(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
+                    if (!SVGRenderSupport::updateGraphicsContext(childPaintInfo, stateSaver, m_renderSVGShape.style(), m_renderSVGShape, ApplyToStrokeMode, additionalPaintServerTransform))
                         break;
                     strokeShape(childPaintInfo.context);
                 }

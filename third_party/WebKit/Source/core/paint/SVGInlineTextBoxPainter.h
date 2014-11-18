@@ -25,13 +25,13 @@ class SVGInlineTextBoxPainter {
 public:
     SVGInlineTextBoxPainter(SVGInlineTextBox& svgInlineTextBox) : m_svgInlineTextBox(svgInlineTextBox) { }
     void paint(PaintInfo&, const LayoutPoint&);
-    void paintSelectionBackground(PaintInfo&);
+    void paintSelectionBackground(const PaintInfo&);
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&);
 
 private:
-    void paintDecoration(GraphicsContext*, TextDecoration, const SVGTextFragment&);
-    void paintTextWithShadows(GraphicsContext*, RenderStyle*, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
-    void paintText(GraphicsContext*, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool hasSelection, bool paintSelectedTextOnly);
+    void paintDecoration(const PaintInfo&, TextDecoration, const SVGTextFragment&);
+    void paintTextWithShadows(const PaintInfo&, RenderStyle*, TextRun&, const SVGTextFragment&, int startPosition, int endPosition, RenderSVGResourceMode);
+    void paintText(const PaintInfo&, RenderStyle*, RenderStyle* selectionStyle, const SVGTextFragment&, RenderSVGResourceMode, bool hasSelection, bool paintSelectedTextOnly);
 
     SVGInlineTextBox& m_svgInlineTextBox;
 };
