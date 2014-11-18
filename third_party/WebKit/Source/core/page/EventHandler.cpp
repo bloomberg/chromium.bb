@@ -1389,10 +1389,10 @@ void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
-    handleMouseMoveOrLeaveEvent(event);
+    handleMouseMoveOrLeaveEvent(event, 0, false, true);
 }
 
-bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
+bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars, bool forceLeave)
 {
     ASSERT(m_frame);
     ASSERT(m_frame->view());
@@ -1438,7 +1438,15 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     if (m_touchPressed)
         hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
     HitTestRequest request(hitType);
-    MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
+    MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(mouseEvent, HitTestResult(LayoutPoint()));
+
+    // We don't want to do a hit-test in forceLeave scenarios because there might actually be some other frame above this one at the specified co-ordinate.
+    // So we must force the hit-test to fail, while still clearing hover/active state.
+    if (forceLeave)
+        m_frame->document()->updateHoverActiveState(request, 0, &mouseEvent);
+    else
+        mev = prepareMouseEvent(request, mouseEvent);
+
     if (hoveredNode)
         *hoveredNode = mev.hitTestResult();
 
@@ -1460,7 +1468,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
 
     // We want mouseouts to happen first, from the inside out.  First send a move event to the last subframe so that it will fire mouseouts.
     if (m_lastMouseMoveEventSubframe && m_lastMouseMoveEventSubframe->tree().isDescendantOf(m_frame) && m_lastMouseMoveEventSubframe != newSubframe)
-        passMouseMoveEventToSubframe(mev, m_lastMouseMoveEventSubframe.get());
+        m_lastMouseMoveEventSubframe->eventHandler().handleMouseLeaveEvent(mouseEvent);
 
     if (newSubframe) {
         // Update over/out state before passing the event to the subframe.

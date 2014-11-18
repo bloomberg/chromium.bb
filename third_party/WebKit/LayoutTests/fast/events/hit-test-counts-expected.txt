@@ -45,7 +45,7 @@ GestureScrollEnd: 0 0 0
 Event near boundary of two iframes
 ---------------------
 Initial: 0 0 0
-MouseMove: 1 1 1
+MouseMove: 1 1 0
 MouseDown: 2 2 0
 MouseUp: 1 1 0
 Wheel: 1 1 0
