@@ -44,10 +44,19 @@ var Dir = AutomationUtil.Dir;
  * @constructor
  */
 Output = function(range, prevRange, type) {
-  // TODO(dtseng): Include brailleBuffer once we add rules for braille.
+  // TODO(dtseng): Include braille specific rules.
   /** @type {!cvox.Spannable} */
   this.buffer_ = new cvox.Spannable();
+  /** @type {!cvox.Spannable} */
+  this.brailleBuffer_ = new cvox.Spannable();
+  /** @type {!Array.<Object>} */
   this.locations_ = [];
+
+  /**
+   * Current global options.
+   * @type {{speech: boolean, braille: boolean, location: boolean}}
+   */
+  this.formatOptions_ = {speech: true, braille: false, location: true};
 
   this.render_(range, prevRange, type);
   this.handleSpeech();
@@ -70,6 +79,9 @@ Output.RULES = {
     'default': {
       speak: '$name $role $value',
       braille: ''
+    },
+    alert: {
+      speak: '@aria_role_alert $name @earcon(ALERT_NONMODAL)'
     },
     button: {
       speak: '$name $earcon(BUTTON, @tag_button)'
@@ -99,8 +111,29 @@ Output.RULES = {
     listItem: {
       enter: '$role'
     },
+    menuItem: {
+      speak: '$or($haspopup, @describe_menu_item_with_submenu($name), ' +
+          '@describe_menu_item($name))'
+    },
+    menuListOption: {
+      speak: '$name $value @aria_role_menuitem ' +
+          '@describe_index($indexInParent, $parentChildCount)'
+    },
     paragraph: {
       speak: '$value'
+    },
+    popUpButton: {
+      speak: '$value $name @tag_button @aria_has_popup $earcon(LISTBOX)'
+    },
+    radioButton: {
+      speak: '$or($checked, @describe_radio_selected($name), ' +
+          '@describe_radio_unselected($name)) ' +
+          '$or($checked, ' +
+              '$earcon(CHECK_ON, @input_type_radio), ' +
+              '$earcon(CHECK_OFF, @input_type_radio))'
+    },
+    slider: {
+      speak: '@describe_slider($value, $name)'
     },
     staticText: {
       speak: '$value'
@@ -108,13 +141,14 @@ Output.RULES = {
     textBox: {
       speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
     },
+    tab: {
+      speak: '@describe_tab($name)'
+    },
     textField: {
       speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
     },
     window: {
-      enter: '$name $role= $earcon(OBJECT_OPEN)'
-      // TODO(dtseng): A leave event is not reliable because views does not fire
-      // focus events after closing windows.
+      speak: '@describe_window($name) $earcon(OBJECT_OPEN)'
     }
   },
   menuStart: {
@@ -195,7 +229,7 @@ Output.prototype = {
    */
   handleBraille: function() {
     cvox.ChromeVox.braille.write(
-        cvox.NavBraille.fromText(this.buffer_.toString()));
+        cvox.NavBraille.fromText(this.brailleBuffer_.toString()));
   },
 
   /**
@@ -215,12 +249,21 @@ Output.prototype = {
    */
   render_: function(range, prevRange, type) {
     var buff = new cvox.Spannable();
+    var brailleBuff = new cvox.Spannable();
     if (range.isSubNode())
       this.subNode_(range, prevRange, type, buff);
     else
       this.range_(range, prevRange, type, buff);
 
+    this.formatOptions_.braille = true;
+    this.formatOptions_.location = false;
+        if (range.isSubNode())
+      this.subNode_(range, prevRange, type, brailleBuff);
+    else
+      this.range_(range, prevRange, type, brailleBuff);
+
     this.buffer_ = buff;
+    this.brailleBuffer_ = brailleBuff;
   },
 
   /**
@@ -278,6 +321,11 @@ Output.prototype = {
         if (token == 'role') {
           // Non-localized role and state obtained by default.
           this.addToSpannable_(buff, node.role, options);
+        } else if (token == 'indexInParent') {
+          this.addToSpannable_(buff, node.indexInParent + 1);
+        } else if (token == 'parentChildCount') {
+          if (node.parent())
+          this.addToSpannable_(buff, node.parent().children().length);
         } else if (token == 'state') {
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
             this.addToSpannable_(buff, s, options);
@@ -317,15 +365,17 @@ Output.prototype = {
             console.error('Unexpected value: ' + arg);
             return;
           }
-          arg = arg.slice(1);
-          if (!node.attributes[arg])
-            msgArgs.push('');
-          else
-            msgArgs.push(node.attributes[arg]);
+          var msgBuff = new cvox.Spannable();
+          this.format_(node, arg, msgBuff);
+          msgArgs.push(msgBuff.toString());
           curMsg = curMsg.nextSibling;
         }
+          var msg = cvox.ChromeVox.msgs.getMsg(msgId, msgArgs);
+        try {
+          if (this.formatOptions_.braille)
+            msg = cvox.ChromeVox.msgs.getMsg(msgId + '_brl', msgArgs) || msg;
+        } catch(e) {}
 
-        var msg = cvox.ChromeVox.msgs.getMsg(msgId, msgArgs);
         if (msg) {
           this.addToSpannable_(buff, msg, options);
         }
@@ -351,7 +401,8 @@ Output.prototype = {
       var buff = new cvox.Spannable();
       this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
-      this.locations_.push(node.location);
+      if (this.formatOptions_.location)
+        this.locations_.push(node.location);
       return buff;
     }.bind(this);
 

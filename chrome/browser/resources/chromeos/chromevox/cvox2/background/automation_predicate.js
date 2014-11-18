@@ -55,7 +55,9 @@ AutomationPredicate.link =
  * @return {boolean}
  */
 AutomationPredicate.leaf = function(node) {
-  return !node.firstChild();
+  return !node.firstChild() || node.children().every(function(n) {
+    return n.state.invisible;
+  });
 };
 
 /**
