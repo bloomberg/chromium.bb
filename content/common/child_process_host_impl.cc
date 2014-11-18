@@ -139,7 +139,6 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
 
 ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
     : delegate_(delegate),
-      peer_handle_(base::kNullProcessHandle),
       opening_channel_(false) {
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
@@ -151,8 +150,6 @@ ChildProcessHostImpl::~ChildProcessHostImpl() {
     filters_[i]->OnChannelClosing();
     filters_[i]->OnFilterRemoved();
   }
-
-  base::CloseProcessHandle(peer_handle_);
 }
 
 void ChildProcessHostImpl::AddFilter(IPC::MessageFilter* filter) {
@@ -277,10 +274,18 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
-  if (!peer_handle_ &&
-      !base::OpenPrivilegedProcessHandle(peer_pid, &peer_handle_)) {
-    peer_handle_ = delegate_->GetHandle();
-    DCHECK(peer_handle_);
+  if (!peer_process_.IsValid()) {
+    base::ProcessHandle peer_handle_;
+    if (base::OpenPrivilegedProcessHandle(peer_pid, &peer_handle_)) {
+      // TODO(rvargas) crbug.com/417532: don't go through a ProcessHandle.
+      if (peer_handle_ == base::GetCurrentProcessHandle())
+        peer_process_ = base::Process::Current();
+      else
+        peer_process_ = base::Process(peer_handle_);
+    } else {
+      peer_process_ = delegate_->GetProcess().Duplicate();
+    }
+    DCHECK(peer_process_.IsValid());
   }
   opening_channel_ = false;
   delegate_->OnChannelConnected(peer_pid);
@@ -306,7 +311,7 @@ void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
 void ChildProcessHostImpl::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
-  AllocateSharedMemory(buffer_size, peer_handle_, handle);
+  AllocateSharedMemory(buffer_size, peer_process_.Handle(), handle);
 }
 
 void ChildProcessHostImpl::OnShutdownRequest() {
@@ -337,7 +342,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
       g_next_gpu_memory_buffer_id.GetNext(),
       gfx::Size(width, height),
       format,
-      peer_handle_,
+      peer_process_.Handle(),
       base::Bind(&ChildProcessHostImpl::GpuMemoryBufferAllocated,
                  base::Unretained(this),
                  reply));

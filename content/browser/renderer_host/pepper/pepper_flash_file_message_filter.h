@@ -75,7 +75,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
 
   base::FilePath plugin_data_directory_;
   int render_process_id_;
-  base::ProcessHandle plugin_process_handle_;
+  base::Process plugin_process_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashFileMessageFilter);
 };

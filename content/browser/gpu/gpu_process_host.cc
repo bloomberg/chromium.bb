@@ -326,9 +326,10 @@ void GpuProcessHost::GetProcessHandles(
   }
   std::list<base::ProcessHandle> handles;
   for (size_t i = 0; i < arraysize(g_gpu_process_hosts); ++i) {
+    // TODO(rvargas) crbug/417532: don't store ProcessHandles!.
     GpuProcessHost* host = g_gpu_process_hosts[i];
     if (host && ValidateHost(host))
-      handles.push_back(host->process_->GetHandle());
+      handles.push_back(host->process_->GetProcess().Handle());
   }
   BrowserThread::PostTask(
       BrowserThread::UI,

@@ -17,7 +17,7 @@ BrowserPpapiHostTest::BrowserPpapiHostTest() : sink_() {
                                base::FilePath(),
                                false /* in_process */,
                                false /* external_plugin */));
-  ppapi_host_->set_plugin_process_handle(base::GetCurrentProcessHandle());
+  ppapi_host_->set_plugin_process(base::Process::Current());
 }
 
 BrowserPpapiHostTest::~BrowserPpapiHostTest() {}

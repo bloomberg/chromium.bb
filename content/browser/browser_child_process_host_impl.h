@@ -65,7 +65,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // ChildProcessHostDelegate implementation:
   bool CanShutdown() override;
   void OnChildDisconnected() override;
-  base::ProcessHandle GetHandle() const override;
+  const base::Process& GetProcess() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32 peer_pid) override;
   void OnChannelError() override;

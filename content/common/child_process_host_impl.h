@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
@@ -91,7 +92,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
                                 const gfx::GpuMemoryBufferHandle& handle);
 
   ChildProcessHostDelegate* delegate_;
-  base::ProcessHandle peer_handle_;
+  base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   scoped_ptr<IPC::Channel> channel_;
   std::string channel_id_;

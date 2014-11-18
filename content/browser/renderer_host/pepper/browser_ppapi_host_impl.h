@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
 #include "content/common/content_export.h"
@@ -30,9 +31,9 @@ namespace content {
 
 class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
  public:
-  // The creator is responsible for calling set_plugin_process_handle as soon
-  // as it is known (we start the process asynchronously so it won't be known
-  // when this object is created).
+  // The creator is responsible for calling set_plugin_process as soon as it is
+  // known (we start the process asynchronously so it won't be known when this
+   // object is created).
   // |external_plugin| signfies that this is a proxy created for an embedder's
   // plugin, i.e. using BrowserPpapiHost::CreateExternalPluginProcess.
   BrowserPpapiHostImpl(IPC::Sender* sender,
@@ -46,7 +47,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
 
   // BrowserPpapiHost.
   ppapi::host::PpapiHost* GetPpapiHost() override;
-  base::ProcessHandle GetPluginProcessHandle() const override;
+  const base::Process& GetPluginProcess() const override;
   bool IsValidInstance(PP_Instance instance) const override;
   bool GetRenderFrameIDsForInstance(PP_Instance instance,
                                     int* render_process_id,
@@ -59,8 +60,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   void SetOnKeepaliveCallback(
       const BrowserPpapiHost::OnKeepaliveCallback& callback) override;
 
-  void set_plugin_process_handle(base::ProcessHandle handle) {
-    plugin_process_handle_ = handle;
+  void set_plugin_process(base::Process process) {
+    plugin_process_ = process.Pass();
   }
 
   bool external_plugin() const { return external_plugin_; }
@@ -111,7 +112,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   void OnKeepalive();
 
   scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
-  base::ProcessHandle plugin_process_handle_;
+  base::Process plugin_process_;
   std::string plugin_name_;
   base::FilePath plugin_path_;
   base::FilePath profile_data_directory_;

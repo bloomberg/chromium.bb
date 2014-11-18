@@ -61,8 +61,8 @@ class CONTENT_EXPORT BrowserPpapiHost {
   // Returns the PpapiHost object.
   virtual ppapi::host::PpapiHost* GetPpapiHost() = 0;
 
-  // Returns the handle to the plugin process.
-  virtual base::ProcessHandle GetPluginProcessHandle() const = 0;
+  // Returns a reference to the plugin process.
+  virtual const base::Process& GetPluginProcess() const = 0;
 
   // Returns true if the given PP_Instance is valid.
   virtual bool IsValidInstance(PP_Instance instance) const = 0;

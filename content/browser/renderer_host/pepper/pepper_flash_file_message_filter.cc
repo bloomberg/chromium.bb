@@ -42,7 +42,7 @@ bool CanCreateReadWrite(int process_id, const base::FilePath& path) {
 PepperFlashFileMessageFilter::PepperFlashFileMessageFilter(
     PP_Instance instance,
     BrowserPpapiHost* host)
-    : plugin_process_handle_(host->GetPluginProcessHandle()) {
+    : plugin_process_(host->GetPluginProcess().Duplicate()) {
   int unused;
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
   base::FilePath profile_data_directory = host->GetProfileDataDirectory();
@@ -134,7 +134,7 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
   }
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_handle_);
+      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_.Handle());
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
@@ -256,7 +256,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
     return ppapi::FileErrorToPepperError(file.error_details());
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_handle_);
+      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_.Handle());
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(

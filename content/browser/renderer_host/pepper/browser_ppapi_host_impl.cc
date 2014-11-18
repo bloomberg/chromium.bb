@@ -32,7 +32,8 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
                                profile_directory,
                                false /* in_process */,
                                true /* external_plugin */);
-  browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
+  browser_ppapi_host->set_plugin_process(
+      base::Process::DeprecatedGetProcessFromHandle(plugin_child_process));
 
   scoped_refptr<PepperMessageFilter> pepper_message_filter(
       new PepperMessageFilter());
@@ -52,7 +53,6 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     bool in_process,
     bool external_plugin)
     : ppapi_host_(new ppapi::host::PpapiHost(sender, permissions)),
-      plugin_process_handle_(base::kNullProcessHandle),
       plugin_name_(plugin_name),
       plugin_path_(plugin_path),
       profile_data_directory_(profile_data_directory),
@@ -78,10 +78,10 @@ ppapi::host::PpapiHost* BrowserPpapiHostImpl::GetPpapiHost() {
   return ppapi_host_.get();
 }
 
-base::ProcessHandle BrowserPpapiHostImpl::GetPluginProcessHandle() const {
+const base::Process& BrowserPpapiHostImpl::GetPluginProcess() const {
   // Handle should previously have been set before use.
-  DCHECK(in_process_ || plugin_process_handle_ != base::kNullProcessHandle);
-  return plugin_process_handle_;
+  DCHECK(in_process_ || plugin_process_.IsValid());
+  return plugin_process_;
 }
 
 bool BrowserPpapiHostImpl::IsValidInstance(PP_Instance instance) const {

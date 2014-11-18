@@ -396,7 +396,7 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
 
 void PpapiPluginProcessHost::OnProcessLaunched() {
   VLOG(2) << "ppapi plugin process launched.";
-  host_impl_->set_plugin_process_handle(process_->GetHandle());
+  host_impl_->set_plugin_process(process_->GetProcess().Duplicate());
 }
 
 void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {

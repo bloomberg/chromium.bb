@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process_handle.h"
 #include "base/task_runner_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
@@ -153,8 +154,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client,
     base::MessageLoopProxy* client_message_loop_proxy)
-    : handle_(base::kNullProcessHandle),
-      client_(client),
+    : client_(client),
       client_message_loop_proxy_(client_message_loop_proxy),
       waiting_for_reply_(false),
       weak_ptr_factory_(this) {
@@ -163,7 +163,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
   // We need to kill the child process when the host dies.
-  base::KillProcess(handle_, content::RESULT_CODE_NORMAL_EXIT, false);
+  base::KillProcess(process_.Handle(), content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
@@ -233,12 +233,15 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
                                        bool no_sandbox) {
   if (no_sandbox) {
     cmd_line->AppendSwitch(switches::kNoSandbox);
-    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
+    base::ProcessHandle handle;
+    if (base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle))
+      process_ = base::Process(handle);
   } else {
     ServiceSandboxedProcessLauncherDelegate delegate;
-    handle_ = content::StartSandboxedProcess(&delegate, cmd_line);
+    process_ =
+        base::Process(content::StartSandboxedProcess(&delegate, cmd_line));
   }
-  return (handle_ != base::kNullProcessHandle);
+  return process_.IsValid();
 }
 
 bool ServiceUtilityProcessHost::Send(IPC::Message* msg) {
@@ -294,8 +297,8 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
-  return handle_;
+const base::Process& ServiceUtilityProcessHost::GetProcess() const {
+  return process_;
 }
 
 void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {

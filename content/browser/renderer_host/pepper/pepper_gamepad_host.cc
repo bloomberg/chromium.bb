@@ -72,7 +72,7 @@ void PepperGamepadHost::GotUserGesture(
     const ppapi::host::ReplyMessageContext& context) {
   base::SharedMemoryHandle handle =
       gamepad_service_->GetSharedMemoryHandleForProcess(
-          browser_ppapi_host_->GetPluginProcessHandle());
+          browser_ppapi_host_->GetPluginProcess().Handle());
 
   context.params.AppendHandle(ppapi::proxy::SerializedHandle(
       handle, sizeof(ppapi::ContentGamepadHardwareBuffer)));

@@ -477,7 +477,7 @@ bool PepperFileIOHost::AddFileToReplyContext(
     int32_t open_flags,
     ppapi::host::ReplyMessageContext* reply_context) const {
   base::ProcessId plugin_process_id =
-      base::GetProcId(browser_ppapi_host_->GetPluginProcessHandle());
+      base::GetProcId(browser_ppapi_host_->GetPluginProcess().Handle());
   if (plugin_process_id == base::kNullProcessId)
     plugin_process_id = resolved_render_process_id_;
 

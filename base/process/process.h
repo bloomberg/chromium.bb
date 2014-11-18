@@ -48,6 +48,12 @@ class BASE_EXPORT Process {
   // Returns an object for the current process.
   static Process Current();
 
+  // Creates an object from a |handle| owned by someone else.
+  // Don't use this for new code. It is only intended to ease the migration to
+  // a strict ownership model.
+  // TODO(rvargas) crbug.com/417532: Remove this code.
+  static Process DeprecatedGetProcessFromHandle(ProcessHandle handle);
+
   // Returns true if processes can be backgrounded.
   static bool CanBackgroundProcesses();
 

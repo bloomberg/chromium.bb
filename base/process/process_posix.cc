@@ -37,6 +37,12 @@ Process Process::Current() {
   return process.Pass();
 }
 
+// static
+Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
+  DCHECK_NE(handle, GetCurrentProcessHandle());
+  return Process(handle);
+}
+
 #if !defined(OS_LINUX)
 // static
 bool Process::CanBackgroundProcesses() {
