@@ -754,10 +754,6 @@ class CONTENT_EXPORT RenderViewImpl
                                  int32 page_id,
                                  bool is_reload);
 
-  // Make the given |frame| show an empty, unscriptable page.
-  // TODO(creis): Move this to RenderFrame.
-  void NavigateToSwappedOutURL(blink::WebFrame* frame);
-
   // If we initiated a navigation, this function will populate |document_state|
   // with the navigation information saved in OnNavigate().
   void PopulateDocumentStateFromPending(DocumentState* document_state);

@@ -1084,6 +1084,19 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   render_view_->pending_navigation_params_.reset();
 }
 
+void RenderFrameImpl::NavigateToSwappedOutURL() {
+  // We use loadRequest instead of loadHTMLString because the former commits
+  // synchronously.  Otherwise a new navigation can interrupt the navigation
+  // to kSwappedOutURL. If that happens to be to the page we had been
+  // showing, then WebKit will never send a commit and we'll be left spinning.
+  // Set the is_swapped_out_ bit to true, so IPC filtering is in effect and
+  // the navigation to swappedout:// is not announced to the browser side.
+  is_swapped_out_ = true;
+  GURL swappedOutURL(kSwappedOutURL);
+  WebURLRequest request(swappedOutURL);
+  frame_->loadRequest(request);
+}
+
 void RenderFrameImpl::BindServiceRegistry(
     mojo::ScopedMessagePipeHandle service_provider_handle) {
   service_registry_.BindRemoteServiceProvider(service_provider_handle.Pass());
@@ -1163,7 +1176,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
     if (!is_site_per_process || is_main_frame)
-      render_view_->NavigateToSwappedOutURL(frame_);
+      NavigateToSwappedOutURL();
 
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.

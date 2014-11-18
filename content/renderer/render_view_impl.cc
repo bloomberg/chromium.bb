@@ -835,7 +835,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // If we are initially swapped out, navigate to kSwappedOutURL.
   // This ensures we are in a unique origin that others cannot script.
   if (is_swapped_out_ && webview()->mainFrame()->isWebLocalFrame())
-    NavigateToSwappedOutURL(webview()->mainFrame());
+    main_render_frame_->NavigateToSwappedOutURL();
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -3250,21 +3250,6 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
 void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {
   // Don't show any more dialogs until we finish OnSwapOut.
   suppress_dialogs_until_swap_out_ = true;
-}
-
-void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {
-  // We use loadRequest instead of loadHTMLString because the former commits
-  // synchronously.  Otherwise a new navigation can interrupt the navigation
-  // to kSwappedOutURL. If that happens to be to the page we had been
-  // showing, then WebKit will never send a commit and we'll be left spinning.
-  // TODO(creis): Until we move this to RenderFrame, we may call this from a
-  // swapped out RenderFrame while our own is_swapped_out_ is false.
-  RenderFrameImpl* rf = RenderFrameImpl::FromWebFrame(frame);
-  CHECK(is_swapped_out_ || rf->is_swapped_out());
-  GURL swappedOutURL(kSwappedOutURL);
-  WebURLRequest request(swappedOutURL);
-  if (frame->isWebLocalFrame())
-    frame->loadRequest(request);
 }
 
 void RenderViewImpl::OnClosePage() {

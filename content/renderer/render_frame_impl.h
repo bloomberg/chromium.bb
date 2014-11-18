@@ -483,6 +483,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // this back to private member.
   void OnNavigate(const FrameMsg_Navigate_Params& params);
 
+  // Make this frame show an empty, unscriptable page.
+  // TODO(nasko): Remove this method once swapped out state is no longer used.
+  void NavigateToSwappedOutURL();
+
   // Binds this render frame's service registry to a handle to the remote
   // service registry.
   void BindServiceRegistry(
