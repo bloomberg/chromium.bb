@@ -10,7 +10,9 @@ import os
 import re
 import shutil
 import subprocess
+import stat
 import sys
+import time
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
@@ -58,16 +60,16 @@ def WriteStampFile(s):
     f.write(s)
 
 
-def DeleteFiles(dir, pattern):
-  """Delete all files in dir matching pattern."""
-  n = 0
-  regex = re.compile(r'^' + pattern + r'$')
-  for root, _, files in os.walk(dir):
-    for f in files:
-      if regex.match(f):
-        os.remove(os.path.join(root, f))
-        n += 1
-  return n
+def RmTree(dir):
+  """Delete dir."""
+  def ChmodAndRetry(func, path, _):
+    # Subversion can leave read-only files around.
+    if not os.access(path, os.W_OK):
+      os.chmod(path, stat.S_IWUSR)
+      return func(path)
+    raise
+
+  shutil.rmtree(dir, onerror=ChmodAndRetry)
 
 
 def ClobberChromiumBuildFiles():
@@ -75,18 +77,21 @@ def ClobberChromiumBuildFiles():
   print 'Clobbering Chromium build files...'
   out_dir = os.path.join(CHROMIUM_DIR, 'out')
   if os.path.isdir(out_dir):
-    shutil.rmtree(out_dir)
+    RmTree(out_dir)
     print 'Removed Chromium out dir: %s.' % (out_dir)
 
 
-def RunCommand(command, tries=1):
-  """Run a command, possibly with multiple retries."""
-  for i in range(0, tries):
-    print 'Running %s (try #%d)' % (str(command), i + 1)
-    if subprocess.call(command, shell=True) == 0:
-      return
-    print 'Failed.'
-  sys.exit(1)
+def RunCommand(command, fail_hard=True):
+  """Run command and return success (True) or failure; or if fail_hard is
+     True, exit on failure."""
+
+  print 'Running %s' % (str(command))
+  if subprocess.call(command, shell=True) == 0:
+    return True
+  print 'Failed.'
+  if fail_hard:
+    sys.exit(1)
+  return False
 
 
 def CopyFile(src, dst):
@@ -110,8 +115,17 @@ def CopyDirectoryContents(src, dst, filename_filter=None):
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
   print "Checking out %s r%s into '%s'" % (name, LLVM_WIN_REVISION, dir)
-  RunCommand(['svn', 'checkout', '--force',
-              url + '@' + LLVM_WIN_REVISION, dir], tries=2)
+
+  command = ['svn', 'checkout', '--force', url + '@' + LLVM_WIN_REVISION, dir]
+  if RunCommand(command, fail_hard=False):
+    return
+
+  if os.path.isdir(dir):
+    print "Removing %s." % (dir)
+    RmTree(dir)
+
+  print "Retrying."
+  RunCommand(command)
 
 
 def AddCMakeToPath():
