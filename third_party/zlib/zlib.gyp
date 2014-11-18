@@ -9,15 +9,27 @@
       'type': 'static_library',
       'conditions': [
         ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64")', {
-          'cflags' : ["-msse2", "-msse4.2", "-mpclmul"],
+          'cflags' : ['-msse4.2', '-mpclmul'],
           'xcode_settings' : {
-             'OTHER_CFLAGS' : ["-msse4.2", "-mpclmul"],
+             'OTHER_CFLAGS' : ['-msse4.2', '-mpclmul'],
           },
-          'sources' : [ 'crc_folding.c',
-                        'fill_window_sse.c']
+          'sources' : [
+            'crc_folding.c',
+            'fill_window_sse.c',
+          ],
+          'conditions': [
+            ['OS=="win" and clang==1', {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'AdditionalOptions': [ '-msse4.2', '-mpclmul' ],
+                },
+              },
+            }],
+          ],
         }, {
           'sources' : [ 'simd_stub.c' ],
-        }], ['OS=="android"', {
+        }],
+        ['OS=="android"', {
           'toolsets': ['target', 'host'],
         }],
       ],
