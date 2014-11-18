@@ -341,7 +341,8 @@ def ProcessToolsetsInDict(data):
     for condition in data['conditions']:
       if type(condition) is list:
         for condition_dict in condition[1:]:
-          ProcessToolsetsInDict(condition_dict)
+          if type(condition_dict) is dict:
+            ProcessToolsetsInDict(condition_dict)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
@@ -1037,17 +1038,40 @@ def EvalCondition(condition, conditions_key, phase, variables, build_file):
   that nothing should be used."""
   if type(condition) is not list:
     raise GypError(conditions_key + ' must be a list')
-  if len(condition) != 2 and len(condition) != 3:
+  if len(condition) < 2:
     # It's possible that condition[0] won't work in which case this
     # attempt will raise its own IndexError.  That's probably fine.
     raise GypError(conditions_key + ' ' + condition[0] +
-                   ' must be length 2 or 3, not ' + str(len(condition)))
+                   ' must be at least length 2, not ' + str(len(condition)))
 
-  [cond_expr, true_dict] = condition[0:2]
-  false_dict = None
-  if len(condition) == 3:
-    false_dict = condition[2]
+  i = 0
+  result = None
+  while i < len(condition):
+    cond_expr = condition[i]
+    true_dict = condition[i + 1]
+    if type(true_dict) is not dict:
+      raise GypError('{} {} must be followed by a dictionary, not {}'.format(
+        conditions_key, cond_expr, type(true_dict)))
+    if len(condition) > i + 2 and type(condition[i + 2]) is dict:
+      false_dict = condition[i + 2]
+      i = i + 3
+      if i != len(condition):
+        raise GypError('{} {} has {} unexpected trailing items'.format(
+          conditions_key, cond_expr, len(condition) - i))
+    else:
+      false_dict = None
+      i = i + 2
+    if result == None:
+      result = EvalSingleCondition(
+          cond_expr, true_dict, false_dict, phase, variables, build_file)
 
+  return result
+
+
+def EvalSingleCondition(
+    cond_expr, true_dict, false_dict, phase, variables, build_file):
+  """Returns true_dict if cond_expr evaluates to true, and false_dict
+  otherwise."""
   # Do expansions on the condition itself.  Since the conditon can naturally
   # contain variable references without needing to resort to GYP expansion
   # syntax, this is of dubious value for variables, but someone might want to
