@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <v8.h>
 
@@ -48,13 +49,11 @@ class DOMDataStore {
 public:
     DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
         : m_isMainWorld(isMainWorld)
-        , m_wrapperMap(isolate) { }
-    ~DOMDataStore()
-    {
-        // We never actually destruct the main world's DOMDataStore.
-        ASSERT(!m_isMainWorld);
-        m_wrapperMap.clear();
-    }
+        // We never use |m_wrapperMap| when it's the main world.
+        , m_wrapperMap(adoptPtr(
+            isMainWorld
+            ? nullptr
+            : new DOMWrapperMap<ScriptWrappable>(isolate))) { }
 
     static DOMDataStore& current(v8::Isolate* isolate)
     {
@@ -150,7 +149,7 @@ public:
     {
         if (m_isMainWorld)
             return object->newLocalWrapper(isolate);
-        return m_wrapperMap.newLocal(object, isolate);
+        return m_wrapperMap->newLocal(object, isolate);
     }
 
     void setReference(const v8::Persistent<v8::Object>& parent, ScriptWrappable* child, v8::Isolate* isolate)
@@ -159,21 +158,21 @@ public:
             child->setReference(parent, isolate);
             return;
         }
-        m_wrapperMap.setReference(parent, child, isolate);
+        m_wrapperMap->setReference(parent, child, isolate);
     }
 
     bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue, ScriptWrappable* object)
     {
         if (m_isMainWorld)
             return object->setReturnValue(returnValue);
-        return m_wrapperMap.setReturnValueFrom(returnValue, object);
+        return m_wrapperMap->setReturnValueFrom(returnValue, object);
     }
 
     bool containsWrapper(ScriptWrappable* object)
     {
         if (m_isMainWorld)
             return object->containsWrapper();
-        return m_wrapperMap.containsKey(object);
+        return m_wrapperMap->containsKey(object);
     }
 
 private:
@@ -185,7 +184,7 @@ private:
             object->setWrapper(wrapper, isolate, wrapperTypeInfo);
             return;
         }
-        m_wrapperMap.set(object, wrapper, wrapperTypeInfo);
+        m_wrapperMap->set(object, wrapper, wrapperTypeInfo);
     }
 
     // We can use a wrapper stored in a ScriptWrappable when we're in the main world.
@@ -213,7 +212,7 @@ private:
     }
 
     bool m_isMainWorld;
-    DOMWrapperMap<ScriptWrappable> m_wrapperMap;
+    OwnPtr<DOMWrapperMap<ScriptWrappable> > m_wrapperMap;
 };
 
 template<>
