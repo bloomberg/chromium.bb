@@ -73,6 +73,7 @@ var ProfileInfo;
  *   devicePath: (string|undefined),
  *   isParentDevice: (boolean|undefined),
  *   isReadOnly: boolean,
+ *   hasMedia: boolean,
  *   mountCondition: (string|undefined)
  * }}
  */
@@ -570,5 +571,3 @@ chrome.fileManagerPrivate.onDeviceChanged;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onDriveSyncError;
-
-

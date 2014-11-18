@@ -12,8 +12,7 @@ function DeviceHandler() {
 
   /**
    * Map of device path and mount status of devices.
-   * @type {Object.<string, DeviceHandler.MountStatus>}
-   * @private
+   * @private {Object.<string, DeviceHandler.MountStatus>}
    */
   this.mountStatus_ = {};
 
@@ -23,6 +22,20 @@ function DeviceHandler() {
       this.onMountCompleted_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
       this.onNotificationButtonClicked_.bind(this));
+
+  /**
+   * Controls the popup of a new media import notification when media volumes
+   * are mounted.
+   * @private {boolean}
+   */
+  this.mediaImportEnabled_ = false;
+  // Use the command line switch to enable this new feature.
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-cloud-backup',
+      /** @param {boolean} enabled */
+      function(enabled) {
+        this.mediaImportEnabled_ = enabled;
+      }.bind(this));
 }
 
 DeviceHandler.prototype = {
@@ -89,6 +102,16 @@ DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
     'REMOVABLE_DEVICE_DETECTION_TITLE',
     'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
     'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.DEVICE_IMPORT = new DeviceHandler.Notification(
+    'deviceImport',
+    'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'REMOVABLE_DEVICE_IMPORT_MESSAGE',
+    'REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL');
 
 /**
  * @type {DeviceHandler.Notification}
@@ -265,7 +288,7 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       DeviceHandler.Notification.FORMAT_FAIL.show(event.devicePath);
       break;
     default:
-      console.error('Unknown event tyep: ' + event.type);
+      console.error('Unknown event type: ' + event.type);
       break;
   }
 };
@@ -306,7 +329,13 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
   // If the current volume status is succeed and it should be handled in
   // Files.app, show the notification to navigate the volume.
   if (event.eventType === 'mount' && event.status === 'success') {
-    DeviceHandler.Notification.DEVICE_NAVIGATION.show(volume.devicePath);
+    if (this.mediaImportEnabled_ && volume.hasMedia) {
+      DeviceHandler.Notification.DEVICE_IMPORT.show(
+          volume.devicePath);
+    } else {
+      DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+          volume.devicePath);
+    }
   } else if (event.eventType === 'unmount') {
     DeviceHandler.Notification.DEVICE_NAVIGATION.hide(volume.devicePath);
   }
@@ -404,6 +433,12 @@ DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
     chrome.notifications.clear(id, function() {});
     var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
     event.devicePath = devicePath;
+    this.dispatchEvent(event);
+  } else if (type === 'deviceImport') {
+    chrome.notifications.clear(id, function() {});
+    var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
+    event.devicePath = devicePath;
+    event.filePath = 'DCIM';
     this.dispatchEvent(event);
   }
 };

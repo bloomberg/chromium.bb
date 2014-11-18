@@ -83,7 +83,7 @@ function FileBrowserBackground() {
   this.deviceHandler_.addEventListener(
       DeviceHandler.VOLUME_NAVIGATION_REQUESTED,
       function(event) {
-        this.navigateToVolume_(event.devicePath);
+        this.navigateToVolume_(event.devicePath, event.filePath);
       }.bind(this));
 
   /**
@@ -219,25 +219,62 @@ FileBrowserBackground.prototype.canClose = function() {
 /**
  * Opens the root directory of the volume in Files.app.
  * @param {string} devicePath Device path to a volume to be opened.
+ * @param {string=} opt_directoryPath Optional directory path to be opened.
  * @private
  */
-FileBrowserBackground.prototype.navigateToVolume_ = function(devicePath) {
-  VolumeManager.getInstance().then(function(volumeManager) {
-    var volumeInfoList = volumeManager.volumeInfoList;
-    for (var i = 0; i < volumeInfoList.length; i++) {
-      if (volumeInfoList.item(i).devicePath == devicePath)
-        return volumeInfoList.item(i).resolveDisplayRoot();
+FileBrowserBackground.prototype.navigateToVolume_ =
+    function(devicePath, opt_directoryPath) {
+  /**
+   * Retrieves the root file entry of the volume on the requested device.
+   * @param {!VolumeManager} volumeManager
+   * @return {!Promise<!DirectoryEntry>}
+   */
+  var getDeviceRoot = function(volumeManager) {
+    var volume = volumeManager.volumeInfoList.findByDevicePath(devicePath);
+    if (volume) {
+      // TODO(kenobi): Remove this cast once typing is fixed on
+      //     VolumeInfo#resolveDisplayRoot.
+      return /** @type {!Promise<!DirectoryEntry>} */ (
+          volume.resolveDisplayRoot());
+    } else {
+      return Promise.reject('Volume having the device path: ' +
+          devicePath + ' is not found.');
     }
-    return Promise.reject(
-        'Volume having the device path: ' + devicePath + ' is not found.');
-  }).then(function(entry) {
-    launchFileManager(
-        {currentDirectoryURL: entry.toURL()},
-        /* App ID */ undefined,
-        LaunchType.FOCUS_SAME_OR_CREATE);
-  }).catch(function(error) {
-    console.error(error.stack || error);
-  });
+  };
+
+  /**
+   * If a path was specified, retrieve that directory entry; otherwise just
+   * return the unmodified root entry.
+   * @param {!DirectoryEntry} entry
+   * @return {!Promise<!DirectoryEntry>}
+   */
+  var maybeNavigateToPath = function(entry) {
+    if (opt_directoryPath) {
+      return new Promise(
+          entry.getDirectory.bind(entry, opt_directoryPath, {create:false}));
+    } else {
+      return Promise.resolve(entry);
+    }
+  };
+
+  /** @suppress {checkTypes} */
+  (function() {
+    VolumeManager.getInstance()
+        .then(getDeviceRoot)
+        .then(maybeNavigateToPath)
+        .then(
+            /** @param {!DirectoryEntry} entry */
+            function(entry) {
+              launchFileManager(
+                  {currentDirectoryURL: entry.toURL()},
+                  /* App ID */ undefined,
+                  LaunchType.FOCUS_SAME_OR_CREATE);
+            }.bind(this))
+                .catch(
+                    function(error) {
+                      console.error(error.stack || error);
+                    });
+  })();
 };
 
 /**

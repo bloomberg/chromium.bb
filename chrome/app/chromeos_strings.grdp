@@ -3855,8 +3855,14 @@ Battery full
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to Files.app. If user clicks a button in the notification, Files.app opens.">
     Explore the device's content in the Files app.
   </message>
-  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to FIles.app. If user clicks the button, Files.app opens.">
+  <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to Files.app. If user clicks the button, Files.app opens.">
     Open Files app
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_IMPORT_MESSAGE" desc="Text of notification message to start the media import flow. If user clicks a button in the notification, the import flow begins.">
+    Back up media from the device using the Files app.
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL" desc="Text of a button label in a notification to start the import flow. If user clicks the button, the import flow begins.">
+    View/Backup media
   </message>
   <message name="IDS_REMOVABLE_DEVICE_HARD_UNPLUG_TITLE" desc="Text of notification message which is shown when user removes removable device (SD card, USB key...) without clicking the eject icon">
     You removed your device too soon!

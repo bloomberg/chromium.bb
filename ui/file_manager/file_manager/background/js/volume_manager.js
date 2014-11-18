@@ -423,6 +423,22 @@ VolumeInfoList.prototype.findByEntry = function(entry) {
 };
 
 /**
+ * Searches the information of the volume that exists on the given device path.
+ * @param {string} devicePath Path of the device to search.
+ * @return {VolumeInfo} The volume's information, or null if not found.
+ */
+VolumeInfoList.prototype.findByDevicePath = function(devicePath) {
+  for (var i = 0; i < this.length; i++) {
+    var volumeInfo = this.item(i);
+    if (volumeInfo.devicePath &&
+        volumeInfo.devicePath == devicePath) {
+      return volumeInfo;
+    }
+  }
+  return null;
+};
+
+/**
  * @param {number} index The index of the volume in the list.
  * @return {!VolumeInfo} The VolumeInfo instance.
  */

@@ -4,12 +4,6 @@
 'use strict';
 
 /**
- * Test target.
- * @type {DeviceHandler}
- */
-var handler;
-
-/**
  * Dummy private APIs.
  */
 var chrome;
@@ -27,6 +21,8 @@ function setUp() {
     REMOVABLE_DEVICE_DETECTION_TITLE: 'Device detected',
     REMOVABLE_DEVICE_NAVIGATION_MESSAGE: 'DEVICE_NAVIGATION',
     REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
+    REMOVABLE_DEVICE_IMPORT_MESSAGE: 'DEVICE_IMPORT',
+    REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
     DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
     DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
     DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
@@ -43,6 +39,14 @@ function setUp() {
 
   // Make dummy APIs.
   chrome = {
+    commandLinePrivate: {
+      hasSwitch: function(switchName, callback) {
+        if (switchName === 'enable-cloud-backup') {
+          callback(chrome.commandLinePrivate.cloudBackupEnabled);
+        }
+      },
+      cloudBackupEnabled: false
+    },
     fileManagerPrivate: {
       onDeviceChanged: {
         addListener: function(listener) {
@@ -78,12 +82,12 @@ function setUp() {
       }
     }
   };
-
-  // Make a device handler.
-  handler = new DeviceHandler();
 }
 
 function testGoodDevice() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -101,7 +105,61 @@ function testGoodDevice() {
       chrome.notifications.items['deviceNavigation:/device/path'].message);
 }
 
+function testMediaDeviceWithImportEnabled() {
+  // "Enable" cloud backup, then make a device handler.
+  chrome.commandLinePrivate.cloudBackupEnabled = true;
+  var handler = new DeviceHandler();
+
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: true,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label',
+      hasMedia: true
+    },
+    shouldNotify: true
+  });
+  assertEquals(1, Object.keys(chrome.notifications.items).length);
+  assertTrue('deviceImport:/device/path' in chrome.notifications.items,
+      'The import notification was not found in the notifications queue');
+  assertEquals(
+      'DEVICE_IMPORT',
+      chrome.notifications.items['deviceImport:/device/path'].message,
+      'The import notification did not have the right message');
+}
+
+function testMediaDeviceWithImportDisabled() {
+  // "Disable" cloud backup, then make a device handler.
+  chrome.commandLinePrivate.cloudBackupEnabled = false;
+  var handler = new DeviceHandler();
+
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      isParentDevice: true,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+      deviceLabel: 'label',
+      hasMedia: true
+    },
+    shouldNotify: true
+  });
+  assertEquals(1, Object.keys(chrome.notifications.items).length);
+  assertFalse('deviceImport:/device/path' in chrome.notifications.items,
+      'An unexpected import notification was found in the notifications queue');
+  assertEquals(
+      'DEVICE_NAVIGATION',
+      chrome.notifications.items['deviceNavigation:/device/path'].message);
+}
+
 function testGoodDeviceNotNavigated() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -117,6 +175,9 @@ function testGoodDeviceNotNavigated() {
 }
 
 function testGoodDeviceWithBadParent() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -168,6 +229,9 @@ function testGoodDeviceWithBadParent() {
 }
 
 function testUnsupportedDevice() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unsupported_filesystem',
@@ -186,6 +250,9 @@ function testUnsupportedDevice() {
 }
 
 function testUnsupportedWithUnknownParent() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -219,6 +286,9 @@ function testUnsupportedWithUnknownParent() {
 }
 
 function testMountPartialSuccess() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'success',
@@ -253,6 +323,9 @@ function testMountPartialSuccess() {
 }
 
 function testUnknown() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_unknown',
@@ -271,6 +344,9 @@ function testUnknown() {
 }
 
 function testNonASCIILabel() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
     status: 'error_internal',
@@ -290,6 +366,9 @@ function testNonASCIILabel() {
 }
 
 function testMulitpleFail() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   // The first parent error.
   chrome.fileManagerPrivate.onMountCompleted.dispatch({
     eventType: 'mount',
@@ -361,6 +440,9 @@ function testMulitpleFail() {
 }
 
 function testDisabledDevice() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'disabled',
     devicePath: '/device/path'
@@ -377,6 +459,9 @@ function testDisabledDevice() {
 }
 
 function testFormatSucceeded() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
@@ -396,6 +481,9 @@ function testFormatSucceeded() {
 }
 
 function testFormatFailed() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'format_start',
     devicePath: '/device/path'
@@ -414,6 +502,9 @@ function testFormatFailed() {
 }
 
 function testDeviceHardUnplugged() {
+  // Make a device handler.
+  var handler = new DeviceHandler();
+
   chrome.fileManagerPrivate.onDeviceChanged.dispatch({
     type: 'hard_unplugged',
     devicePath: '/device/path'
