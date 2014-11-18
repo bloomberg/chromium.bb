@@ -73,6 +73,11 @@
           {
             "type": "integer",
             "name": "instanceId"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true
           }
         ]
       },
@@ -88,6 +93,11 @@
           {
             "$ref": "AutoSizeParams",
             "name": "params"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true
           }
         ]
       }
