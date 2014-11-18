@@ -690,6 +690,7 @@ config("default_warnings") {
       # Warnings to evaluate and possibly fix/reenable later:
 
       "/wd4100",  # Unreferenced formal function parameter.
+      "/wd4121",  # Alignment of a member was sensitive to packing.
       "/wd4189",  # A variable was declared and initialized but never used.
       "/wd4244",  # Conversion: possible loss of data.
       "/wd4481",  # Nonstandard extension: override specifier.

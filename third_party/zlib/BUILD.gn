@@ -12,11 +12,10 @@ static_library("zlib_x86_simd") {
     cflags = [ "-msse2", "-msse4.2", "-mpclmul" ]
   } else {
     sources = [ "simd_stub.c"]
-    if (is_win) {
-      # TODO(GYP): crbug.com/431462 disable warning about structure padding.
-      cflags = [ "/wd4324" ]
-    }
   }
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
 static_library("zlib") {

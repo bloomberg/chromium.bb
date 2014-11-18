@@ -114,6 +114,11 @@ test("rlz_unittests") {
     "//testing/gtest",
     "//third_party/zlib",
   ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
 }
 
 executable("rlz_id") {

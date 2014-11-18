@@ -363,6 +363,7 @@ group("root") {
       "//sync",
       "//third_party/WebKit/public:all_blink",
       "//third_party/angle:translator",
+      "//third_party/ffmpeg",
       "//third_party/leveldatabase",
       "//third_party/libjingle",
       "//third_party/usrsctp",
