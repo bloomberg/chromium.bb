@@ -230,6 +230,7 @@ public class BrowserAccessibilityManager {
                 return jumpToElementType(elementType, false);
             }
             case ACTION_SET_TEXT: {
+                if (!nativeIsEditableText(mNativeObj, virtualViewId)) return false;
                 if (arguments == null) return false;
                 String newText = arguments.getString(
                         ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE);
@@ -237,9 +238,10 @@ public class BrowserAccessibilityManager {
                 nativeSetTextFieldValue(mNativeObj, virtualViewId, newText);
                 // Match Android framework and set the cursor to the end of the text field.
                 nativeSetSelection(mNativeObj, virtualViewId, newText.length(), newText.length());
-                break;
+                return true;
             }
             case AccessibilityNodeInfo.ACTION_SET_SELECTION: {
+                if (!nativeIsEditableText(mNativeObj, virtualViewId)) return false;
                 int selectionStart = 0;
                 int selectionEnd = 0;
                 if (arguments != null) {
@@ -249,7 +251,7 @@ public class BrowserAccessibilityManager {
                             AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT);
                 }
                 nativeSetSelection(mNativeObj, virtualViewId, selectionStart, selectionEnd);
-                break;
+                return true;
             }
             case AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY: {
                 if (arguments == null) return false;
