@@ -107,7 +107,7 @@ void InlineBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* mar
 
 void InlineBox::showBox(int printedCharacters) const
 {
-    printedCharacters += fprintf(stderr, "%s\t%p", boxName(), this);
+    printedCharacters += fprintf(stderr, "%s %p", boxName(), this);
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
     fprintf(stderr, "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i\n",
