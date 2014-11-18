@@ -4,6 +4,7 @@ Tests the Timeline API instrumentation of an HTML script tag.
 
 ParseHTML
 ParseHTML
+ParseHTML
 ----> EvaluateScript
 --------> Timestamp: SCRIPT TAG
 EvaluateScript Properties:

@@ -45,6 +45,12 @@ private:
     };
 
 public:
+    enum SimulatedToken {
+        ScriptStart,
+        ScriptEnd,
+        OtherToken
+    };
+
     typedef Vector<Namespace, 1> State;
 
     explicit HTMLTreeBuilderSimulator(const HTMLParserOptions&);
@@ -54,7 +60,7 @@ public:
     const State& state() const { return m_namespaceStack; }
     void setState(const State& state) { m_namespaceStack = state; }
 
-    bool simulate(const CompactHTMLToken&, HTMLTokenizer*);
+    SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
 
 private:
     explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);

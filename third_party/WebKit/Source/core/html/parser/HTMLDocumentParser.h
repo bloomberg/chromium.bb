@@ -96,6 +96,7 @@ public:
         HTMLTreeBuilderSimulator::State treeBuilderState;
         HTMLInputCheckpoint inputCheckpoint;
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
+        bool startingScript;
     };
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);

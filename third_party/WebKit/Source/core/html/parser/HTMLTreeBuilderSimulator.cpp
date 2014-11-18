@@ -129,8 +129,10 @@ HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(HTMLTreeBuild
     return namespaceStack;
 }
 
-bool HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLTokenizer* tokenizer)
+HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLTokenizer* tokenizer)
 {
+    SimulatedToken simulatedToken = OtherToken;
+
     if (token.type() == HTMLToken::StartTag) {
         const String& tagName = token.data();
         if (threadSafeMatch(tagName, SVGNames::svgTag))
@@ -144,19 +146,21 @@ bool HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLToken
             m_namespaceStack.append(HTML);
         if (!inForeignContent()) {
             // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
-            if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag))
+            if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag)) {
                 tokenizer->setState(HTMLTokenizer::RCDATAState);
-            else if (threadSafeMatch(tagName, plaintextTag))
+            } else if (threadSafeMatch(tagName, plaintextTag)) {
                 tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
-            else if (threadSafeMatch(tagName, scriptTag))
+            } else if (threadSafeMatch(tagName, scriptTag)) {
                 tokenizer->setState(HTMLTokenizer::ScriptDataState);
-            else if (threadSafeMatch(tagName, styleTag)
+                simulatedToken = ScriptStart;
+            } else if (threadSafeMatch(tagName, styleTag)
                 || threadSafeMatch(tagName, iframeTag)
                 || threadSafeMatch(tagName, xmpTag)
                 || (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled)
                 || threadSafeMatch(tagName, noframesTag)
-                || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
+                || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled)) {
                 tokenizer->setState(HTMLTokenizer::RAWTEXTState);
+            }
         }
     }
 
@@ -170,14 +174,14 @@ bool HTMLTreeBuilderSimulator::simulate(const CompactHTMLToken& token, HTMLToken
         if (threadSafeMatch(tagName, scriptTag)) {
             if (!inForeignContent())
                 tokenizer->setState(HTMLTokenizer::DataState);
-            return false;
+            return ScriptEnd;
         }
     }
 
     // FIXME: Also setForceNullCharacterReplacement when in text mode.
     tokenizer->setForceNullCharacterReplacement(inForeignContent());
     tokenizer->setShouldAllowCDATA(inForeignContent());
-    return true;
+    return simulatedToken;
 }
 
 }

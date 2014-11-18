@@ -105,6 +105,8 @@ private:
     OwnPtr<TokenPreloadScanner> m_preloadScanner;
     OwnPtr<TextResourceDecoder> m_decoder;
     DocumentEncodingData m_lastSeenEncodingData;
+
+    bool m_startingScript;
 };
 
 }
