@@ -11,6 +11,6 @@ run:
 	dev_appserver.py app.yaml
 
 push:
-	appcfg.py update .
+	appcfg.py update --no_cookies .
 
 .PHONY: all run push
