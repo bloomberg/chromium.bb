@@ -476,8 +476,12 @@ NO_SANITIZE_ADDRESS
 bool HeapObjectHeader::isMarked() const
 {
     checkHeader();
+#if ENABLE_PARALLEL_MARKING
     unsigned size = asanUnsafeAcquireLoad(&m_size);
     return size & markBitMask;
+#else
+    return m_size & markBitMask;
+#endif
 }
 
 NO_SANITIZE_ADDRESS

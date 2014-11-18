@@ -1346,6 +1346,7 @@ NO_SANITIZE_ADDRESS
 void HeapObjectHeader::mark()
 {
     checkHeader();
+#if ENABLE_PARALLEL_MARKING
     // The use of atomic ops guarantees that the reads and writes are
     // atomic and that no memory operation reorderings take place.
     // Multiple threads can still read the old value and all store the
@@ -1353,6 +1354,9 @@ void HeapObjectHeader::mark()
     // the threads and the end result is therefore consistent.
     unsigned size = asanUnsafeAcquireLoad(&m_size);
     asanUnsafeReleaseStore(&m_size, size | markBitMask);
+#else
+    m_size = m_size | markBitMask;
+#endif
 }
 
 Address FinalizedHeapObjectHeader::payload()
