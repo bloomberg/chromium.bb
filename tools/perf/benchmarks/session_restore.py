@@ -57,7 +57,7 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled('android', 'linux', 'reference', 'snowleopard')
+@benchmark.Disabled
 class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
@@ -68,7 +68,7 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
-@benchmark.Disabled('android', 'linux', 'reference', 'snowleopard')
+@benchmark.Disabled
 class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
