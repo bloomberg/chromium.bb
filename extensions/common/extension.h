@@ -102,7 +102,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_REMOTE_INSTALL = 1 << 11,
     DISABLE_INACTIVE_EPHEMERAL_APP = 1 << 12,  // Cached ephemeral apps are
                                                // disabled to prevent activity.
-    DISABLE_REASON_LAST = 1 << 13,  // This should always be the last value
+    DISABLE_EXTERNAL_EXTENSION = 1 << 13,  // External extensions might be
+                                           // disabled for user prompting.
+    DISABLE_REASON_LAST = 1 << 14,  // This should always be the last value
   };
 
   // A base class for parsed manifest data that APIs want to store on

@@ -262,6 +262,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                         Extension::DisableReason disable_reason) const;
   void AddDisableReason(const std::string& extension_id,
                         Extension::DisableReason disable_reason);
+  void AddDisableReasons(const std::string& extension_id, int disable_reasons);
   void RemoveDisableReason(const std::string& extension_id,
                            Extension::DisableReason disable_reason);
   void ClearDisableReasons(const std::string& extension_id);
@@ -601,9 +602,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // existing reason, or clear all reasons. Notifies observers if the set of
   // DisableReasons has changed.
   // If |change| is DISABLE_REASON_CLEAR, then |reason| is ignored.
-  void ModifyDisableReason(const std::string& extension_id,
-                           Extension::DisableReason reason,
-                           DisableReasonChange change);
+  void ModifyDisableReasons(const std::string& extension_id,
+                            int reasons,
+                            DisableReasonChange change);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

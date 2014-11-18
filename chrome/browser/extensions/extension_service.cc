@@ -1567,7 +1567,7 @@ void ExtensionService::OnExtensionInstalled(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& id = extension->id();
-  bool initial_enable = ShouldEnableOnInstall(extension);
+  int disable_reasons = GetDisableReasonsOnInstalled(extension);
   std::string install_parameter;
   const extensions::PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
@@ -1600,21 +1600,19 @@ void ExtensionService::OnExtensionInstalled(
     // extension; if we're here, that means the user is manually
     // installing the extension.
     if (extension_prefs_->IsExternalExtensionUninstalled(id)) {
-      initial_enable = true;
+      disable_reasons = Extension::DISABLE_NONE;
     }
   }
 
   // Unsupported requirements overrides the management policy.
   if (install_flags & extensions::kInstallFlagHasRequirementErrors) {
-    initial_enable = false;
-    extension_prefs_->AddDisableReason(
-        id, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
+    disable_reasons |= Extension::DISABLE_UNSUPPORTED_REQUIREMENT;
   // If the extension was disabled because of unsupported requirements but
   // now supports all requirements after an update and there are not other
   // disable reasons, enable it.
   } else if (extension_prefs_->GetDisableReasons(id) ==
-      Extension::DISABLE_UNSUPPORTED_REQUIREMENT) {
-    initial_enable = true;
+             Extension::DISABLE_UNSUPPORTED_REQUIREMENT) {
+    disable_reasons = Extension::DISABLE_NONE;
     extension_prefs_->ClearDisableReasons(id);
   }
 
@@ -1650,8 +1648,13 @@ void ExtensionService::OnExtensionInstalled(
     }
   }
 
+  if (disable_reasons)
+    extension_prefs_->AddDisableReasons(id, disable_reasons);
+
   const Extension::State initial_state =
-      initial_enable ? Extension::ENABLED : Extension::DISABLED;
+      disable_reasons == Extension::DISABLE_NONE ? Extension::ENABLED
+                                                 : Extension::DISABLED;
+
   if (ShouldDelayExtensionUpdate(
           id,
           !!(install_flags & extensions::kInstallFlagInstallImmediately))) {
@@ -2148,14 +2151,32 @@ void ExtensionService::Observe(int type,
   }
 }
 
-bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
+int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
+  Extension::DisableReason disable_reason;
+  // Extensions disabled by management policy should always be disabled, even
+  // if it's force-installed.
+  if (system_->management_policy()->MustRemainDisabled(
+          extension, &disable_reason, nullptr)) {
+    // A specified reason is required to disable the extension.
+    DCHECK(disable_reason != Extension::DISABLE_NONE);
+    return disable_reason;
+  }
+
   // Extensions installed by policy can't be disabled. So even if a previous
   // installation disabled the extension, make sure it is now enabled.
-  if (system_->management_policy()->MustRemainEnabled(extension, NULL))
-    return true;
+  if (system_->management_policy()->MustRemainEnabled(extension, nullptr))
+    return Extension::DISABLE_NONE;
 
-  if (extension_prefs_->IsExtensionDisabled(extension->id()))
-    return false;
+  // An already disabled extension should inherit the disable reasons and
+  // remain disabled.
+  if (extension_prefs_->IsExtensionDisabled(extension->id())) {
+    int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
+    // If an extension was disabled without specified reason, presume it's
+    // disabled by user.
+    return disable_reasons == Extension::DISABLE_NONE
+               ? Extension::DISABLE_USER_ACTION
+               : disable_reasons;
+  }
 
   if (FeatureSwitch::prompt_for_external_extensions()->IsEnabled()) {
     // External extensions are initially disabled. We prompt the user before
@@ -2164,11 +2185,11 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
     if (extension->GetType() != Manifest::TYPE_HOSTED_APP &&
         Manifest::IsExternalLocation(extension->location()) &&
         !extension_prefs_->IsExternalExtensionAcknowledged(extension->id())) {
-      return false;
+      return Extension::DISABLE_EXTERNAL_EXTENSION;
     }
   }
 
-  return true;
+  return Extension::DISABLE_NONE;
 }
 
 bool ExtensionService::ShouldDelayExtensionUpdate(

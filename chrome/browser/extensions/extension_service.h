@@ -541,9 +541,10 @@ class ExtensionService
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
 
-  // Helper to determine whether we should initially enable an installed
-  // (or upgraded) extension.
-  bool ShouldEnableOnInstall(const extensions::Extension* extension);
+  // Helper to get the disable reasons for an installed (or upgraded) extension.
+  // A return value of Extension::DISABLE_NONE indicates that we should enable
+  // this extension initially.
+  int GetDisableReasonsOnInstalled(const extensions::Extension* extension);
 
   // Helper to determine if updating an extensions should proceed immediately,
   // or if we should delay the update until further notice.
@@ -729,6 +730,8 @@ class ExtensionService
                            GreylistDontEnableManuallyDisabled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            GreylistUnknownDontChange);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           ManagementPolicyProhibitsEnableOnInstalled);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };

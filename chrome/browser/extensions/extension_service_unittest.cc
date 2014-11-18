@@ -85,6 +85,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -3845,7 +3846,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyRequiresEnable) {
   service()->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
   EXPECT_EQ(1u, registry()->disabled_extensions().size());
 
-  // Register an ExtensionMnagementPolicy that requires the extension to remain
+  // Register an ExtensionManagementPolicy that requires the extension to remain
   // enabled.
   GetManagementPolicy()->UnregisterAllProviders();
   extensions::TestManagementPolicyProvider provider(
@@ -3856,6 +3857,31 @@ TEST_F(ExtensionServiceTest, ManagementPolicyRequiresEnable) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_UPDATED);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
+}
+
+// Tests that extensions disabled by management policy can be installed but
+// will get disabled after installing.
+TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsEnableOnInstalled) {
+  InitializeEmptyExtensionService();
+
+  // Register an ExtensionManagementPolicy that disables all extensions, with
+  // a specified Extension::DisableReason.
+  GetManagementPolicy()->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::MUST_REMAIN_DISABLED);
+  provider.SetDisableReason(Extension::DISABLE_NOT_VERIFIED);
+  GetManagementPolicy()->RegisterProvider(&provider);
+
+  // Attempts to install an extensions, it should be installed but disabled.
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+  EXPECT_EQ(0u, registry()->disabled_extensions().size());
+  InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_WITHOUT_LOAD);
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+  EXPECT_EQ(1u, registry()->disabled_extensions().size());
+
+  // Verifies that the disable reason is set properly.
+  EXPECT_EQ(Extension::DISABLE_NOT_VERIFIED,
+            service()->extension_prefs_->GetDisableReasons(kGoodId));
 }
 
 // Tests that extensions with conflicting required permissions by enterprise

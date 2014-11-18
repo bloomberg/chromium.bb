@@ -746,31 +746,36 @@ bool ExtensionPrefs::HasDisableReason(
 
 void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
                                       Extension::DisableReason disable_reason) {
-  ModifyDisableReason(extension_id, disable_reason, DISABLE_REASON_ADD);
+  ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_ADD);
+}
+
+void ExtensionPrefs::AddDisableReasons(const std::string& extension_id,
+                                       int disable_reasons) {
+  ModifyDisableReasons(extension_id, disable_reasons, DISABLE_REASON_ADD);
 }
 
 void ExtensionPrefs::RemoveDisableReason(
     const std::string& extension_id,
     Extension::DisableReason disable_reason) {
-  ModifyDisableReason(extension_id, disable_reason, DISABLE_REASON_REMOVE);
+  ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_REMOVE);
 }
 
 void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
-  ModifyDisableReason(
-      extension_id, Extension::DISABLE_NONE, DISABLE_REASON_CLEAR);
+  ModifyDisableReasons(extension_id, Extension::DISABLE_NONE,
+                       DISABLE_REASON_CLEAR);
 }
 
-void ExtensionPrefs::ModifyDisableReason(const std::string& extension_id,
-                                         Extension::DisableReason reason,
-                                         DisableReasonChange change) {
+void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
+                                          int reasons,
+                                          DisableReasonChange change) {
   int old_value = GetDisableReasons(extension_id);
   int new_value = old_value;
   switch (change) {
     case DISABLE_REASON_ADD:
-      new_value |= static_cast<int>(reason);
+      new_value |= reasons;
       break;
     case DISABLE_REASON_REMOVE:
-      new_value &= ~static_cast<int>(reason);
+      new_value &= ~reasons;
       break;
     case DISABLE_REASON_CLEAR:
       new_value = Extension::DISABLE_NONE;
