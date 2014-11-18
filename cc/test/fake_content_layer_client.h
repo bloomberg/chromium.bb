@@ -31,6 +31,7 @@ class FakeContentLayerClient : public ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& rect,
       ContentLayerClient::GraphicsContextStatus gc_status) override;
+  void DidChangeLayerCanUseLCDText() override {}
   bool FillsBoundsCompletely() const override;
 
   void set_fill_with_nonsolid_color(bool nonsolid) {

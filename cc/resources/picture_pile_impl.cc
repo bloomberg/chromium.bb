@@ -29,7 +29,6 @@ PicturePileImpl::PicturePileImpl()
     : background_color_(SK_ColorTRANSPARENT),
       contents_opaque_(false),
       contents_fill_bounds_completely_(false),
-      can_use_lcd_text_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
       has_any_recordings_(false),
@@ -46,7 +45,6 @@ PicturePileImpl::PicturePileImpl(const PicturePile* other)
       background_color_(other->background_color_),
       contents_opaque_(other->contents_opaque_),
       contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
-      can_use_lcd_text_(other->can_use_lcd_text_),
       is_solid_color_(other->is_solid_color_),
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
@@ -427,10 +425,6 @@ void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
 
 bool PicturePileImpl::IsMask() const {
   return is_mask_;
-}
-
-bool PicturePileImpl::CanUseLCDText() const {
-  return can_use_lcd_text_;
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(

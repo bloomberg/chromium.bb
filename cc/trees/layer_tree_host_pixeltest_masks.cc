@@ -24,6 +24,8 @@ class MaskContentLayerClient : public ContentLayerClient {
   explicit MaskContentLayerClient(const gfx::Size& bounds) : bounds_(bounds) {}
   ~MaskContentLayerClient() override {}
 
+  void DidChangeLayerCanUseLCDText() override {}
+
   bool FillsBoundsCompletely() const override { return false; }
 
   void PaintContents(

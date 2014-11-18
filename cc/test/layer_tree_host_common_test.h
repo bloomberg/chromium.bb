@@ -68,29 +68,30 @@ class LayerTreeHostCommonTestBase {
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       Layer* page_scale_application_layer,
-                                      bool can_use_lcd_text,
-                                      bool layers_always_allowed_lcd_text);
+                                      bool can_use_lcd_text);
 
   void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       LayerImpl* page_scale_application_layer,
-                                      bool can_use_lcd_text,
-                                      bool layers_always_allowed_lcd_text);
+                                      bool can_use_lcd_text);
 
   template <class LayerType>
   void ExecuteCalculateDrawProperties(LayerType* root_layer) {
     LayerType* page_scale_application_layer = NULL;
-    ExecuteCalculateDrawProperties(root_layer, 1.f, 1.f,
-                                   page_scale_application_layer, false, false);
+    ExecuteCalculateDrawProperties(
+        root_layer, 1.f, 1.f, page_scale_application_layer, false);
   }
 
   template <class LayerType>
   void ExecuteCalculateDrawProperties(LayerType* root_layer,
                                       float device_scale_factor) {
     LayerType* page_scale_application_layer = NULL;
-    ExecuteCalculateDrawProperties(root_layer, device_scale_factor, 1.f,
-                                   page_scale_application_layer, false, false);
+    ExecuteCalculateDrawProperties(root_layer,
+                                   device_scale_factor,
+                                   1.f,
+                                   page_scale_application_layer,
+                                   false);
   }
 
   template <class LayerType>
@@ -98,9 +99,11 @@ class LayerTreeHostCommonTestBase {
                                       float device_scale_factor,
                                       float page_scale_factor,
                                       LayerType* page_scale_application_layer) {
-    ExecuteCalculateDrawProperties(root_layer, device_scale_factor,
+    ExecuteCalculateDrawProperties(root_layer,
+                                   device_scale_factor,
                                    page_scale_factor,
-                                   page_scale_application_layer, false, false);
+                                   page_scale_application_layer,
+                                   false);
   }
 
   RenderSurfaceLayerList* render_surface_layer_list() const {

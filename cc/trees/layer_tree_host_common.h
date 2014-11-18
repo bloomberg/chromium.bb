@@ -40,7 +40,6 @@ class CC_EXPORT LayerTreeHostCommon {
                         const LayerType* page_scale_application_layer,
                         int max_texture_size,
                         bool can_use_lcd_text,
-                        bool layers_always_allowed_lcd_text,
                         bool can_render_to_separate_surface,
                         bool can_adjust_raster_scales,
                         RenderSurfaceLayerListType* render_surface_layer_list,
@@ -53,7 +52,6 @@ class CC_EXPORT LayerTreeHostCommon {
           page_scale_application_layer(page_scale_application_layer),
           max_texture_size(max_texture_size),
           can_use_lcd_text(can_use_lcd_text),
-          layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
           can_render_to_separate_surface(can_render_to_separate_surface),
           can_adjust_raster_scales(can_adjust_raster_scales),
           render_surface_layer_list(render_surface_layer_list),
@@ -68,7 +66,6 @@ class CC_EXPORT LayerTreeHostCommon {
     const LayerType* page_scale_application_layer;
     int max_texture_size;
     bool can_use_lcd_text;
-    bool layers_always_allowed_lcd_text;
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
     RenderSurfaceLayerListType* render_surface_layer_list;
@@ -225,7 +222,6 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           NULL,
           std::numeric_limits<int>::max() / 2,
           false,
-          false,
           true,
           false,
           render_surface_layer_list,
@@ -249,7 +245,6 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           1.f,
           NULL,
           std::numeric_limits<int>::max() / 2,
-          false,
           false,
           true,
           false,

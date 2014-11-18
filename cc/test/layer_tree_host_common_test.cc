@@ -59,8 +59,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     float device_scale_factor,
     float page_scale_factor,
     Layer* page_scale_application_layer,
-    bool can_use_lcd_text,
-    bool layers_always_allowed_lcd_text) {
+    bool can_use_lcd_text) {
   EXPECT_TRUE(page_scale_application_layer || (page_scale_factor == 1.f));
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =
@@ -78,7 +77,6 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = page_scale_application_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
-  inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
@@ -88,8 +86,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     float device_scale_factor,
     float page_scale_factor,
     LayerImpl* page_scale_application_layer,
-    bool can_use_lcd_text,
-    bool layers_always_allowed_lcd_text) {
+    bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -106,7 +103,6 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = page_scale_application_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
-  inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
 
   ++render_surface_layer_list_count_;

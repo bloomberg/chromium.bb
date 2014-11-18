@@ -1100,15 +1100,15 @@ ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
 }
 
 SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
-    bool use_distance_field_text,
-    bool can_use_lcd_text) {
+    bool use_distance_field_text) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
 
-  bool create_surface =
-      !resource_->sk_surface.get() ||
-      !SurfaceHasMatchingProperties(use_distance_field_text, can_use_lcd_text);
-  if (create_surface) {
+  // If the surface doesn't exist, or doesn't have the correct dff setting,
+  // recreate the surface within the resource.
+  if (!resource_->sk_surface ||
+      use_distance_field_text !=
+          resource_->sk_surface->props().isUseDistanceFieldFonts()) {
     class GrContext* gr_context = resource_provider_->GrContext();
     // TODO(alokp): Implement TestContextProvider::GrContext().
     if (!gr_context)
@@ -1127,32 +1127,13 @@ SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
         skia::AdoptRef(gr_context->wrapBackendTexture(desc));
     if (!gr_texture)
       return nullptr;
-    uint32_t flags = use_distance_field_text
-                         ? SkSurfaceProps::kUseDistanceFieldFonts_Flag
-                         : 0;
-    // Use unknown pixel geometry to disable LCD text.
-    SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
-    if (can_use_lcd_text) {
-      // LegacyFontHost will get LCD text and skia figures out what type to use.
-      surface_props =
-          SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-    }
+    SkSurface::TextRenderMode text_render_mode =
+        use_distance_field_text ? SkSurface::kDistanceField_TextRenderMode
+                                : SkSurface::kStandard_TextRenderMode;
     resource_->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-        gr_texture->asRenderTarget(), &surface_props));
+        gr_texture->asRenderTarget(), text_render_mode));
   }
   return resource_->sk_surface.get();
-}
-
-bool ResourceProvider::ScopedWriteLockGr::SurfaceHasMatchingProperties(
-    bool use_distance_field_text,
-    bool can_use_lcd_text) const {
-  const SkSurface* surface = resource_->sk_surface.get();
-  bool surface_uses_distance_field_text =
-      surface->props().isUseDistanceFieldFonts();
-  bool surface_can_use_lcd_text =
-      surface->props().pixelGeometry() != kUnknown_SkPixelGeometry;
-  return use_distance_field_text == surface_uses_distance_field_text &&
-         can_use_lcd_text == surface_can_use_lcd_text;
 }
 
 ResourceProvider::SynchronousFence::SynchronousFence(

@@ -93,17 +93,19 @@ class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
       RenderSurfaceLayerList update_list;
       LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
           layer_tree_host()->root_layer(),
-          layer_tree_host()->device_viewport_size(), gfx::Transform(),
+          layer_tree_host()->device_viewport_size(),
+          gfx::Transform(),
           layer_tree_host()->device_scale_factor(),
           layer_tree_host()->page_scale_factor(),
-          layer_tree_host()->page_scale_layer(), max_texture_size,
+          layer_tree_host()->page_scale_layer(),
+          max_texture_size,
           layer_tree_host()->settings().can_use_lcd_text,
-          layer_tree_host()->settings().layers_always_allowed_lcd_text,
           can_render_to_separate_surface,
           layer_tree_host()
               ->settings()
               .layer_transforms_should_scale_layer_contents,
-          &update_list, 0);
+          &update_list,
+          0);
       LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
       timer_.NextLap();
@@ -145,15 +147,18 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
                                 LayerTreeHostImpl* host_impl) {
     LayerImplList update_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        active_tree->root_layer(), active_tree->DrawViewportSize(),
-        host_impl->DrawTransform(), active_tree->device_scale_factor(),
+        active_tree->root_layer(),
+        active_tree->DrawViewportSize(),
+        host_impl->DrawTransform(),
+        active_tree->device_scale_factor(),
         active_tree->total_page_scale_factor(),
-        active_tree->InnerViewportContainerLayer(), max_texture_size,
+        active_tree->InnerViewportContainerLayer(),
+        max_texture_size,
         host_impl->settings().can_use_lcd_text,
-        host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        &update_list, 0);
+        &update_list,
+        0);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 };

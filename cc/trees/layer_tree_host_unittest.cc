@@ -1114,6 +1114,7 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
   }
+  void DidChangeLayerCanUseLCDText() override {}
   bool FillsBoundsCompletely() const override { return false; }
 
  private:
@@ -2307,41 +2308,46 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
     LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted);
 
-class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
+class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
  public:
-  class PaintClient : public FakeContentLayerClient {
+  class NotificationClient : public ContentLayerClient {
    public:
-    PaintClient() : paint_count_(0) {}
+    NotificationClient()
+        : layer_(0), paint_count_(0), lcd_notification_count_(0) {}
 
+    void set_layer(Layer* layer) { layer_ = layer; }
     int paint_count() const { return paint_count_; }
+    int lcd_notification_count() const { return lcd_notification_count_; }
 
     void PaintContents(
         SkCanvas* canvas,
         const gfx::Rect& clip,
         ContentLayerClient::GraphicsContextStatus gc_status) override {
-      FakeContentLayerClient::PaintContents(canvas, clip, gc_status);
       ++paint_count_;
     }
-
+    void DidChangeLayerCanUseLCDText() override {
+      ++lcd_notification_count_;
+      layer_->SetNeedsDisplay();
+    }
     bool FillsBoundsCompletely() const override { return false; }
 
    private:
+    Layer* layer_;
     int paint_count_;
+    int lcd_notification_count_;
   };
 
   void SetupTree() override {
-    num_tiles_rastered_ = 0;
-
     scoped_refptr<Layer> root_layer;
     if (layer_tree_host()->settings().impl_side_painting)
       root_layer = PictureLayer::Create(&client_);
     else
       root_layer = ContentLayer::Create(&client_);
-    client_.set_fill_with_nonsolid_color(true);
     root_layer->SetIsDrawable(true);
-    root_layer->SetBounds(gfx::Size(10, 10));
+    root_layer->SetBounds(gfx::Size(1, 1));
 
     layer_tree_host()->SetRootLayer(root_layer);
+    client_.set_layer(root_layer.get());
 
     // The expecations are based on the assumption that the default
     // LCD settings are:
@@ -2352,76 +2358,49 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void AfterTest() override {}
 
-  void DidCommitAndDrawFrame() override {
+  void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        // The first update consists of a paint of the whole layer.
+        // The first update consists of one LCD notification and one paint.
+        EXPECT_EQ(1, client_.lcd_notification_count());
         EXPECT_EQ(1, client_.paint_count());
         // LCD text must have been enabled on the layer.
         EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        // Since nothing changed on layer, there should be no paint.
+        // Since nothing changed on layer, there should be no notification
+        // or paint on the second update.
+        EXPECT_EQ(1, client_.lcd_notification_count());
         EXPECT_EQ(1, client_.paint_count());
         // LCD text must not have changed.
         EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
-        // Change layer opacity that should trigger lcd change.
+        // Change layer opacity that should trigger lcd notification.
         layer_tree_host()->root_layer()->SetOpacity(.5f);
+        // No need to request a commit - setting opacity will do it.
         break;
-      case 3:
-        // LCD text doesn't require re-recording, so no painting should occur.
-        EXPECT_EQ(1, client_.paint_count());
+      default:
+        // Verify that there is no extra commit due to layer invalidation.
+        EXPECT_EQ(3, layer_tree_host()->source_frame_number());
+        // LCD notification count should have incremented due to
+        // change in layer opacity.
+        EXPECT_EQ(2, client_.lcd_notification_count());
+        // Paint count should be incremented due to invalidation.
+        EXPECT_EQ(2, client_.paint_count());
         // LCD text must have been disabled on the layer due to opacity.
         EXPECT_FALSE(layer_tree_host()->root_layer()->can_use_lcd_text());
-        // Change layer opacity that should not trigger lcd change.
-        layer_tree_host()->root_layer()->SetOpacity(1.f);
-        break;
-      case 4:
-        // LCD text doesn't require re-recording, so no painting should occur.
-        EXPECT_EQ(1, client_.paint_count());
-        // Even though LCD text could be allowed.
-        EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
         EndTest();
         break;
     }
   }
 
-  void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
-                                      const Tile* tile) override {
-    ++num_tiles_rastered_;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        // The first draw.
-        EXPECT_EQ(1, num_tiles_rastered_);
-        break;
-      case 1:
-        // Nothing changed on the layer.
-        EXPECT_EQ(1, num_tiles_rastered_);
-        break;
-      case 2:
-        // LCD text was disabled, it should be re-rastered with LCD text off.
-        EXPECT_EQ(2, num_tiles_rastered_);
-        break;
-      case 3:
-        // LCD text was enabled but it's sticky and stays off.
-        EXPECT_EQ(2, num_tiles_rastered_);
-        break;
-    }
-  }
-
-  void AfterTest() override {}
-
  private:
-  PaintClient client_;
-  int num_tiles_rastered_;
+  NotificationClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestLCDChange);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 
 // Verify that the BeginFrame notification is used to initiate rendering.
 class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
@@ -2591,6 +2570,8 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
         ContentLayerClient::GraphicsContextStatus gc_status) override {
       layer_->SetBounds(gfx::Size(2, 2));
     }
+
+    void DidChangeLayerCanUseLCDText() override {}
 
     bool FillsBoundsCompletely() const override { return false; }
 

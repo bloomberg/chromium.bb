@@ -36,7 +36,9 @@ scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client) {
 }
 
 ContentLayer::ContentLayer(ContentLayerClient* client)
-    : TiledLayer(), client_(client) {
+    : TiledLayer(),
+      client_(client),
+      can_use_lcd_text_last_frame_(can_use_lcd_text()) {
 }
 
 ContentLayer::~ContentLayer() {}
@@ -72,6 +74,7 @@ bool ContentLayer::Update(ResourceUpdateQueue* queue,
                                                   true);
 
     CreateUpdaterIfNeeded();
+    UpdateCanUseLCDText();
   }
 
   bool updated = TiledLayer::Update(queue, occlusion);
@@ -113,6 +116,15 @@ void ContentLayer::SetContentsOpaque(bool opaque) {
   Layer::SetContentsOpaque(opaque);
   if (updater_.get())
     updater_->SetOpaque(opaque);
+}
+
+void ContentLayer::UpdateCanUseLCDText() {
+  if (can_use_lcd_text_last_frame_ == can_use_lcd_text())
+    return;
+
+  can_use_lcd_text_last_frame_ = can_use_lcd_text();
+  if (client_)
+    client_->DidChangeLayerCanUseLCDText();
 }
 
 bool ContentLayer::SupportsLCDText() const {

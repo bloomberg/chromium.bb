@@ -16,6 +16,7 @@ class SolidColorContentLayerClient : public ContentLayerClient {
   explicit SolidColorContentLayerClient(SkColor color) : color_(color) {}
 
   // ContentLayerClient implementation.
+  void DidChangeLayerCanUseLCDText() override {}
   void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& rect,

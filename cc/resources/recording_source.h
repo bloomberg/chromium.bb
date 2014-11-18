@@ -31,7 +31,6 @@ class CC_EXPORT RecordingSource {
       SkColor background_color,
       bool contents_opaque,
       bool contents_fill_bounds_completely,
-      bool can_use_lcd_text,
       const gfx::Size& layer_size,
       const gfx::Rect& visible_layer_rect,
       int frame_number,

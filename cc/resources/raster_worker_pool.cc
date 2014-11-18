@@ -228,26 +228,28 @@ void RasterWorkerPool::PlaybackToMemory(void* memory,
   SkColorType buffer_color_type = ResourceFormatToSkColorType(format);
   bool needs_copy = buffer_color_type != info.colorType();
 
-  // Use unknown pixel geometry to disable LCD text.
-  SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
-  if (raster_source->CanUseLCDText()) {
-    // LegacyFontHost will get LCD text and skia figures out what type to use.
-    surface_props = SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType);
-  }
+  // TODO(danakj): Make a SkSurfaceProps with an SkPixelGeometry to enable or
+  // disable LCD text.
+  // TODO(danakj): Disable LCD text on Mac during layout tests:
+  // https://cs.chromium.org#chromium/src/third_party/WebKit/Source/platform/fonts/mac/FontPlatformDataMac.mm&l=55
+  // TODO(danakj): On Windows when LCD text is disabled, ask skia to draw LCD
+  // text offscreen and downsample it to AA text.
+  // https://cs.chromium.org#chromium/src/third_party/WebKit/Source/platform/fonts/win/FontPlatformDataWin.cpp&l=86
+  SkSurfaceProps* surface_props = nullptr;
 
   if (!stride)
     stride = info.minRowBytes();
 
   if (!needs_copy) {
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-        SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
+        SkSurface::NewRasterDirect(info, memory, stride, surface_props));
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
     raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
     return;
   }
 
   skia::RefPtr<SkSurface> surface =
-      skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
+      skia::AdoptRef(SkSurface::NewRaster(info, surface_props));
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
   raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
 

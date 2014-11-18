@@ -45,7 +45,7 @@ class PicturePileTestBase {
     frame_number_++;
     return pile_.UpdateAndExpandInvalidation(
         &client_, invalidation, background_color_, contents_opaque_, false,
-        false, layer_size, visible_layer_rect, frame_number_,
+        layer_size, visible_layer_rect, frame_number_,
         Picture::RECORD_NORMALLY);
   }
 

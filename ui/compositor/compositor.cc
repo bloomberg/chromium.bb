@@ -90,10 +90,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
-  // When impl-side painting is enabled, this will ensure PictureLayers always
-  // can have LCD text, to match the previous behaviour with ContentLayers,
-  // where LCD-not-allowed notifications were ignored.
-  settings.layers_always_allowed_lcd_text = true;
   settings.refresh_rate =
       context_factory_->DoesCreateTestContexts()
       ? kTestRefreshRate

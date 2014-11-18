@@ -490,14 +490,18 @@ bool LayerTreeImpl::UpdateDrawProperties() {
 
     ++render_surface_layer_list_id_;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        root_layer(), DrawViewportSize(),
-        layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
-        total_page_scale_factor(), page_scale_layer,
-        resource_provider()->max_texture_size(), settings().can_use_lcd_text,
-        settings().layers_always_allowed_lcd_text,
+        root_layer(),
+        DrawViewportSize(),
+        layer_tree_host_impl_->DrawTransform(),
+        device_scale_factor(),
+        total_page_scale_factor(),
+        page_scale_layer,
+        resource_provider()->max_texture_size(),
+        settings().can_use_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        &render_surface_layer_list_, render_surface_layer_list_id_);
+        &render_surface_layer_list_,
+        render_surface_layer_list_id_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

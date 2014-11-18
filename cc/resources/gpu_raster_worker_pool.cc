@@ -41,8 +41,7 @@ class RasterBufferImpl : public RasterBuffer {
     bool use_distance_field_text =
         use_distance_field_text_ ||
         raster_source->ShouldAttemptToUseDistanceFieldText();
-    SkSurface* sk_surface = lock_.GetSkSurface(use_distance_field_text,
-                                               raster_source->CanUseLCDText());
+    SkSurface* sk_surface = lock_.GetSkSurface(use_distance_field_text);
 
     if (!sk_surface)
       return;
