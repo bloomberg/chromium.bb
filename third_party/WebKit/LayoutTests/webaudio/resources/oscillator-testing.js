@@ -9,6 +9,31 @@
 //
 // QUESTION: Why does the very end of the generated signal appear to get slightly weaker?
 // ANSWER: This is an artifact of the algorithm to avoid aliasing.
+//
+// QUESTION: Since the tests compare the actual result with an expected reference file, how are the
+// reference files created?
+// ANSWER: Create an html with the following contents in the webaudio directory.  Then run a layout
+// test on this file.  A new file names "<file>-actual.wav" is created that contains the new result
+// that can be used as the new expected reference file.  Replace the "sine" below with the
+// oscillator type that you want to use.
+//
+// <!doctype html>
+// <html>
+// <head>
+//  <script src="resources/compatibility.js"></script>
+//  <script src="resources/buffer-loader.js"></script>
+//  <script src="../resources/js-test.js"></script>
+//  <script src="resources/oscillator-testing.js"></script>
+//  <script src="resources/audio-testing.js"></script>
+// </head>
+// <body>
+//  <script>
+//    OscillatorTestingUtils.createNewReference("sine");
+//  </script>
+// </body>
+// </html>
+
+OscillatorTestingUtils = (function () {
 
 var sampleRate = 44100.0;
 var nyquist = 0.5 * sampleRate;
@@ -17,13 +42,47 @@ var lowFrequency = 10;
 var highFrequency = nyquist + 2000; // go slightly higher than nyquist to make sure we generate silence there
 var context = 0;
 
+// Scaling factor for converting the 16-bit WAV data to float (and vice-versa).
+var waveScaleFactor = 32768;
+
+// Thresholds for verifying the test passes.  The thresholds are experimentally determined. The
+// default values here will cause the test to fail, which is useful for determining new thresholds,
+// if needed.
+
+// SNR must be greater than this to pass the test.
+// Q: Why is the SNR threshold not infinity?
+// A: The reference result is a 16-bit WAV file, so it won't compare exactly with the
+//    floating point result.
+var thresholdSNR = 10000;
+
+// Max diff must be less than this to pass the test.
+var thresholdDiff = 0;
+
+// Count the number of differences between the expected and actual result. The tests passes
+// if the count is less than this threshold.
+var thresholdDiffCount = 0;
+
+// Mostly for debugging
+
+// An AudioBuffer for the reference (expected) result.
+var reference = 0;
+
+// The actual rendered data produced by the test.
+var renderedData = 0;
+
+// Signal power of the reference
+var signalPower = 0;
+
+// Noise power of the difference between the reference and actual result.
+var noisePower = 0;
+
 function generateExponentialOscillatorSweep(context, oscillatorType) {
     var osc = context.createOscillator();
     if (oscillatorType == "custom") {
         // Create a simple waveform with three Fourier coefficients.
         // Note the first values are expected to be zero (DC for coeffA and Nyquist for coeffB).
         var coeffA = new Float32Array([0, 1, 0.5]);
-        var coeffB = new Float32Array([0, 0, 0]);        
+        var coeffB = new Float32Array([0, 0, 0]);
         var wave = context.createPeriodicWave(coeffA, coeffB);
         osc.setPeriodicWave(wave);
     } else {
@@ -38,7 +97,117 @@ function generateExponentialOscillatorSweep(context, oscillatorType) {
 
     osc.start(0);
 
-    var nyquist = 0.5 * sampleRate;
     osc.frequency.setValueAtTime(10, 0);
     osc.frequency.exponentialRampToValueAtTime(highFrequency, lengthInSeconds);
 }
+
+function calculateSNR(sPower, nPower)
+{
+    if (nPower == 0 && sPower > 0) {
+        return 1000;
+    }
+    return 10 * Math.log10(sPower / nPower);
+}
+
+function loadReferenceAndRunTest(oscType) {
+    var bufferLoader = new BufferLoader(
+        context,
+        [ "oscillator-" + oscType + "-expected.wav" ],
+        function (bufferList) {
+            reference = bufferList[0].getChannelData(0);
+            generateExponentialOscillatorSweep(context, oscType);
+            context.oncomplete = checkResult;
+            context.startRendering();
+        });
+
+    bufferLoader.load();
+}
+
+function checkResult (event) {
+    renderedData = event.renderedBuffer.getChannelData(0);
+    // Compute signal to noise ratio between the result and the reference. Also keep track
+    // of the max difference (and position).
+
+    var maxError = -1;
+    var errorPosition = -1;
+    var diffCount = 0;
+
+    for (var k = 0; k < renderedData.length; ++k) {
+        var diff = renderedData[k] - reference[k];
+        noisePower += diff * diff;
+        signalPower += reference[k] * reference[k];
+        if (Math.abs(diff) > maxError) {
+            maxError = Math.abs(diff);
+            errorPosition = k;
+        }
+        // The reference file is a 16-bit WAV file, so we will almost never get an exact match
+        // between it and the actual floating-point result.
+        if (diff > 1/waveScaleFactor) {
+            diffCount++;
+        }
+    }
+
+    var snr = calculateSNR(signalPower, noisePower);
+    if (snr >= thresholdSNR) {
+        testPassed("Exceeded SNR threshold of " + thresholdSNR + " dB");
+    } else {
+        testFailed("Expected SNR of " + thresholdSNR + " dB, but actual SNR is " + snr + " dB");
+    }
+
+    if (maxError <= thresholdDiff) {
+        testPassed("Maximum difference below threshold of "
+                   + (thresholdDiff * waveScaleFactor) + " ulp (16-bits)");
+    } else {
+        testFailed("Maximum difference of " + (maxError * waveScaleFactor) + " at "
+                   + errorPosition + " exceeded threshold of " + (thresholdDiff * waveScaleFactor)
+                   + " ulp (16-bits)");
+    }
+
+    if (diffCount <= thresholdDiffCount) {
+        testPassed("Number of differences between actual and expected result is less than " + thresholdDiffCount);
+    } else {
+        testFailed(diffCount + " differences found but expected no more than " + thresholdDiffCount);
+    }
+
+    finishJSTest();
+}
+
+function setThresholds(thresholds) {
+    thresholdSNR = thresholds.snr;
+    thresholdDiff = thresholds.maxDiff / waveScaleFactor;
+    thresholdDiffCount = thresholds.diffCount;
+}
+
+function runTest(oscType) {
+    window.jsTestIsAsync = true;
+    context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+    loadReferenceAndRunTest(oscType);
+}
+
+function createNewReference(oscType) {
+     if (!window.testRunner)
+         return;
+
+     context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+     generateExponentialOscillatorSweep(context, oscType);
+
+     context.oncomplete = finishAudioTest;
+     context.startRendering();
+
+     testRunner.waitUntilDone();
+}
+
+return {
+    sampleRate: sampleRate,
+    lengthInSeconds: lengthInSeconds,
+    thresholdSNR: thresholdSNR,
+    thresholdDiff: thresholdDiff,
+    thresholdDiffCount: thresholdDiffCount,
+    waveScaleFactor: waveScaleFactor,
+    setThresholds: setThresholds,
+    loadReferenceAndRunTest: loadReferenceAndRunTest,
+    runTest: runTest,
+    createNewReference: createNewReference,
+};
+
+}());

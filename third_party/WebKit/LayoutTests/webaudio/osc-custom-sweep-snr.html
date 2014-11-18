@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Test Oscillator Node: sine</title>
+    <title>Test Oscillator Node: custom</title>
     <script src="resources/compatibility.js"></script>
     <script src="resources/buffer-loader.js"></script>
     <script src="../resources/js-test.js"></script>
@@ -10,13 +10,13 @@
 
   <body>
     <script>
-      description("Test Sine Oscillator with Exponential Sweep");
-      
+      description("Test Custom Oscillator with Exponential Sweep");
+
       var tester = OscillatorTestingUtils;
 
       // The thresholds are experimentally determined.
-      tester.setThresholds({snr: 86.58, maxDiff: 2.9, diffCount: 5850});
-      tester.runTest("sine");
+      tester.setThresholds({snr: 83.89, maxDiff: 2.22, diffCount: 4450});
+      tester.runTest("custom");
       successfullyParsed = true;
     </script>
   </body>

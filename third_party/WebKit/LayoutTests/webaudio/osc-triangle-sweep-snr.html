@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Test Oscillator Node: sine</title>
+    <title>Test Oscillator Node: triangle</title>
     <script src="resources/compatibility.js"></script>
     <script src="resources/buffer-loader.js"></script>
     <script src="../resources/js-test.js"></script>
@@ -10,13 +10,13 @@
 
   <body>
     <script>
-      description("Test Sine Oscillator with Exponential Sweep");
+      description("Test Triangle Oscillator with Exponential Sweep");
+
+      // Thresholds for verifying the test passes.  The thresholds are experimentally determined.
       
       var tester = OscillatorTestingUtils;
-
-      // The thresholds are experimentally determined.
-      tester.setThresholds({snr: 86.58, maxDiff: 2.9, diffCount: 5850});
-      tester.runTest("sine");
+      tester.setThresholds({snr: 84.85, maxDiff: 2.50, diffCount: 5100});
+      tester.runTest("triangle");
       successfullyParsed = true;
     </script>
   </body>
