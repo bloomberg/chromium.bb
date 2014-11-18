@@ -39,8 +39,7 @@ function run()
     for (var i = 2; i < 100; ++i) {
         for (var j = 0; j < nDivs; ++j)
             array[j].className = (j % i == 0) ? 'selected' : '';
-        selected.offsetLeft;
-        nonSelected.offsetLeft;
+        PerfTestRunner.forceLayoutOrFullFrame();
     }
 }
 

@@ -7,9 +7,9 @@ if (window.testRunner)
 
     var run = function() {
         window.resizeTo(portrait.width, portrait.height);
-        document.body.offsetTop;
+        PerfTestRunner.forceLayoutOrFullFrame();
         window.resizeTo(landscape.width, landscape.height);
-        document.body.offsetTop;
+        PerfTestRunner.forceLayoutOrFullFrame();
     };
 
     function onTestDone() {

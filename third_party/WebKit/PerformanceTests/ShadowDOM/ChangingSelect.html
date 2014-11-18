@@ -42,9 +42,7 @@ function run()
     for (var i = 0; i < 100; ++i) {
         for (var j = 0; j < typeNames.length; ++j) {
             contentSelected.select = '.' + typeNames[j];
-
-            selected.offsetLeft;
-            nonSelected.offsetLeft;
+            PerfTestRunner.forceLayoutOrFullFrame();
         }
     }
 }

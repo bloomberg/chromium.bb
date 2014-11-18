@@ -21,11 +21,11 @@
         function test() {
             style.display = "block";
             style.width = "280px";
-            target.offsetLeft;
+            PerfTestRunner.forceLayoutOrFullFrame();
             style.width = "300px";
-            target.offsetLeft;
+            PerfTestRunner.forceLayoutOrFullFrame();
             style.width = "290px";
-            target.offsetLeft;
+            PerfTestRunner.forceLayoutOrFullFrame();
             style.display = "none";
         }
 

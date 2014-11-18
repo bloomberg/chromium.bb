@@ -907,8 +907,7 @@
           text += ('text on a path! ' + t + '      ');
         textPath.textContent = text;
 
-        // force layout
-        document.getElementById('svg').offsetTop;
+        PerfTestRunner.forceLayoutOrFullFrame();
 
         t++;
       }, done:function() {

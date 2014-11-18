@@ -36,8 +36,7 @@
                         container.appendChild(outer);
                     }
                     document.body.appendChild(container);
-                    // Force a layout update.
-                    document.body.clientHeight;
+                    PerfTestRunner.forceLayoutOrFullFrame();
                     container.remove();
                 }
             }

@@ -67,11 +67,11 @@
             description: "Testing shapes with " + properties['webkitShapeOutside'] +" using " + shapeObjectCount + " shapes.",
             run: function() {
                 applyFloating();
-                document.body.offsetTop;
+                PerfTestRunner.forceLayoutOrFullFrame();
             },
             setup: function() {
                 PerfTestRunner.resetRandomSeed();
-                document.body.offsetTop;
+                PerfTestRunner.forceLayoutOrFullFrame();
             },
             done: function() {
                 document.body.removeChild(floatingObjects);

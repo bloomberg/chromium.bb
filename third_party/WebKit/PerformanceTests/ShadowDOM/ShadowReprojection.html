@@ -42,7 +42,7 @@ function run()
     for (var i = 0; i < nLoops; ++i) {
         host.appendChild(div);
         host.removeChild(div);
-        host.offsetLeft;
+        PerfTestRunner.forceLayoutOrFullFrame();
     }
 }
 

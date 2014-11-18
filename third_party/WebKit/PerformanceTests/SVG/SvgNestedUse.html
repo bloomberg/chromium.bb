@@ -64,6 +64,7 @@
 
             document.getElementById("FPS").textContent = (1000 / avg).toFixed(2);
             unit.setAttribute('transform', 'scale(' + (Math.abs(frame++ % 20 - 10) / 10) + ')');
+            PerfTestRunner.forceLayoutOrFullFrame();
         };
 
         function animate() {

@@ -137,6 +137,27 @@ if (window.testRunner) {
         finish();
     }
 
+    // Force a layout (including style recalc) if window.fullFrameMeasurement is false,
+    // or a full frame update (including style recalc, layout, compositing update and paint invalidation,
+    // not including painting).
+    PerfTestRunner.forceLayoutOrFullFrame = function(doc) {
+        doc = doc || document;
+        // Forcing full frame is only feasible when window.internals is available.
+        if (window.fullFrameMeasurement) {
+            if (window.internals)
+                internals.forceCompositingUpdate(doc);
+            else
+                PerfTestRunner.logFatalError('window.internals API is required for full frame measurement.');
+            return;
+        }
+
+        // Otherwise just force style recalc and layout without compositing update and paint invalidation.
+        if (doc.body)
+            doc.body.offsetHeight;
+        else if (doc.documentElement)
+            doc.documentElement.offsetHeight;
+    };
+
     function start(test, runner) {
         if (!test) {
             PerfTestRunner.logFatalError("Got a bad test object.");
@@ -311,12 +332,7 @@ if (window.testRunner) {
 
             for (var chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
                 iframe.contentDocument.write(chunks[chunkIndex]);
-                // Note that we won't cause a style resolve until we've encountered the <body> element.
-                // Thus the number of chunks counted above is not exactly equal to the number of style resolves.
-                if (iframe.contentDocument.body)
-                    iframe.contentDocument.body.clientHeight; // Force a full layout/style-resolve.
-                else if (iframe.documentElement.localName == 'html')
-                    iframe.contentDocument.documentElement.offsetWidth; // Force the painting.
+                PerfTestRunner.forceLayoutOrFullFrame(iframe.contentDocument);
             }
 
             iframe.contentDocument.close();

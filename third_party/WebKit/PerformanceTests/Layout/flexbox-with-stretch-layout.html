@@ -44,6 +44,7 @@ function setupTest()
         div.appendChild(span);
         container.appendChild(div);
     };
+    PerfTestRunner.forceLayoutOrFullFrame();
 };
 
 setupTest();
@@ -55,7 +56,7 @@ function runTest()
     var inlineBlocks = document.getElementsByClassName("inlineBlock");
     for (var i = inlineBlocks.length - 1; i >= 0; i--) {
         inlineBlocks[i].innerText = switcher ? " " : nbsp;
-        inlineBlocks[i].offsetTop;
+        PerfTestRunner.forceLayoutOrFullFrame();
     };
     switcher = !switcher;
 };

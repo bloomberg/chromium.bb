@@ -49,8 +49,7 @@
                     var y = Math.floor(Math.random() * height);
                     var el = document.getElementById("float" + x + "_" + y);
                     el.className = toggle(el.className, "float", "float big");
-                    // Force a layout.
-                    container.clientHeight;
+                    PerfTestRunner.forceLayoutOrFullFrame();
                 }
                 resetTest();
                 container.style.display = "none";

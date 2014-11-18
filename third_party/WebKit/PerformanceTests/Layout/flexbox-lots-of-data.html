@@ -52,7 +52,7 @@ function startTest() {
         description: "Measures performance of flexbox with lots of data laid out in as a table.",
         run: function() {
             document.body.style.width = ++index % 2 ? "99%" : "98%";
-            document.body.offsetHeight;
+            PerfTestRunner.forceLayoutOrFullFrame();
         }
     });
 }

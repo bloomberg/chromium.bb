@@ -24,7 +24,7 @@
     function createTestFunction(width, height, colspan) {
         return function() {
             var table = createTable(width, height, colspan);
-            table.clientHeight;
+            PerfTestRunner.forceLayoutOrFullFrame();
         }
     }
 

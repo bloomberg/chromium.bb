@@ -15,12 +15,12 @@ PerfTestRunner.prepareToMeasureValuesAsync({
 function runTest() {
     var iframe = document.querySelector('iframe');
     iframe.contentWindow.getSelection().removeAllRanges();
-    iframe.contentDocument.body.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame(iframe.contentDocument);
 
     setTimeout(function () {
         var startTime = PerfTestRunner.now();
         iframe.contentDocument.execCommand('SelectAll');
-        iframe.contentDocument.body.offsetTop;
+        PerfTestRunner.forceLayoutOrFullFrame(iframe.contentDocument);
         setTimeout(function () {
             PerfTestRunner.measureValueAsync(PerfTestRunner.now() - startTime);
             PerfTestRunner.gc();

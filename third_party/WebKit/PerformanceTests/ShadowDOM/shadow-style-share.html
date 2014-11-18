@@ -24,7 +24,7 @@
           list.appendChild(host);
         } while (++i < listSize);
 
-        document.body.offsetHeight;
+        PerfTestRunner.forceLayoutOrFullFrame();
         return PerfTestRunner.now() - start;
       }
     });

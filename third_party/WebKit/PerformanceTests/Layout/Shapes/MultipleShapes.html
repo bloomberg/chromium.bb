@@ -15,7 +15,7 @@ PerfTestRunner.measureTime({run: function() {
     iframe.contentDocument.write(test800);
     iframe.contentDocument.close();
     iframe.style.width = '800px';
-    iframe.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame();
     document.body.removeChild(iframe);
 
     var iframe2 = iframe.cloneNode();
@@ -25,7 +25,7 @@ PerfTestRunner.measureTime({run: function() {
     iframe2.contentDocument.write(test600);
     iframe2.contentDocument.close();
     iframe2.style.width = '600px';
-    iframe2.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame();
     document.body.removeChild(iframe2);
 
     var iframe3 = iframe.cloneNode();
@@ -35,7 +35,7 @@ PerfTestRunner.measureTime({run: function() {
     iframe3.contentDocument.write(test400);
     iframe3.contentDocument.close();
     iframe3.style.width = '400px';
-    iframe3.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame();
     document.body.removeChild(iframe3);
 
 }});

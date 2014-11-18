@@ -19,8 +19,7 @@ function buildTree()
 
 function setup() {
     wrapper.style.display = "block";
-    // Force a layout so that everything is up-to-date.
-    wrapper.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame();
 }
 
 function runTest() {
@@ -29,7 +28,7 @@ function runTest() {
     var now = PerfTestRunner.now();
 
     wrapper.style.display = "none";
-    wrapper.offsetTop;
+    PerfTestRunner.forceLayoutOrFullFrame();
 
     return PerfTestRunner.now() - now;
 }
