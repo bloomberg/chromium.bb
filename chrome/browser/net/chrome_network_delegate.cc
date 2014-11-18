@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -498,6 +499,11 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ChromeNetworkDelegate::OnRawBytesRead"));
+
   TRACE_EVENT_ASYNC_STEP_PAST1("net", "URLRequest", &request, "DidRead",
                                "bytes_read", bytes_read);
 #if defined(ENABLE_TASK_MANAGER)

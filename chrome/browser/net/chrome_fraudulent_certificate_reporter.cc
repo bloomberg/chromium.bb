@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/cert_logger.pb.h"
@@ -110,6 +111,11 @@ void ChromeFraudulentCertificateReporter::RequestComplete(
 // appealing to the user.
 void ChromeFraudulentCertificateReporter::OnResponseStarted(
     net::URLRequest* request) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 ChromeFraudulentCertificateReporter::OnResponseStarted"));
+
   const net::URLRequestStatus& status(request->status());
   if (!status.is_success()) {
     LOG(WARNING) << "Certificate upload failed"

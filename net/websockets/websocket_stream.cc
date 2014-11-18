@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
@@ -222,6 +223,10 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
 };
 
 void Delegate::OnResponseStarted(URLRequest* request) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 Delegate::OnResponseStarted"));
+
   // All error codes, including OK and ABORTED, as with
   // Net.ErrorCodesForMainFrame3
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.WebSocket.ErrorCodes",

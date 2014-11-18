@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -217,6 +218,11 @@ void ResourcePrefetcher::OnSSLCertificateError(net::URLRequest* request,
 }
 
 void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourcePrefetcher::OnResponseStarted"));
+
   if (request->status().error()) {
     FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
     return;
@@ -228,6 +234,11 @@ void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request) {
 
 void ResourcePrefetcher::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourcePrefetcher::OnReadCompleted"));
+
   if (request->status().error()) {
     FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
     return;

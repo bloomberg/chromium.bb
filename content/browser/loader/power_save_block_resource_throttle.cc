@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 
+#include "base/profiler/scoped_tracker.h"
 #include "content/public/browser/power_save_blocker.h"
 
 namespace content {
@@ -29,6 +30,11 @@ void PowerSaveBlockResourceThrottle::WillStartRequest(bool* defer) {
 }
 
 void PowerSaveBlockResourceThrottle::WillProcessResponse(bool* defer) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 PowerSaveBlockResourceThrottle::WillProcessResponse"));
+
   // Stop blocking power save after request finishes.
   power_save_blocker_.reset();
   timer_.Stop();

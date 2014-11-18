@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -152,6 +153,11 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
 
 void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
     net::URLRequest *request) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 AppCacheUpdateJob::URLFetcher::OnResponseStarted"));
+
   DCHECK(request == request_);
   int response_code = -1;
   if (request->status().is_success()) {
@@ -211,6 +217,11 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
 
 void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
     net::URLRequest* request, int bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 AppCacheUpdateJob::URLFetcher::OnReadCompleted"));
+
   DCHECK(request_ == request);
   bool data_consumed = true;
   if (request->status().is_success() && bytes_read > 0) {

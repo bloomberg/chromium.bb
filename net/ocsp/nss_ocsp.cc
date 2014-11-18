@@ -23,6 +23,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -297,6 +298,11 @@ class OCSPRequestSession
   }
 
   void OnResponseStarted(URLRequest* request) override {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 OCSPRequestSession::OnResponseStarted"));
+
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
@@ -311,6 +317,11 @@ class OCSPRequestSession
   }
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 OCSPRequestSession::OnReadCompleted"));
+
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 

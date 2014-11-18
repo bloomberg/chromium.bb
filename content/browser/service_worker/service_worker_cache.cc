@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_cache.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -216,6 +217,11 @@ class ServiceWorkerCache::BlobReader : public net::URLRequest::Delegate {
   }
 
   void OnResponseStarted(net::URLRequest* request) override {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ServiceWorkerCache::BlobReader::OnResponseStarted"));
+
     if (!request->status().is_success()) {
       callback_.Run(entry_.Pass(), false);
       return;
@@ -232,6 +238,11 @@ class ServiceWorkerCache::BlobReader : public net::URLRequest::Delegate {
   }
 
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ServiceWorkerCache::BlobReader::OnReadCompleted"));
+
     if (!request->status().is_success()) {
       callback_.Run(entry_.Pass(), false);
       return;
