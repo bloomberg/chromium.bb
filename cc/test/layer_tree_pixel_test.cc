@@ -107,7 +107,7 @@ void LayerTreePixelTest::AfterTest() {
   EXPECT_TRUE(PathService::Get(CCPaths::DIR_TEST_DATA, &test_data_dir));
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
     EXPECT_TRUE(WritePNGFile(*result_bitmap_, ref_file_path, true));
   EXPECT_TRUE(MatchesPNGFile(*result_bitmap_,

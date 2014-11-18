@@ -114,7 +114,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
   if (!result_bitmap_)
     return false;
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
     return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
 
