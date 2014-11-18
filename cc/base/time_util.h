@@ -18,6 +18,11 @@ class CC_EXPORT TimeUtil {
         static_cast<double>(time_delta.ToInternalValue()) * value));
   }
 
+  static double Divide(base::TimeDelta dividend, base::TimeDelta divisor) {
+    return static_cast<double>(dividend.ToInternalValue()) /
+           static_cast<double>(divisor.ToInternalValue());
+  }
+
   static base::TimeDelta Mod(base::TimeDelta dividend,
                              base::TimeDelta divisor) {
     return base::TimeDelta::FromInternalValue(dividend.ToInternalValue() %

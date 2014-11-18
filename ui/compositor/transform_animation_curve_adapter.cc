@@ -4,6 +4,8 @@
 
 #include "ui/compositor/transform_animation_curve_adapter.h"
 
+#include "cc/base/time_util.h"
+
 namespace ui {
 
 TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
@@ -32,12 +34,12 @@ scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::Clone() const {
 }
 
 gfx::Transform TransformAnimationCurveAdapter::GetValue(
-    double t) const {
-  if (t >= duration_.InSecondsF())
+    base::TimeDelta t) const {
+  if (t >= duration_)
     return target_value_;
-  if (t <= 0.0)
+  if (t <= base::TimeDelta())
     return initial_value_;
-  double progress = t / duration_.InSecondsF();
+  double progress = cc::TimeUtil::Divide(t, duration_);
 
   gfx::DecomposedTransform to_return;
   gfx::BlendDecomposedTransforms(&to_return,
@@ -80,7 +82,8 @@ InverseTransformCurveAdapter::InverseTransformCurveAdapter(
     : base_curve_(base_curve),
       initial_value_(initial_value),
       duration_(duration) {
-  effective_initial_value_ = base_curve_.GetValue(0.0) * initial_value_;
+  effective_initial_value_ =
+      base_curve_.GetValue(base::TimeDelta()) * initial_value_;
 }
 
 InverseTransformCurveAdapter::~InverseTransformCurveAdapter() {
@@ -95,9 +98,8 @@ scoped_ptr<cc::AnimationCurve> InverseTransformCurveAdapter::Clone() const {
       new InverseTransformCurveAdapter(base_curve_, initial_value_, duration_));
 }
 
-gfx::Transform InverseTransformCurveAdapter::GetValue(
-    double t) const {
-  if (t <= 0.0)
+gfx::Transform InverseTransformCurveAdapter::GetValue(base::TimeDelta t) const {
+  if (t <= base::TimeDelta())
     return initial_value_;
 
   gfx::Transform base_transform = base_curve_.GetValue(t);

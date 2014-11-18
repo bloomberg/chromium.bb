@@ -8,6 +8,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
+#include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
@@ -503,11 +504,11 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
 
     const FloatAnimationCurve* curve =
         animation->curve()->ToFloatAnimationCurve();
-    float start_opacity = curve->GetValue(0.0);
-    float end_opacity = curve->GetValue(curve->Duration().InSecondsF());
+    float start_opacity = curve->GetValue(base::TimeDelta());
+    float end_opacity = curve->GetValue(curve->Duration());
     float linearly_interpolated_opacity =
         0.25f * end_opacity + 0.75f * start_opacity;
-    double time = curve->Duration().InSecondsF() * 0.25;
+    base::TimeDelta time = TimeUtil::Scale(curve->Duration(), 0.25f);
     // If the linear timing function associated with this animation was not
     // picked up, then the linearly interpolated opacity would be different
     // because of the default ease timing function.

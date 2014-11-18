@@ -48,7 +48,7 @@ class CC_EXPORT ColorAnimationCurve : public AnimationCurve {
  public:
   ~ColorAnimationCurve() override {}
 
-  virtual SkColor GetValue(double t) const = 0;
+  virtual SkColor GetValue(base::TimeDelta t) const = 0;
 
   // Partial Animation implementation.
   CurveType Type() const override;
@@ -58,7 +58,7 @@ class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
  public:
   ~FloatAnimationCurve() override {}
 
-  virtual float GetValue(double t) const = 0;
+  virtual float GetValue(base::TimeDelta t) const = 0;
 
   // Partial Animation implementation.
   CurveType Type() const override;
@@ -68,7 +68,7 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
  public:
   ~TransformAnimationCurve() override {}
 
-  virtual gfx::Transform GetValue(double t) const = 0;
+  virtual gfx::Transform GetValue(base::TimeDelta t) const = 0;
 
   // Sets |bounds| to be the bounding box for the region within which |box|
   // will move during this animation. If this region cannot be computed,
@@ -98,7 +98,7 @@ class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
  public:
   ~FilterAnimationCurve() override {}
 
-  virtual FilterOperations GetValue(double t) const = 0;
+  virtual FilterOperations GetValue(base::TimeDelta t) const = 0;
   virtual bool HasFilterThatMovesPixels() const = 0;
 
   // Partial Animation implementation.

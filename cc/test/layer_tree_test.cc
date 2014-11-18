@@ -524,10 +524,8 @@ void LayerTreeTest::PostAddAnimationToMainThread(
     Layer* layer_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchAddAnimation,
-                 main_thread_weak_ptr_,
-                 base::Unretained(layer_to_receive_animation),
-                 0.000001));
+      base::Bind(&LayerTreeTest::DispatchAddAnimation, main_thread_weak_ptr_,
+                 base::Unretained(layer_to_receive_animation), 0.000004));
 }
 
 void LayerTreeTest::PostAddInstantAnimationToMainThread(

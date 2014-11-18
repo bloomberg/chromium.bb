@@ -1144,8 +1144,9 @@ TEST(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
 static bool AddTestAnimation(Layer* layer) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve =
       KeyframedFloatAnimationCurve::Create();
-  curve->AddKeyframe(FloatKeyframe::Create(0.0, 0.3f, nullptr));
-  curve->AddKeyframe(FloatKeyframe::Create(1.0, 0.7f, nullptr));
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.3f, nullptr));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.7f, nullptr));
   scoped_ptr<Animation> animation =
       Animation::Create(curve.Pass(), 0, 0, Animation::Opacity);
 

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "cc/animation/timing_function.h"
+#include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
 
 const double kDurationDivisor = 60.0;
@@ -65,17 +66,18 @@ void ScrollOffsetAnimationCurve::SetInitialValue(
       target_value_.DeltaFrom(initial_value_));
 }
 
-gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(double t) const {
-  double duration = (total_animation_duration_ - last_retarget_).InSecondsF();
-  t -= last_retarget_.InSecondsF();
+gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(
+    base::TimeDelta t) const {
+  base::TimeDelta duration = total_animation_duration_ - last_retarget_;
+  t -= last_retarget_;
 
-  if (t <= 0)
+  if (t <= base::TimeDelta())
     return initial_value_;
 
   if (t >= duration)
     return target_value_;
 
-  double progress = (timing_function_->GetValue(t / duration));
+  double progress = timing_function_->GetValue(TimeUtil::Divide(t, duration));
   return gfx::ScrollOffset(
       gfx::Tween::FloatValueBetween(
           progress, initial_value_.x(), target_value_.x()),
@@ -105,7 +107,8 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
 void ScrollOffsetAnimationCurve::UpdateTarget(
     double t,
     const gfx::ScrollOffset& new_target) {
-  gfx::ScrollOffset current_position = GetValue(t);
+  gfx::ScrollOffset current_position =
+      GetValue(base::TimeDelta::FromSecondsD(t));
   gfx::Vector2dF old_delta = target_value_.DeltaFrom(initial_value_);
   gfx::Vector2dF new_delta = new_target.DeltaFrom(current_position);
 

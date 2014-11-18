@@ -167,7 +167,7 @@ gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
   if (!top_controls_animation_ || !client_->HaveRootScrollLayer())
     return gfx::Vector2dF();
 
-  double time = (monotonic_time - base::TimeTicks()).InMillisecondsF();
+  base::TimeDelta time = monotonic_time - base::TimeTicks();
 
   float old_offset = client_->ControlsTopOffset();
   SetControlsTopOffset(top_controls_animation_->GetValue(time));
@@ -199,16 +199,15 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
     return;
 
   top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
-  double start_time =
-      (gfx::FrameTime::Now() - base::TimeTicks()).InMillisecondsF();
+  base::TimeDelta start_time = gfx::FrameTime::Now() - base::TimeTicks();
   top_controls_animation_->AddKeyframe(
       FloatKeyframe::Create(start_time, client_->ControlsTopOffset(), nullptr));
   float max_ending_offset =
       (direction == SHOWING_CONTROLS ? 1 : -1) * top_controls_height_;
-  top_controls_animation_->AddKeyframe(
-      FloatKeyframe::Create(start_time + kShowHideMaxDurationMs,
-                            client_->ControlsTopOffset() + max_ending_offset,
-                            EaseTimingFunction::Create()));
+  top_controls_animation_->AddKeyframe(FloatKeyframe::Create(
+      start_time + base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs),
+      client_->ControlsTopOffset() + max_ending_offset,
+      EaseTimingFunction::Create()));
   animation_direction_ = direction;
   client_->DidChangeTopControlsPosition();
 }
@@ -241,8 +240,8 @@ bool TopControlsManager::IsAnimationCompleteAtTime(base::TimeTicks time) {
   if (!top_controls_animation_)
     return true;
 
-  double time_ms = (time - base::TimeTicks()).InMillisecondsF();
-  float new_offset = top_controls_animation_->GetValue(time_ms);
+  base::TimeDelta animation_time = time - base::TimeTicks();
+  float new_offset = top_controls_animation_->GetValue(animation_time);
 
   if ((animation_direction_ == SHOWING_CONTROLS && new_offset >= 0) ||
       (animation_direction_ == HIDING_CONTROLS

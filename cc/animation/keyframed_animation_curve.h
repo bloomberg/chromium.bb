@@ -16,17 +16,17 @@ namespace cc {
 
 class CC_EXPORT Keyframe {
  public:
-  double Time() const;
+  base::TimeDelta Time() const;
   const TimingFunction* timing_function() const {
     return timing_function_.get();
   }
 
  protected:
-  Keyframe(double time, scoped_ptr<TimingFunction> timing_function);
+  Keyframe(base::TimeDelta time, scoped_ptr<TimingFunction> timing_function);
   virtual ~Keyframe();
 
  private:
-  double time_;
+  base::TimeDelta time_;
   scoped_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
@@ -35,7 +35,7 @@ class CC_EXPORT Keyframe {
 class CC_EXPORT ColorKeyframe : public Keyframe {
  public:
   static scoped_ptr<ColorKeyframe> Create(
-      double time,
+      base::TimeDelta time,
       SkColor value,
       scoped_ptr<TimingFunction> timing_function);
   ~ColorKeyframe() override;
@@ -45,7 +45,7 @@ class CC_EXPORT ColorKeyframe : public Keyframe {
   scoped_ptr<ColorKeyframe> Clone() const;
 
  private:
-  ColorKeyframe(double time,
+  ColorKeyframe(base::TimeDelta time,
                 SkColor value,
                 scoped_ptr<TimingFunction> timing_function);
 
@@ -55,7 +55,7 @@ class CC_EXPORT ColorKeyframe : public Keyframe {
 class CC_EXPORT FloatKeyframe : public Keyframe {
  public:
   static scoped_ptr<FloatKeyframe> Create(
-      double time,
+      base::TimeDelta time,
       float value,
       scoped_ptr<TimingFunction> timing_function);
   ~FloatKeyframe() override;
@@ -65,7 +65,7 @@ class CC_EXPORT FloatKeyframe : public Keyframe {
   scoped_ptr<FloatKeyframe> Clone() const;
 
  private:
-  FloatKeyframe(double time,
+  FloatKeyframe(base::TimeDelta time,
                 float value,
                 scoped_ptr<TimingFunction> timing_function);
 
@@ -75,7 +75,7 @@ class CC_EXPORT FloatKeyframe : public Keyframe {
 class CC_EXPORT TransformKeyframe : public Keyframe {
  public:
   static scoped_ptr<TransformKeyframe> Create(
-      double time,
+      base::TimeDelta time,
       const TransformOperations& value,
       scoped_ptr<TimingFunction> timing_function);
   ~TransformKeyframe() override;
@@ -85,10 +85,9 @@ class CC_EXPORT TransformKeyframe : public Keyframe {
   scoped_ptr<TransformKeyframe> Clone() const;
 
  private:
-  TransformKeyframe(
-      double time,
-      const TransformOperations& value,
-      scoped_ptr<TimingFunction> timing_function);
+  TransformKeyframe(base::TimeDelta time,
+                    const TransformOperations& value,
+                    scoped_ptr<TimingFunction> timing_function);
 
   TransformOperations value_;
 };
@@ -96,7 +95,7 @@ class CC_EXPORT TransformKeyframe : public Keyframe {
 class CC_EXPORT FilterKeyframe : public Keyframe {
  public:
   static scoped_ptr<FilterKeyframe> Create(
-      double time,
+      base::TimeDelta time,
       const FilterOperations& value,
       scoped_ptr<TimingFunction> timing_function);
   ~FilterKeyframe() override;
@@ -106,10 +105,9 @@ class CC_EXPORT FilterKeyframe : public Keyframe {
   scoped_ptr<FilterKeyframe> Clone() const;
 
  private:
-  FilterKeyframe(
-      double time,
-      const FilterOperations& value,
-      scoped_ptr<TimingFunction> timing_function);
+  FilterKeyframe(base::TimeDelta time,
+                 const FilterOperations& value,
+                 scoped_ptr<TimingFunction> timing_function);
 
   FilterOperations value_;
 };
@@ -131,7 +129,7 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // BackgrounColorAnimationCurve implementation
-  SkColor GetValue(double t) const override;
+  SkColor GetValue(base::TimeDelta t) const override;
 
  private:
   KeyframedColorAnimationCurve();
@@ -161,7 +159,7 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // FloatAnimationCurve implementation
-  float GetValue(double t) const override;
+  float GetValue(base::TimeDelta t) const override;
 
  private:
   KeyframedFloatAnimationCurve();
@@ -192,7 +190,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // TransformAnimationCurve implementation
-  gfx::Transform GetValue(double t) const override;
+  gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;
@@ -229,7 +227,7 @@ class CC_EXPORT KeyframedFilterAnimationCurve
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // FilterAnimationCurve implementation
-  FilterOperations GetValue(double t) const override;
+  FilterOperations GetValue(base::TimeDelta t) const override;
   bool HasFilterThatMovesPixels() const override;
 
  private:

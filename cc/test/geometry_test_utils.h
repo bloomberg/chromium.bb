@@ -68,6 +68,12 @@ do { \
   EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
 } while (false)
 
+#define EXPECT_VECTOR2DF_NEAR(expected, actual, abs_error)  \
+  do {                                                      \
+    EXPECT_NEAR((expected).x(), (actual).x(), (abs_error)); \
+    EXPECT_NEAR((expected).y(), (actual).y(), (abs_error)); \
+  } while (false)
+
 #define EXPECT_FLOAT_ARRAY_EQ(expected, actual, count) \
 do { \
   for (int i = 0; i < count; i++) { \

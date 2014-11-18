@@ -27,7 +27,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   // TransformAnimationCurve implementation.
   base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
-  gfx::Transform GetValue(double t) const override;
+  gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;
@@ -57,7 +57,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
 
   base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
-  gfx::Transform GetValue(double t) const override;
+  gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool AffectsScale() const override;

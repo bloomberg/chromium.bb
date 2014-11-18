@@ -24,7 +24,7 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   ~ScrollOffsetAnimationCurve() override;
 
   void SetInitialValue(const gfx::ScrollOffset& initial_value);
-  gfx::ScrollOffset GetValue(double t) const;
+  gfx::ScrollOffset GetValue(base::TimeDelta t) const;
   gfx::ScrollOffset target_value() const { return target_value_; }
   void UpdateTarget(double t, const gfx::ScrollOffset& new_target);
 
