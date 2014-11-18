@@ -10,16 +10,29 @@ function sendScriptRequest() {
 
 function sendXHRRequest() {
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", "resources/empty.html");
+    xhr.open("GET", "resources/empty.html?xhr");
     xhr.send();
+}
+
+function createIFrame() {
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/empty.html?iframe";
+    document.head.appendChild(iframe);
 }
 
 function test() {
     function step1()
     {
-        requestName = "empty.html";
-        nextStep = InspectorTest.completeTest;
+        requestName = "empty.html?xhr";
+        nextStep = step2;
         InspectorTest.evaluateInPage("sendXHRRequest()");
+    }
+
+    function step2()
+    {
+        requestName = "empty.html?iframe";
+        nextStep = InspectorTest.completeTest;
+        InspectorTest.evaluateInPage("createIFrame()");
     }
 
     function onRequest(event)

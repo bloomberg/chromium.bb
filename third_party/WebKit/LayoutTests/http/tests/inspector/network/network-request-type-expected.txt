@@ -4,6 +4,9 @@ Tests that XHR request type is detected on send.
 Request: empty-script.js
 Type: other
 
-Request: empty.html
+Request: empty.html?xhr
 Type: xhr
+
+Request: empty.html?iframe
+Type: document
 
