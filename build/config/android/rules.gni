@@ -640,6 +640,153 @@ template("java_strings_grd_prebuilt") {
   }
 }
 
+# Declare a Java executable target
+#
+# This target creates an executable from java code and libraries. The executable
+# will be in the output folder's /bin/ directory.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be included in the executable (and the javac classpath).
+#
+#   java_files: List of .java files included in this library.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#     will be added to java_files and be included in this library.
+#   srcjars: List of srcjars to be included in this library, together with the
+#     ones obtained from srcjar_deps.
+#
+#   chromium_code: If true, extra analysis warning/errors will be enabled.
+#
+#   datadeps, testonly
+#
+# Example
+#   java_library("foo") {
+#     java_files = [ "org/chromium/foo/FooMain.java" ]
+#     deps = [ ":bar_java" ]
+#     main_class = "org.chromium.foo.FooMain"
+#   }
+template("java_binary") {
+  # TODO(cjhopman): This should not act like a java_library for dependents (i.e.
+  # dependents shouldn't get the jar in their classpath, etc.).
+  java_library_impl(target_name) {
+    if (defined(invoker.DEPRECATED_java_in_dir)) { DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir }
+    if (defined(invoker.chromium_code)) { chromium_code = invoker.chromium_code }
+    if (defined(invoker.datadeps)) { deps = invoker.datadeps }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.java_files)) { java_files = invoker.java_files }
+    if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
+    if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
+    if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
+    main_class = invoker.main_class
+  }
+}
+
+
+# Declare an java library target
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be added to the javac classpath.
+#
+#   java_files: List of .java files included in this library.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#     will be added to java_files and be included in this library.
+#   srcjars: List of srcjars to be included in this library, together with the
+#     ones obtained from srcjar_deps.
+#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
+#     this directory will be included in the library. This is only supported to
+#     ease the gyp->gn conversion and will be removed in the future.
+#
+#   chromium_code: If true, extra analysis warning/errors will be enabled.
+#   jar_excluded_patterns: List of patterns of .class files to exclude from the
+#     final jar.
+#
+#   proguard_preprocess: If true, proguard preprocessing will be run. This can
+#     be used to remove unwanted parts of the library.
+#   proguard_config: Path to the proguard config for preprocessing.
+#
+#   supports_android: If true, Android targets (android_library, android_apk)
+#     may depend on this target. Note: if true, this target must only use the
+#     subset of Java available on Android.
+#   requires_android_platform: If true, this library may depend on
+#     android-specific targets. If this is the case, there should be some
+#     android-platform-like implementation available at runtime (Android,
+#     robolectric, etc).
+#
+#   datadeps, testonly
+#
+# Example
+#   java_library("foo_java") {
+#     java_files = [
+#       "org/chromium/foo/Foo.java",
+#       "org/chromium/foo/FooInterface.java",
+#       "org/chromium/foo/FooService.java",
+#     ]
+#     deps = [
+#       ":bar_java"
+#     ]
+#     srcjar_deps = [
+#       ":foo_generated_enum"
+#     ]
+#     jar_excluded_patterns = [
+#       "*/FooService.class", "*/FooService##*.class"
+#     ]
+#   }
+template("java_library") {
+  java_library_impl(target_name) {
+    if (defined(invoker.DEPRECATED_java_in_dir)) { DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir }
+    if (defined(invoker.chromium_code)) { chromium_code = invoker.chromium_code }
+    if (defined(invoker.datadeps)) { deps = invoker.datadeps }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.jar_excluded_patterns)) { jar_excluded_patterns = invoker.jar_excluded_patterns }
+    if (defined(invoker.java_files)) { java_files = invoker.java_files }
+    if (defined(invoker.proguard_config)) { proguard_config = invoker.proguard_config }
+    if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
+    if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
+    if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
+    if (defined(invoker.testonly)) { testonly = invoker.testonly }
+    if (defined(invoker.jar_path)) { jar_path = invoker.jar_path }
+
+    if (defined(invoker.supports_android) && invoker.supports_android) {
+      supports_android = true
+    }
+    if (defined(invoker.requires_android_platform)
+        && invoker.requires_android_platform) {
+      supports_android = true
+      requires_android = true
+    }
+  }
+}
+
+
+# Declare an java library target for a prebuilt jar
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be added to the javac classpath.
+#   jar_path: Path to the prebuilt jar.
+#   proguard_preprocess: If true, proguard preprocessing will be run. This can
+#     be used to remove unwanted parts of the library.
+#   proguard_config: Path to the proguard config for preprocessing.
+#
+# Example
+#   java_prebuilt("foo_java") {
+#     jar_path = "foo.jar"
+#     deps = [
+#       ":foo_resources",
+#       ":bar_java"
+#     ]
+#   }
+template("java_prebuilt") {
+  java_prebuilt_impl(target_name) {
+    jar_path = invoker.jar_path
+    if (defined(invoker.testonly)) { testonly = invoker.testonly }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.proguard_config)) { proguard_config = invoker.proguard_config }
+    if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
+  }
+}
 
 # Declare an Android library target
 #
@@ -650,21 +797,24 @@ template("java_strings_grd_prebuilt") {
 #   deps: Specifies the dependencies of this target. Java targets in this list
 #     will be added to the javac classpath. Android resources in dependencies
 #     will be used when building this library.
+#
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
 #   srcjars: List of srcjars to be included in this library, together with the
 #     ones obtained from srcjar_deps.
+#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
+#     this directory will be included in the library. This is only supported to
+#     ease the gyp->gn conversion and will be removed in the future.
+#
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
+#
 #   proguard_preprocess: If true, proguard preprocessing will be run. This can
 #     be used to remove unwanted parts of the library.
 #   proguard_config: Path to the proguard config for preprocessing.
 #
-#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
-#     this directory will be included in the library. This is only supported to
-#     ease the gyp->gn conversion and will be removed in the future.
 #
 # Example
 #   android_library("foo_java") {
@@ -684,132 +834,32 @@ template("java_strings_grd_prebuilt") {
 #     ]
 #   }
 template("android_library") {
-  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+  assert(!defined(invoker.jar_path),
+      "android_library does not support a custom jar path")
+  java_library_impl(target_name) {
+    if (defined(invoker.DEPRECATED_java_in_dir)) { DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir }
+    if (defined(invoker.chromium_code)) { chromium_code = invoker.chromium_code }
+    if (defined(invoker.datadeps)) { deps = invoker.datadeps }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.jar_excluded_patterns)) { jar_excluded_patterns = invoker.jar_excluded_patterns }
+    if (defined(invoker.java_files)) { java_files = invoker.java_files }
+    if (defined(invoker.proguard_config)) { proguard_config = invoker.proguard_config }
+    if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
+    if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
+    if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
+    if (defined(invoker.testonly)) { testonly = invoker.testonly }
+    if (defined(invoker.dex_path)) { dex_path = invoker.dex_path }
 
-  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
-      || defined(invoker.srcjars) || defined(invoker.srcjar_deps))
-  _base_path = "$target_gen_dir/$target_name"
-  _build_config = _base_path + ".build_config"
-  _jar_path = _base_path + ".jar"
-  if (defined(invoker.dex_path)) {
-    _dex_path = invoker.dex_path
-  } else {
-    _dex_path = _base_path + ".dex.jar"
-  }
+    supports_android = true
+    requires_android = true
 
-  write_build_config("${target_name}__build_config") {
-    type = "android_library"
-
-    deps = []
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-
-    build_config = _build_config
-    jar_path = _jar_path
-    dex_path = _dex_path
-  }
-
-  _chromium_code = true
-  if (defined(invoker.chromium_code)) {
-    _chromium_code = invoker.chromium_code
-  }
-
-  android_java_library(target_name) {
-    chromium_code = _chromium_code
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    } else if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
-    build_config = _build_config
-    jar_path = _jar_path
-    dex_path = _dex_path
-
-    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-      proguard_preprocess = true
-      proguard_config = invoker.proguard_config
-    }
-
-    jar_excluded_patterns = [
+    if (!defined(jar_excluded_patterns)) { jar_excluded_patterns = [] }
+    jar_excluded_patterns += [
       "*/R.class", "*/R##*.class",
       "*/Manifest.class", "*/Manifest##*.class",
     ]
-    if (defined(invoker.jar_excluded_patterns)) {
-      jar_excluded_patterns += invoker.jar_excluded_patterns
-    }
-
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.srcjars)) {
-      srcjars = invoker.srcjars
-    }
   }
 }
-
-template("java_library") {
-  if (defined(invoker.testonly)) { testonly = invoker.testonly }
-
-  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
-      || defined(invoker.srcjars))
-
-  _srcjar_deps = []
-  if (defined(invoker.srcjar_deps)) {
-    _srcjar_deps = invoker.srcjar_deps
-  }
-
-  _srcjars = []
-  if (defined(invoker.srcjars)) {
-    _srcjars = invoker.srcjars
-  }
-
-  _java_files = []
-  if (defined(invoker.java_files)) {
-    _java_files = invoker.java_files
-  } else if (defined(invoker.DEPRECATED_java_in_dir)) {
-    _src_dir = invoker.DEPRECATED_java_in_dir + "/src"
-    _src_dir_exists = exec_script("//build/dir_exists.py",
-          [ rebase_path(_src_dir, root_build_dir) ],
-          "string")
-    assert(_src_dir_exists == "False",
-        "In GN, java_in_dir should be the fully specified java directory " +
-        "(i.e. including the trailing \"/src\")")
-
-    _java_files_build_rel = exec_script(
-        "//build/android/gyp/find.py",
-        [
-          "--pattern",
-          "*.java",
-          rebase_path(invoker.DEPRECATED_java_in_dir, root_build_dir)
-        ],
-        "list lines"
-        )
-    _java_files = rebase_path(_java_files_build_rel, ".", root_build_dir)
-  }
-  assert(_java_files != [] || _srcjar_deps != [] || _srcjars != [])
-
-  # TODO(cjhopman): Write a proper build config so that java library
-  # dependencies work correctly.
-  _build_config = "$target_gen_dir/$target_name.build_config"
-  write_file(
-      _build_config,
-      "{ \"javac\": { \"classpath\": [], \"srcjars\": [] } }")
-
-  _jar_path = "$root_build_dir/lib.java/$target_name.jar"
-  if (defined(invoker.jar_path)) {
-    _jar_path = invoker.jar_path
-  }
-
-  compile_java(target_name) {
-    build_config = _build_config
-    jar_path = _jar_path
-    java_files = _java_files
-    srcjar_deps = _srcjar_deps
-    srcjars = _srcjars
-  }
-}
-
 
 # Declare an Android library target for a prebuilt jar
 #
@@ -834,47 +884,14 @@ template("java_library") {
 #     ]
 #   }
 template("android_java_prebuilt") {
-  if (defined(invoker.testonly)) { testonly = invoker.testonly }
-
-  assert(defined(invoker.jar_path))
-  _base_path = "${target_gen_dir}/$target_name"
-  _jar_path = _base_path + ".jar"
-  _dex_path = _base_path + ".dex.jar"
-  _build_config = _base_path + ".build_config"
-
-  write_build_config("${target_name}__build_config") {
-    type = "android_library"
-
-    deps = []
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    build_config = _build_config
-    jar_path = _jar_path
-    dex_path = _dex_path
-  }
-
-  java_prebuilt("${target_name}__process_jar") {
-    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-      proguard_preprocess = true
-      proguard_config = invoker.proguard_config
-    }
-
-    build_config = _build_config
-    input_jar_path = invoker.jar_path
-    output_jar_path = _jar_path
-  }
-
-  dex("${target_name}__dex") {
-    sources = [_jar_path]
-    output = _dex_path
-  }
-
-  group(target_name) {
-    deps = [
-      ":${target_name}__build_config",
-      ":${target_name}__dex",
-    ]
+  java_prebuilt_impl(target_name) {
+    jar_path = invoker.jar_path
+    supports_android = true
+    requires_android = true
+    if (defined(invoker.testonly)) { testonly = invoker.testonly }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.proguard_config)) { proguard_config = invoker.proguard_config }
+    if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
   }
 }
 
@@ -934,7 +951,7 @@ template("android_apk") {
   assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
   gen_dir = "$target_gen_dir/$target_name"
   base_path = "$gen_dir/$target_name"
-  build_config = "$base_path.build_config"
+  _build_config = "$base_path.build_config"
   resources_zip_path = "$base_path.resources.zip"
   all_resources_zip_path = "$base_path.resources.all.zip"
   jar_path = "$base_path.jar"
@@ -1012,12 +1029,13 @@ template("android_apk") {
     }
   }
 
-  _rebased_build_config = rebase_path(build_config, root_build_dir)
+  _rebased_build_config = rebase_path(_build_config, root_build_dir)
 
   write_build_config("${_template_name}__build_config") {
     type = "android_apk"
     dex_path = final_dex_path
     resources_zip = resources_zip_path
+    build_config = _build_config
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -1035,6 +1053,7 @@ template("android_apk") {
     resource_dirs = ["//build/android/ant/empty/res"]
     zip_path = resources_zip_path
     generate_constant_ids = true
+    build_config = _build_config
   }
   _srcjar_deps += [":${_template_name}__process_resources"]
 
@@ -1052,7 +1071,7 @@ template("android_apk") {
         "//base/android/java/templates/NativeLibraries.template",
       ]
       inputs = [
-        build_config,
+        _build_config,
       ]
 
       defines = [
@@ -1074,8 +1093,12 @@ template("android_apk") {
   }
 
   final_deps += [ ":${_template_name}__java" ]
-  android_java_library("${_template_name}__java") {
+  java_library_impl("${_template_name}__java") {
+    supports_android = true
+    requires_android = true
+    override_build_config = _build_config
     android_manifest = invoker.android_manifest
+    chromium_code = true
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
     } else if (defined(invoker.DEPRECATED_java_in_dir)) {
@@ -1095,7 +1118,7 @@ template("android_apk") {
     action("${_template_name}__create_dist_jar") {
       script = "//build/android/gyp/create_dist_jar.py"
       depfile = "$target_gen_dir/$target_name.d"
-      inputs = [ build_config ]
+      inputs = [ _build_config ]
       outputs = [
         depfile,
         _dist_jar_path,
@@ -1117,7 +1140,7 @@ template("android_apk") {
   dex("${_template_name}__final_dex") {
     deps = [ ":${_template_name}__java" ]
     sources = [ jar_path ]
-    inputs = [ build_config ]
+    inputs = [ _build_config ]
     output = final_dex_path
     dex_arg_key = "${_rebased_build_config}:apk_dex:dependency_dex_files"
     args = [ "--inputs=@FileArg($dex_arg_key)" ]
@@ -1132,7 +1155,7 @@ template("android_apk") {
         depfile
       ]
       inputs = [
-        build_config
+        _build_config
       ]
       deps = []
       skip_packing_list = [

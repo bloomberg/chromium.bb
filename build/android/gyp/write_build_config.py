@@ -12,10 +12,6 @@ things like: the javac classpath, the list of android resources dependencies,
 etc. It also includes the information needed to create the build_config for
 other targets that depend on that one.
 
-There are several different types of build_configs:
-  android_library: An android library containing java code.
-  android_resources: A target containing android resources.
-
 Android build scripts should not refer to the build_config directly, and the
 build specification should instead pass information in using the special
 file-arg syntax (see build_utils.py:ExpandFileArgs). That syntax allows passing
@@ -76,11 +72,17 @@ def main(argv):
       help='Java package name for these resources.')
   parser.add_option('--android-manifest', help='Path to android manifest.')
 
-  # android_library/apk options
+  # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
+  parser.add_option('--supports-android', action='store_true',
+      help='Whether this library supports running on the Android platform.')
+  parser.add_option('--requires-android', action='store_true',
+      help='Whether this library requires running on the Android platform.')
+
+  # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
 
-  # apk native library options
+  # native library options
   parser.add_option('--native-libs', help='List of top-level native libs.')
   parser.add_option('--readelf-path', help='Path to toolchain\'s readelf.')
 
@@ -91,24 +93,30 @@ def main(argv):
 
 
   if not options.type in [
-      'android_library', 'android_resources', 'android_apk']:
+      'java_library', 'android_resources', 'android_apk']:
     raise Exception('Unknown type: <%s>' % options.type)
 
-
   required_options = ['build_config'] + {
-      'android_library': ['jar_path', 'dex_path'],
+      'java_library': ['jar_path'],
       'android_resources': ['resources_zip'],
       'android_apk': ['jar_path', 'dex_path', 'resources_zip']
     }[options.type]
 
   if options.native_libs:
-    required_options += ['readelf_path']
+    required_options.append('readelf_path')
 
   build_utils.CheckOptions(options, parser, required_options)
 
+  if options.type == 'java_library':
+    if options.supports_android and not options.dex_path:
+      raise Exception('java_library that supports Android requires a dex path.')
+
+    if options.requires_android and not options.supports_android:
+      raise Exception(
+          '--supports-android is required when using --requires-android')
+
   possible_deps_config_paths = build_utils.ParseGypList(
       options.possible_deps_configs)
-
 
   allow_unknown_deps = options.type == 'android_apk'
   unknown_deps = [
@@ -123,8 +131,8 @@ def main(argv):
   direct_deps_configs = [GetDepConfig(p) for p in direct_deps_config_paths]
   all_deps_configs = [GetDepConfig(p) for p in all_deps_config_paths]
 
-  direct_library_deps = DepsOfType('android_library', direct_deps_configs)
-  all_library_deps = DepsOfType('android_library', all_deps_configs)
+  direct_library_deps = DepsOfType('java_library', direct_deps_configs)
+  all_library_deps = DepsOfType('java_library', all_deps_configs)
 
   direct_resources_deps = DepsOfType('android_resources', direct_deps_configs)
   all_resources_deps = DepsOfType('android_resources', all_deps_configs)
@@ -132,6 +140,7 @@ def main(argv):
   # Initialize some common config.
   config = {
     'deps_info': {
+      'name': os.path.basename(options.build_config),
       'path': options.build_config,
       'type': options.type,
       'deps_configs': direct_deps_config_paths,
@@ -139,16 +148,40 @@ def main(argv):
   }
   deps_info = config['deps_info']
 
-  if options.type in ['android_library', 'android_apk']:
+
+  if options.type == 'java_library':
+    deps_info['requires_android'] = options.requires_android
+    deps_info['supports_android'] = options.supports_android
+
+    deps_require_android = (all_resources_deps +
+        [d['name'] for d in direct_library_deps if d['requires_android']])
+    deps_not_support_android = (
+        [d['name'] for d in direct_library_deps if not d['supports_android']])
+
+    if deps_require_android and not options.requires_android:
+      raise Exception('Some deps require building for the Android platform: ' +
+          str(deps_require_android))
+
+    if deps_not_support_android and options.supports_android:
+      raise Exception('Not all deps support the Android platform: ' +
+          str(deps_not_support_android))
+
+
+  if options.type in ['java_library', 'android_apk']:
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
+    java_full_classpath = [c['jar_path'] for c in all_library_deps]
     deps_info['resources_deps'] = [c['path'] for c in all_resources_deps]
     deps_info['jar_path'] = options.jar_path
-    deps_info['dex_path'] = options.dex_path
+    if options.type == 'android_apk' or options.supports_android:
+      deps_info['dex_path'] = options.dex_path
     config['javac'] = {
       'classpath': javac_classpath,
     }
+    config['java'] = {
+      'full_classpath': java_full_classpath
+    }
 
-  if options.type == 'android_library':
+  if options.type == 'java_library':
     # Only resources might have srcjars (normal srcjar targets are listed in
     # srcjar_deps). A resource's srcjar contains the R.java file for those
     # resources, and (like Android's default build system) we allow a library to
@@ -157,8 +190,8 @@ def main(argv):
         c['srcjar'] for c in direct_resources_deps if 'srcjar' in c]
 
   if options.type == 'android_apk':
+    # Apks will get their resources srcjar explicitly passed to the java step.
     config['javac']['srcjars'] = []
-
 
   if options.type == 'android_resources':
     deps_info['resources_zip'] = options.resources_zip

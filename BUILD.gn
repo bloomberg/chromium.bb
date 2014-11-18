@@ -180,6 +180,7 @@ group("root") {
   if (is_android) {
     deps += [
       "//base/android/linker:chromium_android_linker",
+      "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
       "//third_party/openmax_dl/dl",
       "//content/shell/android:content_shell_apk",

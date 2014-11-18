@@ -4,15 +4,13 @@
 
 import("//build/config/android/rules.gni")
 
-# TODO(GYP): should be java_prebuilt
 # GYP: //third_party/junit.gyp:hamcrest_jar
-android_java_prebuilt("hamcrest") {
+java_prebuilt("hamcrest") {
   jar_path = "src/lib/hamcrest-core-1.3.jar"
 }
 
-# TODO(GYP): should be java_library
 # GYP: //third_party/junit.gyp:junit_jar
-android_library("junit") {
+java_library("junit") {
   deps = [
     ":hamcrest"
   ]

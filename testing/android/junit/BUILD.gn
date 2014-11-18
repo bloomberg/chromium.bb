@@ -6,22 +6,20 @@ assert(is_android)
 
 import("//build/config/android/rules.gni")
 
-# TODO(GYP): should be java_library
 # GYP: //testing/android/junit_test.gyp:junit_test_support
-android_library("junit_test_support") {
+java_library("junit_test_support") {
   DEPRECATED_java_in_dir = "java/src"
   deps = [
     "//third_party/junit"
   ]
 }
 
-# TODO(GYP): should be java_library
 # GYP: //testing/android/junit_test.gyp:junit_unit_tests
-android_library("junit_unittests") {
+java_binary("junit_unittests") {
   deps = [
     ":junit_test_support",
     "//third_party/junit",
   ]
-#main_class = "org.chromium.testing.local.JuniTestMain"
+  main_class = "org.chromium.testing.local.JunitTestMain"
   DEPRECATED_java_in_dir = "javatests/src"
 }
