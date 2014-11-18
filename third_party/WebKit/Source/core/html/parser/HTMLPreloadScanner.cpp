@@ -254,7 +254,6 @@ private:
             // FIXME - Don't match media multiple times.
             m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
         }
-
     }
 
     template<typename NameType>
@@ -374,6 +373,7 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassRefPtr<Med
     : m_documentURL(documentURL)
     , m_inStyle(false)
     , m_inPicture(false)
+    , m_isAppCacheEnabled(false)
     , m_templateCount(0)
     , m_mediaValues(mediaValues)
 {
@@ -386,7 +386,7 @@ TokenPreloadScanner::~TokenPreloadScanner()
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint()
 {
     TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_templateCount));
+    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_isAppCacheEnabled, m_templateCount));
     return checkpoint;
 }
 
@@ -396,6 +396,7 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     const Checkpoint& checkpoint = m_checkpoints[checkpointIndex];
     m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
     m_inStyle = checkpoint.inStyle;
+    m_isAppCacheEnabled = checkpoint.isAppCacheEnabled;
     m_templateCount = checkpoint.templateCount;
     m_cssScanner.reset();
     m_checkpoints.clear();
@@ -414,6 +415,10 @@ void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedStr
 template<typename Token>
 void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
+    // Disable preload for documents with AppCache.
+    if (m_isAppCacheEnabled)
+        return;
+
     switch (token.type()) {
     case HTMLToken::Character: {
         if (!m_inStyle)
@@ -457,6 +462,11 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             updatePredictedBaseURL(token);
             return;
         }
+        if (match(tagImpl, htmlTag) && token.getAttributeItem(manifestAttr)) {
+            m_isAppCacheEnabled = true;
+            return;
+        }
+
         if (RuntimeEnabledFeatures::pictureEnabled() && (match(tagImpl, pictureTag))) {
             m_inPicture = true;
             m_pictureSourceURL = String();
