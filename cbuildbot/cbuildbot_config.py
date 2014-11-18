@@ -1118,71 +1118,12 @@ internal_chromium_pfq.add_config('master-chromium-pfq',
   chrome_sdk=False,
 )
 
-internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
-  boards=['x86-generic'],
-)
-
-internal_chromium_pfq.add_config('daisy-chromium-pfq',
-  non_testable_builder,
-  boards=['daisy'],
-)
-
-internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
-  disk_layout='2gb-rootfs',
-  boards=['amd64-generic'],
-)
-
-internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
-  disk_layout='2gb-rootfs',
-  boards=['amd64-generic_freon'],
-  vm_tests=[],
-)
-
-internal_chromium_pfq.add_config('arm-generic_freon-chromium-pfq',
-  non_testable_builder,
-  boards=['arm-generic_freon'],
-)
-
 chrome_pfq = internal_chromium_pfq.derive(
   official,
   important=True,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome Uprev & Build (internal)',
   prebuilts=constants.PRIVATE,
-)
-
-chrome_pfq.add_config('alex-chrome-pfq',
-  boards=['x86-alex'],
-)
-
-chrome_pfq.add_config('lumpy-chrome-pfq',
-  boards=['lumpy'],
-  afdo_generate=True,
-  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
-      minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
-)
-
-chrome_pfq.add_config('daisy_skate-chrome-pfq',
-  non_testable_builder,
-  boards=['daisy_skate'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
-)
-
-chrome_pfq.add_config('falco-chrome-pfq',
-  boards=['falco'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
-)
-
-chrome_pfq.add_config('link_freon-chrome-pfq',
-  boards=['link_freon'],
-  hw_tests=[],
-  # This build can't run vm_tests, bug 387507
-  vm_tests=[],
-)
-
-chrome_pfq.add_config('rush_ryu-chrome-pfq',
-  non_testable_builder,
-  boards=['rush_ryu'],
 )
 
 chrome_try = _config(
@@ -1316,9 +1257,9 @@ _x86_external_boards = frozenset([
 
 # TODO(akeshet) eliminate the need for this.
 _x86_internal_non_release_boards = frozenset([
+  'fox_wtm2',
   'duck',
   'stumpy_moblab',
-  'fox_wtm2',
 ])
 
 _mips_internal_release_boards = frozenset([
@@ -1427,6 +1368,11 @@ _moblab_boards = frozenset([
   'panther_moblab',
 ])
 
+_freon_boards = frozenset([
+  'link_freon',
+  'peppy_freon',
+])
+
 _minimal_profile_boards = frozenset([
   'bobcat',
 ])
@@ -1445,6 +1391,8 @@ def _CreateBaseConfigs():
       base.update(moblab)
     if board in _minimal_profile_boards:
       base.update(profile='minimal')
+    if board in _freon_boards:
+      base.update(vm_tests=[], hw_tests=[])
     _base_configs[board] = base.derive(boards=[board])
 
 _CreateBaseConfigs()
@@ -1508,6 +1456,61 @@ def _AddFullConfigs():
       internal_chromium_pfq.add_config(config_name, pfq_config)
 
 _AddFullConfigs()
+
+internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
+  boards=['x86-generic'],
+)
+
+internal_chromium_pfq.add_config('daisy-chromium-pfq',
+  non_testable_builder,
+  boards=['daisy'],
+)
+
+internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
+  disk_layout='2gb-rootfs',
+  boards=['amd64-generic'],
+)
+
+internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
+  disk_layout='2gb-rootfs',
+  boards=['amd64-generic_freon'],
+  vm_tests=[],
+)
+
+internal_chromium_pfq.add_config('arm-generic_freon-chromium-pfq',
+  non_testable_builder,
+  boards=['arm-generic_freon'],
+)
+
+chrome_pfq.add_config('alex-chrome-pfq',
+  boards=['x86-alex'],
+)
+
+chrome_pfq.add_config('lumpy-chrome-pfq',
+  boards=['lumpy'],
+  afdo_generate=True,
+  hw_tests=[AFDORecordTest()] + HWTestConfig.DefaultListPFQ(
+      minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
+)
+
+chrome_pfq.add_config('daisy_skate-chrome-pfq',
+  non_testable_builder,
+  boards=['daisy_skate'],
+  hw_tests=HWTestConfig.DefaultListPFQ(),
+)
+
+chrome_pfq.add_config('falco-chrome-pfq',
+  boards=['falco'],
+  hw_tests=HWTestConfig.DefaultListPFQ(),
+)
+
+chrome_pfq.add_config('link_freon-chrome-pfq',
+  _base_configs['link_freon'],
+)
+
+chrome_pfq.add_config('rush_ryu-chrome-pfq',
+  _base_configs['rush_ryu'],
+)
 
 _telemetry_boards = frozenset([
     'amd64-generic',
@@ -2344,18 +2347,13 @@ _release.add_config('link-release',
   important=True,
 )
 
-_release.add_config('lumpy-release',
-  boards=['lumpy'],
-  critical_for_chrome=True,
-)
-
 _release.add_config('quawks-release',
   boards=['quawks'],
   useflags=_release['useflags'] + ['highdpi'],
 )
 
 _release.add_config('samus-release',
-  boards=['samus'],
+  _base_configs['samus'],
   useflags=_release['useflags'] + ['highdpi'],
   important=True,
 )
@@ -2373,24 +2371,22 @@ _release_freon = _release.derive(
 )
 
 _release_freon.add_config('link_freon-release',
+  _base_configs['link_freon'],
   boards=['link_freon'],
   useflags=_release['useflags'] + ['highdpi'],
   hw_tests=[],
   important=True,
 )
 
-_release_freon.add_config('peppy_freon-release',
-  boards=['peppy_freon'],
-)
-
 ### Arm release configs.
 
 _arm_release = _release.derive(non_testable_builder)
 
-_arm_release.add_config('daisy-release',
-  boards=['daisy'],
-  critical_for_chrome=True,
-)
+_critical_for_chrome_boards = frozenset([
+    'daisy',
+    'lumpy',
+    'parrot',
+])
 
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
@@ -2416,19 +2412,7 @@ _arm_release.add_config('nyan_blaze-release',
 # specific above already.
 def _AddReleaseConfigs():
   for board in _all_release_boards:
-    if board in _x86_release_boards:
-      board_config = _config(
-          boards=(board,),
-      )
-    else:
-      board_config = _config(
-          non_testable_builder,
-          boards=(board,),
-      )
-
-    config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE)
-    if config_name not in config:
-      _release.add_config(config_name, board_config)
+    board_config = _base_configs[board].derive()
 
     # We have to mark all autogenerated PFQs as not important so the master
     # does not wait for them.  http://crbug.com/386214
@@ -2445,6 +2429,15 @@ def _AddReleaseConfigs():
     config_name = '%s-chrome-pfq' % board
     if config_name not in config:
       chrome_pfq.add_config(config_name, pfq_config)
+
+    # This flag only needs to be applied to release
+    # configs.
+    if board in _critical_for_chrome_boards:
+      board_config['critical_for_chrome'] = True
+
+    config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE)
+    if config_name not in config:
+      _release.add_config(config_name, board_config)
 
 _AddReleaseConfigs()
 
@@ -2794,13 +2787,16 @@ _depthcharge_full_internal = full.derive(
   description='Firmware Informational',
 )
 
-_x86_firmware_boards = (
+_firmware_boards = frozenset([
   'auron',
   'bayleybay',
   'beltino',
   'butterfly',
   'candy',
   'clapper',
+  'daisy',
+  'daisy_skate',
+  'daisy_spring',
   'enguarde',
   'expresso',
   'falco',
@@ -2814,22 +2810,25 @@ _x86_firmware_boards = (
   'panther',
   'parrot',
   'parry',
+  'peach_pi',
+  'peach_pit',
   'peppy',
   'quawks',
   'rambi',
   'samus',
-  'squawks',
-  'stout',
   'slippy',
+  'squawks',
+  'storm',
+  'stout',
   'stumpy',
   'swanky',
   'winky',
   'wolf',
   'x86-mario',
   'zako',
-)
+])
 
-_x86_depthcharge_firmware_boards = (
+_x86_depthcharge_firmware_boards = frozenset([
   'auron',
   'bayleybay',
   'candy',
@@ -2849,39 +2848,25 @@ _x86_depthcharge_firmware_boards = (
   'swanky',
   'winky',
   'zako',
-)
+])
 
-_arm_firmware_boards = (
-  'daisy',
-  'daisy_skate',
-  'daisy_spring',
-  'peach_pit',
-  'peach_pi',
-  'storm',
-)
 
 def _AddFirmwareConfigs():
   """Add x86 and arm firmware configs."""
-  for board in _x86_firmware_boards:
+  for board in _firmware_boards:
     _firmware_release.add_config('%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
-      boards=[board],
+        _base_configs[board],
     )
 
   for board in _x86_depthcharge_firmware_boards:
     _depthcharge_release.add_config(
         '%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FIRMWARE),
-        boards=[board],
+        _base_configs[board],
     )
     _depthcharge_full_internal.add_config(
         '%s-%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FULL,
                          CONFIG_TYPE_FIRMWARE),
-        boards=[board],
-    )
-
-  for board in _arm_firmware_boards:
-    _firmware_release.add_config('%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
-      non_testable_builder,
-      boards=[board],
+        _base_configs[board],
     )
 
 _AddFirmwareConfigs()
