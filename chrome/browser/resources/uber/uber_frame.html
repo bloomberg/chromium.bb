@@ -15,21 +15,23 @@
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
 <h1 i18n-content="shortProductName"></h1>
-<ul>
+<ul role="tablist">
   <li i18n-values="controls:historyHost;override:overridesHistory;
-                   group:historyGroup" hidden>
+                   group:historyGroup" role="tab" hidden>
     <button class="custom-appearance"
         i18n-content="historyDisplayName"></button>
   </li>
-  <li i18n-values="controls:extensionsHost;group:extensionsGroup" hidden>
+  <li i18n-values="controls:extensionsHost;group:extensionsGroup" role="tab"
+      hidden>
     <button class="custom-appearance"
         i18n-content="extensionsDisplayName"></button>
   </li>
-  <li i18n-values="controls:settingsHost;group:settingsGroup" hidden>
+  <li i18n-values="controls:settingsHost;group:settingsGroup" role="tab" hidden>
     <button class="custom-appearance"
         i18n-content="settingsDisplayName"></button>
   </li>
-  <li id="helpNavItem" i18n-values="controls:helpHost;group:helpGroup" hidden>
+  <li id="helpNavItem" i18n-values="controls:helpHost;group:helpGroup"
+      role="tab" hidden>
     <button class="custom-appearance"
         i18n-content="helpDisplayName"></button>
   </li>
