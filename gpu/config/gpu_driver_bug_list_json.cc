@@ -915,17 +915,6 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 79,
-      "cr_bugs": [371530],
-      "description": "Testing ARB sync fences is broken on MacOSX",
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "disable_arb_sync"
-      ]
-    },
-    {
       "id": 82,
       "description": "PBO mappings segfault on certain older Qualcomm drivers",
       "cr_bugs": [394510],
