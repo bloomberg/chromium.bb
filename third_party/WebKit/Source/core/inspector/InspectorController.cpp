@@ -470,8 +470,6 @@ void InspectorController::didProcessTask()
         timelineAgent->didProcessTask();
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->didProcessTask();
-    if (InspectorDOMDebuggerAgent* domDebuggerAgent = m_instrumentingAgents->inspectorDOMDebuggerAgent())
-        domDebuggerAgent->didProcessTask();
 }
 
 void InspectorController::flushPendingFrontendMessages()

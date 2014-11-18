@@ -132,3 +132,15 @@ Framework.throwFrameworkExceptionAndCatch = function()
     } catch(e) {
     }
 }
+
+Framework.scheduleUntilDone = function(callback, delay)
+{
+    Framework.schedule(Framework_scheduleUntilDone, delay);
+
+    function Framework_scheduleUntilDone()
+    {
+        if (callback && callback())
+            return;
+        Framework.schedule(Framework_scheduleUntilDone, delay);
+    }
+}

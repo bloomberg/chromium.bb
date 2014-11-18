@@ -178,14 +178,14 @@ public:
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
+    void willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+    void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void debuggerWasEnabled() = 0;
         virtual void debuggerWasDisabled() = 0;
-        virtual void stepInto() = 0;
-        virtual void didPause() = 0;
         virtual bool canPauseOnPromiseEvent() = 0;
         virtual void didCreatePromise() = 0;
         virtual void didResolvePromise() = 0;
@@ -224,6 +224,7 @@ private:
     SkipPauseRequest shouldSkipStepPause();
     bool isTopCallFrameInFramework();
 
+    void schedulePauseOnNextStatementIfSteppingInto();
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
 
@@ -254,6 +255,13 @@ private:
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
     typedef HashMap<String, std::pair<String, BreakpointSource> > DebugServerBreakpointToBreakpointIdAndSourceMap;
 
+    enum DebuggerStep {
+        NoStep = 0,
+        StepInto,
+        StepOver,
+        StepOut
+    };
+
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Debugger* m_frontend;
     RefPtr<ScriptState> m_pausedScriptState;
@@ -264,8 +272,8 @@ private:
     String m_continueToLocationBreakpointId;
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<JSONObject> m_breakAuxData;
+    DebuggerStep m_scheduledDebuggerStep;
     bool m_javaScriptPauseScheduled;
-    bool m_debuggerStepScheduled;
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
     RawPtrWillBeMember<Listener> m_listener;

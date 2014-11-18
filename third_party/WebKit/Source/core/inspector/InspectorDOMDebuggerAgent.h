@@ -93,10 +93,7 @@ public:
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
-    void willExecuteCustomElementCallback(Element*);
     void willCloseWindow();
-
-    void didProcessTask();
 
     virtual void clearFrontend() override;
     virtual void discardAgent() override;
@@ -114,8 +111,6 @@ private:
     // InspectorDebuggerAgent::Listener implementation.
     virtual void debuggerWasEnabled() override;
     virtual void debuggerWasDisabled() override;
-    virtual void stepInto() override;
-    virtual void didPause() override;
     virtual bool canPauseOnPromiseEvent() override;
     virtual void didCreatePromise() override;
     virtual void didResolvePromise() override;
@@ -133,7 +128,6 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;
-    bool m_pauseInNextEventListener;
 };
 
 } // namespace blink

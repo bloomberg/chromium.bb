@@ -39,7 +39,6 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -183,8 +182,6 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     ASSERT(!receiver.IsEmpty());
 
-    InspectorInstrumentation::willExecuteCustomElementCallback(element);
-
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
@@ -226,8 +223,6 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
         newValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(isolate, newValue))
     };
 
-    InspectorInstrumentation::willExecuteCustomElementCallback(element);
-
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(executionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
@@ -252,8 +247,6 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
     v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
     ASSERT(!receiver.IsEmpty());
-
-    InspectorInstrumentation::willExecuteCustomElementCallback(element);
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);

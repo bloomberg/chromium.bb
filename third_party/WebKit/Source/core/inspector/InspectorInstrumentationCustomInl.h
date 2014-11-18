@@ -43,7 +43,6 @@ void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
 
 bool canvasAgentEnabled(ExecutionContext*);
 bool consoleAgentEnabled(ExecutionContext*);
-bool timelineAgentEnabled(ExecutionContext*);
 
 inline bool isDebuggerPaused(LocalFrame* frame)
 {

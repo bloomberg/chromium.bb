@@ -160,7 +160,7 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
-    if (InspectorInstrumentation::timelineAgentEnabled(context)) {
+    if (InspectorInstrumentation::hasFrontends()) {
         int scriptId = 0;
         String resourceName;
         int lineNumber = 1;

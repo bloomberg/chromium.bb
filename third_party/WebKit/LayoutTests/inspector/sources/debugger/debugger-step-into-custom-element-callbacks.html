@@ -4,18 +4,23 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function testFunction() {
+function testFunction()
+{
     var proto = Object.create(HTMLElement.prototype);
-    proto.createdCallback = function createdCallback() {
+    proto.createdCallback = function createdCallback()
+    {
         output('Invoked createdCallback.');
     };
-    proto.attachedCallback = function attachedCallback() {
+    proto.attachedCallback = function attachedCallback()
+    {
         output('Invoked attachedCallback.');
     };
-    proto.detachedCallback = function detachedCallback() {
+    proto.detachedCallback = function detachedCallback()
+    {
         output('Invoked detachedCallback.');
     };
-    proto.attributeChangedCallback = function attributeChangedCallback() {
+    proto.attributeChangedCallback = function attributeChangedCallback()
+    {
         output('Invoked attributeChangedCallback.');
     };
     var FooElement = document.registerElement('x-foo', { prototype: proto });
@@ -29,7 +34,8 @@ function testFunction() {
     foo.remove();
 }
 
-var test = function() {
+function test()
+{
     InspectorTest.startDebuggerTest(step1, true);
 
     function step1()
@@ -109,6 +115,5 @@ var test = function() {
 <p>
 Tests that stepping into custom element methods will lead to a pause in the callbacks.
 </p>
-
 </body>
 </html>

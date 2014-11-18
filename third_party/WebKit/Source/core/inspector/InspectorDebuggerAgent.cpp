@@ -122,8 +122,8 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_frontend(0)
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
+    , m_scheduledDebuggerStep(NoStep)
     , m_javaScriptPauseScheduled(false)
-    , m_debuggerStepScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
     , m_listener(nullptr)
@@ -721,11 +721,21 @@ void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString, cons
 
 void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
-    if (m_javaScriptPauseScheduled || isPaused())
+    if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
     m_pausingOnNativeEvent = true;
+    scriptDebugServer().setPauseOnNextStatement(true);
+}
+
+void InspectorDebuggerAgent::schedulePauseOnNextStatementIfSteppingInto()
+{
+    if (m_scheduledDebuggerStep != StepInto || m_javaScriptPauseScheduled || isPaused())
+        return;
+    clearBreakDetails();
+    m_pausingOnNativeEvent = false;
+    m_skippedStepInCount = 0;
     scriptDebugServer().setPauseOnNextStatement(true);
 }
 
@@ -961,7 +971,7 @@ void InspectorDebuggerAgent::resume(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    m_debuggerStepScheduled = false;
+    m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().continueProgram();
@@ -971,7 +981,7 @@ void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    m_debuggerStepScheduled = true;
+    m_scheduledDebuggerStep = StepOver;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepOverStatement();
@@ -981,19 +991,17 @@ void InspectorDebuggerAgent::stepInto(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    m_debuggerStepScheduled = true;
+    m_scheduledDebuggerStep = StepInto;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepIntoStatement();
-    if (m_listener)
-        m_listener->stepInto();
 }
 
 void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
-    m_debuggerStepScheduled = true;
+    m_scheduledDebuggerStep = StepOut;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepOutOfFunction();
@@ -1236,6 +1244,19 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
     }
 }
 
+void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, int scriptId, const String&, int)
+{
+    // Skip unknown scripts (i.e. InjectedScript).
+    if (!m_scripts.contains(String::number(scriptId)))
+        return;
+    schedulePauseOnNextStatementIfSteppingInto();
+}
+
+void InspectorDebuggerAgent::willEvaluateScript(LocalFrame*, const String&, int)
+{
+    schedulePauseOnNextStatementIfSteppingInto();
+}
+
 PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.isEmpty())
@@ -1402,7 +1423,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
         result = ScriptDebugListener::NoSkip; // Don't skip explicit breakpoints even if set in frameworks.
     else if (!exception.isEmpty())
         result = shouldSkipExceptionPause();
-    else if (m_debuggerStepScheduled || m_pausingOnNativeEvent)
+    else if (m_scheduledDebuggerStep != NoStep || m_pausingOnNativeEvent)
         result = shouldSkipStepPause();
     else
         result = ScriptDebugListener::NoSkip;
@@ -1438,8 +1459,8 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     }
 
     m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
+    m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
-    m_debuggerStepScheduled = false;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
     m_skippedStepInCount = 0;
@@ -1448,8 +1469,6 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
         scriptDebugServer().removeBreakpoint(m_continueToLocationBreakpointId);
         m_continueToLocationBreakpointId = "";
     }
-    if (m_listener)
-        m_listener->didPause();
     return result;
 }
 
@@ -1472,7 +1491,7 @@ void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::E
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
-    m_debuggerStepScheduled = false;
+    m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
     scriptDebugServer().breakProgram();
@@ -1488,8 +1507,8 @@ void InspectorDebuggerAgent::clear()
     promiseTracker().clear();
     m_continueToLocationBreakpointId = String();
     clearBreakDetails();
+    m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
-    m_debuggerStepScheduled = false;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
     ErrorString error;
@@ -1525,6 +1544,7 @@ void InspectorDebuggerAgent::removeBreakpoint(const String& scriptId, int lineNu
 
 void InspectorDebuggerAgent::reset()
 {
+    m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
     asyncCallStackTracker().clear();
