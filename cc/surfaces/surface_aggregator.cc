@@ -381,6 +381,19 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
   }
 }
 
+void SurfaceAggregator::RemoveUnreferencedChildren() {
+  for (const auto& surface : previous_contained_surfaces_) {
+    if (!contained_surfaces_.count(surface.first)) {
+      SurfaceToResourceChildIdMap::iterator it =
+          surface_id_to_resource_child_id_.find(surface.first);
+      if (it != surface_id_to_resource_child_id_.end()) {
+        provider_->DestroyChild(it->second);
+        surface_id_to_resource_child_id_.erase(it);
+      }
+    }
+  }
+}
+
 scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
@@ -406,6 +419,7 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   DCHECK(referenced_surfaces_.empty());
 
   dest_pass_list_ = NULL;
+  RemoveUnreferencedChildren();
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();
 

@@ -1242,6 +1242,41 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   factory.Destroy(surface_id);
 }
 
+TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
+  ResourceTrackingSurfaceFactoryClient client;
+  SurfaceFactory factory(&manager_, &client);
+  SurfaceId surface_id(7u);
+  factory.Create(surface_id, SurfaceSize());
+  SurfaceId surface_id2(8u);
+  factory.Create(surface_id2, SurfaceSize());
+
+  ResourceProvider::ResourceId ids[] = {11, 12, 13};
+  SubmitFrameWithResources(ids, arraysize(ids), &factory, surface_id);
+  ResourceProvider::ResourceId ids2[] = {14, 15, 16};
+  SubmitFrameWithResources(ids2, arraysize(ids2), &factory, surface_id2);
+
+  scoped_ptr<CompositorFrame> frame = aggregator_->Aggregate(surface_id);
+
+  SubmitFrameWithResources(NULL, 0, &factory, surface_id);
+
+  // Nothing should be available to be returned yet.
+  EXPECT_TRUE(client.returned_resources().empty());
+
+  frame = aggregator_->Aggregate(surface_id2);
+
+  // surface_id wasn't referenced, so its resources should be returned.
+  ASSERT_EQ(3u, client.returned_resources().size());
+  ResourceProvider::ResourceId returned_ids[3];
+  for (size_t i = 0; i < 3; ++i) {
+    returned_ids[i] = client.returned_resources()[i].id;
+  }
+  EXPECT_THAT(returned_ids,
+              testing::WhenSorted(testing::ElementsAreArray(ids)));
+  EXPECT_EQ(3u, resource_provider_->num_resources());
+  factory.Destroy(surface_id);
+  factory.Destroy(surface_id2);
+}
+
 }  // namespace
 }  // namespace cc
 

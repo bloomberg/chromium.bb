@@ -52,6 +52,10 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                        SurfaceId surface_id);
   void CopyPasses(const DelegatedFrameData* frame_data, Surface* surface);
 
+  // Remove Surfaces that were referenced before but aren't currently
+  // referenced from the ResourceProvider.
+  void RemoveUnreferencedChildren();
+
   bool TakeResources(Surface* surface,
                      const DelegatedFrameData* frame_data,
                      RenderPassList* render_pass_list);
