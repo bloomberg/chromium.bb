@@ -199,6 +199,14 @@ bool WebView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   return web_contents() && !web_contents()->IsCrashed();
 }
 
+bool WebView::OnMousePressed(const ui::MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
+    RequestFocus();
+    return true;
+  }
+  return View::OnMousePressed(event);
+}
+
 void WebView::OnFocus() {
   if (web_contents())
     web_contents()->Focus();

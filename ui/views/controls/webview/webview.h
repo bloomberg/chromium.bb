@@ -103,6 +103,7 @@ class WEBVIEW_EXPORT WebView : public View,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleState(ui::AXViewState* state) override;
