@@ -106,16 +106,6 @@ class DataReductionProxySettings
       PrefService* prefs,
       net::URLRequestContextGetter* url_request_context_getter);
 
-  // Initializes the data reduction proxy with profile and local state prefs,
-  // a |UrlRequestContextGetter| for canary probes, and a proxy configurator.
-  // The caller must ensure that all parameters remain alive for the lifetime of
-  // the |DataReductionProxySettings| instance.
-  // TODO(marq): Remove when iOS supports the new interface above.
-  void InitDataReductionProxySettings(
-      PrefService* prefs,
-      net::URLRequestContextGetter* url_request_context_getter,
-      DataReductionProxyConfigurator* configurator);
-
   // Sets the |statistics_prefs_| to be used for data reduction proxy pref reads
   // and writes.
   void SetDataReductionProxyStatisticsPrefs(

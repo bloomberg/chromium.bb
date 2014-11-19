@@ -139,15 +139,6 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
-void DataReductionProxySettings::InitDataReductionProxySettings(
-    PrefService* prefs,
-    net::URLRequestContextGetter* url_request_context_getter,
-    DataReductionProxyConfigurator* configurator) {
-  InitDataReductionProxySettings(prefs,
-                                 url_request_context_getter);
-  SetProxyConfigurator(configurator);
-}
-
 void DataReductionProxySettings::SetDataReductionProxyStatisticsPrefs(
     DataReductionProxyStatisticsPrefs* statistics_prefs) {
   statistics_prefs_ = statistics_prefs;
