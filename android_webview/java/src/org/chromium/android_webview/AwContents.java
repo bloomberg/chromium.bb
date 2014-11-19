@@ -1754,6 +1754,35 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyed()) mWebContents.evaluateJavaScript(script, null);
     }
 
+    /**
+     * Post a message to a frame.
+     * TODO(sgurun) investigate if we should hardcode the source origin to some
+     * value instead.
+     *
+     * @param frameName The name of the frame. If the name is null the message is posted
+     *                  to the main frame.
+     * @param message   The message
+     * @param sourceOrigin  The source origin
+     * @param targetOrigin  The target origin
+     * @param msgPorts The sent message ports, if any. Pass null if there is no
+     *                 message ports to pass.
+     */
+    public void postMessageToFrame(String frameName, String message,
+            String sourceOrigin, String targetOrigin, int[] msgPorts) {
+        nativePostMessageToFrame(mNativeAwContents, frameName, message, sourceOrigin,
+                targetOrigin, msgPorts);
+    }
+
+    /**
+     * Creates a message channel.
+     *
+     * @param callback The message channel created.
+     */
+    public void createMessageChannel(ValueCallback<MessageChannel> callback) {
+        nativeCreateMessageChannel(mNativeAwContents, callback);
+    }
+
+
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
     //--------------------------------------------------------------------------------------------
@@ -2164,6 +2193,12 @@ public class AwContents implements SmartClipProvider {
         if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
             postInvalidateOnAnimation();
         }
+    }
+
+    @CalledByNative
+    private static void onMessageChannelCreated(int portId1, int portId2,
+            ValueCallback<MessageChannel> callback) {
+        callback.onReceiveValue(new MessageChannel(portId1, portId2));
     }
 
     // -------------------------------------------------------------------------------------------
@@ -2643,4 +2678,10 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativePreauthorizePermission(long nativeAwContents, String origin,
             long resources);
+
+    private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
+            String message, String sourceOrigin, String targetOrigin, int[] msgPorts);
+
+    private native void nativeCreateMessageChannel(long nativeAwContents,
+            ValueCallback<MessageChannel> callback);
 }

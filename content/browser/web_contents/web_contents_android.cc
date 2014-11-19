@@ -442,23 +442,4 @@ void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
       ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
-// TODO(sgurun) add support for posting a frame whose name is known (only
-//               main frame is supported at this time, see crbug.com/389721)
-// TODO(sgurun) add support for passing message ports
-void WebContentsAndroid::PostMessageToFrame(JNIEnv* env, jobject obj,
-    jstring frame_name, jstring message, jstring source_origin,
-    jstring target_origin) {
-
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (!host)
-    return;
-  ViewMsg_PostMessage_Params params;
-  params.source_origin = ConvertJavaStringToUTF16(env, source_origin);
-  params.target_origin = ConvertJavaStringToUTF16(env, target_origin);
-  params.data = ConvertJavaStringToUTF16(env, message);
-  params.is_data_raw_string = true;
-  params.source_routing_id = MSG_ROUTING_NONE;
-  host->Send(new ViewMsg_PostMessageEvent(host->GetRoutingID(), params));
-}
-
 }  // namespace content

@@ -101,8 +101,6 @@ class CONTENT_EXPORT WebContentsAndroid
                           jobject obj,
                           jstring script,
                           jobject callback);
-  void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
-      jstring message, jstring source_origin, jstring target_origin);
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

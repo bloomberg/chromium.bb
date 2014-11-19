@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -131,6 +132,23 @@ void OnIoThreadClientReady(content::RenderFrameHost* rfh) {
   int render_frame_id = rfh->GetRoutingID();
   AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
       render_process_id, render_frame_id);
+}
+
+void OnMessageChannelCreated(ScopedJavaGlobalRef<jobject>* callback,
+                             int* port1,
+                             int* port2) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AwContents_onMessageChannelCreated(env, *port1, *port2,
+    callback->obj());
+}
+
+void PostMessageToFrameOnIOThread(WebContents* web_contents,
+                                  base::string16* source_origin,
+                                  base::string16* target_origin,
+                                  base::string16* data,
+                                  std::vector<int>* ports) {
+  content::MessagePortProvider::PostMessageToFrame(web_contents,
+      *source_origin, *target_origin, *data, *ports);
 }
 
 }  // namespace
@@ -1055,6 +1073,55 @@ void AwContents::TrimMemory(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_view_renderer_.TrimMemory(level, visible);
 }
+
+// TODO(sgurun) add support for posting a frame whose name is known (only
+//               main frame is supported at this time, see crbug.com/389721)
+void AwContents::PostMessageToFrame(JNIEnv* env, jobject obj,
+    jstring frame_name, jstring message, jstring source_origin,
+    jstring target_origin, jintArray msgPorts) {
+
+  base::string16* j_source_origin = new base::string16;
+  ConvertJavaStringToUTF16(env, source_origin, j_source_origin);
+  base::string16* j_target_origin = new base::string16;
+  ConvertJavaStringToUTF16(env, target_origin, j_target_origin);
+  base::string16* j_message = new base::string16;
+  ConvertJavaStringToUTF16(env, message, j_message);
+  std::vector<int>* j_ports  = new std::vector<int>;
+
+  if (msgPorts != nullptr)
+    base::android::JavaIntArrayToIntVector(env, msgPorts, j_ports);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PostMessageToFrameOnIOThread,
+                 web_contents_.get(),
+                 base::Owned(j_source_origin),
+                 base::Owned(j_target_origin),
+                 base::Owned(j_message),
+                 base::Owned(j_ports)));
+}
+
+void AwContents::CreateMessageChannel(JNIEnv* env, jobject obj,
+    jobject callback) {
+  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
+  j_callback->Reset(env, callback);
+
+  int* port1 = new int;
+  int* port2 = new int;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&content::MessagePortProvider::CreateMessageChannel,
+                 web_contents_.get(),
+                 port1,
+                 port2),
+      base::Bind(&OnMessageChannelCreated,
+                 base::Owned(j_callback),
+                 base::Owned(port1),
+                 base::Owned(port2)));
+}
+
 
 void SetShouldDownloadFavicons(JNIEnv* env, jclass jclazz) {
   g_should_download_favicons = true;

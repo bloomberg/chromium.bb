@@ -71,6 +71,7 @@ void MessagePortService::OnMessagePortMessageFilterClosing(
 void MessagePortService::Create(int route_id,
                                 MessagePortMessageFilter* filter,
                                 int* message_port_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   *message_port_id = ++next_message_port_id_;
 
   MessagePort port;

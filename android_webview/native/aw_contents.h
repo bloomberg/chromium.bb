@@ -220,6 +220,11 @@ class AwContents : public FindHelper::Listener,
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
   void TrimMemory(JNIEnv* env, jobject obj, jint level, jboolean visible);
 
+  void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
+      jstring message, jstring source_origin, jstring target_origin,
+      jintArray msgPorts);
+  void CreateMessageChannel(JNIEnv* env, jobject obj, jobject callback);
+
  private:
   void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);
