@@ -160,11 +160,32 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLenum internalformat, GLsizei width, '
       'GLsizei height, GLint border, GLsizei imageSize, const void* data', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glCompressedTexImage3D',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments':
+      'GLenum target, GLint level, GLenum internalformat, GLsizei width, '
+      'GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, '
+      'const void* data', },
+{ 'return_type': 'void',
   'names': ['glCompressedTexSubImage2D'],
   'arguments':
-     'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
-     'GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, '
-     'const void* data', },
+      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+      'GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, '
+      'const void* data', },
+# TODO(zmo): wait for MOCK_METHOD11.
+# { 'return_type': 'void',
+#   'versions': [{ 'name': 'glCompressedTexSubImage3D',
+#                  'gl_versions': ['gl3', 'gl4', 'es3'] }],
+#   'arguments':
+#       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+#       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
+#       'GLenum format, GLsizei imageSize, const void* data', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glCopyBufferSubData',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],  # GL 3.1 or higher.
+  'arguments':
+      'GLenum readTarget, GLenum writeTarget, GLintptr readOffset, '
+      'GLintptr writeOffset, GLsizeiptr size', },
 { 'return_type': 'void',
   'names': ['glCopyTexImage2D'],
   'arguments':
@@ -175,6 +196,12 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLint level, GLint xoffset, '
       'GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glCopyTexSubImage3D',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments':
+      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+      'GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
 { 'return_type': 'GLuint',
   'names': ['glCreateProgram'],
   'arguments': 'void', },
@@ -343,6 +370,11 @@ GL_FUNCTIONS = [
       'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
       'GLint level, GLsizei samples', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glFramebufferTextureLayer',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLenum target, GLenum attachment, GLuint texture, GLint level, '
+               'GLint layer', },
+{ 'return_type': 'void',
   'names': ['glFrontFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
@@ -419,6 +451,10 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glGetFloatv'],
   'arguments': 'GLenum pname, GLfloat* params', },
+{ 'return_type': 'GLint',
+  'versions': [{ 'name': 'glGetFragDataLocation',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint program, const char* name', },
 { 'return_type': 'void',
   'names': ['glGetFramebufferAttachmentParameterivEXT',
             'glGetFramebufferAttachmentParameteriv'],
@@ -436,6 +472,11 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glGetIntegerv'],
   'arguments': 'GLenum pname, GLint* params', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glGetInternalformativ',
+                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.2 or higher.
+  'arguments': 'GLenum target, GLenum internalformat, GLenum pname, '
+               'GLsizei bufSize, GLint* params', },
 { 'return_type': 'void',
   'known_as': 'glGetProgramBinary',
   'versions': [{ 'name': 'glGetProgramBinaryOES' },
@@ -539,6 +580,12 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glInsertEventMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glInvalidateSubFramebuffer',
+                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.3 or higher.
+  'arguments':
+      'GLenum target, GLsizei numAttachments, const GLenum* attachments, '
+      'GLint x, GLint y, GLint width, GLint height', },
 { 'return_type': 'GLboolean',
   'names': ['glIsBuffer'],
   'arguments': 'GLuint buffer', },
@@ -774,6 +821,13 @@ GL_FUNCTIONS = [
       'GLsizei height, GLint border, GLenum format, GLenum type, '
       'const void* pixels', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glTexImage3D',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments':
+      'GLenum target, GLint level, GLint internalformat, GLsizei width, '
+      'GLsizei height, GLsizei depth, GLint border, GLenum format, '
+      'GLenum type, const void* pixels', },
+{ 'return_type': 'void',
   'names': ['glTexParameterf'],
   'arguments': 'GLenum target, GLenum pname, GLfloat param', },
 { 'return_type': 'void',
@@ -796,11 +850,24 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glTexStorage3D',
+                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.2 or higher.
+  'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
+               'GLsizei width, GLsizei height, GLsizei depth', },
+{ 'return_type': 'void',
   'names': ['glTexSubImage2D'],
   'arguments':
      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
      'GLsizei width, GLsizei height, GLenum format, GLenum type, '
      'const void* pixels', },
+# TODO(zmo): wait for MOCK_METHOD11.
+# { 'return_type': 'void',
+#   'versions': [{ 'name': 'glTexSubImage3D',
+#                  'gl_versions': ['gl3', 'gl4', 'es3'] }],
+#   'arguments':
+#       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+#       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
+#       'GLenum format, GLenum type, const void* pixels', },
 { 'return_type': 'void',
   'names': ['glUniform1f'],
   'arguments': 'GLint location, GLfloat x', },
@@ -814,6 +881,14 @@ GL_FUNCTIONS = [
   'names': ['glUniform1iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform1ui',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLuint v0', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform1uiv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, const GLuint* v', },
+{ 'return_type': 'void',
   'names': ['glUniform2f'],
   'arguments': 'GLint location, GLfloat x, GLfloat y', },
 { 'return_type': 'void',
@@ -825,6 +900,14 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glUniform2iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform2ui',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLuint v0, GLuint v1', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform2uiv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, const GLuint* v', },
 { 'return_type': 'void',
   'names': ['glUniform3f'],
   'arguments': 'GLint location, GLfloat x, GLfloat y, GLfloat z', },
@@ -838,6 +921,14 @@ GL_FUNCTIONS = [
   'names': ['glUniform3iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform3ui',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLuint v0, GLuint v1, GLuint v2', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform3uiv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, const GLuint* v', },
+{ 'return_type': 'void',
   'names': ['glUniform4f'],
   'arguments': 'GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w', },
 { 'return_type': 'void',
@@ -850,7 +941,25 @@ GL_FUNCTIONS = [
   'names': ['glUniform4iv'],
   'arguments': 'GLint location, GLsizei count, const GLint* v', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform4ui',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniform4uiv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, const GLuint* v', },
+{ 'return_type': 'void',
   'names': ['glUniformMatrix2fv'],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix2x3fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix2x4fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
@@ -858,7 +967,27 @@ GL_FUNCTIONS = [
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix3x2fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix3x4fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
   'names': ['glUniformMatrix4fv'],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix4x2fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLint location, GLsizei count, '
+               'GLboolean transpose, const GLfloat* value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glUniformMatrix4x3fv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'GLboolean',
@@ -901,6 +1030,27 @@ GL_FUNCTIONS = [
             'glVertexAttribDivisor'],
   'arguments':
       'GLuint index, GLuint divisor', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glVertexAttribI4i',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint indx, GLint x, GLint y, GLint z, GLint w', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glVertexAttribI4iv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint indx, const GLint* values', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glVertexAttribI4ui',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint indx, GLuint x, GLuint y, GLuint z, GLuint w', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glVertexAttribI4uiv',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint indx, const GLuint* values', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glVertexAttribIPointer',
+                 'gl_versions': ['gl3', 'gl4', 'es3'] }],
+  'arguments': 'GLuint indx, GLint size, GLenum type, GLsizei stride, '
+               'const void* ptr', },
 { 'return_type': 'void',
   'names': ['glVertexAttribPointer'],
   'arguments': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
