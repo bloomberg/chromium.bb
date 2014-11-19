@@ -238,12 +238,12 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(object);
             ASSERT(arrayBuffer);
-            xmlHttpRequest->send(arrayBuffer->buffer(), exceptionState);
+            xmlHttpRequest->send(arrayBuffer, exceptionState);
         } else if (V8ArrayBufferView::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
             ASSERT(arrayBufferView);
-            xmlHttpRequest->send(arrayBufferView->view(), exceptionState);
+            xmlHttpRequest->send(arrayBufferView, exceptionState);
         } else {
             TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, argString, arg);
             xmlHttpRequest->send(argString, exceptionState);

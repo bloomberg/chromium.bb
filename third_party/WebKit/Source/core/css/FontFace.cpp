@@ -59,7 +59,6 @@
 #include "core/frame/UseCounter.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 

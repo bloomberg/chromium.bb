@@ -27,6 +27,7 @@
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentParser.h"
@@ -64,8 +65,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
@@ -877,14 +876,14 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
     createRequest(httpBody.release(), exceptionState);
 }
 
-void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(DOMArrayBuffer* body, ExceptionState& exceptionState)
 {
     WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBuffer %p", this, body);
 
     sendBytesData(body->data(), body->byteLength(), exceptionState);
 }
 
-void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& exceptionState)
+void XMLHttpRequest::send(DOMArrayBufferView* body, ExceptionState& exceptionState)
 {
     WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
 

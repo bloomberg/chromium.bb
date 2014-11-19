@@ -34,7 +34,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "public/platform/WebWaitableEvent.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"

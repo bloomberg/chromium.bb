@@ -22,15 +22,21 @@ public:
     }
     static PassRefPtr<DOMArrayBuffer> create(unsigned numElements, unsigned elementByteSize)
     {
-        return adoptRef(new DOMArrayBuffer(WTF::ArrayBuffer::create(numElements, elementByteSize)));
+        return create(WTF::ArrayBuffer::create(numElements, elementByteSize));
     }
     static PassRefPtr<DOMArrayBuffer> create(const void* source, unsigned byteLength)
     {
-        return adoptRef(new DOMArrayBuffer(WTF::ArrayBuffer::create(source, byteLength)));
+        return create(WTF::ArrayBuffer::create(source, byteLength));
     }
     static PassRefPtr<DOMArrayBuffer> create(WTF::ArrayBufferContents& contents)
     {
-        return adoptRef(new DOMArrayBuffer(WTF::ArrayBuffer::create(contents)));
+        return create(WTF::ArrayBuffer::create(contents));
+    }
+
+    // Only for use by Internals::serializeObject.
+    static PassRefPtr<DOMArrayBuffer> createUninitialized(unsigned numElements, unsigned elementByteSize)
+    {
+        return create(WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
     }
 
     const WTF::ArrayBuffer* buffer() const { return m_buffer.get(); }

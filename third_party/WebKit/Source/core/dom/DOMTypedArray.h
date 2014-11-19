@@ -29,26 +29,31 @@ public:
 
     static PassRefPtr<ThisType> create(PassRefPtr<WTFTypedArray> bufferView)
     {
-        if (!bufferView.get())
+        if (!bufferView)
             return nullptr;
         return adoptRef(new ThisType(bufferView));
     }
     static PassRefPtr<ThisType> create(unsigned length)
     {
-        return adoptRef(new ThisType(WTFTypedArray::create(length)));
+        return create(WTFTypedArray::create(length));
     }
     static PassRefPtr<ThisType> create(const ValueType* array, unsigned length)
     {
-        return adoptRef(new ThisType(WTFTypedArray::create(array, length)));
+        return create(WTFTypedArray::create(array, length));
     }
     static PassRefPtr<ThisType> create(PassRefPtr<WTF::ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     {
-        return adoptRef(new ThisType(WTFTypedArray::create(buffer, byteOffset, length)));
+        return create(WTFTypedArray::create(buffer, byteOffset, length));
     }
     static PassRefPtr<ThisType> create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned length)
     {
         RefPtr<DOMArrayBuffer> buffer = prpBuffer;
-        return adoptRef(new ThisType(WTFTypedArray::create(buffer->buffer(), byteOffset, length), buffer));
+        if (!buffer)
+            return nullptr;
+        RefPtr<WTFTypedArray> bufferView = WTFTypedArray::create(buffer->buffer(), byteOffset, length);
+        if (!bufferView)
+            return nullptr;
+        return adoptRef(new ThisType(bufferView.release(), buffer));
     }
 
     const WTFTypedArray* view() const { return static_cast<const WTFTypedArray*>(DOMArrayBufferView::view()); }

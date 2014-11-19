@@ -6,6 +6,7 @@
 #include "core/loader/BeaconLoader.h"
 
 #include "core/FetchInitiatorTypeNames.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fileapi/File.h"
@@ -15,7 +16,6 @@
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return true;
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtr<ArrayBufferView> data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtr<DOMArrayBufferView> data, int& payloadLength)
 {
     ASSERT(data);
     unsigned long long entitySize = data->byteLength();

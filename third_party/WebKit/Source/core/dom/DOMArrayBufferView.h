@@ -16,16 +16,16 @@ class DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptW
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WTF::ArrayBufferView::ViewType ViewType;
-    static const int TypeInt8 = WTF::ArrayBufferView::TypeInt8;
-    static const int TypeUint8 = WTF::ArrayBufferView::TypeUint8;
-    static const int TypeUint8Clamped = WTF::ArrayBufferView::TypeUint8Clamped;
-    static const int TypeInt16 = WTF::ArrayBufferView::TypeInt16;
-    static const int TypeUint16 = WTF::ArrayBufferView::TypeUint16;
-    static const int TypeInt32 = WTF::ArrayBufferView::TypeInt32;
-    static const int TypeUint32 = WTF::ArrayBufferView::TypeUint32;
-    static const int TypeFloat32 = WTF::ArrayBufferView::TypeFloat32;
-    static const int TypeFloat64 = WTF::ArrayBufferView::TypeFloat64;
-    static const int TypeDataView = WTF::ArrayBufferView::TypeDataView;
+    static const ViewType TypeInt8 = WTF::ArrayBufferView::TypeInt8;
+    static const ViewType TypeUint8 = WTF::ArrayBufferView::TypeUint8;
+    static const ViewType TypeUint8Clamped = WTF::ArrayBufferView::TypeUint8Clamped;
+    static const ViewType TypeInt16 = WTF::ArrayBufferView::TypeInt16;
+    static const ViewType TypeUint16 = WTF::ArrayBufferView::TypeUint16;
+    static const ViewType TypeInt32 = WTF::ArrayBufferView::TypeInt32;
+    static const ViewType TypeUint32 = WTF::ArrayBufferView::TypeUint32;
+    static const ViewType TypeFloat32 = WTF::ArrayBufferView::TypeFloat32;
+    static const ViewType TypeFloat64 = WTF::ArrayBufferView::TypeFloat64;
+    static const ViewType TypeDataView = WTF::ArrayBufferView::TypeDataView;
 
     virtual ~DOMArrayBufferView() { }
 

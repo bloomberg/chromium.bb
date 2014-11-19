@@ -44,6 +44,7 @@ namespace blink {
 class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
+class DOMArrayBufferView;
 class DOMFormData;
 class Document;
 class DocumentParser;
@@ -119,8 +120,8 @@ public:
     void send(const String&, ExceptionState&);
     void send(Blob*, ExceptionState&);
     void send(DOMFormData*, ExceptionState&);
-    void send(ArrayBuffer*, ExceptionState&);
-    void send(ArrayBufferView*, ExceptionState&);
+    void send(DOMArrayBuffer*, ExceptionState&);
+    void send(DOMArrayBufferView*, ExceptionState&);
     void abort();
     void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
     void overrideMimeType(const AtomicString& override, ExceptionState&);

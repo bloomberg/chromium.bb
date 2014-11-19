@@ -3098,22 +3098,22 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         return;
     }
 
-    ArrayBufferView::ViewType expectedViewType;
+    DOMArrayBufferView::ViewType expectedViewType;
 
     switch (type) {
     case GL_UNSIGNED_BYTE:
-        expectedViewType = ArrayBufferView::TypeUint8;
+        expectedViewType = DOMArrayBufferView::TypeUint8;
         break;
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-        expectedViewType = ArrayBufferView::TypeUint16;
+        expectedViewType = DOMArrayBufferView::TypeUint16;
         break;
     case GL_FLOAT:
-        expectedViewType = ArrayBufferView::TypeFloat32;
+        expectedViewType = DOMArrayBufferView::TypeFloat32;
         break;
     case GL_HALF_FLOAT_OES:
-        expectedViewType = ArrayBufferView::TypeUint16;
+        expectedViewType = DOMArrayBufferView::TypeUint16;
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
@@ -4856,7 +4856,7 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
 
     switch (type) {
     case GL_UNSIGNED_BYTE:
-        if (pixels->type() != ArrayBufferView::TypeUint8) {
+        if (pixels->type() != DOMArrayBufferView::TypeUint8) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
             return false;
         }
@@ -4864,13 +4864,13 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-        if (pixels->type() != ArrayBufferView::TypeUint16) {
+        if (pixels->type() != DOMArrayBufferView::TypeUint16) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_SHORT but ArrayBufferView not Uint16Array");
             return false;
         }
         break;
     case GL_FLOAT: // OES_texture_float
-        if (pixels->type() != ArrayBufferView::TypeFloat32) {
+        if (pixels->type() != DOMArrayBufferView::TypeFloat32) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type FLOAT but ArrayBufferView not Float32Array");
             return false;
         }
@@ -4878,7 +4878,7 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
         // As per the specification, ArrayBufferView should be null or a Uint16Array when
         // OES_texture_half_float is enabled.
-        if (pixels->type() != ArrayBufferView::TypeUint16) {
+        if (pixels->type() != DOMArrayBufferView::TypeUint16) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type HALF_FLOAT_OES but ArrayBufferView is not NULL and not Uint16Array");
             return false;
         }

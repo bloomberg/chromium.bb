@@ -9,13 +9,10 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
-namespace WTF {
-class ArrayBufferView;
-}
-
 namespace blink {
 
 class Blob;
+class DOMArrayBufferView;
 class DOMFormData;
 class KURL;
 class LocalFrame;
@@ -29,7 +26,7 @@ public:
     virtual ~BeaconLoader() { }
 
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
-    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<WTF::ArrayBufferView>, int&);
+    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<DOMArrayBufferView>, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtrWillBeRawPtr<DOMFormData>, int&);
 

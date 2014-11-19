@@ -44,7 +44,9 @@ public:
     static inline PassRefPtr<ArrayBuffer> create(const void* source, unsigned byteLength);
     static inline PassRefPtr<ArrayBuffer> create(ArrayBufferContents&);
 
-    // Only for use by Uint8ClampedArray::createUninitialized and SharedBuffer::getAsArrayBuffer.
+    // Only for use by Uint8ClampedArray::createUninitialized,
+    // SharedBuffer::getAsArrayBuffer and Internals::serializeObject (through
+    // DOMArrayBuffer::createUninitialized).
     static inline PassRefPtr<ArrayBuffer> createUninitialized(unsigned numElements, unsigned elementByteSize);
 
     inline void* data();

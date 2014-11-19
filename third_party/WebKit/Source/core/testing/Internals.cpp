@@ -1989,9 +1989,9 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionState& excep
 PassRefPtr<DOMArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptValue> value) const
 {
     String stringValue = value->toWireString();
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::createUninitialized(stringValue.length(), sizeof(UChar));
+    RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::createUninitialized(stringValue.length(), sizeof(UChar));
     stringValue.copyTo(static_cast<UChar*>(buffer->data()), 0, stringValue.length());
-    return DOMArrayBuffer::create(buffer.release());
+    return buffer.release();
 }
 
 PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<DOMArrayBuffer> buffer) const
