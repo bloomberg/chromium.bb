@@ -218,7 +218,7 @@ class ValidatorBase(page_test.PageTest):
 
 class TestBase(benchmark.Benchmark):
   @classmethod
-  def AddTestCommandLineArgs(cls, group):
+  def AddBenchmarkCommandLineArgs(cls, group):
     group.add_option('--build-revision',
         help='Chrome revision being tested.',
         default="unknownrev")

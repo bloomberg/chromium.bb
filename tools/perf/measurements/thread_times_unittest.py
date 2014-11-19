@@ -46,8 +46,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
 
   def testWithSilkDetails(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
-    measurement = thread_times.ThreadTimes()
-    self._options.report_silk_details = True
+    measurement = thread_times.ThreadTimes(report_silk_details=True)
     results = self.RunMeasurement(measurement, ps, options = self._options)
     self.assertEquals(0, len(results.failures))
 

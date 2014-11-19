@@ -7,61 +7,69 @@ import page_sets
 from telemetry import benchmark
 
 
-class PageCyclerDhtml(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class _PageCycler(benchmark.Benchmark):
+  options = {'pageset_repeat': 10}
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    parser.add_option('--v8-object-stats',
+        action='store_true',
+        help='Enable detailed V8 object statistics.')
+
+    parser.add_option('--report-speed-index',
+        action='store_true',
+        help='Enable the speed index metric.')
+
+    parser.add_option('--cold-load-percent', type='int', default=50,
+                      help='%d of page visits for which a cold load is forced')
+
+  def CreatePageTest(self, options):
+    return page_cycler.PageCycler(
+        page_repeat = options.page_repeat,
+        pageset_repeat = options.pageset_repeat,
+        cold_load_percent = options.cold_load_percent,
+        record_v8_object_stats = options.v8_object_stats,
+        report_speed_index = options.report_speed_index)
+
+
+class PageCyclerDhtml(_PageCycler):
   page_set = page_sets.DhtmlPageSet
-  options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlArFaHe(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerIntlArFaHe(_PageCycler):
   page_set = page_sets.IntlArFaHePageSet
-  options = {'pageset_repeat': 10}
 
 
 @benchmark.Disabled('win')  # crbug.com/388337
-class PageCyclerIntlEsFrPtBr(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerIntlEsFrPtBr(_PageCycler):
   page_set = page_sets.IntlEsFrPtBrPageSet
-  options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlHiRu(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerIntlHiRu(_PageCycler):
   page_set = page_sets.IntlHiRuPageSet
-  options = {'pageset_repeat': 10}
 
 
 @benchmark.Disabled('android', 'win')  # crbug.com/379564, crbug.com/330909
-class PageCyclerIntlJaZh(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerIntlJaZh(_PageCycler):
   page_set = page_sets.IntlJaZhPageSet
-  options = {'pageset_repeat': 10}
 
 
-class PageCyclerIntlKoThVi(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerIntlKoThVi(_PageCycler):
   page_set = page_sets.IntlKoThViPageSet
-  options = {'pageset_repeat': 10}
 
 
-class PageCyclerMorejs(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerMorejs(_PageCycler):
   page_set = page_sets.MorejsPageSet
-  options = {'pageset_repeat': 10}
 
 
-class PageCyclerMoz(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerMoz(_PageCycler):
   page_set = page_sets.MozPageSet
-  options = {'pageset_repeat': 10}
 
 
 @benchmark.Disabled('linux', 'win')  # crbug.com/353260
-class PageCyclerNetsimTop10(benchmark.Benchmark):
+class PageCyclerNetsimTop10(_PageCycler):
   """Measures load time of the top 10 sites under simulated cable network."""
   tag = 'netsim'
-  test = page_cycler.PageCycler
   page_set = page_sets.Top10PageSet
   options = {
       'cold_load_percent': 100,
@@ -77,30 +85,22 @@ class PageCyclerNetsimTop10(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class PageCyclerTop10Mobile(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerTop10Mobile(_PageCycler):
   page_set = page_sets.Top10MobilePageSet
-  options = {'pageset_repeat': 10}
 
 
 @benchmark.Disabled
-class PageCyclerKeyMobileSites(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerKeyMobileSites(_PageCycler):
   page_set = page_sets.KeyMobileSitesPageSet
-  options = {'pageset_repeat': 10}
 
 
 @benchmark.Disabled('android')  # crbug.com/357326
-class PageCyclerToughLayoutCases(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerToughLayoutCases(_PageCycler):
   page_set = page_sets.ToughLayoutCasesPageSet
-  options = {'pageset_repeat': 10}
 
 
 # crbug.com/273986: This test is really flakey on xp.
 # cabug.com/341843: This test is always timing out on Android.
 @benchmark.Disabled('android', 'win')
-class PageCyclerTypical25(benchmark.Benchmark):
-  test = page_cycler.PageCycler
+class PageCyclerTypical25(_PageCycler):
   page_set = page_sets.Typical25PageSet
-  options = {'pageset_repeat': 10}

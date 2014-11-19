@@ -12,16 +12,9 @@ _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 
 class SkpicturePrinter(page_test.PageTest):
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.add_option('-s', '--skp-outdir',
-                      help='Output directory for the SKP files')
-
-  @classmethod
-  def ProcessCommandLineArgs(cls, parser, args):
-    if not args.skp_outdir:
-      parser.error('Please specify --skp-outdir')
-    cls._skp_outdir = args.skp_outdir
+  def __init__(self, skp_outdir):
+    super(SkpicturePrinter, self).__init__()
+    self._skp_outdir = skp_outdir
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',

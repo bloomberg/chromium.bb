@@ -10,14 +10,9 @@ from telemetry.value import scalar
 
 
 class RecordPerArea(page_test.PageTest):
-  def __init__(self):
+  def __init__(self, start_wait_time=2):
     super(RecordPerArea, self).__init__('', True)
-
-  def AddCommandLineArgs(self, parser):
-    parser.add_option('--start-wait-time', type='float',
-                      default=2,
-                      help='Wait time before the benchmark is started '
-                      '(must be long enought to load all content)')
+    self._start_wait_time = start_wait_time
 
   def CustomizeBrowserOptions(self, options):
     smoothness.Smoothness.CustomizeBrowserOptions(options)
@@ -30,7 +25,7 @@ class RecordPerArea(page_test.PageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     # Wait until the page has loaded and come to a somewhat steady state.
     # Needs to be adjusted for every device (~2 seconds for workstation).
-    time.sleep(self.options.start_wait_time)
+    time.sleep(self._start_wait_time)
 
     # Enqueue benchmark
     tab.ExecuteJavaScript("""

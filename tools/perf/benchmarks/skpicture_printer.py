@@ -24,7 +24,7 @@ class SkpicturePrinter(benchmark.Benchmark):
   test = skpicture_printer.SkpicturePrinter
 
   @classmethod
-  def AddTestCommandLineArgs(cls, parser):
+  def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--page-set-name',  action='store', type='string')
     parser.add_option('--page-set-base-dir', action='store', type='string')
 

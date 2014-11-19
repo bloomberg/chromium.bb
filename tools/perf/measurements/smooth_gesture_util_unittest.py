@@ -120,6 +120,7 @@ class SmoothGestureTest(page_test_test_case.PageTestTestCase):
     tab_ids = []
     class ScrollingGestureTestMeasurement(page_test.PageTest):
       def __init__(self):
+        # pylint: disable=bad-super-call
         super(ScrollingGestureTestMeasurement, self).__init__(
           'RunSmoothness', False)
 

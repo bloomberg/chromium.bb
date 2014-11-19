@@ -12,10 +12,9 @@ from telemetry import benchmark
 class StartWithUrlCold(benchmark.Benchmark):
   """Measure time to start Chrome cold with startup URLs"""
   tag = 'cold'
-  test = startup.StartWithUrl
+  test = startup.StartWithUrl(cold=True)
   page_set = page_sets.StartupPagesPageSet
-  options = {'cold': True,
-             'pageset_repeat': 5}
+  options = {'pageset_repeat': 5}
 
 
 @benchmark.Enabled('has tabs')
@@ -23,8 +22,6 @@ class StartWithUrlCold(benchmark.Benchmark):
 class StartWithUrlWarm(benchmark.Benchmark):
   """Measure time to start Chrome warm with startup URLs"""
   tag = 'warm'
-  test = startup.StartWithUrl
+  test = startup.StartWithUrl(cold=False)
   page_set = page_sets.StartupPagesPageSet
-  options = {'warm': True,
-             'pageset_repeat': 10}
-
+  options = {'pageset_repeat': 10}

@@ -40,20 +40,18 @@ class _SessionRestoreTest(benchmark.Benchmark):
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreColdTypical25(_SessionRestoreTest):
   tag = 'cold'
-  test = session_restore.SessionRestore
+  test = session_restore.SessionRestore(cold=True)
   page_set = page_sets.Typical25PageSet
-  options = {'cold': True,
-             'pageset_repeat': 5}
+  options = {'pageset_repeat': 5}
 
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
-  test = session_restore.SessionRestore
+  test = session_restore.SessionRestore(cold=False)
   page_set = page_sets.Typical25PageSet
-  options = {'warm': True,
-             'pageset_repeat': 20}
+  options = {'pageset_repeat': 20}
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
@@ -61,10 +59,9 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
 class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
-  test = session_restore_with_url.SessionRestoreWithUrl
+  test = session_restore_with_url.SessionRestoreWithUrl(cold=True)
   page_set = page_sets.StartupPagesPageSet
-  options = {'cold': True,
-             'pageset_repeat': 5}
+  options = {'pageset_repeat': 5}
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/405386
@@ -72,7 +69,6 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
 class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
-  test = session_restore_with_url.SessionRestoreWithUrl
+  test = session_restore_with_url.SessionRestoreWithUrl(cold=False)
   page_set = page_sets.StartupPagesPageSet
-  options = {'warm': True,
-             'pageset_repeat': 10}
+  options = {'pageset_repeat': 10}

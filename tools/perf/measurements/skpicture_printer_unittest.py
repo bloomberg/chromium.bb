@@ -14,15 +14,15 @@ from telemetry.unittest_util import test
 class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
-    self._options.skp_outdir = tempfile.mkdtemp('_skp_test')
+    self._skp_outdir = tempfile.mkdtemp('_skp_test')
 
   def tearDown(self):
-    shutil.rmtree(self._options.skp_outdir)
+    shutil.rmtree(self._skp_outdir)
 
   @test.Disabled('android')
   def testSkpicturePrinter(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
-    measurement = skpicture_printer.SkpicturePrinter()
+    measurement = skpicture_printer.SkpicturePrinter(self._skp_outdir)
     results = self.RunMeasurement(measurement, ps, options=self._options)
 
     # Picture printing is not supported on all platforms.

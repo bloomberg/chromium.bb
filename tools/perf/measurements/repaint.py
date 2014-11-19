@@ -7,23 +7,13 @@ from telemetry.page import page_test
 
 
 class Repaint(page_test.PageTest):
-  def __init__(self):
+  def __init__(self, mode='viewport', width=None, height=None):
     super(Repaint, self).__init__('RunRepaint', False)
     self._smoothness_controller = None
     self._micro_benchmark_id = None
-
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.add_option('--mode', type='string',
-                      default='viewport',
-                      help='Invalidation mode. '
-                      'Supported values: fixed_size, layer, random, viewport.')
-    parser.add_option('--width', type='int',
-                      default=None,
-                      help='Width of invalidations for fixed_size mode.')
-    parser.add_option('--height', type='int',
-                      default=None,
-                      help='Height of invalidations for fixed_size mode.')
+    self._mode = mode
+    self._width = width
+    self._height = height
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -42,11 +32,11 @@ class Repaint(page_test.PageTest):
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
 
     args = {}
-    args['mode'] = self.options.mode
-    if self.options.width:
-      args['width'] = self.options.width
-    if self.options.height:
-      args['height'] = self.options.height
+    args['mode'] = self._mode
+    if self._width:
+      args['width'] = self._width
+    if self._height:
+      args['height'] = self._height
 
     # Enque benchmark
     tab.ExecuteJavaScript("""

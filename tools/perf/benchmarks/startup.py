@@ -7,60 +7,56 @@ import page_sets
 from telemetry import benchmark
 
 
+class _StartupCold(benchmark.Benchmark):
+  options = {'pageset_repeat': 5}
+
+  def CreatePageTest(self, options):
+    return startup.Startup(cold=True)
+
+
+class _StartupWarm(benchmark.Benchmark):
+  options = {'pageset_repeat': 20}
+
+  def CreatePageTest(self, options):
+    return startup.Startup(cold=False)
+
+
 @benchmark.Enabled('has tabs')
 @benchmark.Disabled('snowleopard') # crbug.com/336913
-class StartupColdBlankPage(benchmark.Benchmark):
+class StartupColdBlankPage(_StartupCold):
   tag = 'cold'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
-  options = {'cold': True,
-             'pageset_repeat': 5}
 
 
 @benchmark.Enabled('has tabs')
-class StartupWarmBlankPage(benchmark.Benchmark):
+class StartupWarmBlankPage(_StartupWarm):
   tag = 'warm'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
-  options = {'warm': True,
-             'pageset_repeat': 20}
 
 
 @benchmark.Disabled  # crbug.com/336913
-class StartupColdTheme(benchmark.Benchmark):
+class StartupColdTheme(_StartupCold):
   tag = 'theme_cold'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
   generated_profile_archive = 'theme_profile.zip'
-  options = {'cold': True,
-             'pageset_repeat': 5}
 
 
 @benchmark.Disabled
-class StartupWarmTheme(benchmark.Benchmark):
+class StartupWarmTheme(_StartupWarm):
   tag = 'theme_warm'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
   generated_profile_archive = 'theme_profile.zip'
-  options = {'warm': True,
-             'pageset_repeat': 20}
 
 
 @benchmark.Disabled  # crbug.com/336913
-class StartupColdManyExtensions(benchmark.Benchmark):
+class StartupColdManyExtensions(_StartupCold):
   tag = 'many_extensions_cold'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
   generated_profile_archive = 'many_extensions_profile.zip'
-  options = {'cold': True,
-             'pageset_repeat': 5}
 
 
 @benchmark.Disabled
-class StartupWarmManyExtensions(benchmark.Benchmark):
+class StartupWarmManyExtensions(_StartupWarm):
   tag = 'many_extensions_warm'
-  test = startup.Startup
   page_set = page_sets.BlankPageSet
   generated_profile_archive = 'many_extensions_profile.zip'
-  options = {'warm': True,
-             'pageset_repeat': 20}

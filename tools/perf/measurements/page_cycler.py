@@ -30,15 +30,16 @@ from telemetry.value import scalar
 
 
 class PageCycler(page_test.PageTest):
-  options = {'pageset_repeat': 10}
-
-  def __init__(self, *args, **kwargs):
-    super(PageCycler, self).__init__(*args, **kwargs)
+  def __init__(self, page_repeat, pageset_repeat, cold_load_percent=50,
+               record_v8_object_stats=False, report_speed_index=False):
+    super(PageCycler, self).__init__()
 
     with open(os.path.join(os.path.dirname(__file__),
                            'page_cycler.js'), 'r') as f:
       self._page_cycler_js = f.read()
 
+    self._record_v8_object_stats = record_v8_object_stats
+    self._report_speed_index = report_speed_index
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
     self._power_metric = None
@@ -47,42 +48,24 @@ class PageCycler(page_test.PageTest):
     self._has_loaded_page = collections.defaultdict(int)
     self._initial_renderer_url = None  # to avoid cross-renderer navigation
 
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.add_option('--v8-object-stats',
-        action='store_true',
-        help='Enable detailed V8 object statistics.')
-
-    parser.add_option('--report-speed-index',
-        action='store_true',
-        help='Enable the speed index metric.')
-
-    parser.add_option('--cold-load-percent', type='int', default=50,
-                      help='%d of page visits for which a cold load is forced')
-
-  @classmethod
-  def ProcessCommandLineArgs(cls, parser, args):
-    cls._record_v8_object_stats = args.v8_object_stats
-    cls._report_speed_index = args.report_speed_index
-
-    cold_runs_percent_set = (args.cold_load_percent != None)
+    cold_runs_percent_set = (cold_load_percent != None)
     # Handle requests for cold cache runs
     if (cold_runs_percent_set and
-        (args.cold_load_percent < 0 or args.cold_load_percent > 100)):
-      raise Exception('--cold-load-percent must be in the range [0-100]')
+        (cold_load_percent < 0 or cold_load_percent > 100)):
+      raise Exception('cold-load-percent must be in the range [0-100]')
 
     # Make sure _cold_run_start_index is an integer multiple of page_repeat.
     # Without this, --pageset_shuffle + --page_repeat could lead to
     # assertion failures on _started_warm in WillNavigateToPage.
     if cold_runs_percent_set:
       number_warm_pageset_runs = int(
-          (int(args.pageset_repeat) - 1) * (100 - args.cold_load_percent) / 100)
-      number_warm_runs = number_warm_pageset_runs * args.page_repeat
-      cls._cold_run_start_index = number_warm_runs + args.page_repeat
-      cls.discard_first_result = (not args.cold_load_percent or
-                                  cls.discard_first_result)
+          (int(pageset_repeat) - 1) * (100 - cold_load_percent) / 100)
+      number_warm_runs = number_warm_pageset_runs * page_repeat
+      self._cold_run_start_index = number_warm_runs + page_repeat
+      self._discard_first_result = (not cold_load_percent or
+                                    self._discard_first_result)
     else:
-      cls._cold_run_start_index = args.pageset_repeat * args.page_repeat
+      self._cold_run_start_index = pageset_repeat * page_repeat
 
   def WillStartBrowser(self, platform):
     """Initialize metrics once right before the browser has been launched."""

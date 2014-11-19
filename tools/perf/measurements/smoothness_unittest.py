@@ -149,6 +149,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
   def testCleanUpPowerMetric(self):
     class FailPage(page.Page):
       def __init__(self, page_set):
+        # pylint: disable=bad-super-call
         super(FailPage, self).__init__(
             url='file://blank.html',
             page_set=page_set, base_dir=page_set.base_dir)

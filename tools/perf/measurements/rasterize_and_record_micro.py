@@ -11,31 +11,15 @@ from telemetry.value import scalar
 
 
 class RasterizeAndRecordMicro(page_test.PageTest):
-  def __init__(self):
+  def __init__(self, start_wait_time=2, rasterize_repeat=100, record_repeat=100,
+               timeout=120, report_detailed_results=False):
     super(RasterizeAndRecordMicro, self).__init__('')
     self._chrome_branch_number = None
-
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.add_option('--start-wait-time', type='float',
-                      default=2,
-                      help='Wait time before the benchmark is started '
-                      '(must be long enought to load all content)')
-    parser.add_option('--rasterize-repeat', type='int',
-                      default=100,
-                      help='Repeat each raster this many times. Increase '
-                      'this value to reduce variance.')
-    parser.add_option('--record-repeat', type='int',
-                      default=100,
-                      help='Repeat each record this many times. Increase '
-                      'this value to reduce variance.')
-    parser.add_option('--timeout', type='int',
-                      default=120,
-                      help='The length of time to wait for the micro '
-                      'benchmark to finish, expressed in seconds.')
-    parser.add_option('--report-detailed-results',
-                      action='store_true',
-                      help='Whether to report additional detailed results.')
+    self._start_wait_time = start_wait_time
+    self._rasterize_repeat = rasterize_repeat
+    self._record_repeat = record_repeat
+    self._timeout = timeout
+    self._report_detailed_results = report_detailed_results
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -60,10 +44,8 @@ class RasterizeAndRecordMicro(page_test.PageTest):
       tab.WaitForDocumentReadyStateToBeComplete()
     except TimeoutException:
       pass
-    time.sleep(self.options.start_wait_time)
+    time.sleep(self._start_wait_time)
 
-    record_repeat = self.options.record_repeat
-    rasterize_repeat = self.options.rasterize_repeat
     # Enqueue benchmark
     tab.ExecuteJavaScript("""
         window.benchmark_results = {};
@@ -75,10 +57,10 @@ class RasterizeAndRecordMicro(page_test.PageTest):
                   window.benchmark_results.done = true;
                   window.benchmark_results.results = value;
                 }, {
-                  "record_repeat_count": """ + str(record_repeat) + """,
-                  "rasterize_repeat_count": """ + str(rasterize_repeat) + """
+                  "record_repeat_count": %i,
+                  "rasterize_repeat_count": %i
                 });
-    """)
+    """ % (self._record_repeat, self._rasterize_repeat))
 
     benchmark_id = tab.EvaluateJavaScript('window.benchmark_results.id')
     if (not benchmark_id):
@@ -86,7 +68,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
           'Failed to schedule rasterize_and_record_micro')
 
     tab.WaitForJavaScriptExpression(
-        'window.benchmark_results.done', self.options.timeout)
+        'window.benchmark_results.done', self._timeout)
 
     data = tab.EvaluateJavaScript('window.benchmark_results.results')
 
@@ -117,7 +99,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
           results.current_page, 'record_time_painting_disabled', 'ms',
           record_time_painting_disabled))
 
-    if self.options.report_detailed_results:
+    if self._report_detailed_results:
       pixels_rasterized_with_non_solid_color = \
           data['pixels_rasterized_with_non_solid_color']
       pixels_rasterized_as_opaque = \

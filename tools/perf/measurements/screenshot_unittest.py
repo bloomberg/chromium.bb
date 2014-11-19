@@ -15,15 +15,15 @@ from telemetry.unittest_util import page_test_test_case
 class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
-    self._options.png_outdir = tempfile.mkdtemp('_png_test')
+    self._png_outdir = tempfile.mkdtemp('_png_test')
 
   def tearDown(self):
-    shutil.rmtree(self._options.png_outdir)
+    shutil.rmtree(self._png_outdir)
 
   @benchmark.Disabled('win')  # http://crbug.com/386572
   def testScreenshot(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
-    measurement = screenshot.Screenshot()
+    measurement = screenshot.Screenshot(self._png_outdir)
     results = self.RunMeasurement(measurement, ps, options=self._options)
     if results.failures:
       logging.warning(str(results.failures))

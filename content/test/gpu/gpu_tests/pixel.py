@@ -150,8 +150,8 @@ class Pixel(cloud_storage_test_base.TestBase):
   test = _PixelValidator
 
   @classmethod
-  def AddTestCommandLineArgs(cls, group):
-    super(Pixel, cls).AddTestCommandLineArgs(group)
+  def AddBenchmarkCommandLineArgs(cls, group):
+    super(Pixel, cls).AddBenchmarkCommandLineArgs(group)
     group.add_option('--reference-dir',
         help='Overrides the default on-disk location for reference images '
         '(only used for local testing without a cloud storage account)',

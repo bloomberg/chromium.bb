@@ -23,15 +23,13 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
-    self._options.rasterize_repeat = 1
-    self._options.record_repeat = 1
-    self._options.start_wait_time = 0.0
-    self._options.report_detailed_results = True
 
   @test.Disabled('win', 'chromeos')
   def testRasterizeAndRecordMicro(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
-    measurement = rasterize_and_record_micro.RasterizeAndRecordMicro()
+    measurement = rasterize_and_record_micro.RasterizeAndRecordMicro(
+        rasterize_repeat=1, record_repeat=1, start_wait_time=0.0,
+        report_detailed_results=True)
     try:
       results = self.RunMeasurement(measurement, ps, options=self._options)
     except page_test.TestNotSupportedOnPlatformFailure as failure:
@@ -91,5 +89,3 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(total_picture_layers_off_screen), 1)
     self.assertEqual(
         total_picture_layers_off_screen[0].GetRepresentativeNumber(), 0)
-
-

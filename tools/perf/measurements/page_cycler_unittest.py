@@ -94,17 +94,23 @@ class FakePlatform(object):
 
 class PageCyclerUnitTest(unittest.TestCase):
 
-  def SetUpCycler(self, args, setup_memory_module=False):
-    cycler = page_cycler.PageCycler()
+  def SetUpCycler(self, page_repeat=1, pageset_repeat=10, cold_load_percent=50,
+                  record_v8_object_stats=False, report_speed_index=False,
+                  setup_memory_module=False):
+    cycler = page_cycler.PageCycler(
+        page_repeat = page_repeat,
+        pageset_repeat = pageset_repeat,
+        cold_load_percent = cold_load_percent,
+        record_v8_object_stats = record_v8_object_stats,
+        report_speed_index = report_speed_index)
     options = browser_options.BrowserFinderOptions()
     options.browser_options.platform = FakePlatform()
     parser = options.CreateParser()
     page_runner.AddCommandLineArgs(parser)
-    cycler.AddCommandLineArgs(parser)
-    cycler.SetArgumentDefaults(parser)
+    args = ['--page-repeat=%i' % page_repeat,
+            '--pageset-repeat=%i' % pageset_repeat]
     parser.parse_args(args)
     page_runner.ProcessCommandLineArgs(parser, options)
-    cycler.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options.browser_options)
 
     if setup_memory_module:
@@ -128,25 +134,25 @@ class PageCyclerUnitTest(unittest.TestCase):
     return cycler
 
   def testOptionsColdLoadNoArgs(self):
-    cycler = self.SetUpCycler([])
+    cycler = self.SetUpCycler()
 
     self.assertEquals(cycler._cold_run_start_index, 5)
 
   def testOptionsColdLoadPagesetRepeat(self):
-    cycler = self.SetUpCycler(['--pageset-repeat=20', '--page-repeat=2'])
+    cycler = self.SetUpCycler(pageset_repeat=20, page_repeat=2)
 
     self.assertEquals(cycler._cold_run_start_index, 20)
 
   def testOptionsColdLoadRequested(self):
-    cycler = self.SetUpCycler(['--pageset-repeat=21', '--page-repeat=2',
-                               '--cold-load-percent=40'])
+    cycler = self.SetUpCycler(pageset_repeat=21, page_repeat=2,
+                              cold_load_percent=40)
 
     self.assertEquals(cycler._cold_run_start_index, 26)
 
   def testCacheHandled(self):
-    cycler = self.SetUpCycler(['--pageset-repeat=5',
-                               '--cold-load-percent=50'],
-                              True)
+    cycler = self.SetUpCycler(pageset_repeat=5,
+                              cold_load_percent=50,
+                              setup_memory_module=True)
 
     url_name = 'http://fakepage.com'
     page = FakePage(url_name)
@@ -173,7 +179,7 @@ class PageCyclerUnitTest(unittest.TestCase):
       cycler.DidNavigateToPage(page, tab)
 
   def testColdWarm(self):
-    cycler = self.SetUpCycler(['--pageset-repeat=3'], True)
+    cycler = self.SetUpCycler(pageset_repeat=3, setup_memory_module=True)
     pages = [FakePage('http://fakepage1.com'), FakePage('http://fakepage2.com')]
     tab = FakeTab()
     for i in range(3):
@@ -196,7 +202,7 @@ class PageCyclerUnitTest(unittest.TestCase):
         cycler.DidNavigateToPage(page, tab)
 
   def testResults(self):
-    cycler = self.SetUpCycler([], True)
+    cycler = self.SetUpCycler(setup_memory_module=True)
 
     pages = [FakePage('http://fakepage1.com'), FakePage('http://fakepage2.com')]
     tab = FakeTab()
@@ -228,7 +234,7 @@ class PageCyclerUnitTest(unittest.TestCase):
   def testLegacyPagesAvoidCrossRenderNavigation(self):
     # For legacy page cyclers with file URLs, verify that WillNavigateToPage
     # does an initial navigate to avoid paying for a cross-renderer navigation.
-    cycler = self.SetUpCycler([], True)
+    cycler = self.SetUpCycler(setup_memory_module=True)
     pages = [FakePage('file://fakepage1.com'), FakePage('file://fakepage2.com')]
     tab = FakeTab()
 
