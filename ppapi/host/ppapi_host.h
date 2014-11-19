@@ -70,10 +70,9 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
       const std::vector<proxy::SerializedHandle>& handles);
 
   // Create a ResourceHost with the given |nested_msg|.
-  scoped_ptr<ResourceHost> CreateResourceHost(
-      const proxy::ResourceMessageCallParams& params,
-      PP_Instance instance,
-      const IPC::Message& nested_msg);
+  scoped_ptr<ResourceHost> CreateResourceHost(PP_Resource resource,
+                                              PP_Instance instance,
+                                              const IPC::Message& nested_msg);
 
   // Adds the given host resource as a pending one (with no corresponding
   // PluginResource object and no PP_Resource ID yet). The pending resource ID

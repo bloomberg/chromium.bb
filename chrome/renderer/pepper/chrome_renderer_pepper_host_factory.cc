@@ -29,7 +29,7 @@ ChromeRendererPepperHostFactory::~ChromeRendererPepperHostFactory() {}
 
 scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
     ppapi::host::PpapiHost* host,
-    const ppapi::proxy::ResourceMessageCallParams& params,
+    PP_Resource resource,
     PP_Instance instance,
     const IPC::Message& message) {
   DCHECK_EQ(host_->GetPpapiHost(), host);
@@ -43,18 +43,18 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_Flash_Create::ID: {
         return scoped_ptr<ResourceHost>(
-            new PepperFlashRendererHost(host_, instance, params.pp_resource()));
+            new PepperFlashRendererHost(host_, instance, resource));
       }
       case PpapiHostMsg_FlashFullscreen_Create::ID: {
-        return scoped_ptr<ResourceHost>(new PepperFlashFullscreenHost(
-            host_, instance, params.pp_resource()));
+        return scoped_ptr<ResourceHost>(
+            new PepperFlashFullscreenHost(host_, instance, resource));
       }
       case PpapiHostMsg_FlashMenu_Create::ID: {
         ppapi::proxy::SerializedFlashMenu serialized_menu;
         if (ppapi::UnpackMessage<PpapiHostMsg_FlashMenu_Create>(
                 message, &serialized_menu)) {
           return scoped_ptr<ResourceHost>(new PepperFlashMenuHost(
-              host_, instance, params.pp_resource(), serialized_menu));
+              host_, instance, resource, serialized_menu));
         }
         break;
       }
@@ -75,13 +75,13 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
         if (ppapi::UnpackMessage<PpapiHostMsg_FlashFontFile_Create>(
                 message, &description, &charset)) {
           return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
-              host_, instance, params.pp_resource(), description, charset));
+              host_, instance, resource, description, charset));
         }
         break;
       }
       case PpapiHostMsg_FlashDRM_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashDRMRendererHost(
-            host_, instance, params.pp_resource()));
+        return scoped_ptr<ResourceHost>(
+            new PepperFlashDRMRendererHost(host_, instance, resource));
     }
   }
 
@@ -90,7 +90,7 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_PDF_Create::ID: {
         return scoped_ptr<ResourceHost>(
-            new pdf::PepperPDFHost(host_, instance, params.pp_resource()));
+            new pdf::PepperPDFHost(host_, instance, resource));
       }
     }
   }
@@ -102,7 +102,7 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
   switch (message.type()) {
     case PpapiHostMsg_UMA_Create::ID: {
       return scoped_ptr<ResourceHost>(
-          new PepperUMAHost(host_, instance, params.pp_resource()));
+          new PepperUMAHost(host_, instance, resource));
     }
   }
 

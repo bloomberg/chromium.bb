@@ -208,7 +208,7 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
 
     if (!resource_host.get()) {
       resource_host = host->GetPpapiHost()->CreateResourceHost(
-          params, instance, nested_msg);
+          params.pp_resource(), instance, nested_msg);
     }
 
     if (resource_host.get())

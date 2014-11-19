@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 
 namespace IPC {
 class Message;
@@ -32,7 +33,7 @@ class HostFactory {
 
   virtual scoped_ptr<ResourceHost> CreateResourceHost(
       PpapiHost* host,
-      const proxy::ResourceMessageCallParams& params,
+      PP_Resource resource,
       PP_Instance instance,
       const IPC::Message& message) = 0;
 };

@@ -123,14 +123,16 @@ void PpapiHost::SendUnsolicitedReplyWithHandles(
 }
 
 scoped_ptr<ResourceHost> PpapiHost::CreateResourceHost(
-    const proxy::ResourceMessageCallParams& params,
+    PP_Resource resource,
     PP_Instance instance,
     const IPC::Message& nested_msg) {
   scoped_ptr<ResourceHost> resource_host;
   DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
   for (size_t i = 0; i < host_factory_filters_.size(); i++) {
-    resource_host = host_factory_filters_[i]->CreateResourceHost(
-        this, params, instance, nested_msg).Pass();
+    resource_host =
+        host_factory_filters_[i]
+            ->CreateResourceHost(this, resource, instance, nested_msg)
+            .Pass();
     if (resource_host.get())
       break;
   }
@@ -232,8 +234,8 @@ void PpapiHost::OnHostMsgResourceCreated(
   }
 
   // Run through all filters until one grabs this message.
-  scoped_ptr<ResourceHost> resource_host = CreateResourceHost(params, instance,
-                                                              nested_msg);
+  scoped_ptr<ResourceHost> resource_host =
+      CreateResourceHost(params.pp_resource(), instance, nested_msg);
 
   if (!resource_host.get()) {
     NOTREACHED();

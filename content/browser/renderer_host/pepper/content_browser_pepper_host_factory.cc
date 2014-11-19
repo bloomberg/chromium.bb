@@ -56,7 +56,7 @@ ContentBrowserPepperHostFactory::~ContentBrowserPepperHostFactory() {}
 
 scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     ppapi::host::PpapiHost* host,
-    const ppapi::proxy::ResourceMessageCallParams& params,
+    PP_Resource resource,
     PP_Instance instance,
     const IPC::Message& message) {
   DCHECK(host == host_->GetPpapiHost());
@@ -69,7 +69,7 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   switch (message.type()) {
     case PpapiHostMsg_FileIO_Create::ID: {
       return scoped_ptr<ResourceHost>(
-          new PepperFileIOHost(host_, instance, params.pp_resource()));
+          new PepperFileIOHost(host_, instance, resource));
     }
     case PpapiHostMsg_FileSystem_Create::ID: {
       PP_FileSystemType file_system_type;
@@ -79,24 +79,21 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>();
       }
       return scoped_ptr<ResourceHost>(new PepperFileSystemBrowserHost(
-          host_, instance, params.pp_resource(), file_system_type));
+          host_, instance, resource, file_system_type));
     }
     case PpapiHostMsg_Gamepad_Create::ID: {
       return scoped_ptr<ResourceHost>(
-          new PepperGamepadHost(host_, instance, params.pp_resource()));
+          new PepperGamepadHost(host_, instance, resource));
     }
     case PpapiHostMsg_NetworkProxy_Create::ID: {
       return scoped_ptr<ResourceHost>(
-          new PepperNetworkProxyHost(host_, instance, params.pp_resource()));
+          new PepperNetworkProxyHost(host_, instance, resource));
     }
     case PpapiHostMsg_HostResolver_Create::ID: {
       scoped_refptr<ResourceMessageFilter> host_resolver(
           new PepperHostResolverMessageFilter(host_, instance, false));
-      return scoped_ptr<ResourceHost>(
-          new MessageFilterHost(host_->GetPpapiHost(),
-                                instance,
-                                params.pp_resource(),
-                                host_resolver));
+      return scoped_ptr<ResourceHost>(new MessageFilterHost(
+          host_->GetPpapiHost(), instance, resource, host_resolver));
     }
     case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
@@ -107,7 +104,7 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>();
       }
       return scoped_ptr<ResourceHost>(new PepperFileRefHost(
-          host_, instance, params.pp_resource(), file_system, internal_path));
+          host_, instance, resource, file_system, internal_path));
     }
     case PpapiHostMsg_TCPSocket_Create::ID: {
       ppapi::TCPSocketVersion version;
@@ -116,14 +113,14 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>();
       }
 
-      return CreateNewTCPSocket(instance, params.pp_resource(), version);
+      return CreateNewTCPSocket(instance, resource, version);
     }
     case PpapiHostMsg_UDPSocket_Create::ID: {
       if (CanCreateSocket()) {
         scoped_refptr<ResourceMessageFilter> udp_socket(
             new PepperUDPSocketMessageFilter(host_, instance, false));
         return scoped_ptr<ResourceHost>(new MessageFilterHost(
-            host_->GetPpapiHost(), instance, params.pp_resource(), udp_socket));
+            host_->GetPpapiHost(), instance, resource, udp_socket));
       } else {
         return scoped_ptr<ResourceHost>();
       }
@@ -136,11 +133,8 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_Printing_Create::ID: {
         scoped_ptr<PepperPrintSettingsManager> manager(
             new PepperPrintSettingsManagerImpl());
-        return scoped_ptr<ResourceHost>(
-            new PepperPrintingHost(host_->GetPpapiHost(),
-                                   instance,
-                                   params.pp_resource(),
-                                   manager.Pass()));
+        return scoped_ptr<ResourceHost>(new PepperPrintingHost(
+            host_->GetPpapiHost(), instance, resource, manager.Pass()));
       }
       case PpapiHostMsg_TrueTypeFont_Create::ID: {
         SerializedTrueTypeFontDesc desc;
@@ -153,12 +147,12 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
         if (!base::IsStringUTF8(desc.family))
           return scoped_ptr<ResourceHost>();
 
-        return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
-            host_, instance, params.pp_resource(), desc));
+        return scoped_ptr<ResourceHost>(
+            new PepperTrueTypeFontHost(host_, instance, resource, desc));
       }
       case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
-        return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(
-            host_, instance, params.pp_resource()));
+        return scoped_ptr<ResourceHost>(
+            new PepperTrueTypeFontListHost(host_, instance, resource));
       }
     }
   }
@@ -167,8 +161,8 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
     switch (message.type()) {
       case PpapiHostMsg_BrowserFontSingleton_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperBrowserFontSingletonHost(
-            host_, instance, params.pp_resource()));
+        return scoped_ptr<ResourceHost>(
+            new PepperBrowserFontSingletonHost(host_, instance, resource));
     }
   }
 
@@ -182,38 +176,35 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     scoped_refptr<ResourceMessageFilter> host_resolver(
         new PepperHostResolverMessageFilter(host_, instance, true));
     return scoped_ptr<ResourceHost>(new MessageFilterHost(
-        host_->GetPpapiHost(), instance, params.pp_resource(), host_resolver));
+        host_->GetPpapiHost(), instance, resource, host_resolver));
   }
   if (message.type() == PpapiHostMsg_TCPServerSocket_CreatePrivate::ID) {
     if (CanCreateSocket()) {
       scoped_refptr<ResourceMessageFilter> tcp_server_socket(
           new PepperTCPServerSocketMessageFilter(this, host_, instance, true));
-      return scoped_ptr<ResourceHost>(
-          new MessageFilterHost(host_->GetPpapiHost(),
-                                instance,
-                                params.pp_resource(),
-                                tcp_server_socket));
+      return scoped_ptr<ResourceHost>(new MessageFilterHost(
+          host_->GetPpapiHost(), instance, resource, tcp_server_socket));
     } else {
       return scoped_ptr<ResourceHost>();
     }
   }
   if (message.type() == PpapiHostMsg_TCPSocket_CreatePrivate::ID) {
-    return CreateNewTCPSocket(
-        instance, params.pp_resource(), ppapi::TCP_SOCKET_VERSION_PRIVATE);
+    return CreateNewTCPSocket(instance, resource,
+                              ppapi::TCP_SOCKET_VERSION_PRIVATE);
   }
   if (message.type() == PpapiHostMsg_UDPSocket_CreatePrivate::ID) {
     if (CanCreateSocket()) {
       scoped_refptr<ResourceMessageFilter> udp_socket(
           new PepperUDPSocketMessageFilter(host_, instance, true));
       return scoped_ptr<ResourceHost>(new MessageFilterHost(
-          host_->GetPpapiHost(), instance, params.pp_resource(), udp_socket));
+          host_->GetPpapiHost(), instance, resource, udp_socket));
     } else {
       return scoped_ptr<ResourceHost>();
     }
   }
   if (message.type() == PpapiHostMsg_NetworkMonitor_Create::ID) {
     return scoped_ptr<ResourceHost>(
-        new PepperNetworkMonitorHost(host_, instance, params.pp_resource()));
+        new PepperNetworkMonitorHost(host_, instance, resource));
   }
 
   // Flash interfaces.
@@ -222,11 +213,8 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FlashFile_Create::ID: {
         scoped_refptr<ResourceMessageFilter> file_filter(
             new PepperFlashFileMessageFilter(instance, host_));
-        return scoped_ptr<ResourceHost>(
-            new MessageFilterHost(host_->GetPpapiHost(),
-                                  instance,
-                                  params.pp_resource(),
-                                  file_filter));
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, resource, file_filter));
       }
     }
   }

@@ -25,7 +25,7 @@ class PDFRendererHostFactory : public ppapi::host::HostFactory {
   // ppapi::host::HostFactory:
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
       ppapi::host::PpapiHost* host,
-      const ppapi::proxy::ResourceMessageCallParams& params,
+      PP_Resource resource,
       PP_Instance instance,
       const IPC::Message& message) override {
     DCHECK_EQ(host_->GetPpapiHost(), host);
@@ -38,13 +38,12 @@ class PDFRendererHostFactory : public ppapi::host::HostFactory {
       switch (message.type()) {
         case PpapiHostMsg_PDF_Create::ID:
           return scoped_ptr<ppapi::host::ResourceHost>(
-              new pdf::PepperPDFHost(host_, instance, params.pp_resource()));
+              new pdf::PepperPDFHost(host_, instance, resource));
 
         case PpapiHostMsg_FlashFontFile_Create::ID:
           return scoped_ptr<ppapi::host::ResourceHost>(
-              new ppapi::host::ResourceHost(host_->GetPpapiHost(),
-                                            instance,
-                                            params.pp_resource()));
+              new ppapi::host::ResourceHost(host_->GetPpapiHost(), instance,
+                                            resource));
       }
     }
 
