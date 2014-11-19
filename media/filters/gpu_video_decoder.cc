@@ -27,6 +27,8 @@
 
 namespace media {
 
+const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
+
 // Maximum number of concurrent VDA::Decode() operations GVD will maintain.
 // Higher values allow better pipelining in the GPU, but also require more
 // resources.
@@ -136,7 +138,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
 }
 
 std::string GpuVideoDecoder::GetDisplayName() const {
-  return "GpuVideoDecoder";
+  return kDecoderName;
 }
 
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,

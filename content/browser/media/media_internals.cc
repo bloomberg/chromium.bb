@@ -17,6 +17,7 @@
 #include "content/public/browser/web_ui.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_log_event.h"
+#include "media/filters/gpu_video_decoder.h"
 
 namespace {
 
@@ -305,7 +306,7 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
                                 player_info.last_pipeline_status,
                                 media::PIPELINE_STATUS_MAX + 1);
     } else if (player_info.video_codec_name == "h264") {
-      if (player_info.video_decoder == "gpu") {
+      if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName) {
         UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.HW.H264",
                                   player_info.last_pipeline_status,
                                   media::PIPELINE_STATUS_MAX + 1);

@@ -64,6 +64,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   void NotifyResetDone() override;
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
+  static const char kDecoderName[];
+
  protected:
   ~GpuVideoDecoder() override;
 
