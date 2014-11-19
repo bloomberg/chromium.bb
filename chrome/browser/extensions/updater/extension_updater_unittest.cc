@@ -1683,39 +1683,49 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // The urls could have been fetched in either order, so use the host to
     // tell them apart and note the query each used.
+    GURL url1_fetch_url;
+    GURL url2_fetch_url;
     std::string url1_query;
     std::string url2_query;
     if (fetched_urls[0].host() == url1.host()) {
+      url1_fetch_url = fetched_urls[0];
+      url2_fetch_url = fetched_urls[1];
+
       url1_query = fetched_urls[0].query();
       url2_query = fetched_urls[1].query();
     } else if (fetched_urls[0].host() == url2.host()) {
+      url1_fetch_url = fetched_urls[1];
+      url2_fetch_url = fetched_urls[0];
       url1_query = fetched_urls[1].query();
       url2_query = fetched_urls[0].query();
     } else {
       NOTREACHED();
     }
 
+    std::map<std::string, ParamsMap> url1_ping_data =
+        GetPingDataFromURL(url1_fetch_url);
+    ParamsMap url1_params = ParamsMap();
+    if (!url1_ping_data.empty() && ContainsKey(url1_ping_data, id))
+      url1_params = url1_ping_data[id];
+
     // First make sure the non-google query had no ping parameter.
-    std::string search_string = "ping%3D";
-    EXPECT_TRUE(url2_query.find(search_string) == std::string::npos);
+    EXPECT_TRUE(GetPingDataFromURL(url2_fetch_url).empty());
 
     // Now make sure the google query had the correct ping parameter.
-    bool ping_expected = false;
     bool did_rollcall = false;
     if (rollcall_ping_days != 0) {
-      search_string += "r%253D" + base::IntToString(rollcall_ping_days);
+      ASSERT_TRUE(ContainsKey(url1_params, "r"));
+      ASSERT_EQ(1u, url1_params["r"].size());
+      EXPECT_EQ(base::IntToString(rollcall_ping_days),
+                *url1_params["r"].begin());
       did_rollcall = true;
-      ping_expected = true;
     }
-    if (active_bit && active_ping_days != 0) {
-      if (did_rollcall)
-        search_string += "%2526";
-      search_string += "a%253D" + base::IntToString(active_ping_days);
-      ping_expected = true;
+    if (active_bit && active_ping_days != 0 && did_rollcall) {
+      ASSERT_TRUE(ContainsKey(url1_params, "a"));
+      ASSERT_EQ(1u, url1_params["a"].size());
+      EXPECT_EQ(base::IntToString(active_ping_days),
+                *url1_params["a"].begin());
     }
-    bool ping_found = url1_query.find(search_string) != std::string::npos;
-    EXPECT_EQ(ping_expected, ping_found) << "query was: " << url1_query
-        << " was looking for " << search_string;
 
     // Make sure the non-google query has no brand parameter.
     const std::string brand_string = "brand%3D";
@@ -1783,14 +1793,10 @@ class ExtensionUpdaterTest : public testing::Test {
   // This lets us run a test with some enabled and some disabled
   // extensions. The |num_enabled| value specifies how many enabled extensions
   // to have, and |disabled| is a vector of DisableReason bitmasks for each
-  // disabled extension we want. |enable_metrics| specifies whether we should
-  // have enabled/disable reason information in the ping parameter.
-  void TestPingMetrics(bool enable_metrics,
-                       int num_enabled,
+  // disabled extension we want.
+  void TestPingMetrics(int num_enabled,
                        const std::vector<int>& disabled) {
     ServiceForManifestTests service(prefs_.get());
-    service.set_enable_metrics(enable_metrics);
-
     ExtensionList enabled_extensions;
     ExtensionList disabled_extensions;
 
@@ -1845,16 +1851,10 @@ class ExtensionUpdaterTest : public testing::Test {
     std::map<std::string, ParamsMap> all_pings = GetPingDataFromURL(url);
 
     // Make sure that all the enabled extensions have "e=1" in their ping
-    // parameter if metrics are turned on, or don't have it if metrics are
-    // off.
+    // parameter.
     for (const auto& ext : enabled_extensions) {
       ASSERT_TRUE(ContainsKey(all_pings, ext->id()));
       ParamsMap& ping = all_pings[ext->id()];
-      if (!enable_metrics) {
-        EXPECT_FALSE(ContainsKey(ping, "e"));
-        EXPECT_FALSE(ContainsKey(ping, "dr"));
-        continue;
-      }
       EXPECT_FALSE(ContainsKey(ping, "dr"));
       ASSERT_TRUE(ContainsKey(ping, "e")) << url;
       std::set<std::string> e = ping["e"];
@@ -1873,11 +1873,6 @@ class ExtensionUpdaterTest : public testing::Test {
       ASSERT_TRUE(ContainsKey(all_pings, ext->id())) << url;
       ParamsMap& ping = all_pings[ext->id()];
 
-      if (!enable_metrics) {
-        EXPECT_FALSE(ContainsKey(ping, "e"));
-        EXPECT_FALSE(ContainsKey(ping, "dr"));
-        continue;
-      }
       ASSERT_TRUE(ContainsKey(ping, "e")) << url;
       std::set<std::string> e = ping["e"];
       ASSERT_EQ(1u, e.size()) << url;
@@ -2234,21 +2229,18 @@ TEST_F(ExtensionUpdaterTest, TestDisabledReasons1) {
   disabled.push_back(Extension::DISABLE_USER_ACTION);
   disabled.push_back(Extension::DISABLE_PERMISSIONS_INCREASE |
                      Extension::DISABLE_CORRUPTED);
-  TestPingMetrics(true, 1, disabled);
-  TestPingMetrics(false, 1, disabled);
+  TestPingMetrics(1, disabled);
 }
 
 TEST_F(ExtensionUpdaterTest, TestDisabledReasons2) {
   std::vector<int> disabled;
-  TestPingMetrics(true, 1, disabled);
-  TestPingMetrics(false, 1, disabled);
+  TestPingMetrics(1, disabled);
 }
 
 TEST_F(ExtensionUpdaterTest, TestDisabledReasons3) {
   std::vector<int> disabled;
   disabled.push_back(0);
-  TestPingMetrics(true, 0, disabled);
-  TestPingMetrics(false, 0, disabled);
+  TestPingMetrics(0, disabled);
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:

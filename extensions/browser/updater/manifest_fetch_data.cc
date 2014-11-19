@@ -22,7 +22,7 @@ namespace {
 // request. We want to stay under 2K because of proxies, etc.
 const int kExtensionsManifestMaxURLSize = 2000;
 
-void AddMetricsToPing(std::string* ping_value,
+void AddEnabledStateToPing(std::string* ping_value,
                       const ManifestFetchData::PingData* ping_data) {
   *ping_value += "&e=" + std::string(ping_data->is_enabled ? "1" : "0");
   if (!ping_data->is_enabled) {
@@ -125,8 +125,8 @@ bool ManifestFetchData::AddExtension(const std::string& id,
       if (ping_data->rollcall_days == kNeverPinged ||
           ping_data->rollcall_days > 0) {
         ping_value += "r=" + base::IntToString(ping_data->rollcall_days);
-        if (ping_mode_ == PING_WITH_METRICS)
-          AddMetricsToPing(&ping_value, ping_data);
+        if (ping_mode_ == PING_WITH_ENABLED_STATE)
+          AddEnabledStateToPing(&ping_value, ping_data);
         pings_[id].rollcall_days = ping_data->rollcall_days;
         pings_[id].is_enabled = ping_data->is_enabled;
       }

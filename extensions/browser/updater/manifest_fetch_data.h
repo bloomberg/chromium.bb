@@ -30,8 +30,8 @@ class ManifestFetchData {
     // Ping without extra metrics.
     PING,
 
-    // Ping with extra metrics.
-    PING_WITH_METRICS,
+    // Ping with information about enabled/disabled state.
+    PING_WITH_ENABLED_STATE,
   };
 
   // Each ping type is sent at most once per day.

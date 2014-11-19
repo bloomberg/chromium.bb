@@ -952,13 +952,8 @@ ManifestFetchData* ExtensionDownloader::CreateManifestFetchData(
     const GURL& update_url,
     int request_id) {
   ManifestFetchData::PingMode ping_mode = ManifestFetchData::NO_PING;
-  if (update_url.DomainIs(ping_enabled_domain_.c_str())) {
-    if (enable_extra_update_metrics_) {
-      ping_mode = ManifestFetchData::PING_WITH_METRICS;
-    } else {
-      ping_mode = ManifestFetchData::PING;
-    }
-  }
+  if (update_url.DomainIs(ping_enabled_domain_.c_str()))
+    ping_mode = ManifestFetchData::PING_WITH_ENABLED_STATE;
   return new ManifestFetchData(
       update_url, request_id, brand_code_, manifest_query_params_, ping_mode);
 }
