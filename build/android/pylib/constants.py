@@ -246,8 +246,21 @@ def _Memoize(func):
   return Wrapper
 
 
-@_Memoize
+def SetAdbPath(adb_path):
+  os.environ['ADB_PATH'] = adb_path
+
+
 def GetAdbPath():
+  # Check if a custom adb path as been set. If not, try to find adb
+  # on the system.
+  if os.environ.get('ADB_PATH'):
+    return os.environ.get('ADB_PATH')
+  else:
+    return _FindAdbPath()
+
+
+@_Memoize
+def _FindAdbPath():
   if os.environ.get('ANDROID_SDK_ROOT'):
     return 'adb'
   # If envsetup.sh hasn't been sourced and there's no adb in the path,
@@ -259,7 +272,6 @@ def GetAdbPath():
   except OSError:
     logging.debug('No adb found in $PATH, fallback to checked in binary.')
     return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
-
 
 # Exit codes
 ERROR_EXIT_CODE = 1

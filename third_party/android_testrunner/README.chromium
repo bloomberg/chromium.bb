@@ -18,6 +18,8 @@ Local Modifications:
    bugs in run_command.py.
 4. Fixed a bug where wait_time wasn't properly respected in
     _WaitForShellCommandContents.
+5. Added option to specify the ADB binary that should be used instead of always
+  using the ADB in the environment path.
 
 Here is the detail steps
 1. Checkout Android source code

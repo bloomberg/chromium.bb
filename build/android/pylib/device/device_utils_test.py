@@ -215,9 +215,14 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
     return type(self).AndroidCommandsCalls(self, cmd_ret, comp)
 
   def setUp(self):
+    self._get_adb_path_patch = mock.patch('pylib.constants.GetAdbPath',
+                                          mock.Mock(return_value='adb'))
+    self._get_adb_path_patch.start()
     self.device = device_utils.DeviceUtils(
         '0123456789abcdef', default_timeout=1, default_retries=0)
 
+  def tearDown(self):
+    self._get_adb_path_patch.stop()
 
 class DeviceUtilsNewImplTest(mock_calls.TestCase):
 

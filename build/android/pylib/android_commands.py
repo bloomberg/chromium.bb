@@ -314,11 +314,7 @@ class AndroidCommands(object):
       device: If given, adb commands are only send to the device of this ID.
           Otherwise commands are sent to all attached devices.
     """
-    adb_dir = os.path.dirname(constants.GetAdbPath())
-    if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
-      # Required by third_party/android_testrunner to call directly 'adb'.
-      os.environ['PATH'] += os.pathsep + adb_dir
-    self._adb = adb_interface.AdbInterface()
+    self._adb = adb_interface.AdbInterface(constants.GetAdbPath())
     if device:
       self._adb.SetTargetSerial(device)
     self._device = device

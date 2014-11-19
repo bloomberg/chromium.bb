@@ -91,6 +91,9 @@ def AddCommonOptions(option_parser):
   group.add_option('-e', '--environment', default='local',
                    help=('Test environment to run in. Must be one of: %s' %
                          ', '.join(constants.VALID_ENVIRONMENTS)))
+  group.add_option('--adb-path',
+                   help=('Specify the absolute path of the adb binary that '
+                         'should be used.'))
   option_parser.add_option_group(group)
 
 
@@ -102,6 +105,12 @@ def ProcessCommonOptions(options, error_func):
     constants.SetBuildDirectory(options.build_directory)
   if options.output_directory:
     constants.SetOutputDirectort(options.output_directory)
+  if options.adb_path:
+    constants.SetAdbPath(options.adb_path)
+  # Some things such as Forwarder require ADB to be in the environment path.
+  adb_dir = os.path.dirname(constants.GetAdbPath())
+  if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
+    os.environ['PATH'] = adb_dir + os.pathsep + os.environ['PATH']
   if options.environment not in constants.VALID_ENVIRONMENTS:
     error_func('--environment must be one of: %s' %
                ', '.join(constants.VALID_ENVIRONMENTS))

@@ -34,10 +34,18 @@ import run_command
 class AdbInterface:
   """Helper class for communicating with Android device via adb."""
 
-  # argument to pass to adb, to direct command to specific device
-  _target_arg = ""
-
   DEVICE_TRACE_DIR = "/data/test_results/"
+
+  def __init__(self, adb_path='adb'):
+    """Constructor.
+
+    Args:
+      adb_path: Absolute path to the adb binary that should be used. Defaults
+                to the adb in the environment path.
+    """
+    self._adb_path = adb_path
+    # argument to pass to adb, to direct command to specific device
+    self._target_arg = ""
 
   def SetEmulatorTarget(self):
     """Direct all future commands to the only running emulator."""
@@ -66,7 +74,7 @@ class AdbInterface:
     Raises:
       WaitForResponseTimedOutError if device does not respond to command within time
     """
-    adb_cmd = "adb %s %s" % (self._target_arg, command_string)
+    adb_cmd = "%s %s %s" % (self._adb_path, self._target_arg, command_string)
     logger.SilentLog("about to run %s" % adb_cmd)
     return run_command.RunCommand(adb_cmd, timeout_time=timeout_time,
                                   retry_count=retry_count)
