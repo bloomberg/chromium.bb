@@ -480,8 +480,8 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
           // Open up using the same channel layout as the source if it is
           // supported by the hardware.
           channel_layout = input_params.channel_layout();
-          VLOG(1) << "Hardware channel layout is not used; using same layout"
-                  << " as the source instead (" << channel_layout << ")";
+          DVLOG(1) << "Hardware channel layout is not used; using same layout"
+                   << " as the source instead (" << channel_layout << ")";
         }
       }
     }

@@ -91,7 +91,7 @@ static double ExpectedTimeBetweenCallbacks(AudioParameters params) {
 // Helper method which verifies that the device list starts with a valid
 // default device name followed by non-default device names.
 static void CheckDeviceNames(const AudioDeviceNames& device_names) {
-  VLOG(2) << "Got " << device_names.size() << " audio devices.";
+  DVLOG(2) << "Got " << device_names.size() << " audio devices.";
   if (device_names.empty()) {
     // Log a warning so we can see the status on the build bots.  No need to
     // break the test though since this does successfully test the code and
@@ -113,8 +113,8 @@ static void CheckDeviceNames(const AudioDeviceNames& device_names) {
   while (it != device_names.end()) {
     EXPECT_FALSE(it->device_name.empty());
     EXPECT_FALSE(it->unique_id.empty());
-    VLOG(2) << "Device ID(" << it->unique_id
-            << "), label: " << it->device_name;
+    DVLOG(2) << "Device ID(" << it->unique_id
+             << "), label: " << it->device_name;
     EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
               it->device_name);
     EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
@@ -169,7 +169,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
     // Log the name of the file which is used as input for this test.
     base::FilePath file_path = GetTestDataFilePath(name);
-    VLOG(0) << "Reading from file: " << file_path.value().c_str();
+    DVLOG(0) << "Reading from file: " << file_path.value().c_str();
   }
 
   virtual ~FileAudioSource() {}
@@ -240,7 +240,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
     file_path = file_path.AppendASCII(file_name.c_str());
     binary_file_ = base::OpenFile(file_path, "wb");
     DLOG_IF(ERROR, !binary_file_) << "Failed to open binary PCM data file.";
-    VLOG(0) << "Writing to file: " << file_path.value().c_str();
+    DVLOG(0) << "Writing to file: " << file_path.value().c_str();
   }
 
   virtual ~FileAudioSink() {
@@ -512,10 +512,10 @@ class AudioAndroidOutputTest : public testing::Test {
 
     double average_time_between_callbacks_ms =
         AverageTimeBetweenCallbacks(num_callbacks);
-    VLOG(0) << "expected time between callbacks: "
-            << expected_time_between_callbacks_ms << " ms";
-    VLOG(0) << "average time between callbacks: "
-            << average_time_between_callbacks_ms << " ms";
+    DVLOG(0) << "expected time between callbacks: "
+             << expected_time_between_callbacks_ms << " ms";
+    DVLOG(0) << "average time between callbacks: "
+             << average_time_between_callbacks_ms << " ms";
     EXPECT_GE(average_time_between_callbacks_ms,
               0.70 * expected_time_between_callbacks_ms);
     EXPECT_LE(average_time_between_callbacks_ms,
@@ -666,10 +666,10 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
 
     double average_time_between_callbacks_ms =
         AverageTimeBetweenCallbacks(num_callbacks);
-    VLOG(0) << "expected time between callbacks: "
-            << expected_time_between_callbacks_ms << " ms";
-    VLOG(0) << "average time between callbacks: "
-            << average_time_between_callbacks_ms << " ms";
+    DVLOG(0) << "expected time between callbacks: "
+             << expected_time_between_callbacks_ms << " ms";
+    DVLOG(0) << "average time between callbacks: "
+             << average_time_between_callbacks_ms << " ms";
     EXPECT_GE(average_time_between_callbacks_ms,
               0.70 * expected_time_between_callbacks_ms);
     EXPECT_LE(average_time_between_callbacks_ms,
@@ -722,13 +722,13 @@ TEST_P(AudioAndroidInputTest, GetDefaultInputStreamParameters) {
   // so that we can log the real (non-overridden) values of the effects.
   GetDefaultInputStreamParametersOnAudioThread();
   EXPECT_TRUE(audio_input_parameters().IsValid());
-  VLOG(1) << audio_input_parameters();
+  DVLOG(1) << audio_input_parameters();
 }
 
 // Get the default audio output parameters and log the result.
 TEST_F(AudioAndroidOutputTest, GetDefaultOutputStreamParameters) {
   GetDefaultOutputStreamParametersOnAudioThread();
-  VLOG(1) << audio_output_parameters();
+  DVLOG(1) << audio_output_parameters();
 }
 
 // Verify input device enumeration.
@@ -840,7 +840,7 @@ TEST_F(AudioAndroidOutputTest, StartOutputStreamCallbacksNonDefaultParameters) {
 // automatized test on bots.
 TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
   GetDefaultOutputStreamParametersOnAudioThread();
-  VLOG(1) << audio_output_parameters();
+  DVLOG(1) << audio_output_parameters();
   MakeAudioOutputStreamOnAudioThread(audio_output_parameters());
 
   std::string file_name;
@@ -862,7 +862,7 @@ TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
   FileAudioSource source(&event, file_name);
 
   OpenAndStartAudioOutputStreamOnAudioThread(&source);
-  VLOG(0) << ">> Verify that the file is played out correctly...";
+  DVLOG(0) << ">> Verify that the file is played out correctly...";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   StopAndCloseAudioOutputStreamOnAudioThread();
 }
@@ -873,7 +873,7 @@ TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
 // automatized test on bots.
 TEST_P(AudioAndroidInputTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
   AudioParameters params = GetInputStreamParameters();
-  VLOG(1) << params;
+  DVLOG(1) << params;
   MakeAudioInputStreamOnAudioThread(params);
 
   std::string file_name = base::StringPrintf("out_simplex_%d_%d_%d.pcm",
@@ -885,7 +885,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
   FileAudioSink sink(&event, params, file_name);
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
-  VLOG(0) << ">> Speak into the microphone to record audio...";
+  DVLOG(0) << ">> Speak into the microphone to record audio...";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   StopAndCloseAudioInputStreamOnAudioThread();
 }
@@ -896,11 +896,11 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
 // automatized test on bots.
 TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   AudioParameters in_params = GetInputStreamParameters();
-  VLOG(1) << in_params;
+  DVLOG(1) << in_params;
   MakeAudioInputStreamOnAudioThread(in_params);
 
   GetDefaultOutputStreamParametersOnAudioThread();
-  VLOG(1) << audio_output_parameters();
+  DVLOG(1) << audio_output_parameters();
   MakeAudioOutputStreamOnAudioThread(audio_output_parameters());
 
   std::string file_name = base::StringPrintf("out_duplex_%d_%d_%d.pcm",
@@ -918,7 +918,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
   OpenAndStartAudioOutputStreamOnAudioThread(&source);
-  VLOG(0) << ">> Speak into the microphone to record audio";
+  DVLOG(0) << ">> Speak into the microphone to record audio";
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   StopAndCloseAudioOutputStreamOnAudioThread();
   StopAndCloseAudioInputStreamOnAudioThread();
@@ -947,7 +947,7 @@ TEST_P(AudioAndroidInputTest,
                             default_input_params.bits_per_sample(),
                             default_input_params.sample_rate() / 100,
                             default_input_params.effects());
-  VLOG(1) << io_params;
+  DVLOG(1) << io_params;
 
   // Create input and output streams using the common audio parameters.
   MakeAudioInputStreamOnAudioThread(io_params);
@@ -961,9 +961,9 @@ TEST_P(AudioAndroidInputTest,
   // something that has been added by the test.
   OpenAndStartAudioInputStreamOnAudioThread(&full_duplex);
   OpenAndStartAudioOutputStreamOnAudioThread(&full_duplex);
-  VLOG(1) << "HINT: an estimate of the extra FIFO delay will be updated "
-          << "once per second during this test.";
-  VLOG(0) << ">> Speak into the mic and listen to the audio in loopback...";
+  DVLOG(1) << "HINT: an estimate of the extra FIFO delay will be updated "
+           << "once per second during this test.";
+  DVLOG(0) << ">> Speak into the mic and listen to the audio in loopback...";
   fflush(stdout);
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   printf("\n");

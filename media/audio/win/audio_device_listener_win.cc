@@ -158,12 +158,12 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   if (new_default_device_id)
     new_device_id = base::WideToUTF8(new_default_device_id);
 
-  VLOG(1) << "OnDefaultDeviceChanged() "
-          << "new_default_device: "
-          << (new_default_device_id ?
-              CoreAudioUtil::GetFriendlyName(new_device_id) : "No device")
-          << ", flow: " << FlowToString(flow)
-          << ", role: " << RoleToString(role);
+  DVLOG(1) << "OnDefaultDeviceChanged() "
+           << "new_default_device: "
+           << (new_default_device_id ?
+               CoreAudioUtil::GetFriendlyName(new_device_id) : "No device")
+           << ", flow: " << FlowToString(flow)
+           << ", role: " << RoleToString(role);
 
   // Only fire a state change event if the device has actually changed.
   // TODO(dalecurtis): This still seems to fire an extra event on my machine for

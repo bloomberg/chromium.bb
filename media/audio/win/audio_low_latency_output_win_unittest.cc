@@ -443,13 +443,13 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
   }
   ReadFromFileAudioSource file_source(file_name);
 
-  VLOG(0) << "File name      : " << file_name.c_str();
-  VLOG(0) << "Sample rate    : " << aosw.sample_rate();
-  VLOG(0) << "Bits per sample: " << aosw.bits_per_sample();
-  VLOG(0) << "#channels      : " << aosw.channels();
-  VLOG(0) << "File size      : " << file_source.file_size();
-  VLOG(0) << "#file segments : " << kNumFileSegments;
-  VLOG(0) << ">> Listen to the stereo file while playing...";
+  DVLOG(0) << "File name      : " << file_name.c_str();
+  DVLOG(0) << "Sample rate    : " << aosw.sample_rate();
+  DVLOG(0) << "Bits per sample: " << aosw.bits_per_sample();
+  DVLOG(0) << "#channels      : " << aosw.channels();
+  DVLOG(0) << "File size      : " << file_source.file_size();
+  DVLOG(0) << "#file segments : " << kNumFileSegments;
+  DVLOG(0) << ">> Listen to the stereo file while playing...";
 
   for (int i = 0; i < kNumFileSegments; i++) {
     // Each segment will start with a short (~20ms) block of zeros, hence
@@ -462,7 +462,7 @@ TEST(WASAPIAudioOutputStreamTest, DISABLED_ReadFromStereoFile) {
     aos->Stop();
   }
 
-  VLOG(0) << ">> Stereo file playout has stopped.";
+  DVLOG(0) << ">> Stereo file playout has stopped.";
   aos->Close();
 }
 

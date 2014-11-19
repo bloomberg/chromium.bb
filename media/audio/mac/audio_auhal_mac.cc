@@ -55,11 +55,11 @@ AUHALStream::AUHALStream(
   // We must have a manager.
   DCHECK(manager_);
 
-  VLOG(1) << "AUHALStream::AUHALStream()";
-  VLOG(1) << "Device: " << device;
-  VLOG(1) << "Output channels: " << output_channels_;
-  VLOG(1) << "Sample rate: " << params_.sample_rate();
-  VLOG(1) << "Buffer size: " << number_of_frames_;
+  DVLOG(1) << "AUHALStream::AUHALStream()";
+  DVLOG(1) << "Device: " << device;
+  DVLOG(1) << "Output channels: " << output_channels_;
+  DVLOG(1) << "Sample rate: " << params_.sample_rate();
+  DVLOG(1) << "Buffer size: " << number_of_frames_;
 }
 
 AUHALStream::~AUHALStream() {
@@ -193,8 +193,9 @@ OSStatus AUHALStream::Render(
   if (number_of_frames != number_of_frames_) {
     // Create a FIFO on the fly to handle any discrepancies in callback rates.
     if (!audio_fifo_) {
-      VLOG(1) << "Audio frame size changed from " << number_of_frames_ << " to "
-              << number_of_frames << "; adding FIFO to compensate.";
+      DVLOG(1) << "Audio frame size changed from " << number_of_frames_
+               << " to " << number_of_frames
+               << "; adding FIFO to compensate.";
       audio_fifo_.reset(new AudioPullFifo(
           output_channels_,
           number_of_frames_,

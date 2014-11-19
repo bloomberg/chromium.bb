@@ -82,7 +82,7 @@ class AudioManagerTest : public ::testing::Test {
   // Helper method which verifies that the device list starts with a valid
   // default record followed by non-default device names.
   static void CheckDeviceNames(const AudioDeviceNames& device_names) {
-    VLOG(2) << "Got " << device_names.size() << " audio devices.";
+    DVLOG(2) << "Got " << device_names.size() << " audio devices.";
     if (!device_names.empty()) {
       AudioDeviceNames::const_iterator it = device_names.begin();
 
@@ -97,8 +97,8 @@ class AudioManagerTest : public ::testing::Test {
       while (it != device_names.end()) {
         EXPECT_FALSE(it->device_name.empty());
         EXPECT_FALSE(it->unique_id.empty());
-        VLOG(2) << "Device ID(" << it->unique_id
-                << "), label: " << it->device_name;
+        DVLOG(2) << "Device ID(" << it->unique_id
+                 << "), label: " << it->device_name;
         EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
                   it->device_name);
         EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
@@ -338,7 +338,7 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
   if (!CanRunInputTest())
     return;
 
-  VLOG(2) << "Testing AudioManagerAlsa.";
+  DVLOG(2) << "Testing AudioManagerAlsa.";
   CreateAudioManagerForTesting<AudioManagerAlsa>();
   AudioDeviceNames device_names;
   audio_manager_->GetAudioInputDeviceNames(&device_names);
@@ -349,7 +349,7 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
   if (!CanRunOutputTest())
     return;
 
-  VLOG(2) << "Testing AudioManagerAlsa.";
+  DVLOG(2) << "Testing AudioManagerAlsa.";
   CreateAudioManagerForTesting<AudioManagerAlsa>();
   AudioDeviceNames device_names;
   audio_manager_->GetAudioOutputDeviceNames(&device_names);
@@ -383,7 +383,7 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
     std::string output_device_id(
         audio_manager_->GetAssociatedOutputDeviceID(it->unique_id));
     if (!output_device_id.empty()) {
-      VLOG(2) << it->unique_id << " matches with " << output_device_id;
+      DVLOG(2) << it->unique_id << " matches with " << output_device_id;
       found_an_associated_device = true;
     }
   }
