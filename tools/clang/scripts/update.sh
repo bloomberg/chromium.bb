@@ -704,7 +704,8 @@ if [[ -n "${with_android}" ]]; then
       --platform=android-14 \
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
       --system=linux-x86_64 \
-      --stl=stlport
+      --stl=stlport \
+      --toolchain=arm-linux-androideabi-4.9
 
   # Android NDK r9d copies a broken unwind.h into the toolchain, see
   # http://crbug.com/357890
