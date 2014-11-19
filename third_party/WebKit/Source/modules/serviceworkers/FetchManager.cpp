@@ -12,6 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/serviceworkers/FetchRequestData.h"
@@ -157,11 +158,16 @@ void FetchManager::Loader::start()
     // "4. Let response be the value corresponding to the first matching
     // statement:"
 
-    // "- should fetching |request| be blocked as mixed content returns blocked
-    //  - should fetching |request| be blocked as content security returns
-    //    blocked
-    //      A network error."
-    // We do mixed content checking and CSP checking in ResourceFetcher.
+    // "- should fetching |request| be blocked as mixed content returns blocked"
+    // We do mixed content checking in ResourceFetcher.
+
+    // "- should fetching |request| be blocked as content security returns
+    //    blocked"
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) && !m_executionContext->contentSecurityPolicy()->allowConnectToSource(m_request->url())) {
+        // "A network error."
+        performNetworkError("Refused to connect to '" + m_request->url().elidedString() + "' because it violates the document's Content Security Policy.");
+        return;
+    }
 
     // "- |request|'s url's origin is |request|'s origin and the |CORS flag| is
     //    unset"
@@ -311,13 +317,13 @@ void FetchManager::Loader::performHTTPFetch()
     }
 
     ThreadableLoaderOptions threadableLoaderOptions;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(m_executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
     if (m_corsPreflightFlag)
         threadableLoaderOptions.preflightPolicy = ForcePreflight;
     if (m_corsFlag)
         threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
     else
         threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
-
 
     m_loader = ThreadableLoader::create(*m_executionContext, this, request, threadableLoaderOptions, resourceLoaderOptions);
 }

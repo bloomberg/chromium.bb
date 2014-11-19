@@ -33,6 +33,7 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -49,6 +50,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebDevToolsAgent.h"
@@ -88,6 +90,13 @@ public:
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) override
+    {
+        m_contentSecurityPolicy = ContentSecurityPolicy::create();
+        m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
+        m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
+    }
+
     virtual void notifyFinished() override
     {
         (*m_callback)();
@@ -101,6 +110,7 @@ public:
     bool failed() const { return m_scriptLoader->failed(); }
     const KURL& url() const { return m_scriptLoader->responseURL(); }
     String script() const { return m_scriptLoader->script(); }
+    PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
 private:
     Loader() : m_scriptLoader(WorkerScriptLoader::create())
@@ -109,6 +119,7 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     OwnPtr<Closure> m_callback;
+    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 class WebEmbeddedWorkerImpl::LoaderProxy : public WorkerLoaderProxy {
@@ -407,6 +418,9 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     providePermissionClientToWorker(workerClients.get(), m_permissionClient.release());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
 
+    // We need to set the CSP to both the shadow page's document and the ServiceWorkerGlobalScope.
+    document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
+
     KURL scriptURL = m_mainScriptLoader->url();
     OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData =
         WorkerThreadStartupData::create(
@@ -414,9 +428,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
             m_workerStartData.userAgent,
             m_mainScriptLoader->script(),
             startMode,
-            // FIXME: fill appropriate CSP info and policy type.
-            String(),
-            ContentSecurityPolicyHeaderTypeEnforce,
+            document->contentSecurityPolicy()->deprecatedHeader(),
+            document->contentSecurityPolicy()->deprecatedHeaderType(),
             starterOrigin,
             workerClients.release());
 
