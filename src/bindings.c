@@ -255,17 +255,16 @@ install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key)
 	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
 }
 
-WL_EXPORT int
+WL_EXPORT void
 weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  struct weston_seat *seat,
 				  uint32_t time, uint32_t key,
 				  enum wl_keyboard_key_state state)
 {
 	struct weston_binding *b, *tmp;
-	int eaten = 0;
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-		return eaten;
+		return;
 
 	/* Invalidate all active modifier bindings. */
 	wl_list_for_each(b, &compositor->modifier_binding_list, link)
@@ -282,10 +281,8 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 			if (seat->keyboard->grab ==
 			    &seat->keyboard->default_grab)
 				install_binding_grab(seat, time, key);
-			++eaten;
 		}
 	}
-	return eaten;
 }
 
 WL_EXPORT void

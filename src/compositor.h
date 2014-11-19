@@ -473,7 +473,6 @@ struct weston_keyboard {
 	uint32_t grab_time;
 
 	struct wl_array keys;
-	struct wl_array eaten_keys;
 
 	struct {
 		uint32_t mods_depressed;
@@ -1147,7 +1146,7 @@ weston_binding_destroy(struct weston_binding *binding);
 void
 weston_binding_list_destroy_all(struct wl_list *list);
 
-int
+void
 weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  struct weston_seat *seat, uint32_t time,
 				  uint32_t key,

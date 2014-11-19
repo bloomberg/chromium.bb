@@ -528,7 +528,6 @@ weston_keyboard_create(void)
 	wl_list_init(&keyboard->focus_resource_listener.link);
 	keyboard->focus_resource_listener.notify = keyboard_focus_resource_destroyed;
 	wl_array_init(&keyboard->keys);
-	wl_array_init(&keyboard->eaten_keys);
 	keyboard->default_grab.interface = &default_keyboard_grab_interface;
 	keyboard->default_grab.keyboard = keyboard;
 	keyboard->grab = &keyboard->default_grab;
@@ -555,7 +554,6 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 #endif
 
 	wl_array_release(&keyboard->keys);
-	wl_array_release(&keyboard->eaten_keys);
 	wl_list_remove(&keyboard->focus_resource_listener.link);
 	free(keyboard);
 }
@@ -1311,26 +1309,6 @@ update_keymap(struct weston_seat *seat)
 }
 #endif
 
-/* remove the key from the array if it is being released,
- * else return -1 and do nothing */
-static int
-remove_key(uint32_t key, enum wl_keyboard_key_state state,
-	   struct wl_array *array)
-{
-	uint32_t *k, *end;
-	end = array->data + array->size;
-	for (k = array->data; k < end; k++) {
-		if (*k == key) {
-			/* Ignore server-generated repeats. */
-			if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
-				return -1;
-			*k = *--end;
-		}
-	}
-	array->size = (void *) end - array->data;
-	return 0;
-}
-
 WL_EXPORT void
 notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state,
@@ -1339,9 +1317,7 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = seat->keyboard;
 	struct weston_keyboard_grab *grab = keyboard->grab;
-	uint32_t *k;
-	int eaten = 0;
-	struct wl_array *array;
+	uint32_t *k, *end;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		weston_compositor_idle_inhibit(compositor);
@@ -1351,31 +1327,32 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 		weston_compositor_idle_release(compositor);
 	}
 
-	/* Ignore server-generated repeats, so return if remove_key()
-	 * returns -1, signaling the key is in the array already. */
-	if (remove_key(key, state, &keyboard->keys) == -1)
-		return;
-	if (remove_key(key, state, &keyboard->eaten_keys) == -1)
-		return;
+	end = keyboard->keys.data + keyboard->keys.size;
+	for (k = keyboard->keys.data; k < end; k++) {
+		if (*k == key) {
+			/* Ignore server-generated repeats. */
+			if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+				return;
+			*k = *--end;
+		}
+	}
+	keyboard->keys.size = (void *) end - keyboard->keys.data;
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		k = wl_array_add(&keyboard->keys, sizeof *k);
+		*k = key;
+	}
 
 	if (grab == &keyboard->default_grab ||
 	    grab == &keyboard->input_method_grab) {
-		eaten = weston_compositor_run_key_binding(compositor, seat,
-		                                          time, key, state);
+		weston_compositor_run_key_binding(compositor, seat, time, key,
+						  state);
 		grab = keyboard->grab;
-	}
-
-	array = eaten == 0 ? &keyboard->keys : &keyboard->eaten_keys;
-	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		k = wl_array_add(array, sizeof *k);
-		*k = key;
 	}
 
 	grab->interface->key(grab, time, key, state);
 
 	if (keyboard->pending_keymap &&
-	    keyboard->keys.size == 0 &&
-	    keyboard->eaten_keys.size == 0)
+	    keyboard->keys.size == 0)
 		update_keymap(seat);
 
 	if (update_state == STATE_UPDATE_AUTOMATIC) {
@@ -1454,11 +1431,6 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 		weston_compositor_idle_release(compositor);
 		update_modifier_state(seat, serial, *k,
 				      WL_KEYBOARD_KEY_STATE_RELEASED);
-	}
-	wl_array_for_each(k, &keyboard->eaten_keys) {
-		weston_compositor_idle_release(compositor);
-		/* No need to update the modifier state here, modifiers
-		 * can't be in the eaten_keys array */
 	}
 
 	seat->modifier_state = 0;
@@ -2113,8 +2085,7 @@ weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap)
 	xkb_keymap_unref(seat->keyboard->pending_keymap);
 	seat->keyboard->pending_keymap = xkb_keymap_ref(keymap);
 
-	if (seat->keyboard->keys.size == 0 &&
-	    seat->keyboard->eaten_keys.size == 0)
+	if (seat->keyboard->keys.size == 0)
 		update_keymap(seat);
 #endif
 }
