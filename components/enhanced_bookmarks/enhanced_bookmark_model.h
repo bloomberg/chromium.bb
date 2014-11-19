@@ -165,6 +165,9 @@ class EnhancedBookmarkModel : public KeyedService,
   // by a (Schedule)ResetDuplicateRemoteIds call when done adding nodes.
   void AddToIdMap(const BookmarkNode* node);
 
+  // Recursively removes a node and all its children from the various maps.
+  void RemoveNodeFromMaps(const BookmarkNode* node);
+
   // If there are nodes that needs to reset their remote ids, schedules
   // ResetDuplicateRemoteIds to be run asynchronously.
   void ScheduleResetDuplicateRemoteIds();

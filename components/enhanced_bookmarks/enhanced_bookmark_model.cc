@@ -313,10 +313,7 @@ void EnhancedBookmarkModel::BookmarkNodeRemoved(
     int old_index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
-  std::string remote_id = GetRemoteId(node);
-  id_map_.erase(remote_id);
-  nodes_to_reset_.erase(node);
-  set_needs_offline_processing_tasks_.erase(node);
+  RemoveNodeFromMaps(node);
   FOR_EACH_OBSERVER(
       EnhancedBookmarkModelObserver, observers_, EnhancedBookmarkRemoved(node));
 }
@@ -384,6 +381,16 @@ void EnhancedBookmarkModel::AddToIdMap(const BookmarkNode* node) {
     nodes_to_reset_[result.first->second] = remote_id;
     nodes_to_reset_[node] = remote_id;
   }
+}
+
+void EnhancedBookmarkModel::RemoveNodeFromMaps(const BookmarkNode* node) {
+  for (int i = 0; i < node->child_count(); i++) {
+    RemoveNodeFromMaps(node->GetChild(i));
+  }
+  std::string remote_id = GetRemoteId(node);
+  id_map_.erase(remote_id);
+  nodes_to_reset_.erase(node);
+  set_needs_offline_processing_tasks_.erase(node);
 }
 
 void EnhancedBookmarkModel::ScheduleResetDuplicateRemoteIds() {

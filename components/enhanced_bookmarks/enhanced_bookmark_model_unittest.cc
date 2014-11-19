@@ -752,3 +752,15 @@ TEST_F(EnhancedBookmarkModelTest,
   bookmark_model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
   base::RunLoop().RunUntilIdle();
 }
+
+TEST_F(EnhancedBookmarkModelTest,
+       RemoveParentShouldRemoveChildrenFromMaps) {
+  const BookmarkNode* parent = AddFolder();
+  const BookmarkNode* node = AddBookmark("Title", parent);
+  std::string remote_id = GetId(node);
+  EXPECT_EQ(node, model_->BookmarkForRemoteId(remote_id));
+
+  const BookmarkNode* gp = parent->parent();
+  bookmark_model_->Remove(gp, gp->GetIndexOf(parent));
+  EXPECT_FALSE(model_->BookmarkForRemoteId(remote_id));
+}
