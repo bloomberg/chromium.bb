@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -723,8 +724,8 @@ void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
 
   DCHECK(result.domain_id != DOMAIN_NOT_PINNED);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.PublicKeyPinFailureDomain", result.domain_id, DOMAIN_NUM_EVENTS);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Net.PublicKeyPinFailureDomain", result.domain_id);
 }
 
 // static
