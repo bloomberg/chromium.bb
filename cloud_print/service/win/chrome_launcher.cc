@@ -67,7 +67,7 @@ void CloseChrome(HANDLE process, DWORD thread_id) {
   ShutdownChrome(process, thread_id);
 }
 
-bool LaunchProcess(const CommandLine& cmdline,
+bool LaunchProcess(const base::CommandLine& cmdline,
                    base::win::ScopedHandle* process_handle,
                    DWORD* thread_id) {
   STARTUPINFO startup_info = {};
@@ -149,7 +149,7 @@ void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
     base::win::RegistryValueIterator value(HKEY_CURRENT_USER, kAutoRunKeyPath);
     for (; value.Valid(); ++value) {
       if (value.Type() == REG_SZ && value.Value()) {
-        CommandLine cmd = CommandLine::FromString(value.Value());
+        base::CommandLine cmd = base::CommandLine::FromString(value.Value());
         if (cmd.GetSwitchValueASCII(switches::kProcessType) ==
             switches::kServiceProcess &&
             cmd.HasSwitch(switches::kUserDataDir)) {
@@ -201,7 +201,7 @@ void ChromeLauncher::Run() {
     base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
 
     if (!chrome_path.empty()) {
-      CommandLine cmd(chrome_path);
+      base::CommandLine cmd(chrome_path);
       CopyChromeSwitchesFromCurrentProcess(&cmd);
 
       // Required switches.
@@ -278,7 +278,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
     return std::string();
   }
 
-  CommandLine cmd(chrome_path);
+  base::CommandLine cmd(chrome_path);
   CopyChromeSwitchesFromCurrentProcess(&cmd);
   cmd.AppendSwitchPath(switches::kUserDataDir, temp_user_data.path());
   cmd.AppendSwitchPath(switches::kCloudPrintSetupProxy, printers_file);

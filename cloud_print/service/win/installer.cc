@@ -77,7 +77,8 @@ void DeleteShortcuts() {
 }  // namespace
 
 HRESULT ProcessInstallerSwitches() {
-  const CommandLine& command_line(*CommandLine::ForCurrentProcess());
+  const base::CommandLine& command_line(
+      *base::CommandLine::ForCurrentProcess());
 
   if (command_line.HasSwitch(kInstallSwitch)) {
     base::FilePath old_location =
@@ -139,6 +140,6 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
                    __in  LPSTR lpCmdLine,
                    __in  int nCmdShow) {
   base::AtExitManager at_exit;
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   return ProcessInstallerSwitches();
 }

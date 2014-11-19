@@ -88,7 +88,7 @@ void SpoolerServiceCommand(const char* command) {
   base::FilePath net_path = GetNativeSystemPath(L"net");
   if (net_path.empty())
     return;
-  CommandLine command_line(net_path);
+  base::CommandLine command_line(net_path);
   command_line.AppendArg(command);
   command_line.AppendArg("spooler");
   command_line.AppendArg("/y");
@@ -126,7 +126,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
 
-  CommandLine command_line(regsvr32_path);
+  base::CommandLine command_line(regsvr32_path);
   command_line.AppendArg("/s");
   if (!install) {
     command_line.AppendArg("/u");
@@ -503,7 +503,8 @@ HRESULT DoInstall(const base::FilePath& install_path) {
 }
 
 HRESULT ExecuteCommands() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   base::FilePath exe_path;
   if (FAILED(PathService::Get(base::DIR_EXE, &exe_path)) ||
@@ -537,7 +538,7 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   using namespace cloud_print;
 
   base::AtExitManager at_exit_manager;
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   HRESULT retval = ExecuteCommands();
 
@@ -552,7 +553,7 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
           << " HRESULT=0x" << std::setbase(16) << retval;
 
   // Installer is silent by default as required by Google Update.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     DisplayWindowsMessage(NULL, retval, LoadLocalString(IDS_DRIVER_NAME));
   }
   return retval;

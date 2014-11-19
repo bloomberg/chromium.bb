@@ -83,7 +83,7 @@ HRESULT OpenService(const base::string16& name, DWORD access,
 
 ServiceController::ServiceController()
     : name_(cloud_print::LoadLocalString(IDS_SERVICE_NAME)),
-      command_line_(CommandLine::NO_PROGRAM) {
+      command_line_(base::CommandLine::NO_PROGRAM) {
 }
 
 ServiceController::~ServiceController() {
@@ -164,7 +164,7 @@ HRESULT ServiceController::InstallService(const base::string16& user,
   base::FilePath service_path = GetBinary();
   if (!base::PathExists(service_path))
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-  CommandLine command_line(service_path);
+  base::CommandLine command_line(service_path);
   command_line.AppendSwitch(run_switch);
   if (!user_data_dir.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
@@ -304,7 +304,7 @@ void ServiceController::UpdateState() {
     return;
   }
 
-  command_line_ = CommandLine::FromString(config->lpBinaryPathName);
+  command_line_ = base::CommandLine::FromString(config->lpBinaryPathName);
   if (!command_line_.HasSwitch(kServiceSwitch)) {
     state_ = STATE_NOT_FOUND;
     return;

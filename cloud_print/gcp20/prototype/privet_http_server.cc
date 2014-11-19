@@ -139,7 +139,8 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
   if (!ValidateRequestMethod(connection_id, url.path(), info.method))
     return;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableXTocken)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableXTocken)) {
     net::HttpServerRequestInfo::HeadersMap::const_iterator iter =
         info.headers.find("x-privet-token");
     if (iter == info.headers.end()) {
@@ -192,7 +193,8 @@ bool PrivetHttpServer::ValidateRequestMethod(int connection_id,
     return false;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch("disable-method-check"))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "disable-method-check"))
     return true;
 
   if ((IsGetMethod(request) && method != "GET") ||

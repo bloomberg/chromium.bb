@@ -154,7 +154,7 @@ class CloudPrintServiceModule
 
   bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode) {
     CHECK(pnRetCode);
-    CommandLine command_line(CommandLine::NO_PROGRAM);
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.ParseFromString(lpCmdLine);
 
     LOG(INFO) << command_line.GetCommandLineString();
@@ -198,7 +198,8 @@ class CloudPrintServiceModule
   }
 
  private:
-  HRESULT ParseCommandLine(const CommandLine& command_line, bool* is_service) {
+  HRESULT ParseCommandLine(const base::CommandLine& command_line,
+                           bool* is_service) {
     if (!is_service)
       return E_INVALIDARG;
     *is_service = false;
@@ -404,7 +405,8 @@ BOOL CloudPrintServiceModule::ConsoleCtrlHandler(DWORD type) {
 }
 
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::AtExitManager at_exit;
 
   logging::LoggingSettings settings;
@@ -412,7 +414,7 @@ int main(int argc, char** argv) {
   logging::InitLogging(settings);
 
   logging::SetMinLogLevel(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableLogging) ?
+      command_line->HasSwitch(switches::kEnableLogging) ?
       logging::LOG_INFO : logging::LOG_FATAL);
 
   return _AtlModule.WinMain(0);

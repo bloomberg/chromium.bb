@@ -48,7 +48,7 @@ base::string16 GetCurrentUserName() {
   return result;
 }
 
-void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
+void CopyChromeSwitchesFromCurrentProcess(base::CommandLine* destination) {
   static const char* const kSwitchesToCopy[] = {
     switches::kCloudPrintURL,
     switches::kCloudPrintXmppEndpoint,
@@ -58,7 +58,7 @@ void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
     switches::kLsoUrl,
     switches::kV,
   };
-  destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+  destination->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                 kSwitchesToCopy,
                                 arraysize(kSwitchesToCopy));
 }

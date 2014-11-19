@@ -218,7 +218,7 @@ bool LaunchPrintDialog(const base::FilePath& xps_path,
     return false;
   }
 
-  CommandLine command_line(chrome_path);
+  base::CommandLine command_line(chrome_path);
 
   base::FilePath chrome_profile = GetChromeProfilePath();
   if (!chrome_profile.empty())
@@ -250,7 +250,7 @@ void LaunchChromeDownloadPage() {
   base::FilePath ie_path;
   PathService::Get(base::DIR_PROGRAM_FILESX86, &ie_path);
   ie_path = ie_path.Append(kIePath);
-  CommandLine command_line(ie_path);
+  base::CommandLine command_line(ie_path);
   command_line.AppendArg(kChromeInstallUrl);
 
   base::LaunchOptions options;

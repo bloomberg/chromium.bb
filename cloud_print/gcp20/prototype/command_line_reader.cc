@@ -15,7 +15,7 @@ uint16 ReadHttpPort(uint16 default_value) {
   uint32 http_port = 0;
 
   std::string http_port_string =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kHttpPort);
 
   if (!base::StringToUint(http_port_string, &http_port))
@@ -32,9 +32,10 @@ uint16 ReadHttpPort(uint16 default_value) {
 
 uint32 ReadTtl(uint32 default_value) {
   uint32 ttl = 0;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (!base::StringToUint(
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kTtl),
+          command_line->GetSwitchValueASCII(switches::kTtl),
           &ttl)) {
     ttl = default_value;
   }
@@ -45,7 +46,7 @@ uint32 ReadTtl(uint32 default_value) {
 
 std::string ReadServiceNamePrefix(const std::string& default_value) {
   std::string service_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kServiceName);
 
   return service_name.empty() ? default_value : service_name;
@@ -53,7 +54,7 @@ std::string ReadServiceNamePrefix(const std::string& default_value) {
 
 std::string ReadDomainName(const std::string& default_value) {
   std::string domain_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kDomainName);
 
   if (domain_name.empty())
@@ -75,8 +76,9 @@ std::string ReadDomainName(const std::string& default_value) {
 }
 
 std::string ReadStatePath(const std::string& default_value) {
-  std::string filename = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kStatePath);
+  std::string filename =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kStatePath);
 
   if (filename.empty())
     return default_value;

@@ -85,7 +85,7 @@ LocalPrintJob::CreateResult PrintJobHandler::CreatePrintJob(
     return LocalPrintJob::CREATE_INVALID_TICKET;
 
   // Let's simulate at least some errors just for testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSimulatePrintingErrors)) {
     if (base::RandDouble() <= kPaperJamProbability) {
       *error_description = "Paper jam, try again";

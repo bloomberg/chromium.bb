@@ -144,7 +144,7 @@ void CreateUninstallKey(const base::string16& uninstall_id,
   base::FilePath unstall_binary;
   CHECK(PathService::Get(base::FILE_EXE, &unstall_binary));
 
-  CommandLine uninstall_command(unstall_binary);
+  base::CommandLine uninstall_command(unstall_binary);
   uninstall_command.AppendSwitch(uninstall_switch);
   key.WriteValue(kUninstallString,
                  uninstall_command.GetCommandLineString().c_str());
@@ -200,7 +200,7 @@ void DeleteProgramDir(const std::string& delete_switch) {
     return;
   base::CopyFile(installer_source, temp_path);
   base::DeleteFileAfterReboot(temp_path);
-  CommandLine command_line(temp_path);
+  base::CommandLine command_line(temp_path);
   command_line.AppendSwitchPath(delete_switch, installer_source.DirName());
   base::LaunchOptions options;
   base::ProcessHandle process_handle;

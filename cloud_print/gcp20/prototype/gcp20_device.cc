@@ -50,14 +50,15 @@ void OnAbort(int val) {
 int main(int argc, char* argv[]) {
   base::AtExitManager at_exit;
   Printer printer;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelp) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpShort)) {
+  if (command_line->HasSwitch(switches::kHelp) ||
+      command_line->HasSwitch(switches::kHelpShort)) {
     switches::PrintUsage();
     return 0;
   }

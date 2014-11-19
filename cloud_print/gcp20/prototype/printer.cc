@@ -233,7 +233,8 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
   state_.user = user;
   state_.registration_state = PrinterState::REGISTRATION_STARTED;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch("disable-confirmation")) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "disable-confirmation")) {
     state_.confirmation_state = PrinterState::CONFIRMATION_CONFIRMED;
     VLOG(0) << "Registration confirmed by default.";
   } else {
