@@ -103,7 +103,7 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
 }
 
 void SingleThreadProxy::SetVisible(bool visible) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::SetVisible");
+  TRACE_EVENT1("cc", "SingleThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->SetVisible(visible);
   if (scheduler_on_impl_thread_)

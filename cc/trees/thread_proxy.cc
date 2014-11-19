@@ -165,7 +165,7 @@ void ThreadProxy::SetLayerTreeHostClientReadyOnImplThread() {
 }
 
 void ThreadProxy::SetVisible(bool visible) {
-  TRACE_EVENT0("cc", "ThreadProxy::SetVisible");
+  TRACE_EVENT1("cc", "ThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
   CompletionEvent completion;
@@ -180,7 +180,7 @@ void ThreadProxy::SetVisible(bool visible) {
 
 void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
                                          bool visible) {
-  TRACE_EVENT0("cc", "ThreadProxy::SetVisibleOnImplThread");
+  TRACE_EVENT1("cc", "ThreadProxy::SetVisibleOnImplThread", "visible", visible);
   impl().layer_tree_host_impl->SetVisible(visible);
   impl().scheduler->SetVisible(visible);
   completion->Signal();
