@@ -2979,7 +2979,15 @@ bool FrameView::scrollbarsDisabled() const
     if (!m_frame->settings() || !m_frame->settings()->pinchVirtualViewportEnabled())
         return false;
 
-    return m_frame->isMainFrame() && ScrollbarTheme::theme()->usesOverlayScrollbars();
+    // FIXME: This decision should be made based on whether or not to use
+    // viewport scrollbars for the main frame. This is implicitly just Android,
+    // but should be made explicit.
+    // http://crbug.com/434533
+#if !OS(ANDROID)
+    return false;
+#endif
+
+    return m_frame->isMainFrame();
 }
 
 AXObjectCache* FrameView::axObjectCache() const
