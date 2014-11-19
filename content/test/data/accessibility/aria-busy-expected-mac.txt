@@ -1,4 +1,3 @@
-#<skip - AXARIABusy is not implemented crbug.com/428377>
 AXWebArea AXRoleDescription='HTML content'
-    AXGroup AXSubrole=AXApplicationLog AXRoleDescription='log' AXARIABusy:YES
-    AXGroup AXSubrole=AXApplicationLog AXRoleDescription='log' AXARIABusy:NO
+    AXGroup AXSubrole=AXApplicationLog AXRoleDescription='log' AXARIABusy='1'
+    AXGroup AXSubrole=AXApplicationLog AXRoleDescription='log' AXARIABusy='0'

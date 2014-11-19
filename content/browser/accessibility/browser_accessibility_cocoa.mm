@@ -151,9 +151,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)ariaBusy {
-  bool boolValue = browserAccessibility_->GetBoolAttribute(
-      ui::AX_ATTR_LIVE_BUSY);
-  return [NSNumber numberWithBool:boolValue];
+  return [NSNumber numberWithBool:
+      GetState(browserAccessibility_, ui::AX_STATE_BUSY)];
 }
 
 - (NSString*)ariaLive {
@@ -1327,20 +1326,30 @@ NSDictionary* attributeToMethodNameMap = nil;
           ui::AX_ATTR_LIVE_STATUS)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIALive",
-        @"AXARIARelevant",
         nil]];
   }
   if (browserAccessibility_->HasStringAttribute(
-          ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
+          ui::AX_ATTR_LIVE_RELEVANT)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXARIARelevant",
+        nil]];
+  }
+  if (browserAccessibility_->HasBoolAttribute(
+          ui::AX_ATTR_LIVE_ATOMIC)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIAAtomic",
+        nil]];
+  }
+  if (browserAccessibility_->HasBoolAttribute(
+          ui::AX_ATTR_LIVE_BUSY)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIABusy",
         nil]];
   }
 
   //Add expanded attribute only if it has expanded or collapsed state.
-  if (GetState(browserAccessibility_,ui::AX_STATE_EXPANDED) ||
-        GetState(browserAccessibility_,ui::AX_STATE_COLLAPSED)) {
+  if (GetState(browserAccessibility_, ui::AX_STATE_EXPANDED) ||
+        GetState(browserAccessibility_, ui::AX_STATE_COLLAPSED)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityExpandedAttribute,
         nil]];
