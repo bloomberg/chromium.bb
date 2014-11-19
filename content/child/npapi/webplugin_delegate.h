@@ -28,6 +28,7 @@ class Rect;
 
 namespace content {
 
+struct Referrer;
 class WebPluginResourceClient;
 
 // This is the interface that a plugin implementation needs to provide.
@@ -138,7 +139,7 @@ class WebPluginDelegate {
                         const std::string& method,
                         const char* buf,
                         unsigned int len,
-                        const GURL& referrer,
+                        const Referrer& referrer,
                         bool notify_redirects,
                         bool is_plugin_src_load,
                         int origin_pid,

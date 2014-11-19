@@ -121,7 +121,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                 const std::string& method,
                 const char* buf,
                 unsigned int len,
-                const GURL& referrer,
+                const Referrer& referrer,
                 bool notify_redirects,
                 bool is_plugin_src_load,
                 int origin_pid,

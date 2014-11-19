@@ -1121,7 +1121,7 @@ void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
                                       const std::string& method,
                                       const char* buf,
                                       unsigned int len,
-                                      const GURL& referrer,
+                                      const Referrer& referrer,
                                       bool notify_redirects,
                                       bool is_plugin_src_load,
                                       int origin_pid,
@@ -1137,7 +1137,8 @@ void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
     params.post_data.resize(len);
     memcpy(&params.post_data.front(), buf, len);
   }
-  params.referrer = referrer;
+  params.referrer = referrer.url;
+  params.referrer_policy = referrer.policy;
   params.notify_redirect = notify_redirects;
   params.is_plugin_src_load = is_plugin_src_load;
   params.render_frame_id = render_frame_id;

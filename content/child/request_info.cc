@@ -7,8 +7,7 @@
 namespace content {
 
 RequestInfo::RequestInfo()
-    : referrer_policy(blink::WebReferrerPolicyDefault),
-      load_flags(0),
+    : load_flags(0),
       requestor_pid(0),
       request_type(RESOURCE_TYPE_MAIN_FRAME),
       fetch_request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),

@@ -650,7 +650,7 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   return rv;
 }
 
-bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
+bool WebPluginImpl::IsValidUrl(const GURL& url, ReferrerValue referrer_flag) {
   if (referrer_flag == PLUGIN_SRC &&
       mime_type_ == kFlashPluginSwfMimeType &&
       url.GetOrigin() != plugin_url_.GetOrigin()) {
@@ -682,7 +682,7 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
     const char* buf,
     unsigned int len,
     int notify_id,
-    Referrer referrer_flag) {
+    ReferrerValue referrer_flag) {
   // If there is no target, there is nothing to do
   if (!target)
     return NOT_ROUTED;
@@ -1161,7 +1161,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
                                              unsigned int len,
                                              int notify_id,
                                              bool popups_allowed,
-                                             Referrer referrer_flag,
+                                             ReferrerValue referrer_flag,
                                              bool notify_redirects,
                                              bool is_plugin_src_load) {
   // For this request, we either route the output to a frame
@@ -1233,8 +1233,9 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     // WebFrameImpl::setReferrerForRequest does.
     WebURLRequest request(complete_url);
     SetReferrer(&request, referrer_flag);
-    GURL referrer(
-        request.httpHeaderField(WebString::fromUTF8("Referer")).utf8());
+    Referrer referrer(
+        GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+        request.referrerPolicy());
 
     GURL first_party_for_cookies = webframe_->document().firstPartyForCookies();
     delegate_->FetchURL(resource_id, notify_id, complete_url,
@@ -1269,7 +1270,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
                                         const char* buf,
                                         int buf_len,
                                         const char* range_info,
-                                        Referrer referrer_flag,
+                                        ReferrerValue referrer_flag,
                                         bool notify_redirects,
                                         bool is_plugin_src_load) {
   if (!client) {
@@ -1520,7 +1521,7 @@ void WebPluginImpl::TearDownPluginInstance(
 }
 
 void WebPluginImpl::SetReferrer(blink::WebURLRequest* request,
-                                Referrer referrer_flag) {
+                                ReferrerValue referrer_flag) {
   switch (referrer_flag) {
     case DOCUMENT_URL:
       webframe_->setReferrerForRequest(*request, GURL());

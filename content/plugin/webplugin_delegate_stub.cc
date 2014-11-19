@@ -438,7 +438,7 @@ void WebPluginDelegateStub::OnFetchURL(
                       params.method,
                       data,
                       static_cast<unsigned int>(params.post_data.size()),
-                      params.referrer,
+                      Referrer(params.referrer, params.referrer_policy),
                       params.notify_redirect,
                       params.is_plugin_src_load,
                       channel_->renderer_id(),

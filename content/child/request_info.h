@@ -11,6 +11,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -36,12 +37,8 @@ struct CONTENT_EXPORT RequestInfo {
   // third-party cookie blocking policy.
   GURL first_party_for_cookies;
 
-  // Optional parameter, a URL with similar constraints in how it must be
-  // encoded as the url member.
-  GURL referrer;
-
-  // The referrer policy that applies to the referrer.
-  blink::WebReferrerPolicy referrer_policy;
+  // Optional parameter, the referrer to use for the request for the url member.
+  Referrer referrer;
 
   // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
   // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using

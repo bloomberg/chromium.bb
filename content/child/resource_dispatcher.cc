@@ -116,8 +116,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.method = request_info.method;
   request_.url = request_info.url;
   request_.first_party_for_cookies = request_info.first_party_for_cookies;
-  request_.referrer = request_info.referrer;
-  request_.referrer_policy = request_info.referrer_policy;
+  request_.referrer = request_info.referrer.url;
+  request_.referrer_policy = request_info.referrer.policy;
   request_.headers = request_info.headers;
   request_.load_flags = request_info.load_flags;
   request_.origin_pid = request_info.requestor_pid;
@@ -135,17 +135,17 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.enable_load_timing = request_info.enable_load_timing;
   request_.enable_upload_progress = request_info.enable_upload_progress;
 
-  if ((request_info.referrer_policy == blink::WebReferrerPolicyDefault ||
-       request_info.referrer_policy ==
+  if ((request_info.referrer.policy == blink::WebReferrerPolicyDefault ||
+       request_info.referrer.policy ==
            blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
-      request_info.referrer.SchemeIsSecure() &&
+      request_info.referrer.url.SchemeIsSecure() &&
       !request_info.url.SchemeIsSecure()) {
     // Debug code for crbug.com/422871
     base::debug::DumpWithoutCrashing();
     DLOG(FATAL) << "Trying to send secure referrer for insecure request "
                 << "without an appropriate referrer policy.\n"
                 << "URL = " << request_info.url << "\n"
-                << "Referrer = " << request_info.referrer;
+                << "Referrer = " << request_info.referrer.url;
   }
 
   const RequestExtraData kEmptyData;

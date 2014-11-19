@@ -460,7 +460,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.method = method;
   request_info.url = url;
   request_info.first_party_for_cookies = request.firstPartyForCookies();
-  request_info.referrer = referrer_url;
+  referrer_policy_ = request.referrerPolicy();
+  request_info.referrer = Referrer(referrer_url, referrer_policy_);
   request_info.headers = GetWebURLRequestHeaders(request);
   request_info.load_flags = GetLoadFlagsForWebURLRequest(request);
   request_info.enable_load_timing = true;
@@ -482,8 +483,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.fetch_request_context_type = GetRequestContextType(request);
   request_info.fetch_frame_type = GetRequestContextFrameType(request);
   request_info.extra_data = request.extraData();
-  referrer_policy_ = request.referrerPolicy();
-  request_info.referrer_policy = request.referrerPolicy();
   bridge_.reset(resource_dispatcher_->CreateBridge(request_info));
 
   if (!request.httpBody().isNull()) {

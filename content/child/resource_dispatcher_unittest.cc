@@ -322,7 +322,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.method = "GET";
     request_info.url = GURL(kTestPageUrl);
     request_info.first_party_for_cookies = GURL(kTestPageUrl);
-    request_info.referrer = GURL();
+    request_info.referrer = Referrer();
     request_info.headers = std::string();
     request_info.load_flags = 0;
     request_info.requestor_pid = 0;

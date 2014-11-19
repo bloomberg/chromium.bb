@@ -155,7 +155,7 @@ class WebPluginImpl : public WebPlugin,
 
   // Determines the referrer value sent along with outgoing HTTP requests
   // issued by plugins.
-  enum Referrer {
+  enum ReferrerValue {
     PLUGIN_SRC,
     DOCUMENT_URL,
     NO_REFERRER
@@ -172,7 +172,7 @@ class WebPluginImpl : public WebPlugin,
                              const char* buf,
                              unsigned int len,
                              int notify_id,
-                             Referrer referrer_flag);
+                             ReferrerValue referrer_flag);
 
   // Returns the next avaiable resource id. Returns 0 if the operation fails.
   // It may fail if the page has already been closed.
@@ -187,7 +187,7 @@ class WebPluginImpl : public WebPlugin,
                            const char* buf,
                            int len,
                            const char* range_info,
-                           Referrer referrer_flag,
+                           ReferrerValue referrer_flag,
                            bool notify_redirects,
                            bool check_mixed_scripting);
 
@@ -242,7 +242,7 @@ class WebPluginImpl : public WebPlugin,
                                 unsigned int len,
                                 int notify_id,
                                 bool popups_allowed,
-                                Referrer referrer_flag,
+                                ReferrerValue referrer_flag,
                                 bool notify_redirects,
                                 bool check_mixed_scripting);
 
@@ -260,10 +260,10 @@ class WebPluginImpl : public WebPlugin,
   ClientInfo* GetClientInfoFromLoader(blink::WebURLLoader* loader);
 
   // Helper function to set the referrer on the request passed in.
-  void SetReferrer(blink::WebURLRequest* request, Referrer referrer_flag);
+  void SetReferrer(blink::WebURLRequest* request, ReferrerValue referrer_flag);
 
   // Check for invalid chars like @, ;, \ before the first / (in path).
-  bool IsValidUrl(const GURL& url, Referrer referrer_flag);
+  bool IsValidUrl(const GURL& url, ReferrerValue referrer_flag);
 
   std::vector<ClientInfo> clients_;
 
