@@ -22,8 +22,6 @@
       'browser/ui/android/content_settings/popup_blocked_infobar_delegate.h',
       'browser/ui/android/infobars/auto_login_infobar_delegate_android.cc',
       'browser/ui/android/infobars/auto_login_infobar_delegate_android.h',
-      'browser/ui/android/infobars/auto_login_prompter.cc',
-      'browser/ui/android/infobars/auto_login_prompter.h',
       'browser/ui/android/infobars/confirm_infobar.cc',
       'browser/ui/android/infobars/confirm_infobar.h',
       'browser/ui/android/infobars/data_reduction_proxy_infobar.cc',

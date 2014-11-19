@@ -89,7 +89,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/intercept_download_resource_throttle.h"
-#include "chrome/browser/ui/android/infobars/auto_login_prompter.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
@@ -647,17 +646,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceResponse* response,
     IPC::Sender* sender) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-
-#if defined(OS_ANDROID)
-  // See if the response contains the X-Auto-Login header.  If so, this was
-  // a request for a login page, and the server is allowing the browser to
-  // suggest auto-login, if available.
-  if (info->IsMainFrame()) {
-    AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
-                                             info->GetRouteID());
-  }
-#endif
-
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
