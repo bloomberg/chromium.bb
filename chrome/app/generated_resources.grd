@@ -14915,7 +14915,7 @@ Do you accept?
       </message>
       <!-- Step 1.5: "Secure this phone to continue" -->
       <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog after a phone has been found but is not secured by a lock screen.">
-        Secure this phone to continue.
+        Secure this phone to continue
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog after a suitable phone has been found but is not secured by a lock screen. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
         To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Chrome Smart Lock requires a screen lock on your phone. &lt;a&gt;Learn how to secure your phone&lt;/a&gt;
