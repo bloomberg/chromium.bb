@@ -157,9 +157,8 @@ FontCacheKey FontDescription::cacheKey(const FontFaceCreationParams& creationPar
     FontTraits fontTraits = desiredTraits.bitfield() ? desiredTraits : traits();
 
     unsigned options =
-        static_cast<unsigned>(m_syntheticItalic) << 7 | // bit 8
-        static_cast<unsigned>(m_syntheticBold) << 6 | // bit 7
-        static_cast<unsigned>(m_fontSmoothing) << 4 | // bits 5-6
+        static_cast<unsigned>(m_syntheticItalic) << 5 | // bit 6
+        static_cast<unsigned>(m_syntheticBold) << 4 | // bit 5
         static_cast<unsigned>(m_textRendering) << 2 | // bits 3-4
         static_cast<unsigned>(m_orientation) << 1 | // bit 2
         static_cast<unsigned>(m_subpixelTextPosition); // bit 1

@@ -104,6 +104,11 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 [ Mac Win ] virtual/textblob/svg/text/text-with-geometric-precision.svg [ WontFix ]
 
+# Mac has different fallback behavior so that this test won't work there
+[ Mac ] fast/text/font-cachekey.html [ WontFix ]
+[ Mac ] virtual/textblob/fast/text/font-cachekey.html [ WontFix ]
+[ Mac ] virtual/antialiasedtext/fast/text/font-cachekey.html [ WontFix ]
+
 # This test is specific to Android. Because long pressing on disabled/readonly input/textarea
 # won't trigger text selection on Linux/Mac/Windows platforms, hence we need to skip it.
 [ Linux Mac Win ] editing/selection/readonly-disabled-text-selection.html [ WontFix ]
