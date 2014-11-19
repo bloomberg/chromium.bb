@@ -7,7 +7,6 @@ package org.chromium.base;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.ActivityOptions;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -27,9 +26,6 @@ import android.widget.TextView;
  * Utility class to use new APIs that were added after ICS (API level 14).
  */
 public class ApiCompatibilityUtils {
-
-    private static final String TAG = "ApiCompatibilityUtils";
-
     private ApiCompatibilityUtils() {
     }
 
@@ -365,18 +361,6 @@ public class ApiCompatibilityUtils {
             return intent.getCreatorPackage();
         } else {
             return intent.getTargetPackage();
-        }
-    }
-
-    /**
-     * @see android.app.Notification.Builder#setLocalOnly(boolean)
-     */
-    @SuppressWarnings("deprecation")
-    public static Notification build(Notification.Builder builder) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return builder.build();
-        } else {
-            return builder.getNotification();
         }
     }
 
