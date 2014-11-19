@@ -34,7 +34,13 @@ class BookmarkModelObserver {
                                  const BookmarkNode* parent,
                                  int index) = 0;
 
-  // Invoked before a node is removed.
+  // Invoked prior to removing a node from the model. When a node is removed
+  // it's descendants are implicitly removed from the model as
+  // well. Notification is only sent for the node itself, not any
+  // descendants. For example, if folder 'A' has the children 'A1' and 'A2',
+  // model->Remove('A') generates a single notification for 'A'; no notification
+  // is sent for 'A1' or 'A2'.
+  //
   // |parent| the parent of the node that will be removed.
   // |old_index| the index of the node about to be removed in |parent|.
   // |node| is the node to be removed.
@@ -43,18 +49,23 @@ class BookmarkModelObserver {
                                      int old_index,
                                      const BookmarkNode* node) {}
 
-  // Invoked when a node has been removed, the item may still be starred though.
+  // Invoked after a node has been removed from the model. Removing a node
+  // implicitly removes all descendants. Notification is only sent for the node
+  // that BookmarkModel::Remove() is invoked on. See description of
+  // OnWillRemoveBookmarks() for details.
+  //
   // |parent| the parent of the node that was removed.
   // |old_index| the index of the removed node in |parent| before it was
   // removed.
-  // |node| is the node that was removed.
-  // |removed_urls| is populated with the urls which no longer have any
-  // bookmarks associated with them.
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) = 0;
+  // |node| the node that was removed.
+  // |no_longer_bookmarked| contains the urls of any nodes that are no longer
+  // bookmarked as a result of the removal.
+  virtual void BookmarkNodeRemoved(
+      BookmarkModel* model,
+      const BookmarkNode* parent,
+      int old_index,
+      const BookmarkNode* node,
+      const std::set<GURL>& no_longer_bookmarked) = 0;
 
   // Invoked before the title or url of a node is changed.
   virtual void OnWillChangeBookmarkNode(BookmarkModel* model,
