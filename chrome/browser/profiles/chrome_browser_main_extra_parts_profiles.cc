@@ -72,6 +72,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/policy/consumer_enrollment_handler_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/recommendation_restorer_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
@@ -225,6 +226,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance();
+  policy::ConsumerEnrollmentHandlerFactory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();
   policy::RecommendationRestorerFactory::GetInstance();
   policy::UserCloudPolicyManagerFactoryChromeOS::GetInstance();

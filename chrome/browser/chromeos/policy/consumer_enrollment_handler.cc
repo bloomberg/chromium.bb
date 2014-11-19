@@ -8,16 +8,14 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -26,13 +24,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/url_constants.h"
-#include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
@@ -59,12 +52,6 @@ const char kEnrollmentNotificationUrl[] = "chrome://consumer-management/enroll";
 // The path to the consumer management enrollment/unenrollment confirmation
 // overlay, relative to the settings page URL.
 const char kConsumerManagementOverlay[] = "consumer-management-overlay";
-
-  // Returns the account ID signed in to |profile|.
-const std::string& GetAccountIdFromProfile(Profile* profile) {
-  return SigninManagerFactory::GetForProfile(profile)->
-      GetAuthenticatedAccountId();
-}
 
 class DesktopNotificationDelegate : public NotificationDelegate {
  public:
@@ -108,48 +95,31 @@ void DesktopNotificationDelegate::ButtonClick(int button_index) {
 namespace policy {
 
 ConsumerEnrollmentHandler::ConsumerEnrollmentHandler(
+    Profile* profile,
     ConsumerManagementService* consumer_management_service,
     DeviceManagementService* device_management_service)
     : Consumer("consumer_enrollment_handler"),
+      profile_(profile),
       consumer_management_service_(consumer_management_service),
       device_management_service_(device_management_service),
-      enrolling_profile_(NULL),
       weak_ptr_factory_(this) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                 content::NotificationService::AllSources());
+  gaia_account_id_ = SigninManagerFactory::GetForProfile(profile)->
+      GetAuthenticatedAccountId();
+  Start();
 }
 
 ConsumerEnrollmentHandler::~ConsumerEnrollmentHandler() {
-  if (enrolling_profile_) {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(enrolling_profile_)->
-        RemoveObserver(this);
-  }
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                    content::NotificationService::AllSources());
 }
 
-void ConsumerEnrollmentHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED) {
-    NOTREACHED() << "Unexpected notification " << type;
-    return;
-  }
-
-  Profile* profile = content::Details<Profile>(details).ptr();
-  if (chromeos::ProfileHelper::IsOwnerProfile(profile))
-    OnOwnerSignin(profile);
+void ConsumerEnrollmentHandler::Shutdown() {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      RemoveObserver(this);
 }
 
 void ConsumerEnrollmentHandler::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  CHECK(enrolling_profile_);
-
-  if (account_id == GetAccountIdFromProfile(enrolling_profile_)) {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(enrolling_profile_)->
+  if (account_id == gaia_account_id_) {
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
         RemoveObserver(this);
     OnOwnerRefreshTokenAvailable();
   }
@@ -160,7 +130,8 @@ void ConsumerEnrollmentHandler::OnGetTokenSuccess(
       const std::string& access_token,
       const base::Time& expiration_time) {
   DCHECK_EQ(token_request_, request);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
+  base::MessageLoopProxy::current()->DeleteSoon(
+      FROM_HERE, token_request_.release());
 
   OnOwnerAccessTokenAvailable(access_token);
 }
@@ -169,13 +140,14 @@ void ConsumerEnrollmentHandler::OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) {
   DCHECK_EQ(token_request_, request);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
+  base::MessageLoopProxy::current()->DeleteSoon(
+      FROM_HERE, token_request_.release());
 
   LOG(ERROR) << "Failed to get the access token: " << error.ToString();
   EndEnrollment(ConsumerManagementService::ENROLLMENT_STAGE_GET_TOKEN_FAILED);
 }
 
-void ConsumerEnrollmentHandler::OnOwnerSignin(Profile* profile) {
+void ConsumerEnrollmentHandler::Start() {
   const ConsumerManagementService::EnrollmentStage stage =
       consumer_management_service_->GetEnrollmentStage();
   switch (stage) {
@@ -184,8 +156,7 @@ void ConsumerEnrollmentHandler::OnOwnerSignin(Profile* profile) {
       return;
 
     case ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED:
-      // Continue the enrollment process after the owner signs in.
-      ContinueEnrollmentProcess(profile);
+      ContinueEnrollmentProcess();
       return;
 
     case ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS:
@@ -193,7 +164,7 @@ void ConsumerEnrollmentHandler::OnOwnerSignin(Profile* profile) {
     case ConsumerManagementService::ENROLLMENT_STAGE_BOOT_LOCKBOX_FAILED:
     case ConsumerManagementService::ENROLLMENT_STAGE_DM_SERVER_FAILED:
     case ConsumerManagementService::ENROLLMENT_STAGE_GET_TOKEN_FAILED:
-      ShowDesktopNotificationAndResetStage(stage, profile);
+      ShowDesktopNotificationAndResetStage(stage);
       return;
 
     case ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED:
@@ -203,14 +174,11 @@ void ConsumerEnrollmentHandler::OnOwnerSignin(Profile* profile) {
   }
 }
 
-void ConsumerEnrollmentHandler::ContinueEnrollmentProcess(Profile* profile) {
-  enrolling_profile_ = profile;
-
+void ConsumerEnrollmentHandler::ContinueEnrollmentProcess() {
   // First, we need to ensure that the refresh token is available.
-  const std::string& account_id = GetAccountIdFromProfile(profile);
   ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (token_service->RefreshTokenIsAvailable(account_id)) {
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  if (token_service->RefreshTokenIsAvailable(gaia_account_id_)) {
     OnOwnerRefreshTokenAvailable();
   } else {
     token_service->AddObserver(this);
@@ -218,15 +186,12 @@ void ConsumerEnrollmentHandler::ContinueEnrollmentProcess(Profile* profile) {
 }
 
 void ConsumerEnrollmentHandler::OnOwnerRefreshTokenAvailable() {
-  CHECK(enrolling_profile_);
-
   // Now we can request the OAuth access token for device management to send the
   // device registration request to the device management server.
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-  const std::string& account_id = GetAccountIdFromProfile(enrolling_profile_);
   token_request_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
-      enrolling_profile_)->StartRequest(account_id, oauth_scopes, this);
+      profile_)->StartRequest(gaia_account_id_, oauth_scopes, this);
 }
 
 void ConsumerEnrollmentHandler::OnOwnerAccessTokenAvailable(
@@ -269,16 +234,12 @@ void ConsumerEnrollmentHandler::OnEnrollmentCompleted(EnrollmentStatus status) {
 
 void ConsumerEnrollmentHandler::EndEnrollment(
     ConsumerManagementService::EnrollmentStage stage) {
-  Profile* profile = enrolling_profile_;
-  enrolling_profile_ = NULL;
-
   consumer_management_service_->SetEnrollmentStage(stage);
-  if (user_manager::UserManager::Get()->IsCurrentUserOwner())
-    ShowDesktopNotificationAndResetStage(stage, profile);
+  ShowDesktopNotificationAndResetStage(stage);
 }
 
 void ConsumerEnrollmentHandler::ShowDesktopNotificationAndResetStage(
-    ConsumerManagementService::EnrollmentStage stage, Profile* profile) {
+    ConsumerManagementService::EnrollmentStage stage) {
   base::string16 title;
   base::string16 body;
   base::string16 button_label;
@@ -293,8 +254,7 @@ void ConsumerEnrollmentHandler::ShowDesktopNotificationAndResetStage(
         IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON);
     button_click_callback = base::Bind(
         &ConsumerEnrollmentHandler::OpenSettingsPage,
-        weak_ptr_factory_.GetWeakPtr(),
-        profile);
+        weak_ptr_factory_.GetWeakPtr());
   } else {
     title = l10n_util::GetStringUTF16(
         IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_TITLE);
@@ -304,8 +264,7 @@ void ConsumerEnrollmentHandler::ShowDesktopNotificationAndResetStage(
         IDS_CONSUMER_MANAGEMENT_NOTIFICATION_TRY_AGAIN_BUTTON);
     button_click_callback = base::Bind(
         &ConsumerEnrollmentHandler::TryEnrollmentAgain,
-        weak_ptr_factory_.GetWeakPtr(),
-        profile);
+        weak_ptr_factory_.GetWeakPtr());
   }
 
   message_center::RichNotificationData optional_field;
@@ -326,24 +285,24 @@ void ConsumerEnrollmentHandler::ShowDesktopNotificationAndResetStage(
       new DesktopNotificationDelegate(kEnrollmentNotificationId,
                                       button_click_callback));
   notification.SetSystemPriority();
-  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  g_browser_process->notification_ui_manager()->Add(notification, profile_);
 
   consumer_management_service_->SetEnrollmentStage(
       ConsumerManagementService::ENROLLMENT_STAGE_NONE);
 }
 
-void ConsumerEnrollmentHandler::OpenSettingsPage(Profile* profile) const {
+void ConsumerEnrollmentHandler::OpenSettingsPage() const {
   const GURL url(chrome::kChromeUISettingsURL);
-  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }
 
-void ConsumerEnrollmentHandler::TryEnrollmentAgain(Profile* profile) const {
+void ConsumerEnrollmentHandler::TryEnrollmentAgain() const {
   const GURL base_url(chrome::kChromeUISettingsURL);
   const GURL url = base_url.Resolve(kConsumerManagementOverlay);
 
-  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }

@@ -24,7 +24,6 @@ class URLRequestContextGetter;
 namespace policy {
 
 class AppPackUpdater;
-class ConsumerEnrollmentHandler;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
@@ -109,6 +108,14 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
     return consumer_management_service_.get();
   }
 
+  DeviceManagementService* GetDeviceManagementServiceForConsumer() const {
+    return consumer_device_management_service_.get();
+  }
+
+  // Sets the consumer management service for testing.
+  void SetConsumerManagementServiceForTesting(
+      scoped_ptr<ConsumerManagementService> service);
+
   // Sets the device cloud policy initializer for testing.
   void SetDeviceCloudPolicyInitializerForTesting(
       scoped_ptr<DeviceCloudPolicyInitializer> initializer);
@@ -135,7 +142,6 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   scoped_ptr<ConsumerManagementService> consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
   scoped_ptr<DeviceManagementService> consumer_device_management_service_;
-  scoped_ptr<ConsumerEnrollmentHandler> consumer_enrollment_handler_;
   scoped_ptr<DeviceCloudPolicyInitializer> device_cloud_policy_initializer_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;

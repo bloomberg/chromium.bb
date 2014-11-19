@@ -705,6 +705,8 @@
         'browser/chromeos/policy/configuration_policy_handler_chromeos.h',
         'browser/chromeos/policy/consumer_enrollment_handler.cc',
         'browser/chromeos/policy/consumer_enrollment_handler.h',
+        'browser/chromeos/policy/consumer_enrollment_handler_factory.cc',
+        'browser/chromeos/policy/consumer_enrollment_handler_factory.h',
         'browser/chromeos/policy/consumer_management_service.cc',
         'browser/chromeos/policy/consumer_management_service.h',
         'browser/chromeos/policy/device_cloud_policy_initializer.cc',

@@ -118,7 +118,7 @@ class ConsumerManagementService
   void RemoveObserver(Observer* observer);
 
   // Returns the status.
-  Status GetStatus() const;
+  virtual Status GetStatus() const;
 
   // Returns the string value of the status.
   std::string GetStatusString() const;
@@ -128,10 +128,10 @@ class ConsumerManagementService
   bool HasPendingEnrollmentNotification() const;
 
   // Returns the enrollment stage.
-  EnrollmentStage GetEnrollmentStage() const;
+  virtual EnrollmentStage GetEnrollmentStage() const;
 
   // Sets the enrollment stage.
-  void SetEnrollmentStage(EnrollmentStage stage);
+  virtual void SetEnrollmentStage(EnrollmentStage stage);
 
   // Returns the device owner stored in the boot lockbox via |callback|.
   void GetOwner(const GetOwnerCallback& callback);

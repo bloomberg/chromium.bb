@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
-#include "chrome/browser/chromeos/policy/consumer_enrollment_handler.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
@@ -161,15 +160,6 @@ void BrowserPolicyConnectorChromeOS::Init(
         new DeviceManagementService(configuration.Pass()));
     consumer_device_management_service_->ScheduleInitialization(
         kServiceInitializationStartupDelay);
-
-    if (consumer_management_service_->GetStatus() ==
-        ConsumerManagementService::STATUS_ENROLLING ||
-        consumer_management_service_->HasPendingEnrollmentNotification()) {
-      consumer_enrollment_handler_.reset(
-          new ConsumerEnrollmentHandler(
-              consumer_management_service_.get(),
-              consumer_device_management_service_.get()));
-    }
   }
 
   if (device_cloud_policy_manager_) {
@@ -234,17 +224,11 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
   // invalidation::TiclInvalidationService it may have created as an observer of
   // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
   device_cloud_policy_invalidator_.reset();
-
-  // The |consumer_enrollment_handler_| may be observing a
-  // ProfileOAuth2TokenService and needs to be destroyed before the token
-  // service.
-  consumer_enrollment_handler_.reset();
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   // Verify that PreShutdown() has been called first.
   DCHECK(!device_cloud_policy_invalidator_);
-  DCHECK(!consumer_enrollment_handler_);
 
   // The AppPackUpdater may be observing the |device_cloud_policy_manager_|.
   // Delete it first.
@@ -302,17 +286,24 @@ void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
   global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);
 }
 
+void BrowserPolicyConnectorChromeOS::SetConsumerManagementServiceForTesting(
+    scoped_ptr<ConsumerManagementService> service) {
+  consumer_management_service_ = service.Pass();
+}
+
 void BrowserPolicyConnectorChromeOS::SetDeviceCloudPolicyInitializerForTesting(
     scoped_ptr<DeviceCloudPolicyInitializer> initializer) {
   device_cloud_policy_initializer_ = initializer.Pass();
 }
 
+// static
 void BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
     EnterpriseInstallAttributes* attributes) {
   DCHECK(!g_testing_install_attributes);
   g_testing_install_attributes = attributes;
 }
 
+// static
 void BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting() {
   if (g_testing_install_attributes) {
     delete g_testing_install_attributes;
