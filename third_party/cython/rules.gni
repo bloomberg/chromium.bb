@@ -76,6 +76,9 @@ template("python_binary_module") {
       sources += invoker.additional_sources
     }
     configs += [ ":$config_name" ]
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
   }
 
   copy(target_name) {
