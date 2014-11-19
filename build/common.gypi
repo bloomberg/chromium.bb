@@ -100,7 +100,16 @@
 
         'conditions': [
           # Compute the architecture that we're building on.
-          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="android"', {
+          # This logic needs to be kept in sync with Chrome's common.gypi or
+          # subtle build errors will result when integrating into Chrome.
+          # Generally, a desync will result in NaCl libraries will be a
+          # different bittage than Chrome.  The kicker is that builds that
+          # explicitly specify target_arch will not notice this desync, (this
+          # logic is overridden) but builds that do not specify target_arch will
+          # break.  This can cause confusion because only some trybots break.
+          ['OS=="win" or OS=="ios"', {
+            'host_arch%': 'ia32',
+          }, {
             # This handles the Linux platforms we generally deal with. Anything
             # else gets passed through, which probably won't work very well;
             # such hosts should pass an explicit target_arch to gyp.
@@ -113,9 +122,6 @@
             #    succeeds.
             'host_arch%':
                 '<!(echo "<!pymod_do_main(detect_nacl_host_arch)" | sed -e "s/arm.*/ia32/")',
-
-          }, {  # OS!="linux"
-            'host_arch%': 'ia32',
           }],
         ]
       },
