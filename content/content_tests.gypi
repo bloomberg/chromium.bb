@@ -571,7 +571,6 @@
         'browser/quota/quota_temporary_storage_evictor_unittest.cc',
         'browser/quota/storage_monitor_unittest.cc',
         'browser/quota/usage_tracker_unittest.cc',
-        'browser/renderer_host/clipboard_message_filter_unittest.cc',
         'browser/renderer_host/input/gesture_event_queue_unittest.cc',
         'browser/renderer_host/input/gesture_text_selector_unittest.cc',
         'browser/renderer_host/input/input_router_impl_unittest.cc',

@@ -4,12 +4,10 @@
 
 // Multiply-included message file, so no include guard.
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/shared_memory.h"
-#include "base/strings/string16.h"
 #include "content/common/clipboard_format.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
@@ -23,6 +21,15 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::ClipboardType, ui::CLIPBOARD_TYPE_LAST)
 
 // Clipboard IPC messages sent from the renderer to the browser.
 
+// This message is used when the object list does not contain a bitmap.
+IPC_MESSAGE_CONTROL1(ClipboardHostMsg_WriteObjectsAsync,
+                     ui::Clipboard::ObjectMap /* objects */)
+// This message is used when the object list contains a bitmap.
+// It is synchronized so that the renderer knows when it is safe to
+// free the shared memory used to transfer the bitmap.
+IPC_SYNC_MESSAGE_CONTROL2_0(ClipboardHostMsg_WriteObjectsSync,
+                            ui::Clipboard::ObjectMap /* objects */,
+                            base::SharedMemoryHandle /* bitmap handle */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_GetSequenceNumber,
                             ui::ClipboardType /* type */,
                             uint64 /* result */)
@@ -56,35 +63,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
                             ui::ClipboardType /* type */,
                             base::string16 /* type */,
                             base::string16 /* result */)
-
-// Writing to the clipboard via IPC is a two-phase operation. First, the sender
-// sends the different types of data it'd like to write to the receiver. Then,
-// it sends a commit message to commit the data to the system clipboard.
-IPC_MESSAGE_CONTROL2(ClipboardHostMsg_WriteText,
-                     ui::ClipboardType /* type */,
-                     base::string16 /* text */)
-IPC_MESSAGE_CONTROL3(ClipboardHostMsg_WriteHTML,
-                     ui::ClipboardType /* type */,
-                     base::string16 /* markup */,
-                     GURL /* url */)
-IPC_MESSAGE_CONTROL1(ClipboardHostMsg_WriteSmartPasteMarker,
-                     ui::ClipboardType /* type */);
-// Custom data consists of arbitrary MIME types an untrusted sender wants to
-// write to the clipboard. Note that exposing a general interface to do this is
-// dangerous--an untrusted sender could cause a DoS or code execution.
-typedef std::map<base::string16, base::string16> CustomDataMap;
-IPC_MESSAGE_CONTROL2(ClipboardHostMsg_WriteCustomData,
-                     ui::ClipboardType /* type */,
-                     CustomDataMap /* custom data */)
-IPC_MESSAGE_CONTROL3(ClipboardHostMsg_WriteBookmark,
-                     ui::ClipboardType /* type */,
-                     GURL /* url */,
-                     base::string16 /* title */)
-IPC_SYNC_MESSAGE_CONTROL3_0(ClipboardHostMsg_WriteImage,
-                            ui::ClipboardType /* type */,
-                            gfx::Size /* size */,
-                            base::SharedMemoryHandle /* bitmap handle */)
-IPC_MESSAGE_CONTROL1(ClipboardHostMsg_CommitWrite, ui::ClipboardType /* type */)
 
 #if defined(OS_MACOSX)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,

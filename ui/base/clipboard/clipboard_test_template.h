@@ -61,8 +61,17 @@ class ClipboardTest : public PlatformTest {
 
   ~ClipboardTest() override { ClipboardTraits::Destroy(clipboard_); }
 
+  static void WriteObjectsToClipboard(ui::Clipboard* clipboard,
+                                      const Clipboard::ObjectMap& objects) {
+    clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
+  }
+
  protected:
   Clipboard& clipboard() { return *clipboard_; }
+
+  void WriteObjectsToClipboard(const Clipboard::ObjectMap& objects) {
+    WriteObjectsToClipboard(&clipboard(), objects);
+  }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -340,18 +349,54 @@ TYPED_TEST(ClipboardTest, URLTest) {
 #endif
 }
 
+// TODO(dcheng): The tests for copying to the clipboard also test IPC
+// interaction... consider moving them to a different layer so we can
+// consolidate the validation logic.
+// Note that |bitmap_data| is not premultiplied!
 static void TestBitmapWrite(Clipboard* clipboard,
-                            const gfx::Size& size,
-                            const uint32* bitmap_data) {
-  {
-    ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
-    SkBitmap bitmap;
-    ASSERT_TRUE(bitmap.setInfo(
-        SkImageInfo::MakeN32Premul(size.width(), size.height())));
-    bitmap.setPixels(
-        const_cast<void*>(reinterpret_cast<const void*>(bitmap_data)));
-    scw.WriteImage(bitmap);
+                            const uint32* bitmap_data,
+                            size_t bitmap_data_size,
+                            const gfx::Size& size) {
+  // Create shared memory region.
+  base::SharedMemory shared_buf;
+  ASSERT_TRUE(shared_buf.CreateAndMapAnonymous(bitmap_data_size));
+  memcpy(shared_buf.memory(), bitmap_data, bitmap_data_size);
+  // CBF_SMBITMAP expects premultiplied bitmap data so do that now.
+  uint32* pixel_buffer = static_cast<uint32*>(shared_buf.memory());
+  for (int j = 0; j < size.height(); ++j) {
+    for (int i = 0; i < size.width(); ++i) {
+      uint32& pixel = pixel_buffer[i + j * size.width()];
+      pixel = SkPreMultiplyColor(pixel);
+    }
   }
+  base::SharedMemoryHandle handle_to_share;
+  base::ProcessHandle current_process = base::kNullProcessHandle;
+#if defined(OS_WIN)
+  current_process = GetCurrentProcess();
+#endif
+  shared_buf.ShareToProcess(current_process, &handle_to_share);
+  ASSERT_TRUE(shared_buf.Unmap());
+
+  // Setup data for clipboard().
+  Clipboard::ObjectMapParam placeholder_param;
+  Clipboard::ObjectMapParam size_param;
+  const char* size_data = reinterpret_cast<const char*>(&size);
+  for (size_t i = 0; i < sizeof(size); ++i)
+    size_param.push_back(size_data[i]);
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+  ASSERT_TRUE(Clipboard::ReplaceSharedMemHandle(&objects, handle_to_share,
+                                                current_process));
+
+  // This is pretty ugly, but the template type parameter is irrelevant... and
+  // this test will be going away anyway.
+  ClipboardTest<NullClipboardTraits>::WriteObjectsToClipboard(clipboard,
+                                                              objects);
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                            CLIPBOARD_TYPE_COPY_PASTE));
@@ -362,36 +407,143 @@ static void TestBitmapWrite(Clipboard* clipboard,
     const uint32* row_address = image.getAddr32(0, j);
     for (int i = 0; i < image.width(); ++i) {
       int offset = i + j * image.width();
-      EXPECT_EQ(bitmap_data[offset], row_address[i]) << "i = " << i
-                                                     << ", j = " << j;
+      uint32 pixel = SkPreMultiplyColor(bitmap_data[offset]);
+      EXPECT_EQ(pixel, row_address[i]) << "i = " << i << ", j = " << j;
     }
   }
 }
 
 TYPED_TEST(ClipboardTest, SharedBitmapTest) {
   const uint32 fake_bitmap_1[] = {
-      0x46061626, 0xf69f5988, 0x793f2937, 0xfa55b986,
-      0x78772152, 0x87692a30, 0x36322a25, 0x4320401b,
-      0x91848c21, 0xc3177b3c, 0x6946155c, 0x64171952,
+    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
   };
   {
     SCOPED_TRACE("first bitmap");
-    TestBitmapWrite(&this->clipboard(), gfx::Size(4, 3), fake_bitmap_1);
+    TestBitmapWrite(&this->clipboard(), fake_bitmap_1, sizeof(fake_bitmap_1),
+                    gfx::Size(4, 3));
   }
 
   const uint32 fake_bitmap_2[] = {
-      0x46061626, 0xf69f5988,
-      0x793f2937, 0xfa55b986,
-      0x78772152, 0x87692a30,
-      0x36322a25, 0x4320401b,
-      0x91848c21, 0xc3177b3c,
-      0x6946155c, 0x64171952,
-      0xa6910313, 0x8302323e,
+    0x46155189, 0xF6A55C8D,
+    0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A,
+    0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F,
+    0x69AB32DF, 0x643A3FD1,
+    0xA6DF041D, 0x83046278,
   };
   {
     SCOPED_TRACE("second bitmap");
-    TestBitmapWrite(&this->clipboard(), gfx::Size(2, 7), fake_bitmap_2);
+    TestBitmapWrite(&this->clipboard(), fake_bitmap_2, sizeof(fake_bitmap_2),
+                    gfx::Size(2, 7));
   }
+}
+
+namespace {
+// A size class that just happens to have the same layout as gfx::Size!
+struct UnsafeSize {
+  int width;
+  int height;
+};
+COMPILE_ASSERT(sizeof(UnsafeSize) == sizeof(gfx::Size),
+               UnsafeSize_must_be_same_size_as_gfx_Size);
+}  // namespace
+
+TYPED_TEST(ClipboardTest, SharedBitmapWithTwoNegativeSizes) {
+  Clipboard::ObjectMapParam placeholder_param;
+  void* crash_me = reinterpret_cast<void*>(57);
+  placeholder_param.resize(sizeof(crash_me));
+  memcpy(&placeholder_param.front(), &crash_me, sizeof(crash_me));
+
+  Clipboard::ObjectMapParam size_param;
+  UnsafeSize size = {-100, -100};
+  size_param.resize(sizeof(size));
+  memcpy(&size_param.front(), &size, sizeof(size));
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+
+  this->WriteObjectsToClipboard(objects);
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      Clipboard::GetBitmapFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
+}
+
+TYPED_TEST(ClipboardTest, SharedBitmapWithOneNegativeSize) {
+  Clipboard::ObjectMapParam placeholder_param;
+  void* crash_me = reinterpret_cast<void*>(57);
+  placeholder_param.resize(sizeof(crash_me));
+  memcpy(&placeholder_param.front(), &crash_me, sizeof(crash_me));
+
+  Clipboard::ObjectMapParam size_param;
+  UnsafeSize size = {-100, 100};
+  size_param.resize(sizeof(size));
+  memcpy(&size_param.front(), &size, sizeof(size));
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+
+  this->WriteObjectsToClipboard(objects);
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      Clipboard::GetBitmapFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
+}
+
+TYPED_TEST(ClipboardTest, BitmapWithSuperSize) {
+  Clipboard::ObjectMapParam placeholder_param;
+  void* crash_me = reinterpret_cast<void*>(57);
+  placeholder_param.resize(sizeof(crash_me));
+  memcpy(&placeholder_param.front(), &crash_me, sizeof(crash_me));
+
+  Clipboard::ObjectMapParam size_param;
+  // Width just big enough that bytes per row won't fit in a 32-bit
+  // representation.
+  gfx::Size size(0x20000000, 1);
+  size_param.resize(sizeof(size));
+  memcpy(&size_param.front(), &size, sizeof(size));
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+
+  this->WriteObjectsToClipboard(objects);
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      Clipboard::GetBitmapFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
+}
+
+TYPED_TEST(ClipboardTest, BitmapWithSuperSize2) {
+  Clipboard::ObjectMapParam placeholder_param;
+  void* crash_me = reinterpret_cast<void*>(57);
+  placeholder_param.resize(sizeof(crash_me));
+  memcpy(&placeholder_param.front(), &crash_me, sizeof(crash_me));
+
+  Clipboard::ObjectMapParam size_param;
+  // Width and height large enough that SkBitmap::getSize() will be truncated.
+  gfx::Size size(0x0fffffff, 0x0fffffff);
+  size_param.resize(sizeof(size));
+  memcpy(&size_param.front(), &size, sizeof(size));
+
+  Clipboard::ObjectMapParams params;
+  params.push_back(placeholder_param);
+  params.push_back(size_param);
+
+  Clipboard::ObjectMap objects;
+  objects[Clipboard::CBF_SMBITMAP] = params;
+
+  this->WriteObjectsToClipboard(objects);
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      Clipboard::GetBitmapFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
 }
 
 TYPED_TEST(ClipboardTest, DataTest) {

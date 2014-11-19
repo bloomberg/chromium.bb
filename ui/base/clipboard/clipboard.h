@@ -32,6 +32,11 @@ class MessageWindow;
 }  // namespace win
 }  // namespace base
 
+// TODO(dcheng): Temporary until the IPC layer doesn't use WriteObjects().
+namespace content {
+class ClipboardMessageFilter;
+}
+
 namespace gfx {
 class Size;
 }
@@ -112,6 +117,48 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
     // Copyable and assignable, since this is essentially an opaque value type.
   };
+
+  // TODO(dcheng): Make this private once the IPC layer no longer needs to
+  // serialize this information.
+  // ObjectType designates the type of data to be stored in the clipboard. This
+  // designation is shared across all OSes. The system-specific designation
+  // is defined by FormatType. A single ObjectType might be represented by
+  // several system-specific FormatTypes. For example, on Linux the CBF_TEXT
+  // ObjectType maps to "text/plain", "STRING", and several other formats. On
+  // windows it maps to CF_UNICODETEXT.
+  enum ObjectType {
+    CBF_TEXT,
+    CBF_HTML,
+    CBF_RTF,
+    CBF_BOOKMARK,
+    CBF_WEBKIT,
+    CBF_SMBITMAP,  // Bitmap from shared memory.
+    CBF_DATA,  // Arbitrary block of bytes.
+  };
+
+  // ObjectMap is a map from ObjectType to associated data.
+  // The data is organized differently for each ObjectType. The following
+  // table summarizes what kind of data is stored for each key.
+  // * indicates an optional argument.
+  //
+  // Key           Arguments    Type
+  // -------------------------------------
+  // CBF_TEXT      text         char array
+  // CBF_HTML      html         char array
+  //               url*         char array
+  // CBF_RTF       data         byte array
+  // CBF_BOOKMARK  html         char array
+  //               url          char array
+  // CBF_WEBKIT    none         empty vector
+  // CBF_SMBITMAP  shared_mem   A pointer to an unmapped base::SharedMemory
+  //                            object containing the bitmap data. The bitmap
+  //                            data should be premultiplied.
+  //               size         gfx::Size struct
+  // CBF_DATA      format       char array
+  //               data         byte array
+  typedef std::vector<char> ObjectMapParam;
+  typedef std::vector<ObjectMapParam> ObjectMapParams;
+  typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
 
   static bool IsSupportedClipboardType(int32 type) {
     switch (type) {
@@ -220,6 +267,15 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetWebCustomDataFormatType();
   static const FormatType& GetPepperCustomDataFormatType();
 
+  // Embeds a pointer to a SharedMemory object pointed to by |bitmap_handle|
+  // belonging to |process| into a shared bitmap [CBF_SMBITMAP] slot in
+  // |objects|.  The pointer is deleted by DispatchObjects().
+  //
+  // On non-Windows platforms, |process| is ignored.
+  static bool ReplaceSharedMemHandle(ObjectMap* objects,
+                                     base::SharedMemoryHandle bitmap_handle,
+                                     base::ProcessHandle process)
+      WARN_UNUSED_RESULT;
 #if defined(OS_WIN)
   // Firefox text/html
   static const FormatType& GetTextHtmlFormatType();
@@ -234,45 +290,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   Clipboard() {}
   virtual ~Clipboard() {}
-
-  // ObjectType designates the type of data to be stored in the clipboard. This
-  // designation is shared across all OSes. The system-specific designation
-  // is defined by FormatType. A single ObjectType might be represented by
-  // several system-specific FormatTypes. For example, on Linux the CBF_TEXT
-  // ObjectType maps to "text/plain", "STRING", and several other formats. On
-  // windows it maps to CF_UNICODETEXT.
-  enum ObjectType {
-    CBF_TEXT,
-    CBF_HTML,
-    CBF_RTF,
-    CBF_BOOKMARK,
-    CBF_WEBKIT,
-    CBF_SMBITMAP,  // Bitmap from shared memory.
-    CBF_DATA,      // Arbitrary block of bytes.
-  };
-
-  // ObjectMap is a map from ObjectType to associated data.
-  // The data is organized differently for each ObjectType. The following
-  // table summarizes what kind of data is stored for each key.
-  // * indicates an optional argument.
-  //
-  // Key           Arguments    Type
-  // -------------------------------------
-  // CBF_TEXT      text         char array
-  // CBF_HTML      html         char array
-  //               url*         char array
-  // CBF_RTF       data         byte array
-  // CBF_BOOKMARK  html         char array
-  //               url          char array
-  // CBF_WEBKIT    none         empty vector
-  // CBF_SMBITMAP  bitmap       A pointer to a SkBitmap. The caller must ensure
-  //                            the SkBitmap remains live for the duration of
-  //                            the WriteObjects call.
-  // CBF_DATA      format       char array
-  //               data         byte array
-  typedef std::vector<char> ObjectMapParam;
-  typedef std::vector<ObjectMapParam> ObjectMapParams;
-  typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|.
@@ -303,7 +320,11 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
                          size_t data_len) = 0;
 
  private:
+  template <typename T>
+  friend class ClipboardTest;
   // For access to WriteObjects().
+  // TODO(dcheng): Remove the temporary exception for content.
+  friend class content::ClipboardMessageFilter;
   friend class ScopedClipboardWriter;
   friend class TestClipboard;
 

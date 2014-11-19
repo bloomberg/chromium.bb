@@ -86,23 +86,6 @@ void ScopedClipboardWriter::WriteWebSmartPaste() {
   objects_[Clipboard::CBF_WEBKIT] = Clipboard::ObjectMapParams();
 }
 
-void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
-  if (bitmap.drawsNothing()) {
-    NOTREACHED();
-    return;
-  }
-  bitmap_ = bitmap;
-  // TODO(dcheng): This is slightly less horrible than what we used to do, but
-  // only very slightly less.
-  SkBitmap* bitmap_pointer = &bitmap_;
-  Clipboard::ObjectMapParam packed_pointer;
-  packed_pointer.resize(sizeof(bitmap_pointer));
-  *reinterpret_cast<SkBitmap**>(&*packed_pointer.begin()) = bitmap_pointer;
-  Clipboard::ObjectMapParams parameters;
-  parameters.push_back(packed_pointer);
-  objects_[Clipboard::CBF_SMBITMAP] = parameters;
-}
-
 void ScopedClipboardWriter::WritePickledData(
     const Pickle& pickle, const Clipboard::FormatType& format) {
   std::string format_string = format.Serialize();
@@ -123,7 +106,6 @@ void ScopedClipboardWriter::WritePickledData(
 void ScopedClipboardWriter::Reset() {
   url_text_.clear();
   objects_.clear();
-  bitmap_.reset();
 }
 
 void ScopedClipboardWriter::WriteTextOrURL(const base::string16& text,

@@ -10,7 +10,8 @@ namespace ui {
 
 struct TestClipboardTraits {
   static Clipboard* Create() {
-    return TestClipboard::CreateForCurrentThread();
+    TestClipboard::UseForCurrentThread();
+    return Clipboard::GetForCurrentThread();
   }
 
   static void Destroy(Clipboard* clipboard) {
