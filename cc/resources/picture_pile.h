@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include <utility>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -106,6 +107,19 @@ class CC_EXPORT PicturePile : public RecordingSource {
  private:
   friend class PicturePileImpl;
 
+  void CreatePictures(ContentLayerClient* painter,
+                      Picture::RecordingMode recording_mode,
+                      const std::vector<gfx::Rect>& record_rects);
+  void GetInvalidTileRects(const gfx::Rect& interest_rect,
+                           Region* invalidation,
+                           const gfx::Rect& visible_layer_rect,
+                           int frame_number,
+                           std::vector<gfx::Rect>* invalid_tiles);
+  bool ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
+                                  Region* invalidation,
+                                  const gfx::Size& layer_size,
+                                  int frame_number,
+                                  bool can_use_lcd_text_changed);
   void DetermineIfSolidColor();
   void SetBufferPixels(int buffer_pixels);
 

@@ -106,18 +106,17 @@ float PerformClustering(const std::vector<gfx::Rect>& tiles,
          static_cast<float>(total_record_area);
 }
 
-float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
-                   std::vector<gfx::Rect>* record_rects) {
+void ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
+                  std::vector<gfx::Rect>* record_rects) {
   TRACE_EVENT1("cc", "ClusterTiles",
                "count",
                invalid_tiles.size());
-
   if (invalid_tiles.size() <= 1) {
     // Quickly handle the special case for common
     // single-invalidation update, and also the less common
     // case of no tiles passed in.
     *record_rects = invalid_tiles;
-    return 1;
+    return;
   }
 
   // Sort the invalid tiles by y coordinate.
@@ -126,15 +125,14 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
             invalid_tiles_vertical.end(),
             rect_sort_y);
 
-  float vertical_density;
   std::vector<gfx::Rect> vertical_clustering;
-  vertical_density = PerformClustering(invalid_tiles_vertical,
-                                       &vertical_clustering);
+  float vertical_density =
+      PerformClustering(invalid_tiles_vertical, &vertical_clustering);
 
   // If vertical density is optimal, then we can return early.
   if (vertical_density == 1.f) {
     *record_rects = vertical_clustering;
-    return vertical_density;
+    return;
   }
 
   // Now try again with a horizontal sort, see which one is best
@@ -143,18 +141,16 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
             invalid_tiles_horizontal.end(),
             rect_sort_x);
 
-  float horizontal_density;
   std::vector<gfx::Rect> horizontal_clustering;
-  horizontal_density = PerformClustering(invalid_tiles_horizontal,
-                                         &horizontal_clustering);
+  float horizontal_density =
+      PerformClustering(invalid_tiles_horizontal, &horizontal_clustering);
 
   if (vertical_density < horizontal_density) {
     *record_rects = horizontal_clustering;
-    return horizontal_density;
+    return;
   }
 
   *record_rects = vertical_clustering;
-  return vertical_density;
 }
 
 }  // namespace
@@ -190,6 +186,37 @@ bool PicturePile::UpdateAndExpandInvalidation(
   bool can_use_lcd_text_changed = can_use_lcd_text_ != can_use_lcd_text;
   can_use_lcd_text_ = can_use_lcd_text;
 
+  gfx::Rect interest_rect = visible_layer_rect;
+  interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
+  recorded_viewport_ = interest_rect;
+  recorded_viewport_.Intersect(gfx::Rect(layer_size));
+
+  bool updated =
+      ApplyInvalidationAndResize(interest_rect, invalidation, layer_size,
+                                 frame_number, can_use_lcd_text_changed);
+  std::vector<gfx::Rect> invalid_tiles;
+  GetInvalidTileRects(interest_rect, invalidation, visible_layer_rect,
+                      frame_number, &invalid_tiles);
+  std::vector<gfx::Rect> record_rects;
+  ClusterTiles(invalid_tiles, &record_rects);
+
+  if (record_rects.empty())
+    return updated;
+
+  CreatePictures(painter, recording_mode, record_rects);
+
+  DetermineIfSolidColor();
+
+  has_any_recordings_ = true;
+  DCHECK(CanRasterSlowTileCheck(recorded_viewport_));
+  return true;
+}
+
+bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
+                                             Region* invalidation,
+                                             const gfx::Size& layer_size,
+                                             int frame_number,
+                                             bool can_use_lcd_text_changed) {
   bool updated = false;
 
   Region synthetic_invalidation;
@@ -207,22 +234,17 @@ bool PicturePile::UpdateAndExpandInvalidation(
     updated = true;
   }
 
-  gfx::Rect interest_rect = visible_layer_rect;
-  interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
-  recorded_viewport_ = interest_rect;
-  recorded_viewport_.Intersect(gfx::Rect(GetSize()));
-
   gfx::Rect interest_rect_over_tiles =
       tiling_.ExpandRectToTileBounds(interest_rect);
 
-  gfx::Size min_tiling_size(
-      std::min(GetSize().width(), old_tiling_size.width()),
-      std::min(GetSize().height(), old_tiling_size.height()));
-  gfx::Size max_tiling_size(
-      std::max(GetSize().width(), old_tiling_size.width()),
-      std::max(GetSize().height(), old_tiling_size.height()));
-
   if (old_tiling_size != layer_size) {
+    gfx::Size min_tiling_size(
+        std::min(GetSize().width(), old_tiling_size.width()),
+        std::min(GetSize().height(), old_tiling_size.height()));
+    gfx::Size max_tiling_size(
+        std::max(GetSize().width(), old_tiling_size.width()),
+        std::max(GetSize().height(), old_tiling_size.height()));
+
     has_any_recordings_ = false;
 
     // Drop recordings that are outside the new or old layer bounds or that
@@ -240,12 +262,10 @@ bool PicturePile::UpdateAndExpandInvalidation(
       min_toss_y =
           tiling_.FirstBorderTileYIndexFromSrcCoord(min_tiling_size.height());
     }
-    for (PictureMap::const_iterator it = picture_map_.begin();
-         it != picture_map_.end();
-         ++it) {
-      const PictureMapKey& key = it->first;
+    for (const auto& key_picture_pair : picture_map_) {
+      const PictureMapKey& key = key_picture_pair.first;
       if (key.first < min_toss_x && key.second < min_toss_y) {
-        has_any_recordings_ |= !!it->second.GetPicture();
+        has_any_recordings_ |= !!key_picture_pair.second.GetPicture();
         continue;
       }
       to_erase.push_back(key);
@@ -472,10 +492,16 @@ bool PicturePile::UpdateAndExpandInvalidation(
   }
 
   invalidation->Union(synthetic_invalidation);
+  return updated;
+}
 
+void PicturePile::GetInvalidTileRects(const gfx::Rect& interest_rect,
+                                      Region* invalidation,
+                                      const gfx::Rect& visible_layer_rect,
+                                      int frame_number,
+                                      std::vector<gfx::Rect>* invalid_tiles) {
   // Make a list of all invalid tiles; we will attempt to
   // cluster these into multiple invalidation regions.
-  std::vector<gfx::Rect> invalid_tiles;
   bool include_borders = true;
   for (TilingData::Iterator it(&tiling_, interest_rect, include_borders); it;
        ++it) {
@@ -488,7 +514,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
 
     if (info.NeedsRecording(frame_number, distance_to_visible)) {
       gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
-      invalid_tiles.push_back(tile);
+      invalid_tiles->push_back(tile);
     } else if (!info.GetPicture()) {
       if (recorded_viewport_.Intersects(rect)) {
         // Recorded viewport is just an optimization for a fully recorded
@@ -504,18 +530,13 @@ bool PicturePile::UpdateAndExpandInvalidation(
       invalidation->Union(tiling_.TileBounds(it.index_x(), it.index_y()));
     }
   }
+}
 
-  std::vector<gfx::Rect> record_rects;
-  ClusterTiles(invalid_tiles, &record_rects);
-
-  if (record_rects.empty())
-    return updated;
-
-  for (std::vector<gfx::Rect>::iterator it = record_rects.begin();
-       it != record_rects.end();
-       it++) {
-    gfx::Rect record_rect = *it;
-    record_rect = PadRect(record_rect);
+void PicturePile::CreatePictures(ContentLayerClient* painter,
+                                 Picture::RecordingMode recording_mode,
+                                 const std::vector<gfx::Rect>& record_rects) {
+  for (const auto& record_rect : record_rects) {
+    gfx::Rect padded_record_rect = PadRect(record_rect);
 
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
     scoped_refptr<Picture> picture;
@@ -526,44 +547,34 @@ bool PicturePile::UpdateAndExpandInvalidation(
     // Picture::Create.
     bool gather_pixel_refs = RasterWorkerPool::GetNumRasterThreads() > 1;
 
-    {
-      for (int i = 0; i < repeat_count; i++) {
-        picture = Picture::Create(record_rect,
-                                  painter,
-                                  tile_grid_info_,
-                                  gather_pixel_refs,
-                                  recording_mode);
-        // Note the '&&' with previous is-suitable state.
-        // This means that once a picture-pile becomes unsuitable for gpu
-        // rasterization due to some content, it will continue to be unsuitable
-        // even if that content is replaced by gpu-friendly content.
-        // This is an optimization to avoid iterating though all pictures in
-        // the pile after each invalidation.
-        is_suitable_for_gpu_rasterization_ &=
-            picture->IsSuitableForGpuRasterization();
-      }
+    for (int i = 0; i < repeat_count; i++) {
+      picture = Picture::Create(padded_record_rect, painter, tile_grid_info_,
+                                gather_pixel_refs, recording_mode);
+      // Note the '&&' with previous is-suitable state.
+      // This means that once a picture-pile becomes unsuitable for gpu
+      // rasterization due to some content, it will continue to be unsuitable
+      // even if that content is replaced by gpu-friendly content.
+      // This is an optimization to avoid iterating though all pictures in
+      // the pile after each invalidation.
+      is_suitable_for_gpu_rasterization_ &=
+          picture->IsSuitableForGpuRasterization();
     }
 
     bool found_tile_for_recorded_picture = false;
 
     bool include_borders = true;
-    for (TilingData::Iterator it(&tiling_, record_rect, include_borders); it;
-         ++it) {
+    for (TilingData::Iterator it(&tiling_, padded_record_rect, include_borders);
+         it; ++it) {
       const PictureMapKey& key = it.index();
       gfx::Rect tile = PaddedRect(key);
-      if (record_rect.Contains(tile)) {
+      if (padded_record_rect.Contains(tile)) {
         PictureInfo& info = picture_map_[key];
         info.SetPicture(picture);
         found_tile_for_recorded_picture = true;
       }
     }
-    DetermineIfSolidColor();
     DCHECK(found_tile_for_recorded_picture);
   }
-
-  has_any_recordings_ = true;
-  DCHECK(CanRasterSlowTileCheck(recorded_viewport_));
-  return true;
 }
 
 scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
