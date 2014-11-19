@@ -1,7 +1,6 @@
 # Failing because overflow:hidden on TD elements doesn't work in these cases.
 crbug.com/434560 virtual/slimmingpaint/fast/table/overflowHidden.html  [ ImageOnlyFailure ]
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
-crbug.com/434560 virtual/slimmingpaint/fast/table/edge-offsets.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
