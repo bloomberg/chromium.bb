@@ -69,7 +69,7 @@ except ImportError:
 
 try:
   import keyring
-except ImportError:
+except:
   keyring = None
 
 # The logging verbosity:
