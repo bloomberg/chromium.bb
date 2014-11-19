@@ -16,7 +16,6 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/service/cast_service.h"
 #include "chromecast/browser/url_request_context_factory.h"
-#include "chromecast/browser/webui/webui_cast.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/net/network_change_notifier_cast.h"
