@@ -196,7 +196,7 @@ void RasterizeAndRecordBenchmarkImpl::Run(LayerImpl* layer) {
 
 void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   rasterize_results_.total_picture_layers++;
-  if (!layer->DrawsContent()) {
+  if (!layer->CanHaveTilings()) {
     rasterize_results_.total_picture_layers_with_no_content++;
     return;
   }
