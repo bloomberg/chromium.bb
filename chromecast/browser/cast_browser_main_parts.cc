@@ -142,8 +142,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
 
-  InitializeWebUI();
-
   cast_browser_process_->SetCastService(CastService::Create(
       cast_browser_process_->browser_context(),
       url_request_context_factory_->GetSystemGetter(),
