@@ -64,39 +64,36 @@ Response* Response::create(ExecutionContext* context, ExceptionState& exceptionS
     return create(context, nullptr, ResponseInit(), exceptionState);
 }
 
-Response* Response::create(ExecutionContext* context, Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, const BodyInit& body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
-    ASSERT(body);
-    return create(context, body, ResponseInit(responseInit, exceptionState), exceptionState);
-}
-
-Response* Response::create(ExecutionContext* context, const String& body, const Dictionary& responseInit, ExceptionState& exceptionState)
-{
-    OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendText(body, false);
-    // "Set |Content-Type| to `text/plain;charset=UTF-8`."
-    blobData->setContentType("text/plain;charset=UTF-8");
-    const long long length = blobData->length();
-    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
-}
-
-Response* Response::create(ExecutionContext* context, const DOMArrayBuffer* body, const Dictionary& responseInit, ExceptionState& exceptionState)
-{
-    OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendArrayBuffer(body->buffer());
-    const long long length = blobData->length();
-    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
-}
-
-Response* Response::create(ExecutionContext* context, const DOMArrayBufferView* body, const Dictionary& responseInit, ExceptionState& exceptionState)
-{
-    OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendArrayBufferView(body->view());
-    const long long length = blobData->length();
-    Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-    return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    ASSERT(!body.isNull());
+    if (body.isBlob())
+        return create(context, body.getAsBlob(), ResponseInit(responseInit, exceptionState), exceptionState);
+    if (body.isUSVString()) {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendText(body.getAsUSVString(), false);
+        // "Set |Content-Type| to `text/plain;charset=UTF-8`."
+        blobData->setContentType("text/plain;charset=UTF-8");
+        const long long length = blobData->length();
+        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    }
+    if (body.isArrayBuffer()) {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendArrayBuffer(body.getAsArrayBuffer()->buffer());
+        const long long length = blobData->length();
+        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    }
+    if (body.isArrayBufferView()) {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendArrayBufferView(body.getAsArrayBufferView()->view());
+        const long long length = blobData->length();
+        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
 }
 
 Response* Response::create(ExecutionContext* context, Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)

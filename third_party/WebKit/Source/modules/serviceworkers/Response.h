@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/serviceworkers/Body.h"
 #include "modules/serviceworkers/FetchResponseData.h"
 #include "modules/serviceworkers/Headers.h"
@@ -22,16 +23,16 @@ class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;
 
+typedef BlobOrArrayBufferOrArrayBufferViewOrUSVString BodyInit;
+
 class Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Response() { }
-    // Constructors from Response.idl:
+
+    // From Response.idl:
     static Response* create(ExecutionContext*, ExceptionState&);
-    static Response* create(ExecutionContext*, Blob*, const Dictionary&, ExceptionState&);
-    static Response* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
-    static Response* create(ExecutionContext*, const DOMArrayBuffer*, const Dictionary&, ExceptionState&);
-    static Response* create(ExecutionContext*, const DOMArrayBufferView*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const BodyInit&, const Dictionary&, ExceptionState&);
 
     static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
