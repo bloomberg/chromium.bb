@@ -86,11 +86,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // is always handled and will never be passed to an window/web contents.
   bool IsReserved(const ui::Accelerator& accelerator) const;
 
-  // Performs the specified action. The |accelerator| may provide additional
-  // data the action needs. Returns whether an action was performed
-  // successfully.
-  bool PerformAction(int action,
-                     const ui::Accelerator& accelerator);
+  // Performs the specified action if it is enabled. Returns whether the action
+  // was performed successfully.
+  bool PerformActionIfEnabled(int action);
 
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
@@ -132,6 +130,12 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Registers the specified accelerators.
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);
+
+  // Performs the specified action. The |accelerator| may provide additional
+  // data the action needs. Returns whether an action was performed
+  // successfully.
+  bool PerformAction(int action,
+                     const ui::Accelerator& accelerator);
 
   // Get the accelerator restriction for the given action. Supply an |action|
   // of -1 to get restrictions that apply for the current context.

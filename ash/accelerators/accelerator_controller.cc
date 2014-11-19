@@ -778,6 +778,10 @@ bool AcceleratorController::IsReserved(
   return reserved_actions_.find(iter->second) != reserved_actions_.end();
 }
 
+bool AcceleratorController::PerformActionIfEnabled(int action) {
+  return PerformAction(action, ui::Accelerator());
+}
+
 bool AcceleratorController::PerformAction(int action,
                                           const ui::Accelerator& accelerator) {
   ash::Shell* shell = ash::Shell::GetInstance();
@@ -786,17 +790,13 @@ bool AcceleratorController::PerformAction(int action,
   if (restriction != RESTRICTION_NONE)
     return restriction == RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
 
-  const ui::KeyboardCode key_code = accelerator.key_code();
-  // PerformAction() is performed from gesture controllers and passes
-  // empty Accelerator() instance as the second argument. Such events
-  // should never be suspended.
-  const bool gesture_event = key_code == ui::VKEY_UNKNOWN;
-  // Ignore accelerators invoked as repeated (while holding a key for a long
-  // time, if their handling is nonrepeatable.
   if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
-      accelerator.IsRepeat() && !gesture_event) {
+      accelerator.IsRepeat()) {
     return true;
   }
+
+  const ui::KeyboardCode key_code = accelerator.key_code();
+
   // Type of the previous accelerator. Used by NEXT_IME and DISABLE_CAPS_LOCK.
   const ui::EventType previous_event_type = previous_accelerator_.type();
   const ui::KeyboardCode previous_key_code = previous_accelerator_.key_code();

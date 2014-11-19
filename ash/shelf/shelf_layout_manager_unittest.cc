@@ -1781,8 +1781,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Show the status menu. That should make the shelf visible again.
-  Shell::GetInstance()->accelerator_controller()->PerformAction(
-      SHOW_SYSTEM_TRAY_BUBBLE, ui::Accelerator());
+  Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+      SHOW_SYSTEM_TRAY_BUBBLE);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_TRUE(GetSystemTray()->HasSystemBubble());

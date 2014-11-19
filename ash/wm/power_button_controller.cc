@@ -65,8 +65,8 @@ void PowerButtonController::OnPowerButtonEvent(
   if (volume_down_pressed_ && down &&
       Shell::GetInstance()->maximize_mode_controller()->
         IsMaximizeModeWindowManagerEnabled()) {
-    Shell::GetInstance()->accelerator_controller()->PerformAction(
-        ash::TAKE_SCREENSHOT, ui::Accelerator());
+    Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+        ash::TAKE_SCREENSHOT);
     return;
   }
 

@@ -439,20 +439,18 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 TEST_F(AcceleratorControllerTest, WindowSnap) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
-
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   window_state->Activate();
 
   {
-    GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
     gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
         window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
-    GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
     gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
         window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
@@ -460,34 +458,34 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
 
-    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
     EXPECT_TRUE(window_state->IsMaximized());
     EXPECT_NE(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
     EXPECT_FALSE(window_state->IsMaximized());
     // Window gets restored to its restore bounds since side-maximized state
     // is treated as a "maximized" state.
     EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 
-    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
-    GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
     EXPECT_FALSE(window_state->IsMaximized());
 
-    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
-    GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
     EXPECT_FALSE(window_state->IsMaximized());
 
-    GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
+    GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
     EXPECT_TRUE(window_state->IsMaximized());
-    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_TRUE(window_state->IsMinimized());
     window_state->Restore();
     window_state->Activate();
   }
   {
-    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
     EXPECT_TRUE(window_state->IsMinimized());
   }
 }
@@ -497,21 +495,19 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   scoped_ptr<aura::Window> window1(
     CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
-
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1_state->Activate();
 
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
                                 window1.get());
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   EXPECT_FALSE(window1_state->IsNormalOrSnapped());
   EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   EXPECT_FALSE(window1_state->IsDocked());
   EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
 }
@@ -521,21 +517,20 @@ TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   scoped_ptr<aura::Window> window1(
     CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
 
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1_state->Activate();
 
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds =
     wm::GetDefaultRightSnappedWindowBoundsInParent(window1.get());
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   EXPECT_FALSE(window1_state->IsNormalOrSnapped());
   EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   EXPECT_FALSE(window1_state->IsDocked());
   EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
 }
@@ -545,22 +540,21 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   scoped_ptr<aura::Window> window1(
     CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
 
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1_state->Activate();
 
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds =
     wm::GetDefaultLeftSnappedWindowBoundsInParent(window1.get());
   gfx::Rect expected_bounds2 =
     wm::GetDefaultRightSnappedWindowBoundsInParent(window1.get());
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   EXPECT_FALSE(window1_state->IsNormalOrSnapped());
   EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   EXPECT_FALSE(window1_state->IsDocked());
   EXPECT_TRUE(window1_state->IsSnapped());
   EXPECT_EQ(expected_bounds2.ToString(), window1->bounds().ToString());
@@ -571,7 +565,6 @@ TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   scoped_ptr<aura::Window> window1(
     CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
 
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1_state->Activate();
@@ -587,16 +580,16 @@ TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
   wm::WindowState* window3_state = wm::GetWindowState(window3.get());
   window3_state->Activate();
 
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect window3_docked_bounds = window3->bounds();
 
   window2_state->Activate();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   window1_state->Activate();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
 
   EXPECT_TRUE(window3_state->IsDocked());
   EXPECT_TRUE(window2_state->IsDocked());
@@ -604,9 +597,9 @@ TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
   EXPECT_TRUE(window3_state->IsMinimized());
 
   window1_state->Activate();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   window2_state->Activate();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   window3_state->Unminimize();
   EXPECT_FALSE(window1_state->IsDocked());
   EXPECT_FALSE(window2_state->IsDocked());
@@ -619,12 +612,11 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
   scoped_ptr<aura::Window> window(CreatePanel());
-  const ui::Accelerator dummy;
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Activate();
 
   gfx::Rect window_restore_bounds2 = window->bounds();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_LEFT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds =
       wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
   gfx::Rect window_restore_bounds =
@@ -634,9 +626,9 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
   EXPECT_FALSE(window_state->IsNormalOrSnapped());
   EXPECT_TRUE(window_state->IsDocked());
   window_state->Restore();
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   EXPECT_TRUE(window_state->IsDocked());
-  GetController()->PerformAction(WINDOW_CYCLE_SNAP_DOCK_RIGHT, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   EXPECT_FALSE(window_state->IsDocked());
   EXPECT_EQ(window_restore_bounds.ToString(),
             window_restore_bounds2.ToString());
@@ -646,12 +638,11 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
 TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Activate();
 
   // Center the window using accelerator.
-  GetController()->PerformAction(WINDOW_POSITION_CENTER, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
   gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(window.get()).work_area();
   gfx::Rect bounds = window->GetBoundsInScreen();
@@ -668,7 +659,7 @@ TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
       window->GetRootWindow(), kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
   gfx::Rect docked_bounds = window->GetBoundsInScreen();
-  GetController()->PerformAction(WINDOW_POSITION_CENTER, dummy);
+  GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
   // It should not get centered and should remain docked.
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
   EXPECT_EQ(docked_bounds.ToString(), window->GetBoundsInScreen().ToString());
@@ -1329,14 +1320,13 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   }
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  const ui::Accelerator dummy;
   wm::ActivateWindow(window.get());
   Shell::GetInstance()->SimulateModalWindowOpenForTesting(true);
   for (std::set<AcceleratorAction>::const_iterator it = all_actions.begin();
        it != all_actions.end(); ++it) {
     if (actionsAllowedAtModalWindow.find(*it) ==
         actionsAllowedAtModalWindow.end()) {
-      EXPECT_TRUE(GetController()->PerformAction(*it, dummy))
+      EXPECT_TRUE(GetController()->PerformActionIfEnabled(*it))
           << " for action (disallowed at modal window): " << *it;
     }
   }
@@ -1442,14 +1432,13 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 #endif
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  const ui::Accelerator dummy;
   AccessibilityDelegate* delegate =
       ash::Shell::GetInstance()->accessibility_delegate();
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
     EXPECT_TRUE(
-        GetController()->PerformAction(kActionsNeedingWindow[i], dummy));
+        GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]));
     EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
               ui::A11Y_ALERT_WINDOW_NEEDED);
   }
@@ -1460,7 +1449,7 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
-    GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
+    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(),
               ui::A11Y_ALERT_WINDOW_NEEDED);
   }
@@ -1469,9 +1458,9 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
-    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
+    GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
     delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
-    GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
+    GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(),
               ui::A11Y_ALERT_WINDOW_NEEDED);
   }

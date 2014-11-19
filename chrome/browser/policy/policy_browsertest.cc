@@ -677,8 +677,8 @@ class PolicyTest : public InProcessBrowserTest {
         screenshot_taker.Pass());
 
     SetScreenshotPolicy(enabled);
-    ash::Shell::GetInstance()->accelerator_controller()->PerformAction(
-        ash::TAKE_SCREENSHOT, ui::Accelerator());
+    ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+        ash::TAKE_SCREENSHOT);
 
     content::RunMessageLoop();
   }
