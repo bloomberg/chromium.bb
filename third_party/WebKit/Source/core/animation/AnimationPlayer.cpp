@@ -770,6 +770,10 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
         }
     }
 
+    if (oldPlayState != newPlayState && (oldPlayState == Idle || newPlayState == Idle)) {
+        m_player.setOutdated();
+    }
+
     m_player.m_playState = newPlayState;
 
 #if ENABLE(ASSERT)
