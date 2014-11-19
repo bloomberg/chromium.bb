@@ -66,11 +66,13 @@ readonly TC_BUILD_LLVM="$(pwd)/pnacl/build/llvm_${HOST_ARCH}"
 if ${PNACL_DEBUG} || ${PNACL_BUILDBOT}; then
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
+                       skip_trusted_tests=1
                        --verbose
                        -j${PNACL_CONCURRENCY})
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
+                       skip_trusted_tests=1
                        naclsdk_validate=0
                        sysinfo=0
                        -j${PNACL_CONCURRENCY})
@@ -156,9 +158,19 @@ scons-tests () {
     # (but don't bother separating build/run for now) until we
     # converge on exactly what we want
     RunScons ${arch} ${modeflags} "$@" smoke_tests
-    if [ ${mode} != "sbtc" ]; then
-      # nonpexe tests
-      RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
+    # None of the other tests make sense with the sandboxed translator.
+    if [ ${mode} == "sbtc" ]; then
+      return 0
+    fi
+    if [ ${arch} != "arm" ]; then
+      RunScons ${arch} ${modeflags} bitcode=0 nacl_clang=1 "$@" smoke_tests
+    fi
+    # nonpexe tests
+    RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
+    if [ ${arch} != "x86-64" ]; then
+      RunScons ${arch} ${modeflags} nonsfi_nacl=1 "$@" nonsfi_tests
+      RunScons ${arch} ${modeflags} nonsfi_nacl=1 pnacl_generate_pexe=0 \
+        "$@" nonsfi_tests
     fi
   fi
 }
