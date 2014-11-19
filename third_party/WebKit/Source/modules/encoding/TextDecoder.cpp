@@ -45,7 +45,7 @@ TextDecoder* TextDecoder::create(const String& label, const TextDecoderOptions& 
     // The replacement encoding is not valid, but the Encoding API also
     // rejects aliases of the replacement encoding.
     if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {
-        exceptionState.throwTypeError("The encoding label provided ('" + label + "') is invalid.");
+        exceptionState.throwRangeError("The encoding label provided ('" + label + "') is invalid.");
         return 0;
     }
 
@@ -87,7 +87,7 @@ String TextDecoder::decode(DOMArrayBufferView* input, const TextDecodeOptions& o
     String s = m_codec->decode(start, length, flush, m_fatal, sawError);
 
     if (m_fatal && sawError) {
-        exceptionState.throwDOMException(EncodingError, "The encoded data was not valid.");
+        exceptionState.throwTypeError("The encoded data was not valid.");
         return String();
     }
 

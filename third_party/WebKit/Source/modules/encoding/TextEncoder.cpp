@@ -42,13 +42,13 @@ TextEncoder* TextEncoder::create(const String& utfLabel, ExceptionState& excepti
 {
     WTF::TextEncoding encoding(utfLabel);
     if (!encoding.isValid()) {
-        exceptionState.throwTypeError("The encoding label provided ('" + utfLabel + "') is invalid.");
+        exceptionState.throwRangeError("The encoding label provided ('" + utfLabel + "') is invalid.");
         return 0;
     }
 
     String name(encoding.name());
     if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
-        exceptionState.throwTypeError("The encoding provided ('" + utfLabel + "') is not one of 'utf-8', 'utf-16', or 'utf-16be'.");
+        exceptionState.throwRangeError("The encoding provided ('" + utfLabel + "') is not one of 'utf-8', 'utf-16', or 'utf-16be'.");
         return 0;
     }
 
