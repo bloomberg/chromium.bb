@@ -20,9 +20,6 @@
 #include "core/fileapi/FileList.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobInfo.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferContents.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
@@ -275,44 +272,56 @@ bool Writer::writeCryptoKey(const WebCryptoKey& key)
     return true;
 }
 
-void Writer::writeArrayBuffer(const ArrayBuffer& arrayBuffer)
+void Writer::writeArrayBuffer(const DOMArrayBuffer& arrayBuffer)
 {
     append(ArrayBufferTag);
     doWriteArrayBuffer(arrayBuffer);
 }
 
-void Writer::writeArrayBufferView(const ArrayBufferView& arrayBufferView)
+void Writer::writeArrayBufferView(const DOMArrayBufferView& arrayBufferView)
 {
     append(ArrayBufferViewTag);
 #if ENABLE(ASSERT)
-    const ArrayBuffer& arrayBuffer = *arrayBufferView.buffer();
+    const DOMArrayBuffer& arrayBuffer = *arrayBufferView.buffer();
     ASSERT(static_cast<const uint8_t*>(arrayBuffer.data()) + arrayBufferView.byteOffset() ==
         static_cast<const uint8_t*>(arrayBufferView.baseAddress()));
 #endif
-    ArrayBufferView::ViewType type = arrayBufferView.type();
+    DOMArrayBufferView::ViewType type = arrayBufferView.type();
 
-    if (type == ArrayBufferView::TypeInt8)
+    switch (type) {
+    case DOMArrayBufferView::TypeInt8:
         append(ByteArrayTag);
-    else if (type == ArrayBufferView::TypeUint8Clamped)
+        break;
+    case DOMArrayBufferView::TypeUint8Clamped:
         append(UnsignedByteClampedArrayTag);
-    else if (type == ArrayBufferView::TypeUint8)
+        break;
+    case DOMArrayBufferView::TypeUint8:
         append(UnsignedByteArrayTag);
-    else if (type == ArrayBufferView::TypeInt16)
+        break;
+    case DOMArrayBufferView::TypeInt16:
         append(ShortArrayTag);
-    else if (type == ArrayBufferView::TypeUint16)
+        break;
+    case DOMArrayBufferView::TypeUint16:
         append(UnsignedShortArrayTag);
-    else if (type == ArrayBufferView::TypeInt32)
+        break;
+    case DOMArrayBufferView::TypeInt32:
         append(IntArrayTag);
-    else if (type == ArrayBufferView::TypeUint32)
+        break;
+    case DOMArrayBufferView::TypeUint32:
         append(UnsignedIntArrayTag);
-    else if (type == ArrayBufferView::TypeFloat32)
+        break;
+    case DOMArrayBufferView::TypeFloat32:
         append(FloatArrayTag);
-    else if (type == ArrayBufferView::TypeFloat64)
+        break;
+    case DOMArrayBufferView::TypeFloat64:
         append(DoubleArrayTag);
-    else if (type == ArrayBufferView::TypeDataView)
+        break;
+    case DOMArrayBufferView::TypeDataView:
         append(DataViewTag);
-    else
+        break;
+    default:
         ASSERT_NOT_REACHED();
+    }
     doWriteUint32(arrayBufferView.byteOffset());
     doWriteUint32(arrayBufferView.byteLength());
 }
@@ -428,7 +437,7 @@ void Writer::doWriteFile(const File& file)
     doWriteUint32(static_cast<uint8_t>((file.userVisibility() == File::IsUserVisible) ? 1 : 0));
 }
 
-void Writer::doWriteArrayBuffer(const ArrayBuffer& arrayBuffer)
+void Writer::doWriteArrayBuffer(const DOMArrayBuffer& arrayBuffer)
 {
     uint32_t byteLength = arrayBuffer.byteLength();
     doWriteUint32(byteLength);
@@ -1084,7 +1093,7 @@ Serializer::StateBase* Serializer::writeAndGreyArrayBufferView(v8::Handle<v8::Ob
     StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
     if (stateOut)
         return stateOut;
-    m_writer.writeArrayBufferView(*arrayBufferView->view());
+    m_writer.writeArrayBufferView(*arrayBufferView);
     // This should be safe: we serialize something that we know to be a wrapper (see
     // the toV8 call above), so the call to doSerializeArrayBuffer should neither
     // cause the system stack to overflow nor should it have potential to reach
@@ -1107,7 +1116,7 @@ Serializer::StateBase* Serializer::writeArrayBuffer(v8::Handle<v8::Value> value,
     if (arrayBuffer->isNeutered())
         return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
     ASSERT(!m_transferredArrayBuffers.contains(value.As<v8::Object>()));
-    m_writer.writeArrayBuffer(*arrayBuffer->buffer());
+    m_writer.writeArrayBuffer(*arrayBuffer);
     return 0;
 }
 
@@ -1571,7 +1580,7 @@ bool Reader::readImageData(v8::Handle<v8::Value>* value)
     return true;
 }
 
-PassRefPtr<ArrayBuffer> Reader::doReadArrayBuffer()
+PassRefPtr<DOMArrayBuffer> Reader::doReadArrayBuffer()
 {
     uint32_t byteLength;
     if (!doReadUint32(&byteLength))
@@ -1580,15 +1589,15 @@ PassRefPtr<ArrayBuffer> Reader::doReadArrayBuffer()
         return nullptr;
     const void* bufferStart = m_buffer + m_position;
     m_position += byteLength;
-    return ArrayBuffer::create(bufferStart, byteLength);
+    return DOMArrayBuffer::create(bufferStart, byteLength);
 }
 
 bool Reader::readArrayBuffer(v8::Handle<v8::Value>* value)
 {
-    RefPtr<ArrayBuffer> arrayBuffer = doReadArrayBuffer();
+    RefPtr<DOMArrayBuffer> arrayBuffer = doReadArrayBuffer();
     if (!arrayBuffer)
         return false;
-    *value = toV8(DOMArrayBuffer::create(arrayBuffer.release()), m_scriptState->context()->Global(), isolate());
+    *value = toV8(arrayBuffer.release(), m_scriptState->context()->Global(), isolate());
     return true;
 }
 
@@ -2253,12 +2262,12 @@ bool Deserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::V
         return false;
     if (index >= m_arrayBuffers.size())
         return false;
-    v8::Handle<v8::Object> result = m_arrayBuffers.at(index);
+    v8::Handle<v8::Value> result = m_arrayBuffers.at(index);
     if (result.IsEmpty()) {
         RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
         v8::Isolate* isolate = m_reader.scriptState()->isolate();
         v8::Handle<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
-        result = toV8Object(buffer.get(), creationContext, isolate);
+        result = toV8(buffer.get(), creationContext, isolate);
         m_arrayBuffers[index] = result;
     }
     *object = result;

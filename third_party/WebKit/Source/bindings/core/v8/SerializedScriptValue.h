@@ -38,7 +38,6 @@
 
 namespace WTF {
 
-class ArrayBuffer;
 class ArrayBufferContents;
 
 }

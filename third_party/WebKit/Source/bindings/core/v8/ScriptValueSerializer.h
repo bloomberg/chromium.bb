@@ -18,15 +18,10 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WTF {
-
-class ArrayBuffer;
-class ArrayBufferView;
-
-}
-
 namespace blink {
 
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class File;
 class FileList;
 
@@ -137,8 +132,8 @@ public:
     void writeFileList(const FileList&);
     void writeFileListIndex(const Vector<int>& blobIndices);
     bool writeCryptoKey(const WebCryptoKey&);
-    void writeArrayBuffer(const ArrayBuffer&);
-    void writeArrayBufferView(const ArrayBufferView&);
+    void writeArrayBuffer(const DOMArrayBuffer&);
+    void writeArrayBufferView(const DOMArrayBufferView&);
     void writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength);
     void writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags);
     void writeTransferredMessagePort(uint32_t index);
@@ -155,7 +150,7 @@ public:
 
 protected:
     void doWriteFile(const File&);
-    void doWriteArrayBuffer(const ArrayBuffer&);
+    void doWriteArrayBuffer(const DOMArrayBuffer&);
     void doWriteString(const char* data, int length);
     void doWriteWebCoreString(const String&);
     void doWriteHmacKey(const WebCryptoKey&);
@@ -493,7 +488,7 @@ private:
     bool readNumber(v8::Handle<v8::Value>*);
     bool readNumberObject(v8::Handle<v8::Value>*);
     bool readImageData(v8::Handle<v8::Value>*);
-    PassRefPtr<ArrayBuffer> doReadArrayBuffer();
+    PassRefPtr<DOMArrayBuffer> doReadArrayBuffer();
     bool readArrayBuffer(v8::Handle<v8::Value>*);
     bool readArrayBufferView(v8::Handle<v8::Value>*, CompositeCreator&);
     bool readRegExp(v8::Handle<v8::Value>*);
@@ -596,7 +591,7 @@ private:
     Vector<uint32_t> m_openCompositeReferenceStack;
     RawPtrWillBeMember<MessagePortArray> m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
-    Vector<v8::Handle<v8::Object> > m_arrayBuffers;
+    Vector<v8::Handle<v8::Value> > m_arrayBuffers;
     uint32_t m_version;
 };
 
