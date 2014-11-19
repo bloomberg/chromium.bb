@@ -719,8 +719,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
   IPC_MESSAGE_HANDLER(ExtensionMsg_CancelSuspend, OnCancelSuspend)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
-                      OnClearTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect, OnDispatchOnDisconnect)
@@ -736,8 +734,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
-                      OnUpdateTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
   IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
                       content_watcher_.get(),
@@ -835,12 +831,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent);
-}
-
-void Dispatcher::OnClearTabSpecificPermissions(
-    int tab_id,
-    const std::vector<std::string>& extension_ids) {
-  delegate_->ClearTabSpecificPermissions(this, tab_id, extension_ids);
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id, const Message& message) {
@@ -1012,15 +1002,6 @@ void Dispatcher::OnUpdatePermissions(
 
   extension->permissions_data()->SetPermissions(active, withheld);
   UpdateBindings(extension->id());
-}
-
-void Dispatcher::OnUpdateTabSpecificPermissions(
-    const GURL& url,
-    int tab_id,
-    const std::string& extension_id,
-    const URLPatternSet& origin_set) {
-  delegate_->UpdateTabSpecificPermissions(
-      this, url, tab_id, extension_id, origin_set);
 }
 
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {

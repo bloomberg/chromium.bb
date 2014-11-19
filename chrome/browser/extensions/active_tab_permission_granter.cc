@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_messages.h"
@@ -65,9 +66,11 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     const content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
     if (navigation_entry) {
-      Send(new ExtensionMsg_UpdateTabSpecificPermissions(
+      content::RenderViewHost* render_view_host =
+          web_contents()->GetRenderViewHost();
+      render_view_host->Send(new ExtensionMsg_UpdateTabSpecificPermissions(
+          render_view_host->GetRoutingID(),
           navigation_entry->GetURL(),
-          tab_id_,
           extension->id(),
           new_hosts));
       // If more things ever need to know about this, we should consider making
@@ -133,7 +136,10 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
     extension_ids.push_back((*it)->id());
   }
 
-  Send(new ExtensionMsg_ClearTabSpecificPermissions(tab_id_, extension_ids));
+  content::RenderViewHost* render_view_host =
+      web_contents()->GetRenderViewHost();
+  render_view_host->Send(new ExtensionMsg_ClearTabSpecificPermissions(
+          render_view_host->GetRoutingID(), extension_ids));
   granted_extensions_.Clear();
 }
 

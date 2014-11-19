@@ -25,6 +25,7 @@ class ListValue;
 namespace extensions {
 class AutomationApiHelper;
 class Dispatcher;
+class URLPatternSet;
 
 struct Message;
 
@@ -89,6 +90,12 @@ class ExtensionHelper
                              const std::string& message);
   void OnAppWindowClosed();
   void OnSetFrameName(const std::string& name);
+  void OnUpdateTabSpecificPermissions(
+      const GURL& url,
+      const std::string& extension_id,
+      const URLPatternSet& origin_set);
+  void OnClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids);
 
   Dispatcher* dispatcher_;
 

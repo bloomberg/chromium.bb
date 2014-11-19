@@ -30,20 +30,16 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
-#include "extensions/common/url_pattern_set.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
@@ -281,47 +277,4 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void ChromeExtensionsDispatcherDelegate::SetChannel(int channel) {
   extensions::SetCurrentChannel(
       static_cast<chrome::VersionInfo::Channel>(channel));
-}
-
-void ChromeExtensionsDispatcherDelegate::ClearTabSpecificPermissions(
-    const extensions::Dispatcher* dispatcher,
-    int tab_id,
-    const std::vector<std::string>& extension_ids) {
-  for (std::vector<std::string>::const_iterator it = extension_ids.begin();
-       it != extension_ids.end();
-       ++it) {
-    const extensions::Extension* extension =
-        dispatcher->extensions()->GetByID(*it);
-    if (extension)
-      extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
-  }
-}
-
-void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
-    const extensions::Dispatcher* dispatcher,
-    const GURL& url,
-    int tab_id,
-    const std::string& extension_id,
-    const extensions::URLPatternSet& origin_set) {
-  content::RenderView* view = extensions::TabFinder::Find(tab_id);
-
-  // For now, the message should only be sent to the render view that contains
-  // the target tab. This may change. Either way, if this is the target tab it
-  // gives us the chance to check against the URL to avoid races.
-  DCHECK(view);
-  GURL active_url(view->GetWebView()->mainFrame()->document().url());
-  if (active_url != url)
-    return;
-
-  const extensions::Extension* extension =
-      dispatcher->extensions()->GetByID(extension_id);
-  if (!extension)
-    return;
-
-  extension->permissions_data()->UpdateTabSpecificPermissions(
-      tab_id,
-      new extensions::PermissionSet(extensions::APIPermissionSet(),
-                                    extensions::ManifestPermissionSet(),
-                                    origin_set,
-                                    extensions::URLPatternSet()));
 }

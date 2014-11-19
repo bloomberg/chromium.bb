@@ -65,24 +65,6 @@ class DispatcherDelegate {
   // TODO(rockot): This doesn't belong in a generic extensions system interface.
   // See http://crbug.com/368431.
   virtual void SetChannel(int channel) {}
-
-  // Clears extension permissions specific to a given tab.
-  // TODO(rockot): This doesn't belong in a generic extensions system interface.
-  // See http://crbug.com/368431.
-  virtual void ClearTabSpecificPermissions(
-      const extensions::Dispatcher* dispatcher,
-      int tab_id,
-      const std::vector<std::string>& extension_ids) {}
-
-  // Updates extension permissions specific to a given tab.
-  // TODO(rockot): This doesn't belong in a generic extensions system interface.
-  // See http://crbug.com/368431.
-  virtual void UpdateTabSpecificPermissions(
-      const extensions::Dispatcher* dispatcher,
-      const GURL& url,
-      int tab_id,
-      const std::string& extension_id,
-      const extensions::URLPatternSet& origin_set) {}
 };
 
 }  // namespace extensions

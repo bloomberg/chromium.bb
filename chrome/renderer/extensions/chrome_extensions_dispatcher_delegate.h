@@ -34,16 +34,6 @@ class ChromeExtensionsDispatcherDelegate
   void OnActiveExtensionsUpdated(
       const std::set<std::string>& extensions_ids) override;
   void SetChannel(int channel) override;
-  void ClearTabSpecificPermissions(
-      const extensions::Dispatcher* dispatcher,
-      int tab_id,
-      const std::vector<std::string>& extension_ids) override;
-  void UpdateTabSpecificPermissions(
-      const extensions::Dispatcher* dispatcher,
-      const GURL& url,
-      int tab_id,
-      const std::string& extension_id,
-      const extensions::URLPatternSet& origin_set) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsDispatcherDelegate);
 };

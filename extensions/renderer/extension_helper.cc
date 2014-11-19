@@ -9,6 +9,8 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/url_pattern_set.h"
 #include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
@@ -150,6 +152,10 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed,
                         OnAppWindowClosed)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
+                        OnUpdateTabSpecificPermissions)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
+                        OnClearTabSpecificPermissions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -263,6 +269,37 @@ void ExtensionHelper::OnAppWindowClosed() {
     return;
   script_context->module_system()->CallModuleMethod("app.window",
                                                     "onAppWindowClosed");
+}
+
+void ExtensionHelper::OnUpdateTabSpecificPermissions(
+    const GURL& url,
+    const std::string& extension_id,
+    const extensions::URLPatternSet& origin_set) {
+  // Check against the URL to avoid races.
+  GURL active_url(render_view()->GetWebView()->mainFrame()->document().url());
+  if (active_url != url)
+    return;
+
+  const Extension* extension = dispatcher_->extensions()->GetByID(extension_id);
+  if (!extension)
+    return;
+
+  extension->permissions_data()->UpdateTabSpecificPermissions(
+      tab_id_,
+      new extensions::PermissionSet(extensions::APIPermissionSet(),
+                                    extensions::ManifestPermissionSet(),
+                                    origin_set,
+                                    extensions::URLPatternSet()));
+}
+
+void ExtensionHelper::OnClearTabSpecificPermissions(
+    const std::vector<std::string>& extension_ids) {
+  for (const auto& id : extension_ids) {
+    const extensions::Extension* extension =
+        dispatcher_->extensions()->GetByID(id);
+    if (extension)
+      extension->permissions_data()->ClearTabSpecificPermissions(tab_id_);
+  }
 }
 
 }  // namespace extensions

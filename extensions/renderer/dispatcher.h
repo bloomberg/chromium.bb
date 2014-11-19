@@ -163,9 +163,6 @@ class Dispatcher : public content::RenderProcessObserver,
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
-  void OnClearTabSpecificPermissions(
-      int tab_id,
-      const std::vector<std::string>& extension_ids);
   void OnDeliverMessage(int target_port_id, const Message& message);
   void OnDispatchOnConnect(int target_port_id,
                            const std::string& channel_name,
@@ -192,10 +189,6 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
   void OnUnloaded(const std::string& id);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
-  void OnUpdateTabSpecificPermissions(const GURL& url,
-                                      int tab_id,
-                                      const std::string& extension_id,
-                                      const URLPatternSet& origin_set);
   void OnUsingWebRequestAPI(bool webrequest_used);
 
   // UserScriptSetManager::Observer implementation.

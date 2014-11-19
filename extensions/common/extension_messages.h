@@ -441,17 +441,15 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabId,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
                      ExtensionMsg_UpdatePermissions_Params)
 
-// Tell the renderer about new tab-specific permissions for an extension.
-IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,
-                     GURL /* url */,
-                     int /* tab_id */,
-                     std::string /* extension_id */,
-                     extensions::URLPatternSet /* hosts */)
+// Tell the render view about new tab-specific permissions for an extension.
+IPC_MESSAGE_ROUTED3(ExtensionMsg_UpdateTabSpecificPermissions,
+                    GURL /* url */,
+                    std::string /* extension_id */,
+                    extensions::URLPatternSet /* hosts */)
 
-// Tell the renderer to clear tab-specific permissions for some extensions.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_ClearTabSpecificPermissions,
-                     int /* tab_id */,
-                     std::vector<std::string> /* extension_ids */)
+// Tell the render view to clear tab-specific permissions for some extensions.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_ClearTabSpecificPermissions,
+                    std::vector<std::string> /* extension_ids */)
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
