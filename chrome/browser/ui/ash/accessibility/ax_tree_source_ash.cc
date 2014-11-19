@@ -73,7 +73,7 @@ void AXTreeSourceAsh::GetChildren(AXAuraObjWrapper* node,
 
 AXAuraObjWrapper* AXTreeSourceAsh::GetParent(AXAuraObjWrapper* node) const {
   AXAuraObjWrapper* parent = node->GetParent();
-  if (!parent && root_->HasChild(node))
+  if (!parent && node->GetID() != root_->GetID())
     parent = root_.get();
   return parent;
 }

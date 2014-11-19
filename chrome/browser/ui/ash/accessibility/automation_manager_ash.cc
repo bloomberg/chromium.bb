@@ -44,10 +44,6 @@ void AutomationManagerAsh::HandleEvent(BrowserContext* context,
     return;
   }
 
-  views::Widget* widget = view->GetWidget();
-  if (!widget)
-    return;
-
   if (!context && g_browser_process->profile_manager()) {
     context = g_browser_process->profile_manager()->GetLastUsedProfile();
   }
