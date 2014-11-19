@@ -98,7 +98,9 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' *:*/", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' *:*/path", Manifest::TYPE_EXTENSION));
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+  // "https://" is an invalid CSP, so it will be ignored by Blink.
+  // TODO(robwu): Change to EXPECT_FALSE once http://crbug.com/434773 is fixed.
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*:*", Manifest::TYPE_EXTENSION));
@@ -167,6 +169,11 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' https://*.googleapis.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://x.googleapis.com", Manifest::TYPE_EXTENSION));
+  // "chrome-extension://" is an invalid CSP and ignored by Blink, but extension
+  // authors have been using this string anyway, so we cannot refuse this string
+  // until extensions can be loaded with an invalid CSP. http://crbug.com/434773
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+     "default-src 'self' chrome-extension://", Manifest::TYPE_EXTENSION));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
