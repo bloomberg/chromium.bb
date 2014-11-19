@@ -37,8 +37,10 @@ COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
                               WebSettings::V8CacheOptionsParse);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
                               WebSettings::V8CacheOptionsCode);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE_COMPRESSED,
+                              WebSettings::V8CacheOptionsCodeCompressed);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                              WebSettings::V8CacheOptionsCode);
+                              WebSettings::V8CacheOptionsCodeCompressed);
 
 COMPILE_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
                               WebSettings::V8ScriptStreamingModeAll);

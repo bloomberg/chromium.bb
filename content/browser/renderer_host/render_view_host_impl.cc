@@ -487,6 +487,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
       prefs.v8_cache_options = V8_CACHE_OPTIONS_PARSE;
     } else if (v8_cache_options == "code") {
       prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE;
+    } else if (v8_cache_options == "code-compressed") {
+      prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE_COMPRESSED;
     } else {
       prefs.v8_cache_options = V8_CACHE_OPTIONS_OFF;
     }
