@@ -7,18 +7,19 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/platform_thread.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace dbus {
 class MethodCall;
-class Response;
 }
 
 namespace chromeos {
@@ -118,7 +119,7 @@ class ProxyResolutionServiceProvider
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_ptr<ProxyResolverInterface> resolver_;
-  base::PlatformThreadId origin_thread_id_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);

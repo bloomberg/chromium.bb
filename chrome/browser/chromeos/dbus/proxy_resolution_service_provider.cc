@@ -6,9 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/threading/platform_thread.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/exported_object.h"
@@ -19,8 +18,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using content::BrowserThread;
-
 namespace chromeos {
 
 // The ProxyResolverInterface implementation used in production.
@@ -29,25 +26,21 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   // Data being used in one proxy resolution.
   class Request {
    public:
-    explicit Request(const std::string& source_url)
-        : callback_(base::Bind(&Request::OnCompletion, base::Unretained(this))),
-          source_url_(source_url) {
+    explicit Request(const std::string& source_url) : source_url_(source_url) {
     }
 
     virtual ~Request() {}
 
     // Callback on IO thread for when net::ProxyService::ResolveProxy
     // completes, synchronously or asynchronously.
-    void OnCompletion(int result) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    void OnCompletion(scoped_refptr<base::SingleThreadTaskRunner> origin_thread,
+                      int result) {
       // Generate the error message if the error message is not yet set,
       // and there was an error.
       if (error_.empty() && result != net::OK)
         error_ = net::ErrorToString(result);
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, notify_task_);
+      origin_thread->PostTask(FROM_HERE, notify_task_);
     }
-
-    net::CompletionCallback callback_;
 
     std::string source_url_;  // URL being resolved.
     net::ProxyInfo proxy_info_;  // ProxyInfo resolved for source_url_.
@@ -58,9 +51,8 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  ProxyResolverImpl()
-      : origin_thread_id_(base::PlatformThread::CurrentId()),
-        weak_ptr_factory_(this) {
+  ProxyResolverImpl() : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+                        weak_ptr_factory_(this) {
   }
 
   virtual ~ProxyResolverImpl() {
@@ -99,10 +91,11 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     scoped_refptr<net::URLRequestContextGetter> getter =
         profile->GetRequestContext();
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    getter->GetNetworkTaskRunner()->PostTask(
+        FROM_HERE,
         base::Bind(&ProxyResolverImpl::ResolveProxyInternal,
                    request,
+                   origin_thread_,
                    getter,
                    exported_object));
   }
@@ -111,15 +104,16 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   // Helper function for ResolveProxy().
   static void ResolveProxyInternal(
       Request* request,
+      scoped_refptr<base::SingleThreadTaskRunner> origin_thread,
       scoped_refptr<net::URLRequestContextGetter> getter,
       scoped_refptr<dbus::ExportedObject> exported_object) {
     // Make sure we're running on IO thread.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(getter->GetNetworkTaskRunner()->BelongsToCurrentThread());
 
     // Check if we have the URLRequestContextGetter.
     if (!getter.get()) {
       request->error_ = "No URLRequestContextGetter";
-      request->OnCompletion(net::ERR_UNEXPECTED);
+      request->OnCompletion(origin_thread, net::ERR_UNEXPECTED);
       return;
     }
 
@@ -128,18 +122,22 @@ class ProxyResolverImpl : public ProxyResolverInterface {
         getter->GetURLRequestContext()->proxy_service();
     if (!proxy_service) {
       request->error_ = "No proxy service in chrome";
-      request->OnCompletion(net::ERR_UNEXPECTED);
+      request->OnCompletion(origin_thread, net::ERR_UNEXPECTED);
       return;
     }
 
     VLOG(1) << "Starting network proxy resolution for "
             << request->source_url_;
+    net::CompletionCallback completion_callback =
+        base::Bind(&Request::OnCompletion,
+                   base::Unretained(request),
+                   origin_thread);
     const int result = proxy_service->ResolveProxy(
         GURL(request->source_url_), net::LOAD_NORMAL, &request->proxy_info_,
-        request->callback_, NULL, NULL, net::BoundNetLog());
+        completion_callback, NULL, NULL, net::BoundNetLog());
     if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
-      request->OnCompletion(result);
+      completion_callback.Run(result);
     }
   }
 
@@ -173,10 +171,10 @@ class ProxyResolverImpl : public ProxyResolverInterface {
 
   // Returns true if the current thread is on the origin thread.
   bool OnOriginThread() {
-    return base::PlatformThread::CurrentId() == origin_thread_id_;
+    return origin_thread_->BelongsToCurrentThread();
   }
 
-  base::PlatformThreadId origin_thread_id_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   std::set<Request*> all_requests_;
   base::WeakPtrFactory<ProxyResolverImpl> weak_ptr_factory_;
 
@@ -186,7 +184,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
     ProxyResolverInterface* resolver)
     : resolver_(resolver),
-      origin_thread_id_(base::PlatformThread::CurrentId()),
+      origin_thread_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
 }
 
@@ -222,7 +220,7 @@ void ProxyResolutionServiceProvider::OnExported(
 }
 
 bool ProxyResolutionServiceProvider::OnOriginThread() {
-  return base::PlatformThread::CurrentId() == origin_thread_id_;
+  return origin_thread_->BelongsToCurrentThread();
 }
 
 void ProxyResolutionServiceProvider::ResolveProxyHandler(
