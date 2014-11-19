@@ -126,7 +126,7 @@ def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
   # pthread otherwise.
   return ' '.join([TargetLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
-                   '-DHAS_THREAD_LOCAL=1'])
+                   '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
 
 
 def LibStdcxxCflags(bias_arch):
