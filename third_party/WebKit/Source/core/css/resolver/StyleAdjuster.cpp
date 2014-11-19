@@ -168,7 +168,13 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (style->hasOutOfFlowPosition() || style->isFloating() || (e && e->document().documentElement() == e))
             style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !m_useQuirksModeStyles));
 
+        // We don't adjust the first letter style earlier because we may change the display setting in
+        // adjustStyeForTagName() above.
+        adjustStyleForFirstLetter(style);
+
         adjustStyleForDisplay(style, parentStyle);
+    } else {
+        adjustStyleForFirstLetter(style);
     }
 
     // Make sure our z-index value is only applied if the object is positioned.
@@ -247,6 +253,18 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     }
 
     adjustStyleForAlignment(*style, *parentStyle);
+}
+
+void StyleAdjuster::adjustStyleForFirstLetter(RenderStyle* style)
+{
+    if (style->styleType() != FIRST_LETTER)
+        return;
+
+    // Force inline display (except for floating first-letters).
+    style->setDisplay(style->isFloating() ? BLOCK : INLINE);
+
+    // CSS2 says first-letter can't be positioned.
+    style->setPosition(StaticPosition);
 }
 
 void StyleAdjuster::adjustStyleForAlignment(RenderStyle& style, const RenderStyle& parentStyle)

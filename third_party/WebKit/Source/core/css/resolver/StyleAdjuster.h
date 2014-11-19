@@ -43,6 +43,7 @@ public:
     void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*, const CachedUAStyle*);
 
 private:
+    void adjustStyleForFirstLetter(RenderStyle*);
     void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
     void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
     void adjustOverflow(RenderStyle* styleToAdjust);

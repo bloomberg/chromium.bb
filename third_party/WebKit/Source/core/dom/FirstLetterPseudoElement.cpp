@@ -229,12 +229,6 @@ RenderStyle* FirstLetterPseudoElement::styleForFirstLetter(RenderObject* rendere
     RenderStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
     ASSERT(pseudoStyle);
 
-    // Force inline display (except for floating first-letters).
-    pseudoStyle->setDisplay(pseudoStyle->isFloating() ? BLOCK : INLINE);
-
-    // CSS2 says first-letter can't be positioned.
-    pseudoStyle->setPosition(StaticPosition);
-
     return pseudoStyle;
 }
 
