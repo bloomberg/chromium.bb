@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/article_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

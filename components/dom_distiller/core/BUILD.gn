@@ -7,6 +7,8 @@ source_set("core") {
   sources = [
     "../android/component_jni_registrar.cc",
     "../android/component_jni_registrar.h",
+    "article_attachments_data.cc",
+    "article_attachments_data.h",
     "article_distillation_update.cc",
     "article_distillation_update.h",
     "article_entry.cc",
