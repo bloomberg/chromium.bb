@@ -13,10 +13,7 @@ namespace zip_analyzer {
 
 void AnalyzeZipFile(base::File zip_file, Results* results) {
   zip::ZipReader reader;
-  // OpenFromPlatformFile may close the handle even when it fails, but there is
-  // no way to know if it did that or not. Assume it did (that's the common
-  // case).
-  if (!reader.OpenFromPlatformFile(zip_file.TakePlatformFile())) {
+  if (!reader.OpenFromPlatformFile(zip_file.GetPlatformFile())) {
     DVLOG(1) << "Failed to open zip file";
     return;
   }

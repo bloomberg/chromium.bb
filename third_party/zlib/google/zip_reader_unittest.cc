@@ -573,4 +573,13 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToString) {
   reader.Close();
 }
 
+// This test exposes http://crbug.com/430959, at least on OS X
+TEST_F(ZipReaderTest, DISABLED_LeakDetectionTest) {
+  for (int i = 0; i < 100000; ++i) {
+    FileWrapper zip_fd_wrapper(test_zip_file_, FileWrapper::READ_ONLY);
+    ZipReader reader;
+    ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
+  }
+}
+
 }  // namespace zip

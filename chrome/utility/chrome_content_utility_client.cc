@@ -251,6 +251,9 @@ void ChromeContentUtilityClient::OnCreateZipFile(
     const base::FilePath& src_dir,
     const std::vector<base::FilePath>& src_relative_paths,
     const base::FileDescriptor& dest_fd) {
+  // dest_fd should be closed in the function. See ipc/ipc_message_util.h for
+  // details.
+  base::ScopedFD fd_closer(dest_fd.fd);
   bool succeeded = true;
 
   // Check sanity of source relative paths. Reject if path is absolute or

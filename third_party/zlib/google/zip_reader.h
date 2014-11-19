@@ -102,8 +102,8 @@ class ZipReader {
   // success.
   bool Open(const base::FilePath& zip_file_path);
 
-  // Opens the zip file referred to by the platform file |zip_fd|.
-  // Returns true on success.
+  // Opens the zip file referred to by the platform file |zip_fd|, without
+  // taking ownership of |zip_fd|. Returns true on success.
   bool OpenFromPlatformFile(base::PlatformFile zip_fd);
 
   // Opens the zip data stored in |data|. This class uses a weak reference to

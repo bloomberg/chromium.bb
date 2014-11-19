@@ -79,6 +79,8 @@ void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
 
 #if defined(OS_POSIX)
 // Callback function for zlib that opens a file stream from a file descriptor.
+// Since we do not own the file descriptor, dup it so that we can fdopen/fclose
+// a file stream.
 void* FdOpenFileFunc(void* opaque, const char* filename, int mode) {
   FILE* file = NULL;
   const char* mode_fopen = NULL;
@@ -90,18 +92,18 @@ void* FdOpenFileFunc(void* opaque, const char* filename, int mode) {
   else if (mode & ZLIB_FILEFUNC_MODE_CREATE)
     mode_fopen = "wb";
 
-  if ((filename != NULL) && (mode_fopen != NULL))
-    file = fdopen(*static_cast<int*>(opaque), mode_fopen);
+  if ((filename != NULL) && (mode_fopen != NULL)) {
+    int fd = dup(*static_cast<int*>(opaque));
+    if (fd != -1)
+      file = fdopen(fd, mode_fopen);
+  }
 
   return file;
 }
 
-// We don't actually close the file stream since that would close
-// the underlying file descriptor, and we don't own it. However we do need to
-// flush buffers and free |opaque| since we malloc'ed it in FillFdOpenFileFunc.
-int CloseFileFunc(void* opaque, void* stream) {
-  fflush(static_cast<FILE*>(stream));
-  free(opaque);
+int FdCloseFileFunc(void* opaque, void* stream) {
+  fclose(static_cast<FILE*>(stream));
+  free(opaque); // malloc'ed in FillFdOpenFileFunc()
   return 0;
 }
 
@@ -110,7 +112,7 @@ int CloseFileFunc(void* opaque, void* stream) {
 void FillFdOpenFileFunc(zlib_filefunc_def* pzlib_filefunc_def, int fd) {
   fill_fopen_filefunc(pzlib_filefunc_def);
   pzlib_filefunc_def->zopen_file = FdOpenFileFunc;
-  pzlib_filefunc_def->zclose_file = CloseFileFunc;
+  pzlib_filefunc_def->zclose_file = FdCloseFileFunc;
   int* ptr_fd = static_cast<int*>(malloc(sizeof(fd)));
   *ptr_fd = fd;
   pzlib_filefunc_def->opaque = ptr_fd;
@@ -119,6 +121,7 @@ void FillFdOpenFileFunc(zlib_filefunc_def* pzlib_filefunc_def, int fd) {
 
 #if defined(OS_WIN)
 // Callback function for zlib that opens a file stream from a Windows handle.
+// Does not take ownership of the handle.
 void* HandleOpenFileFunc(void* opaque, const char* filename, int mode) {
   WIN32FILE_IOWIN file_ret;
   file_ret.hf = static_cast<HANDLE>(opaque);
@@ -130,6 +133,11 @@ void* HandleOpenFileFunc(void* opaque, const char* filename, int mode) {
   if (ret != NULL)
     *(static_cast<WIN32FILE_IOWIN*>(ret)) = file_ret;
   return ret;
+}
+
+int HandleCloseFileFunc(void* opaque, void* stream) {
+  free(stream); // malloc'ed in HandleOpenFileFunc()
+  return 0;
 }
 #endif
 
@@ -282,6 +290,7 @@ unzFile OpenHandleForUnzipping(HANDLE zip_handle) {
   zlib_filefunc_def zip_funcs;
   fill_win32_filefunc(&zip_funcs);
   zip_funcs.zopen_file = HandleOpenFileFunc;
+  zip_funcs.zclose_file = HandleCloseFileFunc;
   zip_funcs.opaque = zip_handle;
   return unzOpen2("fd", &zip_funcs);
 }
