@@ -153,6 +153,10 @@ class Layer;
   // flash fullscreen code to avoid sending a key up event without a matching
   // key down event.
   BOOL suppressNextEscapeKeyUp_;
+
+  // The keyCode from the last NSKeyDown event.
+  // Used for filtering out non-matching NSKeyUp events.
+  unsigned short lastKeyCode_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;

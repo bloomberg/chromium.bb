@@ -1996,6 +1996,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return;
   }
 
+  // Do not forward key up events unless preceded by a matching key down,
+  // otherwise we might get an event from releasing the return key in the
+  // omnibox (http://crbug.com/338736).
+  if ([theEvent type] == NSKeyUp && [theEvent keyCode] != lastKeyCode_)
+    return;
+
   // We only handle key down events and just simply forward other events.
   if ([theEvent type] != NSKeyDown) {
     widgetHost->ForwardKeyboardEvent(event);
@@ -2006,6 +2012,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
     return;
   }
+
+  lastKeyCode_ = [theEvent keyCode];
 
   base::scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
 
