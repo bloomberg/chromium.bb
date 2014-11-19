@@ -360,6 +360,10 @@ if ragel_involved:
      '20141110.avx1_3op_fp_scalars', '20141115.avx1_vbroadcast'),
     ('vbroadcast_proof.py', '64',
      '20141110.avx1_3op_fp_scalars', '20141115.avx1_vbroadcast'),
+    ('avx1_3op_simd_or_memory_others_proof.py', '32',
+     '20141115.avx1_vbroadcast', '20141118.avx1_remaining_3operand'),
+    ('avx1_3op_simd_or_memory_others_proof.py', '64',
+     '20141115.avx1_vbroadcast', '20141118.avx1_remaining_3operand'),
   ]
   for proof_file, bitness, old, new in trie_proofs:
     trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
