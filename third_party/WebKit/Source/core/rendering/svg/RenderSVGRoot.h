@@ -41,8 +41,8 @@ public:
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
 
     // If you have a RenderSVGRoot, use firstChild or lastChild instead.
-    void slowFirstChild() const WTF_DELETED_FUNCTION;
-    void slowLastChild() const WTF_DELETED_FUNCTION;
+    void slowFirstChild() const = delete;
+    void slowLastChild() const = delete;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }

@@ -493,7 +493,7 @@ public:
     void prepareForDestruction();
 
     // If you have a Document, use renderView() instead which is faster.
-    void renderer() const WTF_DELETED_FUNCTION;
+    void renderer() const = delete;
 
     RenderView* renderView() const { return m_renderView; }
 
@@ -1084,9 +1084,9 @@ private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
 
-    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
-    bool isDocumentNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
-    bool isElementNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
+    bool isDocumentNode() const = delete; // This will catch anyone doing an unnecessary check.
+    bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
     virtual SecurityContext& securityContext() override final { return *this; }

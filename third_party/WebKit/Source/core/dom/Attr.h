@@ -68,7 +68,7 @@ private:
     Attr(Element&, const QualifiedName&);
     Attr(Document&, const QualifiedName&, const AtomicString& value);
 
-    bool isElementNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     void createTextChild();
 

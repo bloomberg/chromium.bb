@@ -218,8 +218,8 @@ protected:
     template <typename Collection> Collection* cachedCollection(CollectionType);
 
 private:
-    bool isContainerNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
-    bool isTextNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.
+    bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     NodeListsNodeData& ensureNodeLists();
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);

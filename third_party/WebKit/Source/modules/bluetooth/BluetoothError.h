@@ -24,7 +24,7 @@ public:
     static void dispose(blink::WebBluetoothError*);
 
 private:
-    BluetoothError() WTF_DELETED_FUNCTION;
+    BluetoothError() = delete;
 };
 
 } // namespace blink

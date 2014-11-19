@@ -125,8 +125,8 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
-    void nextSibling() const WTF_DELETED_FUNCTION;
-    void previousSibling() const WTF_DELETED_FUNCTION;
+    void nextSibling() const = delete;
+    void previousSibling() const = delete;
 
     RenderObjectChildList m_children;
     unsigned m_rowIndex : 31;

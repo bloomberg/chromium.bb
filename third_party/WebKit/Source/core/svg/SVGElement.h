@@ -228,8 +228,8 @@ protected:
     bool hasFocusEventListeners() const;
 
 private:
-    bool isSVGElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
-    bool isStyledElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.
+    bool isStyledElement() const = delete; // This will catch anyone doing an unnecessary check.
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return computedStyle(pseudoElementSpecifier); }

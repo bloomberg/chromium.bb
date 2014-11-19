@@ -38,7 +38,7 @@ namespace {
 
     private:
         WTF_MAKE_NONCOPYABLE(ClientArray);
-        ClientArray() WTF_DELETED_FUNCTION;
+        ClientArray() = delete;
     };
 
 } // namespace

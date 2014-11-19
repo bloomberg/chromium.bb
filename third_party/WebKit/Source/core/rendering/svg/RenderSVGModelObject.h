@@ -72,7 +72,7 @@ protected:
 
 private:
     // RenderSVGModelObject subclasses should use element() instead.
-    void node() const WTF_DELETED_FUNCTION;
+    void node() const = delete;
 
     // This method should never be called, SVG uses a different nodeAtPoint method
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;

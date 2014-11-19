@@ -23,6 +23,7 @@
 #include "TypeTraits.h"
 
 #include "Assertions.h"
+#include "Noncopyable.h"
 
 namespace WTF {
 
@@ -144,13 +145,7 @@ COMPILE_ASSERT(IsTriviallyCopyAssignable<NestedOwned>::value, WTF_IsTriviallyCop
 COMPILE_ASSERT(IsTriviallyDefaultConstructible<NestedOwned>::value, WTF_IsTriviallyDefaultConstructable_NestedOwned_true);
 
 class NonCopyableClass {
-#if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
-    NonCopyableClass(const NonCopyableClass&) = delete;
-    NonCopyableClass& operator=(const NonCopyableClass&) = delete;
-#else
-    NonCopyableClass(const NonCopyableClass&);
-    NonCopyableClass& operator=(const NonCopyableClass&);
-#endif // COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
+    WTF_MAKE_NONCOPYABLE(NonCopyableClass);
 };
 #if 0 // Compilers don't get this "right" yet if using = delete.
 COMPILE_ASSERT(!IsTriviallyMoveAssignable<NonCopyableClass>::value, WTF_IsTriviallyMoveAssignable_NonCopyableClass_false);

@@ -22,7 +22,7 @@ public:
     static void dispose(WebType* webErrorRaw);
 
 private:
-    PushError() WTF_DELETED_FUNCTION;
+    PushError() = delete;
 };
 
 } // namespace blink

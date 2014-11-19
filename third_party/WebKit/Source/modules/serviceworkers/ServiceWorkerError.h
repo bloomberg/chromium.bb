@@ -49,7 +49,7 @@ public:
 
 private:
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
-    ServiceWorkerError() WTF_DELETED_FUNCTION;
+    ServiceWorkerError() = delete;
 };
 
 } // namespace blink

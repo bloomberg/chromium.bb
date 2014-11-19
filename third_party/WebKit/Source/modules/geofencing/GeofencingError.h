@@ -22,7 +22,7 @@ public:
     static void dispose(WebType* webErrorRaw);
 
 private:
-    GeofencingError() WTF_DELETED_FUNCTION;
+    GeofencingError() = delete;
 };
 
 } // namespace blink

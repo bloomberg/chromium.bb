@@ -174,7 +174,7 @@ private:
 
     void secureText(UChar mask);
 
-    bool isText() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isText() const = delete; // This will catch anyone doing an unnecessary check.
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
