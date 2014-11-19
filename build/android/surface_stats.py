@@ -13,6 +13,8 @@ import optparse
 import sys
 import time
 
+from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.perf import surface_stats_collector
 from pylib.utils import run_tests_helper
@@ -98,7 +100,14 @@ def main(argv):
   options, _ = parser.parse_args(argv)
   run_tests_helper.SetLogLevel(options.verbose_count)
 
-  device = device_utils.DeviceUtils(options.device)
+  if options.device:
+    device = device_utils.DeviceUtils(options.device)
+  else:
+    devices = adb_wrapper.AdbWrapper.GetDevices()
+    if not devices:
+      raise device_errors.NoDevicesError
+    device = device_utils.DeviceUtils(devices[0])
+
   collector = surface_stats_collector.SurfaceStatsCollector(device)
   collector.DisableWarningAboutEmptyData()
 
