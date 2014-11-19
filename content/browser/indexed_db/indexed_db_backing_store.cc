@@ -975,7 +975,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   if (!status->ok()) {
     if (leveldb_env::IndicatesDiskFull(*status)) {
       *is_disk_full = true;
-    } else if (leveldb_env::IsCorruption(*status)) {
+    } else if (status->IsCorruption()) {
       *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = leveldb_env::GetCorruptionMessage(*status);
     }
@@ -1014,7 +1014,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   }
 
   DCHECK(status->ok() || !is_schema_known || leveldb_env::IsIOError(*status) ||
-         leveldb_env::IsCorruption(*status));
+         status->IsCorruption());
 
   if (db) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin_url);
@@ -1024,7 +1024,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY, origin_url);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
-    DCHECK(!is_schema_known || leveldb_env::IsCorruption(*status));
+    DCHECK(!is_schema_known || status->IsCorruption());
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
     *status = leveldb_factory->DestroyLevelDB(file_path);
     if (!status->ok()) {

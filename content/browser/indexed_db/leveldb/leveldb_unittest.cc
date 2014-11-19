@@ -72,6 +72,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   status = LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_FALSE(leveldb);
   EXPECT_FALSE(status.ok());
+  EXPECT_TRUE(status.IsCorruption());
 
   status = LevelDBDatabase::Destroy(temp_directory.path());
   EXPECT_TRUE(status.ok());

@@ -266,7 +266,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
             "Internal error creating database backend for "
             "indexedDB.deleteDatabase."));
     callbacks->OnError(error);
-    if (leveldb_env::IsCorruption(s)) {
+    if (s.IsCorruption()) {
       backing_store = NULL;
       HandleBackingStoreCorruption(origin_url, error);
     }
@@ -463,7 +463,7 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
                                        "database backend for "
                                        "indexedDB.open."));
       connection.callbacks->OnError(error);
-      if (leveldb_env::IsCorruption(s)) {
+      if (s.IsCorruption()) {
         backing_store = NULL;  // Closes the LevelDB so that it can be deleted
         HandleBackingStoreCorruption(origin_url, error);
       }

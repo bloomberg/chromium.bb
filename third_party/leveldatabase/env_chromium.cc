@@ -323,12 +323,6 @@ bool IsIOError(const leveldb::Status& status) {
   return result != leveldb_env::NONE;
 }
 
-bool IsCorruption(const leveldb::Status& status) {
-  // LevelDB returns InvalidArgument when an sst file is truncated but there is
-  // no IsInvalidArgument() accessor defined.
-  return status.IsCorruption() || (!status.ok() && !IsIOError(status));
-}
-
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return base::UTF16ToUTF8(file_path.value());
