@@ -143,6 +143,48 @@ function mode_credentials_test() {
       });
 }
 
+function data_url_test() {
+  return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject('XHR should succeed.');
+        };
+        xhr.responseType = 'text';
+        xhr.open('GET', 'data:text/html,Foobar', true);
+        xhr.send();
+      })
+    .then(function(data) {
+        assert_equals(data, 'Foobar');
+      });
+}
+
+function xhr_options_test() {
+  return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function() {
+          reject('XHR should succeed.');
+        };
+        xhr.responseType = 'text';
+        xhr.open('OpTiOnS', 'fetch-access-control.php', true);
+        xhr.send();
+      })
+    .then(function(data) {
+        var result;
+        var report = function(arg) {
+          result = arg;
+        };
+        eval(data);
+        assert_equals(result['jsonpResult'], 'success');
+        assert_equals(result['method'], 'OPTIONS');
+      })
+}
+
 window.addEventListener('message', function(evt) {
     var port = evt.ports[0];
     string_test()
@@ -150,6 +192,8 @@ window.addEventListener('message', function(evt) {
       .then(custom_method_test)
       .then(form_data_test)
       .then(mode_credentials_test)
+      .then(data_url_test)
+      .then(xhr_options_test)
       .then(function() { port.postMessage({results: 'finish'}); })
       .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
   });
