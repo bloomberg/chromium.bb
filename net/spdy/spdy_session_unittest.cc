@@ -181,8 +181,7 @@ class SpdySessionTest : public PlatformTest,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdySessionTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 // Try to create a SPDY session that will fail during
 // initialization. Nothing should blow up.
@@ -1798,10 +1797,6 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
   data.RunFor(1);
   // Regression test of compression performance under the request fixture.
   switch (spdy_util_.spdy_version()) {
-    case SPDY2:
-      histogram_tester.ExpectBucketCount(
-          "Net.SpdySynStreamCompressionPercentage", 0, 1);
-      break;
     case SPDY3:
       histogram_tester.ExpectBucketCount(
           "Net.SpdySynStreamCompressionPercentage", 30, 1);
@@ -3084,22 +3079,12 @@ TEST_P(SpdySessionTest, ProtocolNegotiation) {
 
   EXPECT_EQ(spdy_util_.spdy_version(),
             session->buffered_spdy_framer_->protocol_version());
-  if (GetParam() == kProtoDeprecatedSPDY2) {
-    EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
-    EXPECT_EQ(0, session->session_send_window_size_);
-    EXPECT_EQ(0, session->session_recv_window_size_);
-  } else if (GetParam() == kProtoSPDY3) {
-    EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM, session->flow_control_state());
-    EXPECT_EQ(0, session->session_send_window_size_);
-    EXPECT_EQ(0, session->session_recv_window_size_);
-  } else {
-    EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-              session->flow_control_state());
-    EXPECT_EQ(kSpdySessionInitialWindowSize,
-              session->session_send_window_size_);
-    EXPECT_EQ(kSpdySessionInitialWindowSize,
-              session->session_recv_window_size_);
-  }
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
+            session->flow_control_state());
+  EXPECT_EQ(kSpdySessionInitialWindowSize,
+            session->session_send_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize,
+            session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
@@ -3455,9 +3440,6 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
 // The tests below are only for SPDY/3 and above.
 
 TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
   // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
   // gets sent.
   SettingsMap new_settings;

@@ -54,8 +54,6 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 NextProtoVector SpdyNextProtos() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoDeprecatedSPDY2);
-  next_protos.push_back(kProtoSPDY3);
   next_protos.push_back(kProtoSPDY31);
   next_protos.push_back(kProtoSPDY4_14);
   next_protos.push_back(kProtoSPDY4_15);
@@ -720,15 +718,11 @@ SpdyTestUtil::SpdyTestUtil(NextProto protocol)
 
 void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
                                        SpdyHeaderBlock* headers) const {
-  if (is_spdy2()) {
-    (*headers)["url"] = url.as_string();
-  } else {
-    std::string scheme, host, path;
-    ParseUrl(url, &scheme, &host, &path);
-    (*headers)[GetSchemeKey()] = scheme;
-    (*headers)[GetHostKey()] = host;
-    (*headers)[GetPathKey()] = path;
-  }
+  std::string scheme, host, path;
+  ParseUrl(url, &scheme, &host, &path);
+  (*headers)[GetSchemeKey()] = scheme;
+  (*headers)[GetHostKey()] = host;
+  (*headers)[GetPathKey()] = path;
 }
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
@@ -739,8 +733,6 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlockForProxy(
     base::StringPiece url) const {
   scoped_ptr<SpdyHeaderBlock> headers(ConstructGetHeaderBlock(url));
-  if (is_spdy2())
-    (*headers)[GetPathKey()] = url.data();
   return headers.Pass();
 }
 
@@ -963,8 +955,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                           bool direct) const {
   SpdyHeaderBlock block;
   block[GetMethodKey()] = "GET";
-  block[GetPathKey()] =
-      (is_spdy2() && !direct) ? "http://www.google.com/" : "/";
+  block[GetPathKey()] = "/";
   block[GetHostKey()] = "www.google.com";
   block[GetSchemeKey()] = "http";
   MaybeAddVersionHeader(&block);
@@ -1259,16 +1250,14 @@ scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer(bool compressed) const {
 }
 
 const char* SpdyTestUtil::GetMethodKey() const {
-  return is_spdy2() ? "method" : ":method";
+  return ":method";
 }
 
 const char* SpdyTestUtil::GetStatusKey() const {
-  return is_spdy2() ? "status" : ":status";
+  return ":status";
 }
 
 const char* SpdyTestUtil::GetHostKey() const {
-  if (protocol_ < kProtoSPDY3)
-    return "host";
   if (protocol_ < kProtoSPDY4MinimumVersion)
     return ":host";
   else
@@ -1276,15 +1265,15 @@ const char* SpdyTestUtil::GetHostKey() const {
 }
 
 const char* SpdyTestUtil::GetSchemeKey() const {
-  return is_spdy2() ? "scheme" : ":scheme";
+  return ":scheme";
 }
 
 const char* SpdyTestUtil::GetVersionKey() const {
-  return is_spdy2() ? "version" : ":version";
+  return ":version";
 }
 
 const char* SpdyTestUtil::GetPathKey() const {
-  return is_spdy2() ? "url" : ":path";
+  return ":path";
 }
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeaderBlock(

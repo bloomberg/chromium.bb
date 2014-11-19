@@ -206,8 +206,8 @@ class SpdySMServerTest : public SpdySMTestBase {
 
 INSTANTIATE_TEST_CASE_P(SpdySMProxyTest,
                         SpdySMProxyTest,
-                        Values(SPDY2, SPDY3, SPDY4));
-INSTANTIATE_TEST_CASE_P(SpdySMServerTest, SpdySMServerTest, Values(SPDY2));
+                        Values(SPDY3, SPDY4));
+INSTANTIATE_TEST_CASE_P(SpdySMServerTest, SpdySMServerTest, Values(SPDY4));
 
 TEST_P(SpdySMProxyTest, InitSMConnection) {
   {
@@ -218,113 +218,7 @@ TEST_P(SpdySMProxyTest, InitSMConnection) {
       NULL, NULL, epoll_server_.get(), -1, "", "", "", false);
 }
 
-TEST_P(SpdySMProxyTest, OnSynStream_SPDY2) {
-  if (GetParam() != SPDY2) {
-    // This test case is for SPDY2.
-    return;
-  }
-  BufferedSpdyFramerVisitorInterface* visitor = interface_.get();
-  scoped_ptr<MockSMInterface> mock_interface(new MockSMInterface);
-  uint32 stream_id = 92;
-  uint32 associated_id = 43;
-  std::string expected = "GET /path HTTP/1.0\r\n"
-      "Host: 127.0.0.1\r\n"
-      "hoge: fuga\r\n\r\n";
-  SpdyHeaderBlock block;
-  block["method"] = "GET";
-  block["url"] = "/path";
-  block["scheme"] = "http";
-  block["version"] = "HTTP/1.0";
-  block["hoge"] = "fuga";
-  StringSaver saver;
-  {
-    InSequence s;
-    EXPECT_CALL(*interface_, FindOrMakeNewSMConnectionInterface(_, _))
-        .WillOnce(Return(mock_interface.get()));
-    EXPECT_CALL(*mock_interface, SetStreamID(stream_id));
-    EXPECT_CALL(*mock_interface, ProcessWriteInput(_, _))
-        .WillOnce(DoAll(SaveArg<0>(&saver.data),
-                        SaveArg<1>(&saver.size),
-                        InvokeWithoutArgs(&saver, &StringSaver::Save),
-                        Return(0)));
-  }
-  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
-  ASSERT_EQ(expected, saver.string);
-}
-
-TEST_P(SpdySMProxyTest, OnSynStream) {
-  if (GetParam() == SPDY2) {
-    // This test case is not for SPDY2.
-    return;
-  }
-  BufferedSpdyFramerVisitorInterface* visitor = interface_.get();
-  scoped_ptr<MockSMInterface> mock_interface(new MockSMInterface);
-  uint32 stream_id = 92;
-  uint32 associated_id = 43;
-  std::string expected = "GET /path HTTP/1.1\r\n"
-      "Host: 127.0.0.1\r\n"
-      "foo: bar\r\n\r\n";
-  SpdyHeaderBlock block;
-  block[":method"] = "GET";
-  block[":host"] = "www.example.com";
-  block[":path"] = "/path";
-  block[":scheme"] = "http";
-  block["foo"] = "bar";
-  StringSaver saver;
-  {
-    InSequence s;
-    EXPECT_CALL(*interface_,
-                FindOrMakeNewSMConnectionInterface(_, _))
-        .WillOnce(Return(mock_interface.get()));
-    EXPECT_CALL(*mock_interface, SetStreamID(stream_id));
-    EXPECT_CALL(*mock_interface, ProcessWriteInput(_, _))
-        .WillOnce(DoAll(SaveArg<0>(&saver.data),
-                        SaveArg<1>(&saver.size),
-                        InvokeWithoutArgs(&saver, &StringSaver::Save),
-                        Return(0)));
-  }
-  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
-  ASSERT_EQ(expected, saver.string);
-}
-
-TEST_P(SpdySMProxyTest, OnStreamFrameData_SPDY2) {
-  if (GetParam() != SPDY2) {
-    // This test case is for SPDY2.
-    return;
-  }
-  BufferedSpdyFramerVisitorInterface* visitor = interface_.get();
-  scoped_ptr<MockSMInterface> mock_interface(new MockSMInterface);
-  uint32 stream_id = 92;
-  uint32 associated_id = 43;
-  SpdyHeaderBlock block;
-  testing::MockFunction<void(int)> checkpoint;  // NOLINT
-
-  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12, false));
-  block["method"] = "GET";
-  block["url"] = "http://www.example.com/path";
-  block["scheme"] = "http";
-  block["version"] = "HTTP/1.0";
-  {
-    InSequence s;
-    EXPECT_CALL(*interface_, FindOrMakeNewSMConnectionInterface(_, _))
-        .WillOnce(Return(mock_interface.get()));
-    EXPECT_CALL(*mock_interface, SetStreamID(stream_id));
-    EXPECT_CALL(*mock_interface, ProcessWriteInput(_, _)).Times(1);
-    EXPECT_CALL(checkpoint, Call(0));
-    EXPECT_CALL(*mock_interface,
-                ProcessWriteInput(frame->data(), frame->size())).Times(1);
-  }
-
-  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
-  checkpoint.Call(0);
-  visitor->OnStreamFrameData(stream_id, frame->data(), frame->size(), true);
-}
-
 TEST_P(SpdySMProxyTest, OnStreamFrameData) {
-  if (GetParam() == SPDY2) {
-    // This test case is not for SPDY2.
-    return;
-  }
   BufferedSpdyFramerVisitorInterface* visitor = interface_.get();
   scoped_ptr<MockSMInterface> mock_interface(new MockSMInterface);
   uint32 stream_id = 92;
@@ -407,14 +301,14 @@ TEST_P(SpdySMProxyTest, ResetForNewConnection) {
 
 TEST_P(SpdySMProxyTest, CreateFramer) {
   interface_->ResetForNewConnection();
-  interface_->CreateFramer(SPDY2);
-  ASSERT_TRUE(interface_->spdy_framer() != NULL);
-  ASSERT_EQ(interface_->spdy_version(), SPDY2);
-
-  interface_->ResetForNewConnection();
   interface_->CreateFramer(SPDY3);
   ASSERT_TRUE(interface_->spdy_framer() != NULL);
   ASSERT_EQ(interface_->spdy_version(), SPDY3);
+
+  interface_->ResetForNewConnection();
+  interface_->CreateFramer(SPDY4);
+  ASSERT_TRUE(interface_->spdy_framer() != NULL);
+  ASSERT_EQ(interface_->spdy_version(), SPDY4);
 }
 
 TEST_P(SpdySMProxyTest, PostAcceptHook) {
@@ -455,61 +349,7 @@ TEST_P(SpdySMProxyTest, AddToOutputOrder) {
   ASSERT_TRUE(HasStream(stream_id));
 }
 
-TEST_P(SpdySMProxyTest, SendErrorNotFound_SPDY2) {
-  if (GetParam() != SPDY2) {
-    // This test is for SPDY2.
-    return;
-  }
-  uint32 stream_id = 82;
-  SpdyHeaderBlock actual_header_block;
-  const char* actual_data;
-  size_t actual_size;
-  testing::MockFunction<void(int)> checkpoint;  // NOLINT
-
-  interface_->SendErrorNotFound(stream_id);
-
-  ASSERT_EQ(2u, connection_->output_list()->size());
-
-  {
-    InSequence s;
-    if (GetParam() < SPDY4) {
-      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-          .WillOnce(SaveArg<2>(&actual_header_block));
-    } else {
-      EXPECT_CALL(*spdy_framer_visitor_,
-                  OnHeaders(stream_id, false, 0, false, _))
-          .WillOnce(SaveArg<4>(&actual_header_block));
-    }
-    EXPECT_CALL(checkpoint, Call(0));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnDataFrameHeader(stream_id, _, true));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, _, _, false)).Times(1)
-        .WillOnce(DoAll(SaveArg<1>(&actual_data),
-                        SaveArg<2>(&actual_size)));
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, NULL, 0, true)).Times(1);
-  }
-
-  std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
-  DataFrame* df = *i++;
-  spdy_framer_->ProcessInput(df->data, df->size);
-  checkpoint.Call(0);
-  df = *i++;
-  spdy_framer_->ProcessInput(df->data, df->size);
-
-  ASSERT_EQ(2, spdy_framer_->frames_received());
-  ASSERT_EQ(2u, actual_header_block.size());
-  ASSERT_EQ("404 Not Found", actual_header_block["status"]);
-  ASSERT_EQ("HTTP/1.1", actual_header_block["version"]);
-  ASSERT_EQ("wtf?", StringPiece(actual_data, actual_size));
-}
-
 TEST_P(SpdySMProxyTest, SendErrorNotFound) {
-  if (GetParam() == SPDY2) {
-    // This test is not for SPDY2.
-    return;
-  }
   uint32 stream_id = 82;
   SpdyHeaderBlock actual_header_block;
   const char* actual_data;
@@ -556,44 +396,7 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
   ASSERT_EQ("wtf?", StringPiece(actual_data, actual_size));
 }
 
-TEST_P(SpdySMProxyTest, SendSynStream_SPDY2) {
-  if (GetParam() != SPDY2) {
-    // This test is for SPDY2.
-    return;
-  }
-  uint32 stream_id = 82;
-  BalsaHeaders headers;
-  SpdyHeaderBlock actual_header_block;
-  headers.AppendHeader("key1", "value1");
-  headers.SetRequestFirstlineFromStringPieces("GET", "/path", "HTTP/1.0");
-
-  interface_->SendSynStream(stream_id, headers);
-
-  ASSERT_EQ(1u, connection_->output_list()->size());
-  std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
-  DataFrame* df = *i++;
-
-  {
-    InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynStream(stream_id, 0, _, false, false, _))
-        .WillOnce(SaveArg<5>(&actual_header_block));
-  }
-
-  spdy_framer_->ProcessInput(df->data, df->size);
-  ASSERT_EQ(1, spdy_framer_->frames_received());
-  ASSERT_EQ(4u, actual_header_block.size());
-  ASSERT_EQ("GET", actual_header_block["method"]);
-  ASSERT_EQ("HTTP/1.0", actual_header_block["version"]);
-  ASSERT_EQ("/path", actual_header_block["url"]);
-  ASSERT_EQ("value1", actual_header_block["key1"]);
-}
-
 TEST_P(SpdySMProxyTest, SendSynStream) {
-  if (GetParam() == SPDY2) {
-    // This test is not for SPDY2.
-    return;
-  }
   uint32 stream_id = 82;
   BalsaHeaders headers;
   SpdyHeaderBlock actual_header_block;
@@ -624,48 +427,7 @@ TEST_P(SpdySMProxyTest, SendSynStream) {
   ASSERT_EQ("value1", actual_header_block["key1"]);
 }
 
-TEST_P(SpdySMProxyTest, SendSynReply_SPDY2) {
-  if (GetParam() != SPDY2) {
-    // This test is for SPDY2.
-    return;
-  }
-  uint32 stream_id = 82;
-  BalsaHeaders headers;
-  SpdyHeaderBlock actual_header_block;
-  headers.AppendHeader("key1", "value1");
-  headers.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "OK");
-
-  interface_->SendSynReply(stream_id, headers);
-
-  ASSERT_EQ(1u, connection_->output_list()->size());
-  std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
-  DataFrame* df = *i++;
-
-  {
-    InSequence s;
-    if (GetParam() < SPDY4) {
-      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-          .WillOnce(SaveArg<2>(&actual_header_block));
-    } else {
-      EXPECT_CALL(*spdy_framer_visitor_,
-                  OnHeaders(stream_id, false, 0, false, _))
-          .WillOnce(SaveArg<4>(&actual_header_block));
-    }
-  }
-
-  spdy_framer_->ProcessInput(df->data, df->size);
-  ASSERT_EQ(1, spdy_framer_->frames_received());
-  ASSERT_EQ(3u, actual_header_block.size());
-  ASSERT_EQ("200 OK", actual_header_block["status"]);
-  ASSERT_EQ("HTTP/1.1", actual_header_block["version"]);
-  ASSERT_EQ("value1", actual_header_block["key1"]);
-}
-
 TEST_P(SpdySMProxyTest, SendSynReply) {
-  if (GetParam() == SPDY2) {
-    // This test is not for SPDY2.
-    return;
-  }
   uint32 stream_id = 82;
   BalsaHeaders headers;
   SpdyHeaderBlock actual_header_block;
@@ -761,58 +523,6 @@ TEST_P(SpdySMProxyTest, SendLongDataFrame) {
   df = *i++;
   spdy_framer_->ProcessInput(df->data, df->size);
   ASSERT_EQ("c", StringPiece(actual_data, actual_size));
-}
-
-TEST_P(SpdySMProxyTest, SendEOF_SPDY2) {
-  // This test is for SPDY2.
-  if (GetParam() != SPDY2) {
-    return;
-  }
-
-  uint32 stream_id = 82;
-  // SPDY2 data frame
-  char empty_data_frame[] = {'\0', '\0', '\0', '\x52', '\x1', '\0', '\0', '\0'};
-  MemCacheIter mci;
-  mci.stream_id = stream_id;
-
-  {
-    BalsaHeaders headers;
-    std::string filename = "foobar";
-    memory_cache_->InsertFile(&headers, filename, "");
-    mci.file_data = memory_cache_->GetFileData(filename);
-  }
-
-  interface_->AddToOutputOrder(mci);
-  ASSERT_TRUE(HasStream(stream_id));
-  interface_->SendEOF(stream_id);
-  ASSERT_FALSE(HasStream(stream_id));
-
-  ASSERT_EQ(1u, connection_->output_list()->size());
-  std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
-  DataFrame* df = *i++;
-  ASSERT_EQ(StringPiece(empty_data_frame, sizeof(empty_data_frame)),
-            StringPiece(df->data, df->size));
-}
-
-TEST_P(SpdySMProxyTest, SendEmptyDataFrame_SPDY2) {
-  // This test is for SPDY2.
-  if (GetParam() != SPDY2) {
-    return;
-  }
-
-  uint32 stream_id = 133;
-  SpdyDataFlags flags = DATA_FLAG_NONE;
-  // SPDY2 data frame
-  char expected[] = {'\0', '\0', '\0', '\x85', '\0', '\0', '\0', '\0'};
-
-  interface_->SendDataFrame(stream_id, "hello", 0, flags, true);
-
-  ASSERT_EQ(1u, connection_->output_list()->size());
-  std::list<DataFrame*>::const_iterator i = connection_->output_list()->begin();
-  DataFrame* df = *i++;
-
-  ASSERT_EQ(StringPiece(expected, sizeof(expected)),
-            StringPiece(df->data, df->size));
 }
 
 TEST_P(SpdySMServerTest, OnSynStream) {

@@ -239,8 +239,7 @@ class SSLClientSocketPoolTest
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SSLClientSocketPoolTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 // Tests that the final socket will connect even if all sockets
 // prior to it fail.

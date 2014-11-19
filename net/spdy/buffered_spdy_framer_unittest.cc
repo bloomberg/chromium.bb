@@ -208,8 +208,7 @@ class BufferedSpdyFramerTest
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     BufferedSpdyFramerTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 TEST_P(BufferedSpdyFramerTest, OnSetting) {
   SpdyFramer framer(spdy_version());

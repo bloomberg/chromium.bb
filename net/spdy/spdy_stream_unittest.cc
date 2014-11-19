@@ -110,8 +110,7 @@ class SpdyStreamTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdyStreamTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);
@@ -717,9 +716,6 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 // to overflow an int32. The SpdyStream should handle that case
 // gracefully.
 TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
@@ -877,17 +873,11 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }
@@ -972,17 +962,11 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }

@@ -424,8 +424,7 @@ class HttpStreamFactoryTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     HttpStreamFactoryTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 TEST_P(HttpStreamFactoryTest, PreconnectDirect) {
   for (size_t i = 0; i < arraysize(kTests); ++i) {

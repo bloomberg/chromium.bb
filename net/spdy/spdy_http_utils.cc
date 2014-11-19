@@ -170,42 +170,21 @@ SpdyPriority ConvertRequestPriorityToSpdyPriority(
     SpdyMajorVersion protocol_version) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
-  if (protocol_version == SPDY2) {
-    // SPDY 2 only has 2 bits of priority, but we have 5 RequestPriorities.
-    // Map IDLE => 3, LOWEST => 2, LOW => 2, MEDIUM => 1, HIGHEST => 0.
-    if (priority > LOWEST) {
-      return static_cast<SpdyPriority>(HIGHEST - priority);
-    } else {
-      return static_cast<SpdyPriority>(HIGHEST - priority - 1);
-    }
-  } else {
-    return static_cast<SpdyPriority>(HIGHEST - priority);
-  }
+  return static_cast<SpdyPriority>(MAXIMUM_PRIORITY - priority);
 }
 
 NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
     SpdyPriority priority,
     SpdyMajorVersion protocol_version) {
-  // Handle invalid values gracefully, and pick LOW to map 2 back
-  // to for SPDY/2.
-  SpdyPriority idle_cutoff = (protocol_version == SPDY2) ? 3 : 5;
-  return (priority >= idle_cutoff) ?
-      IDLE : static_cast<RequestPriority>(HIGHEST - priority);
+  // Handle invalid values gracefully.
+  // Note that SpdyPriority is not an enum, hence the magic constants.
+  return (priority >= 5) ?
+      IDLE : static_cast<RequestPriority>(4 - priority);
 }
 
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
                            SpdyMajorVersion protocol_version,
                            bool pushed) {
-  // SPDY 2 server push urls are specified in a single "url" header.
-  if (pushed && protocol_version == SPDY2) {
-      std::string url;
-      SpdyHeaderBlock::const_iterator it;
-      it = headers.find("url");
-      if (it != headers.end())
-        url = it->second;
-      return GURL(url);
-  }
-
   const char* scheme_header = protocol_version >= SPDY3 ? ":scheme" : "scheme";
   const char* host_header = protocol_version >= SPDY4 ? ":authority" :
       (protocol_version >= SPDY3 ? ":host" : "host");

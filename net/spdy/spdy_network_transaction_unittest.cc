@@ -58,7 +58,7 @@ enum SpdyNetworkTransactionTestSSLType {
 
 struct SpdyNetworkTransactionTestParams {
   SpdyNetworkTransactionTestParams()
-      : protocol(kProtoSPDY3),
+      : protocol(kProtoSPDY31),
         ssl_type(SPDYNPN) {}
 
   SpdyNetworkTransactionTestParams(
@@ -717,12 +717,6 @@ INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTest,
     ::testing::Values(
-        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2, SPDYNPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN),
@@ -5843,9 +5837,6 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
 // limitations as described above and it's not deterministic, tests may
 // fail under specific circumstances.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   static int kFrameCount = 2;
   scoped_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
@@ -5934,9 +5925,6 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   // Amount of body required to trigger a sent window update.
   const size_t kTargetSize = kSpdyStreamInitialWindowSize / 2 + 1;
 
@@ -6016,9 +6004,6 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
 // Test that WINDOW_UPDATE frame causing overflow is handled correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   // Number of full frames we hope to write (but will not, used to
   // set content-length header correctly)
   static int kFrameCount = 3;
@@ -6098,9 +6083,6 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // After that, next read is artifically enforced, which causes a
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the WINDOW_UPDATE is received,
@@ -6212,9 +6194,6 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // Test we correctly handle the case where the SETTINGS frame results in
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the SETTING is received, therefore +3.
@@ -6333,9 +6312,6 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // Test we correctly handle the case where the SETTINGS frame results in a
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
-  if (GetParam().protocol < kProtoSPDY3)
-    return;
-
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the SETTING is received, therefore +3.
@@ -6390,10 +6366,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
       spdy_util_.ConstructSpdyWindowUpdate(1, kSpdyStreamInitialWindowSize));
 
   reads.push_back(CreateMockRead(*settings_frame_small, i++));
-
-  if (GetParam().protocol >= kProtoSPDY3)
-    reads.push_back(CreateMockRead(*session_window_update_init_size, i++));
-
+  reads.push_back(CreateMockRead(*session_window_update_init_size, i++));
   reads.push_back(CreateMockRead(*window_update_init_size, i++));
 
   scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
@@ -6557,10 +6530,7 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
 INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionNoTLSUsageCheckTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2,
-                                                       SPDYNPN),
-                      SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNPN),
-                      SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN)));
+    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN)));
 
 TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSVersionTooOld) {
   scoped_ptr<SSLSocketDataProvider> ssl_provider(

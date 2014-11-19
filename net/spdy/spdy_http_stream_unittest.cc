@@ -130,8 +130,7 @@ class SpdyHttpStreamTest : public testing::Test,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdyHttpStreamTest,
-    testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
 
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.
@@ -700,9 +699,6 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
   scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
