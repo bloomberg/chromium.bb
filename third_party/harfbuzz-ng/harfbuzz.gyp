@@ -30,6 +30,12 @@
       }, {
         'use_system_harfbuzz': 0,
       }],
+      ['OS=="linux" and target_arch=="arm" and chromeos==0', {
+        # Override use_system_harfbuzz for ARM cross compiling so system
+        # harfbuzz is not used because the corresponding package is not
+        # available.
+        'use_system_harfbuzz': 0,
+      }],
     ],
   },
   'conditions': [
