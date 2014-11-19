@@ -1218,7 +1218,30 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
 
 bool Textfield::GetAcceleratorForCommandId(int command_id,
                                            ui::Accelerator* accelerator) {
-  return false;
+  switch (command_id) {
+    case IDS_APP_UNDO:
+      *accelerator = ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDS_APP_CUT:
+      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDS_APP_COPY:
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDS_APP_PASTE:
+      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDS_APP_SELECT_ALL:
+      *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
