@@ -434,6 +434,8 @@
             '<(libjingle_source)/talk/media/base/videocommon.h',
             '<(libjingle_source)/talk/media/base/videoframe.cc',
             '<(libjingle_source)/talk/media/base/videoframe.h',
+            '<(libjingle_source)/talk/media/base/videoframefactory.cc',
+            '<(libjingle_source)/talk/media/base/videoframefactory.h',
             '<(libjingle_source)/talk/media/devices/dummydevicemanager.cc',
             '<(libjingle_source)/talk/media/devices/dummydevicemanager.h',
             '<(libjingle_source)/talk/media/devices/filevideocapturer.cc',

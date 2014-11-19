@@ -452,6 +452,8 @@ if (enable_webrtc) {
       "source/talk/media/base/videocommon.h",
       "source/talk/media/base/videoframe.cc",
       "source/talk/media/base/videoframe.h",
+      "source/talk/media/base/videoframefactory.cc",
+      "source/talk/media/base/videoframefactory.h",
       "source/talk/media/devices/dummydevicemanager.cc",
       "source/talk/media/devices/dummydevicemanager.h",
       "source/talk/media/devices/filevideocapturer.cc",
