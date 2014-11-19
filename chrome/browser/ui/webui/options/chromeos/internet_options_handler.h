@@ -101,9 +101,7 @@ class InternetOptionsHandler
   void UpdateLoggedInUserType();
 
   // Additional callbacks to set network state properties.
-  void SetServerHostnameCallback(const base::ListValue* args);
-  void SetPreferNetworkCallback(const base::ListValue* args);
-  void SetAutoConnectCallback(const base::ListValue* args);
+  void SetPropertiesCallback(const base::ListValue* args);
   void SetIPConfigCallback(const base::ListValue* args);
   void SetIPConfigProperties(const base::ListValue* args,
                              const std::string& service_path,

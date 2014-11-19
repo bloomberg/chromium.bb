@@ -314,6 +314,10 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
     AddService("stub_vpn1", "vpn1", shill::kTypeVPN, shill::kStateOnline);
+    service_test_->SetServiceProperty(
+        "stub_vpn1", shill::kProviderTypeProperty,
+        base::StringValue(shill::kProviderOpenVpn));
+    profile_test->AddService(kUser1ProfilePath, "stub_vpn1");
 
     content::RunAllPendingInMessageLoop();
   }
@@ -401,8 +405,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetStateNonExistent) {
   EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetProperties) {
-  EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetWiFiProperties) {
+  EXPECT_TRUE(RunNetworkingSubtest("setWiFiProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetVPNProperties) {
+  EXPECT_TRUE(RunNetworkingSubtest("setVPNProperties")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CreateNetwork) {

@@ -114,6 +114,9 @@ CHROMEOS_EXPORT scoped_ptr<base::ListValue> TranslateNetworkListToONC(
 // there is no match. Only valid for ethernet, wifi, wimax, cellular, and vpn.
 CHROMEOS_EXPORT std::string TranslateONCTypeToShill(const std::string& type);
 
+// Inverse of TranslateONCTypeToShill.
+CHROMEOS_EXPORT std::string TranslateShillTypeToONC(const std::string& type);
+
 }  // namespace network_util
 }  // namespace chromeos
 

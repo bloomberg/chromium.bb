@@ -95,11 +95,8 @@ const char kUpdateCarrierFunction[] =
 // Setter methods called from JS that still need to be converted to match
 // networkingPrivate methods.
 const char kSetApnMessage[] = "setApn";
-const char kSetAutoConnectMessage[] = "setAutoConnect";
 const char kSetCarrierMessage[] = "setCarrier";
 const char kSetIPConfigMessage[] = "setIPConfig";
-const char kSetPreferNetworkMessage[] = "setPreferNetwork";
-const char kSetServerHostname[] = "setServerHostname";
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 const char kSimOperationMessage[] = "simOperation";
 
@@ -111,6 +108,7 @@ const char kGetManagedPropertiesMessage[] = "getManagedProperties";
 const char kRequestNetworkScanMessage[] = "requestNetworkScan";
 const char kStartConnectMessage[] = "startConnect";
 const char kStartDisconnectMessage[] = "startDisconnect";
+const char kSetPropertiesMessage[] = "setProperties";
 
 // TODO(stevenjb): Add these to networkingPrivate.
 const char kRemoveNetworkMessage[] = "removeNetwork";
@@ -145,8 +143,6 @@ const char kNetworkInfoKeyServicePath[] = "servicePath";
 const char kTagErrorMessage[] = "errorMessage";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 
-const int kPreferredPriority = 1;
-
 void ShillError(const std::string& function,
                 const std::string& error_name,
                 scoped_ptr<base::DictionaryValue> error_data) {
@@ -162,19 +158,6 @@ void ShillError(const std::string& function,
 const NetworkState* GetNetworkState(const std::string& service_path) {
   return NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path);
-}
-
-void SetNetworkProperty(const std::string& service_path,
-                        const std::string& property,
-                        base::Value* value) {
-  NET_LOG_EVENT("SetNetworkProperty: " + property, service_path);
-  base::DictionaryValue properties;
-  properties.SetWithoutPathExpansion(property, value);
-  NetworkHandler::Get()->network_configuration_handler()->SetProperties(
-      service_path, properties,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "SetNetworkProperty"));
 }
 
 // Builds a dictionary with network information and an icon used for the
@@ -341,12 +324,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kActivateNetworkMessage,
       base::Bind(&InternetOptionsHandler::ActivateNetwork,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetPreferNetworkMessage,
-      base::Bind(&InternetOptionsHandler::SetPreferNetworkCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetAutoConnectMessage,
-      base::Bind(&InternetOptionsHandler::SetAutoConnectCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetIPConfigMessage,
       base::Bind(&InternetOptionsHandler::SetIPConfigCallback,
                  base::Unretained(this)));
@@ -361,9 +338,6 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSimOperationMessage,
       base::Bind(&InternetOptionsHandler::SimOperationCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetServerHostname,
-      base::Bind(&InternetOptionsHandler::SetServerHostnameCallback,
                  base::Unretained(this)));
 
   // networkingPrivate methods
@@ -384,6 +358,9 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kStartDisconnectMessage,
       base::Bind(&InternetOptionsHandler::StartDisconnectCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kSetPropertiesMessage,
+      base::Bind(&InternetOptionsHandler::SetPropertiesCallback,
                  base::Unretained(this)));
 }
 
@@ -703,49 +680,20 @@ void InternetOptionsHandler::DevicePropertiesUpdated(
     UpdateConnectionData(network->path());
 }
 
-void InternetOptionsHandler::SetServerHostnameCallback(
-    const base::ListValue* args) {
-  std::string service_path, server_hostname;
-  if (args->GetSize() < 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetString(1, &server_hostname)) {
-    NOTREACHED();
-    return;
-  }
-  SetNetworkProperty(service_path,
-                     shill::kProviderHostProperty,
-                     new base::StringValue(server_hostname));
-}
-
-void InternetOptionsHandler::SetPreferNetworkCallback(
+void InternetOptionsHandler::SetPropertiesCallback(
     const base::ListValue* args) {
   std::string service_path;
-  bool prefer_network;
+  const base::DictionaryValue* properties;
   if (args->GetSize() < 2 ||
       !args->GetString(0, &service_path) ||
-      !args->GetBoolean(1, &prefer_network)) {
+      !args->GetDictionary(1, &properties)) {
     NOTREACHED();
     return;
   }
-  int priority = prefer_network ? kPreferredPriority : 0;
-  SetNetworkProperty(service_path,
-                     shill::kPriorityProperty,
-                     new base::FundamentalValue(priority));
-}
-
-void InternetOptionsHandler::SetAutoConnectCallback(
-    const base::ListValue* args) {
-  std::string service_path;
-  bool auto_connect;
-  if (args->GetSize() < 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetBoolean(1, &auto_connect)) {
-    NOTREACHED();
-    return;
-  }
-  SetNetworkProperty(service_path,
-                     shill::kAutoConnectProperty,
-                     new base::FundamentalValue(auto_connect));
+  NetworkHandler::Get()->managed_network_configuration_handler()->SetProperties(
+      service_path, *properties,
+      base::Bind(&base::DoNothing),
+      base::Bind(&ShillError, "SetProperties"));
 }
 
 void InternetOptionsHandler::SetIPConfigCallback(const base::ListValue* args) {

@@ -28,6 +28,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_merger.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
@@ -265,6 +266,15 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     return;
   }
 
+  // We need to ensure that required configuration properties (e.g. Type) are
+  // included for ONC validation and translation to Shill properties.
+  scoped_ptr<base::DictionaryValue> user_settings_copy(
+      user_settings.DeepCopy());
+  user_settings_copy->SetStringWithoutPathExpansion(
+      ::onc::network_config::kType,
+      network_util::TranslateShillTypeToONC(state->type()));
+  user_settings_copy->MergeDictionary(&user_settings);
+
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names. User settings are only partial ONC, thus we ignore missing fields.
   onc::Validator validator(false,  // Ignore unknown fields.
@@ -276,7 +286,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   scoped_ptr<base::DictionaryValue> validated_user_settings =
       validator.ValidateAndRepairObject(
           &onc::kNetworkConfigurationSignature,
-          user_settings,
+          *user_settings_copy,
           &validation_result);
 
   if (validation_result == onc::Validator::INVALID) {
@@ -722,14 +732,17 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
   scoped_ptr<base::DictionaryValue> shill_properties_copy(
       shill_properties.DeepCopy());
 
-  // Add associated Device properties before the ONC translation.
-  GetDeviceStateProperties(service_path, shill_properties_copy.get());
+  std::string type;
+  shill_properties_copy->GetStringWithoutPathExpansion(shill::kTypeProperty,
+                                                       &type);
+  // Add associated DeviceState properties for non-VPN networks.
+  if (type != shill::kTypeVPN)
+    GetDeviceStateProperties(service_path, shill_properties_copy.get());
 
-  // Only request Device properties for Cellular networks with a valid device.
-  std::string type, device_path;
+  // Only request additional Device properties for Cellular networks with a
+  // valid device.
+  std::string device_path;
   if (!network_device_handler_ ||
-      !shill_properties_copy->GetStringWithoutPathExpansion(
-          shill::kTypeProperty, &type) ||
       type != shill::kTypeCellular ||
       !shill_properties_copy->GetStringWithoutPathExpansion(
           shill::kDeviceProperty, &device_path) ||

@@ -191,5 +191,13 @@ std::string TranslateONCTypeToShill(const std::string& onc_type) {
   return shill_type;
 }
 
+std::string TranslateShillTypeToONC(const std::string& shill_type) {
+  if (shill_type == shill::kTypeEthernet)
+    return ::onc::network_type::kEthernet;
+  std::string onc_type;
+  onc::TranslateStringToONC(onc::kNetworkTypeTable, shill_type, &onc_type);
+  return onc_type;
+}
+
 }  // namespace network_util
 }  // namespace chromeos

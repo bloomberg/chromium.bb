@@ -88,22 +88,6 @@ cr.define('options.internet', function() {
   }
 
   /**
-   * Sends the 'checked' state of a control to chrome for a network.
-   * @param {string} path The service path of the network.
-   * @param {string} message The message to send to chrome.
-   * @param {string} checkboxId The id of the checkbox with the value to send.
-   * @param {string=} opt_action Optional action to record.
-   */
-  function sendCheckedIfEnabled(path, message, checkboxId, opt_action) {
-    var checkbox = assertInstanceof($(checkboxId), HTMLInputElement);
-    if (!checkbox.hidden && !checkbox.disabled) {
-      chrome.send(message, [path, !!checkbox.checked]);
-      if (opt_action)
-        sendChromeMetricsAction(opt_action);
-    }
-  }
-
-  /**
    * Send metrics to Chrome when the detailed page is opened.
    * @param {string} type The ONC type of the network being shown.
    * @param {string} state The ONC network state.
@@ -834,7 +818,7 @@ cr.define('options.internet', function() {
             stringFromValue(defaultApn['AccessPointName']);
         activeApn['Username'] = stringFromValue(defaultApn['Username']);
         activeApn['Password'] = stringFromValue(defaultApn['Password']);
-        onc.setManagedProperty('Cellular.APN', activeApn);
+        onc.setProperty('Cellular.APN', activeApn);
         chrome.send('setApn', [this.servicePath_,
                                activeApn['AccessPointName'],
                                activeApn['Username'],
@@ -862,7 +846,7 @@ cr.define('options.internet', function() {
       activeApn['AccessPointName'] = stringFromValue(apnValue);
       activeApn['Username'] = stringFromValue($('cellular-apn-username').value);
       activeApn['Password'] = stringFromValue($('cellular-apn-password').value);
-      onc.setManagedProperty('Cellular.APN', activeApn);
+      onc.setProperty('Cellular.APN', activeApn);
       this.userApn_ = activeApn;
       chrome.send('setApn', [this.servicePath_,
                              activeApn['AccessPointName'],
@@ -1086,32 +1070,34 @@ cr.define('options.internet', function() {
     var detailsPage = DetailsInternetPage.getInstance();
     var type = detailsPage.type_;
     var servicePath = detailsPage.servicePath_;
+    var oncData = new OncData({});
+    var autoConnectCheckboxId = '';
     if (type == 'WiFi') {
-      sendCheckedIfEnabled(servicePath,
-                           'setPreferNetwork',
-                           'prefer-network-wifi',
-                           'Options_NetworkSetPrefer');
-      sendCheckedIfEnabled(servicePath,
-                           'setAutoConnect',
-                           'auto-connect-network-wifi',
-                           'Options_NetworkAutoConnect');
+      var preferredCheckbox =
+          assertInstanceof($('prefer-network-wifi'), HTMLInputElement);
+      if (!preferredCheckbox.hidden && !preferredCheckbox.disabled) {
+        var kPreferredPriority = 1;
+        var priority = preferredCheckbox.checked ? kPreferredPriority : 0;
+        oncData.setProperty('Priority', priority);
+        sendChromeMetricsAction('Options_NetworkSetPrefer');
+      }
+      autoConnectCheckboxId = 'auto-connect-network-wifi';
     } else if (type == 'WiMAX') {
-      sendCheckedIfEnabled(servicePath,
-                           'setAutoConnect',
-                           'auto-connect-network-wimax',
-                           'Options_NetworkAutoConnect');
+      autoConnectCheckboxId = 'auto-connect-network-wimax';
     } else if (type == 'Cellular') {
-      sendCheckedIfEnabled(servicePath,
-                           'setAutoConnect',
-                           'auto-connect-network-cellular',
-                           'Options_NetworkAutoConnect');
+      autoConnectCheckboxId = 'auto-connect-network-cellular';
     } else if (type == 'VPN') {
-      chrome.send('setServerHostname',
-                  [servicePath, $('inet-server-hostname').value]);
-      sendCheckedIfEnabled(servicePath,
-                           'setAutoConnect',
-                           'auto-connect-network-vpn',
-                           'Options_NetworkAutoConnect');
+      oncData.setProperty('VPN.Host', $('inet-server-hostname').value);
+      autoConnectCheckboxId = 'auto-connect-network-vpn';
+    }
+    if (autoConnectCheckboxId != '') {
+      var autoConnectCheckbox =
+          assertInstanceof($(autoConnectCheckboxId), HTMLInputElement);
+      if (!autoConnectCheckbox.hidden && !autoConnectCheckbox.disabled) {
+        var autoConnectKey = type + '.AutoConnect';
+        oncData.setProperty(autoConnectKey, !!autoConnectCheckbox.checked);
+        sendChromeMetricsAction('Options_NetworkAutoConnect');
+      }
     }
 
     var nameServerTypes = ['automatic', 'google', 'user'];
@@ -1123,6 +1109,12 @@ cr.define('options.internet', function() {
       }
     }
     detailsPage.sendIpConfig_(nameServerType);
+
+    var data = oncData.getData();
+    if (Object.keys(data).length > 0) {
+      // TODO(stevenjb): chrome.networkingPrivate.setProperties
+      chrome.send('setProperties', [servicePath, data]);
+    }
 
     PageManager.closeOverlay();
   };

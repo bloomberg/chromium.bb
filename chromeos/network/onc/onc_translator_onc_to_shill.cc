@@ -218,8 +218,8 @@ void LocalTranslator::TranslateIPsec() {
 void LocalTranslator::TranslateVPN() {
   CopyFieldFromONCToShill(::onc::vpn::kHost, shill::kProviderHostProperty);
   std::string type;
-  onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
-  TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
+  if (onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type))
+    TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
 
   CopyFieldsAccordingToSignature();
 }
@@ -232,7 +232,8 @@ void LocalTranslator::TranslateWiFi() {
 
   std::string ssid;
   onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid);
-  shill_property_util::SetSSID(ssid, shill_dictionary_);
+  if (!ssid.empty())
+    shill_property_util::SetSSID(ssid, shill_dictionary_);
 
   // We currently only support managed and no adhoc networks.
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,

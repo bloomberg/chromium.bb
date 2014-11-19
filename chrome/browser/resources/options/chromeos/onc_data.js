@@ -49,7 +49,7 @@ cr.define('cr.onc', function() {
      * @param {string} key The property key.
      * @param {Object} value The property value to set.
      */
-    setManagedProperty: function(key, value) {
+    setProperty: function(key, value) {
       var data = this.data_;
       while (true) {
         var index = key.indexOf('.');
@@ -177,6 +177,13 @@ cr.define('cr.onc', function() {
           return property[effective];
       }
       return undefined;
+    },
+
+    /**
+     * Returns the complete ONC dictionary.
+     */
+    getData: function() {
+      return this.data_;
     }
   };
 

@@ -373,23 +373,64 @@ var availableTests = [
                  }, result);
       }));
   },
-  function setProperties() {
+  function setWiFiProperties() {
     var done = chrome.test.callbackAdded();
-    var network_guid = "stub_wifi2_guid";
+    var network_guid = "stub_wifi1_guid";
     chrome.networkingPrivate.getProperties(
         network_guid,
         callbackPass(function(result) {
           assertEq(network_guid, result.GUID);
-          result.WiFi.Security = "WEP-PSK";
+          var new_properties = {
+            Priority: 1,
+            WiFi: {
+              AutoConnect: true
+            }
+          };
           chrome.networkingPrivate.setProperties(
               network_guid,
-              result,
+              new_properties,
               callbackPass(function() {
                 chrome.networkingPrivate.getProperties(
                     network_guid,
                     callbackPass(function(result) {
-                      // Ensure that the property was set.
-                      assertEq("WEP-PSK", result.WiFi.Security);
+                      // Ensure that the properties were set.
+                      assertEq(1, result['Priority']);
+                      assertTrue('WiFi' in result);
+                      assertTrue('AutoConnect' in result['WiFi']);
+                      assertEq(true, result['WiFi']['AutoConnect']);
+                      // Ensure that the GUID doesn't change.
+                      assertEq(network_guid, result.GUID);
+                      done();
+                    }));
+              }));
+        }));
+  },
+  function setVPNProperties() {
+    var done = chrome.test.callbackAdded();
+    var network_guid = "stub_vpn1_guid";
+    chrome.networkingPrivate.getProperties(
+        network_guid,
+        callbackPass(function(result) {
+          assertEq(network_guid, result.GUID);
+          var new_properties = {
+            Priority: 1,
+            VPN: {
+              Host: 'vpn.host1'
+            }
+          };
+          chrome.networkingPrivate.setProperties(
+              network_guid,
+              new_properties,
+              callbackPass(function() {
+                chrome.networkingPrivate.getProperties(
+                    network_guid,
+                    callbackPass(function(result) {
+                      console.log('Result: ' + JSON.stringify(result));
+                      // Ensure that the properties were set.
+                      assertEq(1, result['Priority']);
+                      assertTrue('VPN' in result);
+                      assertTrue('Host' in result['VPN']);
+                      assertEq('vpn.host1', result['VPN']['Host']);
                       // Ensure that the GUID doesn't change.
                       assertEq(network_guid, result.GUID);
                       done();
