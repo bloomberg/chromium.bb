@@ -974,7 +974,7 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
       delegate_(delegate),
       weak_factory_(this) {
   if (frontend_url_.empty())
-    frontend_url_ = "/devtools/devtools.html";
+    frontend_url_ = "/devtools/inspector.html";
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

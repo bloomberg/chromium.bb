@@ -30,7 +30,7 @@ namespace shell {
 namespace {
 
 const char kFrontEndURL[] =
-    "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
+    "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 const int kDefaultRemoteDebuggingPort = 9222;
 
 #if defined(OS_ANDROID)

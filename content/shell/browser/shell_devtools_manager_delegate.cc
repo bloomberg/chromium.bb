@@ -38,7 +38,7 @@ namespace {
 
 #if defined(OS_ANDROID)
 const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
+    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 #endif
 const char kTargetTypePage[] = "page";
 const char kTargetTypeServiceWorker[] = "service_worker";

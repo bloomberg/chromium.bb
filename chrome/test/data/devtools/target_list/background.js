@@ -29,7 +29,7 @@ function checkTarget(targets, url, type, opt_title, opt_faviconUrl) {
   var wsAddress = REMOTE_DEBUGGER_HOST + '/devtools/page/' + target.id;
 
   chrome.test.assertEq(
-      '/devtools/devtools.html?ws=' + wsAddress,
+      '/devtools/inspector.html?ws=' + wsAddress,
       target.devtoolsFrontendUrl);
   // On some platforms (e.g. Chrome OS) target.faviconUrl might be empty for
   // a freshly created tab. Ignore the check then.

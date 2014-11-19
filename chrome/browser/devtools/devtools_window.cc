@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -418,7 +419,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
-  return Create(profile, GURL(), NULL, true, false, false, "");
+  return Create(profile, GURL(), NULL, true, std::string(), false, "");
 }
 
 // static
@@ -459,8 +460,8 @@ void DevToolsWindow::OpenExternalFrontend(
     bool isWorker) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
-    window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
-                    isWorker, true, false, "");
+    window = Create(profile, GURL(), NULL, isWorker,
+                    DevToolsUI::GetProxyURL(frontend_url).spec(), false, "");
     window->bindings_->AttachTo(agent_host);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
@@ -481,8 +482,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         inspected_web_contents->GetBrowserContext());
     content::RecordAction(
         base::UserMetricsAction("DevTools_InspectRenderer"));
-    window = Create(
-        profile, GURL(), inspected_web_contents, false, false, true, settings);
+    window = Create(profile, GURL(), inspected_web_contents,
+                    false, std::string(), true, settings);
     window->bindings_->AttachTo(agent.get());
     do_open = true;
   }
@@ -722,7 +723,7 @@ DevToolsWindow* DevToolsWindow::Create(
     const GURL& frontend_url,
     content::WebContents* inspected_web_contents,
     bool shared_worker_frontend,
-    bool external_frontend,
+    const std::string& remote_frontend,
     bool can_dock,
     const std::string& settings) {
   if (inspected_web_contents) {
@@ -739,7 +740,7 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create WebContents with devtools.
   GURL url(GetDevToolsURL(profile, frontend_url,
                           shared_worker_frontend,
-                          external_frontend,
+                          remote_frontend,
                           can_dock, settings));
   return new DevToolsWindow(profile, url, inspected_web_contents, can_dock);
 }
@@ -748,7 +749,7 @@ DevToolsWindow* DevToolsWindow::Create(
 GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const GURL& base_url,
                                     bool shared_worker_frontend,
-                                    bool external_frontend,
+                                    const std::string& remote_frontend,
                                     bool can_dock,
                                     const std::string& settings) {
   // Compatibility errors are encoded with data urls, pass them
@@ -763,8 +764,10 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&"));
   if (shared_worker_frontend)
     url_string += "&isSharedWorker=true";
-  if (external_frontend)
+  if (remote_frontend.size()) {
     url_string += "&remoteFrontend=true";
+    url_string += "&remoteFrontendUrl=" + net::EscapePath(remote_frontend);
+  }
   if (can_dock)
     url_string += "&can_dock=true";
   if (settings.size())

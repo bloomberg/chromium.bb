@@ -207,13 +207,13 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                                 const GURL& frontend_url,
                                 content::WebContents* inspected_web_contents,
                                 bool shared_worker_frontend,
-                                bool external_frontend,
+                                const std::string& remote_frontend,
                                 bool can_dock,
                                 const std::string& settings);
   static GURL GetDevToolsURL(Profile* profile,
                              const GURL& base_url,
                              bool shared_worker_frontend,
-                             bool external_frontend,
+                             const std::string& remote_frontend,
                              bool can_dock,
                              const std::string& settings);
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);

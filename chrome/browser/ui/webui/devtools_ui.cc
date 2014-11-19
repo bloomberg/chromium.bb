@@ -47,7 +47,7 @@ const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 #if defined(DEBUG_DEVTOOLS)
 // Local frontend url provided by InspectUI.
 const char kFallbackFrontendURL[] =
-    "chrome-devtools://devtools/bundled/devtools.html";
+    "chrome-devtools://devtools/bundled/inspector.html";
 #else
 // URL causing the DevTools window to display a plain text warning.
 const char kFallbackFrontendURL[] =

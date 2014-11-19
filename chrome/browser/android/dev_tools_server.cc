@@ -64,7 +64,7 @@ namespace {
 const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
 
 const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
+    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
 const int kBackLog = 10;
