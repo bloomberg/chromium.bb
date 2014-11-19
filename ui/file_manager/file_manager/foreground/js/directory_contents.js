@@ -423,13 +423,20 @@ function FileListModel(metadataCache) {
 
   // Initialize compare functions.
   this.setCompareFunction('name',
-      /** @type {function(*, *): number} */ (util.compareName));
+      /** @type {function(*, *): number} */ (this.compareName_.bind(this)));
   this.setCompareFunction('modificationTime',
       /** @type {function(*, *): number} */ (this.compareMtime_.bind(this)));
   this.setCompareFunction('size',
       /** @type {function(*, *): number} */ (this.compareSize_.bind(this)));
   this.setCompareFunction('type',
       /** @type {function(*, *): number} */ (this.compareType_.bind(this)));
+
+  /**
+   * Whether this file list is sorted in descending order.
+   * @type {boolean}
+   * @private
+   */
+  this.isDescendingOrder_ = false;
 }
 
 FileListModel.prototype = {
@@ -437,13 +444,59 @@ FileListModel.prototype = {
 };
 
 /**
- * Compare by mtime first, then by name.
+ * Sorts data model according to given field and direction and dispathes
+ * sorted event.
+ * @param {string} field Sort field.
+ * @param {string} direction Sort direction.
+ * @override
+ */
+FileListModel.prototype.sort = function(field, direction) {
+  this.isDescendingOrder_ = direction === 'desc';
+  cr.ui.ArrayDataModel.prototype.sort.call(this, field, direction);
+};
+
+/**
+ * Called before a sort happens so that you may fetch additional data
+ * required for the sort.
+ * @param {string} field Sort field.
+ * @param {function()} callback The function to invoke when preparation
+ *     is complete.
+ * @override
+ */
+FileListModel.prototype.prepareSort = function(field, callback) {
+  // Starts the actual sorting immediately as we don't need any preparation to
+  // sort the file list and we want to start actual sorting as soon as possible
+  // after we get the |this.isDescendingOrder_| value in sort().
+  callback();
+};
+
+/**
+ * Compares entries by name.
+ * @param {!Entry} a First entry.
+ * @param {!Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareName_ = function(a, b) {
+  // Directories always precede files.
+  if (a.isDirectory !== b.isDirectory)
+    return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
+
+  return util.compareName(a, b);
+};
+
+/**
+ * Compares entries by mtime first, then by name.
  * @param {Entry} a First entry.
  * @param {Entry} b Second entry.
  * @return {number} Compare result.
  * @private
  */
 FileListModel.prototype.compareMtime_ = function(a, b) {
+  // Directories always precede files.
+  if (a.isDirectory !== b.isDirectory)
+    return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
+
   var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
   var aTime = aCachedFilesystem ? aCachedFilesystem.modificationTime : 0;
 
@@ -460,13 +513,17 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
 };
 
 /**
- * Compare by size first, then by name.
+ * Compares entries by size first, then by name.
  * @param {Entry} a First entry.
  * @param {Entry} b Second entry.
  * @return {number} Compare result.
  * @private
  */
 FileListModel.prototype.compareSize_ = function(a, b) {
+  // Directories always precede files.
+  if (a.isDirectory !== b.isDirectory)
+    return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
+
   var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
   var aSize = aCachedFilesystem ? aCachedFilesystem.size : 0;
 
@@ -477,16 +534,16 @@ FileListModel.prototype.compareSize_ = function(a, b) {
 };
 
 /**
- * Compare by type first, then by subtype and then by name.
+ * Compares entries by type first, then by subtype and then by name.
  * @param {Entry} a First entry.
  * @param {Entry} b Second entry.
  * @return {number} Compare result.
  * @private
  */
 FileListModel.prototype.compareType_ = function(a, b) {
-  // Directories precede files.
+  // Directories always precede files.
   if (a.isDirectory !== b.isDirectory)
-    return Number(b.isDirectory) - Number(a.isDirectory);
+    return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
   var aType = FileType.typeToString(FileType.getType(a));
   var bType = FileType.typeToString(FileType.getType(b));

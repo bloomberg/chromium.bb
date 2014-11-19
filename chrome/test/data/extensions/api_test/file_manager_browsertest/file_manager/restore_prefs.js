@@ -10,8 +10,8 @@
 testcase.restoreSortColumn = function() {
   var appId;
   var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
-    ENTRIES.world,
     ENTRIES.photos,
+    ENTRIES.world,
     ENTRIES.desktop,
     ENTRIES.hello,
     ENTRIES.beautiful
