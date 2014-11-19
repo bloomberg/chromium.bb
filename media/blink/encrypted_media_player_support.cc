@@ -169,8 +169,7 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
 
     GURL security_origin(frame->document().securityOrigin().toString());
 
-    if (!cdm_factory_.get() ||
-        !proxy_decryptor_->InitializeCDM(cdm_factory_.get(), key_system,
+    if (!proxy_decryptor_->InitializeCDM(cdm_factory_.get(), key_system,
                                          security_origin)) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }
