@@ -61,6 +61,7 @@
         "args": ["--test-launcher-print-test-stdio=always"]
       },
       "ui_base_unittests",
+      "ui_chromeos_unittests",
       "views_unittests",
       "wm_unittests",
       "aura_unittests",
@@ -133,6 +134,7 @@
       "sql_unittests",
       "sync_unit_tests",
       "ui_base_unittests",
+      "ui_chromeos_unittests",
       "unit_tests",
       "url_unittests",
       "views_unittests",
@@ -180,6 +182,7 @@
         "args": ["--test-launcher-print-test-stdio=always"]
       },
       "ui_base_unittests",
+      "ui_chromeos_unittests",
       "views_unittests",
       "wm_unittests",
       "aura_unittests",

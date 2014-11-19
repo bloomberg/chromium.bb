@@ -405,6 +405,11 @@
             }],
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../dbus/dbus.gyp:dbus_unittests',
@@ -1294,8 +1299,9 @@
             }],
             ['chromeos==1', {
               'dependencies': [
-                '../chromeos/chromeos.gyp:chromeos_unittests',
                 '../athena/main/athena_main.gyp:*',
+                '../chromeos/chromeos.gyp:chromeos_unittests',
+                '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
               ],
             }],
             ['use_ozone==1', {

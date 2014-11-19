@@ -95,5 +95,31 @@
         'user_activity_power_manager_notifier.h',
       ],
     },  # target_name: ui_chromeos
+    {
+      'target_name': 'ui_chromeos_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../../base/base.gyp:test_support_base',
+        '../../chromeos/chromeos.gyp:chromeos',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../aura/aura.gyp:aura_test_support',
+        '../compositor/compositor.gyp:compositor',
+        '../message_center/message_center.gyp:message_center',
+        '../resources/ui_resources.gyp:ui_test_pak',
+        '../views/views.gyp:views',
+        '../views/views.gyp:views_test_support',
+        'ui_chromeos',
+      ],
+      'sources': [
+        '../chromeos/ime/candidate_view_unittest.cc',
+        '../chromeos/ime/candidate_window_view_unittest.cc',
+        '../chromeos/ime/input_method_menu_item_unittest.cc',
+        '../chromeos/ime/input_method_menu_manager_unittest.cc',
+        '../chromeos/network/network_state_notifier_unittest.cc',
+        '../chromeos/touch_exploration_controller_unittest.cc',
+        'run_all_unittests.cc',
+      ],
+    },  # target_name: ui_chromeos_unittests
   ],
 }

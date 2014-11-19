@@ -165,6 +165,15 @@
         "shards": 2
       }
     },
+    {
+      "test": "ui_chromeos_unittests",
+      "platforms": ["linux"],
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ]
+    },
     "url_unittests",
     {
       "test": "wm_unittests",

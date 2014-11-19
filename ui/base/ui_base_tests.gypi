@@ -195,23 +195,6 @@
     ['chromeos==1', {
       'dependencies': [
         '../../chromeos/chromeos.gyp:chromeos',
-        '../aura/aura.gyp:aura_test_support',
-        '../chromeos/ui_chromeos.gyp:ui_chromeos',
-        '../chromeos/ui_chromeos.gyp:ui_chromeos_resources',
-        '../chromeos/ui_chromeos.gyp:ui_chromeos_strings',
-        '../events/events.gyp:gesture_detection',
-        '../message_center/message_center.gyp:message_center',
-        '../views/views.gyp:views',
-        '../views/views.gyp:views_test_support',
-      ],
-      'sources': [
-        # TODO(pkotwicz): Move tests to their own target (crbug.com/432538)
-        '../chromeos/ime/candidate_view_unittest.cc',
-        '../chromeos/ime/candidate_window_view_unittest.cc',
-        '../chromeos/ime/input_method_menu_item_unittest.cc',
-        '../chromeos/ime/input_method_menu_manager_unittest.cc',
-        '../chromeos/network/network_state_notifier_unittest.cc',
-        '../chromeos/touch_exploration_controller_unittest.cc',
       ],
       'sources!': [
         'dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
