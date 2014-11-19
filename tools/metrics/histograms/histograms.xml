@@ -10371,6 +10371,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InertialSensor.DeviceOrientationSensorAndroid"
+    enum="DeviceOrientationSensorTypeAndroid">
+  <owner>timvolodine@chromium.org</owner>
+  <summary>
+    Provides a histogram of the base sensors (if any) that are used at the start
+    of the Device Orientation API. Currently Sensor.TYPE_ROTATION_VECTOR is the
+    default sensor for orientation, if it's not available fall-back option is
+    provided by using Sensor.TYPE_ACCELEROMETER and Sensor.TYPE_MAGNETIC_FIELD.
+  </summary>
+</histogram>
+
 <histogram name="InertialSensor.GyrometerWindowsAvailable"
     enum="BooleanAvailable">
   <owner>timvolodine@chromium.org</owner>
@@ -10436,6 +10447,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="InertialSensor.RotationVectorAndroidAvailable"
     enum="BooleanAvailable">
+  <obsolete>
+    Deprecated 11/2014 (crbug.com/347507). Replaced by
+    InertialSensor.DeviceOrientationSensorAndroid.
+  </obsolete>
   <owner>timvolodine@chromium.org</owner>
   <summary>
     Whether the Sensor.TYPE_ROTATION_VECTOR was available at the start of Device
@@ -42498,6 +42513,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="First screen capture call failed."/>
   <int value="4" label="First window capture call succeeded."/>
   <int value="5" label="First window capture call failed."/>
+</enum>
+
+<enum name="DeviceOrientationSensorTypeAndroid" type="int">
+  <int value="0" label="Not Available"/>
+  <int value="1" label="ROTATION_VECTOR"/>
+  <int value="2" label="ACCELEROMETER + MAGNETIC_FIELD"/>
 </enum>
 
 <enum name="DevicePermissionActions" type="int">

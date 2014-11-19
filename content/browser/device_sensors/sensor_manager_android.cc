@@ -16,8 +16,17 @@ using base::android::AttachCurrentThread;
 
 namespace {
 
-static void updateRotationVectorHistogram(bool value) {
-  UMA_HISTOGRAM_BOOLEAN("InertialSensor.RotationVectorAndroidAvailable", value);
+enum OrientationSensorType {
+  NOT_AVAILABLE = 0,
+  ROTATION_VECTOR = 1,
+  ACCELEROMETER_MAGNETIC = 2,
+  ORIENTATION_SENSOR_MAX = 3,
+};
+
+static void UpdateDeviceOrientationHistogram(OrientationSensorType type) {
+  UMA_HISTOGRAM_ENUMERATION("InertialSensor.DeviceOrientationSensorAndroid",
+                            type,
+                            ORIENTATION_SENSOR_MAX);
 }
 
 }
@@ -68,7 +77,8 @@ void SensorManagerAndroid::GotOrientation(
 
   if (!is_orientation_buffer_ready_) {
     SetOrientationBufferReadyStatus(true);
-    updateRotationVectorHistogram(!is_using_backup_sensors_for_orientation_);
+    UpdateDeviceOrientationHistogram(is_using_backup_sensors_for_orientation_
+        ? ACCELEROMETER_MAGNETIC : ROTATION_VECTOR);
   }
 }
 
@@ -312,11 +322,12 @@ bool SensorManagerAndroid::StartFetchingDeviceOrientationData(
     SetOrientationBufferReadyStatus(!success);
   }
 
-  if (!success)
-    updateRotationVectorHistogram(false);
-  else
+  if (!success) {
+    UpdateDeviceOrientationHistogram(NOT_AVAILABLE);
+  } else {
     is_using_backup_sensors_for_orientation_ =
         isUsingBackupSensorsForOrientation();
+  }
 
   return success;
 }
