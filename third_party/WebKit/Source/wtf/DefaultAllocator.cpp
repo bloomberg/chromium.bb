@@ -40,7 +40,12 @@ void* DefaultAllocator::backingAllocate(size_t size)
     return partitionAllocGeneric(Partitions::getBufferPartition(), size);
 }
 
-void DefaultAllocator::backingFree(void* address)
+void DefaultAllocator::vectorBackingFree(void* address)
+{
+    partitionFreeGeneric(Partitions::getBufferPartition(), address);
+}
+
+void DefaultAllocator::hashTableBackingFree(void* address)
 {
     partitionFreeGeneric(Partitions::getBufferPartition(), address);
 }

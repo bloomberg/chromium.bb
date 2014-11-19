@@ -62,33 +62,31 @@ public:
     typedef DefaultAllocatorQuantizer Quantizer;
     typedef DefaultAllocatorDummyVisitor Visitor;
     static const bool isGarbageCollected = false;
-    template<typename T, typename Traits>
-    struct VectorBackingHelper {
-        typedef void Type;
-    };
-    template<typename T>
-    struct HashTableBackingHelper {
-        typedef void Type;
-    };
-    template <typename Return, typename Metadata>
-    static Return backingMalloc(size_t size)
+    template <typename T>
+    static T* vectorBackingMalloc(size_t size)
     {
-        return reinterpret_cast<Return>(backingAllocate(size));
+        return reinterpret_cast<T*>(backingAllocate(size));
     }
-    template <typename Return, typename Metadata>
-    static Return zeroedBackingMalloc(size_t size)
+    template <typename T, typename HashTable>
+    static T* hashTableBackingMalloc(size_t size)
+    {
+        return reinterpret_cast<T*>(backingAllocate(size));
+    }
+    template <typename T, typename HashTable>
+    static T* zeroedHashTableBackingMalloc(size_t size)
     {
         void* result = backingAllocate(size);
         memset(result, 0, size);
-        return reinterpret_cast<Return>(result);
+        return reinterpret_cast<T*>(result);
     }
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
     {
         return reinterpret_cast<Return>(fastMalloc(size));
     }
-    WTF_EXPORT static void backingFree(void* address);
-    WTF_EXPORT static inline bool backingExpand(void*, size_t)
+    WTF_EXPORT static void vectorBackingFree(void* address);
+    WTF_EXPORT static void hashTableBackingFree(void* address);
+    WTF_EXPORT static inline bool vectorBackingExpand(void*, size_t)
     {
         return false;
     }

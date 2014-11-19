@@ -2848,6 +2848,7 @@ void Heap::makeConsistentForSweeping()
         (*it)->makeConsistentForSweeping();
 }
 
+template<typename HeapTraits, typename HeapType, typename HeaderType>
 void HeapAllocator::backingFree(void* address)
 {
     if (!address || ThreadState::isAnyThreadInGC())
@@ -2863,10 +2864,6 @@ void HeapAllocator::backingFree(void* address)
     if (page->isLargeObject() || page->threadState() != state)
         return;
 
-    typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-
     HeaderType* header = HeaderType::fromPayload(address);
     header->checkHeader();
 
@@ -2876,6 +2873,23 @@ void HeapAllocator::backingFree(void* address)
     heap->promptlyFreeObject(header);
 }
 
+void HeapAllocator::vectorBackingFree(void* address)
+{
+    typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
+    typedef HeapTraits::HeapType HeapType;
+    typedef HeapTraits::HeaderType HeaderType;
+    backingFree<HeapTraits, HeapType, HeaderType>(address);
+}
+
+void HeapAllocator::hashTableBackingFree(void* address)
+{
+    typedef HeapIndexTrait<HashTableBackingHeap> HeapTraits;
+    typedef HeapTraits::HeapType HeapType;
+    typedef HeapTraits::HeaderType HeaderType;
+    backingFree<HeapTraits, HeapType, HeaderType>(address);
+}
+
+template<typename HeapTraits, typename HeapType, typename HeaderType>
 bool HeapAllocator::backingExpand(void* address, size_t newSize)
 {
     if (!address || ThreadState::isAnyThreadInGC())
@@ -2890,10 +2904,6 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     if (page->isLargeObject() || page->threadState() != state)
         return false;
 
-    typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
-    typedef HeapTraits::HeapType HeapType;
-    typedef HeapTraits::HeaderType HeaderType;
-
     HeaderType* header = HeaderType::fromPayload(address);
     header->checkHeader();
 
@@ -2901,6 +2911,14 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
     HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
     return heap->expandObject(header, newSize);
+}
+
+bool HeapAllocator::vectorBackingExpand(void* address, size_t newSize)
+{
+    typedef HeapIndexTrait<VectorBackingHeap> HeapTraits;
+    typedef HeapTraits::HeapType HeapType;
+    typedef HeapTraits::HeaderType HeaderType;
+    return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
 }
 
 BaseHeapPage* Heap::lookup(Address address)

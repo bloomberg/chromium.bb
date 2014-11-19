@@ -180,13 +180,15 @@ enum TypedHeaps {
     General2Heap,
     General3Heap,
     General4Heap,
-    CollectionBackingHeap,
+    VectorBackingHeap,
+    HashTableBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
     General1HeapNonFinalized,
     General2HeapNonFinalized,
     General3HeapNonFinalized,
     General4HeapNonFinalized,
-    CollectionBackingHeapNonFinalized,
+    VectorBackingHeapNonFinalized,
+    HashTableBackingHeapNonFinalized,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
     // Values used for iteration of heap segments.
     NumberOfHeaps,
@@ -264,9 +266,13 @@ template<>
 struct HeapIndexTrait<General4HeapNonFinalized> : public HeapIndexTrait<General4Heap> { };
 
 template<>
-struct HeapIndexTrait<CollectionBackingHeap> : public HeapIndexTraitBase<CollectionBackingHeap> { };
+struct HeapIndexTrait<VectorBackingHeap> : public HeapIndexTraitBase<VectorBackingHeap> { };
 template<>
-struct HeapIndexTrait<CollectionBackingHeapNonFinalized> : public HeapIndexTrait<CollectionBackingHeap> { };
+struct HeapIndexTrait<VectorBackingHeapNonFinalized> : public HeapIndexTrait<VectorBackingHeap> { };
+template<>
+struct HeapIndexTrait<HashTableBackingHeap> : public HeapIndexTraitBase<HashTableBackingHeap> { };
+template<>
+struct HeapIndexTrait<HashTableBackingHeapNonFinalized> : public HeapIndexTrait<HashTableBackingHeap> { };
 
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
@@ -285,7 +291,8 @@ FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
 template<typename T>
 struct HeapTypeTrait : public HeapIndexTrait<General1Heap> { };
 
-// We don't have any type-based mappings to the CollectionBackingHeap.
+// We don't have any type-based mappings to the VectorBackingHeap
+// and HashTableBackingHeap.
 
 // Each typed-heap maps the respective type to its heap.
 #define DEFINE_TYPED_HEAP_TRAIT(Type)                                   \

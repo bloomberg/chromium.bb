@@ -986,8 +986,6 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::allocateTable(unsigned size)
     {
-        typedef typename Allocator::template HashTableBackingHelper<HashTable>::Type HashTableBacking;
-
         size_t allocSize = size * sizeof(ValueType);
         ValueType* result;
         // Assert that we will not use memset on things with a vtable entry.
@@ -997,9 +995,9 @@ namespace WTF {
         // one of the components is polymorphic.
         COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
         if (Traits::emptyValueIsZero) {
-            result = Allocator::template zeroedBackingMalloc<ValueType*, HashTableBacking>(allocSize);
+            result = Allocator::template zeroedHashTableBackingMalloc<ValueType, HashTable>(allocSize);
         } else {
-            result = Allocator::template backingMalloc<ValueType*, HashTableBacking>(allocSize);
+            result = Allocator::template hashTableBackingMalloc<ValueType, HashTable>(allocSize);
             for (unsigned i = 0; i < size; i++)
                 initializeBucket(result[i]);
         }
@@ -1028,7 +1026,7 @@ namespace WTF {
                 }
             }
         }
-        Allocator::backingFree(table);
+        Allocator::hashTableBackingFree(table);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>

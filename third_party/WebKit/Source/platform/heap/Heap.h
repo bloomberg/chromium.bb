@@ -1456,7 +1456,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return HeapIndexTrait<CollectionBackingHeap>::HeapType::roundedAllocationSize(count * sizeof(T));
+        return HeapIndexTrait<VectorBackingHeap>::HeapType::roundedAllocationSize(count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
@@ -1469,23 +1469,29 @@ public:
     typedef blink::Visitor Visitor;
     static const bool isGarbageCollected = true;
 
-    template <typename Return, typename Metadata>
-    static Return backingMalloc(size_t size)
+    template <typename T>
+    static T* vectorBackingMalloc(size_t size)
     {
-        return reinterpret_cast<Return>(Heap::allocate<Metadata, HeapIndexTrait<CollectionBackingHeap> >(size));
+        return reinterpret_cast<T*>(Heap::allocate<HeapVectorBacking<T, VectorTraits<T>>, HeapIndexTrait<VectorBackingHeap> >(size));
     }
-    template <typename Return, typename Metadata>
-    static Return zeroedBackingMalloc(size_t size)
+    template <typename T, typename HashTable>
+    static T* hashTableBackingMalloc(size_t size)
     {
-        return backingMalloc<Return, Metadata>(size);
+        return reinterpret_cast<T*>(Heap::allocate<HeapHashTableBacking<HashTable>, HeapIndexTrait<HashTableBackingHeap> >(size));
+    }
+    template <typename T, typename HashTable>
+    static T* zeroedHashTableBackingMalloc(size_t size)
+    {
+        return hashTableBackingMalloc<T, HashTable>(size);
     }
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
     {
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
     }
-    PLATFORM_EXPORT static void backingFree(void* address);
-    PLATFORM_EXPORT static bool backingExpand(void*, size_t);
+    PLATFORM_EXPORT static void vectorBackingFree(void* address);
+    PLATFORM_EXPORT static void hashTableBackingFree(void* address);
+    PLATFORM_EXPORT static bool vectorBackingExpand(void*, size_t);
 
     static void free(void* address) { }
     template<typename T>
@@ -1545,25 +1551,6 @@ public:
         typedef T* Type;
     };
 
-    // The WTF classes use Allocator::VectorBackingHelper in order to find a
-    // class to template their backing allocation operation on. For off-heap
-    // allocations the VectorBackingHelper is a dummy class, since the class is
-    // not used during allocation of backing. For on-heap allocations this
-    // typedef ensures that the allocation is done with the correct templated
-    // instantiation of the allocation function. This ensures the correct GC
-    // map is written when backing allocations take place.
-    template<typename T, typename Traits>
-    struct VectorBackingHelper {
-        typedef HeapVectorBacking<T, Traits> Type;
-    };
-
-    // Like the VectorBackingHelper, but this type is used for HashSet and
-    // HashMap, both of which are implemented using HashTable.
-    template<typename Table>
-    struct HashTableBackingHelper {
-        typedef HeapHashTableBacking<Table> Type;
-    };
-
     template<typename T>
     struct OtherType {
         typedef T* Type;
@@ -1590,6 +1577,11 @@ public:
     }
 
 private:
+    template<typename HeapTraits, typename HeapType, typename HeaderType>
+    static void backingFree(void*);
+    template<typename HeapTraits, typename HeapType, typename HeaderType>
+    static bool backingExpand(void*, size_t);
+
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
     template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;

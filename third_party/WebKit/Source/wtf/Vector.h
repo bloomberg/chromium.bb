@@ -289,10 +289,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     public:
         void allocateBuffer(size_t newCapacity)
         {
-            typedef typename Allocator::template VectorBackingHelper<T, VectorTraits<T> >::Type VectorBacking;
             ASSERT(newCapacity);
             size_t sizeToAllocate = allocationSize(newCapacity);
-            m_buffer = Allocator::template backingMalloc<T*, VectorBacking>(sizeToAllocate);
+            m_buffer = Allocator::template vectorBackingMalloc<T>(sizeToAllocate);
             m_capacity = sizeToAllocate / sizeof(T);
         }
 
@@ -356,13 +355,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void deallocateBuffer(T* bufferToDeallocate)
         {
-            Allocator::backingFree(bufferToDeallocate);
+            Allocator::vectorBackingFree(bufferToDeallocate);
         }
 
         bool expandBuffer(size_t newCapacity)
         {
             size_t sizeToAllocate = allocationSize(newCapacity);
-            if (Allocator::backingExpand(m_buffer, sizeToAllocate)) {
+            if (Allocator::vectorBackingExpand(m_buffer, sizeToAllocate)) {
                 m_capacity = sizeToAllocate / sizeof(T);
                 return true;
             }
@@ -429,7 +428,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         NEVER_INLINE void reallyDeallocateBuffer(T* bufferToDeallocate)
         {
-            Allocator::backingFree(bufferToDeallocate);
+            Allocator::vectorBackingFree(bufferToDeallocate);
         }
 
         void deallocateBuffer(T* bufferToDeallocate)
@@ -445,7 +444,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 return false;
 
             size_t sizeToAllocate = allocationSize(newCapacity);
-            if (Allocator::backingExpand(m_buffer, sizeToAllocate)) {
+            if (Allocator::vectorBackingExpand(m_buffer, sizeToAllocate)) {
                 m_capacity = sizeToAllocate / sizeof(T);
                 return true;
             }
