@@ -2633,40 +2633,49 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
       }
     }
 
+    // Scrolls should bubble perfectly between the outer and inner viewports.
+    bool allow_unrestricted_bubbling_for_current_layer =
+        layer_impl == OuterViewportScrollLayer();
+    bool allow_bubbling_for_current_layer =
+        allow_unrestricted_bubbling_for_current_layer || should_bubble_scrolls_;
+
     // If the layer wasn't able to move, try the next one in the hierarchy.
     bool did_move_layer_x = std::abs(applied_delta.x()) > kEpsilon;
     bool did_move_layer_y = std::abs(applied_delta.y()) > kEpsilon;
     did_scroll_x |= did_move_layer_x;
     did_scroll_y |= did_move_layer_y;
     if (!did_move_layer_x && !did_move_layer_y) {
-      // Scrolls should always bubble between the outer and inner viewports
-      if (should_bubble_scrolls_ || !did_lock_scrolling_layer_ ||
-          layer_impl == OuterViewportScrollLayer())
+      if (allow_bubbling_for_current_layer || !did_lock_scrolling_layer_)
         continue;
       else
         break;
     }
 
     did_lock_scrolling_layer_ = true;
-    if (!should_bubble_scrolls_) {
+    if (!allow_bubbling_for_current_layer) {
       active_tree_->SetCurrentlyScrollingLayer(layer_impl);
       break;
     }
 
-    // If the applied delta is within 45 degrees of the input delta, bail out to
-    // make it easier to scroll just one layer in one direction without
-    // affecting any of its parents.
-    float angle_threshold = 45;
-    if (MathUtil::SmallestAngleBetweenVectors(
-            applied_delta, pending_delta) < angle_threshold) {
-      pending_delta = gfx::Vector2dF();
-      break;
-    }
+    if (allow_unrestricted_bubbling_for_current_layer) {
+      pending_delta -= applied_delta;
+    } else {
+      // If the applied delta is within 45 degrees of the input delta, bail out
+      // to make it easier to scroll just one layer in one direction without
+      // affecting any of its parents.
+      float angle_threshold = 45;
+      if (MathUtil::SmallestAngleBetweenVectors(applied_delta, pending_delta) <
+          angle_threshold) {
+        pending_delta = gfx::Vector2dF();
+        break;
+      }
 
-    // Allow further movement only on an axis perpendicular to the direction in
-    // which the layer moved.
-    gfx::Vector2dF perpendicular_axis(-applied_delta.y(), applied_delta.x());
-    pending_delta = MathUtil::ProjectVector(pending_delta, perpendicular_axis);
+      // Allow further movement only on an axis perpendicular to the direction
+      // in which the layer moved.
+      gfx::Vector2dF perpendicular_axis(-applied_delta.y(), applied_delta.x());
+      pending_delta =
+          MathUtil::ProjectVector(pending_delta, perpendicular_axis);
+    }
 
     if (gfx::ToRoundedVector2d(pending_delta).IsZero())
       break;
