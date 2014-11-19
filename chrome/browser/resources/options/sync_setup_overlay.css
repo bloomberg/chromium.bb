@@ -92,12 +92,6 @@
   width: 100%;
 }
 
-#sync-setup-overlay * input[type='button'],
-#sync-setup-overlay * input[type='submit'] {
-  min-height: 26px;
-  min-width: 87px;
-}
-
 #sync-setup-delete-profile {
   margin: 10px 0 0 0;
 }

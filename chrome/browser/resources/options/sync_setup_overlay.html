@@ -17,10 +17,9 @@
           </div>
           <div id="confirm-everything-throbber" class="throbber"></div>
           <div class="button-strip">
-            <input id="confirm-everything-cancel" type="button"
-                i18n-values="value:cancel">
-            <input id="confirm-everything-ok" type="button"
-                class="default-button" i18n-values="value:syncEverything">
+            <button id="confirm-everything-cancel" i18n-content="cancel">
+            <button id="confirm-everything-ok" class="default-button"
+                i18n-content="syncEverything">
           </div>
         </div>
       </div>
@@ -34,10 +33,6 @@
                     metric="Options_SyncSelectDataTypes">
               <option i18n-content="syncAllDataTypes" selected></option>
               <option i18n-content="chooseDataTypes"></option>
-              <!-- The syncNothing element is to be removed for M29.
-                   TODO(rsimha): Revisit this for M30.
-                   See http://crbug.com/252049.
-              -->
             </select>
             <div id="choose-data-types-body">
               <div id="apps-item" class="sync-type-checkbox checkbox">
@@ -208,8 +203,8 @@
   <div id="sync-setup-spinner" hidden>
     <h1 i18n-content="syncSetupSpinnerTitle"></h1>
     <div class="action-area button-strip">
-      <input id="sync-spinner-cancel" type="button" class="default-button"
-          i18n-values="value:cancel">
+      <button id="sync-spinner-cancel" class="default-button"
+          i18n-content="cancel">
     </div>
   </div>
   <div id="sync-setup-timeout" hidden>
@@ -235,10 +230,9 @@
 </if>
     </div>
     <div class="action-area button-strip">
-      <input id="stop-syncing-cancel" type="button"
-          i18n-values="value:cancel">
-      <input id="stop-syncing-ok" type="button" class="default-button"
-          i18n-values="value:stopSyncingConfirm">
+      <button id="stop-syncing-cancel" i18n-content="cancel">
+      <button id="stop-syncing-ok" class="default-button"
+          i18n-content="stopSyncingConfirm">
     </div>
   </div>
 </div>

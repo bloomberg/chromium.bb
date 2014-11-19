@@ -141,7 +141,9 @@ html[dir='rtl'] .overlay .page .action-area {
   display: -webkit-box;
 }
 
-.overlay .page .button-strip > button {
+.overlay .page .button-strip > :-webkit-any(button,
+                                            input[type='button'],
+                                            input[type='submit']) {
   -webkit-margin-start: 10px;
   display: block;
 }

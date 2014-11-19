@@ -255,13 +255,13 @@ cr.define('options', function() {
       }
     },
 
+    /** @private */
     checkPassphraseMatch_: function() {
       var emptyError = $('empty-error');
       var mismatchError = $('mismatch-error');
       emptyError.hidden = true;
       mismatchError.hidden = true;
 
-      var f = $('choose-data-types-form');
       if (!$('full-encryption-option').checked ||
            $('basic-encryption-option').disabled) {
         return true;
@@ -282,6 +282,7 @@ cr.define('options', function() {
       return true;
     },
 
+    /** @private */
     sendConfiguration_: function() {
       var encryptAllData = $('full-encryption-option').checked;
 
@@ -493,6 +494,7 @@ cr.define('options', function() {
 
     /**
      * @param {SyncConfig} args
+     * @private
      */
     setEncryptionRadios_: function(args) {
       if (!args.encryptAllData && !args.usePassphrase) {
@@ -506,6 +508,7 @@ cr.define('options', function() {
 
     /**
      * @param {SyncConfig} args
+     * @private
      */
     setCheckboxesAndErrors_: function(args) {
       this.setChooseDataTypesCheckboxes_(args);
@@ -514,6 +517,7 @@ cr.define('options', function() {
 
     /**
      * @param {SyncConfig} args
+     * @private
      */
     showConfigure_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
@@ -576,16 +580,19 @@ cr.define('options', function() {
       }
     },
 
+    /** @private */
     showSpinner_: function() {
       this.resetPage_('sync-setup-spinner');
       $('sync-setup-spinner').hidden = false;
     },
 
+    /** @private */
     showTimeoutPage_: function() {
       this.resetPage_('sync-setup-timeout');
       $('sync-setup-timeout').hidden = false;
     },
 
+    /** @private */
     showSyncEverythingPage_: function() {
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_SyncSetDefault']);
