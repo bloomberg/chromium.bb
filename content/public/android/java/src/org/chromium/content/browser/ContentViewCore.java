@@ -1688,6 +1688,10 @@ public class ContentViewCore
         final float dyPix = yPix - yCurrentPix;
         if (dxPix != 0 || dyPix != 0) {
             long time = SystemClock.uptimeMillis();
+            // It's a very real (and valid) possibility that a fling may still
+            // be active when programatically scrolling. Cancelling the fling in
+            // such cases ensures a consistent gesture event stream.
+            if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
             nativeScrollBegin(mNativeContentViewCore, time,
                     xCurrentPix, yCurrentPix, -dxPix, -dyPix);
             nativeScrollBy(mNativeContentViewCore,
