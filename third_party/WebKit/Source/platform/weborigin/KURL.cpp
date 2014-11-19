@@ -130,7 +130,7 @@ bool isValidProtocol(const String& protocol)
 
 String KURL::strippedForUseAsReferrer() const
 {
-    if (protocolIsAbout() || protocolIs("data") || protocolIs("javascript"))
+    if (!protocolIsInHTTPFamily())
         return String();
 
     if (m_parsed.username.is_nonempty() || m_parsed.password.is_nonempty() || m_parsed.ref.is_nonempty()) {
