@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -789,6 +790,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // killed in the near future.
   void FlushDirectory() const;
 
+  // Needed to test whether the directory is deleted properly.
+  base::FilePath GetDirectoryPathForTest() const;
+
+  // Sometimes we need to wait for tasks on the sync thread in tests.
+  base::MessageLoop* GetSyncLoopForTest() const;
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -974,7 +981,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Clean up prefs and backup DB when rollback is not needed.
   void CleanUpBackup();
 
- // Factory used to create various dependent objects.
+  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
   // The profile whose data we are synchronizing.
@@ -1156,6 +1163,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   scoped_ptr<base::Time> last_backup_time_;
 
   BrowsingDataRemover::Observer* browsing_data_remover_observer_;
+
+  // The full path to the sync data directory.
+  base::FilePath directory_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

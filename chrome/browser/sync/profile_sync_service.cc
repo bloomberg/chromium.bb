@@ -188,6 +188,15 @@ void ClearBrowsingData(BrowsingDataRemover::Observer* observer,
   password->RemoveLoginsSyncedBetween(start, end);
 }
 
+// Perform the actual sync data folder deletion.
+// This should only be called on the sync thread.
+void DeleteSyncDataFolder(const base::FilePath& directory_path) {
+  if (base::DirectoryExists(directory_path)) {
+    if (!base::DeleteFile(directory_path, true))
+      LOG(DFATAL) << "Could not delete the Sync Data folder.";
+  }
+}
+
 }  // anonymous namespace
 
 bool ShouldShowActionOnUI(
@@ -671,6 +680,8 @@ void ProfileSyncService::StartUpSlowBackendComponents(
       invalidator = provider->GetInvalidationService();
   }
 
+  directory_path_ = profile_->GetPath().Append(sync_folder);
+
   backend_.reset(
       factory_->CreateSyncBackendHost(
           profile_->GetDebugName(),
@@ -807,8 +818,15 @@ void ProfileSyncService::Shutdown() {
 }
 
 void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
-  if (!backend_)
+  if (!backend_) {
+    if (reason == syncer::ShutdownReason::DISABLE_SYNC && sync_thread_) {
+      // If the backend is already shut down when a DISABLE_SYNC happens,
+      // the data directory needs to be cleaned up here.
+      sync_thread_->message_loop()->PostTask(FROM_HERE,
+          base::Bind(&DeleteSyncDataFolder, directory_path_));
+    }
     return;
+  }
 
   non_blocking_data_type_manager_.DisconnectSyncBackend();
 
@@ -2736,4 +2754,18 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (backend_initialized_)
     backend_->FlushDirectory();
+}
+
+base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
+  return directory_path_;
+}
+
+base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
+  if (sync_thread_) {
+    return sync_thread_->message_loop();
+  } else if (backend_) {
+    return backend_->GetSyncLoopForTesting();
+  } else {
+    return NULL;
+  }
 }
