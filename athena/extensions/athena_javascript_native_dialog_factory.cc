@@ -17,18 +17,18 @@ namespace athena {
 namespace {
 
 class AthenaJavaScriptNativeDialogFactory
-    : public JavaScriptNativeDialogFactory {
+    : public app_modal::JavaScriptNativeDialogFactory {
  public:
   AthenaJavaScriptNativeDialogFactory() {}
   ~AthenaJavaScriptNativeDialogFactory() override {}
 
  private:
-  // JavScriptNativeDialogFactory:
-  NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      JavaScriptAppModalDialog* dialog,
+  // app_modal::JavScriptNativeDialogFactory:
+  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
+      app_modal::JavaScriptAppModalDialog* dialog,
       gfx::NativeWindow parent_window) override{
-    JavaScriptAppModalDialogViews* d =
-        new JavaScriptAppModalDialogViews(dialog);
+    app_modal::JavaScriptAppModalDialogViews* d =
+        new app_modal::JavaScriptAppModalDialogViews(dialog);
     constrained_window::CreateBrowserModalDialogViews(d, parent_window);
     return d;
   }
@@ -39,8 +39,9 @@ class AthenaJavaScriptNativeDialogFactory
 }  // namespace
 
 void InstallJavaScriptNativeDialogFactory() {
-  SetJavaScriptNativeDialogFactory(
-      make_scoped_ptr(new AthenaJavaScriptNativeDialogFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->
+      SetNativeDialogFactory(
+          make_scoped_ptr(new AthenaJavaScriptNativeDialogFactory));
 }
 
 }  // namespace athena

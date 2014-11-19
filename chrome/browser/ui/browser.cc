@@ -1624,7 +1624,7 @@ void Browser::DidNavigateToPendingEntry(WebContents* web_contents) {
 
 content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
     WebContents* source) {
-  return GetJavaScriptDialogManagerInstance();
+  return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
 content::ColorChooser* Browser::OpenColorChooser(

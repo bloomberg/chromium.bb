@@ -13,6 +13,8 @@ namespace content {
 class WebContents;
 }
 
+namespace app_modal {
+
 // A client interface to access and control extensions/apps
 // that opened a JavaScript dialog.
 class JavaScriptDialogExtensionsClient {
@@ -34,5 +36,7 @@ class JavaScriptDialogExtensionsClient {
                                 const GURL& origin_url,
                                 std::string* name_out) = 0;
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_EXTENSIONS_CLIENT_H_

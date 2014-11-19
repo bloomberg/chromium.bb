@@ -1514,14 +1514,15 @@ bool BrowserView::CanMinimize() const {
 }
 
 bool BrowserView::CanActivate() const {
-  if (!AppModalDialogQueue::GetInstance()->active_dialog() ||
-      !AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog())
+  app_modal::AppModalDialogQueue* queue =
+      app_modal::AppModalDialogQueue::GetInstance();
+  if (!queue->active_dialog() || !queue->active_dialog()->native_dialog())
     return true;
 
 #if defined(USE_AURA) && defined(OS_CHROMEOS)
   // On Aura window manager controls all windows so settings focus via PostTask
   // will make only worse because posted task will keep trying to steal focus.
-  AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+  queue->ActivateModalDialog();
 #else
   // If another browser is app modal, flash and activate the modal browser. This
   // has to be done in a post task, otherwise if the user clicked on a window
@@ -2482,8 +2483,8 @@ bool BrowserView::DoCutCopyPasteForWebContents(
 
 void BrowserView::ActivateAppModalDialog() const {
   // If another browser is app modal, flash and activate the modal browser.
-  AppModalDialog* active_dialog =
-      AppModalDialogQueue::GetInstance()->active_dialog();
+  app_modal::AppModalDialog* active_dialog =
+      app_modal::AppModalDialogQueue::GetInstance()->active_dialog();
   if (!active_dialog)
     return;
 
@@ -2494,7 +2495,7 @@ void BrowserView::ActivateAppModalDialog() const {
     modal_browser->window()->Activate();
   }
 
-  AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+  app_modal::AppModalDialogQueue::GetInstance()->ActivateModalDialog();
 }
 
 int BrowserView::GetMaxTopInfoBarArrowHeight() {

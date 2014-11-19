@@ -9,9 +9,11 @@
 
 #include "base/basictypes.h"
 
-class AppModalDialog;
-
 template <typename T> struct DefaultSingletonTraits;
+
+namespace app_modal {
+
+class AppModalDialog;
 
 // Keeps a queue of AppModalDialogs, making sure only one app modal
 // dialog is shown at a time.
@@ -85,5 +87,7 @@ class AppModalDialogQueue {
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogQueue);
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_

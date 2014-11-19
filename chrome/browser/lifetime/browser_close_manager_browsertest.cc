@@ -49,11 +49,11 @@
 
 namespace {
 
-NativeAppModalDialog* GetNextDialog() {
-  AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+app_modal::NativeAppModalDialog* GetNextDialog() {
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(dialog->IsJavaScriptModalDialog());
-  JavaScriptAppModalDialog* js_dialog =
-      static_cast<JavaScriptAppModalDialog*>(dialog);
+  app_modal::JavaScriptAppModalDialog* js_dialog =
+      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
   CHECK(js_dialog->native_dialog());
   return js_dialog->native_dialog();
 }

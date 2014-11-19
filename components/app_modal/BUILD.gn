@@ -15,8 +15,6 @@ static_library("app_modal") {
     "javascript_dialog_extension_client.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
-    "javascript_dialog_manager_impl.cc",
-    "javascript_dialog_manager_impl.h",
     "javascript_native_dialog_factory.h",
     "native_app_modal_dialog.h"
   ]

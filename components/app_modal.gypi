@@ -25,8 +25,6 @@
         'app_modal/javascript_dialog_extensions_client.h',
         'app_modal/javascript_dialog_manager.cc',
         'app_modal/javascript_dialog_manager.h',
-        'app_modal/javascript_dialog_manager_impl.cc',
-        'app_modal/javascript_dialog_manager_impl.h',
         'app_modal/javascript_native_dialog_factory.h',
         'app_modal/native_app_modal_dialog.h'
       ],

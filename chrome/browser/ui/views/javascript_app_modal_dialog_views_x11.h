@@ -11,9 +11,11 @@
 class JavascriptAppModalEventBlockerX11;
 
 // JavaScriptAppModalDialog implmentation for linux desktop.
-class JavaScriptAppModalDialogViewsX11 : public JavaScriptAppModalDialogViews {
+class JavaScriptAppModalDialogViewsX11
+    : public app_modal::JavaScriptAppModalDialogViews {
  public:
-  explicit JavaScriptAppModalDialogViewsX11(JavaScriptAppModalDialog* parent);
+  explicit JavaScriptAppModalDialogViewsX11(
+      app_modal::JavaScriptAppModalDialog* parent);
   virtual ~JavaScriptAppModalDialogViewsX11();
 
   // JavaScriptAppModalDialogViews:

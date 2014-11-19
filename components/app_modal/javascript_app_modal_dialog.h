@@ -13,6 +13,8 @@
 #include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
+namespace app_modal {
+
 // Extra data for JavaScript dialogs to add Chrome-only features.
 class ChromeJavaScriptDialogExtraData {
  public:
@@ -97,5 +99,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_APP_MODAL_DIALOG_H_

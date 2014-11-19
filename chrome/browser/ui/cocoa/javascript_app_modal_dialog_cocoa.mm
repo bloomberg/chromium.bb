@@ -219,7 +219,7 @@ enum AlertAction {
 // JavaScriptAppModalDialogCocoa, public:
 
 JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
-    JavaScriptAppModalDialog* dialog)
+    app_modal::JavaScriptAppModalDialog* dialog)
     : dialog_(dialog),
       helper_(NULL) {
   // Determine the names of the dialog buttons based on the flags. "Default"
@@ -440,14 +440,14 @@ void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
 namespace {
 
 class ChromeJavaScriptNativeDialogCocoaFactory
-    : public JavaScriptNativeDialogFactory {
+    : public app_modal::JavaScriptNativeDialogFactory {
  public:
   ChromeJavaScriptNativeDialogCocoaFactory() {}
   ~ChromeJavaScriptNativeDialogCocoaFactory() override {}
 
  private:
-  NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      JavaScriptAppModalDialog* dialog,
+  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
+      app_modal::JavaScriptAppModalDialog* dialog,
       gfx::NativeWindow parent_window) override {
     return new JavaScriptAppModalDialogCocoa(dialog);
   }
@@ -458,6 +458,7 @@ class ChromeJavaScriptNativeDialogCocoaFactory
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
-  SetJavaScriptNativeDialogFactory(
-      make_scoped_ptr(new ChromeJavaScriptNativeDialogCocoaFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->
+      SetNativeDialogFactory(
+          make_scoped_ptr(new ChromeJavaScriptNativeDialogCocoaFactory));
 }

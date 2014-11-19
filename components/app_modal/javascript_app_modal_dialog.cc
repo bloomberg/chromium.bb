@@ -4,7 +4,7 @@
 
 #include "components/app_modal/javascript_app_modal_dialog.h"
 
-#include "components/app_modal/javascript_dialog_manager_impl.h"
+#include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
@@ -14,9 +14,9 @@
 #include "ui/aura/window_event_dispatcher.h"
 #endif
 
-using content::JavaScriptDialogManager;
 using content::WebContents;
 
+namespace app_modal {
 namespace {
 
 // Control maximum sizes of various texts passed to us from javascript.
@@ -69,7 +69,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
     bool is_reload,
-    const JavaScriptDialogManager::DialogClosedCallback& callback)
+    const content::JavaScriptDialogManager::DialogClosedCallback& callback)
     : AppModalDialog(web_contents, title),
       extra_data_map_(extra_data_map),
       javascript_message_type_(javascript_message_type),
@@ -95,7 +95,7 @@ NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
     parent_window = NULL;
   }
 #endif  // defined(USE_AURA)
-  return JavaScriptDialogManagerImpl::GetInstance()->native_dialog_factory()->
+  return JavaScriptDialogManager::GetInstance()->native_dialog_factory()->
       CreateNativeJavaScriptDialog(this, parent_window);
 }
 
@@ -161,7 +161,7 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   }
 
   // The callback_ above may delete web_contents_, thus removing the extra
-  // data from the map owned by ChromeJavaScriptDialogManager. Make sure
+  // data from the map owned by ::JavaScriptDialogManager. Make sure
   // to only use the data if still present. http://crbug.com/236476
   ExtraDataMap::iterator extra_data = extra_data_map_->find(web_contents());
   if (extra_data != extra_data_map_->end()) {
@@ -174,3 +174,5 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   // See crbug.com/63732.
   AppModalDialog::Invalidate();
 }
+
+}  // namespace app_modal

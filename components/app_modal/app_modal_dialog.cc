@@ -13,6 +13,7 @@
 
 using content::WebContents;
 
+namespace app_modal {
 namespace {
 
 AppModalDialogObserver* app_modal_dialog_observer = NULL;
@@ -82,3 +83,5 @@ void AppModalDialog::CompleteDialog() {
     AppModalDialogQueue::GetInstance()->ShowNextDialog();
   }
 }
+
+}  // namespace app_modal

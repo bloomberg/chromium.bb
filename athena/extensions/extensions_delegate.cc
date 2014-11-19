@@ -18,7 +18,7 @@ ExtensionsDelegate* instance = nullptr;
 
 ExtensionsDelegate::ExtensionsDelegate() {
   InstallConstrainedWindowViewsClient();
-  InstallJavaScriptDialogExtensionsClient();
+  javascript_dialog_extensions_client::InstallClient();
   InstallJavaScriptNativeDialogFactory();
   DCHECK(!instance);
   instance = this;

@@ -8,8 +8,8 @@
 #include "ui/views/widget/widget.h"
 
 JavaScriptAppModalDialogViewsX11::JavaScriptAppModalDialogViewsX11(
-    JavaScriptAppModalDialog* parent)
-    : JavaScriptAppModalDialogViews(parent) {}
+    app_modal::JavaScriptAppModalDialog* parent)
+    : app_modal::JavaScriptAppModalDialogViews(parent) {}
 
 JavaScriptAppModalDialogViewsX11::~JavaScriptAppModalDialogViewsX11() {
 }

@@ -15,6 +15,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
+namespace app_modal {
+
 ////////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogViews, public:
 
@@ -151,3 +153,5 @@ views::View* JavaScriptAppModalDialogViews::GetInitiallyFocusedView() {
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
 }
+
+}  // namespace app_modal

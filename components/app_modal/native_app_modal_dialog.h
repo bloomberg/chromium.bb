@@ -7,6 +7,8 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace app_modal {
+
 class JavaScriptAppModalDialog;
 
 class NativeAppModalDialog {
@@ -28,5 +30,7 @@ class NativeAppModalDialog {
   virtual void AcceptAppModalDialog() = 0;
   virtual void CancelAppModalDialog() = 0;
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_NATIVE_APP_MODAL_DIALOG_H_

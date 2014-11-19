@@ -23,7 +23,7 @@ using base::android::ScopedJavaLocalRef;
 
 JavascriptAppModalDialogAndroid::JavascriptAppModalDialogAndroid(
     JNIEnv* env,
-    JavaScriptAppModalDialog* dialog,
+    app_modal::JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent)
     : dialog_(dialog),
       parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {
@@ -131,7 +131,8 @@ const ScopedJavaGlobalRef<jobject>&
 
 // static
 jobject GetCurrentModalDialog(JNIEnv* env, jclass clazz) {
-  AppModalDialog* dialog = AppModalDialogQueue::GetInstance()->active_dialog();
+  app_modal::AppModalDialog* dialog =
+      app_modal::AppModalDialogQueue::GetInstance()->active_dialog();
   if (!dialog || !dialog->native_dialog())
     return NULL;
 
@@ -159,14 +160,14 @@ JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {
 namespace {
 
 class ChromeJavaScriptNativeDialogAndroidFactory
-    : public JavaScriptNativeDialogFactory {
+    : public app_modal::JavaScriptNativeDialogFactory {
  public:
   ChromeJavaScriptNativeDialogAndroidFactory() {}
   ~ChromeJavaScriptNativeDialogAndroidFactory() override {}
 
  private:
-  NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      JavaScriptAppModalDialog* dialog,
+  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
+      app_modal::JavaScriptAppModalDialog* dialog,
       gfx::NativeWindow parent_window) override {
     return new JavascriptAppModalDialogAndroid(
         base::android::AttachCurrentThread(),
@@ -179,7 +180,8 @@ class ChromeJavaScriptNativeDialogAndroidFactory
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
-  SetJavaScriptNativeDialogFactory(
-      make_scoped_ptr(new ChromeJavaScriptNativeDialogAndroidFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->
+      SetNativeDialogFactory(
+          make_scoped_ptr(new ChromeJavaScriptNativeDialogAndroidFactory));
 }
 

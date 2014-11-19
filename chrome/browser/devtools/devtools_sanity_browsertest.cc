@@ -52,6 +52,9 @@
 #include "net/socket/tcp_listen_socket.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+using app_modal::AppModalDialog;
+using app_modal::JavaScriptAppModalDialog;
+using app_modal::NativeAppModalDialog;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::NavigationController;

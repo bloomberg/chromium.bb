@@ -11,6 +11,7 @@
 #include "extensions/common/extension.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace javascript_dialog_extensions_client {
 namespace {
 
 using extensions::Extension;
@@ -30,7 +31,7 @@ const Extension* GetExtensionForWebContents(
 }
 
 class JavaScriptDialogExtensionsClientImpl
-    : public JavaScriptDialogExtensionsClient {
+    : public app_modal::JavaScriptDialogExtensionsClient {
  public:
   JavaScriptDialogExtensionsClientImpl() {}
   ~JavaScriptDialogExtensionsClientImpl() override {}
@@ -74,7 +75,10 @@ class JavaScriptDialogExtensionsClientImpl
 
 }  // namespace
 
-void InstallJavaScriptDialogExtensionsClient() {
-  SetJavaScriptDialogExtensionsClient(
-      make_scoped_ptr(new JavaScriptDialogExtensionsClientImpl));
+void InstallClient() {
+  app_modal::JavaScriptDialogManager::GetInstance()->
+      SetExtensionsClient(
+          make_scoped_ptr(new JavaScriptDialogExtensionsClientImpl));
 }
+
+}  // namespace javascript_dialog_extensions_client

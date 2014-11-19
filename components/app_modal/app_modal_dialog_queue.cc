@@ -7,6 +7,8 @@
 #include "base/memory/singleton.h"
 #include "components/app_modal/app_modal_dialog.h"
 
+namespace app_modal {
+
 // static
 AppModalDialogQueue* AppModalDialogQueue::GetInstance() {
   return Singleton<AppModalDialogQueue>::get();
@@ -74,3 +76,5 @@ AppModalDialog* AppModalDialogQueue::GetNextDialog() {
   }
   return NULL;
 }
+
+}  // namespace app_modal

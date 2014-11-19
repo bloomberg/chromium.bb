@@ -15,6 +15,8 @@ namespace views {
 class MessageBoxView;
 }
 
+namespace app_modal {
+
 class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
                                       public views::DialogDelegate {
  public:
@@ -55,5 +57,7 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogViews);
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_

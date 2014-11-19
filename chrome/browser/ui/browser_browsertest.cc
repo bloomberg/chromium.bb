@@ -102,6 +102,9 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using app_modal::AppModalDialog;
+using app_modal::AppModalDialogQueue;
+using app_modal::JavaScriptAppModalDialog;
 using base::ASCIIToUTF16;
 using content::InterstitialPage;
 using content::HostZoomMap;

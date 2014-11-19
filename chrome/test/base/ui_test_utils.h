@@ -26,12 +26,15 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
-class AppModalDialog;
 class Browser;
 class LocationBar;
 class Profile;
 class SkBitmap;
 class TemplateURLService;
+
+namespace app_modal {
+class AppModalDialog;
+}
 
 namespace base {
 class FilePath;
@@ -127,7 +130,7 @@ GURL GetTestUrl(const base::FilePath& dir, const base::FilePath& file);
 bool GetRelativeBuildDirectory(base::FilePath* build_dir);
 
 // Blocks until an application modal dialog is showns and returns it.
-AppModalDialog* WaitForAppModalDialog();
+app_modal::AppModalDialog* WaitForAppModalDialog();
 
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index

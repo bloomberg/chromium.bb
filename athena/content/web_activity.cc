@@ -367,7 +367,7 @@ class AthenaWebView : public views::WebView {
 
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* contents) override {
-    return GetJavaScriptDialogManagerInstance();
+    return app_modal::JavaScriptDialogManager::GetInstance();
   }
 
   content::ColorChooser* OpenColorChooser(

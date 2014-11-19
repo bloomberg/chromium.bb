@@ -35,7 +35,7 @@ void ChromeExtensionHostDelegate::OnRenderViewCreatedForBackgroundPage(
 
 content::JavaScriptDialogManager*
 ChromeExtensionHostDelegate::GetJavaScriptDialogManager() {
-  return GetJavaScriptDialogManagerInstance();
+  return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
 void ChromeExtensionHostDelegate::CreateTab(content::WebContents* web_contents,

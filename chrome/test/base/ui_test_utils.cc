@@ -107,7 +107,7 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   return new_browser;
 }
 
-class AppModalDialogWaiter : public AppModalDialogObserver {
+class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
  public:
   AppModalDialogWaiter()
       : dialog_(NULL) {
@@ -115,7 +115,7 @@ class AppModalDialogWaiter : public AppModalDialogObserver {
   ~AppModalDialogWaiter() override {
   }
 
-  AppModalDialog* Wait() {
+  app_modal::AppModalDialog* Wait() {
     if (dialog_)
       return dialog_;
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -125,7 +125,7 @@ class AppModalDialogWaiter : public AppModalDialogObserver {
   }
 
   // AppModalDialogWaiter:
-  void Notify(AppModalDialog* dialog) override {
+  void Notify(app_modal::AppModalDialog* dialog) override {
     DCHECK(!dialog_);
     dialog_ = dialog;
     if (message_loop_runner_.get() && message_loop_runner_->loop_running())
@@ -133,7 +133,7 @@ class AppModalDialogWaiter : public AppModalDialogObserver {
   }
 
  private:
-  AppModalDialog* dialog_;
+  app_modal::AppModalDialog* dialog_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
@@ -324,8 +324,9 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   return true;
 }
 
-AppModalDialog* WaitForAppModalDialog() {
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+app_modal::AppModalDialog* WaitForAppModalDialog() {
+  app_modal::AppModalDialogQueue* dialog_queue =
+      app_modal::AppModalDialogQueue::GetInstance();
   if (dialog_queue->HasActiveDialog())
     return dialog_queue->active_dialog();
   AppModalDialogWaiter waiter;

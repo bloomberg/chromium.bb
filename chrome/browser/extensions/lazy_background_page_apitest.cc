@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   ASSERT_TRUE(extension);
 
   // The test extension opens a dialog on installation.
-  AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
 
   // With the dialog open the background page is still alive.

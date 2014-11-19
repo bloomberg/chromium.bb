@@ -11,11 +11,13 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
-class NativeAppModalDialog;
-
 namespace content {
 class WebContents;
 }
+
+namespace app_modal {
+
+class NativeAppModalDialog;
 
 // A controller+model base class for modal dialogs.
 class AppModalDialog {
@@ -101,5 +103,7 @@ class AppModalDialogObserver {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_H_

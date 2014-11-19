@@ -1070,7 +1070,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
 #endif  // OS_ANDROID
 
 #if defined(ENABLE_EXTENSIONS)
-  InstallJavaScriptDialogExtensionsClient();
+  javascript_dialog_extensions_client::InstallClient();
 #endif
 
 #if !defined(OS_IOS)

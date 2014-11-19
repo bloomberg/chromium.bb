@@ -17,20 +17,20 @@
 namespace {
 
 class ChromeJavaScriptNativeDialogViewsFactory
-    : public JavaScriptNativeDialogFactory {
+    : public app_modal::JavaScriptNativeDialogFactory {
  public:
   ChromeJavaScriptNativeDialogViewsFactory() {}
   ~ChromeJavaScriptNativeDialogViewsFactory() override {}
 
  private:
-  NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      JavaScriptAppModalDialog* dialog,
+  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
+      app_modal::JavaScriptAppModalDialog* dialog,
       gfx::NativeWindow parent_window) override{
-    JavaScriptAppModalDialogViews* d = nullptr;
+    app_modal::JavaScriptAppModalDialogViews* d = nullptr;
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
     d = new JavaScriptAppModalDialogViewsX11(dialog);
 #else
-    d = new JavaScriptAppModalDialogViews(dialog);
+    d = new app_modal::JavaScriptAppModalDialogViews(dialog);
 #endif
     constrained_window::CreateBrowserModalDialogViews(d, parent_window);
     return d;
@@ -42,6 +42,7 @@ class ChromeJavaScriptNativeDialogViewsFactory
 }  // namespace
 
 void InstallChromeJavaScriptNativeDialogFactory() {
-  SetJavaScriptNativeDialogFactory(
-      make_scoped_ptr(new ChromeJavaScriptNativeDialogViewsFactory));
+  app_modal::JavaScriptDialogManager::GetInstance()->
+      SetNativeDialogFactory(
+          make_scoped_ptr(new ChromeJavaScriptNativeDialogViewsFactory));
 }

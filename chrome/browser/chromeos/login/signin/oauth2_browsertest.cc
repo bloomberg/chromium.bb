@@ -46,6 +46,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using app_modal::AppModalDialog;
+using app_modal::JavaScriptAppModalDialog;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;

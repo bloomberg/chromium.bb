@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   host->host_contents()->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("alert('This should not crash.');"));
 
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  app_modal::AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert);
   alert->CloseModalDialog();
 }

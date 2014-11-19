@@ -216,7 +216,7 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 ChromeWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  return GetJavaScriptDialogManagerInstance();
+  return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
 void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(

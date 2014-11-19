@@ -7,6 +7,8 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace app_modal {
+
 class JavaScriptAppModalDialog;
 class NativeAppModalDialog;
 
@@ -19,5 +21,7 @@ class JavaScriptNativeDialogFactory {
       JavaScriptAppModalDialog* dialog,
       gfx::NativeWindow parent_window) = 0;
 };
+
+}  // namespace app_modal
 
 #endif  // COMPONENTS_APP_MODAL_JAVASCRIPT_NATIVE_DIALOG_FACTORY_H_

@@ -18,9 +18,11 @@ class NSAlert;
 class JavaScriptAppModalDialogHelper;
 #endif
 
-class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
+class JavaScriptAppModalDialogCocoa
+    : public app_modal::NativeAppModalDialog {
  public:
-  explicit JavaScriptAppModalDialogCocoa(JavaScriptAppModalDialog* dialog);
+  explicit JavaScriptAppModalDialogCocoa(
+      app_modal::JavaScriptAppModalDialog* dialog);
   virtual ~JavaScriptAppModalDialogCocoa();
 
   // Overridden from NativeAppModalDialog:
@@ -31,13 +33,15 @@ class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
   void AcceptAppModalDialog() override;
   void CancelAppModalDialog() override;
 
-  JavaScriptAppModalDialog* dialog() const { return dialog_.get(); }
+  app_modal::JavaScriptAppModalDialog* dialog() const {
+    return dialog_.get();
+  }
 
  private:
   // Returns the NSAlert associated with the modal dialog.
   NSAlert* GetAlert() const;
 
-  scoped_ptr<JavaScriptAppModalDialog> dialog_;
+  scoped_ptr<app_modal::JavaScriptAppModalDialog> dialog_;
 
   // Created in the constructor and destroyed in the destructor.
   base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
