@@ -98,7 +98,7 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' *:*/", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' *:*/path", Manifest::TYPE_EXTENSION));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*:*", Manifest::TYPE_EXTENSION));
@@ -167,8 +167,6 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' https://*.googleapis.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://x.googleapis.com", Manifest::TYPE_EXTENSION));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-     "default-src 'self' chrome-extension://", Manifest::TYPE_EXTENSION));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
