@@ -29,10 +29,10 @@ v8::Handle<v8::Object> DOMArrayBuffer::wrap(v8::Handle<v8::Object> creationConte
     // DOMArrayBufferDeallocationObserver::blinkAllocatedMemory.
     buffer()->setDeallocationObserver(DOMArrayBufferDeallocationObserver::instance());
 
-    return associateWithWrapper(wrapperTypeInfo, wrapper, isolate);
+    return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Handle<v8::Object> DOMArrayBuffer::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> DOMArrayBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
 {
     // This function does not set a deallocation observer to the underlying
     // array buffer.  It's a caller's duty.

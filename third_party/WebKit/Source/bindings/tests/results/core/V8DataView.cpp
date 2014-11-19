@@ -42,7 +42,7 @@ TestDataView* V8DataView::toImpl(v8::Handle<v8::Object> object)
 
     v8::Handle<v8::DataView> v8View = object.As<v8::DataView>();
     RefPtr<TestDataView> typedArray = TestDataView::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->ByteLength());
-    typedArray->associateWithWrapper(typedArray->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
+    typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
 
     return typedArray->toImpl<TestDataView>();
 }

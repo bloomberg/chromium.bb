@@ -54,7 +54,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
     // DOMArrayBufferDeallocationObserver::blinkAllocatedMemory.
     buffer->buffer()->setDeallocationObserverWithoutAllocationNotification(
         DOMArrayBufferDeallocationObserver::instance());
-    buffer->associateWithWrapper(buffer->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
+    buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
 
     return buffer.get();
 }

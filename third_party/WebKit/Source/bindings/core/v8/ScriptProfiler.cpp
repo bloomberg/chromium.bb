@@ -166,7 +166,7 @@ class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolv
 public:
     virtual const char* GetName(v8::Handle<v8::Object> object) override
     {
-        DOMWindow* window = toDOMWindow(object, v8::Isolate::GetCurrent());
+        DOMWindow* window = toDOMWindow(v8::Isolate::GetCurrent(), object);
         if (!window)
             return 0;
         CString url = toLocalDOMWindow(window)->document()->url().string().utf8();

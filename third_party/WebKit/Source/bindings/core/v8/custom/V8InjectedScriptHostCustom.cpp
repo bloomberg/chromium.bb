@@ -290,7 +290,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
 
     // We need to handle a LocalDOMWindow specially, because a LocalDOMWindow wrapper exists on a prototype chain.
     if (!target)
-        target = toDOMWindow(value, info.GetIsolate());
+        target = toDOMWindow(info.GetIsolate(), value);
 
     if (!target || !target->executionContext())
         return;

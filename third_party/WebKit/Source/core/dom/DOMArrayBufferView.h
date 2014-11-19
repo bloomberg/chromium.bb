@@ -50,7 +50,7 @@ public:
         ASSERT_NOT_REACHED();
         return v8::Handle<v8::Object>();
     }
-    virtual v8::Handle<v8::Object> associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*) override
+    virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override
     {
         ASSERT_NOT_REACHED();
         return v8::Handle<v8::Object>();

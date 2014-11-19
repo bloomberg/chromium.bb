@@ -201,9 +201,9 @@ void AudioBuffer::zero()
     }
 }
 
-v8::Handle<v8::Object> AudioBuffer::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> AudioBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
 {
-    ScriptWrappable::associateWithWrapper(wrapperType, wrapper, isolate);
+    ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
     if (!wrapper.IsEmpty()) {
         // We only setDeallocationObservers on array buffers that are held by

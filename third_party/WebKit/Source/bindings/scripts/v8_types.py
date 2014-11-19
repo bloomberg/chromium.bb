@@ -477,7 +477,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, 0, 0, exceptionState, {isolate})',
     'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
-    'Window': 'toDOMWindow({v8_value}, {isolate})',
+    'Window': 'toDOMWindow({isolate}, {v8_value})',
     'XPathNSResolver': 'toXPathNSResolver({isolate}, {v8_value})',
 }
 

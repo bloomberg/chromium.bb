@@ -28,11 +28,11 @@ v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Hand
 
     v8::Handle<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
 
-    return associateWithWrapper(wrapperTypeInfo, wrapper, isolate);
+    return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
 template<typename WTFTypedArray, typename V8TypedArray>
-v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
@@ -42,7 +42,7 @@ v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWith
     INSTANTIATE_DOMTYPEDARRAY_MEMBER_FUNCTIONS_IMPL(WTF::Type##Array, v8::Type##Array)
 #define INSTANTIATE_DOMTYPEDARRAY_MEMBER_FUNCTIONS_IMPL(WTFTypedArray, V8TypedArray) \
 template v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*); \
-template v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*)
+template v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper)
 
 INSTANTIATE_DOMTYPEDARRAY_MEMBER_FUNCTIONS(Int8);
 INSTANTIATE_DOMTYPEDARRAY_MEMBER_FUNCTIONS(Int16);

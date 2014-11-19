@@ -260,7 +260,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
 
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper
     // exists on a prototype chain of v8Value.
-    value = toDOMWindow(v8Value, dictionary.isolate());
+    value = toDOMWindow(dictionary.isolate(), v8Value);
     return true;
 }
 

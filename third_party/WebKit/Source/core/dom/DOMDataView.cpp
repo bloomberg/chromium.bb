@@ -37,10 +37,10 @@ v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext,
 
     v8::Handle<v8::Object> wrapper = v8::DataView::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
 
-    return associateWithWrapper(wrapperTypeInfo, wrapper, isolate);
+    return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Handle<v8::Object> DOMDataView::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> DOMDataView::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }

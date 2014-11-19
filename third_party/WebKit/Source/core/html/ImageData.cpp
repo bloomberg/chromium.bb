@@ -125,9 +125,9 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(DOMUint8ClampedArray* data, 
     return adoptRefWillBeNoop(new ImageData(IntSize(width, height), data));
 }
 
-v8::Handle<v8::Object> ImageData::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
 {
-    ScriptWrappable::associateWithWrapper(wrapperType, wrapper, isolate);
+    ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
     if (!wrapper.IsEmpty()) {
         // Create a V8 Uint8ClampedArray object.

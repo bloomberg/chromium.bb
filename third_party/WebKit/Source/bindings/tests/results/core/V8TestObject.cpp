@@ -1081,7 +1081,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    DOMWindow* cppValue = toDOMWindow(v8Value, info.GetIsolate());
+    DOMWindow* cppValue = toDOMWindow(info.GetIsolate(), v8Value);
     impl->setWindowAttribute(WTF::getPtr(cppValue));
 }
 
@@ -8410,7 +8410,7 @@ static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Valu
     DOMWindow* arg1;
     double arg2;
     {
-        arg1 = toDOMWindow(info[0], info.GetIsolate());
+        arg1 = toDOMWindow(info.GetIsolate(), info[0]);
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg2, toDouble(info[1], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());

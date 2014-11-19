@@ -91,7 +91,7 @@ private:
         }
         if (value->IsArray())
             return append(v8::Handle<v8::Array>::Cast(value));
-        if (toDOMWindow(value, m_isolate)) {
+        if (toDOMWindow(m_isolate, value)) {
             m_builder.append("[object Window]");
             return true;
         }

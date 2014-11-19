@@ -235,7 +235,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtr<TestInterface2> impl = TestInterface2::create();
     v8::Handle<v8::Object> wrapper = info.Holder();
-    impl->associateWithWrapper(&V8TestInterface2::wrapperTypeInfo, wrapper, info.GetIsolate());
+    impl->associateWithWrapper(info.GetIsolate(), &V8TestInterface2::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
 

@@ -187,9 +187,9 @@ void MessageEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-v8::Handle<v8::Object> MessageEvent::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+v8::Handle<v8::Object> MessageEvent::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
 {
-    Event::associateWithWrapper(wrapperType, wrapper, isolate);
+    Event::associateWithWrapper(isolate, wrapperType, wrapper);
 
     // Ensures a wrapper is created for the data to return now so that V8 knows how
     // much memory is used via the wrapper. To keep the wrapper alive, it's set to

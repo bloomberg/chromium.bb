@@ -705,7 +705,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, 
     return resolver;
 }
 
-DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+DOMWindow* toDOMWindow(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsObject())
         return 0;
@@ -720,7 +720,7 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
     if (context.IsEmpty())
         return 0;
-    return toDOMWindow(context->Global(), context->GetIsolate());
+    return toDOMWindow(context->GetIsolate(), context->Global());
 }
 
 LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate)
