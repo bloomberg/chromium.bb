@@ -33,7 +33,7 @@ class FastUnloadController::DetachedWebContentsDelegate
 
  private:
   // WebContentsDelegate implementation.
-  bool ShouldSuppressDialogs() override {
+  bool ShouldSuppressDialogs(content::WebContents* source) override {
     return true;  // Return true so dialogs are suppressed.
   }
 

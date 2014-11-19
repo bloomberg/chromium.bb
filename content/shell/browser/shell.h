@@ -137,7 +137,8 @@ class Shell : public WebContentsDelegate,
   void CloseContents(WebContents* source) override;
   bool CanOverscrollContent() const override;
   void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
-  JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override;
 #if defined(OS_MACOSX)
   void HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;

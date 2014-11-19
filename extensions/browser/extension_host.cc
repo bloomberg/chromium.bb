@@ -372,7 +372,8 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
     render_view_host_ = host_contents_->GetRenderViewHost();
 }
 
-content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager() {
+content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager(
+    WebContents* source) {
   return delegate_->GetJavaScriptDialogManager();
 }
 

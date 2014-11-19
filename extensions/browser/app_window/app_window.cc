@@ -887,7 +887,9 @@ void AppWindow::CloseContents(WebContents* contents) {
   native_app_window_->Close();
 }
 
-bool AppWindow::ShouldSuppressDialogs() { return true; }
+bool AppWindow::ShouldSuppressDialogs(WebContents* source) {
+  return true;
+}
 
 content::ColorChooser* AppWindow::OpenColorChooser(
     WebContents* web_contents,

@@ -19,8 +19,8 @@ class AwWebContentsDelegate
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
   virtual ~AwWebContentsDelegate();
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
-      override;
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* source) override;
   virtual void FindReply(content::WebContents* web_contents,
                          int request_id,
                          int number_of_matches,

@@ -597,7 +597,8 @@ class Browser : public TabStripModelObserver,
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   void DidNavigateToPendingEntry(content::WebContents* web_contents) override;
-  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* source) override;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

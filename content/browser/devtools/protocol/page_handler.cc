@@ -373,7 +373,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
     return Response::InternalError("No JavaScript dialog to handle");
 
   JavaScriptDialogManager* manager =
-      web_contents->GetDelegate()->GetJavaScriptDialogManager();
+      web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
   if (manager && manager->HandleJavaScriptDialog(
           web_contents, accept, prompt_text ? &prompt_override : nullptr)) {
     return Response::OK();

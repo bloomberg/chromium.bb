@@ -360,7 +360,7 @@ class AppWindow : public content::NotificationObserver,
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* contents) override;
-  bool ShouldSuppressDialogs() override;
+  bool ShouldSuppressDialogs(content::WebContents* source) override;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

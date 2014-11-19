@@ -176,7 +176,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Returns true if javascript dialogs and unload alerts are suppressed.
   // Default is false.
-  virtual bool ShouldSuppressDialogs();
+  virtual bool ShouldSuppressDialogs(WebContents* source);
 
   // Returns whether pending NavigationEntries for aborted browser-initiated
   // navigations should be preserved (and thus returned from GetVisibleURL).
@@ -342,7 +342,8 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Returns a pointer to a service to manage JavaScript dialogs. May return
   // NULL in which case dialogs aren't shown.
-  virtual JavaScriptDialogManager* GetJavaScriptDialogManager();
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source);
 
   // Called when color chooser should open. Returns the opened color chooser.
   // Returns NULL if we failed to open the color chooser (e.g. when there is a

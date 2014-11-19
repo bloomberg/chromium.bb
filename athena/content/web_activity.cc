@@ -365,7 +365,8 @@ class AthenaWebView : public views::WebView {
     layer->SetOpacity(0.f);
   }
 
-  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override {
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* contents) override {
     return GetJavaScriptDialogManagerInstance();
   }
 

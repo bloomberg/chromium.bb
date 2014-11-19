@@ -54,7 +54,7 @@ class ChromeWebContentsDelegateAndroid
                                    const std::vector<gfx::RectF>& rects,
                                    const gfx::RectF& active_rect) override;
   virtual content::JavaScriptDialogManager*
-  GetJavaScriptDialogManager() override;
+  GetJavaScriptDialogManager(content::WebContents* source) override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,

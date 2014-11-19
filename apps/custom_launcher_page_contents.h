@@ -52,7 +52,7 @@ class CustomLauncherPageContents
                       bool user_gesture,
                       bool* was_blocked) override;
   bool IsPopupOrPanel(const content::WebContents* source) const override;
-  bool ShouldSuppressDialogs() override;
+  bool ShouldSuppressDialogs(content::WebContents* source) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
   content::ColorChooser* OpenColorChooser(

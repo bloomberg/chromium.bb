@@ -33,7 +33,7 @@ gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-bool WebContentsDelegate::ShouldSuppressDialogs() {
+bool WebContentsDelegate::ShouldSuppressDialogs(WebContents* source) {
   return false;
 }
 
@@ -140,7 +140,8 @@ bool WebContentsDelegate::ShouldCreateWebContents(
   return true;
 }
 
-JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager() {
+JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
+    WebContents* source) {
   return NULL;
 }
 

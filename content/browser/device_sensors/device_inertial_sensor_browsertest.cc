@@ -202,9 +202,9 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
   }
 
   void WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta delay) {
-    ShellJavaScriptDialogManager* dialog_manager=
+    ShellJavaScriptDialogManager* dialog_manager =
         static_cast<ShellJavaScriptDialogManager*>(
-            shell()->GetJavaScriptDialogManager());
+            shell()->GetJavaScriptDialogManager(shell()->web_contents()));
 
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
     dialog_manager->set_dialog_request_callback(

@@ -3396,15 +3396,14 @@ void WebContentsImpl::RunJavaScriptMessage(
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
       static_cast<RenderFrameHostImpl*>(render_frame_host)->is_swapped_out() ||
-      ShowingInterstitialPage() ||
-      !delegate_ ||
-      delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogManager();
+      ShowingInterstitialPage() || !delegate_ ||
+      delegate_->ShouldSuppressDialogs(this) ||
+      !delegate_->GetJavaScriptDialogManager(this);
 
   if (!suppress_this_message) {
     std::string accept_lang = GetContentClient()->browser()->
       GetAcceptLangs(GetBrowserContext());
-    dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+    dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
     dialog_manager_->RunJavaScriptDialog(
         this,
         frame_url.GetOrigin(),
@@ -3444,17 +3443,16 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
     delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
-      rfhi->rfh_state() != RenderFrameHostImpl::STATE_DEFAULT ||
-      !delegate_ ||
-      delegate_->ShouldSuppressDialogs() ||
-      !delegate_->GetJavaScriptDialogManager();
+      rfhi->rfh_state() != RenderFrameHostImpl::STATE_DEFAULT || !delegate_ ||
+      delegate_->ShouldSuppressDialogs(this) ||
+      !delegate_->GetJavaScriptDialogManager(this);
   if (suppress_this_message) {
     rfhi->JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
     return;
   }
 
   is_showing_before_unload_dialog_ = true;
-  dialog_manager_ = delegate_->GetJavaScriptDialogManager();
+  dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
   dialog_manager_->RunBeforeUnloadDialog(
       this, message, is_reload,
       base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),

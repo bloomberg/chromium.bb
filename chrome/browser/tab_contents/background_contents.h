@@ -56,7 +56,7 @@ class BackgroundContents : public content::WebContentsDelegate,
 
   // content::WebContentsDelegate implementation:
   void CloseContents(content::WebContents* source) override;
-  bool ShouldSuppressDialogs() override;
+  bool ShouldSuppressDialogs(content::WebContents* source) override;
   void DidNavigateMainFramePostCommit(content::WebContents* tab) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,

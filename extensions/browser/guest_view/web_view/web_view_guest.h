@@ -136,7 +136,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                    const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override;
-  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* source) override;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

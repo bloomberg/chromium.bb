@@ -1622,7 +1622,8 @@ void Browser::DidNavigateToPendingEntry(WebContents* web_contents) {
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
-content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager() {
+content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
+    WebContents* source) {
   return GetJavaScriptDialogManagerInstance();
 }
 

@@ -87,7 +87,8 @@ bool CustomLauncherPageContents::IsPopupOrPanel(
   return true;
 }
 
-bool CustomLauncherPageContents::ShouldSuppressDialogs() {
+bool CustomLauncherPageContents::ShouldSuppressDialogs(
+    content::WebContents* source) {
   return true;
 }
 

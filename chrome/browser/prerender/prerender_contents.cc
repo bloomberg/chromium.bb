@@ -171,7 +171,7 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  bool ShouldSuppressDialogs() override {
+  bool ShouldSuppressDialogs(WebContents* source) override {
     // We still want to show the user the message when they navigate to this
     // page, so cancel this prerender.
     prerender_contents_->Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);

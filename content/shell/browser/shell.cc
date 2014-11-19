@@ -329,7 +329,8 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
   PlatformSetAddressBarURL(web_contents->GetLastCommittedURL());
 }
 
-JavaScriptDialogManager* Shell::GetJavaScriptDialogManager() {
+JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
+    WebContents* source) {
   if (!dialog_manager_) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     dialog_manager_.reset(command_line.HasSwitch(switches::kDumpRenderTree)

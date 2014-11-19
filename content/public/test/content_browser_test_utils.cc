@@ -81,9 +81,9 @@ bool NavigateToURLAndExpectNoCommit(Shell* window, const GURL& url) {
 }
 
 void WaitForAppModalDialog(Shell* window) {
-  ShellJavaScriptDialogManager* dialog_manager=
+  ShellJavaScriptDialogManager* dialog_manager =
       static_cast<ShellJavaScriptDialogManager*>(
-          window->GetJavaScriptDialogManager());
+          window->GetJavaScriptDialogManager(window->web_contents()));
 
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
   dialog_manager->set_dialog_request_callback(runner->QuitClosure());

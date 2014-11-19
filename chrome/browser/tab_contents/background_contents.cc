@@ -94,7 +94,7 @@ void BackgroundContents::CloseContents(WebContents* source) {
   delete this;
 }
 
-bool BackgroundContents::ShouldSuppressDialogs() {
+bool BackgroundContents::ShouldSuppressDialogs(WebContents* source) {
   return true;
 }
 

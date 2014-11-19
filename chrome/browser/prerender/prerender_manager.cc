@@ -191,9 +191,10 @@ class PrerenderManager::OnCloseWebContentsDeleter
     ScheduleWebContentsForDeletion(false);
   }
 
-  bool ShouldSuppressDialogs() override {
+  bool ShouldSuppressDialogs(WebContents* source) override {
     // Use this as a proxy for getting statistics on how often we fail to honor
     // the beforeunload event.
+    DCHECK_EQ(tab_, source);
     suppressed_dialog_ = true;
     return true;
   }

@@ -902,8 +902,8 @@ void WebViewGuest::WillAttachToEmbedder() {
   PushWebViewStateToIOThread();
 }
 
-content::JavaScriptDialogManager*
-    WebViewGuest::GetJavaScriptDialogManager() {
+content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(
+    WebContents* source) {
   return &javascript_dialog_helper_;
 }
 

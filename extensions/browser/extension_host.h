@@ -85,7 +85,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   // content::WebContentsDelegate
-  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* source) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,

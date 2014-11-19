@@ -55,7 +55,7 @@ AwWebContentsDelegate::~AwWebContentsDelegate() {
 }
 
 content::JavaScriptDialogManager*
-AwWebContentsDelegate::GetJavaScriptDialogManager() {
+AwWebContentsDelegate::GetJavaScriptDialogManager(WebContents* source) {
   return g_javascript_dialog_manager.Pointer();
 }
 

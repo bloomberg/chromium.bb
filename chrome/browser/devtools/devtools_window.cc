@@ -929,11 +929,13 @@ void DevToolsWindow::HandleKeyboardEvent(
     inspected_window->HandleKeyboardEvent(event);
 }
 
-content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager() {
+content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(
+    WebContents* source) {
   WebContents* inspected_web_contents = GetInspectedWebContents();
-  return (inspected_web_contents && inspected_web_contents->GetDelegate()) ?
-      inspected_web_contents->GetDelegate()->GetJavaScriptDialogManager() :
-      content::WebContentsDelegate::GetJavaScriptDialogManager();
+  return (inspected_web_contents && inspected_web_contents->GetDelegate())
+             ? inspected_web_contents->GetDelegate()
+                   ->GetJavaScriptDialogManager(inspected_web_contents)
+             : content::WebContentsDelegate::GetJavaScriptDialogManager(source);
 }
 
 content::ColorChooser* DevToolsWindow::OpenColorChooser(
