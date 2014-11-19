@@ -106,18 +106,45 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, BadNative) {
 
 #if defined(OS_WIN)
 // crbug.com/98721
-#  define MAYBE_Crash DISABLED_Crash
+#  define MAYBE_CrashViaCheckFailure DISABLED_CrashViaCheckFailure
+#  define MAYBE_CrashViaExitCall DISABLED_CrashViaExitCall
+#  define MAYBE_CrashInCallback DISABLED_CrashInCallback
+#  define MAYBE_CrashOffMainThread DISABLED_CrashOffMainThread
+#  define MAYBE_CrashPPAPIOffMainThread DISABLED_CrashPPAPIOffMainThread
 #elif defined(OS_MACOSX)
 // crbug.com/425570
-#  define MAYBE_Crash DISABLED_Crash
-#elif defined(OS_LINUX)
-// crbug.com/428838
-#  define MAYBE_Crash DISABLED_Crash
+#  define MAYBE_CrashViaCheckFailure DISABLED_CrashViaCheckFailure
+#  define MAYBE_CrashViaExitCall DISABLED_CrashViaExitCall
+#  define MAYBE_CrashInCallback DISABLED_CrashInCallback
+#  define MAYBE_CrashOffMainThread DISABLED_CrashOffMainThread
+#  define MAYBE_CrashPPAPIOffMainThread DISABLED_CrashPPAPIOffMainThread
 #else
-#  define MAYBE_Crash Crash
+#  define MAYBE_CrashViaCheckFailure CrashViaCheckFailure
+#  define MAYBE_CrashViaExitCall CrashViaExitCall
+#  define MAYBE_CrashInCallback CrashInCallback
+#  define MAYBE_CrashOffMainThread CrashOffMainThread
+#  define MAYBE_CrashPPAPIOffMainThread CrashPPAPIOffMainThread
 #endif
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_Crash, {
-  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash.html"));
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashViaCheckFailure, {
+  RunNaClIntegrationTest(
+      FILE_PATH_LITERAL("ppapi_crash_via_check_failure.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashViaExitCall, {
+  RunNaClIntegrationTest( FILE_PATH_LITERAL("ppapi_crash_via_exit_call.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashInCallback, {
+  RunNaClIntegrationTest( FILE_PATH_LITERAL("ppapi_crash_in_callback.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashOffMainThread, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash_off_main_thread.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashPPAPIOffMainThread, {
+  RunNaClIntegrationTest(
+      FILE_PATH_LITERAL("ppapi_crash_ppapi_off_main_thread.html"));
 })
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtManifestFile) {
