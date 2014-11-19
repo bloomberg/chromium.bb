@@ -3073,9 +3073,7 @@
             '<(DEPTH)/extensions/components/extensions_components.gyp:javascript_dialog_extensions_client',
           ],
         }],
-        # Temporary fix to break the browser_ui target into smaller chunks so it
-        # will link with SyzyASan builds.
-        ['OS=="win" and syzyasan==1', {
+        ['OS=="win" and (chromium_win_pch==0 or syzyasan==1)', {
           'msvs_shard': 4,
         }],
         ['OS!="android" and OS!="ios"', {
