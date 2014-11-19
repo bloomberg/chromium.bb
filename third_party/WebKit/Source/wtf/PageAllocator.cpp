@@ -69,8 +69,15 @@ static bool shouldUseAddressHint()
     // is running under WOW64, then it has at least 3 GB available (and likely
     // 4 GB depending upon the OS version), and we want use the additional
     // randomness.
-    // TODO(tsepez): presently disabled due to IsWow64Process() compatibility.
-    return true;
+    static BOOL bIsWow64 = -1;
+    if (bIsWow64 == -1) {
+        BOOL result = IsWow64Process(GetCurrentProcess(), &bIsWow64);
+        if (!result) {
+            ASSERT_NOT_REACHED();
+            bIsWow64 = 0;
+        }
+    }
+    return !!bIsWow64;
 #else // CPU(32BIT)
     return true;
 #endif // CPU(32BIT)
