@@ -129,8 +129,8 @@ test_set_timeout(unsigned int to)
 	fprintf(stderr, "Timeout was %sset", re ? "re-" : "");
 
 	if (to != 0)
-		fprintf(stderr, " to %d second%c from now.\n",
-			to, to > 1 ? 's' : 0);
+		fprintf(stderr, " to %d second%s from now.\n",
+			to, to > 1 ? "s" : "");
 	else
 		fprintf(stderr, " off.\n");
 }
