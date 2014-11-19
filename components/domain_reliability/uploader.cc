@@ -107,7 +107,8 @@ class DomainReliabilityUploaderImpl
     base::TimeDelta retry_after;
     {
       std::string retry_after_string;
-      if (fetcher->GetResponseHeaders()->EnumerateHeader(NULL,
+      if (fetcher->GetResponseHeaders() &&
+          fetcher->GetResponseHeaders()->EnumerateHeader(NULL,
                                                          "Retry-After",
                                                          &retry_after_string)) {
         net::HttpUtil::ParseRetryAfterHeader(retry_after_string,

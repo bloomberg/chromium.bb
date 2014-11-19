@@ -14,6 +14,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/test_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -86,6 +87,18 @@ class DomainReliabilityUploaderTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
+  void SimulateUploadError(int error) {
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+
+    net::URLRequestStatus status;
+    status.set_status(net::URLRequestStatus::FAILED);
+    status.set_error(error);
+    fetcher->set_status(status);
+    fetcher->set_response_code(-1);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+  }
+
   scoped_refptr<base::TestSimpleTaskRunner> network_task_runner_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
@@ -111,7 +124,16 @@ TEST_F(DomainReliabilityUploaderTest, SuccessfulUpload) {
   EXPECT_TRUE(upload_result_[0].is_success());
 }
 
-TEST_F(DomainReliabilityUploaderTest, FailedUpload) {
+TEST_F(DomainReliabilityUploaderTest, NetworkFailedUpload) {
+  SimulateUpload();
+  SimulateUploadRequest();
+  EXPECT_FALSE(upload_complete_[0]);
+  SimulateUploadError(net::ERR_CONNECTION_REFUSED);
+  EXPECT_TRUE(upload_complete_[0]);
+  EXPECT_TRUE(upload_result_[0].is_failure());
+}
+
+TEST_F(DomainReliabilityUploaderTest, ServerFailedUpload) {
   SimulateUpload();
   SimulateUploadRequest();
   EXPECT_FALSE(upload_complete_[0]);
