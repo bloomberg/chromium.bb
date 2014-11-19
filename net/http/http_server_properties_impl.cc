@@ -301,8 +301,14 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     const HostPortPair& server) {
   AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
   if (it == alternate_protocol_map_.end()) {
-    LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
-    return;
+    if (!HasAlternateProtocol(server)) {
+      LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
+      return;
+    }
+    // This server's alternate protocol information is coming from a canonical
+    // server. Add an entry in the map for this server explicitly so that
+    // it can be marked as broken.
+    it = alternate_protocol_map_.Put(server, GetAlternateProtocol(server));
   }
   it->second.is_broken = true;
   int count = ++broken_alternate_protocol_map_[server];

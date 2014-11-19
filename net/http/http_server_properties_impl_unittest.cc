@@ -475,6 +475,23 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken2) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+
+  AlternateProtocolInfo canonical_protocol(1234, QUIC, 1);
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol,
+                             canonical_protocol.probability);
+
+  impl_.SetBrokenAlternateProtocol(test_host_port_pair);
+  AlternateProtocolInfo alternate =
+      impl_.GetAlternateProtocol(test_host_port_pair);
+  EXPECT_TRUE(alternate.is_broken);
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
