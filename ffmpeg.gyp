@@ -217,6 +217,8 @@
               # matroskadec.c has a "failed:" label that's only used if some
               # CONFIG_ flags we don't set are set.
               '-Wno-unused-label',
+              # This fires on `av_assert0(!"valid element size")` in utils.c
+              '-Wno-string-conversion',
             ],
           },
           'cflags': [

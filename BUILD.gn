@@ -179,11 +179,23 @@ if (build_ffmpegsumo) {
       if (is_clang) {
         cflags += [
           "-Wno-absolute-value",
+          # ffmpeg uses its own deprecated functions.
+          "-Wno-deprecated-declarations",
+          # ffmpeg doesn't care about pointer constness.
           "-Wno-incompatible-pointer-types",
+          # ffmpeg doesn't follow usual parentheses conventions.
           "-Wno-logical-op-parentheses",
+          # ffmpeg doesn't care about pointer signedness.
           "-Wno-parentheses",
+          # ffmpeg doesn't care about pointer signedness.
           "-Wno-pointer-sign",
+          # ffmpeg doesn't believe in exhaustive switch statements.
           "-Wno-switch",
+          # matroskadec.c has a "failed:" label that's only used if some
+          # CONFIG_ flags we don't set are set.
+          "-Wno-unused-label",
+          # This fires on `av_assert0(!"valid element size")` in utils.c
+          "-Wno-string-conversion",
         ]
       } else {
         # gcc doesn't have flags for specific warnings, so disable them
