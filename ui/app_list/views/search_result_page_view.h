@@ -29,6 +29,9 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
+  void SetSelectedIndex(int index);
+  bool IsValidSelectionIndex(int index);
+
   void AddSearchResultContainerView(
       AppListModel::SearchResults* result_model,
       SearchResultContainerView* result_container);
@@ -36,6 +39,8 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.
   std::vector<SearchResultContainerView*> result_container_views_;
+
+  int selected_index_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };

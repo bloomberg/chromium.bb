@@ -144,8 +144,7 @@ void SearchResultListView::OnContainerSelected(bool from_bottom) {
   if (num_results() == 0)
     return;
 
-  // TODO(calamity): select result based on |from_bottom|.
-  SetSelectedIndex(0);
+  SetSelectedIndex(from_bottom ? num_results() - 1 : 0);
 }
 
 int SearchResultListView::Update() {

@@ -45,7 +45,8 @@ class SearchCardView : public views::View {
 }  // namespace
 
 SearchResultPageView::SearchResultPageView(AppListMainView* app_list_main_view,
-                                           AppListViewDelegate* view_delegate) {
+                                           AppListViewDelegate* view_delegate)
+    : selected_index_(0) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kExperimentalWindowPadding, kTopPadding,
                                         kGroupSpacing));
@@ -60,16 +61,58 @@ SearchResultPageView::~SearchResultPageView() {
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  DCHECK(!result_container_views_.empty());
+  if (result_container_views_.at(selected_index_)->OnKeyPressed(event))
+    return true;
+
+  int dir = 0;
+  switch (event.key_code()) {
+    case ui::VKEY_TAB:
+      dir = event.IsShiftDown() ? -1 : 1;
+      break;
+    case ui::VKEY_UP:
+      dir = -1;
+      break;
+    case ui::VKEY_DOWN:
+      dir = 1;
+      break;
+    default:
+      return false;
+  }
+
+  // Find the next result container with results.
+  int new_selected = selected_index_;
+  do {
+    new_selected += dir;
+  } while (IsValidSelectionIndex(new_selected) &&
+           result_container_views_[new_selected]->num_results() == 0);
+
+  if (IsValidSelectionIndex(new_selected)) {
+    SetSelectedIndex(new_selected);
+    return true;
+  }
+
   // Capture the Tab key to prevent defocusing of the search box.
-  return result_container_views_[0]->OnKeyPressed(event) ||
-         event.key_code() == ui::VKEY_TAB;
+  return event.key_code() == ui::VKEY_TAB;
+}
+
+void SearchResultPageView::SetSelectedIndex(int index) {
+  bool from_bottom = index < selected_index_;
+
+  // Reset the old selected view's selection.
+  result_container_views_[selected_index_]->ClearSelectedIndex();
+  selected_index_ = index;
+  // Set the new selected view's selection to its first result.
+  result_container_views_[selected_index_]->OnContainerSelected(from_bottom);
+}
+
+bool SearchResultPageView::IsValidSelectionIndex(int index) {
+  return index >= 0 && index < static_cast<int>(result_container_views_.size());
 }
 
 void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   DCHECK(!result_container_views_.empty());
   Layout();
-  result_container_views_[0]->OnContainerSelected(false);
+  SetSelectedIndex(0);
 }
 
 void SearchResultPageView::AddSearchResultContainerView(

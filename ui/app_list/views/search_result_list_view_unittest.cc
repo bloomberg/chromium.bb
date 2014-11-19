@@ -53,8 +53,11 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
   void SetUpSearchResults() {
     AppListModel::SearchResults* results = GetResults();
-    for (int i = 0; i < kDefaultSearchItems; ++i)
-      results->Add(new TestSearchResult());
+    for (int i = 0; i < kDefaultSearchItems; ++i) {
+      TestSearchResult* result = new TestSearchResult();
+      result->SetDisplayType(SearchResult::DISPLAY_LIST);
+      results->Add(result);
+    }
 
     // Adding results will schedule Update().
     RunPendingMessages();
