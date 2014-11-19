@@ -11,6 +11,7 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
+class LayoutRect;
 class RenderObject;
 class RenderStyle;
 class RenderTableCell;
@@ -25,6 +26,11 @@ public:
     void paintBackgroundsBehindCell(PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
     void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint& paintOffset);
     void paintMask(PaintInfo&, const LayoutPoint& paintOffset);
+
+    enum PaintBoundOffsetBehavior { AddOffsetFromParent, DoNotAddOffsetFromParent };
+    // Returns the bonds of the table cell for painting, offset by paintOffset, and if desired, the offset from the cell
+    // to its parent.
+    LayoutRect paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior);
 
 private:
     CollapsedBorderValue cachedCollapsedLeftBorder(const RenderStyle*) const;

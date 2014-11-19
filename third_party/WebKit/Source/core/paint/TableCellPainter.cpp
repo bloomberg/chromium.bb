@@ -121,7 +121,7 @@ void TableCellPainter::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutP
     if (!paintInfo.shouldPaintWithinRoot(&m_renderTableCell) || m_renderTableCell.style()->visibility() != VISIBLE)
         return;
 
-    LayoutRect paintRect = LayoutRect(paintOffset + m_renderTableCell.location(), m_renderTableCell.pixelSnappedSize());
+    LayoutRect paintRect = paintBounds(paintOffset, AddOffsetFromParent);
     if (paintRect.y() - m_renderTableCell.table()->outerBorderTop() >= paintInfo.rect.maxY())
         return;
 
@@ -130,6 +130,8 @@ void TableCellPainter::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutP
 
     if (!m_renderTableCell.table()->currentBorderValue())
         return;
+
+    DrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, paintRect);
 
     const RenderStyle* styleForCellFlow = m_renderTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
@@ -192,12 +194,10 @@ void TableCellPainter::paintBackgroundsBehindCell(PaintInfo& paintInfo, const La
     if (!tableElt->collapseBorders() && m_renderTableCell.style()->emptyCells() == HIDE && !m_renderTableCell.firstChild())
         return;
 
-    LayoutPoint adjustedPaintOffset = paintOffset;
-    if (backgroundObject != &m_renderTableCell)
-        adjustedPaintOffset.moveBy(m_renderTableCell.location());
-
     Color c = backgroundObject->resolveColor(CSSPropertyBackgroundColor);
     const FillLayer& bgLayer = backgroundObject->style()->backgroundLayers();
+
+    LayoutRect paintRect = paintBounds(paintOffset, backgroundObject != &m_renderTableCell ? AddOffsetFromParent : DoNotAddOffsetFromParent);
 
     if (bgLayer.hasImage() || c.alpha()) {
         // We have to clip here because the background would paint
@@ -205,12 +205,12 @@ void TableCellPainter::paintBackgroundsBehindCell(PaintInfo& paintInfo, const La
         bool shouldClip = backgroundObject->hasLayer() && (backgroundObject == &m_renderTableCell || backgroundObject == m_renderTableCell.parent()) && tableElt->collapseBorders();
         GraphicsContextStateSaver stateSaver(*paintInfo.context, shouldClip);
         if (shouldClip) {
-            LayoutRect clipRect(adjustedPaintOffset.x() + m_renderTableCell.borderLeft(), adjustedPaintOffset.y() + m_renderTableCell.borderTop(),
+            LayoutRect clipRect(paintRect.location().x() + m_renderTableCell.borderLeft(), paintRect.location().y() + m_renderTableCell.borderTop(),
                 m_renderTableCell.width() - m_renderTableCell.borderLeft() - m_renderTableCell.borderRight(),
                 m_renderTableCell.height() - m_renderTableCell.borderTop() - m_renderTableCell.borderBottom());
             paintInfo.context->clip(clipRect);
         }
-        BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, LayoutRect(adjustedPaintOffset, m_renderTableCell.pixelSnappedSize()), BackgroundBleedNone, CompositeSourceOver, backgroundObject);
+        BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, CompositeSourceOver, backgroundObject);
     }
 }
 
@@ -223,7 +223,7 @@ void TableCellPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const 
     if (!tableElt->collapseBorders() && m_renderTableCell.style()->emptyCells() == HIDE && !m_renderTableCell.firstChild())
         return;
 
-    LayoutRect paintRect = LayoutRect(paintOffset, m_renderTableCell.pixelSnappedSize());
+    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
     DrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_renderTableCell.style(), Normal);
 
@@ -247,7 +247,15 @@ void TableCellPainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintO
     if (!tableElt->collapseBorders() && m_renderTableCell.style()->emptyCells() == HIDE && !m_renderTableCell.firstChild())
         return;
 
-    BoxPainter(m_renderTableCell).paintMaskImages(paintInfo, LayoutRect(paintOffset, m_renderTableCell.pixelSnappedSize()));
+    BoxPainter(m_renderTableCell).paintMaskImages(paintInfo, paintBounds(paintOffset, DoNotAddOffsetFromParent));
+}
+
+LayoutRect TableCellPainter::paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior paintBoundOffsetBehavior)
+{
+    LayoutPoint adjustedPaintOffset = paintOffset;
+    if (paintBoundOffsetBehavior == AddOffsetFromParent)
+        adjustedPaintOffset.moveBy(m_renderTableCell.location());
+    return LayoutRect(adjustedPaintOffset, m_renderTableCell.pixelSnappedSize());
 }
 
 } // namespace blink
