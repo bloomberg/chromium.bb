@@ -135,7 +135,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
   if (gaia::AreEmailsSame(email_, primary_email) &&
       source == signin::SOURCE_REAUTH &&
-      switches::IsNewProfileManagement()) {
+      switches::IsNewProfileManagement() && !password_.empty()) {
     chrome::SetLocalAuthCredentials(profile_, password_);
   }
 
