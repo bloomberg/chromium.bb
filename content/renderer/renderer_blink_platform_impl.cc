@@ -48,7 +48,7 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
@@ -231,8 +231,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
-      clipboard_client_(new RendererClipboardClient),
-      clipboard_(new WebClipboardImpl(clipboard_client_.get())),
+      clipboard_delegate_(new RendererClipboardDelegate),
+      clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
       mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),

@@ -73,5 +73,6 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//testing/gtest",
+    "//ui/base",
   ]
 }

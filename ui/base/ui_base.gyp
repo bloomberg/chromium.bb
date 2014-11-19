@@ -34,6 +34,7 @@
       ],
       'export_dependent_settings': [
         '../../net/net.gyp:net',
+        '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
       ],
       'sources' : [

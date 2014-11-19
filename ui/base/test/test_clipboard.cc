@@ -17,10 +17,12 @@ TestClipboard::TestClipboard()
 TestClipboard::~TestClipboard() {
 }
 
-void TestClipboard::UseForCurrentThread() {
+Clipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::clipboard_map_lock_.Get());
+  Clipboard* clipboard = new TestClipboard;
   Clipboard::clipboard_map_.Get()[base::PlatformThread::CurrentId()] =
-      new TestClipboard;
+      clipboard;
+  return clipboard;
 }
 
 uint64 TestClipboard::GetSequenceNumber(ClipboardType type) const {

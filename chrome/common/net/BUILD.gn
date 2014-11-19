@@ -26,6 +26,7 @@ static_library("net") {
     "//net",
     "//net:net_resources",
     "//third_party/icu",
+    "//ui/base/",
   ]
 
   if (is_ios) {
