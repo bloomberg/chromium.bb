@@ -30,7 +30,6 @@ body,
   display: -webkit-box;
 }
 
-#contents.loading #signin-frame,
 #contents:not(.loading) #spinner-container {
   display: none;
 }
