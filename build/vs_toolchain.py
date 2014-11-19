@@ -184,11 +184,11 @@ def Update():
 def GetToolchainDir():
   """Gets location information about the current toolchain (must have been
   previously updated by 'update'). This is used for the GN build."""
-  SetEnvironmentAndGetRuntimeDllDirs()
+  runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
 
   # If WINDOWSSDKDIR is not set, search the default SDK path and set it.
   if not 'WINDOWSSDKDIR' in os.environ:
-    default_sdk_path = 'C:\\Program Files (x86)\\Windows Kits\\8.0'
+    default_sdk_path = 'C:\\Program Files (x86)\\Windows Kits\\8.1'
     if os.path.isdir(default_sdk_path):
       os.environ['WINDOWSSDKDIR'] = default_sdk_path
 
@@ -196,11 +196,13 @@ def GetToolchainDir():
 sdk_path = "%s"
 vs_version = "%s"
 wdk_dir = "%s"
+runtime_dirs = "%s"
 ''' % (
       os.environ['GYP_MSVS_OVERRIDE_PATH'],
       os.environ['WINDOWSSDKDIR'],
       os.environ['GYP_MSVS_VERSION'],
-      os.environ.get('WDK_DIR', ''))
+      os.environ.get('WDK_DIR', ''),
+      ';'.join(runtime_dll_dirs))
 
 
 def main():
