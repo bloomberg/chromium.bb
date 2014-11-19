@@ -2,41 +2,41 @@ The test verifies the CSS outline functionality.
 
 {
     atRule : "@import url("some-url-to-load-css.css") print"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 1
 }
 {
     atRule : "@charset "ISO-8859-15""
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 2
 }
 {
     atRule : "@namespace svg url(http://www.w3.org/2000/svg)"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 3
 }
 {
     atRule : "@font-face"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 4
 }
 {
     atRule : "@page"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 9
 }
 {
     atRule : "@page :right"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 12
 }
 {
     atRule : "@page :first"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 15
 }
 {
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 19
     properties : [
         {
@@ -47,7 +47,7 @@ The test verifies the CSS outline functionality.
     selectorText : "div"
 }
 {
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 20
     properties : [
         {
@@ -62,7 +62,7 @@ The test verifies the CSS outline functionality.
     selectorText : "#fluffy"
 }
 {
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 24
     properties : [
         {
@@ -73,7 +73,7 @@ The test verifies the CSS outline functionality.
     selectorText : "input:-moz-placeholder"
 }
 {
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 25
     properties : [
         {
@@ -89,11 +89,11 @@ The test verifies the CSS outline functionality.
 }
 {
     atRule : "@keyframes identifier"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 30
 }
 {
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 37
     properties : [
         {
@@ -105,11 +105,11 @@ The test verifies the CSS outline functionality.
 }
 {
     atRule : "@media (max-width:500px)"
-    columNumber : 0
+    columnNumber : 0
     lineNumber : 41
 }
 {
-    columNumber : 4
+    columnNumber : 4
     lineNumber : 42
     properties : [
         {
