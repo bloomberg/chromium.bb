@@ -102,7 +102,7 @@ class _ContextLostValidator(page_test.PageTest):
         # The try/except is a workaround for crbug.com/368107.
         try:
           gpucrash_tab.Navigate('chrome://gpucrash')
-        except (exceptions.TabCrashException, Exception):
+        except Exception:
           print 'Tab crashed while navigating to chrome://gpucrash'
         # Activate the original tab and wait for completion.
         tab.Activate()
@@ -149,7 +149,7 @@ class _ContextLostValidator(page_test.PageTest):
         # The try/except is a workaround for crbug.com/368107.
         try:
           gpucrash_tab.Close()
-        except (exceptions.TabCrashException, Exception):
+        except Exception:
           print 'Tab crashed while closing chrome://gpucrash'
         if not completed:
           raise page_test.Failure(
