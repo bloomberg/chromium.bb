@@ -25,7 +25,6 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
 
  private:
   // Overridden from keyboard::KeyboardControllerProxy:
-  content::BrowserContext* GetBrowserContext() override;
   ui::InputMethod* GetInputMethod() override;
   void RequestAudioInput(
       content::WebContents* web_contents,

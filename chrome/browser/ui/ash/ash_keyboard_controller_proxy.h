@@ -12,6 +12,7 @@
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 namespace extensions {
@@ -32,14 +33,13 @@ class AshKeyboardControllerProxy
       public content::WebContentsObserver,
       public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
-  AshKeyboardControllerProxy();
+  explicit AshKeyboardControllerProxy(content::BrowserContext* context);
   ~AshKeyboardControllerProxy() override;
 
  private:
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // keyboard::KeyboardControllerProxy overrides
-  content::BrowserContext* GetBrowserContext() override;
   ui::InputMethod* GetInputMethod() override;
   void RequestAudioInput(
       content::WebContents* web_contents,

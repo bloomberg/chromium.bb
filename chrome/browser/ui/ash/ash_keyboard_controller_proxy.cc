@@ -8,8 +8,6 @@
 #include "ash/shell.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
@@ -69,7 +67,10 @@ Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
 
 }  // namespace
 
-AshKeyboardControllerProxy::AshKeyboardControllerProxy() {}
+AshKeyboardControllerProxy::AshKeyboardControllerProxy(
+    content::BrowserContext* context)
+    : keyboard::KeyboardControllerProxy(context) {
+}
 
 AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {}
 
@@ -77,10 +78,6 @@ void AshKeyboardControllerProxy::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_->Dispatch(
       params, web_contents()->GetRenderViewHost());
-}
-
-content::BrowserContext* AshKeyboardControllerProxy::GetBrowserContext() {
-  return ProfileManager::GetActiveUserProfile();
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
@@ -97,7 +94,7 @@ void AshKeyboardControllerProxy::RequestAudioInput(
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(GetBrowserContext());
+        extensions::ExtensionRegistry::Get(browser_context());
     extension = registry->enabled_extensions().GetByID(origin.host());
     DCHECK(extension);
   }
@@ -109,7 +106,7 @@ void AshKeyboardControllerProxy::RequestAudioInput(
 void AshKeyboardControllerProxy::SetupWebContents(
     content::WebContents* contents) {
   extension_function_dispatcher_.reset(
-      new extensions::ExtensionFunctionDispatcher(GetBrowserContext(), this));
+      new extensions::ExtensionFunctionDispatcher(browser_context(), this));
   extensions::SetViewType(contents, extensions::VIEW_TYPE_VIRTUAL_KEYBOARD);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
@@ -150,8 +147,8 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
 void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   // TODO(bshe): Need to check the affected window's profile once multi-profile
   // is supported.
-  content::BrowserContext* context = GetBrowserContext();
-  extensions::EventRouter* router = extensions::EventRouter::Get(context);
+  extensions::EventRouter* router =
+      extensions::EventRouter::Get(browser_context());
 
   if (!router->HasEventListener(
           virtual_keyboard_private::OnTextInputBoxFocused::kEventName)) {
@@ -167,6 +164,6 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
       event_args.Pass()));
-  event->restrict_to_browser_context = context;
+  event->restrict_to_browser_context = browser_context();
   router->DispatchEventToExtension(kVirtualKeyboardExtensionID, event.Pass());
 }

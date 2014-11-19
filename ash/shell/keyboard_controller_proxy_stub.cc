@@ -14,7 +14,10 @@ using namespace content;
 
 namespace ash {
 
-KeyboardControllerProxyStub::KeyboardControllerProxyStub() {
+KeyboardControllerProxyStub::KeyboardControllerProxyStub()
+    : keyboard::KeyboardControllerProxy(Shell::GetInstance()
+                                            ->delegate()
+                                            ->GetActiveBrowserContext()) {
 }
 
 KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
@@ -30,11 +33,6 @@ aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
     keyboard_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   }
   return keyboard_.get();
-}
-
-BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {
-  // TODO(oshima): investigate which profile to use.
-  return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
 }
 
 ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {

@@ -86,8 +86,9 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
 
 namespace keyboard {
 
-KeyboardControllerProxy::KeyboardControllerProxy()
-    : default_url_(kKeyboardURL) {
+KeyboardControllerProxy::KeyboardControllerProxy(
+    content::BrowserContext* context)
+    : browser_context_(context), default_url_(kKeyboardURL) {
 }
 
 KeyboardControllerProxy::~KeyboardControllerProxy() {
@@ -116,7 +117,7 @@ void KeyboardControllerProxy::LoadContents(const GURL& url) {
 
 aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
   if (!keyboard_contents_) {
-    content::BrowserContext* context = GetBrowserContext();
+    content::BrowserContext* context = browser_context();
     keyboard_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(context,
             content::SiteInstance::CreateForURL(context,

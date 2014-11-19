@@ -49,7 +49,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  KeyboardControllerProxy();
+  explicit KeyboardControllerProxy(content::BrowserContext* context);
   ~KeyboardControllerProxy() override;
 
   // Gets the virtual keyboard window.  Ownership of the returned Window remains
@@ -102,10 +102,6 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   virtual void ReloadKeyboardIfNeeded();
 
  protected:
-  // Gets the BrowserContext to use for creating the WebContents hosting the
-  // keyboard.
-  virtual content::BrowserContext* GetBrowserContext() = 0;
-
   // The implementation can choose to setup the WebContents before the virtual
   // keyboard page is loaded (e.g. install a WebContentsObserver).
   // SetupWebContents() is called right after creating the WebContents, before
@@ -118,6 +114,8 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
+  content::BrowserContext* browser_context() { return browser_context_; }
+
  private:
   friend class TestApi;
 
@@ -126,6 +124,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
 
   // Gets the virtual keyboard URL (either the default URL or IME override URL).
   const GURL& GetVirtualKeyboardUrl();
+
+  // The BrowserContext to use for creating the WebContents hosting the
+  // keyboard.
+  content::BrowserContext* browser_context_;
 
   const GURL default_url_;
 

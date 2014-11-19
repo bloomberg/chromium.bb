@@ -31,7 +31,7 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
  public:
   BasicKeyboardControllerProxy(content::BrowserContext* context,
                                aura::Window* root_window)
-      : browser_context_(context), root_window_(root_window) {}
+      : keyboard::KeyboardControllerProxy(context), root_window_(root_window) {}
   ~BasicKeyboardControllerProxy() override {}
 
   // keyboard::KeyboardControllerProxy:
@@ -46,14 +46,9 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override {}
 
-  virtual content::BrowserContext* GetBrowserContext() override {
-    return browser_context_;
-  }
-
   virtual void SetUpdateInputType(ui::TextInputType type) override {}
 
  private:
-  content::BrowserContext* browser_context_;
   aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicKeyboardControllerProxy);

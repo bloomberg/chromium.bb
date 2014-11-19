@@ -81,8 +81,9 @@ class TestFocusController : public ui::EventHandler {
 class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
   TestKeyboardControllerProxy()
-      : input_method_(
-            ui::CreateInputMethod(NULL, gfx::kNullAcceleratedWidget)) {}
+      : KeyboardControllerProxy(nullptr),
+        input_method_(
+            ui::CreateInputMethod(nullptr, gfx::kNullAcceleratedWidget)) {}
 
   ~TestKeyboardControllerProxy() override {
     // Destroy the window before the delegate.
@@ -99,7 +100,6 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
     }
     return window_.get();
   }
-  content::BrowserContext* GetBrowserContext() override { return NULL; }
   ui::InputMethod* GetInputMethod() override { return input_method_.get(); }
   void RequestAudioInput(
       content::WebContents* web_contents,

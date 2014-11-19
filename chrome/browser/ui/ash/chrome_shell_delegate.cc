@@ -144,7 +144,8 @@ base::string16 ChromeShellDelegate::GetProductName() const {
 
 keyboard::KeyboardControllerProxy*
     ChromeShellDelegate::CreateKeyboardControllerProxy() {
-  return new AshKeyboardControllerProxy();
+  return new AshKeyboardControllerProxy(
+      ProfileManager::GetActiveUserProfile());
 }
 
 void ChromeShellDelegate::VirtualKeyboardActivated(bool activated) {
