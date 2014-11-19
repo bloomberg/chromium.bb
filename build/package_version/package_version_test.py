@@ -796,6 +796,53 @@ class TestPackageVersion(unittest.TestCase):
       self.assertEqual(mock_contents1, dest_mock_contents1)
       self.assertEqual(mock_contents2, dest_mock_contents2)
 
+  def test_CleanupExtraFiles(self):
+    # Test that the cleanup function properly cleans up extra files
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      mock_tar = self.GenerateMockFile(work_dir)
+
+      tar_dir = os.path.join(work_dir, 'tar_dir')
+      package_target = 'custom_package_target'
+      package_name = 'custom_package'
+
+      package_desc = self.GeneratePackageInfo(
+        [mock_tar],
+      )
+      package_file = package_locations.GetLocalPackageFile(
+          tar_dir,
+          package_target,
+          package_name
+      )
+      package_desc.SavePackageFile(package_file)
+      self.CopyToLocalArchiveFile(mock_tar, tar_dir)
+
+      package_dir = os.path.dirname(package_file)
+      archive_file = package_locations.GetLocalPackageArchiveFile(
+          tar_dir,
+          os.path.basename(mock_tar),
+          archive_info.GetArchiveHash(mock_tar))
+
+      extra_file = self.GenerateMockFile(tar_dir)
+      extra_file2 = self.GenerateMockFile(package_dir)
+      extra_dir = os.path.join(tar_dir, 'extra_dir')
+      os.makedirs(extra_dir)
+      extra_file3 = self.GenerateMockFile(extra_dir)
+
+      package_version.CleanupTarDirectory(tar_dir)
+
+      # Make sure all the key files were not deleted
+      self.assertTrue(os.path.isfile(package_file))
+      self.assertTrue(os.path.isfile(archive_file))
+
+      # Make sure package file can be loaded and nothing vital was deleted.
+      new_package_desc = package_info.PackageInfo(package_file)
+
+      # Make sure all the extra directories and files were deleted
+      self.assertFalse(os.path.isfile(extra_file))
+      self.assertFalse(os.path.isfile(extra_file2))
+      self.assertFalse(os.path.isfile(extra_file3))
+      self.assertFalse(os.path.isdir(extra_dir))
+
 
 if __name__ == '__main__':
   verbose = '-v' in sys.argv or '--verbose' in sys.argv
