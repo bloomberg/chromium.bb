@@ -1,8 +1,0 @@
-Tests that the Notification.permission static property exists.
-
-PASS window.Notification is defined.
-PASS window.Notification.permission is defined.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

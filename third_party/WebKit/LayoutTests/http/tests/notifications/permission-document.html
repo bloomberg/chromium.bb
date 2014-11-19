@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: The Notification.permission property reflects the permission status.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the Notification.permission property reflects the current
+      // permission level of notifications for the current origin. This test
+      // requires the TestRunner.
+      if (window.testRunner)
+          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+
+      test(function () {
+          if (!window.testRunner) {
+              assert_unreached('This test requires the TestRunner for working correctly.');
+              return;
+          }
+
+          testRunner.clearWebNotificationPermissions();
+
+          // "default" indicates that no permission request has been answered.
+          assert_equals(Notification.permission, "default");
+
+          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", false);
+          assert_equals(Notification.permission, "denied");
+
+          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+          assert_equals(Notification.permission, "granted");
+
+      }, 'Notification.permission reflects the actual permission level.');
+    </script>
+  </body>
+</html>

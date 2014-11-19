@@ -1,8 +1,0 @@
-Tests that it is possible to request permission to display Web Notifications from a document context, for which the passed callback will be invoked with the requests' result. It also makes sure that not passing a callback won't result in a crash.
-
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS result is "denied"
-PASS result is "granted"
-

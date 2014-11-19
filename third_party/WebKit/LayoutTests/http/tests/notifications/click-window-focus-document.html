@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: Simulating a click should call the onclick event.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that Document-bound notifications are able to focus a window in
+      // their onclick event. When the test is being ran manually, grant
+      // Notification permission and click on the notification.
+      if (window.testRunner) {
+          testRunner.setCanOpenWindows(); 
+          testRunner.setCloseRemainingWindowsWhenComplete();
+          testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+      }
+
+      async_test(function(test) {
+          if (Notification.permission != 'granted') {
+              assert_unreached('No permission has been granted for displaying notifications.');
+              return;
+          }
+
+          window.addEventListener('focus', function() {
+              test.done();
+          });
+
+          var childWindow = window.open('about:blank');
+          childWindow.focus();
+
+          var notification = new Notification('My Notification');
+          notification.addEventListener('show', function() {
+              if (window.testRunner)
+                  testRunner.simulateWebNotificationClick('My Notification');
+          });
+
+          notification.addEventListener('click', function() {
+              window.focus();
+          });
+          
+          notification.addEventListener('error', function() {
+              assert_unreached('The error event should not be thrown.');
+          });
+
+      }, 'Clicking on a notification enables it to focus the window it was created from.');
+    </script>
+    <script src="resources/click-focus-test.js"></script>
+  </body>
+</html>

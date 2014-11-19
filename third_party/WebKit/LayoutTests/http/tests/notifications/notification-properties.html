@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: The Notification object exposes the expected properties.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the Notification object exposes the properties per the
+      // semantics defined by the specification. When the test is being ran
+      // manually, grant Notification permission first.
+      if (window.testRunner)
+          testRunner.clearWebNotificationPermissions();
+
+      test(function () {
+          var options = {
+                dir: "rtl",
+                lang: "nl-NL",
+                body: "Hallo, wereld!",
+                tag: "notification",
+                icon: "http://localhost/my_icon.png"
+            };
+
+            var notification = new Notification("My Notification", options);
+
+            assert_equals(notification.title, "My Notification");
+            assert_equals(notification.dir, options.dir);
+            assert_equals(notification.lang, options.lang);
+            assert_equals(notification.body, options.body);
+            assert_equals(notification.tag, options.tag);
+            assert_equals(notification.icon, options.icon);
+
+            var emptyNotification = new Notification("My Notification");
+
+            assert_equals(emptyNotification.title, "My Notification");
+            assert_equals(emptyNotification.dir, "auto");
+            assert_equals(emptyNotification.lang, "");
+            assert_equals(emptyNotification.body, "");
+            assert_equals(emptyNotification.tag, "");
+            assert_equals(emptyNotification.icon, "");
+
+            var invalidIconNotification = new Notification("My Notification", {
+                icon: "http://test:test/"
+            });
+
+            // Invalid icon URLs should be reset to an empty string.
+            assert_equals(invalidIconNotification.icon, "");
+
+            var serializedUrlNotification = new Notification("My Notification", {
+                icon: "http://example.com"
+            });
+
+            // Icon URLs should be returned in serialized form.
+            assert_equals(serializedUrlNotification.icon, "http://example.com/");
+
+            var noTagNotification = new Notification("My Notification"),
+                emptyTagNotification = new Notification("My Notification", { tag: "" });
+
+            // Setting an empty string as the tag should be equal to not setting the tag at all.
+            assert_equals(noTagNotification.tag, emptyTagNotification.tag);
+
+      }, 'Checks the properties exposed on the Notification object.');
+    </script>
+  </body>
+</html>
