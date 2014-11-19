@@ -1,3 +1,2 @@
-CONSOLE WARNING: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
 ALERT: 339 tests of 339 passed, 0 failed.
 
