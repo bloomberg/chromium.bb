@@ -43,6 +43,9 @@ android_envsetup_main() {
   # Add Android SDK tools to system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
 
+  # Add Android utility tools to the system path.
+  export PATH=$PATH:${ANDROID_SDK_ROOT}/tools/
+
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
