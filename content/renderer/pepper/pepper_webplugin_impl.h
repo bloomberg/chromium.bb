@@ -68,6 +68,8 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   virtual blink::WebString selectionAsText() const;
   virtual blink::WebString selectionAsMarkup() const;
   virtual blink::WebURL linkAtPosition(const blink::WebPoint& position) const;
+  virtual bool getPrintPresetOptionsFromDocument(
+      blink::WebPrintPresetOptions* preset_options);
   virtual void setZoomLevel(double level, bool text_only);
   virtual bool startFind(const blink::WebString& search_text,
                          bool case_sensitive,

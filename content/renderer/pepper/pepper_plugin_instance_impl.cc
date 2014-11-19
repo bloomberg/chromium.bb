@@ -112,6 +112,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
+#include "third_party/WebKit/public/web/WebPrintPresetOptions.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -1504,7 +1505,7 @@ bool PepperPluginInstanceImpl::LoadMouseLockInterface() {
 bool PepperPluginInstanceImpl::LoadPdfInterface() {
   if (!checked_for_plugin_pdf_interface_) {
     checked_for_plugin_pdf_interface_ = true;
-    plugin_pdf_interface_ = static_cast<const PPP_Pdf_1*>(
+    plugin_pdf_interface_ = static_cast<const PPP_Pdf*>(
         module_->GetPluginInterface(PPP_PDF_INTERFACE_1));
   }
 
@@ -1812,6 +1813,25 @@ void PepperPluginInstanceImpl::PrintEnd() {
 #if defined(OS_MACOSX)
   last_printed_page_ = NULL;
 #endif  // defined(OS_MACOSX)
+}
+
+bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
+    blink::WebPrintPresetOptions* preset_options) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PepperPluginInstanceImpl> ref(this);
+  if (!LoadPdfInterface())
+    return false;
+
+  PP_PdfPrintPresetOptions_Dev options;
+  if (!plugin_pdf_interface_->GetPrintPresetOptionsFromDocument(pp_instance(),
+                                                                &options)) {
+    return false;
+  }
+
+  preset_options->isScalingDisabled = PP_ToBool(options.is_scaling_disabled);
+  preset_options->copies = options.copies;
+
+  return true;
 }
 
 bool PepperPluginInstanceImpl::CanRotateView() {

@@ -38,6 +38,7 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
+#include "third_party/WebKit/public/web/WebPrintPresetOptions.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
@@ -1450,8 +1451,14 @@ void PrintWebViewHelper::SetOptionsFromDocument(
   blink::WebLocalFrame* source_frame = print_preview_context_.source_frame();
   const blink::WebNode& source_node = print_preview_context_.source_node();
 
-  params.is_scaling_disabled =
-      source_frame->isPrintScalingDisabledForPlugin(source_node);
+  blink::WebPrintPresetOptions preset_options;
+  if (!source_frame->getPrintPresetOptionsForPlugin(source_node,
+                                                    &preset_options)) {
+    return;
+  }
+
+  params.is_scaling_disabled = preset_options.isScalingDisabled;
+  params.copies = preset_options.copies;
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(

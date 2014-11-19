@@ -89,6 +89,7 @@ class PDFiumEngine : public PDFEngine,
   virtual void OnCallback(int id);
   virtual std::string GetPageAsJSON(int index);
   virtual bool GetPrintScaling();
+  virtual int GetCopiesToPrint();
   virtual void AppendBlankPages(int num_pages);
   virtual void AppendPage(PDFEngine* engine, int index);
   virtual pp::Point GetScrollPosition();

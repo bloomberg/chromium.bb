@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
+#include "third_party/WebKit/public/web/WebPrintPresetOptions.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "url/gurl.h"
 
@@ -269,6 +270,11 @@ bool PepperWebPluginImpl::printPage(int page_number, blink::WebCanvas* canvas) {
 }
 
 void PepperWebPluginImpl::printEnd() { return instance_->PrintEnd(); }
+
+bool PepperWebPluginImpl::getPrintPresetOptionsFromDocument(
+    blink::WebPrintPresetOptions* preset_options) {
+  return instance_->GetPrintPresetOptionsFromDocument(preset_options);
+}
 
 bool PepperWebPluginImpl::canRotateView() { return instance_->CanRotateView(); }
 

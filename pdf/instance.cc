@@ -217,9 +217,21 @@ void Transform(PP_Instance instance, PP_PrivatePageTransformType type) {
   }
 }
 
+PP_Bool GetPrintPresetOptionsFromDocument(
+    PP_Instance instance,
+    PP_PdfPrintPresetOptions_Dev* options) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    Instance* obj_instance = static_cast<Instance*>(object);
+    obj_instance->GetPrintPresetOptionsFromDocument(options);
+  }
+  return PP_TRUE;
+}
+
 const PPP_Pdf ppp_private = {
   &GetLinkAtPosition,
-  &Transform
+  &Transform,
+  &GetPrintPresetOptionsFromDocument
 };
 
 int ExtractPrintPreviewPageIndex(const std::string& src_url) {
@@ -669,6 +681,12 @@ pp::Var Instance::GetInstanceObject() {
   }
 
   return instance_object_;
+}
+
+void Instance::GetPrintPresetOptionsFromDocument(
+    PP_PdfPrintPresetOptions_Dev* options) {
+  options->is_scaling_disabled = PP_FromBool(IsPrintScalingDisabled());
+  options->copies = engine_->GetCopiesToPrint();
 }
 
 pp::Var Instance::GetLinkAtPosition(const pp::Point& point) {

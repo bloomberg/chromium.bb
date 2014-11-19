@@ -255,6 +255,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   int PrintBegin(const blink::WebPrintParams& print_params);
   bool PrintPage(int page_number, blink::WebCanvas* canvas);
   void PrintEnd();
+  bool GetPrintPresetOptionsFromDocument(
+      blink::WebPrintPresetOptions* preset_options);
 
   bool CanRotateView();
   void RotateView(blink::WebPlugin::RotationType type);

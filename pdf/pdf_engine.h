@@ -244,6 +244,8 @@ class PDFEngine {
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;
+  // Returns number of copies to be printed.
+  virtual int GetCopiesToPrint() = 0;
 
   // Append blank pages to make a 1-page document to a |num_pages| document.
   // Always retain the first page data.

@@ -2387,6 +2387,10 @@ bool PDFiumEngine::GetPrintScaling() {
   return !!FPDF_VIEWERREF_GetPrintScaling(doc_);
 }
 
+int PDFiumEngine::GetCopiesToPrint() {
+  return FPDF_VIEWERREF_GetNumCopies(doc_);
+}
+
 void PDFiumEngine::AppendBlankPages(int num_pages) {
   DCHECK(num_pages != 0);
 
