@@ -63,81 +63,47 @@ bool DomDistillerStore::GetEntryByUrl(const GURL& url, ArticleEntry* entry) {
 }
 
 bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
-  if (!database_loaded_) {
-    return false;
-  }
-
-  if (model_.GetEntryById(entry.entry_id(), NULL)) {
-    DVLOG(1) << "Already have entry with id " << entry.entry_id() << ".";
-    return false;
-  }
-
-  SyncChangeList changes_to_apply;
-  changes_to_apply.push_back(
-      SyncChange(FROM_HERE, SyncChange::ACTION_ADD, CreateLocalData(entry)));
-
-  SyncChangeList changes_applied;
-  SyncChangeList changes_missing;
-
-  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
-
-  DCHECK_EQ(size_t(0), changes_missing.size());
-  DCHECK_EQ(size_t(1), changes_applied.size());
-
-  ApplyChangesToSync(FROM_HERE, changes_applied);
-  ApplyChangesToDatabase(changes_applied);
-
-  return true;
+  return ChangeEntry(entry, SyncChange::ACTION_ADD);
 }
 
 bool DomDistillerStore::UpdateEntry(const ArticleEntry& entry) {
-  if (!database_loaded_) {
-    return false;
-  }
-
-  if (!model_.GetEntryById(entry.entry_id(), NULL)) {
-    DVLOG(1) << "No entry with id " << entry.entry_id() << " found.";
-    return false;
-  }
-
-  SyncChangeList changes_to_apply;
-  changes_to_apply.push_back(
-      SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE, CreateLocalData(entry)));
-
-  SyncChangeList changes_applied;
-  SyncChangeList changes_missing;
-
-  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
-
-  if (changes_applied.size() != 1) {
-    DVLOG(1) << "Failed to update entry with id " << entry.entry_id() << ".";
-    return false;
-  }
-
-  ApplyChangesToSync(FROM_HERE, changes_applied);
-  ApplyChangesToDatabase(changes_applied);
-
-  return true;
+  return ChangeEntry(entry, SyncChange::ACTION_UPDATE);
 }
 
 bool DomDistillerStore::RemoveEntry(const ArticleEntry& entry) {
+  return ChangeEntry(entry, SyncChange::ACTION_DELETE);
+}
+
+bool DomDistillerStore::ChangeEntry(const ArticleEntry& entry,
+                                    SyncChange::SyncChangeType changeType) {
   if (!database_loaded_) {
     return false;
   }
 
-  if (!model_.GetEntryById(entry.entry_id(), NULL)) {
+  bool hasEntry = model_.GetEntryById(entry.entry_id(), NULL);
+  if (hasEntry) {
+    if (changeType == SyncChange::ACTION_ADD) {
+      DVLOG(1) << "Already have entry with id " << entry.entry_id() << ".";
+      return false;
+    }
+  } else if (changeType != SyncChange::ACTION_ADD) {
     DVLOG(1) << "No entry with id " << entry.entry_id() << " found.";
     return false;
   }
 
   SyncChangeList changes_to_apply;
   changes_to_apply.push_back(
-      SyncChange(FROM_HERE, SyncChange::ACTION_DELETE, CreateLocalData(entry)));
+      SyncChange(FROM_HERE, changeType, CreateLocalData(entry)));
 
   SyncChangeList changes_applied;
   SyncChangeList changes_missing;
 
   ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
+
+  if (changeType == SyncChange::ACTION_UPDATE && changes_applied.size() != 1) {
+    DVLOG(1) << "Failed to update entry with id " << entry.entry_id() << ".";
+    return false;
+  }
 
   DCHECK_EQ(size_t(0), changes_missing.size());
   DCHECK_EQ(size_t(1), changes_applied.size());
@@ -268,6 +234,7 @@ void DomDistillerStore::OnDatabaseLoad(bool success,
   SyncChangeList database_changes_needed;
   MergeDataWithModel(data, &changes_applied, &database_changes_needed);
   ApplyChangesToDatabase(database_changes_needed);
+  ApplyChangesToSync(FROM_HERE, changes_applied);
 }
 
 void DomDistillerStore::OnDatabaseSave(bool success) {
@@ -330,6 +297,8 @@ bool DomDistillerStore::ApplyChangesToDatabase(
 SyncMergeResult DomDistillerStore::MergeDataWithModel(
     const SyncDataList& data, SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
+  // TODO(cjhopman): This naive merge algorithm could cause flip-flopping
+  // between database/sync of multiple clients.
   DCHECK(changes_applied);
   DCHECK(changes_missing);
 

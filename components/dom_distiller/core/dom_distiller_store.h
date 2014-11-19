@@ -38,10 +38,8 @@ class DomDistillerStoreInterface {
   virtual syncer::SyncableService* GetSyncableService() = 0;
 
   virtual bool AddEntry(const ArticleEntry& entry) = 0;
-
   // Returns false if |entry| is not present or |entry| was not updated.
   virtual bool UpdateEntry(const ArticleEntry& entry) = 0;
-
   virtual bool RemoveEntry(const ArticleEntry& entry) = 0;
 
   // Lookup an ArticleEntry by ID or URL. Returns whether a corresponding entry
@@ -121,6 +119,10 @@ class DomDistillerStore : public syncer::SyncableService,
   void OnDatabaseInit(bool success);
   void OnDatabaseLoad(bool success, scoped_ptr<EntryVector> entries);
   void OnDatabaseSave(bool success);
+
+  // Returns true if the change is successfully applied.
+  bool ChangeEntry(const ArticleEntry& entry,
+                   syncer::SyncChange::SyncChangeType changeType);
 
   syncer::SyncMergeResult MergeDataWithModel(
       const syncer::SyncDataList& data, syncer::SyncChangeList* changes_applied,

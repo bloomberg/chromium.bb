@@ -345,6 +345,32 @@ TEST_F(DomDistillerStoreTest, TestSyncMergeAfterDatabaseLoad) {
   EXPECT_TRUE(AreEntryMapsEqual(sync_model_, expected_model));
 }
 
+TEST_F(DomDistillerStoreTest, TestDatabaseLoadAfterSyncMerge) {
+  AddEntry(GetSampleEntry(0), &db_model_);
+  AddEntry(GetSampleEntry(1), &db_model_);
+  AddEntry(GetSampleEntry(2), &db_model_);
+
+  AddEntry(GetSampleEntry(2), &sync_model_);
+  AddEntry(GetSampleEntry(3), &sync_model_);
+  AddEntry(GetSampleEntry(4), &sync_model_);
+
+  EntryMap expected_model(db_model_);
+  AddEntry(GetSampleEntry(3), &expected_model);
+  AddEntry(GetSampleEntry(4), &expected_model);
+
+  CreateStore();
+  StartSyncing();
+
+  EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), sync_model_));
+
+  fake_db_->InitCallback(true);
+  fake_db_->LoadCallback(true);
+
+  EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), expected_model));
+  EXPECT_TRUE(AreEntryMapsEqual(db_model_, expected_model));
+  EXPECT_TRUE(AreEntryMapsEqual(sync_model_, expected_model));
+}
+
 TEST_F(DomDistillerStoreTest, TestGetAllSyncData) {
   AddEntry(GetSampleEntry(0), &db_model_);
   AddEntry(GetSampleEntry(1), &db_model_);
