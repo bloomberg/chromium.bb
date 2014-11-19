@@ -27,7 +27,6 @@
 #include <Windows.h>
 #include <dwmapi.h>
 #include <shellapi.h>
-#include <wincrypt.h>  // 4
 #include <wtypes.h>  // 2
 
 // Defines in atlbase.h cause conflicts; if we could figure out how
