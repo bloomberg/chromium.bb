@@ -618,7 +618,8 @@ bool CreatePlatformShortcuts(
       return false;
   }
 
-  if (switches::kEnableAppsFileAssociations) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAppsFileAssociations)) {
     CreateFileAssociationsForApp(
         shortcut_info.extension_id, shortcut_info.title,
         shortcut_info.profile_path, file_handlers_info);
