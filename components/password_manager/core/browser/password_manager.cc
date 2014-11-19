@@ -450,6 +450,16 @@ void PasswordManager::OnPasswordFormsRendered(
 
   DCHECK(IsSavingEnabledForCurrentPage());
 
+  // If the server throws an internal error, access denied page, page not
+  // found etc. after a login attempt, we do not save the credentials.
+  if (client_->WasLastNavigationHTTPError()) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_DECISION_DROP);
+    provisional_save_manager_->SubmitFailed();
+    provisional_save_manager_.reset();
+    return;
+  }
+
   if (logger) {
     logger->LogNumber(Logger::STRING_NUMBER_OF_VISIBLE_FORMS,
                       visible_forms.size());

@@ -65,6 +65,7 @@ class ChromePasswordManagerClient
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void LogSavePasswordProgress(const std::string& text) const override;
   bool IsLoggingActive() const override;
+  bool WasLastNavigationHTTPError() const override;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();

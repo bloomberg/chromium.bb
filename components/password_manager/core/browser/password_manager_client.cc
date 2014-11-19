@@ -36,6 +36,10 @@ bool PasswordManagerClient::IsLoggingActive() const {
   return false;
 }
 
+bool PasswordManagerClient::WasLastNavigationHTTPError() const {
+  return false;
+}
+
 PasswordStore::AuthorizationPromptPolicy
 PasswordManagerClient::GetAuthorizationPromptPolicy(
     const autofill::PasswordForm& form) {

@@ -171,6 +171,11 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "wait_for_username";
     case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
       return "Instances of LoginModelObserver may be present";
+    case
+      SavePasswordProgressLogger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD:
+      return "ChromePasswordManagerClient::WasLastNavigationHTTPError";
+    case SavePasswordProgressLogger::STRING_HTTP_STATUS_CODE:
+      return "HTTP status code for landing page";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

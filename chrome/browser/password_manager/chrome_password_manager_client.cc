@@ -29,6 +29,7 @@
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -50,6 +51,10 @@ using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
+
+// Shorten the name to spare line breaks. The code provides enough context
+// already.
+typedef autofill::SavePasswordProgressLogger Logger;
 
 // static
 void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
@@ -288,6 +293,30 @@ bool ChromePasswordManagerClient::IsLoggingActive() const {
   // WebUI tabs do not need to log password saving progress. In particular, the
   // internals page itself should not send any logs.
   return can_use_log_router_ && !web_contents()->GetWebUI();
+}
+
+bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
+  DCHECK(web_contents());
+
+  scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
+  if (IsLoggingActive()) {
+    logger.reset(new password_manager::BrowserSavePasswordProgressLogger(this));
+    logger->LogMessage(
+        Logger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD);
+  }
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (!entry)
+    return false;
+  int http_status_code = entry->GetHttpStatusCode();
+
+  if (logger)
+    logger->LogNumber(Logger::STRING_HTTP_STATUS_CODE, http_status_code);
+
+  if (http_status_code >= 400 && http_status_code < 600)
+    return true;
+  return false;
 }
 
 // static
