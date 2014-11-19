@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -189,6 +190,9 @@ public class WebappAuthenticator {
             }
 
             sMacKeyGenerator = new FutureTask<SecretKey>(new Callable<SecretKey>() {
+                // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
+                // warns about, so this lint warning can safely be suppressed.
+                @SuppressLint("TrulyRandom")
                 @Override
                 public SecretKey call() throws Exception {
                     KeyGenerator generator = KeyGenerator.getInstance(MAC_ALGORITHM_NAME);

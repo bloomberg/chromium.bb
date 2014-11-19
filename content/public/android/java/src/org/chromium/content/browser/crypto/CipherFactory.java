@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.crypto;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -149,6 +150,9 @@ public class CipherFactory {
      */
     private Callable<CipherData> createGeneratorCallable() {
         return new Callable<CipherData>() {
+            // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
+            // warns about, so this lint warning can safely be suppressed.
+            @SuppressLint("TrulyRandom")
             @Override
             public CipherData call() {
                 // Poll random data to generate initialization parameters for the Cipher.
