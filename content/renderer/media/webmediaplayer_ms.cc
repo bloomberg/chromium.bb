@@ -87,7 +87,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
-      buffered_(static_cast<size_t>(1)),
+      buffered_(static_cast<size_t>(0)),
       volume_(1.0f),
       client_(client),
       delegate_(delegate),
