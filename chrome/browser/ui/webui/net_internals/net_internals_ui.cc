@@ -149,19 +149,6 @@ bool Base64StringToHashes(const std::string& hashes_str,
   return true;
 }
 
-// Returns a Value representing the state of a pre-existing URLRequest when
-// net-internals was opened.
-base::Value* GetRequestStateAsValue(const net::URLRequest* request,
-                                    net::NetLog::LogLevel log_level) {
-  return request->GetStateAsValue();
-}
-
-// Returns true if |request1| was created before |request2|.
-bool RequestCreatedBefore(const net::URLRequest* request1,
-                          const net::URLRequest* request2) {
-  return request1->creation_time() < request2->creation_time();
-}
-
 // Returns the http network session for |context| if there is one.
 // Otherwise, returns NULL.
 net::HttpNetworkSession* GetHttpNetworkSession(
@@ -856,21 +843,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // If we have any pending entries, go ahead and get rid of them, so they won't
-  // appear before the REQUEST_ALIVE events we add for currently active
-  // URLRequests.
-  PostPendingEntries();
+  // If currently watching the NetLog, temporarily stop watching it and flush
+  // pending events, so they won't appear before the status events created for
+  // currently active network objects below.
+  if (net_log()) {
+    net_log()->RemoveThreadSafeObserver(this);
+    PostPendingEntries();
+  }
 
   SendJavascriptCommand("receivedConstants", NetInternalsUI::GetConstants());
 
-  // Add entries for ongoing URL requests.
   PrePopulateEventList();
 
-  if (!net_log()) {
-    // Register with network stack to observe events.
-    io_thread_->net_log()->AddThreadSafeObserver(this,
-        net::NetLog::LOG_ALL_BUT_BYTES);
-  }
+  // Register with network stack to observe events.
+  io_thread_->net_log()->AddThreadSafeObserver(this,
+      net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetNetInfo(
@@ -1389,7 +1376,7 @@ void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
-  // Use a set to prevent duplicates.
+  // Using a set removes any duplicates.
   std::set<net::URLRequestContext*> contexts;
   for (ContextGetterList::const_iterator getter = context_getters_.begin();
        getter != context_getters_.end(); ++getter) {
@@ -1398,46 +1385,8 @@ void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
   contexts.insert(io_thread_->globals()->proxy_script_fetcher_context.get());
   contexts.insert(io_thread_->globals()->system_request_context.get());
 
-  // Put together the list of all requests.
-  std::vector<const net::URLRequest*> requests;
-  for (std::set<net::URLRequestContext*>::const_iterator context =
-           contexts.begin();
-       context != contexts.end(); ++context) {
-    std::set<const net::URLRequest*>* context_requests =
-        (*context)->url_requests();
-    for (std::set<const net::URLRequest*>::const_iterator request_it =
-             context_requests->begin();
-         request_it != context_requests->end(); ++request_it) {
-      DCHECK_EQ(io_thread_->net_log(), (*request_it)->net_log().net_log());
-      requests.push_back(*request_it);
-    }
-  }
-
-  // Sort by creation time.
-  std::sort(requests.begin(), requests.end(), RequestCreatedBefore);
-
-  // Create fake events.
-  for (std::vector<const net::URLRequest*>::const_iterator request_it =
-           requests.begin();
-       request_it != requests.end(); ++request_it) {
-    const net::URLRequest* request = *request_it;
-    net::NetLog::ParametersCallback callback =
-        base::Bind(&GetRequestStateAsValue, base::Unretained(request));
-
-    // Create and add the entry directly, to avoid sending it to any other
-    // NetLog observers.
-    net::NetLog::EntryData entry_data(net::NetLog::TYPE_REQUEST_ALIVE,
-                                      request->net_log().source(),
-                                      net::NetLog::PHASE_BEGIN,
-                                      request->creation_time(),
-                                      &callback);
-    net::NetLog::Entry entry(&entry_data, request->net_log().GetLogLevel());
-
-    // Have to add |entry| to the queue synchronously, as there may already
-    // be posted tasks queued up to add other events for |request|, which we
-    // want |entry| to precede.
-    AddEntryToQueue(entry.ToValue());
-  }
+  // Add entries for ongoing network objects.
+  CreateNetLogEntriesForActiveObjects(contexts, this);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::SendNetInfo(int info_sources) {

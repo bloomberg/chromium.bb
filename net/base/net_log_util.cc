@@ -4,12 +4,17 @@
 
 #include "net/base/net_log_util.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/load_states.h"
@@ -28,6 +33,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {
@@ -99,6 +105,25 @@ disk_cache::Backend* GetDiskCacheBackend(net::URLRequestContext* context) {
     return NULL;
 
   return http_cache->GetCurrentBackend();
+}
+
+// Returns true if |request1| was created before |request2|.
+bool RequestCreatedBefore(const net::URLRequest* request1,
+                          const net::URLRequest* request2) {
+  if (request1->creation_time() < request2->creation_time())
+    return true;
+  if (request1->creation_time() > request2->creation_time())
+    return false;
+  // If requests were created at the same time, sort by ID.  Mostly matters for
+  // testing purposes.
+  return request1->identifier() < request2->identifier();
+}
+
+// Returns a Value representing the state of a pre-existing URLRequest when
+// net-internals was opened.
+base::Value* GetRequestStateAsValue(const net::URLRequest* request,
+                                    net::NetLog::LogLevel log_level) {
+  return request->GetStateAsValue();
 }
 
 }  // namespace
@@ -298,6 +323,9 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 
 NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     URLRequestContext* context, int info_sources) {
+  // May only be called on the context's thread.
+  DCHECK(context->CalledOnValidThread());
+
   scoped_ptr<base::DictionaryValue> net_info_dict(new base::DictionaryValue());
 
   // TODO(mmenke):  The code for most of these sources should probably be moved
@@ -487,6 +515,43 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   return net_info_dict.Pass();
+}
+
+NET_EXPORT void CreateNetLogEntriesForActiveObjects(
+    const std::set<URLRequestContext*>& contexts,
+    NetLog::ThreadSafeObserver* observer) {
+  // Not safe to call this when the observer is watching a NetLog.
+  DCHECK(!observer->net_log());
+
+  // Put together the list of all requests.
+  std::vector<const URLRequest*> requests;
+  for (const auto& context : contexts) {
+    // May only be called on the context's thread.
+    DCHECK(context->CalledOnValidThread());
+    // Contexts should all be using the same NetLog.
+    DCHECK_EQ((*contexts.begin())->net_log(), context->net_log());
+    for (const auto& request : *context->url_requests()) {
+      requests.push_back(request);
+    }
+  }
+
+  // Sort by creation time.
+  std::sort(requests.begin(), requests.end(), RequestCreatedBefore);
+
+  // Create fake events.
+  ScopedVector<NetLog::Entry> entries;
+  for (const auto& request : requests) {
+    net::NetLog::ParametersCallback callback =
+        base::Bind(&GetRequestStateAsValue, base::Unretained(request));
+
+    net::NetLog::EntryData entry_data(net::NetLog::TYPE_REQUEST_ALIVE,
+                                      request->net_log().source(),
+                                      net::NetLog::PHASE_BEGIN,
+                                      request->creation_time(),
+                                      &callback);
+    NetLog::Entry entry(&entry_data, request->net_log().GetLogLevel());
+    observer->OnAddEntry(entry);
+  }
 }
 
 }  // namespace net

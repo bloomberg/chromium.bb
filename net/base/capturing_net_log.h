@@ -8,68 +8,22 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
+#include "net/base/captured_net_log_entry.h"
+#include "net/base/capturing_net_log_observer.h"
 #include "net/base/net_log.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
 
 namespace net {
 
-// CapturingNetLog is a NetLog which instantiates Observer that saves messages
-// to a bounded buffer.  It is intended for testing only, and is part of the
-// net_test_support project. This is provided for convinience and compatilbility
-// with the old unittests.
+// CapturingNetLog is convenience class which combines a NetLog and a
+// CapturingNetLogObserver.  It is intended for testing only, and is part of the
+// net_test_support project.
 class CapturingNetLog : public NetLog {
  public:
-  struct CapturedEntry {
-    CapturedEntry(EventType type,
-                  const base::TimeTicks& time,
-                  Source source,
-                  EventPhase phase,
-                  scoped_ptr<base::DictionaryValue> params);
-    // Copy constructor needed to store in a std::vector because of the
-    // scoped_ptr.
-    CapturedEntry(const CapturedEntry& entry);
-
-    ~CapturedEntry();
-
-    // Equality operator needed to store in a std::vector because of the
-    // scoped_ptr.
-    CapturedEntry& operator=(const CapturedEntry& entry);
-
-    // Attempt to retrieve an value of the specified type with the given name
-    // from |params|.  Returns true on success, false on failure.  Does not
-    // modify |value| on failure.
-    bool GetStringValue(const std::string& name, std::string* value) const;
-    bool GetIntegerValue(const std::string& name, int* value) const;
-    bool GetListValue(const std::string& name, base::ListValue** value) const;
-
-    // Same as GetIntegerValue, but returns the error code associated with a
-    // log entry.
-    bool GetNetErrorCode(int* value) const;
-
-    // Returns the parameters as a JSON string, or empty string if there are no
-    // parameters.
-    std::string GetParamsJson() const;
-
-    EventType type;
-    base::TimeTicks time;
-    Source source;
-    EventPhase phase;
-    scoped_ptr<base::DictionaryValue> params;
-  };
-
-  // Ordered set of entries that were logged.
-  typedef std::vector<CapturedEntry> CapturedEntryList;
+  // TODO(mmenke):  Get rid of these.
+  typedef CapturedNetLogEntry CapturedEntry;
+  typedef CapturedNetLogEntry::List CapturedEntryList;
 
   CapturingNetLog();
   ~CapturingNetLog() override;
@@ -83,39 +37,7 @@ class CapturingNetLog : public NetLog {
   void Clear();
 
  private:
-  // Observer is an implementation of NetLog::ThreadSafeObserver
-  // that saves messages to a bounded buffer. It is intended for testing only,
-  // and is part of the net_test_support project.
-  class Observer : public NetLog::ThreadSafeObserver {
-   public:
-    Observer();
-    ~Observer() override;
-
-    // Returns the list of all entries in the log.
-    void GetEntries(CapturedEntryList* entry_list) const;
-
-    // Fills |entry_list| with all entries in the log from the specified Source.
-    void GetEntriesForSource(Source source,
-                             CapturedEntryList* entry_list) const;
-
-    // Returns number of entries in the log.
-    size_t GetSize() const;
-
-    void Clear();
-
-   private:
-    // ThreadSafeObserver implementation:
-    void OnAddEntry(const Entry& entry) override;
-
-    // Needs to be "mutable" so can use it in GetEntries().
-    mutable base::Lock lock_;
-
-    CapturedEntryList captured_entries_;
-
-    DISALLOW_COPY_AND_ASSIGN(Observer);
-  };
-
-  Observer capturing_net_log_observer_;
+  CapturingNetLogObserver capturing_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturingNetLog);
 };
@@ -123,7 +45,7 @@ class CapturingNetLog : public NetLog {
 // Helper class that exposes a similar API as BoundNetLog, but uses a
 // CapturingNetLog rather than the more generic NetLog.
 //
-// CapturingBoundNetLog can easily be converted to a BoundNetLog using the
+// A CapturingBoundNetLog can easily be converted to a BoundNetLog using the
 // bound() method.
 class CapturingBoundNetLog {
  public:

@@ -876,8 +876,12 @@
         '../testing/gmock.gyp:gmock',
       ],
       'sources': [
+        'base/captured_net_log_entry.cc',
+        'base/captured_net_log_entry.h',
         'base/capturing_net_log.cc',
         'base/capturing_net_log.h',
+        'base/capturing_net_log_observer.cc',
+        'base/capturing_net_log_observer.h',
         'base/load_timing_info_test_util.cc',
         'base/load_timing_info_test_util.h',
         'base/mock_file_stream.cc',
