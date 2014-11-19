@@ -413,7 +413,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
     HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, checkpoint.release()));
 }
 
-void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
+size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
 {
     TRACE_EVENT0("blink", "HTMLDocumentParser::processParsedChunkFromBackgroundParser");
 
@@ -432,6 +432,7 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 
     OwnPtr<ParsedChunk> chunk(popChunk);
     OwnPtr<CompactHTMLTokenStream> tokens = chunk->tokens.release();
+    size_t elementTokenCount = 0;
 
     HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
 
@@ -444,6 +445,9 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 
     for (Vector<CompactHTMLToken>::const_iterator it = tokens->begin(); it != tokens->end(); ++it) {
         ASSERT(!isWaitingForScripts());
+
+        if (!chunk->startingScript && (it->type() == HTMLToken::StartTag || it->type() == HTMLToken::EndTag))
+            elementTokenCount++;
 
         if (document()->frame() && document()->frame()->navigationScheduler().locationChangePending()) {
 
@@ -485,6 +489,8 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
     // This leaves "script", "style" and "svg" nodes text nodes intact.
     if (!isStopped())
         m_treeBuilder->flush(FlushIfAtTextLimit);
+
+    return elementTokenCount;
 }
 
 void HTMLDocumentParser::pumpPendingSpeculations()
@@ -509,13 +515,14 @@ void HTMLDocumentParser::pumpPendingSpeculations()
 
     SpeculationsPumpSession session(contextForParsingSession());
     while (!m_speculations.isEmpty()) {
-        processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
+        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
+        session.addedElementTokens(elementTokenCount);
 
         // Always check isStopped first as m_document may be null.
         if (isStopped() || isWaitingForScripts())
             break;
 
-        if (m_speculations.isEmpty() || m_parserScheduler->yieldIfNeeded(session))
+        if (m_speculations.isEmpty() || m_parserScheduler->yieldIfNeeded(session, m_speculations.first()->startingScript))
             break;
     }
 
