@@ -178,6 +178,7 @@ private:
     RawPtrWillBeMember<FrameHost> m_frameHost;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
+    OwnPtr<GraphicsLayer> m_overscrollElasticityLayer;
     OwnPtr<GraphicsLayer> m_pageScaleLayer;
     OwnPtr<GraphicsLayer> m_innerViewportScrollLayer;
     OwnPtr<GraphicsLayer> m_overlayScrollbarHorizontal;

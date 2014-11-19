@@ -125,7 +125,14 @@ public:
 
     // Identify key layers to the compositor when using the pinch virtual viewport.
     virtual void registerViewportLayers(
-        const WebLayer* pageScaleLayerLayer,
+        const WebLayer* overscrollElasticityLayer,
+        const WebLayer* pageScaleLayer,
+        const WebLayer* innerViewportScrollLayer,
+        const WebLayer* outerViewportScrollLayer) { }
+    // TODO(ccameron): remove this function once all callers have been moved to
+    // the version that specifies the overscroll elasticity layer.
+    virtual void registerViewportLayers(
+        const WebLayer* pageScaleLayer,
         const WebLayer* innerViewportScrollLayer,
         const WebLayer* outerViewportScrollLayer) { }
     virtual void clearViewportLayers() { }

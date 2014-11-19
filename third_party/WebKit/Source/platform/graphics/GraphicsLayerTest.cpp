@@ -72,6 +72,7 @@ public:
         m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting());
         ASSERT(m_layerTreeView);
         m_layerTreeView->setRootLayer(*m_clipLayer->platformLayer());
+        // TODO(ccameron): Use the version of this function which specifies the overscroll layer as well.
         m_layerTreeView->registerViewportLayers(
             m_clipLayer->platformLayer(), m_graphicsLayer->platformLayer(), 0);
         m_layerTreeView->setViewportSize(WebSize(1, 1));

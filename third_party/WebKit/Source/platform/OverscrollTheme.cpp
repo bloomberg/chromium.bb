@@ -45,6 +45,8 @@ PassRefPtr<Image> OverscrollTheme::getOverhangImage()
 
 void OverscrollTheme::setUpOverhangShadowLayer(GraphicsLayer* overhangShadowLayer)
 {
+    if (!m_overhangShadow)
+        return;
     // The shadow texture is has a 1-pixel aperture in the center, so the division by
     // two is doing an intentional round-down.
     overhangShadowLayer->setContentsToNinePatch(
@@ -54,6 +56,8 @@ void OverscrollTheme::setUpOverhangShadowLayer(GraphicsLayer* overhangShadowLaye
 
 void OverscrollTheme::updateOverhangShadowLayer(GraphicsLayer* shadowLayer, GraphicsLayer* rootContentLayer)
 {
+    if (!m_overhangShadow)
+        return;
     // Note that for the position, the division m_overhangShadow->width() / 2 is an intentional
     // round-down, and that for the width and height, the 1-pixel aperture is being replaced
     // by the root contents layer, hence subtracting 1 and adding the rootContentsLayer size.

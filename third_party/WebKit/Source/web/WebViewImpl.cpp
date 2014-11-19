@@ -4156,6 +4156,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
                 GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
                 ASSERT(rootScrollLayer);
                 WebLayer* pageScaleLayer = rootScrollLayer->parent() ? rootScrollLayer->parent()->platformLayer() : 0;
+                // TODO(ccameron): Use the version of this function which specifies the overscroll layer as well.
                 m_layerTreeView->registerViewportLayers(pageScaleLayer, rootScrollLayer->platformLayer(), 0);
             }
         } else {
