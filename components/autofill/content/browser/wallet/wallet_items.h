@@ -191,8 +191,7 @@ class WalletItems {
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentUrl);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentEmptyId);
     LegalDocument(const std::string& id,
-                  const base::string16& display_name);
-    LegalDocument(const GURL& url,
+                  const GURL& url,
                   const base::string16& display_name);
 
     // Externalized Online Wallet id for the document, or an empty string for

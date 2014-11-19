@@ -18,6 +18,7 @@ GURL GetGetWalletItemsUrl(size_t user_index);
 GURL GetGetFullWalletUrl(size_t user_index);
 GURL GetManageInstrumentsUrl(size_t user_index);
 GURL GetManageAddressesUrl(size_t user_index);
+GURL GetPrivacyNoticeUrl();
 GURL GetAcceptLegalDocumentsUrl(size_t user_index);
 GURL GetAuthenticateInstrumentUrl(size_t user_index);
 GURL GetSaveToWalletNoEscrowUrl(size_t user_index);

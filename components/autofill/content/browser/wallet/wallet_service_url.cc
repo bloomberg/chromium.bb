@@ -118,6 +118,10 @@ GURL GetManageAddressesUrl(size_t user_index) {
   return GetBaseSecureUrl().Resolve(path);
 }
 
+GURL GetPrivacyNoticeUrl() {
+  return GetWalletHostUrl().Resolve("legaldocument?family=0.privacynotice");
+}
+
 GURL GetAcceptLegalDocumentsUrl(size_t user_index) {
   return GetBaseAutocheckoutUrl(user_index).Resolve("acceptLegalDocument");
 }

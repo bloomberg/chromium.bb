@@ -1153,6 +1153,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   ScopedVector<WalletItems::LegalDocument> docs;
   base::DictionaryValue document;
   document.SetString("legal_document_id", "doc_id_1");
+  document.SetString("url", "https://example.com");
   document.SetString("display_name", "doc_1");
   docs.push_back(
       WalletItems::LegalDocument::CreateLegalDocument(document).release());
@@ -1160,8 +1161,10 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   document.SetString("display_name", "doc_2");
   docs.push_back(
       WalletItems::LegalDocument::CreateLegalDocument(document).release());
+  ASSERT_TRUE(docs.back());
   docs.push_back(
       WalletItems::LegalDocument::CreatePrivacyPolicyDocument().release());
+  ASSERT_TRUE(docs.back());
   wallet_client_->AcceptLegalDocuments(docs.get(),
                                        kGoogleTransactionId);
   VerifyAndFinishRequest(net::HTTP_OK,

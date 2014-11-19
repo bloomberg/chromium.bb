@@ -174,6 +174,7 @@ scoped_ptr<Instrument> GetTestAddressNameChangeInstrument() {
 scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
   base::DictionaryValue dict;
   dict.SetString("legal_document_id", "document_id");
+  dict.SetString("url", "https://example.com");
   dict.SetString("display_name", "display_name");
   return wallet::WalletItems::LegalDocument::CreateLegalDocument(dict);
 }

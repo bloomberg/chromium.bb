@@ -16,9 +16,10 @@ TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "1");
 
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/online/v2/u/1/wallet/"
-            "autocheckout/v1/getWalletItemsJwtless",
-           GetGetWalletItemsUrl(1).spec());
+  EXPECT_EQ(
+      "https://wallet-web.sandbox.google.com/online/v2/u/1/wallet/"
+      "autocheckout/v1/getWalletItemsJwtless",
+      GetGetWalletItemsUrl(1).spec());
   EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/u/1/"
             "autocheckout/v1/getFullWalletJwtless?s7e=otp",
             GetGetFullWalletUrl(1).spec());
@@ -27,6 +28,10 @@ TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
   EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/1/settings/"
             "addresses",
             GetManageAddressesUrl(1).spec());
+  EXPECT_EQ(
+      "https://wallet-web.sandbox.google.com/"
+      "legaldocument?family=0.privacynotice",
+      GetPrivacyNoticeUrl().spec());
   EXPECT_EQ("https://wallet-web.sandbox.google.com/online/v2/u/1/wallet/"
             "autocheckout/v1/acceptLegalDocument",
             GetAcceptLegalDocumentsUrl(1).spec());
@@ -58,6 +63,10 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
             GetManageInstrumentsUrl(1).spec());
   EXPECT_EQ("https://wallet.google.com/manage/w/1/settings/addresses",
             GetManageAddressesUrl(1).spec());
+  EXPECT_EQ(
+      "https://wallet.google.com/"
+      "legaldocument?family=0.privacynotice",
+      GetPrivacyNoticeUrl().spec());
   EXPECT_EQ("https://wallet.google.com/online/v2/u/1/wallet/"
             "autocheckout/v1/acceptLegalDocument",
             GetAcceptLegalDocumentsUrl(1).spec());
