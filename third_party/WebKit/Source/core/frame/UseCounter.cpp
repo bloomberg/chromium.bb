@@ -817,6 +817,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DOMImplementationHasFeatureReturnFalse:
         return "'DOMImplementation.hasFeature()' returning false is deprecated. Please do not use it, as per DOM it should always return true (https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature).";
 
+    case BgPropertiesFixed:
+        return "The 'bgproperties=fixed' attribute is deprecated. Please use CSS 'background-attachment:fixed' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

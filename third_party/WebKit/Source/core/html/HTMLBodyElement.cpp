@@ -82,7 +82,7 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(const QualifiedName& 
         addHTMLColorToStyle(style, CSSPropertyColor, value);
     } else if (name == bgpropertiesAttr) {
         if (equalIgnoringCase(value, "fixed")) {
-            UseCounter::count(document(), UseCounter::BgPropertiesFixed);
+            UseCounter::countDeprecation(document(), UseCounter::BgPropertiesFixed);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBackgroundAttachment, CSSValueFixed);
         }
     } else

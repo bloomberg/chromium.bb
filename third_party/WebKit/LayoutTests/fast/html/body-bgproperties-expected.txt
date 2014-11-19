@@ -1,0 +1,6 @@
+CONSOLE WARNING: The 'bgproperties=fixed' attribute is deprecated. Please use CSS 'background-attachment:fixed' instead.
+PASS getComputedStyle(document.body).backgroundAttachment is "fixed"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
