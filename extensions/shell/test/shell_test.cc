@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
-#include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 
 namespace extensions {
@@ -44,7 +44,7 @@ void AppShellTest::RunTestOnMainThreadLoop() {
   TearDownOnMainThread();
 
   // Clean up the app window.
-  ShellDesktopController::instance()->CloseAppWindows();
+  DesktopController::instance()->CloseAppWindows();
 }
 
 }  // namespace extensions

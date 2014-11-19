@@ -4,46 +4,22 @@
 
 #include "extensions/shell/browser/shell_native_app_window.h"
 
-#include "content/public/browser/web_contents.h"
 #include "extensions/shell/browser/desktop_controller.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/wm/core/window_util.h"
 
 namespace extensions {
-namespace {
-
-gfx::Size GetDesktopWindowSize() {
-  return DesktopController::instance()->GetHost()->window()->bounds().size();
-}
-
-}  // namespace
 
 ShellNativeAppWindow::ShellNativeAppWindow(
     AppWindow* app_window,
     const AppWindow::CreateParams& params)
     : app_window_(app_window) {
-  gfx::Rect bounds = params.GetInitialWindowBounds(GetFrameInsets());
-  bool position_specified =
-      bounds.x() != AppWindow::BoundsSpecification::kUnspecifiedPosition &&
-      bounds.y() != AppWindow::BoundsSpecification::kUnspecifiedPosition;
-  if (!position_specified)
-    bounds.set_origin(GetBounds().origin());
-  SetBounds(bounds);
 }
 
 ShellNativeAppWindow::~ShellNativeAppWindow() {
-}
-
-bool ShellNativeAppWindow::IsActive() const {
-  // Even though app_shell only supports a single app window, there might be
-  // some sort of system-level dialog open and active.
-  aura::Window* window = GetWindow();
-  return window && wm::IsActiveWindow(window);
 }
 
 bool ShellNativeAppWindow::IsMaximized() const {
@@ -61,10 +37,6 @@ bool ShellNativeAppWindow::IsFullscreen() const {
   return false;
 }
 
-gfx::NativeWindow ShellNativeAppWindow::GetNativeWindow() const {
-  return GetWindow();
-}
-
 gfx::Rect ShellNativeAppWindow::GetRestoredBounds() const {
   // app_shell windows cannot be maximized, so the current bounds are the
   // restored bounds.
@@ -75,18 +47,6 @@ ui::WindowShowState ShellNativeAppWindow::GetRestoredState() const {
   return ui::SHOW_STATE_NORMAL;
 }
 
-gfx::Rect ShellNativeAppWindow::GetBounds() const {
-  return GetWindow()->GetBoundsInScreen();
-}
-
-void ShellNativeAppWindow::Show() {
-  GetWindow()->Show();
-}
-
-void ShellNativeAppWindow::Hide() {
-  GetWindow()->Hide();
-}
-
 void ShellNativeAppWindow::ShowInactive() {
   NOTIMPLEMENTED();
 }
@@ -94,18 +54,6 @@ void ShellNativeAppWindow::ShowInactive() {
 void ShellNativeAppWindow::Close() {
   DesktopController::instance()->RemoveAppWindow(app_window_);
   app_window_->OnNativeClose();
-}
-
-void ShellNativeAppWindow::Activate() {
-  aura::Window* window = GetWindow();
-  if (window)
-    wm::ActivateWindow(window);
-}
-
-void ShellNativeAppWindow::Deactivate() {
-  aura::Window* window = GetWindow();
-  if (window)
-    wm::DeactivateWindow(window);
 }
 
 void ShellNativeAppWindow::Maximize() {
@@ -118,10 +66,6 @@ void ShellNativeAppWindow::Minimize() {
 
 void ShellNativeAppWindow::Restore() {
   NOTIMPLEMENTED();
-}
-
-void ShellNativeAppWindow::SetBounds(const gfx::Rect& bounds) {
-  GetWindow()->SetBounds(bounds);
 }
 
 void ShellNativeAppWindow::FlashFrame(bool flash) {
@@ -236,12 +180,12 @@ void ShellNativeAppWindow::UpdateShelfMenu() {
 
 gfx::Size ShellNativeAppWindow::GetContentMinimumSize() const {
   // Content fills the desktop and cannot be resized.
-  return GetDesktopWindowSize();
+  return DesktopController::instance()->GetWindowSize();
 }
 
 gfx::Size ShellNativeAppWindow::GetContentMaximumSize() const {
   // Content fills the desktop and cannot be resized.
-  return GetDesktopWindowSize();
+  return DesktopController::instance()->GetWindowSize();
 }
 
 void ShellNativeAppWindow::SetContentSizeConstraints(
@@ -257,10 +201,6 @@ void ShellNativeAppWindow::SetVisibleOnAllWorkspaces(bool always_visible) {
 bool ShellNativeAppWindow::CanHaveAlphaEnabled() const {
   // No background to display if the window was transparent.
   return false;
-}
-
-aura::Window* ShellNativeAppWindow::GetWindow() const {
-  return app_window_->web_contents()->GetNativeView();
 }
 
 }  // namespace extensions

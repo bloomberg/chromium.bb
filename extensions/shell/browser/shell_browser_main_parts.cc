@@ -24,7 +24,7 @@
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_context_keyed_service_factories.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
-#include "extensions/shell/browser/shell_desktop_controller.h"
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #include "extensions/shell/browser/shell_device_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
@@ -33,10 +33,12 @@
 #include "extensions/shell/browser/shell_omaha_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/common/switches.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -127,7 +129,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext(net_log_.get()));
 
+#if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
+#endif
 
   storage_monitor::StorageMonitor::Create();
 

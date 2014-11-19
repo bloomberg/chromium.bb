@@ -47,6 +47,7 @@ class ExtensionsTest : public testing::Test {
   void TearDown() override;
 
  private:
+  // TODO(yoz): Add a NotificationService here; it's used widely enough.
   scoped_ptr<content::ContentClient> content_client_;
   scoped_ptr<content::ContentBrowserClient> content_browser_client_;
   scoped_ptr<content::BrowserContext> browser_context_;

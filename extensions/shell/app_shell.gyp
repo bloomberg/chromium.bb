@@ -38,7 +38,6 @@
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        '<(DEPTH)/ui/wm/wm.gyp:wm',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [
@@ -72,8 +71,6 @@
         'browser/shell_browser_main_parts.h',
         'browser/shell_content_browser_client.cc',
         'browser/shell_content_browser_client.h',
-        'browser/shell_desktop_controller.cc',
-        'browser/shell_desktop_controller.h',
         'browser/shell_device_client.cc',
         'browser/shell_device_client.h',
         'browser/shell_display_info_provider.cc',
@@ -121,6 +118,18 @@
         'utility/shell_content_utility_client.h',
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/wm/wm.gyp:wm',
+          ],
+          'sources': [
+            'browser/shell_app_window_client_aura.cc',
+            'browser/shell_desktop_controller_aura.cc',
+            'browser/shell_desktop_controller_aura.h',
+            'browser/shell_native_app_window_aura.cc',
+            'browser/shell_native_app_window_aura.h',
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
@@ -253,7 +262,7 @@
         '../test/extensions_unittests_main.cc',
         'browser/api/identity/identity_api_unittest.cc',
         'browser/shell_audio_controller_chromeos_unittest.cc',
-        'browser/shell_desktop_controller_unittest.cc',
+        'browser/shell_native_app_window_aura_unittest.cc',
         'browser/shell_oauth2_token_service_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
@@ -261,6 +270,11 @@
         ['disable_nacl==0', {
           'sources': [
             'browser/shell_nacl_browser_delegate_unittest.cc',
+          ],
+        }],
+        ['use_aura==1', {
+          'sources': [
+            'browser/shell_desktop_controller_aura_unittest.cc',
           ],
         }],
         ['chromeos==1', {

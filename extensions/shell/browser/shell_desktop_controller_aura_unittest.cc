@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/shell_desktop_controller.h"
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,15 +16,15 @@
 
 namespace extensions {
 
-class ShellDesktopControllerTest : public aura::test::AuraTestBase {
+class ShellDesktopControllerAuraTest : public aura::test::AuraTestBase {
  public:
-  ShellDesktopControllerTest()
+  ShellDesktopControllerAuraTest()
 #if defined(OS_CHROMEOS)
       : power_manager_client_(NULL)
 #endif
       {
   }
-  ~ShellDesktopControllerTest() override {}
+  ~ShellDesktopControllerAuraTest() override {}
 
   void SetUp() override {
 #if defined(OS_CHROMEOS)
@@ -34,7 +34,7 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
     dbus_setter->SetPowerManagerClient(make_scoped_ptr(power_manager_client_));
 #endif
     aura::test::AuraTestBase::SetUp();
-    controller_.reset(new ShellDesktopController());
+    controller_.reset(new ShellDesktopControllerAura());
   }
 
   void TearDown() override {
@@ -46,20 +46,20 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
   }
 
  protected:
-  scoped_ptr<ShellDesktopController> controller_;
+  scoped_ptr<ShellDesktopControllerAura> controller_;
 
 #if defined(OS_CHROMEOS)
   chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.
 #endif
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellDesktopControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ShellDesktopControllerAuraTest);
 };
 
 #if defined(OS_CHROMEOS)
 // Tests that a shutdown request is sent to the power manager when the power
 // button is pressed.
-TEST_F(ShellDesktopControllerTest, PowerButton) {
+TEST_F(ShellDesktopControllerAuraTest, PowerButton) {
   // Ignore button releases.
   power_manager_client_->SendPowerButtonEvent(false /* down */,
                                               base::TimeTicks());

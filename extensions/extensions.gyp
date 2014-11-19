@@ -1044,6 +1044,8 @@
         'browser/api_test_utils.h',
         'browser/api_unittest.cc',
         'browser/api_unittest.h',
+        'browser/app_window/test_app_window_contents.cc',
+        'browser/app_window/test_app_window_contents.h',
         'browser/extension_error_test_util.cc',
         'browser/extension_error_test_util.h',
         'browser/extensions_test.cc',

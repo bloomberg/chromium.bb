@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/shell_desktop_controller.h"
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
 #include <algorithm>
 #include <string>
@@ -24,6 +24,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -158,13 +159,13 @@ class AppsFocusRules : public wm::BaseFocusRules {
 
 }  // namespace
 
-ShellDesktopController::ShellDesktopController()
+ShellDesktopControllerAura::ShellDesktopControllerAura()
     : app_window_client_(new ShellAppWindowClient) {
   extensions::AppWindowClient::Set(app_window_client_.get());
 
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
   display_configurator_.reset(new ui::DisplayConfigurator);
   display_configurator_->Init(false);
   display_configurator_->ForceInitialConfigure(0);
@@ -173,21 +174,21 @@ ShellDesktopController::ShellDesktopController()
   CreateRootWindow();
 }
 
-ShellDesktopController::~ShellDesktopController() {
+ShellDesktopControllerAura::~ShellDesktopControllerAura() {
   CloseAppWindows();
   DestroyRootWindow();
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 #endif
   extensions::AppWindowClient::Set(NULL);
 }
 
-aura::WindowTreeHost* ShellDesktopController::GetHost() {
-  return host_.get();
+gfx::Size ShellDesktopControllerAura::GetWindowSize() {
+  return host_->window()->bounds().size();
 }
 
-AppWindow* ShellDesktopController::CreateAppWindow(
+AppWindow* ShellDesktopControllerAura::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
   app_windows_.push_back(
@@ -195,18 +196,18 @@ AppWindow* ShellDesktopController::CreateAppWindow(
   return app_windows_.back();
 }
 
-void ShellDesktopController::AddAppWindow(aura::Window* window) {
-  aura::Window* root_window = GetHost()->window();
+void ShellDesktopControllerAura::AddAppWindow(gfx::NativeWindow window) {
+  aura::Window* root_window = host_->window();
   root_window->AddChild(window);
 }
 
-void ShellDesktopController::RemoveAppWindow(AppWindow* window) {
+void ShellDesktopControllerAura::RemoveAppWindow(AppWindow* window) {
   auto iter = std::find(app_windows_.begin(), app_windows_.end(), window);
   DCHECK(iter != app_windows_.end());
   app_windows_.erase(iter);
 }
 
-void ShellDesktopController::CloseAppWindows() {
+void ShellDesktopControllerAura::CloseAppWindows() {
   // Create a copy of the window vector, because closing the windows will
   // trigger RemoveAppWindow, which will invalidate the iterator.
   // This vector should be small enough that this should not be an issue.
@@ -216,7 +217,7 @@ void ShellDesktopController::CloseAppWindows() {
   app_windows_.clear();
 }
 
-aura::Window* ShellDesktopController::GetDefaultParent(
+aura::Window* ShellDesktopControllerAura::GetDefaultParent(
     aura::Window* context,
     aura::Window* window,
     const gfx::Rect& bounds) {
@@ -224,16 +225,17 @@ aura::Window* ShellDesktopController::GetDefaultParent(
 }
 
 #if defined(OS_CHROMEOS)
-void ShellDesktopController::PowerButtonEventReceived(
+void ShellDesktopControllerAura::PowerButtonEventReceived(
     bool down,
     const base::TimeTicks& timestamp) {
   if (down) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        RequestShutdown();
+    chromeos::DBusThreadManager::Get()
+        ->GetPowerManagerClient()
+        ->RequestShutdown();
   }
 }
 
-void ShellDesktopController::OnDisplayModeChanged(
+void ShellDesktopControllerAura::OnDisplayModeChanged(
     const std::vector<ui::DisplayConfigurator::DisplayState>& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
@@ -241,7 +243,7 @@ void ShellDesktopController::OnDisplayModeChanged(
 }
 #endif
 
-void ShellDesktopController::OnHostCloseRequested(
+void ShellDesktopControllerAura::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
   CloseAppWindows();
@@ -249,7 +251,7 @@ void ShellDesktopController::OnHostCloseRequested(
                                          base::MessageLoop::QuitClosure());
 }
 
-void ShellDesktopController::InitWindowManager() {
+void ShellDesktopControllerAura::InitWindowManager() {
   wm::FocusController* focus_controller =
       new wm::FocusController(new AppsFocusRules());
   aura::client::SetFocusClient(host_->window(), focus_controller);
@@ -285,7 +287,7 @@ void ShellDesktopController::InitWindowManager() {
 #endif
 }
 
-void ShellDesktopController::CreateRootWindow() {
+void ShellDesktopControllerAura::CreateRootWindow() {
   // Set up basic pieces of ui::wm.
   gfx::Size size;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -319,7 +321,7 @@ void ShellDesktopController::CreateRootWindow() {
   host_->Show();
 }
 
-void ShellDesktopController::DestroyRootWindow() {
+void ShellDesktopControllerAura::DestroyRootWindow() {
   host_->RemoveObserver(this);
   if (input_method_filter_)
     root_window_event_filter_->RemoveHandler(input_method_filter_.get());
@@ -345,7 +347,7 @@ void ShellDesktopController::DestroyRootWindow() {
   host_.reset();
 }
 
-gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
+gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
   const std::vector<ui::DisplayConfigurator::DisplayState>& displays =
       display_configurator_->cached_displays();

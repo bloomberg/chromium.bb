@@ -18,9 +18,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/browser/app_window/app_window_client.h"
-#include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -87,26 +87,6 @@ class BrowserProcessPowerTest : public BrowserWithTestWindowTest {
 
   scoped_ptr<ProcessPowerCollector> collector;
   scoped_ptr<TestingProfileManager> profile_manager_;
-};
-
-class TestAppWindowContents : public extensions::AppWindowContents {
- public:
-  explicit TestAppWindowContents(content::WebContents* web_contents)
-      : web_contents_(web_contents) {}
-
-  // apps:AppWindowContents
-  void Initialize(content::BrowserContext* context, const GURL& url) override {}
-  void LoadContents(int32 creator_process_id) override {}
-  void NativeWindowChanged(
-      extensions::NativeAppWindow* native_app_window) override {}
-  void NativeWindowClosed() override {}
-  void DispatchWindowShownForTests() const override {}
-  content::WebContents* GetWebContents() const override {
-    return web_contents_.get();
-  }
-
- private:
-  scoped_ptr<content::WebContents> web_contents_;
 };
 
 TEST_F(BrowserProcessPowerTest, NoSite) {
@@ -299,7 +279,7 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
           content::SiteInstance::CreateForURL(current_profile, url))));
   window->SetAppWindowContentsForTesting(
       scoped_ptr<extensions::AppWindowContents>(
-          new TestAppWindowContents(web_contents)));
+          new extensions::TestAppWindowContents(web_contents)));
   extensions::AppWindowRegistry* app_registry =
       extensions::AppWindowRegistry::Get(current_profile);
   app_registry->AddAppWindow(window);
@@ -311,9 +291,6 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
   collector->UpdatePowerConsumptionForTesting();
   EXPECT_EQ(1u, collector->metrics_map_for_testing()->size());
 
-  // Clear the AppWindowContents before trying to close.
-  window->SetAppWindowContentsForTesting(
-      scoped_ptr<extensions::AppWindowContents>());
   window->OnNativeClose();
   collector->UpdatePowerConsumptionForTesting();
   EXPECT_EQ(0u, collector->metrics_map_for_testing()->size());

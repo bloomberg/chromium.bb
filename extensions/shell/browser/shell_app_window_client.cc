@@ -8,7 +8,6 @@
 
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/shell/browser/desktop_controller.h"
-#include "extensions/shell/browser/shell_native_app_window.h"
 
 namespace extensions {
 
@@ -22,16 +21,6 @@ AppWindow* ShellAppWindowClient::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
   return DesktopController::instance()->CreateAppWindow(context, extension);
-}
-
-NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
-      AppWindow* window,
-      AppWindow::CreateParams* params) {
-  ShellNativeAppWindow* native_app_window =
-      new ShellNativeAppWindow(window, *params);
-  DesktopController::instance()->AddAppWindow(
-      native_app_window->GetNativeWindow());
-  return native_app_window;
 }
 
 void ShellAppWindowClient::OpenDevToolsWindow(

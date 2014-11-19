@@ -24,7 +24,10 @@
 #include "extensions/shell/common/switches.h"
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace athena {
 namespace {
@@ -41,8 +44,8 @@ class AthenaDesktopController : public extensions::DesktopController {
 
  private:
   // extensions::DesktopController:
-  virtual aura::WindowTreeHost* GetHost() override {
-    return athena::AthenaEnv::Get()->GetHost();
+  virtual gfx::Size GetWindowSize() override {
+    return athena::AthenaEnv::Get()->GetHost()->window()->bounds().size();
   }
 
   // Creates a new app window and adds it to the desktop. The desktop maintains

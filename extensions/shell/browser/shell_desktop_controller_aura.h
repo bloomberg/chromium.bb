@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_H_
-#define EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_H_
+#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_AURA_H_
+#define EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_AURA_H_
 
 #include <vector>
 
@@ -55,22 +55,23 @@ class AppWindowClient;
 class Extension;
 
 // Handles desktop-related tasks for app_shell.
-class ShellDesktopController : public DesktopController,
-                               public aura::client::WindowTreeClient,
+class ShellDesktopControllerAura
+    : public DesktopController,
+      public aura::client::WindowTreeClient,
 #if defined(OS_CHROMEOS)
-                               public chromeos::PowerManagerClient::Observer,
-                               public ui::DisplayConfigurator::Observer,
+      public chromeos::PowerManagerClient::Observer,
+      public ui::DisplayConfigurator::Observer,
 #endif
-                               public aura::WindowTreeHostObserver {
+      public aura::WindowTreeHostObserver {
  public:
-  ShellDesktopController();
-  ~ShellDesktopController() override;
+  ShellDesktopControllerAura();
+  ~ShellDesktopControllerAura() override;
 
   // DesktopController:
-  aura::WindowTreeHost* GetHost() override;
+  gfx::Size GetWindowSize() override;
   AppWindow* CreateAppWindow(content::BrowserContext* context,
                              const Extension* extension) override;
-  void AddAppWindow(aura::Window* window) override;
+  void AddAppWindow(gfx::NativeWindow window) override;
   void RemoveAppWindow(AppWindow* window) override;
   void CloseAppWindows() override;
 
@@ -81,13 +82,13 @@ class ShellDesktopController : public DesktopController,
 
 #if defined(OS_CHROMEOS)
   // chromeos::PowerManagerClient::Observer overrides:
-  virtual void PowerButtonEventReceived(bool down,
-                                        const base::TimeTicks& timestamp)
-      override;
+  void PowerButtonEventReceived(bool down,
+                                const base::TimeTicks& timestamp) override;
 
   // ui::DisplayConfigurator::Observer overrides.
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::DisplayConfigurator::DisplayState>& displays) override;
+  void OnDisplayModeChanged(
+      const std::vector<ui::DisplayConfigurator::DisplayState>& displays)
+      override;
 #endif
 
   // aura::WindowTreeHostObserver overrides:
@@ -137,9 +138,9 @@ class ShellDesktopController : public DesktopController,
   // NativeAppWindow::Close() deletes the AppWindow.
   std::vector<AppWindow*> app_windows_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
+  DISALLOW_COPY_AND_ASSIGN(ShellDesktopControllerAura);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_AURA_H_

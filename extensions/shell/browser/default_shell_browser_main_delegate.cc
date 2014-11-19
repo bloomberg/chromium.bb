@@ -9,8 +9,11 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "extensions/common/switches.h"
-#include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+
+#if defined(USE_AURA)
+#include "extensions/shell/browser/shell_desktop_controller_aura.h"
+#endif
 
 namespace extensions {
 
@@ -62,7 +65,11 @@ void DefaultShellBrowserMainDelegate::Shutdown() {
 }
 
 DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController() {
-  return new ShellDesktopController();
+#if defined(USE_AURA)
+  return new ShellDesktopControllerAura();
+#else
+  return NULL;
+#endif
 }
 
 }  // namespace extensions

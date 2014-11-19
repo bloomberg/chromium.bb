@@ -254,19 +254,18 @@ void AppWindow::Init(const GURL& url,
   // Initialize the render interface and web contents
   app_window_contents_.reset(app_window_contents);
   app_window_contents_->Initialize(browser_context(), url);
-  WebContents* web_contents = app_window_contents_->GetWebContents();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAppsShowOnFirstPaint)) {
-    content::WebContentsObserver::Observe(web_contents);
+    content::WebContentsObserver::Observe(web_contents());
   }
-  app_delegate_->InitWebContents(web_contents);
+  app_delegate_->InitWebContents(web_contents());
 
-  WebContentsModalDialogManager::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::CreateForWebContents(web_contents());
 
-  web_contents->SetDelegate(this);
-  WebContentsModalDialogManager::FromWebContents(web_contents)
+  web_contents()->SetDelegate(this);
+  WebContentsModalDialogManager::FromWebContents(web_contents())
       ->SetDelegate(this);
-  SetViewType(web_contents, VIEW_TYPE_APP_WINDOW);
+  SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
 
   // Initialize the window
   CreateParams new_params = LoadDefaults(params);
@@ -285,11 +284,11 @@ void AppWindow::Init(const GURL& url,
       app_window_client->CreateNativeAppWindow(this, &new_params));
 
   helper_.reset(new AppWebContentsHelper(
-      browser_context_, extension_id_, web_contents, app_delegate_.get()));
+      browser_context_, extension_id_, web_contents(), app_delegate_.get()));
 
   popup_manager_.reset(
       new web_modal::PopupManager(GetWebContentsModalDialogHost()));
-  popup_manager_->RegisterWith(web_contents);
+  popup_manager_->RegisterWith(web_contents());
 
   UpdateExtensionAppIcon();
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
@@ -343,7 +342,7 @@ void AppWindow::Init(const GURL& url,
     gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
     gfx::Rect initial_bounds = new_params.GetInitialWindowBounds(frame_insets);
     initial_bounds.Inset(frame_insets);
-    app_delegate_->ResizeWebContents(web_contents, initial_bounds.size());
+    app_delegate_->ResizeWebContents(web_contents(), initial_bounds.size());
   }
 }
 
@@ -452,9 +451,10 @@ void AppWindow::DidFirstVisuallyNonEmptyPaint() {
 void AppWindow::OnNativeClose() {
   AppWindowRegistry::Get(browser_context_)->RemoveAppWindow(this);
   if (app_window_contents_) {
-    WebContents* web_contents = app_window_contents_->GetWebContents();
-    WebContentsModalDialogManager::FromWebContents(web_contents)
-        ->SetDelegate(NULL);
+    WebContentsModalDialogManager* modal_dialog_manager =
+        WebContentsModalDialogManager::FromWebContents(web_contents());
+    if (modal_dialog_manager)  // May be null in unit tests.
+      modal_dialog_manager->SetDelegate(nullptr);
     app_window_contents_->NativeWindowClosed();
   }
   delete this;

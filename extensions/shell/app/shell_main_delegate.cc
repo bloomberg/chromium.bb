@@ -26,8 +26,10 @@
 #include "components/nacl/common/nacl_switches.h"
 #if defined(OS_LINUX)
 #include "components/nacl/common/nacl_paths.h"
-#include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 #endif  // OS_LINUX
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#include "components/nacl/zygote/nacl_fork_delegate_linux.h"
+#endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
 #endif  // !DISABLE_NACL
 
 namespace {
@@ -139,6 +141,9 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
          process_type == switches::kRendererProcess ||
 #if !defined(DISABLE_NACL)
          process_type == switches::kNaClLoaderProcess ||
+#endif
+#if defined(OS_MACOSX)
+         process_type == switches::kGpuProcess ||
 #endif
          process_type == switches::kUtilityProcess;
 }

@@ -25,9 +25,9 @@ class ShellBrowserMainDelegate {
   // other services such as BrowserContext / extension system are shut down.
   virtual void Shutdown() = 0;
 
-  // Creates the ShellDesktopController instance to initialize the root window
-  // and window manager. Subclass may return its subclass to customize the
-  // windo manager.
+  // Creates the ShellDesktopControllerAura instance to initialize the root
+  // window and window manager. Subclass may return its subclass to customize
+  // the window manager.
   virtual DesktopController* CreateDesktopController() = 0;
 };
 

@@ -17,25 +17,19 @@ class ShellNativeAppWindow : public NativeAppWindow {
                        const AppWindow::CreateParams& params);
   ~ShellNativeAppWindow() override;
 
+  AppWindow* app_window() const { return app_window_; }
+
   // ui::BaseView overrides:
-  bool IsActive() const override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool IsFullscreen() const override;
-  gfx::NativeWindow GetNativeWindow() const override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
-  gfx::Rect GetBounds() const override;
-  void Show() override;
-  void Hide() override;
   void ShowInactive() override;
   void Close() override;
-  void Activate() override;
-  void Deactivate() override;
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
-  void SetBounds(const gfx::Rect& bounds) override;
   void FlashFrame(bool flash) override;
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override;
@@ -77,8 +71,6 @@ class ShellNativeAppWindow : public NativeAppWindow {
   bool CanHaveAlphaEnabled() const override;
 
  private:
-  aura::Window* GetWindow() const;
-
   AppWindow* app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNativeAppWindow);

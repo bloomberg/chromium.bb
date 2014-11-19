@@ -20,6 +20,8 @@ class ShellAppWindowClient : public AppWindowClient {
   // AppWindowClient overrides:
   AppWindow* CreateAppWindow(content::BrowserContext* context,
                              const Extension* extension) override;
+  // Note that CreateNativeAppWindow is defined in separate (per-framework)
+  // implementation files.
   NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
       AppWindow::CreateParams* params) override;
