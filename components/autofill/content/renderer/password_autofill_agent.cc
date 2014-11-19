@@ -728,7 +728,6 @@ void PasswordAutofillAgent::SendPasswordForms(blink::WebFrame* frame,
   if (!OriginCanAccessPasswordManager(origin)) {
     if (logger) {
       logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
-      logger->LogMessage(Logger::STRING_DECISION_DROP);
     }
     return;
   }
@@ -737,7 +736,6 @@ void PasswordAutofillAgent::SendPasswordForms(blink::WebFrame* frame,
   if (IsWebpageEmpty(frame)) {
     if (logger) {
       logger->LogMessage(Logger::STRING_WEBPAGE_EMPTY);
-      logger->LogMessage(Logger::STRING_DECISION_DROP);
     }
     return;
   }
@@ -895,7 +893,7 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
     // Remove reference since we have already submitted this form.
     provisionally_saved_forms_.erase(frame);
   } else if (logger) {
-    logger->LogMessage(Logger::STRING_DECISION_DROP);
+    logger->LogMessage(Logger::STRING_FORM_IS_NOT_PASSWORD);
   }
 }
 
@@ -989,7 +987,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
           }
         }
         if (!password_forms_found && logger) {
-          logger->LogMessage(Logger::STRING_DECISION_DROP);
+          logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
         }
       }
     }
@@ -1001,7 +999,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
     gatekeeper_.Reset();
   } else {
     if (logger)
-      logger->LogMessage(Logger::STRING_DECISION_DROP);
+      logger->LogMessage(Logger::STRING_FRAME_NOT_MAIN_FRAME);
   }
 }
 

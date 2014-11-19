@@ -444,7 +444,6 @@ void PasswordManager::OnPasswordFormsRendered(
   if (!provisional_save_manager_.get()) {
     if (logger) {
       logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
-      logger->LogMessage(Logger::STRING_DECISION_DROP);
     }
     return;
   }

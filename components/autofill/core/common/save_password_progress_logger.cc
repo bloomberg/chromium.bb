@@ -101,6 +101,8 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Form is visible";
     case SavePasswordProgressLogger::STRING_FORM_IS_PASSWORD:
       return "Form is a password form";
+    case SavePasswordProgressLogger::STRING_FORM_IS_NOT_PASSWORD:
+      return "Form isn't a password form";
     case SavePasswordProgressLogger::STRING_WILL_SUBMIT_FORM_METHOD:
       return "PasswordAutofillAgent::WillSubmitForm";
     case SavePasswordProgressLogger::STRING_HTML_FORM_FOR_SUBMIT:
@@ -113,10 +115,14 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "PasswordAutofillAgent::DidStartProvisionalLoad";
     case SavePasswordProgressLogger::STRING_FORM_FRAME_EQ_FRAME:
       return "form_frame == frame";
+    case SavePasswordProgressLogger::STRING_FRAME_NOT_MAIN_FRAME:
+      return "|frame| is not the main frame";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:
       return "provisionally_saved_forms_[form_frame]";
     case SavePasswordProgressLogger::STRING_PASSWORD_FORM_FOUND_ON_PAGE:
-      return "PasswordForm found on the page";
+      return "A password form found on the page";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE:
+      return "No password form found on the page";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD:
       return "PasswordManager::ProvisionallySavePassword";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
@@ -171,7 +177,7 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
   }
   NOTREACHED();  // Win compilers don't believe this is unreachable.
   return std::string();
-};
+}
 
 // Removes privacy sensitive parts of |url| (currently all but host and scheme).
 std::string ScrubURL(const GURL& url) {
