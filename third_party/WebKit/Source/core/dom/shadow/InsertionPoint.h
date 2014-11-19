@@ -84,7 +84,7 @@ private:
     bool m_registeredWithShadowRoot;
 };
 
-typedef WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> > DestinationInsertionPoints;
+typedef WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>, 1> DestinationInsertionPoints;
 
 DEFINE_ELEMENT_TYPE_CASTS(InsertionPoint, isInsertionPoint());
 
