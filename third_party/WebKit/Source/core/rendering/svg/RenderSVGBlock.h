@@ -46,6 +46,7 @@ public:
 
 protected:
     virtual void willBeDestroyed() override;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override final;
 
     AffineTransform m_localTransform;
 

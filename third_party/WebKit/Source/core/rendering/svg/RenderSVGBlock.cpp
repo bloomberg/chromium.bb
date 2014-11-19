@@ -101,6 +101,14 @@ LayoutRect RenderSVGBlock::clippedOverflowRectForPaintInvalidation(const RenderL
     return SVGRenderSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
+void RenderSVGBlock::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+{
+    FloatRect paintInvalidationRect = rect;
+    paintInvalidationRect.inflate(style()->outlineWidth());
+    computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    rect = enclosingLayoutRect(paintInvalidationRect);
+}
+
 void RenderSVGBlock::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState) const
 {
     SVGRenderSupport::computeFloatRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
