@@ -36,21 +36,22 @@
 #include <iphlpapi.h>
 #include <objbase.h>
 #include "base/win/windows_version.h"
-#include "net/base/net_util_win.h"
 #endif  // OS_WIN
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_WIN)
 #include "net/base/address_tracker_linux.h"
 #endif  // !OS_MACOSX && !OS_NACL && !OS_WIN
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+#include "net/base/net_util_win.h"
+#else  // OS_WIN
 #include "net/base/net_util_posix.h"
 #if defined(OS_MACOSX)
 #include "net/base/net_util_mac.h"
 #else  // OS_MACOSX
 #include "net/base/net_util_linux.h"
-#endif
-#endif  // !OS_WIN
+#endif  // OS_MACOSX
+#endif  // OS_WIN
 
 using base::ASCIIToUTF16;
 using base::WideToUTF16;
@@ -877,16 +878,32 @@ TEST(NetUtilTest, GetNetworkList) {
 }
 
 static const char ifname_em1[] = "em1";
+#if defined(OS_WIN)
+static const char ifname_vm[] = "VMnet";
+#else
 static const char ifname_vm[] = "vmnet";
+#endif  // OS_WIN
 
 static const unsigned char kIPv6LocalAddr[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+
+// The following 3 addresses need to be changed together. IPv6Addr is the IPv6
+// address. IPv6Netmask is the mask address with as many leading bits set to 1
+// as the prefix length. IPv6AddrPrefix needs to match IPv6Addr with the same
+// number of bits as the prefix length.
 static const unsigned char kIPv6Addr[] =
   {0x24, 0x01, 0xfa, 0x00, 0x00, 0x04, 0x10, 0x00, 0xbe, 0x30, 0x5b, 0xff,
    0xfe, 0xe5, 0x00, 0xc3};
+#if defined(OS_WIN)
+static const unsigned char kIPv6AddrPrefix[] =
+  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+   0x00, 0x00, 0x00, 0x00};
+#endif  // OS_WIN
+#if defined(OS_MACOSX)
 static const unsigned char kIPv6Netmask[] =
   {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00};
+#endif  // OS_MACOSX
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_NACL)
 
@@ -908,8 +925,6 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
   IPAddressNumber ipv6_local_address(
       kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
   IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
-  IPAddressNumber ipv6_netmask(kIPv6Netmask,
-                               kIPv6Netmask + arraysize(kIPv6Netmask));
 
   NetworkInterfaceList results;
   ::base::hash_set<int> online_links;
@@ -1118,6 +1133,175 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
   results.clear();
 #endif  // !OS_IOS
+}
+#elif defined(OS_WIN)  // !OS_MACOSX && !OS_WIN && !OS_NACL
+
+// Helper function to create a valid IP_ADAPTER_ADDRESSES with reasonable
+// default value. The output is the |adapter_address|. All the rests are input
+// to fill the |adapter_address|. |sock_addrs| are temporary storage used by
+// |adapter_address| once the function is returned.
+bool FillAdapterAddress(IP_ADAPTER_ADDRESSES* adapter_address,
+                        const char* ifname,
+                        const IPAddressNumber& ip_address,
+                        const IPAddressNumber& ip_netmask,
+                        sockaddr_storage sock_addrs[2]) {
+  adapter_address->AdapterName = const_cast<char*>(ifname);
+  adapter_address->FriendlyName = L"interface";
+  adapter_address->IfType = IF_TYPE_ETHERNET_CSMACD;
+  adapter_address->OperStatus = IfOperStatusUp;
+  adapter_address->FirstUnicastAddress->DadState = IpDadStatePreferred;
+  adapter_address->FirstUnicastAddress->PrefixOrigin = IpPrefixOriginOther;
+  adapter_address->FirstUnicastAddress->SuffixOrigin = IpSuffixOriginOther;
+  adapter_address->FirstUnicastAddress->PreferredLifetime = 100;
+  adapter_address->FirstUnicastAddress->ValidLifetime = 1000;
+
+  socklen_t sock_len = sizeof(sockaddr_storage);
+
+  // Convert to sockaddr for next check.
+  if (!IPEndPoint(ip_address, 0)
+           .ToSockAddr(reinterpret_cast<sockaddr*>(&sock_addrs[0]),
+                       &sock_len)) {
+    return false;
+  }
+  adapter_address->FirstUnicastAddress->Address.lpSockaddr =
+      reinterpret_cast<sockaddr*>(&sock_addrs[0]);
+  adapter_address->FirstUnicastAddress->Address.iSockaddrLength = sock_len;
+  adapter_address->FirstUnicastAddress->OnLinkPrefixLength = 1;
+
+  sock_len = sizeof(sockaddr_storage);
+  if (!IPEndPoint(ip_netmask, 0)
+           .ToSockAddr(reinterpret_cast<sockaddr*>(&sock_addrs[1]),
+                       &sock_len)) {
+    return false;
+  }
+  adapter_address->FirstPrefix->Address.lpSockaddr =
+      reinterpret_cast<sockaddr*>(&sock_addrs[1]);
+  adapter_address->FirstPrefix->Address.iSockaddrLength = sock_len;
+  adapter_address->FirstPrefix->PrefixLength = 1;
+
+  DCHECK_EQ(sock_addrs[0].ss_family, sock_addrs[1].ss_family);
+  if (sock_addrs[0].ss_family == AF_INET6) {
+    adapter_address->Ipv6IfIndex = 0;
+  } else {
+    DCHECK_EQ(sock_addrs[0].ss_family, AF_INET);
+    adapter_address->IfIndex = 0;
+  }
+
+  return true;
+}
+
+TEST(NetUtilTest, GetNetworkListTrimming) {
+  IPAddressNumber ipv6_local_address(
+      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
+  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
+  IPAddressNumber ipv6_prefix(kIPv6AddrPrefix,
+                              kIPv6AddrPrefix + arraysize(kIPv6AddrPrefix));
+
+  NetworkInterfaceList results;
+  sockaddr_storage addresses[2];
+  IP_ADAPTER_ADDRESSES adapter_address = {0};
+  IP_ADAPTER_UNICAST_ADDRESS address = {0};
+  IP_ADAPTER_PREFIX adapter_prefix = {0};
+  adapter_address.FirstUnicastAddress = &address;
+  adapter_address.FirstPrefix = &adapter_prefix;
+
+  // Address of offline links should be ignored.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_em1 /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  adapter_address.OperStatus = IfOperStatusDown;
+
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+
+  EXPECT_EQ(results.size(), 0ul);
+
+  // Address on loopback interface should be trimmed out.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_em1 /* ifname */,
+      ipv6_local_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  adapter_address.IfType = IF_TYPE_SOFTWARE_LOOPBACK;
+
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 0ul);
+
+  // vmware address should return by default.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_vm /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_vm);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_NONE);
+  results.clear();
+
+  // vmware address should be trimmed out if policy specified so.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_vm /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+  // Addresses with incompleted DAD should be ignored.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_em1 /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  adapter_address.FirstUnicastAddress->DadState = IpDadStateTentative;
+
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+  // Addresses with allowed attribute IpSuffixOriginRandom should be returned
+  // and attributes should be translated correctly to
+  // IP_ADDRESS_ATTRIBUTE_TEMPORARY.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_em1 /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  adapter_address.FirstUnicastAddress->PrefixOrigin =
+      IpPrefixOriginRouterAdvertisement;
+  adapter_address.FirstUnicastAddress->SuffixOrigin = IpSuffixOriginRandom;
+
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
+  results.clear();
+
+  // Addresses with preferred lifetime 0 should be returned and
+  // attributes should be translated correctly to
+  // IP_ADDRESS_ATTRIBUTE_DEPRECATED.
+  ASSERT_TRUE(FillAdapterAddress(
+      &adapter_address /* adapter_address */, ifname_em1 /* ifname */,
+      ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
+      addresses /* sock_addrs */));
+  adapter_address.FirstUnicastAddress->PreferredLifetime = 0;
+  adapter_address.FriendlyName = L"FriendlyInterfaceName";
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].friendly_name, "FriendlyInterfaceName");
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
+  results.clear();
 }
 
 #endif  // !OS_MACOSX && !OS_WIN && !OS_NACL

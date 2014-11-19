@@ -8,10 +8,12 @@
 // This file is only used to expose some of the internals
 // of net_util_win.cc to tests.
 
+#include <iphlpapi.h>
 #include <wlanapi.h>
 
 #include "base/win/scoped_handle.h"
 #include "net/base/net_export.h"
+#include "net/base/net_util.h"
 
 namespace net {
 namespace internal {
@@ -77,6 +79,12 @@ struct WlanApiDeleter {
     WlanApi::GetInstance().free_memory_func(ptr);
   }
 };
+
+NET_EXPORT bool GetNetworkListImpl(
+    NetworkInterfaceList* networks,
+    int policy,
+    bool is_xp,
+    const IP_ADAPTER_ADDRESSES* ip_adapter_addresses);
 
 }  // namespace internal
 

@@ -85,35 +85,11 @@ WlanApi::WlanApi() : initialized(false) {
       free_memory_func && close_handle_func;
 }
 
-}  // namespace internal
-
-bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
-  // GetAdaptersAddresses() may require IO operations.
-  base::ThreadRestrictions::AssertIOAllowed();
-  bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
-  ULONG len = 0;
-  ULONG flags = is_xp ? GAA_FLAG_INCLUDE_PREFIX : 0;
-  // First get number of networks.
-  ULONG result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, NULL, &len);
-  if (result != ERROR_BUFFER_OVERFLOW) {
-    // There are 0 networks.
-    return true;
-  }
-  scoped_ptr<char[]> buf(new char[len]);
-  IP_ADAPTER_ADDRESSES *adapters =
-      reinterpret_cast<IP_ADAPTER_ADDRESSES *>(buf.get());
-  result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, adapters, &len);
-  if (result != NO_ERROR) {
-    LOG(ERROR) << "GetAdaptersAddresses failed: " << result;
-    return false;
-  }
-
-  // These two variables are used below when this method is asked to pick a
-  // IPv6 address which has the shortest lifetime.
-  ULONG ipv6_valid_lifetime = 0;
-  scoped_ptr<NetworkInterface> ipv6_address;
-
-  for (IP_ADAPTER_ADDRESSES *adapter = adapters; adapter != NULL;
+bool GetNetworkListImpl(NetworkInterfaceList* networks,
+                        int policy,
+                        bool is_xp,
+                        const IP_ADAPTER_ADDRESSES* adapters) {
+  for (const IP_ADAPTER_ADDRESSES* adapter = adapters; adapter != NULL;
        adapter = adapter->Next) {
     // Ignore the loopback device.
     if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK) {
@@ -128,7 +104,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     // VMware Virtual Ethernet Adapter for VMnet1
     // but don't ignore any GUEST side adapters with a description like:
     // VMware Accelerated AMD PCNet Adapter #2
-    if (policy == EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES &&
+    if ((policy & EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES) &&
         strstr(adapter->AdapterName, "VMnet") != NULL) {
       continue;
     }
@@ -161,46 +137,65 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
               }
             }
           }
+
+          // If the duplicate address detection (DAD) state is not changed to
+          // Preferred, skip this address.
+          if (address->DadState != IpDadStatePreferred) {
+            continue;
+          }
+
           uint32 index =
               (family == AF_INET) ? adapter->IfIndex : adapter->Ipv6IfIndex;
-          // Pick one IPv6 address with least valid lifetime.
-          // The reason we are checking |ValidLifeftime| as there is no other
-          // way identifying the interface type. Usually (and most likely) temp
-          // IPv6 will have a shorter ValidLifetime value then the permanent
-          // interface.
-          if (family == AF_INET6 &&
-              (policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE)) {
-            if (ipv6_valid_lifetime == 0 ||
-                ipv6_valid_lifetime > address->ValidLifetime) {
-              ipv6_valid_lifetime = address->ValidLifetime;
-              ipv6_address.reset(new NetworkInterface(
-                  adapter->AdapterName,
-                  base::SysWideToNativeMB(adapter->FriendlyName),
-                  index,
-                  GetNetworkInterfaceType(adapter->IfType),
-                  endpoint.address(),
-                  net_prefix,
-                  IP_ADDRESS_ATTRIBUTE_NONE));
-              continue;
+
+          // From http://technet.microsoft.com/en-us/ff568768(v=vs.60).aspx, the
+          // way to identify a temporary IPv6 Address is to check if
+          // PrefixOrigin is equal to IpPrefixOriginRouterAdvertisement and
+          // SuffixOrigin equal to IpSuffixOriginRandom.
+          int ip_address_attributes = IP_ADDRESS_ATTRIBUTE_NONE;
+          if (family == AF_INET6) {
+            if (address->PrefixOrigin == IpPrefixOriginRouterAdvertisement &&
+                address->SuffixOrigin == IpSuffixOriginRandom) {
+              ip_address_attributes |= IP_ADDRESS_ATTRIBUTE_TEMPORARY;
+            }
+            if (address->PreferredLifetime == 0) {
+              ip_address_attributes |= IP_ADDRESS_ATTRIBUTE_DEPRECATED;
             }
           }
-          networks->push_back(
-              NetworkInterface(adapter->AdapterName,
-                               base::SysWideToNativeMB(adapter->FriendlyName),
-                               index,
-                               GetNetworkInterfaceType(adapter->IfType),
-                               endpoint.address(),
-                               net_prefix,
-                               IP_ADDRESS_ATTRIBUTE_NONE));
+          networks->push_back(NetworkInterface(
+              adapter->AdapterName,
+              base::SysWideToNativeMB(adapter->FriendlyName), index,
+              GetNetworkInterfaceType(adapter->IfType), endpoint.address(),
+              net_prefix, ip_address_attributes));
         }
       }
     }
   }
-
-  if (ipv6_address.get()) {
-    networks->push_back(*(ipv6_address.get()));
-  }
   return true;
+}
+
+}  // namespace internal
+
+bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
+  bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
+  ULONG len = 0;
+  ULONG flags = is_xp ? GAA_FLAG_INCLUDE_PREFIX : 0;
+  // GetAdaptersAddresses() may require IO operations.
+  base::ThreadRestrictions::AssertIOAllowed();
+  ULONG result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, NULL, &len);
+  if (result != ERROR_BUFFER_OVERFLOW) {
+    // There are 0 networks.
+    return true;
+  }
+  scoped_ptr<char[]> buf(new char[len]);
+  IP_ADAPTER_ADDRESSES* adapters =
+      reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buf.get());
+  result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, adapters, &len);
+  if (result != NO_ERROR) {
+    LOG(ERROR) << "GetAdaptersAddresses failed: " << result;
+    return false;
+  }
+
+  return internal::GetNetworkListImpl(networks, policy, is_xp, adapters);
 }
 
 WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {

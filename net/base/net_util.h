@@ -487,9 +487,6 @@ typedef std::vector<NetworkInterface> NetworkInterfaceList;
 enum HostAddressSelectionPolicy {
   INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES           = 0x0,
   EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES           = 0x1,
-  // Include temp address only when interface has both permanent and
-  // temp addresses.
-  INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE      = 0x2,
 };
 
 // Returns list of network interfaces except loopback interface. If an

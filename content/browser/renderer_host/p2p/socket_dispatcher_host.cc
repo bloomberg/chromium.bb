@@ -313,8 +313,7 @@ void P2PSocketDispatcherHost::OnDestroySocket(int socket_id) {
 
 void P2PSocketDispatcherHost::DoGetNetworkList() {
   net::NetworkInterfaceList list;
-  net::GetNetworkList(&list, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES |
-                             net::INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE);
+  net::GetNetworkList(&list, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(
           &P2PSocketDispatcherHost::SendNetworkList, this, list));
