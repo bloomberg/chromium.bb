@@ -1347,8 +1347,6 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fi
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ ImageOnlyFailure ]
 
-crbug.com/169282 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
-
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/385014 accessibility/clickable.html [ Failure ]
 crbug.com/385014 accessibility/nochildren-elements.html [ Failure ]
