@@ -76,6 +76,12 @@ class CALayerStorageProvider
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportLayer> layer_;
 
+  // When a CAContext is destroyed in the GPU process, it will become a blank
+  // CALayer in the browser process. Put retains on these contexts in this queue
+  // when they are discarded, and remove one item from the queue as each frame
+  // is acked.
+  std::list<base::scoped_nsobject<CAContext> > previously_discarded_contexts_;
+
   // Weak factory against which a timeout task for forcing a draw is created.
   base::WeakPtrFactory<CALayerStorageProvider> pending_draw_weak_factory_;
 

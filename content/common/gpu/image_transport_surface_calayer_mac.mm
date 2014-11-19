@@ -14,6 +14,10 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+namespace {
+const size_t kFramesToKeepCAContextAfterDiscard = 2;
+}
+
 @interface ImageTransportLayer : CAOpenGLLayer {
   content::CALayerStorageProvider* storageProvider_;
 }
@@ -228,12 +232,27 @@ void CALayerStorageProvider::DiscardBackbuffer() {
   // at the next swap.
   [layer_ resetStorageProvider];
   layer_.reset();
+
+  // If we remove all references to the CAContext in this process, it will be
+  // blanked-out in the browser process (even if the browser process is inside
+  // a NSDisableScreenUpdates block). Ensure that the context is kept around
+  // until a fixed number of frames (determined empirically) have been acked.
+  // http://crbug.com/425819
+  while (previously_discarded_contexts_.size() <
+      kFramesToKeepCAContextAfterDiscard) {
+    previously_discarded_contexts_.push_back(
+        base::scoped_nsobject<CAContext>());
+  }
+  previously_discarded_contexts_.push_back(context_);
+
   context_.reset();
 }
 
 void CALayerStorageProvider::SwapBuffersAckedByBrowser(
     bool disable_throttling) {
   throttling_disabled_ = disable_throttling;
+  if (!previously_discarded_contexts_.empty())
+    previously_discarded_contexts_.pop_front();
 }
 
 CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
