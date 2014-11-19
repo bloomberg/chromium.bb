@@ -66,7 +66,7 @@ public:
         ScriptState::Scope scope(scriptState());
         v8::Handle<v8::Value> jsEvent = toV8(event, scriptState()->context()->Global(), isolate());
 
-        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(scriptState()->isolate(), "detail")), v8::Boolean::New(scriptState()->isolate(), true));
+        EXPECT_EQ(jsEvent->ToObject(isolate())->Get(v8::String::NewFromUtf8(isolate(), "detail")), v8::Boolean::New(isolate(), true));
     }
 
     static PassRefPtr<TestListener> create(ScriptState* scriptState)

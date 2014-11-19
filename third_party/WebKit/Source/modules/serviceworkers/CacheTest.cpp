@@ -182,7 +182,7 @@ public:
     std::string getRejectString(ScriptPromise& promise)
     {
         ScriptValue onReject = getRejectValue(promise);
-        return toCoreString(onReject.v8Value()->ToString()).ascii().data();
+        return toCoreString(onReject.v8Value()->ToString(isolate())).ascii().data();
     }
 
     ScriptValue getResolveValue(ScriptPromise& promise)
@@ -196,7 +196,7 @@ public:
     std::string getResolveString(ScriptPromise& promise)
     {
         ScriptValue onResolve = getResolveValue(promise);
-        return toCoreString(onResolve.v8Value()->ToString()).ascii().data();
+        return toCoreString(onResolve.v8Value()->ToString(isolate())).ascii().data();
     }
 
     ExceptionState& exceptionState()

@@ -287,8 +287,8 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
         }
     }
     ASSERT(!v8result.IsEmpty());
-    v8::Local<v8::Object> resultTuple = v8result->ToObject();
-    int code = static_cast<int>(resultTuple->Get(0)->ToInteger()->Value());
+    v8::Local<v8::Object> resultTuple = v8result->ToObject(m_isolate);
+    int code = static_cast<int>(resultTuple->Get(0)->ToInteger(m_isolate)->Value());
     switch (code) {
     case 0:
         {
@@ -307,8 +307,8 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
             RefPtr<TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
                 TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
                     .setMessage(toCoreStringWithUndefinedOrNullCheck(resultTuple->Get(2)))
-                    .setLineNumber(resultTuple->Get(3)->ToInteger()->Value())
-                    .setColumnNumber(resultTuple->Get(4)->ToInteger()->Value());
+                    .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
+                    .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value());
 
             *error = toCoreStringWithUndefinedOrNullCheck(resultTuple->Get(1));
             errorData = TypeBuilder::Debugger::SetScriptSourceError::create();
@@ -538,7 +538,7 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
 {
     String type = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "type", m_isolate));
     String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name", m_isolate));
-    int id = callInternalGetterFunction(eventData, "id", m_isolate)->ToInteger()->Value();
+    int id = callInternalGetterFunction(eventData, "id", m_isolate)->ToInteger(m_isolate)->Value();
 
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
@@ -553,8 +553,8 @@ void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, Scri
     v8::Handle<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv);
     ASSERT(value->IsObject());
     v8::Handle<v8::Object> promiseDetails = v8::Handle<v8::Object>::Cast(value);
-    v8::Handle<v8::Object> promise = promiseDetails->Get(v8AtomicString(m_isolate, "promise"))->ToObject();
-    int status = promiseDetails->Get(v8AtomicString(m_isolate, "status"))->ToInteger()->Value();
+    v8::Handle<v8::Object> promise = promiseDetails->Get(v8AtomicString(m_isolate, "promise"))->ToObject(m_isolate);
+    int status = promiseDetails->Get(v8AtomicString(m_isolate, "status"))->ToInteger(m_isolate)->Value();
     v8::Handle<v8::Value> parentPromise = promiseDetails->Get(v8AtomicString(m_isolate, "parentPromise"));
 
     m_pausedScriptState = pausedScriptState;
@@ -575,11 +575,11 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
     script.sourceURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceURL")));
     script.sourceMappingURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceMappingURL")));
     script.source = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source")));
-    script.startLine = object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger()->Value();
-    script.startColumn = object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger()->Value();
-    script.endLine = object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger()->Value();
-    script.endColumn = object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger()->Value();
-    script.isContentScript = object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean()->Value();
+    script.startLine = object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger(m_isolate)->Value();
+    script.startColumn = object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger(m_isolate)->Value();
+    script.endLine = object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger(m_isolate)->Value();
+    script.endColumn = object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger(m_isolate)->Value();
+    script.isContentScript = object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean(m_isolate)->Value();
 
     listener->didParseSource(sourceID, script, compileResult);
 }

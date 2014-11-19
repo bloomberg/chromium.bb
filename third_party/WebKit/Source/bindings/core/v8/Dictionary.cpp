@@ -196,7 +196,7 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
     if (properties.IsEmpty())
         return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
-        v8::Local<v8::String> key = properties->Get(i)->ToString();
+        v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
         if (!options->Has(key))
             continue;
 

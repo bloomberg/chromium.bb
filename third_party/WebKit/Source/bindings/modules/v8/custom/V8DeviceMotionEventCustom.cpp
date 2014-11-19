@@ -40,7 +40,7 @@ DeviceMotionData::Acceleration* readAccelerationArgument(v8::Local<v8::Value> va
         return nullptr;
 
     // Given the test above, this will always yield an object.
-    v8::Local<v8::Object> object = value->ToObject();
+    v8::Local<v8::Object> object = value->ToObject(isolate);
 
     v8::Local<v8::Value> xValue = object->Get(v8AtomicString(isolate, "x"));
     if (xValue.IsEmpty())
@@ -72,7 +72,7 @@ DeviceMotionData::RotationRate* readRotationRateArgument(v8::Local<v8::Value> va
         return nullptr;
 
     // Given the test above, this will always yield an object.
-    v8::Local<v8::Object> object = value->ToObject();
+    v8::Local<v8::Object> object = value->ToObject(isolate);
 
     v8::Local<v8::Value> alphaValue = object->Get(v8AtomicString(isolate, "alpha"));
     if (alphaValue.IsEmpty())

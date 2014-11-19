@@ -527,7 +527,7 @@ public:
         isolate()->RunMicrotasks();
         {
             ScriptState::Scope scope(mainScriptState());
-            actual = toCoreString(actualValue.v8Value()->ToString());
+            actual = toCoreString(actualValue.v8Value()->ToString(isolate()));
         }
         if (expected != actual) {
             ADD_FAILURE_AT(file, line) << "toV8Value returns an incorrect value.\n  Actual: " << actual.utf8().data() << "\nExpected: " << expected;

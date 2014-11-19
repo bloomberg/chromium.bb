@@ -331,7 +331,7 @@ void V8InjectedScriptHost::evalMethodCustom(const v8::FunctionCallbackInfo<v8::V
         return;
     }
 
-    v8::Handle<v8::String> expression = info[0]->ToString();
+    v8::Handle<v8::String> expression = info[0]->ToString(isolate);
     if (expression.IsEmpty()) {
         isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(isolate, "The argument must be a string.")));
         return;

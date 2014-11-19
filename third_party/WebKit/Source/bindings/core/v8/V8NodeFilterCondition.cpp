@@ -74,7 +74,7 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
     if (filter->IsFunction()) {
         callback = v8::Handle<v8::Function>::Cast(filter);
     } else {
-        v8::Local<v8::Value> value = filter->ToObject()->Get(v8AtomicString(isolate, "acceptNode"));
+        v8::Local<v8::Value> value = filter->ToObject(isolate)->Get(v8AtomicString(isolate, "acceptNode"));
         if (value.IsEmpty() || !value->IsFunction()) {
             exceptionState.throwTypeError("NodeFilter object does not have an acceptNode function");
             return NodeFilter::FILTER_REJECT;

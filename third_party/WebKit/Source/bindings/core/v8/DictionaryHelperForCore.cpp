@@ -66,7 +66,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, bool
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Boolean> v8Bool = v8Value->ToBoolean();
+    v8::Local<v8::Boolean> v8Bool = v8Value->ToBoolean(dictionary.isolate());
     if (v8Bool.IsEmpty())
         return false;
     value = v8Bool->Value();
@@ -88,7 +88,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, int3
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32();
+    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32(dictionary.isolate());
     if (v8Int32.IsEmpty())
         return false;
     value = v8Int32->Value();
@@ -105,7 +105,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, doub
     }
 
     hasValue = true;
-    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
+    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(dictionary.isolate()), false);
     if (v8Number.IsEmpty())
         return false;
     value = v8Number->Value();
@@ -197,7 +197,7 @@ bool getNumericType(const Dictionary& dictionary, const String& key, NumericType
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32();
+    v8::Local<v8::Int32> v8Int32 = v8Value->ToInt32(dictionary.isolate());
     if (v8Int32.IsEmpty())
         return false;
     value = static_cast<NumericType>(v8Int32->Value());
@@ -229,7 +229,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
     if (!dictionary.get(key, v8Value))
         return false;
 
-    v8::Local<v8::Integer> v8Integer = v8Value->ToInteger();
+    v8::Local<v8::Integer> v8Integer = v8Value->ToInteger(dictionary.isolate());
     if (v8Integer.IsEmpty())
         return false;
     value = static_cast<unsigned long>(v8Integer->Value());
@@ -243,7 +243,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
     if (!dictionary.get(key, v8Value))
         return false;
 
-    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
+    TONATIVE_DEFAULT(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(dictionary.isolate()), false);
     if (v8Number.IsEmpty())
         return false;
     double d = v8Number->Value();

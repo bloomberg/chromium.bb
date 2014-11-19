@@ -241,7 +241,7 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Hand
 
     RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
-        v8::Handle<v8::Object> handle = parentPromise->ToObject();
+        v8::Handle<v8::Object> handle = parentPromise->ToObject(scriptState->isolate());
         RefPtrWillBeRawPtr<PromiseData> parentData = createPromiseDataIfNeeded(scriptState, handle);
         data->m_parentPromiseId = parentData->m_promiseId;
         data->m_parentPromise.set(scriptState->isolate(), handle);

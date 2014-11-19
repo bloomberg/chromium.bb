@@ -252,7 +252,7 @@ void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetail
     // Avoid preprocessing any internal scripts by processing only eval source in this V8 event handler.
     v8::Handle<v8::Value> argvEventData[] = { eventData };
     v8::Handle<v8::Value> v8Value = callDebuggerMethod("isEvalCompilation", WTF_ARRAY_LENGTH(argvEventData), argvEventData);
-    if (v8Value.IsEmpty() || !v8Value->ToBoolean()->Value())
+    if (v8Value.IsEmpty() || !v8Value->ToBoolean(debugContext->GetIsolate())->Value())
         return;
 
     // The name and source are in the JS event data.

@@ -64,7 +64,7 @@ private:
     virtual ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString());
+        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->isolate()));
         return value;
     }
 

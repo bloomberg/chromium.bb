@@ -35,13 +35,13 @@ namespace blink {
 static void domExceptionStackGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(info.Data()->IsObject());
-    v8SetReturnValue(info, info.Data()->ToObject()->Get(v8AtomicString(info.GetIsolate(), "stack")));
+    v8SetReturnValue(info, info.Data()->ToObject(info.GetIsolate())->Get(v8AtomicString(info.GetIsolate(), "stack")));
 }
 
 static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ASSERT(info.Data()->IsObject());
-    info.Data()->ToObject()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
+    info.Data()->ToObject(info.GetIsolate())->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext)
@@ -72,8 +72,8 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     v8::Handle<v8::Value> error = v8::Exception::Error(v8String(isolate, domException->message()));
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
-    exception->ToObject()->SetAccessor(v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error);
-    V8HiddenValue::setHiddenValue(isolate, exception->ToObject(), V8HiddenValue::error(isolate), error);
+    exception->ToObject(isolate)->SetAccessor(v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error);
+    V8HiddenValue::setHiddenValue(isolate, exception->ToObject(isolate), V8HiddenValue::error(isolate), error);
 
     return exception;
 }

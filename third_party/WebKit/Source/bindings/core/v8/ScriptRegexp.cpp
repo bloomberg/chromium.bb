@@ -95,7 +95,7 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
         return -1;
 
     v8::Local<v8::Array> result = returnValue.As<v8::Array>();
-    int matchOffset = result->Get(v8AtomicString(isolate, "index"))->ToInt32()->Value();
+    int matchOffset = result->Get(v8AtomicString(isolate, "index"))->ToInt32(isolate)->Value();
     if (matchLength) {
         v8::Local<v8::String> match = result->Get(0).As<v8::String>();
         *matchLength = match->Length();

@@ -65,7 +65,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         }
 
         uint32_t sqlArgsLength = 0;
-        v8::Local<v8::Object> sqlArgsObject = info[1]->ToObject();
+        v8::Local<v8::Object> sqlArgsObject = info[1]->ToObject(info.GetIsolate());
         TONATIVE_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8AtomicString(info.GetIsolate(), "length")));
 
         if (isUndefinedOrNull(length))
