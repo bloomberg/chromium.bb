@@ -1358,3 +1358,6 @@ crbug.com/427868 inspector/console/console-format-es6.html [ NeedsManualRebaseli
 crbug.com/434090 inspector/tracing/worker-js-profile.html [ Pass Timeout ]
 crbug.com/434369 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Timeout ]
 crbug.com/434690 virtual/implsidepainting/inspector/tracing/worker-js-profile.html [ Pass Timeout Failure ]
+
+# Temporarily skip tests and rebaseline after next V8 roll.
+crbug.com/432468 inspector/sources/debugger/debugger-step-into-v8-internals.html [ NeedsManualRebaseline ]
