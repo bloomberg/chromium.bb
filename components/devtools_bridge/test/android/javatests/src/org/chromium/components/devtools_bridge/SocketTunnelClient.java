@@ -126,12 +126,20 @@ public class SocketTunnelClient extends SocketTunnelBase {
     @Override
     public AbstractDataChannel unbind() {
         AbstractDataChannel dataChannel = super.unbind();
-        close();
+        if (mState.compareAndSet(State.RUNNING, State.STOPPED)) {
+            terminateAllConnections();
+            closeSocket();
+        }
         return dataChannel;
     }
 
-    public void close() {
-        if (mState.get() != State.STOPPED) closeSocket();
+    @Override
+    public void dispose() {
+        if (mState.compareAndSet(State.INITIAL, State.STOPPED)) {
+            closeSocket();
+        }
+        assert mState.get() == State.STOPPED;
+        mThreadPool.shutdown();
     }
 
     @Override
@@ -222,6 +230,11 @@ public class SocketTunnelClient extends SocketTunnelBase {
             throw new InvalidStateException();
         }
 
+        closeSocket();
+    }
+
+    private void terminateAllConnections() {
+
         for (Connection connection : mServerConnections.values()) {
             connection.terminate();
         }
@@ -231,8 +244,6 @@ public class SocketTunnelClient extends SocketTunnelBase {
         }
 
         closeSocket();
-
-        mThreadPool.shutdown();
     }
 
     private void closeSocket() {

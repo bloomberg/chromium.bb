@@ -4,12 +4,18 @@
 
 #include "components/devtools_bridge/session_dependency_factory.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "components/devtools_bridge/abstract_data_channel.h"
 #include "components/devtools_bridge/abstract_peer_connection.h"
 #include "components/devtools_bridge/rtc_configuration.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/webrtc/base/bind.h"
+#include "third_party/webrtc/base/messagehandler.h"
+#include "third_party/webrtc/base/messagequeue.h"
 #include "third_party/webrtc/base/ssladapter.h"
 #include "third_party/webrtc/base/thread.h"
 
@@ -68,6 +74,52 @@ class MediaConstraints
   Constraints optional_;
 };
 
+/**
+ * Posts tasks on signaling thread. If stopped (when SesseionDependencyFactry
+ * is destroying) ignores posted tasks.
+ */
+class SignalingThreadTaskRunner : public base::TaskRunner,
+                                  private rtc::MessageHandler {
+ public:
+  explicit SignalingThreadTaskRunner(rtc::Thread* thread) : thread_(thread) {}
+
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
+    DCHECK(delay.ToInternalValue() == 0);
+
+    rtc::CritScope scope(&critical_section_);
+
+    if (thread_)
+      thread_->Send(this, 0, new Task(task));
+
+    return true;
+  }
+
+  bool RunsTasksOnCurrentThread() const override {
+    rtc::CritScope scope(&critical_section_);
+
+    return thread_ != NULL && thread_->IsCurrent();
+  }
+
+  void Stop() {
+    rtc::CritScope scope(&critical_section_);
+    thread_ = NULL;
+  }
+
+ private:
+  typedef rtc::TypedMessageData<base::Closure> Task;
+
+  ~SignalingThreadTaskRunner() override {}
+
+  void OnMessage(rtc::Message* msg) override {
+    static_cast<Task*>(msg->pdata)->data().Run();
+  }
+
+  mutable rtc::CriticalSection critical_section_;
+  rtc::Thread* thread_;  // Guarded by |critical_section_|.
+};
+
 class DataChannelObserverImpl : public webrtc::DataChannelObserver {
  public:
   DataChannelObserverImpl(
@@ -104,13 +156,76 @@ class DataChannelObserverImpl : public webrtc::DataChannelObserver {
   bool open_;
 };
 
+/**
+ * Thread-safe view on AbstractDataChannel.
+ */
+class DataChannelProxyImpl : public AbstractDataChannel::Proxy {
+ public:
+  DataChannelProxyImpl(
+      SessionDependencyFactory* factory,
+      rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel)
+      : data_channel_(data_channel),
+        signaling_thread_task_runner_(
+            factory->signaling_thread_task_runner()) {
+  }
+
+  void StopOnSignalingThread() {
+    data_channel_ = NULL;
+  }
+
+  virtual void SendBinaryMessage(const void* data, size_t length) override {
+    auto buffer = make_scoped_ptr(new webrtc::DataBuffer(rtc::Buffer(), true));
+    buffer->data.SetData(data, length);
+
+    signaling_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(
+            &DataChannelProxyImpl::SendMessageOnSignalingThread,
+            this,
+            base::Passed(&buffer)));
+  }
+
+  virtual void Close() override {
+    signaling_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataChannelProxyImpl::CloseOnSignalingThread,
+                              this));
+  }
+
+ private:
+
+  ~DataChannelProxyImpl() override {}
+
+  void SendMessageOnSignalingThread(scoped_ptr<webrtc::DataBuffer> message) {
+    if (data_channel_ != NULL)
+      data_channel_->Send(*message);
+  }
+
+  void CloseOnSignalingThread() {
+    if (data_channel_ != NULL)
+      data_channel_->Close();
+  }
+
+  // Accessed on signaling thread.
+  rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel_;
+
+  const scoped_refptr<base::TaskRunner> signaling_thread_task_runner_;
+};
+
 class DataChannelImpl : public AbstractDataChannel {
  public:
-  explicit DataChannelImpl(
+  DataChannelImpl(
+      SessionDependencyFactory* factory,
       rtc::Thread* const signaling_thread,
       rtc::scoped_refptr<webrtc::DataChannelInterface> impl)
-      : signaling_thread_(signaling_thread),
+      : factory_(factory),
+        signaling_thread_(signaling_thread),
         impl_(impl) {
+  }
+
+  ~DataChannelImpl() {
+    if (proxy_.get()) {
+      signaling_thread_->Invoke<void>(rtc::Bind(
+          &DataChannelProxyImpl::StopOnSignalingThread, proxy_.get()));
+    }
   }
 
   virtual void RegisterObserver(scoped_ptr<Observer> observer) override {
@@ -141,6 +256,12 @@ class DataChannelImpl : public AbstractDataChannel {
     impl_->Close();
   }
 
+  scoped_refptr<Proxy> proxy() override {
+    if (!proxy_.get())
+      proxy_ = new DataChannelProxyImpl(factory_, impl_);
+    return proxy_;
+  }
+
  private:
   void RegisterObserverOnSignalingThread() {
     // State initialization and observer registration happen atomically
@@ -149,6 +270,8 @@ class DataChannelImpl : public AbstractDataChannel {
     impl_->RegisterObserver(observer_.get());
   }
 
+  SessionDependencyFactory* const factory_;
+  scoped_refptr<DataChannelProxyImpl> proxy_;
   rtc::Thread* const signaling_thread_;
   scoped_ptr<DataChannelObserverImpl> observer_;
   const rtc::scoped_refptr<webrtc::DataChannelInterface> impl_;
@@ -320,11 +443,13 @@ class SetRemoteDescriptionHandler
 class PeerConnectionImpl : public AbstractPeerConnection {
  public:
   PeerConnectionImpl(
+      SessionDependencyFactory* const factory,
       rtc::Thread* signaling_thread,
       rtc::scoped_refptr<webrtc::PeerConnectionInterface> connection,
       scoped_ptr<PeerConnectionObserverImpl> observer,
       scoped_ptr<AbstractPeerConnection::Delegate> delegate)
-      : holder_(new rtc::RefCountedObject<PeerConnectionHolder>(
+      : factory_(factory),
+        holder_(new rtc::RefCountedObject<PeerConnectionHolder>(
             signaling_thread, connection.get(), delegate.get())),
         signaling_thread_(signaling_thread),
         connection_(connection),
@@ -394,6 +519,7 @@ class PeerConnectionImpl : public AbstractPeerConnection {
     init.id = channelId;
 
     return make_scoped_ptr(new DataChannelImpl(
+        factory_,
         signaling_thread_,
         connection_->CreateDataChannel("", &init)));
   }
@@ -414,6 +540,7 @@ class PeerConnectionImpl : public AbstractPeerConnection {
     // TODO(serya): Send on signaling thread.
   }
 
+  SessionDependencyFactory* const factory_;
   const rtc::scoped_refptr<PeerConnectionHolder> holder_;
   rtc::Thread* const signaling_thread_;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> connection_;
@@ -436,6 +563,9 @@ class SessionDependencyFactoryImpl : public SessionDependencyFactory {
   }
 
   virtual ~SessionDependencyFactoryImpl() {
+    if (signaling_thread_task_runner_.get())
+      signaling_thread_task_runner_->Stop();
+
     signaling_thread_.Invoke<void>(rtc::Bind(
         &SessionDependencyFactoryImpl::DisposeOnSignalingThread, this));
   }
@@ -454,18 +584,38 @@ class SessionDependencyFactoryImpl : public SessionDependencyFactory {
         config->impl(), &constraints, NULL, NULL, observer.get());
 
     return make_scoped_ptr(new PeerConnectionImpl(
-        &signaling_thread_, connection, observer.Pass(), delegate.Pass()));
+        this, &signaling_thread_, connection, observer.Pass(),
+        delegate.Pass()));
+  }
+
+  scoped_refptr<base::TaskRunner> signaling_thread_task_runner() override {
+    if (!signaling_thread_task_runner_.get()) {
+      signaling_thread_task_runner_ =
+          new SignalingThreadTaskRunner(&signaling_thread_);
+    }
+    return signaling_thread_task_runner_;
+  }
+
+  scoped_refptr<base::TaskRunner> io_thread_task_runner() override {
+    if (!io_thread_.get()) {
+      io_thread_.reset(new base::Thread("devtools bridge IO thread"));
+      base::Thread::Options options;
+      options.message_loop_type = base::MessageLoop::TYPE_IO;
+      CHECK(io_thread_->StartWithOptions(options));
+    }
+    return io_thread_->task_runner();
   }
 
  private:
   void DisposeOnSignalingThread() {
     DCHECK(signaling_thread_.IsCurrent());
     CheckedRelease(&factory_);
-    if (!cleanup_on_signaling_thread_.is_null()) {
+    if (!cleanup_on_signaling_thread_.is_null())
       cleanup_on_signaling_thread_.Run();
-    }
   }
 
+  scoped_ptr<base::Thread> io_thread_;
+  scoped_refptr<SignalingThreadTaskRunner> signaling_thread_task_runner_;
   base::Closure cleanup_on_signaling_thread_;
   rtc::Thread signaling_thread_;
   rtc::Thread worker_thread_;

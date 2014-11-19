@@ -1,6 +1,7 @@
 include_rules = [
   "-chrome",
   "-content",
+  "+net",
   "+third_party/libjingle",
   "+third_party/webrtc",
 ]

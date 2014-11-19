@@ -10,6 +10,7 @@
 #include "components/devtools_bridge/abstract_data_channel.h"
 #include "components/devtools_bridge/abstract_peer_connection.h"
 #include "components/devtools_bridge/rtc_configuration.h"
+#include "components/devtools_bridge/socket_tunnel_server.h"
 #include "jni/SessionDependencyFactoryNative_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -156,6 +157,16 @@ SessionDependencyFactoryAndroid::CreatePeerConnection(
   return impl_->CreatePeerConnection(config.Pass(), delegate.Pass());
 }
 
+scoped_refptr<base::TaskRunner>
+SessionDependencyFactoryAndroid::signaling_thread_task_runner() {
+  return impl_->signaling_thread_task_runner();
+}
+
+scoped_refptr<base::TaskRunner>
+SessionDependencyFactoryAndroid::io_thread_task_runner() {
+  return impl_->io_thread_task_runner();
+}
+
 // JNI generated methods
 
 static jlong CreateFactory(JNIEnv* env, jclass jcaller) {
@@ -272,6 +283,21 @@ static void SendTextMessage(
 
 static void CloseDataChannel(JNIEnv* env, jclass jcaller, jlong channel_ptr) {
   reinterpret_cast<AbstractDataChannel*>(channel_ptr)->Close();
+}
+
+static jlong CreateSocketTunnelServer(
+    JNIEnv* env, jclass jcaller, jlong factory_ptr, jlong channel_ptr,
+    jstring socket_name) {
+  return reinterpret_cast<jlong>(
+      new SocketTunnelServer(
+          reinterpret_cast<SessionDependencyFactory*>(factory_ptr),
+          reinterpret_cast<AbstractDataChannel*>(channel_ptr),
+          ConvertJavaStringToUTF8(env, socket_name)));
+}
+
+static void DestroySocketTunnelServer(
+    JNIEnv* env, jclass jcaller, jlong tunnel_ptr) {
+  delete reinterpret_cast<SocketTunnelServer*>(tunnel_ptr);
 }
 
 }  // namespace android

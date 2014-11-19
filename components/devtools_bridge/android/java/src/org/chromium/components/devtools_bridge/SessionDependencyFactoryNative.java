@@ -37,6 +37,11 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
     }
 
     @Override
+    public SocketTunnel newSocketTunnelServer(String socketBase) {
+        return new SocketTunnelServerImpl(mFactoryPtr, socketBase);
+    }
+
+    @Override
     public void dispose() {
         nativeDestroyFactory(mFactoryPtr);
     }
@@ -104,6 +109,10 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
             mChannelPtr = ptr;
         }
 
+        long nativePtr() {
+            return mChannelPtr;
+        }
+
         @Override
         public void registerObserver(Observer observer) {
             nativeRegisterDataChannelObserver(mChannelPtr, observer);
@@ -139,6 +148,44 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
         @Override
         public void dispose() {
             nativeDestroyDataChannel(mChannelPtr);
+        }
+    }
+
+    private static class SocketTunnelServerImpl implements SocketTunnel {
+        private final String mSocketName;
+        private final long mFactoryPtr;
+        private DataChannelImpl mDataChannel;
+        private long mTunnelPtr;
+
+        public SocketTunnelServerImpl(long factoryPtr, String socketName) {
+            mFactoryPtr = factoryPtr;
+            mSocketName = socketName;
+        }
+
+        @Override
+        public void bind(AbstractDataChannel dataChannel) {
+            mDataChannel = (DataChannelImpl) dataChannel;
+            mTunnelPtr = nativeCreateSocketTunnelServer(
+                    mFactoryPtr, mDataChannel.nativePtr(), mSocketName);
+        }
+
+        @Override
+        public AbstractDataChannel unbind() {
+            AbstractDataChannel result = mDataChannel;
+            nativeDestroySocketTunnelServer(mTunnelPtr);
+            mTunnelPtr = 0;
+            mDataChannel = null;
+            return result;
+        }
+
+        @Override
+        public boolean isBound() {
+            return mDataChannel != null;
+        }
+
+        @Override
+        public void dispose() {
+            assert !isBound();
         }
     }
 
@@ -229,4 +276,8 @@ public class SessionDependencyFactoryNative extends SessionDependencyFactory {
             long channelPtr, ByteBuffer message, int size);
     private static native void nativeSendTextMessage(long channelPtr, ByteBuffer message, int size);
     private static native void nativeCloseDataChannel(long channelPtr);
+
+    private static native long nativeCreateSocketTunnelServer(
+            long factoryPtr, long channelPtr, String socketName);
+    private static native void nativeDestroySocketTunnelServer(long tunnelPtr);
 }

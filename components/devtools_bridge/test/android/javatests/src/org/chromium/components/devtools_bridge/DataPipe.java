@@ -11,69 +11,110 @@ import java.nio.ByteBuffer;
  * come to another and vice versa.
  */
 public class DataPipe {
-    private final SignalingThreadMock mSignalingThread = new SignalingThreadMock();
+    private static final int DATA_CHANNEL_ID = 0;
 
-    private final PairedDataChannel mDC0 = new PairedDataChannel();
-    private final PairedDataChannel mDC1 = new PairedDataChannel();
+    final PeerConnectionObserverMock mObserver1 = new PeerConnectionObserverMock();
+    final PeerConnectionObserverMock mObserver2 = new PeerConnectionObserverMock();
 
-    public void connect() {
-        mDC0.setPair(mDC1);
-        mDC1.setPair(mDC0);
-        mDC0.open();
-        mDC1.open();
+    DataChannelObserverMock mDataChannelObserverMock1 = new DataChannelObserverMock();
+    DataChannelObserverMock mDataChannelObserverMock2 = new DataChannelObserverMock();
+
+    final AbstractPeerConnection mConnection1;
+    final AbstractPeerConnection mConnection2;
+
+    final AbstractDataChannel mDataChannel1;
+    final AbstractDataChannel mDataChannel2;
+
+    DataPipe(SessionDependencyFactory factory) {
+        RTCConfiguration config = new RTCConfiguration();
+        mConnection1 = factory.createPeerConnection(config, mObserver1);
+        mConnection2 = factory.createPeerConnection(config, mObserver2);
+
+        mObserver1.iceCandidatesSink = mConnection2;
+        mObserver2.iceCandidatesSink = mConnection1;
+
+        mDataChannel1 = mConnection1.createDataChannel(DATA_CHANNEL_ID);
+        mDataChannel2 = mConnection2.createDataChannel(DATA_CHANNEL_ID);
     }
 
-    public void disconnect() {
-        mDC0.setPair(null);
-        mDC1.setPair(null);
-        mDC0.close();
-        mDC1.close();
+    void dispose() {
+        mDataChannel1.dispose();
+        mDataChannel2.dispose();
+        mConnection1.dispose();
+        mConnection2.dispose();
     }
 
-    public AbstractDataChannel dataChannel(int index) {
-        switch (index) {
+    void negotiate() throws Exception {
+        mConnection1.createAndSetLocalDescription(
+                AbstractPeerConnection.SessionDescriptionType.OFFER);
+        mObserver1.localDescriptionAvailable.await();
+
+        mConnection2.setRemoteDescription(
+                AbstractPeerConnection.SessionDescriptionType.OFFER,
+                mObserver1.localDescription);
+        mObserver2.remoteDescriptionSet.await();
+
+        mConnection2.createAndSetLocalDescription(
+                AbstractPeerConnection.SessionDescriptionType.ANSWER);
+        mObserver2.localDescriptionAvailable.await();
+
+        mConnection1.setRemoteDescription(
+                AbstractPeerConnection.SessionDescriptionType.ANSWER,
+                mObserver2.localDescription);
+        mObserver1.remoteDescriptionSet.await();
+    }
+
+    void awaitConnected() throws Exception {
+        mObserver1.connected.await();
+        mObserver2.connected.await();
+    }
+
+    void send(int channelIndex, String data) {
+        byte[] bytes = data.getBytes();
+        ByteBuffer rawMessage = ByteBuffer.allocateDirect(bytes.length);
+        rawMessage.put(bytes);
+        rawMessage.limit(rawMessage.position());
+        rawMessage.position(0);
+        dataChannel(channelIndex).send(rawMessage, AbstractDataChannel.MessageType.TEXT);
+    }
+
+    void send(int channelIndex, ByteBuffer rawMessage) {
+        dataChannel(channelIndex).send(rawMessage, AbstractDataChannel.MessageType.BINARY);
+    }
+
+    AbstractDataChannel dataChannel(int channelIndex) {
+        switch (channelIndex) {
             case 0:
-                return mDC0;
+                return mDataChannel1;
+
             case 1:
-                return mDC1;
+                return mDataChannel2;
+
             default:
-                throw new IllegalArgumentException("index");
+                throw new ArrayIndexOutOfBoundsException();
         }
     }
 
-    public void dispose() {
-        mDC0.dispose();
-        mDC1.dispose();
-        mSignalingThread.dispose();
+    DataChannelObserverMock dataChannelObserver(int channelIndex) {
+        switch (channelIndex) {
+            case 0:
+                return mDataChannelObserverMock1;
+
+            case 1:
+                return mDataChannelObserverMock2;
+
+            default:
+                throw new ArrayIndexOutOfBoundsException();
+        }
     }
 
-    private class PairedDataChannel extends DataChannelMock {
-        private PairedDataChannel mPair;
+    void registerDatatChannelObservers() {
+        mDataChannel1.registerObserver(mDataChannelObserverMock1);
+        mDataChannel2.registerObserver(mDataChannelObserverMock2);
+    }
 
-        public PairedDataChannel() {
-            super(mSignalingThread);
-        }
-
-        public void setPair(final PairedDataChannel pair) {
-            mSignalingThread.invoke(new Runnable() {
-                @Override
-                public void run() {
-                    mPair = pair;
-                }
-            });
-        }
-
-        @Override
-        protected void sendOnSignalingThread(ByteBuffer message) {
-            assert message.remaining() > 0;
-
-            if (mPair == null) return;
-            mPair.notifyMessageOnSignalingThread(message);
-        }
-
-        @Override
-        protected void disposeSignalingThread() {
-            // Ignore. Will dispose in DataPipe.dispose.
-        }
+    void unregisterDatatChannelObservers() {
+        mDataChannel1.unregisterObserver();
+        mDataChannel2.unregisterObserver();
     }
 }

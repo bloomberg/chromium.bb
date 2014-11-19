@@ -12,6 +12,10 @@
 #include "components/devtools_bridge/abstract_peer_connection.h"
 #include "components/devtools_bridge/rtc_configuration.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace devtools_bridge {
 
 /**
@@ -32,6 +36,9 @@ class SessionDependencyFactory {
   virtual scoped_ptr<AbstractPeerConnection> CreatePeerConnection(
       scoped_ptr<RTCConfiguration> config,
       scoped_ptr<AbstractPeerConnection::Delegate> delegate) = 0;
+
+  virtual scoped_refptr<base::TaskRunner> signaling_thread_task_runner() = 0;
+  virtual scoped_refptr<base::TaskRunner> io_thread_task_runner() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionDependencyFactory);

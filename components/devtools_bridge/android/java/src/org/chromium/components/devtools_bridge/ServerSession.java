@@ -20,7 +20,7 @@ public class ServerSession extends SessionBase implements SessionBase.ServerSess
     public ServerSession(SessionDependencyFactory factory,
                          Executor executor,
                          String defaultSocketName) {
-        super(factory, executor, new SocketTunnelServer(defaultSocketName));
+        super(factory, executor, factory.newSocketTunnelServer(defaultSocketName));
     }
 
     @Override
@@ -154,8 +154,8 @@ public class ServerSession extends SessionBase implements SessionBase.ServerSess
         }
     }
 
-    protected SocketTunnelServer createSocketTunnelServer(String serverSocketName) {
-        return new SocketTunnelServer(serverSocketName);
+    protected SocketTunnel newSocketTunnelServer(String serverSocketName) {
+        return mFactory.newSocketTunnelServer(serverSocketName);
     }
 
     private final class ClientMessageHandler extends SessionControlMessages.ClientMessageHandler {

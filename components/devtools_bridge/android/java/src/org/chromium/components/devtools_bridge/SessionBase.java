@@ -43,7 +43,7 @@ public abstract class SessionBase {
     private static final int DEFAULT_TUNNEL_CHANNEL_ID = 1;
 
     private final Executor mExecutor;
-    private final SessionDependencyFactory mFactory;
+    protected final SessionDependencyFactory mFactory;
     private AbstractPeerConnection mConnection;
     private AbstractDataChannel mControlChannel;
     private List<String> mCandidates = new ArrayList<String>();
@@ -51,8 +51,8 @@ public abstract class SessionBase {
     private boolean mConnected = false;
     private Cancellable mAutoCloseTask;
     private SessionControlMessages.MessageHandler mControlMessageHandler;
-    private final Map<Integer, SocketTunnelBase> mTunnels =
-            new HashMap<Integer, SocketTunnelBase>();
+    private final Map<Integer, SocketTunnel> mTunnels =
+            new HashMap<Integer, SocketTunnel>();
     private EventListener mEventListener;
 
     protected int mAutoCloseTimeoutMs = 30000;
@@ -126,7 +126,7 @@ public abstract class SessionBase {
 
     protected SessionBase(SessionDependencyFactory factory,
                           Executor executor,
-                          SocketTunnelBase defaultTunnel) {
+                          SocketTunnel defaultTunnel) {
         mExecutor = executor;
         mFactory = factory;
         addTunnel(DEFAULT_TUNNEL_CHANNEL_ID, defaultTunnel);
@@ -136,6 +136,10 @@ public abstract class SessionBase {
         checkCalledOnSessionThread();
 
         if (isStarted()) stop();
+
+        for (SocketTunnel tunnel : mTunnels.values()) {
+            tunnel.dispose();
+        }
     }
 
     public void setEventListener(EventListener listener) {
@@ -152,7 +156,7 @@ public abstract class SessionBase {
         return mTunnels.containsKey(channelId);
     }
 
-    private final void addTunnel(int channelId, SocketTunnelBase tunnel) {
+    private final void addTunnel(int channelId, SocketTunnel tunnel) {
         assert !mTunnels.containsKey(channelId);
         assert !tunnel.isBound();
         // Tunnel renegotiation not implemented.
@@ -203,9 +207,9 @@ public abstract class SessionBase {
         mControlMessageHandler = handler;
         mControlChannel.registerObserver(new ControlChannelObserver());
 
-        for (Map.Entry<Integer, SocketTunnelBase> entry : mTunnels.entrySet()) {
+        for (Map.Entry<Integer, SocketTunnel> entry : mTunnels.entrySet()) {
             int channelId = entry.getKey();
-            SocketTunnelBase tunnel = entry.getValue();
+            SocketTunnel tunnel = entry.getValue();
             tunnel.bind(connection().createDataChannel(channelId));
         }
     }
@@ -220,7 +224,7 @@ public abstract class SessionBase {
 
         stopAutoCloseTimer();
 
-        for (SocketTunnelBase tunnel : mTunnels.values()) {
+        for (SocketTunnel tunnel : mTunnels.values()) {
             tunnel.unbind().dispose();
         }
 

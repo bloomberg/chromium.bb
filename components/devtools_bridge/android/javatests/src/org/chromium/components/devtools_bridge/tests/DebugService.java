@@ -16,7 +16,6 @@ import android.widget.Toast;
 import org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox;
 import org.chromium.components.devtools_bridge.GCDClientSessionTestingHost;
 import org.chromium.components.devtools_bridge.LocalSessionBridge;
-import org.chromium.components.devtools_bridge.LocalTunnelBridge;
 
 import java.io.IOException;
 
@@ -24,7 +23,6 @@ import java.io.IOException;
  * Service for testing devtools bridge.
  */
 public class DebugService extends Service {
-    public static final String START_TUNNEL_BRIDGE_ACTION = "action.START_TUNNEL_BRIDGE";
     public static final String START_SESSION_BRIDGE_ACTION = "action.START_SESSION_BRIDGE";
     public static final String START_SERVER_ACTION = "action.START_SERVER";
     public static final String START_GCD_CLIENT_ACTION = "action.START_GCD_CLIENT";
@@ -50,35 +48,6 @@ public class DebugService extends Service {
 
     private String exposingSocketName() {
         return "webview_devtools_remote_" + Integer.valueOf(Process.myPid());
-    }
-
-    private class LocalTunnelBridgeController implements Controller {
-        private LocalTunnelBridge mBridge;
-
-        @Override
-        public void create() throws IOException {
-            mBridge = new LocalTunnelBridge(replicatingSocketName(), exposingSocketName());
-        }
-
-        @Override
-        public void start() throws Exception {
-            mBridge.start();
-        }
-
-        @Override
-        public void stop() {
-            mBridge.stop();
-        }
-
-        @Override
-        public void dispose() {
-            mBridge.dispose();
-        }
-
-        @Override
-        public String toString() {
-            return "LocalTunnelBridge";
-        }
     }
 
     private class LocalSessionBridgeController implements Controller {
@@ -191,9 +160,7 @@ public class DebugService extends Service {
         if (intent == null) return START_NOT_STICKY;
 
         String action = intent.getAction();
-        if (START_TUNNEL_BRIDGE_ACTION.equals(action)) {
-            return start(new LocalTunnelBridgeController());
-        } else if (START_SESSION_BRIDGE_ACTION.equals(action)) {
+        if (START_SESSION_BRIDGE_ACTION.equals(action)) {
             return start(new LocalSessionBridgeController());
         } else if (START_SERVER_ACTION.equals(action)) {
             return start(new DevToolsBridgeServerSandboxController());

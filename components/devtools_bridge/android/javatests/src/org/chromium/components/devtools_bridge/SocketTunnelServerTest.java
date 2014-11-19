@@ -8,7 +8,6 @@ import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.Assert;
 
@@ -23,93 +22,62 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
     private static final int CONNECTION_ID = 30;
     private static final String SOCKET_NAME = "ksdjhflksjhdflk";
 
-    private DataChannelMock mDataChannelMock;
-    private SocketTunnelServer mServer;
+    private static final int SERVER_CHANNEL = 1;
+    private static final int CLIENT_CHANNEL = 0;
+
+    private SessionDependencyFactory mFactory;
+    private DataPipe mPipe;
+    private SocketTunnel mServer;
     private LocalServerSocket mSocket;
+    private DataChannelObserverMock mObserverMock;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mFactory = SessionDependencyFactory.newInstance();
+        mPipe = new DataPipe(mFactory);
+        mServer = mFactory.newSocketTunnelServer(SOCKET_NAME);
+        mServer.bind(mPipe.dataChannel(SERVER_CHANNEL));
         mSocket = new LocalServerSocket(SOCKET_NAME);
+        mObserverMock = new DataChannelObserverMock();
+        mPipe.dataChannel(CLIENT_CHANNEL).registerObserver(mObserverMock);
+        mPipe.negotiate();
+        mPipe.awaitConnected();
     }
 
     @Override
     public void tearDown() throws Exception {
-        mSocket.close();
-        if (mServer != null) destroyServer();
+        mPipe.dataChannel(CLIENT_CHANNEL).unregisterObserver();
+        mServer.unbind();
+        mPipe.dispose();
+        mFactory.dispose();
         super.tearDown();
     }
 
-    private void createServer() {
-        createServer(new DataChannelMock());
+    private void sendPacket(ByteBuffer packet) {
+        packet.position(0);
+        mPipe.send(CLIENT_CHANNEL, packet);
     }
 
-    private void createServer(DataChannelMock dataChannel) {
-        mDataChannelMock = dataChannel;
-        mServer = new SocketTunnelServer(SOCKET_NAME);
-        mServer.bind(mDataChannelMock);
-    }
-
-    private void destroyServer() {
-        mServer.unbind().dispose();
-        mServer = null;
-    }
-
-    @SmallTest
-    public void testOpenDataChannel() {
-        createServer();
-        mDataChannelMock.open();
-    }
-
-    @SmallTest
-    public void testDecodeControlPacket() {
-        createServer();
-        ByteBuffer packet = buildControlPacket(CONNECTION_ID, SocketTunnelBase.SERVER_OPEN_ACK);
-
-        PacketDecoder decoder = PacketDecoder.decode(packet);
-        Assert.assertTrue(decoder.isControlPacket());
-        Assert.assertEquals(CONNECTION_ID, decoder.connectionId());
-        Assert.assertEquals(SocketTunnelBase.SERVER_OPEN_ACK, decoder.opCode());
-    }
-
-    @SmallTest
+    @MediumTest
     public void testConnectToSocket() throws IOException {
-        createServer();
         LocalSocket socket = connectToSocket(1);
-        Assert.assertTrue(mServer.hasConnections());
         socket.close();
     }
 
     private LocalSocket connectToSocket(int connectionId) throws IOException {
-        mDataChannelMock.notifyMessage(
-                buildControlPacket(connectionId, SocketTunnelBase.CLIENT_OPEN));
+        sendPacket(SocketTunnelBase.buildControlPacket(
+                connectionId, SocketTunnelBase.CLIENT_OPEN));
         return mSocket.accept();
     }
 
     private void sendClose(int connectionId) {
-        mDataChannelMock.notifyMessage(
-                buildControlPacket(connectionId, SocketTunnelBase.CLIENT_CLOSE));
+        sendPacket(SocketTunnelBase.buildControlPacket(
+                connectionId, SocketTunnelBase.CLIENT_CLOSE));
     }
 
-    private ByteBuffer buildControlPacket(int connectionId, byte opCode) {
-        ByteBuffer packet = SocketTunnelBase.buildControlPacket(connectionId, opCode);
-        packet.limit(packet.position());
-        packet.position(0);
-        Assert.assertTrue(packet.remaining() > 0);
-        return packet;
-    }
-
-    private ByteBuffer buildDataPacket(int connectionId, byte[] data) {
-        ByteBuffer packet = SocketTunnelBase.buildDataPacket(connectionId, data, data.length);
-        packet.limit(packet.position());
-        packet.position(0);
-        Assert.assertTrue(packet.remaining() > 0);
-        return packet;
-    }
-
-    @SmallTest
+    @MediumTest
     public void testReceiveOpenAcknowledgement() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
 
         receiveOpenAck(CONNECTION_ID);
@@ -117,8 +85,16 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         socket.close();
     }
 
+    private PacketDecoder receivePacket() throws InterruptedException {
+        byte[] bytes = mObserverMock.received.take();
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+        buffer.put(bytes);
+        buffer.position(0);
+        return PacketDecoder.decode(buffer);
+    }
+
     private PacketDecoder receiveControlPacket(int connectionId) throws InterruptedException {
-        PacketDecoder decoder = PacketDecoder.decode(mDataChannelMock.receive());
+        PacketDecoder decoder = receivePacket();
         Assert.assertTrue(decoder.isControlPacket());
         Assert.assertEquals(connectionId, decoder.connectionId());
         return decoder;
@@ -134,26 +110,20 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         Assert.assertEquals(SocketTunnelBase.SERVER_CLOSE, decoder.opCode());
     }
 
-    @SmallTest
+    @MediumTest
     public void testClosingSocket() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
         receiveOpenAck(CONNECTION_ID);
 
-        socket.shutdownOutput();
-
-        PacketDecoder decoder = PacketDecoder.decode(mDataChannelMock.receive());
-
-        Assert.assertTrue(decoder.isControlPacket());
-        Assert.assertEquals(SocketTunnelBase.SERVER_CLOSE, decoder.opCode());
-        Assert.assertEquals(CONNECTION_ID, decoder.connectionId());
-
         socket.close();
+
+        PacketDecoder decoder = receiveControlPacket(CONNECTION_ID);
+
+        Assert.assertEquals(SocketTunnelBase.SERVER_CLOSE, decoder.opCode());
     }
 
-    @SmallTest
+    @MediumTest
     public void testReadData() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
         receiveOpenAck(CONNECTION_ID);
 
@@ -171,7 +141,7 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         ByteBuffer result = ByteBuffer.allocate(length);
 
         while (true) {
-            PacketDecoder decoder = PacketDecoder.decode(mDataChannelMock.receive());
+            PacketDecoder decoder = receivePacket();
             if (decoder.isDataPacket()) {
                 Assert.assertEquals(connectionId, decoder.connectionId());
                 result.put(decoder.data());
@@ -196,9 +166,8 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
     private static final int[] CHUNK_SIZES =
             new int[] { 0, 1, 5, 100, 1000, SocketTunnelBase.READING_BUFFER_SIZE * 2 };
 
-    @SmallTest
+    @MediumTest
     public void testReadLongDataChunk() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
         receiveOpenAck(CONNECTION_ID);
 
@@ -224,13 +193,11 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         Assert.assertEquals(sentData, readData);
     }
 
-    @SmallTest
+    @MediumTest
     public void testReuseConnectionId() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
         receiveOpenAck(CONNECTION_ID);
 
-        socket.shutdownOutput();
         socket.close();
         receiveClose(CONNECTION_ID);
         sendClose(CONNECTION_ID);
@@ -242,13 +209,12 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
 
     private static final byte[] SAMPLE = "Sample".getBytes();
 
-    @SmallTest
+    @MediumTest
     public void testWriteData() throws IOException, InterruptedException {
-        createServer();
         LocalSocket socket = connectToSocket(CONNECTION_ID);
         receiveOpenAck(CONNECTION_ID);
 
-        mDataChannelMock.notifyMessage(buildDataPacket(CONNECTION_ID, SAMPLE));
+        sendPacket(SocketTunnelBase.buildDataPacket(CONNECTION_ID, SAMPLE, SAMPLE.length));
 
         byte[] result = new byte[SAMPLE.length];
         int read = 0;
@@ -261,45 +227,5 @@ public class SocketTunnelServerTest extends InstrumentationTestCase {
         Assert.assertEquals(ByteBuffer.wrap(SAMPLE), ByteBuffer.wrap(result));
 
         socket.close();
-    }
-
-    private enum TestStates {
-        INITIAL, SENDING, CLOSING, MAY_FINISH_SENDING, SENT, DONE
-    }
-
-    @MediumTest
-    public void testStopWhileSendingData() throws IOException {
-
-        final TestUtils.StateBarrier<TestStates> barrier =
-                new TestUtils.StateBarrier<TestStates>(TestStates.INITIAL);
-
-        createServer(new DataChannelMock() {
-            @Override
-            public void send(ByteBuffer message, AbstractDataChannel.MessageType type) {
-                barrier.advance(TestStates.INITIAL, TestStates.SENDING);
-                barrier.advance(TestStates.MAY_FINISH_SENDING, TestStates.SENT);
-            }
-        });
-
-        LocalSocket socket = connectToSocket(CONNECTION_ID);
-        barrier.advance(TestStates.SENDING, TestStates.CLOSING);
-        socket.close();
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                barrier.advance(TestStates.CLOSING, TestStates.MAY_FINISH_SENDING);
-            }
-        }.start();
-
-        destroyServer();
-
-        barrier.advance(TestStates.SENT, TestStates.DONE);
     }
 }

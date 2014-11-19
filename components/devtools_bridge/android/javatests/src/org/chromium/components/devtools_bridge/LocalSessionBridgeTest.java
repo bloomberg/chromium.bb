@@ -18,9 +18,9 @@ import java.util.concurrent.Future;
  */
 public class LocalSessionBridgeTest extends InstrumentationTestCase {
     private static final String SERVER_SOCKET_NAME =
-            "org.chromium.components.devtools_bridge.LocalSessionBridgeTest.SERVER_SOCKET";
+            LocalSessionBridgeTest.class.getName() + ".SERVER_SOCKET";
     private static final String CLIENT_SOCKET_NAME =
-            "org.chromium.components.devtools_bridge.LocalSessionBridgeTest.CLIENT_SOCKET";
+            LocalSessionBridgeTest.class.getName() + ".CLIENT_SOCKET";
 
     private static final String REQUEST = "Request";
     private static final String RESPONSE = "Response";
@@ -79,9 +79,36 @@ public class LocalSessionBridgeTest extends InstrumentationTestCase {
         LocalServerSocket serverListeningSocket = new LocalServerSocket(SERVER_SOCKET_NAME);
         Future<String> response = TestUtils.asyncRequest(CLIENT_SOCKET_NAME, REQUEST);
         LocalSocket serverSocket = serverListeningSocket.accept();
-        String request = TestUtils.readAll(serverSocket);
+        String request = TestUtils.read(serverSocket, REQUEST.length());
         Assert.assertEquals(REQUEST, request);
-        TestUtils.writeAndShutdown(serverSocket, RESPONSE);
+        TestUtils.write(serverSocket, RESPONSE);
+        serverSocket.close();
         Assert.assertEquals(RESPONSE, response.get());
+    }
+
+    @MediumTest
+    public void testRequestFailure1() throws Exception {
+        mBridge.start();
+        LocalServerSocket serverListeningSocket = new LocalServerSocket(SERVER_SOCKET_NAME);
+        Future<String> response = TestUtils.asyncRequest(CLIENT_SOCKET_NAME, REQUEST);
+        LocalSocket socket = serverListeningSocket.accept();
+        int firstByte = socket.getInputStream().read();
+
+        Assert.assertEquals((int) REQUEST.charAt(0), firstByte);
+
+        socket.close();
+        Assert.assertEquals("", response.get());
+    }
+
+    @MediumTest
+    public void testRequestFailure2() throws Exception {
+        mBridge.dispose();
+        // Android system socket will reject connection.
+        mBridge = new LocalSessionBridge("jdwp-control", CLIENT_SOCKET_NAME);
+        mBridge.start();
+
+        Future<String> response = TestUtils.asyncRequest(CLIENT_SOCKET_NAME, REQUEST);
+
+        Assert.assertEquals("", response.get());
     }
 }

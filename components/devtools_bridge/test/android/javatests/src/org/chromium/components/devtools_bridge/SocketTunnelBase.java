@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * if CLIENT_CLOSE has sent and SERVER_CLOSE has received with the same connection ID this
  * ID is safe to be reused.
  */
-public abstract class SocketTunnelBase {
+public abstract class SocketTunnelBase implements SocketTunnel {
     // Data channel is threadsafe but access to the reference needs synchronization.
     private final ReadWriteLock mDataChanneliReferenceLock = new ReentrantReadWriteLock();
     private volatile AbstractDataChannel mDataChannel;
@@ -82,6 +82,7 @@ public abstract class SocketTunnelBase {
     // For writing in socket without blocking signaling thread.
     private final ExecutorService mWritingThread = Executors.newSingleThreadExecutor();
 
+    @Override
     public boolean isBound() {
         final Lock lock = mDataChanneliReferenceLock.readLock();
         lock.lock();
@@ -96,6 +97,7 @@ public abstract class SocketTunnelBase {
      * Binds the tunnel to the data channel. Tunnel starts its activity when data channel
      * open.
      */
+    @Override
     public void bind(AbstractDataChannel dataChannel) {
         // Observer registrution must not be done in constructor.
         final Lock lock = mDataChanneliReferenceLock.writeLock();
@@ -112,6 +114,7 @@ public abstract class SocketTunnelBase {
      * Stops all tunnel activity and returns the prevously bound data channel.
      * It's safe to dispose the data channel after it.
      */
+    @Override
     public AbstractDataChannel unbind() {
         final Lock lock = mDataChanneliReferenceLock.writeLock();
         lock.lock();

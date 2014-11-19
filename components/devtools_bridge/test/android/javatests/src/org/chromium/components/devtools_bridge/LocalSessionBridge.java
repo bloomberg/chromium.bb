@@ -66,7 +66,18 @@ public class LocalSessionBridge {
     }
 
     public void dispose() {
-        if (isStarted()) stop();
+        mServerExecutor.runSynchronously(new Runnable() {
+            @Override
+            public void run() {
+                mServerSession.dispose();
+            }
+        });
+        mClientExecutor.runSynchronously(new Runnable() {
+            @Override
+            public void run() {
+                mClientSession.dispose();
+            }
+        });
 
         mServerExecutor.dispose();
         mClientExecutor.dispose();
@@ -96,16 +107,18 @@ public class LocalSessionBridge {
     }
 
     public void stop() {
+        assert mStarted;
+
         mServerExecutor.runSynchronously(new Runnable() {
             @Override
             public void run() {
-                mServerSession.dispose();
+                mServerSession.stop();
             }
         });
         mClientExecutor.runSynchronously(new Runnable() {
             @Override
             public void run() {
-                mClientSession.dispose();
+                mClientSession.stop();
             }
         });
         mStarted = false;
@@ -129,7 +142,7 @@ public class LocalSessionBridge {
 
     private class ServerSessionMock extends ServerSession {
         public ServerSessionMock(String serverSocketName) {
-            super(mFactory, mServerExecutor, serverSocketName);
+            super(LocalSessionBridge.this.mFactory, mServerExecutor, serverSocketName);
         }
 
         public void setAutoCloseTimeoutMs(int value) {
@@ -164,8 +177,8 @@ public class LocalSessionBridge {
         }
 
         @Override
-        protected SocketTunnelServer createSocketTunnelServer(String serverSocketName) {
-            SocketTunnelServer tunnel = super.createSocketTunnelServer(serverSocketName);
+        protected SocketTunnel newSocketTunnelServer(String serverSocketName) {
+            SocketTunnel tunnel = super.newSocketTunnelServer(serverSocketName);
             Log.d(TAG, "Server tunnel created on " + serverSocketName);
             return tunnel;
         }
@@ -174,7 +187,7 @@ public class LocalSessionBridge {
     private class ClientSessionMock extends ClientSession {
         public ClientSessionMock(ServerSession serverSession, String clientSocketName)
                 throws IOException {
-            super(mFactory,
+            super(LocalSessionBridge.this.mFactory,
                   mClientExecutor,
                   createServerSessionProxy(serverSession),
                   clientSocketName);

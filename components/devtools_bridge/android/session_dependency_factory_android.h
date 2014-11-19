@@ -22,6 +22,10 @@ class SessionDependencyFactoryAndroid : public SessionDependencyFactory {
       scoped_ptr<RTCConfiguration> config,
       scoped_ptr<AbstractPeerConnection::Delegate> delegate) override;
 
+  virtual scoped_refptr<base::TaskRunner> signaling_thread_task_runner()
+      override;
+  virtual scoped_refptr<base::TaskRunner> io_thread_task_runner() override;
+
  private:
   const scoped_ptr<SessionDependencyFactory> impl_;
 

@@ -11,8 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import junit.framework.Assert;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Tests for {@link SessionDependencyFactory}
@@ -22,12 +20,12 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
 
     private SessionDependencyFactory mInstance;
     private AbstractPeerConnection mConnection;
-    private ObserverMock mObserver;
+    private PeerConnectionObserverMock mObserver;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mObserver = new ObserverMock();
+        mObserver = new PeerConnectionObserverMock();
     }
 
     @SmallTest
@@ -111,7 +109,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
     @SmallTest
     public void testNegotiation() throws Exception {
         mInstance = newFactory();
-        Pipe pipe = new Pipe(mInstance);
+        DataPipe pipe = new DataPipe(mInstance);
         pipe.negotiate();
         pipe.dispose();
         mInstance.dispose();
@@ -120,7 +118,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
     @SmallTest
     public void testConnection() throws Exception {
         mInstance = newFactory();
-        Pipe pipe = new Pipe(mInstance);
+        DataPipe pipe = new DataPipe(mInstance);
         pipe.negotiate();
         pipe.awaitConnected();
         pipe.dispose();
@@ -133,7 +131,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
         mConnection = newConnection();
         AbstractDataChannel channel = mConnection.createDataChannel(DATA_CHANNEL_ID);
 
-        channel.registerObserver(new DataChannelObserver());
+        channel.registerObserver(new DataChannelObserverMock());
         channel.send(ByteBuffer.allocateDirect(1), AbstractDataChannel.MessageType.TEXT);
         channel.send(ByteBuffer.allocateDirect(1), AbstractDataChannel.MessageType.BINARY);
         channel.unregisterObserver();
@@ -147,7 +145,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
     @SmallTest
     public void testDataChannelOpens() throws Exception {
         mInstance = newFactory();
-        Pipe pipe = new Pipe(mInstance);
+        DataPipe pipe = new DataPipe(mInstance);
 
         pipe.registerDatatChannelObservers();
 
@@ -165,7 +163,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
     @MediumTest
     public void testPumpData() throws Exception {
         mInstance = newFactory();
-        Pipe pipe = new Pipe(mInstance);
+        DataPipe pipe = new DataPipe(mInstance);
         pipe.registerDatatChannelObservers();
         pipe.negotiate();
         pipe.dataChannelObserver(0).opened.await();
@@ -196,180 +194,7 @@ public class SessionDependencyFactoryTest extends InstrumentationTestCase {
         return newConnection(mObserver);
     }
 
-    private AbstractPeerConnection newConnection(ObserverMock observer) {
+    private AbstractPeerConnection newConnection(PeerConnectionObserverMock observer) {
         return mInstance.createPeerConnection(new RTCConfiguration(), observer);
-    }
-
-    static class Pipe {
-        final ObserverMock mObserver1 = new ObserverMock();
-        final ObserverMock mObserver2 = new ObserverMock();
-
-        DataChannelObserver mDataChannelObserver1 = new DataChannelObserver();
-        DataChannelObserver mDataChannelObserver2 = new DataChannelObserver();
-
-        final AbstractPeerConnection mConnection1;
-        final AbstractPeerConnection mConnection2;
-
-        final AbstractDataChannel mDataChannel1;
-        final AbstractDataChannel mDataChannel2;
-
-        Pipe(SessionDependencyFactory factory) {
-            RTCConfiguration config = new RTCConfiguration();
-            mConnection1 = factory.createPeerConnection(config, mObserver1);
-            mConnection2 = factory.createPeerConnection(config, mObserver2);
-
-            mObserver1.iceCandidatesSink = mConnection2;
-            mObserver2.iceCandidatesSink = mConnection1;
-
-            mDataChannel1 = mConnection1.createDataChannel(DATA_CHANNEL_ID);
-            mDataChannel2 = mConnection2.createDataChannel(DATA_CHANNEL_ID);
-        }
-
-        void dispose() {
-            mDataChannel1.dispose();
-            mDataChannel2.dispose();
-            mConnection1.dispose();
-            mConnection2.dispose();
-        }
-
-        void negotiate() throws Exception {
-            mConnection1.createAndSetLocalDescription(
-                    AbstractPeerConnection.SessionDescriptionType.OFFER);
-            mObserver1.localDescriptionAvailable.await();
-
-            mConnection2.setRemoteDescription(
-                    AbstractPeerConnection.SessionDescriptionType.OFFER,
-                    mObserver1.localDescription);
-            mObserver2.remoteDescriptionSet.await();
-
-            mConnection2.createAndSetLocalDescription(
-                    AbstractPeerConnection.SessionDescriptionType.ANSWER);
-            mObserver2.localDescriptionAvailable.await();
-
-            mConnection1.setRemoteDescription(
-                    AbstractPeerConnection.SessionDescriptionType.ANSWER,
-                    mObserver2.localDescription);
-            mObserver1.remoteDescriptionSet.await();
-        }
-
-        void awaitConnected() throws Exception {
-            mObserver1.connected.await();
-            mObserver2.connected.await();
-        }
-
-        void send(int channelIndex, String data) {
-            send(channelIndex, data.getBytes(), AbstractDataChannel.MessageType.TEXT);
-        }
-
-        void send(int channelIndex, byte[] bytes, AbstractDataChannel.MessageType type) {
-            ByteBuffer rawMessage = ByteBuffer.allocateDirect(bytes.length);
-            rawMessage.put(bytes);
-            rawMessage.limit(rawMessage.position());
-            rawMessage.position(0);
-            dataChannel(channelIndex).send(rawMessage, type);
-        }
-
-        AbstractDataChannel dataChannel(int channelIndex) {
-            switch (channelIndex) {
-                case 0:
-                    return mDataChannel1;
-
-                case 1:
-                    return mDataChannel2;
-
-                default:
-                    throw new ArrayIndexOutOfBoundsException();
-            }
-        }
-
-        DataChannelObserver dataChannelObserver(int channelIndex) {
-            switch (channelIndex) {
-                case 0:
-                    return mDataChannelObserver1;
-
-                case 1:
-                    return mDataChannelObserver2;
-
-                default:
-                    throw new ArrayIndexOutOfBoundsException();
-            }
-        }
-
-        void registerDatatChannelObservers() {
-            mDataChannel1.registerObserver(mDataChannelObserver1);
-            mDataChannel2.registerObserver(mDataChannelObserver2);
-        }
-
-        void unregisterDatatChannelObservers() {
-            mDataChannel1.unregisterObserver();
-            mDataChannel2.unregisterObserver();
-        }
-    }
-
-    private static class ObserverMock implements AbstractPeerConnection.Observer {
-        public AbstractPeerConnection.SessionDescriptionType localDescriptionType;
-        public String localDescription;
-        public String failureDescription;
-
-        public final CountDownLatch localDescriptionAvailable = new CountDownLatch(1);
-        public final CountDownLatch failureAvailable = new CountDownLatch(1);
-        public final CountDownLatch remoteDescriptionSet = new CountDownLatch(1);
-        public final CountDownLatch connected = new CountDownLatch(1);
-
-        public AbstractPeerConnection iceCandidatesSink;
-
-        @Override
-        public void onFailure(String description) {
-            failureDescription = description;
-            failureAvailable.countDown();
-        }
-
-        @Override
-        public void onLocalDescriptionCreatedAndSet(
-                AbstractPeerConnection.SessionDescriptionType type, String description) {
-            localDescriptionType = type;
-            localDescription = description;
-            localDescriptionAvailable.countDown();
-        }
-
-        @Override
-        public void onRemoteDescriptionSet() {
-            remoteDescriptionSet.countDown();
-        }
-
-        @Override
-        public void onIceCandidate(String iceCandidate) {
-            if (iceCandidatesSink != null)
-                iceCandidatesSink.addIceCandidate(iceCandidate);
-        }
-
-        @Override
-        public void onIceConnectionChange(boolean connected) {
-            this.connected.countDown();
-        }
-    }
-
-    private static class DataChannelObserver implements AbstractDataChannel.Observer {
-        public final CountDownLatch opened = new CountDownLatch(1);
-        public final CountDownLatch closed = new CountDownLatch(1);
-        public final LinkedBlockingDeque<byte[]> received = new LinkedBlockingDeque<byte[]>();
-
-        public void onStateChange(AbstractDataChannel.State state) {
-            switch (state) {
-                case OPEN:
-                    opened.countDown();
-                    break;
-
-                case CLOSED:
-                    closed.countDown();
-                    break;
-            }
-        }
-
-        public void onMessage(ByteBuffer message) {
-            byte[] bytes = new byte[message.remaining()];
-            message.get(bytes);
-            received.add(bytes);
-        }
     }
 }

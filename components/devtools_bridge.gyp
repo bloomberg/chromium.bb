@@ -21,6 +21,12 @@
       'sources': [
         'devtools_bridge/android/session_dependency_factory_android.cc',
         'devtools_bridge/android/session_dependency_factory_android.h',
+        'devtools_bridge/socket_tunnel_connection.cc',
+        'devtools_bridge/socket_tunnel_connection.h',
+        'devtools_bridge/socket_tunnel_packet_handler.cc',
+        'devtools_bridge/socket_tunnel_packet_handler.h',
+        'devtools_bridge/socket_tunnel_server.cc',
+        'devtools_bridge/socket_tunnel_server.h',
         'devtools_bridge/session_dependency_factory.cc',
         'devtools_bridge/session_dependency_factory.h',
       ],

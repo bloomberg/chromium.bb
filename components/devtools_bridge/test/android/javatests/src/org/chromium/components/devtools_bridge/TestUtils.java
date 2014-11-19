@@ -31,7 +31,7 @@ public class TestUtils {
             public String call() throws Exception {
                 LocalSocket socket = new LocalSocket();
                 socket.connect(new LocalSocketAddress(socketName));
-                writeAndShutdown(socket, request);
+                write(socket, request);
 
                 String response = readAll(socket);
                 socket.close();
@@ -42,23 +42,26 @@ public class TestUtils {
         });
     }
 
-    public static void writeAndShutdown(LocalSocket socket, String data) throws IOException {
+    public static void write(LocalSocket socket, String data) throws IOException {
         socket.getOutputStream().write(data.getBytes(CHARSET));
         socket.getOutputStream().flush();
-        socket.shutdownOutput();
     }
 
     // Reads all bytes from socket input stream until EOF and converts it to UTF-8 string.
-    public static String readAll(LocalSocket socket) throws IOException {
-        byte[] buffer = new byte[1000];
+    public static String read(LocalSocket socket, int length) throws IOException {
+        byte[] buffer = new byte[length];
         int position = 0;
-        while (true) {
+        while (position < buffer.length) {
             int count = socket.getInputStream().read(buffer, position, buffer.length - position);
             if (count == -1)
                 break;
             position += count;
         }
         return new String(buffer, 0, position, CHARSET);
+    }
+
+    public static String readAll(LocalSocket socket) throws IOException {
+        return read(socket, 1000);
     }
 
     /**

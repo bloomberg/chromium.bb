@@ -48,7 +48,6 @@ public class DebugActivity extends Activity {
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         mLayout.addView(textView);
 
-        addActionButton("Start LocalTunnelBridge", DebugService.START_TUNNEL_BRIDGE_ACTION);
         addActionButton("Start LocalSessionBridge", DebugService.START_SESSION_BRIDGE_ACTION);
         addActionButton("Start hosted DevToolsBridgeServer", DebugService.START_SERVER_ACTION);
         addActionButton("Stop", DebugService.STOP_ACTION);

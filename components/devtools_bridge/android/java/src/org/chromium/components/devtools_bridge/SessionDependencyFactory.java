@@ -38,5 +38,7 @@ public abstract class SessionDependencyFactory {
     public abstract AbstractPeerConnection createPeerConnection(
             RTCConfiguration config, AbstractPeerConnection.Observer observer);
 
+    public abstract SocketTunnel newSocketTunnelServer(String socketName);
+
     public abstract void dispose();
 }
