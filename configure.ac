@@ -181,6 +181,9 @@ AC_ARG_ENABLE(headless-compositor, [  --enable-headless-compositor],,
 	      enable_headless_compositor=yes)
 AM_CONDITIONAL(ENABLE_HEADLESS_COMPOSITOR,
 	       test x$enable_headless_compositor = xyes)
+if test x$enable_headless_compositor = xyes; then
+  AC_DEFINE([BUILD_HEADLESS_COMPOSITOR], [1], [Build the headless compositor])
+fi
 
 
 AC_ARG_ENABLE(rpi-compositor,
