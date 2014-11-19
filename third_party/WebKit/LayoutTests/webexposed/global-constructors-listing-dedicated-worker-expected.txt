@@ -52,6 +52,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] MessageChannel
 [Worker] MessageEvent
 [Worker] NetworkInformation
+[Worker] Notification
 [Worker] Number
 [Worker] Object
 [Worker] Promise

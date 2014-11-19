@@ -8,12 +8,13 @@
   </head>
   <body>
     <script>
-      // Tests that Document-bound notifications will fire the onclose event
-      // when they have their close() method called. When the test is being ran
-      // manually, grant Notification permission first.
+      // Tests that Dedicated Worker-bound notifications will fire the onclose
+      // event when they have their close() method called. When the test is being
+      // ran manually, grant Notification permission first.
       if (window.testRunner)
           testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+
+      dedicatedWorkerTest("resources/close-event-test.js");
     </script>
-    <script src="resources/close-event-test.js"></script>
   </body>
 </html>

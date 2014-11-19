@@ -1,3 +1,8 @@
+if (self.importScripts) {
+    importScripts('/resources/testharness.js');
+    importScripts('worker-helpers.js');
+}
+
 async_test(function(test) {
     if (Notification.permission != 'granted') {
         assert_unreached('No permission has been granted for displaying notifications.');
@@ -6,7 +11,7 @@ async_test(function(test) {
 
     var notification = new Notification('My Notification');
     notification.addEventListener('show', function() {
-        if (window.testRunner)
+        if (testRunner)
             testRunner.simulateWebNotificationClick('My Notification');
     });
 
@@ -19,3 +24,6 @@ async_test(function(test) {
     });
 
 }, 'Simulating a click on the notification should fire the onclick() event.');
+
+if (isDedicatedOrSharedWorker())
+    done();

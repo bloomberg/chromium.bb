@@ -8,13 +8,14 @@
   </head>
   <body>
     <script>
-      // Tests that Document-bound notifications can be replaced using the "tag"
-      // property in the constructor's options. When the test is being ran
+      // Tests that Dedicated Worker-bound notifications can be replaced using the
+      // "tag" property in the constructor's options. When the test is being ran
       // manually, grant Notification permission first and verify that only a
       // single notification will be shown at the end of the test.
       if (window.testRunner)
           testRunner.grantWebNotificationPermission("http://127.0.0.1:8000", true);
+
+      dedicatedWorkerTest("resources/update-event-test.js");
     </script>
-    <script src="resources/update-event-test.js"></script>
   </body>
 </html>
