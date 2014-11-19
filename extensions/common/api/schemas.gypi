@@ -44,12 +44,12 @@
       'test.json',
       'usb.idl',
       'virtual_keyboard_private.json',
-      'vpn_provider.idl',
       'web_request.json',
       'web_view_internal.json',
     ],
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
+      'vpn_provider.idl',
       'webcam_private.idl',
     ],
     'non_compiled_schema_files': [

@@ -32,7 +32,6 @@ namespace vpnProvider {
   enum PlatformMessage {
     connected,
     disconnected,
-    underlyingNetworkDisconnected,
     error
   };
 

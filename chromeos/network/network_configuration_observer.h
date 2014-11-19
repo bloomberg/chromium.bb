@@ -20,10 +20,14 @@ struct NetworkConfiguration;
 // Observer class for network configuration events.
 class NetworkConfigurationObserver {
  public:
-  // Indicates whether a configuration change is triggered by a user action or
-  // by policy.
+  // Indicates whether a configuration change is triggered by a user action,
+  // by an extension or by policy.
   enum Source {
+    // Triggered by a user action.
     SOURCE_USER_ACTION,
+    // Triggered by an extension to install a configuration.
+    SOURCE_EXTENSION_INSTALL,
+    // Triggered by a policy.
     SOURCE_POLICY
   };
 

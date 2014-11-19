@@ -5,11 +5,24 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_VPN_PROVIDER_VPN_PROVIDER_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_VPN_PROVIDER_VPN_PROVIDER_API_H_
 
+#include <string>
+
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-class VpnProviderCreateConfigFunction : public UIThreadExtensionFunction {
+class VpnThreadExtensionFunction : public UIThreadExtensionFunction {
+ public:
+  void SignalCallCompletionSuccess();
+
+  void SignalCallCompletionFailure(const std::string& error_name,
+                                   const std::string& error_message);
+
+ protected:
+  virtual ~VpnThreadExtensionFunction();
+};
+
+class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.createConfig",
                              VPNPROVIDER_CREATECONFIG);
@@ -17,10 +30,12 @@ class VpnProviderCreateConfigFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~VpnProviderCreateConfigFunction();
 
+  void SignalCallCompletionSuccess(int handle);
+
   virtual ExtensionFunction::ResponseAction Run() override;
 };
 
-class VpnProviderDestroyConfigFunction : public UIThreadExtensionFunction {
+class VpnProviderDestroyConfigFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.destroyConfig",
                              VPNPROVIDER_DESTROYCONFIG);
@@ -31,7 +46,7 @@ class VpnProviderDestroyConfigFunction : public UIThreadExtensionFunction {
   virtual ExtensionFunction::ResponseAction Run() override;
 };
 
-class VpnProviderSetParametersFunction : public UIThreadExtensionFunction {
+class VpnProviderSetParametersFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.setParameters",
                              VPNPROVIDER_SETPARAMETERS);
@@ -42,7 +57,7 @@ class VpnProviderSetParametersFunction : public UIThreadExtensionFunction {
   virtual ExtensionFunction::ResponseAction Run() override;
 };
 
-class VpnProviderSendPacketFunction : public UIThreadExtensionFunction {
+class VpnProviderSendPacketFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.sendPacket", VPNPROVIDER_SENDPACKET);
 
@@ -53,7 +68,7 @@ class VpnProviderSendPacketFunction : public UIThreadExtensionFunction {
 };
 
 class VpnProviderNotifyConnectionStateChangedFunction
-    : public UIThreadExtensionFunction {
+    : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.notifyConnectionStateChanged",
                              VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED);

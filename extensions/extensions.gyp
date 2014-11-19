@@ -522,8 +522,6 @@
         'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.cc',
         'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h',
         'browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h',
-        'browser/api/vpn_provider/vpn_provider_api.cc',
-        'browser/api/vpn_provider/vpn_provider_api.h',
         'browser/api/web_request/form_data_parser.cc',
         'browser/api/web_request/form_data_parser.h',
         'browser/api/web_request/upload_data_presenter.cc',
@@ -786,6 +784,16 @@
           'dependencies!': [
             '../components/components.gyp:storage_monitor',
           ],
+        }],
+        ['OS == "linux" and chromeos == 1', {
+          'sources': [
+            'browser/api/vpn_provider/vpn_provider_api.cc',
+            'browser/api/vpn_provider/vpn_provider_api.h',
+            'browser/api/vpn_provider/vpn_service.cc',
+            'browser/api/vpn_provider/vpn_service.h',
+            'browser/api/vpn_provider/vpn_service_factory.cc',
+            'browser/api/vpn_provider/vpn_service_factory.h'
+          ]
         }],
         ['use_openssl==1', {
           'sources': [
