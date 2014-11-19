@@ -40,6 +40,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -634,6 +636,10 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
 
     // The web contents should belong to the current profile.
     DCHECK_EQ(profile_, web_contents->GetBrowserContext());
+
+    // Make the webview transparent.
+    web_contents->GetRenderViewHost()->GetView()->SetBackgroundColor(
+        SK_ColorTRANSPARENT);
 
     views::WebView* web_view =
         new views::WebView(web_contents->GetBrowserContext());
