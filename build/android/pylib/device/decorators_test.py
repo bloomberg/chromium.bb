@@ -280,7 +280,7 @@ class DecoratorsTest(unittest.TestCase):
       self.function_call_counters['alwaysRaisesCommandFailedError'] += 1
       raise device_errors.CommandFailedError('testCommand failed')
 
-    # pylint: disable=R0201
+    # pylint: disable=no-self-use
 
     @decorators.WithTimeoutAndRetriesFromInstance(
         'default_timeout', 'default_retries')
@@ -298,7 +298,7 @@ class DecoratorsTest(unittest.TestCase):
                                       retries=None):
       raise exception
 
-    # pylint: enable=R0201
+    # pylint: enable=no-self-use
 
 
   def testMethodDecoratorDoesTimeout(self):

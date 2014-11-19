@@ -38,7 +38,7 @@ class LinkerExceptionTestResult(base_test_result.BaseTestResult):
     super(LinkerExceptionTestResult, self).__init__(
         test_name,
         base_test_result.ResultType.FAIL,
-        log = "%s %s" % (exc_type, log_msg))
+        log="%s %s" % (exc_type, log_msg))
 
 
 class LinkerTestRunner(base_test_runner.BaseTestRunner):

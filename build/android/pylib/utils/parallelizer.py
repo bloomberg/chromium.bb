@@ -52,7 +52,7 @@ to parallelize operations that are already fast will incur a net performance
 penalty.
 
 """
-# pylint: disable=W0613
+# pylint: disable=protected-access
 
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
@@ -194,11 +194,11 @@ class Parallelizer(object):
       or '_assertNoShadow'.
     """
     if isinstance(self._objs, reraiser_thread.ReraiserThreadGroup):
-      assert(not hasattr(self._objs, '_assertNoShadow'))
-      assert(not hasattr(self._objs, 'pGet'))
+      assert not hasattr(self._objs, '_assertNoShadow')
+      assert not hasattr(self._objs, attr_name)
     else:
-      assert(not any(hasattr(o, '_assertNoShadow') for o in self._objs))
-      assert(not any(hasattr(o, 'pGet') for o in self._objs))
+      assert not any(hasattr(o, '_assertNoShadow') for o in self._objs)
+      assert not any(hasattr(o, attr_name) for o in self._objs)
 
 
 class SyncParallelizer(Parallelizer):

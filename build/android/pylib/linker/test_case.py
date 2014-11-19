@@ -59,15 +59,15 @@ _LINKER_JAVA_SOURCE_PATH = (
 # from the Java source file above.
 _RE_LINKER_BROWSER_CONFIG = re.compile(
     r'.*BROWSER_SHARED_RELRO_CONFIG\s+=\s+' +
-        'BROWSER_SHARED_RELRO_CONFIG_(\S+)\s*;.*',
+        r'BROWSER_SHARED_RELRO_CONFIG_(\S+)\s*;.*',
     re.MULTILINE | re.DOTALL)
 
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
 # it is handy to have the 'chromium_android_linker' ones as well when
 # troubleshooting.
-_LOGCAT_FILTERS = [ '*:s', 'chromium:v', 'chromium_android_linker:v' ]
-#_LOGCAT_FILTERS = [ '*:v' ]  ## DEBUG
+_LOGCAT_FILTERS = ['*:s', 'chromium:v', 'chromium_android_linker:v']
+#_LOGCAT_FILTERS = ['*:v']  ## DEBUG
 
 # Regular expression used to match status lines in logcat.
 re_status_line = re.compile(r'(BROWSER|RENDERER)_LINKER_TEST: (FAIL|SUCCESS)')

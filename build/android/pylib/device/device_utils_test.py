@@ -497,9 +497,6 @@ class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
     def mockGetFilesChanged(host_path, device_path, ignore_filenames):
       return [(host_path, device_path)]
 
-    # Pylint raises a false positive "operator not preceded by a space"
-    # warning below.
-    # pylint: disable=C0322
     with mock.patch('os.path.isfile', return_value=True), (
          mock.patch('os.path.exists', return_value=True)), (
          mock.patch('pylib.utils.apk_helper.GetPackageName',
@@ -508,7 +505,6 @@ class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
                     return_value='/fake/test/out')), (
          mock.patch('pylib.android_commands.AndroidCommands.GetFilesChanged',
                     side_effect=mockGetFilesChanged)):
-    # pylint: enable=C0322
       with self.assertCallsSequence([
           ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
            'package:/fake/data/app/this.is.a.test.package.apk\r\n'),
@@ -523,9 +519,6 @@ class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
     def mockGetFilesChanged(host_path, device_path, ignore_filenames):
       return [(host_path, device_path)]
 
-    # Pylint raises a false positive "operator not preceded by a space"
-    # warning below.
-    # pylint: disable=C0322
     with mock.patch('os.path.isfile', return_value=True), (
          mock.patch('pylib.utils.apk_helper.GetPackageName',
                     return_value='this.is.a.test.package')), (
@@ -533,7 +526,6 @@ class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
                     return_value='/fake/test/out')), (
          mock.patch('pylib.android_commands.AndroidCommands.GetFilesChanged',
                     side_effect=mockGetFilesChanged)):
-    # pylint: enable=C0322
       with self.assertCallsSequence([
           ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
            'package:/fake/data/app/this.is.a.test.package.apk\r\n'),
@@ -1221,30 +1213,30 @@ class DeviceUtilsWriteFileTest(DeviceUtilsOldImplTest):
           cmd_ret=[
               # Create temporary contents file
               (r"adb -s 0123456789abcdef shell "
-                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
-                  "echo \$\?'",
+                  r"'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  r"echo \$\?'",
                '1\r\n'),
               # Create temporary script file
               (r"adb -s 0123456789abcdef shell "
-                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
-                  "echo \$\?'",
+                  r"'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  r"echo \$\?'",
                '1\r\n'),
               # Set contents file
               (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
-                  '/fake/storage/path/temp_file-\d+\d+',
+                  r'/fake/storage/path/temp_file-\d+\d+',
                '100 B/s (100 bytes in 1.000s)\r\n'),
               # Set script file
               (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
-                  '/fake/storage/path/temp_file-\d+\d+',
+                  r'/fake/storage/path/temp_file-\d+\d+',
                '100 B/s (100 bytes in 1.000s)\r\n'),
               # Call script
               (r"adb -s 0123456789abcdef shell "
-                  "'sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+                  r"'sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
               # Remove device temporaries
               (r"adb -s 0123456789abcdef shell "
-                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+                  r"'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
               (r"adb -s 0123456789abcdef shell "
-                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+                  r"'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
           comp=re.match):
         self.device.WriteFile('/test/file/written.to.device',
                               'new test file contents', as_root=True)
@@ -1264,30 +1256,30 @@ class DeviceUtilsWriteFileTest(DeviceUtilsOldImplTest):
           cmd_ret=[
               # Create temporary contents file
               (r"adb -s 0123456789abcdef shell "
-                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
-                  "echo \$\?'",
+                  r"'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  r"echo \$\?'",
                '1\r\n'),
               # Create temporary script file
               (r"adb -s 0123456789abcdef shell "
-                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
-                  "echo \$\?'",
+                  r"'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  r"echo \$\?'",
                '1\r\n'),
               # Set contents file
               (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
-                  '/fake/storage/path/temp_file-\d+\d+',
+                  r'/fake/storage/path/temp_file-\d+\d+',
                '100 B/s (100 bytes in 1.000s)\r\n'),
               # Set script file
               (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
-                  '/fake/storage/path/temp_file-\d+\d+',
+                  r'/fake/storage/path/temp_file-\d+\d+',
                '100 B/s (100 bytes in 1.000s)\r\n'),
               # Call script
               (r"adb -s 0123456789abcdef shell "
-                  "'su -c sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+                  r"'su -c sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
               # Remove device temporaries
               (r"adb -s 0123456789abcdef shell "
-                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+                  r"'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
               (r"adb -s 0123456789abcdef shell "
-                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+                  r"'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
           comp=re.match):
         self.device.WriteFile('/test/file/written.to.device',
                               'new test file contents', as_root=True)

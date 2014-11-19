@@ -209,7 +209,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       Whether the feature being tested is FirstRunExperience.
     """
     annotations = self.test_pkg.GetTestAnnotations(test)
-    return ('FirstRunExperience' == annotations.get('Feature', None))
+    return 'FirstRunExperience' == annotations.get('Feature', None)
 
   def _IsPerfTest(self, test):
     """Determines whether a test is a performance test.
@@ -276,7 +276,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     # Wait and grab annotation data so we can figure out which traces to parse
     regex = self.device.old_interface.WaitForLogMatch(
-        re.compile('\*\*PERFANNOTATION\(' + raw_test_name + '\)\:(.*)'), None)
+        re.compile(r'\*\*PERFANNOTATION\(' + raw_test_name + r'\)\:(.*)'),
+        None)
 
     # If the test is set to run on a specific device type only (IE: only
     # tablet or phone) and it is being run on the wrong device, the test

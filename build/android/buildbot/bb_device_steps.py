@@ -582,7 +582,7 @@ def LogcatDump(options):
   # Print logcat, kill logcat monitor
   bb_annotations.PrintNamedStep('logcat_dump')
   logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log.txt')
-  RunCmd([SrcPath('build' , 'android', 'adb_logcat_printer.py'),
+  RunCmd([SrcPath('build', 'android', 'adb_logcat_printer.py'),
           '--output-path', logcat_file, LOGCAT_DIR])
   gs_path = MakeGSPath(options, 'chromium-android/logcat_dumps')
   RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-z', 'txt', logcat_file,
@@ -693,9 +693,9 @@ def GetDeviceStepsOptParser():
       '--chrome-output-dir',
       help='Chrome output directory to be used while bisecting.')
 
-  parser.add_option('--disable-stack-tool',  action='store_true',
+  parser.add_option('--disable-stack-tool', action='store_true',
       help='Do not run stack tool.')
-  parser.add_option('--asan-symbolize',  action='store_true',
+  parser.add_option('--asan-symbolize', action='store_true',
       help='Run stack tool for ASAN')
   parser.add_option('--cleanup', action='store_true',
       help='Delete out/<target> directory at the end of the run.')

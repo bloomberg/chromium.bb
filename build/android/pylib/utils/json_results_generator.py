@@ -157,10 +157,10 @@ class JSONResultsGeneratorBase(object):
   TIMES_MS_FILENAME = 'times_ms.json'
   INCREMENTAL_RESULTS_FILENAME = 'incremental_results.json'
 
-  # line too long pylint: disable=C0301
+  # line too long pylint: disable=line-too-long
   URL_FOR_TEST_LIST_JSON = (
       'http://%s/testfile?builder=%s&name=%s&testlistjson=1&testtype=%s&master=%s')
-  # pylint: enable=C0301
+  # pylint: enable=line-too-long
 
   def __init__(self, builder_name, build_name, build_number,
                results_file_base_path, builder_base_url,
@@ -387,7 +387,7 @@ class JSONResultsGeneratorBase(object):
     except urllib2.HTTPError, http_error:
       # A non-4xx status code means the bot is hosed for some reason
       # and we can't grab the results.json file off of it.
-      if (http_error.code < 400 and http_error.code >= 500):
+      if http_error.code < 400 and http_error.code >= 500:
         error = http_error
     except urllib2.URLError, url_error:
       error = url_error

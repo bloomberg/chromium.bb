@@ -25,13 +25,13 @@ def Setup(options, _devices):
   test_cases = [
       test_case.LinkerLibraryAddressTest,
       test_case.LinkerSharedRelroTest,
-      test_case.LinkerRandomizationTest ]
+      test_case.LinkerRandomizationTest]
 
   low_memory_modes = [False, True]
   all_tests = [t(is_low_memory=m) for t in test_cases for m in low_memory_modes]
 
   if options.test_filter:
-    all_test_names = [ test.qualified_name for test in all_tests ]
+    all_test_names = [test.qualified_name for test in all_tests]
     filtered_test_names = unittest_util.FilterTestNames(all_test_names,
                                                         options.test_filter)
     all_tests = [t for t in all_tests \

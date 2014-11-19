@@ -61,7 +61,7 @@ def main(argv):
   else:
     if not devices:
       raise Exception('Error: no connected devices')
-    print("No device specified. Defaulting to " + devices[0])
+    print "No device specified. Defaulting to " + devices[0]
 
   device = device_utils.DeviceUtils(devices[0])
   constants.SetBuildType(options.build_type)

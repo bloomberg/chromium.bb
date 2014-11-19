@@ -132,10 +132,10 @@ def GetBotStepMap():
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
                    os.pardir, 'bisect', 'src', 'out'))
   B = BotConfig
-  H = (lambda steps, extra_args=None, extra_gyp=None, target_arch=None :
+  H = (lambda steps, extra_args=None, extra_gyp=None, target_arch=None:
        HostConfig('build/android/buildbot/bb_host_steps.py', steps, extra_args,
                   extra_gyp, target_arch))
-  T = (lambda tests, extra_args=None :
+  T = (lambda tests, extra_args=None:
        TestConfig('build/android/buildbot/bb_device_steps.py', tests,
                   extra_args))
 
@@ -150,7 +150,7 @@ def GetBotStepMap():
         T(std_tests + telemetry_tests + chrome_proxy_tests,
           ['--cleanup', flakiness_server])),
       B('main-tests', H(std_test_steps),
-        T(std_tests,['--cleanup', flakiness_server])),
+        T(std_tests, ['--cleanup', flakiness_server])),
 
       # Other waterfalls
       B('asan-builder-tests', H(compile_step,
@@ -167,7 +167,7 @@ def GetBotStepMap():
           extra_gyp='emma_coverage=1')),
       B('x86-builder-dbg',
         H(compile_step + std_host_tests, target_arch='ia32')),
-      B('fyi-builder-rel', H(std_build_steps,  experimental)),
+      B('fyi-builder-rel', H(std_build_steps, experimental)),
       B('fyi-tests', H(std_test_steps),
         T(std_tests + python_unittests,
                       ['--experimental', flakiness_server,
@@ -234,7 +234,7 @@ def GetBotStepMap():
 def GetBestMatch(id_map, id):
   config = id_map.get(id)
   if not config:
-    substring_matches = filter(lambda x: x in id, id_map.iterkeys())
+    substring_matches = [x for x in id_map.iterkeys() if x in id]
     if substring_matches:
       max_id = max(substring_matches, key=len)
       print 'Using config from id="%s" (substring match).' % max_id

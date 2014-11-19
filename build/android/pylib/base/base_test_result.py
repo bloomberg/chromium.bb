@@ -203,5 +203,5 @@ class TestRunResults(object):
 
   def DidRunPass(self):
     """Return whether the test run was successful."""
-    return not (self.GetNotPass() - self.GetSkip())
+    return not self.GetNotPass() - self.GetSkip()
 

@@ -83,7 +83,7 @@ def GetAttachedDevices(adb_cmd):
                                 stderr=subprocess.PIPE).communicate()
     if err:
       logging.warning('adb device error %s', err.strip())
-    return re.findall('^(\S+)\tdevice$', out, re.MULTILINE)
+    return re.findall('^(\\S+)\tdevice$', out, re.MULTILINE)
   except TimeoutException:
     logging.warning('"adb devices" command timed out')
     return []
@@ -136,7 +136,7 @@ def main(base_dir, adb_cmd='adb'):
       time.sleep(5)
   except SigtermError:
     logging.info('Received SIGTERM, shutting down')
-  except:
+  except: # pylint: disable=bare-except
     logging.exception('Unexpected exception in main.')
   finally:
     for process, _ in devices.itervalues():

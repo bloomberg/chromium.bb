@@ -57,7 +57,7 @@ def DeviceInfo(serial, options):
     battery_info = {}
     logging.error('Unable to obtain battery info for %s, %s', serial, e)
 
-  def _GetData(re_expression, line, lambda_function=lambda x:x):
+  def _GetData(re_expression, line, lambda_function=lambda x: x):
     if not line:
       return 'Unknown'
     found = re.findall(re_expression, line)
@@ -66,7 +66,7 @@ def DeviceInfo(serial, options):
     return 'Unknown'
 
   battery_level = int(battery_info.get('level', 100))
-  imei_slice = _GetData('Device ID = (\d+)',
+  imei_slice = _GetData(r'Device ID = (\d+)',
                         device_adb.old_interface.GetSubscriberInfo(),
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
@@ -151,7 +151,7 @@ def CheckForMissingDevices(options, adb_online_devs):
       os.environ.get('BUILDBOT_BUILDERNAME'),
       os.environ.get('BUILDBOT_BUILDNUMBER'))
     msg = ('Please reboot the following devices:\n%s' %
-           '\n'.join(map(str,new_missing_devs)))
+           '\n'.join(map(str, new_missing_devs)))
     SendEmail(from_address, to_addresses, cc_addresses, subject, msg)
 
   all_known_devices = list(set(adb_online_devs) | set(last_devices))
@@ -216,10 +216,10 @@ def RestartUsb():
   lsusb_proc = bb_utils.SpawnCmd(['lsusb'], stdout=subprocess.PIPE)
   lsusb_output, _ = lsusb_proc.communicate()
   if lsusb_proc.returncode:
-    print ('Error: Could not get list of USB ports (i.e. lsusb).')
+    print 'Error: Could not get list of USB ports (i.e. lsusb).'
     return lsusb_proc.returncode
 
-  usb_devices = [re.findall('Bus (\d\d\d) Device (\d\d\d)', lsusb_line)[0]
+  usb_devices = [re.findall(r'Bus (\d\d\d) Device (\d\d\d)', lsusb_line)[0]
                  for lsusb_line in lsusb_output.strip().split('\n')]
 
   all_restarted = True

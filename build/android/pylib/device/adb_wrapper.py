@@ -45,7 +45,7 @@ class AdbWrapper(object):
     """
     self._device_serial = str(device_serial)
 
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   @classmethod
   @decorators.WithTimeoutAndRetries
   def _RunAdbCmd(cls, arg_list, timeout=None, retries=None, check_error=True):
@@ -62,7 +62,7 @@ class AdbWrapper(object):
     if check_error and output[:len('error:')] == 'error:':
       raise device_errors.AdbCommandFailedError(arg_list, output)
     return output
-  # pylint: enable=W0613
+  # pylint: enable=unused-argument
 
   def _DeviceAdbCmd(self, arg_list, timeout, retries, check_error=True):
     """Runs an adb command on the device associated with this object.

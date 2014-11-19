@@ -30,7 +30,7 @@ DEFAULT_ANDROID_API_LEVEL = constants.ANDROID_SDK_VERSION
 SDK_BASE_URL = 'http://dl.google.com/android/adt'
 SDK_ZIP = 'adt-bundle-linux-x86_64-20131030.zip'
 
-# pylint: disable=C0301
+# pylint: disable=line-too-long
 # Android x86 system image from the Intel website:
 # http://software.intel.com/en-us/articles/intel-eula-x86-android-4-2-jelly-bean-bin
 # These don't exist prior to Android-15.
@@ -41,7 +41,7 @@ X86_IMG_URLS = {
   17: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip',
   18: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip',
   19: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-19_r01.zip'}
-#pylint: enable=C0301
+#pylint: enable=line-too-long
 
 def CheckSDK():
   """Check if SDK is already installed.
@@ -194,8 +194,8 @@ def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
   """
   android_binary = os.path.join(constants.EMULATOR_SDK_ROOT,
                                 'sdk', 'tools', 'android')
-  pattern = re.compile('\s*([0-9]+)- SDK Platform Android [\.,0-9]+, API %d.*' %
-                       api_level)
+  pattern = re.compile(
+      r'\s*([0-9]+)- SDK Platform Android [\.,0-9]+, API %d.*' % api_level)
   # Example:
   #   2- SDK Platform Android 4.3, API 18, revision 2
   exit_code, stdout = cmd_helper.GetCmdStatusAndOutput(
@@ -206,7 +206,7 @@ def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
     match = pattern.match(line)
     if match:
       index = match.group(1)
-      print('package %s corresponds to platform level %d' % (index, api_level))
+      print 'package %s corresponds to platform level %d' % (index, api_level)
       # update sdk --no-ui --filter $INDEX
       update_command = [android_binary,
                         'update', 'sdk', '--no-ui', '--filter', index]
@@ -218,7 +218,7 @@ def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
         raise Exception('License agreement check failed')
       update_process.sendline('y')
       if update_process.expect('Done. 1 package installed.') == 0:
-        print('Successfully installed platform for API level %d' % api_level)
+        print 'Successfully installed platform for API level %d' % api_level
         return
       else:
         raise Exception('Failed to install platform update')
@@ -238,7 +238,7 @@ def main(argv):
   # run_tests_helper will set logging to INFO or DEBUG
   # We achieve verbose output by configuring it with 2 (==DEBUG)
   verbosity = 1
-  if (options.verbose):
+  if options.verbose:
     verbosity = 2
   logging.basicConfig(level=logging.INFO,
                       format='# %(asctime)-15s: %(message)s')

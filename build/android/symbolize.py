@@ -24,8 +24,8 @@ import symbol
 
 # Sample output from base/debug/stack_trace_android.cc
 #00 0x693cd34f /path/to/some/libfoo.so+0x0007434f
-TRACE_LINE = re.compile('(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
-                        '(?P<lib>[^+]+)\+0x(?P<addr>[0-9a-f]{8,8})')
+TRACE_LINE = re.compile(r'(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
+                        r'(?P<lib>[^+]+)\+0x(?P<addr>[0-9a-f]{8,8})')
 
 class Symbolizer(object):
   def __init__(self, output):

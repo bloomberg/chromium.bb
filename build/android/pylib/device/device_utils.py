@@ -92,8 +92,8 @@ class DeviceUtils(object):
     self._default_timeout = default_timeout
     self._default_retries = default_retries
     self._cache = {}
-    assert(hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR))
-    assert(hasattr(self, decorators.DEFAULT_RETRIES_ATTR))
+    assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
+    assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsOnline(self, timeout=None, retries=None):
@@ -701,10 +701,10 @@ class DeviceUtils(object):
 
     # TODO(jbudorick): Move the md5 logic up into DeviceUtils or base
     # this function on mtime.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     host_hash_tuples, device_hash_tuples = self.old_interface._RunMd5Sum(
         real_host_path, real_device_path)
-    # pylint: enable=W0212
+    # pylint: enable=protected-access
 
     if os.path.isfile(host_path):
       if (not device_hash_tuples
@@ -765,7 +765,7 @@ class DeviceUtils(object):
     else:
       zip_time = 0
       transfer_time = byte_count / TRANSFER_RATE
-    return (adb_call_time + adb_push_setup_time + zip_time + transfer_time)
+    return adb_call_time + adb_push_setup_time + zip_time + transfer_time
 
   def _PushChangedFilesIndividually(self, files):
     for h, d in files:

@@ -228,9 +228,8 @@ class TestJar(object):
         int(v) for v in
         device_utils.DeviceUtils.parallel().GetProp(
             'ro.build.version.sdk').pGet(None)]
-    tests = filter(
-        lambda t: self._IsTestValidForSdkRange(t, min(sdk_versions)),
-        tests)
+    tests = [t for t in tests
+             if self._IsTestValidForSdkRange(t, min(sdk_versions))]
 
     return tests
 

@@ -31,12 +31,12 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
 import errors
 
 def KillHostHeartbeat():
-  ps = subprocess.Popen(['ps', 'aux'], stdout = subprocess.PIPE)
+  ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
   stdout, _ = ps.communicate()
   matches = re.findall('\\n.*host_heartbeat.*', stdout)
   for match in matches:
     logging.info('An instance of host heart beart running... will kill')
-    pid = re.findall('(\S+)', match)[1]
+    pid = re.findall(r'(\S+)', match)[1]
     subprocess.call(['kill', str(pid)])
 
 
@@ -206,7 +206,7 @@ def ProvisionDevice(device, options, is_perf):
                  str(device))
     # Device black list is reset by bb_device_status_check.py per build.
     device_blacklist.ExtendBlacklist([str(device)])
-  except (device_errors.CommandFailedError):
+  except device_errors.CommandFailedError:
     logging.exception('Failed to provision device %s. Adding to blacklist.',
                       str(device))
     device_blacklist.ExtendBlacklist([str(device)])

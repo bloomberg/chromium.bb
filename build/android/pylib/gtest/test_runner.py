@@ -78,16 +78,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
     results = base_test_result.TestRunResults()
 
     # Test case statuses.
-    re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
-    re_fail = re.compile('\[  FAILED  \] ?(.*?)( \((\d+) ms\))?\r\r\n')
-    re_ok = re.compile('\[       OK \] ?(.*?)( \((\d+) ms\))?\r\r\n')
+    re_run = re.compile('\\[ RUN      \\] ?(.*)\r\n')
+    re_fail = re.compile('\\[  FAILED  \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
+    re_ok = re.compile('\\[       OK \\] ?(.*?)( \\((\\d+) ms\\))?\r\r\n')
 
     # Test run statuses.
-    re_passed = re.compile('\[  PASSED  \] ?(.*)\r\n')
-    re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
+    re_passed = re.compile('\\[  PASSED  \\] ?(.*)\r\n')
+    re_runner_fail = re.compile('\\[ RUNNER_FAILED \\] ?(.*)\r\n')
     # Signal handlers are installed before starting tests
     # to output the CRASHED marker when a crash happens.
-    re_crash = re.compile('\[ CRASHED      \](.*)\r\n')
+    re_crash = re.compile('\\[ CRASHED      \\](.*)\r\n')
 
     log = ''
     try:

@@ -6,7 +6,7 @@
 
 Assumes adb binary is currently on system path.
 """
-# pylint: disable-all
+# pylint: skip-file
 
 import collections
 import datetime

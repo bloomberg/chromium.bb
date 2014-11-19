@@ -70,8 +70,8 @@ def main(argv):
     android = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk', 'tools',
                            'android')
     avds_output = cmd_helper.GetCmdOutput([android, 'list', 'avd'])
-    names = re.findall('Name: (\w+)', avds_output)
-    api_levels = re.findall('API level (\d+)', avds_output)
+    names = re.findall(r'Name: (\w+)', avds_output)
+    api_levels = re.findall(r'API level (\d+)', avds_output)
     try:
       avd_index = names.index(options.name)
     except ValueError:

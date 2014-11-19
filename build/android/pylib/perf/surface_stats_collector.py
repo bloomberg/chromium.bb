@@ -13,7 +13,7 @@ from pylib.device import device_utils
 
 # Log marker containing SurfaceTexture timestamps.
 _SURFACE_TEXTURE_TIMESTAMPS_MESSAGE = 'SurfaceTexture update timestamps'
-_SURFACE_TEXTURE_TIMESTAMP_RE = '\d+'
+_SURFACE_TEXTURE_TIMESTAMP_RE = r'\d+'
 
 _MIN_NORMALIZED_FRAME_LENGTH = 0.5
 
@@ -90,8 +90,8 @@ class SurfaceStatsCollector(object):
   def _GetNormalizedDeltas(data, refresh_period, min_normalized_delta=None):
     deltas = [t2 - t1 for t1, t2 in zip(data, data[1:])]
     if min_normalized_delta != None:
-      deltas = filter(lambda d: d / refresh_period >= min_normalized_delta,
-                      deltas)
+      deltas = [d for d in deltas
+                if d / refresh_period >= min_normalized_delta]
     return (deltas, [delta / refresh_period for delta in deltas])
 
   @staticmethod
@@ -297,7 +297,7 @@ class SurfaceStatsCollector(object):
     """
     results = self._device.RunShellCommand('service call SurfaceFlinger 1013')
     assert len(results) == 1
-    match = re.search('^Result: Parcel\((\w+)', results[0])
+    match = re.search(r'^Result: Parcel\((\w+)', results[0])
     cur_surface = 0
     if match:
       try:
