@@ -390,8 +390,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 #if defined(USE_AURA) && defined(OS_LINUX)
 #define MAYBE_WindowFeatures DISABLED_WindowFeatures
 #else
-// TODO(jochen): Temporarily disabled, renable again after next blink roll.
-#define MAYBE_WindowFeatures DISABLED_WindowFeatures
+#define MAYBE_WindowFeatures WindowFeatures
 #endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   WebContents* popup =
@@ -413,12 +412,10 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
                CheckTitle);
 }
 
-// TODO(jochen): Temporarily disabled, renable again after next blink roll.
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       DISABLED_WindowFeaturesBarProps) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-windowfeatures.html",
-               ExpectTab,
+               ExpectPopup,
                CheckTitle);
 }
 
