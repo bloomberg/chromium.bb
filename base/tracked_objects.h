@@ -43,7 +43,7 @@ struct TrackingInfo;
 // computational cost is associated with obtaining start and stop times for
 // instances as they are created and destroyed.
 //
-// The following describes the lifecycle of tracking an instance.
+// The following describes the life cycle of tracking an instance.
 //
 // First off, when the instance is created, the FROM_HERE macro is expanded
 // to specify the birth place (file, line, function) where the instance was
@@ -96,9 +96,9 @@ struct TrackingInfo;
 // lock such DeathData instances. (i.e., these accumulated stats in a DeathData
 // instance are exclusively updated by the singular owning thread).
 //
-// With the above lifecycle description complete, the major remaining detail is
-// explaining how each thread maintains a list of DeathData instances, and of
-// Births instances, and is able to avoid additional (redundant/unnecessary)
+// With the above life cycle description complete, the major remaining detail
+// is explaining how each thread maintains a list of DeathData instances, and
+// of Births instances, and is able to avoid additional (redundant/unnecessary)
 // allocations.
 //
 // Each thread maintains a list of data items specific to that thread in a
@@ -119,7 +119,7 @@ struct TrackingInfo;
 // which ensures that any prior acquisition of the list is valid (i.e., the
 // holder can iterate over it without fear of it changing, or the necessity of
 // using an additional lock.  Iterations are actually pretty rare (used
-// primarilly for cleanup, or snapshotting data for display), so this lock has
+// primarily for cleanup, or snapshotting data for display), so this lock has
 // very little global performance impact.
 //
 // The above description tries to define the high performance (run time)
@@ -156,7 +156,7 @@ struct TrackingInfo;
 // example, match with the number of durations we accumulated).  The advantage
 // to having fast (non-atomic) updates of the data outweighs the minimal risk of
 // a singular corrupt statistic snapshot (only the snapshot could be corrupt,
-// not the underlying and ongoing statistic).  In constrast, pointer data that
+// not the underlying and ongoing statistic).  In contrast, pointer data that
 // is accessed during snapshotting is completely invariant, and hence is
 // perfectly acquired (i.e., no potential corruption, and no risk of a bad
 // memory reference).
@@ -167,9 +167,9 @@ struct TrackingInfo;
 // them will continue to be asynchronous).  We had an implementation of this in
 // the past, but the difficulty is dealing with message loops being terminated.
 // We can *try* to spam the available threads via some message loop proxy to
-// achieve this feat, and it *might* be valuable when we are colecting data for
-// upload via UMA (where correctness of data may be more significant than for a
-// single screen of about:profiler).
+// achieve this feat, and it *might* be valuable when we are collecting data
+// for upload via UMA (where correctness of data may be more significant than
+// for a single screen of about:profiler).
 //
 // TODO(jar): We should support (optionally) the recording of parent-child
 // relationships for tasks.  This should be done by detecting what tasks are
@@ -181,7 +181,7 @@ struct TrackingInfo;
 // TODO(jar): We need to store DataCollections, and provide facilities for
 // taking the difference between two gathered DataCollections.  For now, we're
 // just adding a hack that Reset()s to zero all counts and stats.  This is also
-// done in a slighly thread-unsafe fashion, as the resetting is done
+// done in a slightly thread-unsafe fashion, as the resetting is done
 // asynchronously relative to ongoing updates (but all data is 32 bit in size).
 // For basic profiling, this will work "most of the time," and should be
 // sufficient... but storing away DataCollections is the "right way" to do this.
@@ -361,7 +361,7 @@ class BASE_EXPORT ThreadData {
   enum Status {
     UNINITIALIZED,              // PRistine, link-time state before running.
     DORMANT_DURING_TESTS,       // Only used during testing.
-    DEACTIVATED,                // No longer recording profling.
+    DEACTIVATED,                // No longer recording profiling.
     PROFILING_ACTIVE,           // Recording profiles (no parent-child links).
     PROFILING_CHILDREN_ACTIVE,  // Fully active, recording parent-child links.
     STATUS_LAST = PROFILING_CHILDREN_ACTIVE
@@ -551,7 +551,7 @@ class BASE_EXPORT ThreadData {
 
   // Using our lock, make a copy of the specified maps.  This call may be made
   // on  non-local threads, which necessitate the use of the lock to prevent
-  // the map(s) from being reallocaed while they are copied. If |reset_max| is
+  // the map(s) from being reallocated while they are copied. If |reset_max| is
   // true, then, just after we copy the DeathMap, we will set the max values to
   // zero in the active DeathMap (not the snapshot).
   void SnapshotMaps(bool reset_max,
@@ -593,7 +593,7 @@ class BASE_EXPORT ThreadData {
   static base::ThreadLocalStorage::StaticSlot tls_index_;
 
   // List of ThreadData instances for use with worker threads. When a worker
-  // thread is done (terminated), we push it onto this llist.  When a new worker
+  // thread is done (terminated), we push it onto this list.  When a new worker
   // thread is created, we first try to re-use a ThreadData instance from the
   // list, and if none are available, construct a new one.
   // This is only accessed while list_lock_ is held.
@@ -676,7 +676,7 @@ class BASE_EXPORT ThreadData {
   // not yet concluded with a NowForEndOfRun().  Usually this stack is one deep,
   // but if a scoped region is profiled, or <sigh> a task runs a nested-message
   // loop, then the stack can grow larger.  Note that we don't try to deduct
-  // time in nested porfiles, as our current timer is based on wall-clock time,
+  // time in nested profiles, as our current timer is based on wall-clock time,
   // and not CPU time (and we're hopeful that nested timing won't be a
   // significant additional cost).
   ParentStack parent_stack_;
