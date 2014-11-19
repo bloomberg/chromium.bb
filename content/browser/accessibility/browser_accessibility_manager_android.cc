@@ -116,6 +116,9 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (obj.is_null())
     return;
 
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+
   if (event_type == ui::AX_EVENT_HIDE)
     return;
 
@@ -157,8 +160,6 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     case ui::AX_EVENT_SHOW: {
       // This event is fired when an object appears in a live region.
       // Speak its text.
-      BrowserAccessibilityAndroid* android_node =
-          static_cast<BrowserAccessibilityAndroid*>(node);
       Java_BrowserAccessibilityManager_announceLiveRegionText(
           env, obj.obj(),
           base::android::ConvertUTF16ToJavaString(
@@ -174,6 +175,9 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     case ui::AX_EVENT_VALUE_CHANGED:
       if (node->IsEditableText()) {
         Java_BrowserAccessibilityManager_handleEditableTextChanged(
+            env, obj.obj(), node->GetId());
+      } else if (android_node->IsSlider()) {
+        Java_BrowserAccessibilityManager_handleSliderChanged(
             env, obj.obj(), node->GetId());
       }
       break;
@@ -247,6 +251,8 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info,
       id,
+      node->CanScrollForward(),
+      node->CanScrollBackward(),
       node->IsCheckable(),
       node->IsChecked(),
       node->IsClickable(),
@@ -463,6 +469,38 @@ void BrowserAccessibilityManagerAndroid::SetSelection(
   BrowserAccessibility* node = GetFromID(id);
   if (node)
     SetTextSelection(*node, start, end);
+}
+
+jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
+    JNIEnv* env, jobject obj, jint id, jboolean increment) {
+  BrowserAccessibility* node = GetFromID(id);
+  if (!node)
+    return false;
+
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+
+  if (!android_node->IsSlider() || !android_node->IsEnabled())
+    return false;
+
+  float value = node->GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+  float min = node->GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
+  float max = node->GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
+  if (max <= min)
+    return false;
+
+  // To behave similarly to an Android SeekBar, move by an increment of
+  // approximately 20%.
+  float original_value = value;
+  float delta = (max - min) / 5.0f;
+  value += (increment ? delta : -delta);
+  value = std::max(std::min(value, max), min);
+  if (value != original_value) {
+    BrowserAccessibilityManager::SetValue(
+        *node, base::UTF8ToUTF16(base::DoubleToString(value)));
+    return true;
+  }
+  return false;
 }
 
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(

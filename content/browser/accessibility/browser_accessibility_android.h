@@ -19,6 +19,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   virtual bool PlatformIsLeaf() const override;
 
+  bool CanScrollForward() const;
+  bool CanScrollBackward() const;
   bool IsCheckable() const;
   bool IsChecked() const;
   bool IsClickable() const;
@@ -38,6 +40,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsRangeType() const;
   bool IsScrollable() const;
   bool IsSelected() const;
+  bool IsSlider() const;
   bool IsVisibleToUser() const;
 
   bool CanOpenPopup() const;

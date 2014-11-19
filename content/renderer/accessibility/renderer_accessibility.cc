@@ -464,6 +464,7 @@ void RendererAccessibility::OnSetValue(
   }
 
   obj.setValue(value);
+  HandleAXEvent(obj, ui::AX_EVENT_VALUE_CHANGED);
 }
 
 }  // namespace content

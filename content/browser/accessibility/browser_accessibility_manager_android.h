@@ -79,6 +79,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void ScrollToMakeNodeVisible(JNIEnv* env, jobject obj, jint id);
   void SetTextFieldValue(JNIEnv* env, jobject obj, jint id, jstring value);
   void SetSelection(JNIEnv* env, jobject obj, jint id, jint start, jint end);
+  jboolean AdjustSlider(JNIEnv* env, jobject obj, jint id, jboolean increment);
 
   // Return the id of the next node in tree order in the direction given by
   // |forwards|, starting with |start_id|, that matches |element_type|,

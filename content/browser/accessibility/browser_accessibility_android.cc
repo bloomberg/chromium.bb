@@ -92,6 +92,24 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
   return BrowserAccessibility::PlatformIsLeaf();
 }
 
+bool BrowserAccessibilityAndroid::CanScrollForward() const {
+  if (!IsSlider())
+    return false;
+
+  float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+  float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
+  return value < max;
+}
+
+bool BrowserAccessibilityAndroid::CanScrollBackward() const {
+  if (!IsSlider())
+    return false;
+
+  float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+  float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
+  return value > min;
+}
+
 bool BrowserAccessibilityAndroid::IsCheckable() const {
   bool checkable = false;
   bool is_aria_pressed_defined;
@@ -206,6 +224,10 @@ bool BrowserAccessibilityAndroid::IsScrollable() const {
 
 bool BrowserAccessibilityAndroid::IsSelected() const {
   return HasState(ui::AX_STATE_SELECTED);
+}
+
+bool BrowserAccessibilityAndroid::IsSlider() const {
+  return GetRole() == ui::AX_ROLE_SLIDER;
 }
 
 bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
@@ -383,11 +405,13 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
       break;
     case ui::AX_ROLE_SLIDER:
     case ui::AX_ROLE_PROGRESS_INDICATOR: {
-      float value_for_range;
-      if (GetFloatAttribute(
-              ui::AX_ATTR_VALUE_FOR_RANGE, &value_for_range)) {
-        index = static_cast<int>(value_for_range);
-      }
+      // Return a percentage here for live feedback in an AccessibilityEvent.
+      // The exact value is returned in RangeCurrentValue.
+      float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
+      float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
+      float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+      if (max > min && value >= min && value <= max)
+        index = static_cast<int>(((value - min)) * 100 / (max - min));
       break;
     }
   }
@@ -403,14 +427,12 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
       count = PlatformChildCount();
       break;
     case ui::AX_ROLE_SLIDER:
-    case ui::AX_ROLE_PROGRESS_INDICATOR: {
-      float max_value_for_range;
-      if (GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
-                            &max_value_for_range)) {
-        count = static_cast<int>(max_value_for_range);
-      }
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+      // An AccessibilityEvent can only return integer information about a
+      // seek control, so we return a percentage. The real range is returned
+      // in RangeMin and RangeMax.
+      count = 100;
       break;
-    }
   }
   return count;
 }
