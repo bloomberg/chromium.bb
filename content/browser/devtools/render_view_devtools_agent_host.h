@@ -22,6 +22,7 @@ class CompositorFrameMetadata;
 
 namespace content {
 
+class BrowserContext;
 class DevToolsProtocolHandlerImpl;
 class RenderViewHost;
 class RenderViewHostImpl;
@@ -55,6 +56,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   // DevTooolsAgentHost overrides.
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* web_contents) override;
+  BrowserContext* GetBrowserContext() override;
   WebContents* GetWebContents() override;
   Type GetType() override;
   std::string GetTitle() override;

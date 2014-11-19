@@ -29,8 +29,6 @@ class DevToolsNetworkProtocolHandler {
       base::DictionaryValue* command_dict);
 
  private:
-  Profile* GetProfile(content::DevToolsAgentHost* agent_host);
-
   scoped_ptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       DevToolsProtocol::Command* command);

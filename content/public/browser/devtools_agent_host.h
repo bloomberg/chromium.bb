@@ -17,6 +17,7 @@
 
 namespace content {
 
+class BrowserContext;
 class DevToolsExternalAgentProxyDelegate;
 class WebContents;
 
@@ -88,6 +89,9 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns web contents instance for this host if any.
   virtual WebContents* GetWebContents() = 0;
+
+  // Returns related browser context instance if available.
+  virtual BrowserContext* GetBrowserContext() = 0;
 
   // Temporarily detaches render view host from this host. Must be followed by
   // a call to ConnectWebContents (may leak the host instance otherwise).

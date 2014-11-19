@@ -11,6 +11,7 @@
 
 namespace content {
 
+class BrowserContext;
 class SharedWorkerInstance;
 
 class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
@@ -34,11 +35,12 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   GURL GetURL() override;
   bool Activate() override;
   bool Close() override;
+  BrowserContext* GetBrowserContext() override;
 
   // IPCDevToolsAgentHost implementation.
   void SendMessageToAgent(IPC::Message* message) override;
   void Attach() override;
-  void OnClientAttached() override {}
+  void OnClientAttached() override;
   void OnClientDetached() override;
 
   // IPC::Listener implementation.

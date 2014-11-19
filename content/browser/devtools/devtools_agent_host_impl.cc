@@ -102,6 +102,10 @@ std::string DevToolsAgentHostImpl::GetId() {
   return id_;
 }
 
+BrowserContext* DevToolsAgentHostImpl::GetBrowserContext() {
+  return nullptr;
+}
+
 WebContents* DevToolsAgentHostImpl::GetWebContents() {
   return NULL;
 }

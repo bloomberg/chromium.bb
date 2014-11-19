@@ -43,6 +43,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   bool IsAttached() override;
   void InspectElement(int x, int y) override;
   std::string GetId() override;
+  BrowserContext* GetBrowserContext() override;
   WebContents* GetWebContents() override;
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;

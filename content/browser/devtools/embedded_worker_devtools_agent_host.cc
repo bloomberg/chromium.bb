@@ -124,6 +124,10 @@ void EmbeddedWorkerDevToolsAgentHost::Attach() {
   IPCDevToolsAgentHost::Attach();
 }
 
+void EmbeddedWorkerDevToolsAgentHost::OnClientAttached() {
+  DevToolsAgentHostImpl::NotifyCallbacks(this, true);
+}
+
 void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;
@@ -131,6 +135,7 @@ void EmbeddedWorkerDevToolsAgentHost::OnClientDetached() {
   } else if (state_ == WORKER_PAUSED_FOR_REATTACH) {
     state_ = WORKER_UNINSPECTED;
   }
+  DevToolsAgentHostImpl::NotifyCallbacks(this, false);
 }
 
 bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
@@ -222,6 +227,11 @@ void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     return;
 
   ProcessChunkedMessageFromAgent(message, total_size);
+}
+
+BrowserContext* EmbeddedWorkerDevToolsAgentHost::GetBrowserContext() {
+  RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
+  return rph ? rph->GetBrowserContext() : nullptr;
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnSaveAgentRuntimeState(

@@ -41,14 +41,6 @@ base::DictionaryValue* DevToolsNetworkProtocolHandler::HandleCommand(
   return NULL;
 }
 
-Profile* DevToolsNetworkProtocolHandler::GetProfile(
-    content::DevToolsAgentHost* agent_host) {
-  content::WebContents* web_contents = agent_host->GetWebContents();
-  if (!web_contents)
-    return NULL;
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-}
-
 scoped_ptr<DevToolsProtocol::Response>
 DevToolsNetworkProtocolHandler::CanEmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
@@ -98,7 +90,8 @@ DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
 void DevToolsNetworkProtocolHandler::UpdateNetworkState(
     content::DevToolsAgentHost* agent_host,
     scoped_ptr<DevToolsNetworkConditions> conditions) {
-  Profile* profile = GetProfile(agent_host);
+  Profile* profile = Profile::FromBrowserContext(
+      agent_host->GetBrowserContext());
   if (!profile)
     return;
   profile->GetDevToolsNetworkController()->SetNetworkState(

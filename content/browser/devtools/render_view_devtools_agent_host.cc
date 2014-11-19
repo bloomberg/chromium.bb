@@ -24,6 +24,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
@@ -136,6 +137,11 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
+}
+
+BrowserContext* RenderViewDevToolsAgentHost::GetBrowserContext() {
+  WebContents* contents = web_contents();
+  return contents ? contents->GetBrowserContext() : nullptr;
 }
 
 WebContents* RenderViewDevToolsAgentHost::GetWebContents() {
