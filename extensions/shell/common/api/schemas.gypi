@@ -9,7 +9,6 @@
   'variables': {
     'schema_files': [
       'identity.idl',
-      'shell_window.idl',
     ],
     'non_compiled_schema_files': [
     ],
