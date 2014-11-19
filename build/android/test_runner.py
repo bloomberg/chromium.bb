@@ -272,6 +272,11 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('--device-flags', dest='device_flags', default='',
                            help='The relative filepath to a file containing '
                                 'command-line flags to set on the device')
+  option_parser.add_option('--isolate_file_path',
+                           '--isolate-file-path',
+                           dest='isolate_file_path',
+                           help='.isolate file path to override the default '
+                                'path')
 
 
 def ProcessInstrumentationOptions(options, error_func):
@@ -334,7 +339,8 @@ def ProcessInstrumentationOptions(options, error_func):
       options.test_apk_jar_path,
       options.test_runner,
       options.test_support_apk_path,
-      options.device_flags
+      options.device_flags,
+      options.isolate_file_path
       )
 
 
@@ -657,7 +663,8 @@ def _RunInstrumentationTests(options, error_func, devices):
   exit_code = 0
 
   if options.run_java_tests:
-    runner_factory, tests = instrumentation_setup.Setup(instrumentation_options)
+    runner_factory, tests = instrumentation_setup.Setup(
+        instrumentation_options, devices)
 
     test_results, exit_code = test_dispatcher.RunTests(
         tests, runner_factory, devices, shard=True, test_timeout=None,

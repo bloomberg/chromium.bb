@@ -40,7 +40,8 @@ class TestRunner(instr_test_runner.TestRunner):
         test_apk_jar_path=None,
         test_runner=None,
         test_support_apk_path=None,
-        device_flags=None)
+        device_flags=None,
+        isolate_file_path=None)
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg)
 
@@ -54,10 +55,6 @@ class TestRunner(instr_test_runner.TestRunner):
   #override
   def InstallTestPackage(self):
     self.test_pkg.Install(self.device)
-
-  #override
-  def PushDataDeps(self):
-    pass
 
   #override
   def _RunTest(self, test, timeout):

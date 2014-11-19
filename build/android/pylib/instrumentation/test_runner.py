@@ -27,32 +27,13 @@ import perf_tests_results_helper # pylint: disable=F0401
 _PERF_TEST_ANNOTATION = 'PerfTest'
 
 
-def _GetDataFilesForTestSuite(suite_basename):
-  """Returns a list of data files/dirs needed by the test suite.
-
-  Args:
-    suite_basename: The test suite basename for which to return file paths.
-
-  Returns:
-    A list of test file and directory paths.
-  """
-  test_files = []
-  if suite_basename in ['ChromeTest', 'ContentShellTest']:
-    test_files += [
-        'net/data/ssl/certificates/',
-    ]
-  return test_files
-
-
 class TestRunner(base_test_runner.BaseTestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
-  _DEVICE_DATA_DIR = 'chrome/test/data'
   _DEVICE_COVERAGE_DIR = 'chrome/test/coverage'
   _HOSTMACHINE_PERF_OUTPUT_FILE = '/tmp/chrome-profile'
   _DEVICE_PERF_OUTPUT_SEARCH_PREFIX = (constants.DEVICE_PERF_OUTPUT_DIR +
                                        '/chrome-profile*')
-  _DEVICE_HAS_TEST_FILES = {}
 
   def __init__(self, test_options, device, shard_index, test_pkg,
                additional_flags=None):
@@ -88,45 +69,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   #override
   def InstallTestPackage(self):
     self.test_pkg.Install(self.device)
-
-  #override
-  def PushDataDeps(self):
-    # TODO(frankf): Implement a general approach for copying/installing
-    # once across test runners.
-    if TestRunner._DEVICE_HAS_TEST_FILES.get(self.device, False):
-      logging.warning('Already copied test files to device %s, skipping.',
-                      str(self.device))
-      return
-
-    host_device_file_tuples = []
-    test_data = _GetDataFilesForTestSuite(self.test_pkg.GetApkName())
-    if test_data:
-      # Make sure SD card is ready.
-      self.device.WaitUntilFullyBooted(timeout=20)
-      host_device_file_tuples += [
-          (os.path.join(constants.DIR_SOURCE_ROOT, p),
-           os.path.join(self.device.GetExternalStoragePath(), p))
-          for p in test_data]
-
-    # TODO(frankf): Specify test data in this file as opposed to passing
-    # as command-line.
-    for dest_host_pair in self.options.test_data:
-      dst_src = dest_host_pair.split(':', 1)
-      dst_layer = dst_src[0]
-      host_src = dst_src[1]
-      host_test_files_path = os.path.join(constants.DIR_SOURCE_ROOT,
-                                          host_src)
-      if os.path.exists(host_test_files_path):
-        host_device_file_tuples += [(
-            host_test_files_path,
-            '%s/%s/%s' % (
-                self.device.GetExternalStoragePath(),
-                TestRunner._DEVICE_DATA_DIR,
-                dst_layer))]
-    if host_device_file_tuples:
-      self.device.PushChangedFiles(host_device_file_tuples)
-    self.tool.CopyFiles(self.device)
-    TestRunner._DEVICE_HAS_TEST_FILES[str(self.device)] = True
 
   def _GetInstrumentationArgs(self):
     ret = {}

@@ -70,14 +70,9 @@ class BaseTestRunner(object):
     """Installs the test package once before all tests are run."""
     pass
 
-  def PushDataDeps(self):
-    """Push all data deps to device once before all tests are run."""
-    pass
-
   def SetUp(self):
     """Run once before all tests are run."""
     self.InstallTestPackage()
-    self.PushDataDeps()
 
   def TearDown(self):
     """Run once after all tests are run."""
