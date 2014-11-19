@@ -7,7 +7,6 @@
 
 #include "core/paint/TextPainter.h"
 #include "core/rendering/EllipsisBox.h"
-#include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/TextRunConstructor.h"
@@ -27,7 +26,7 @@ void EllipsisBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOff
     FloatRect boxRect(boxOrigin, LayoutSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
-        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
+        context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
     FloatPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
     bool isPrinting = m_ellipsisBox.renderer().document().printing();

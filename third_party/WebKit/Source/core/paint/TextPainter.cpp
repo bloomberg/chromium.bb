@@ -210,9 +210,9 @@ void TextPainter::paintEmphasisMarkForCombinedText()
     FloatPoint emphasisMarkTextOrigin(m_textBounds.x(), m_textBounds.y() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
     TextRunPaintInfo textRunPaintInfo(placeholderTextRun);
     textRunPaintInfo.bounds = m_textBounds;
-    m_graphicsContext->concatCTM(InlineTextBox::rotation(m_textBounds, InlineTextBox::Clockwise));
+    m_graphicsContext->concatCTM(rotation(m_textBounds, Clockwise));
     m_graphicsContext->drawEmphasisMarks(m_combinedText->originalFont(), textRunPaintInfo, m_emphasisMark, emphasisMarkTextOrigin);
-    m_graphicsContext->concatCTM(InlineTextBox::rotation(m_textBounds, InlineTextBox::Counterclockwise));
+    m_graphicsContext->concatCTM(rotation(m_textBounds, Counterclockwise));
 }
 
 } // namespace blink

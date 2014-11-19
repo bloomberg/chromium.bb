@@ -109,7 +109,7 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
 
     bool shouldRotate = !m_inlineTextBox.isHorizontal() && !combinedText;
     if (shouldRotate)
-        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
+        context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
 
     // Determine whether or not we have composition underlines to draw.
     bool containsComposition = m_inlineTextBox.renderer().node() && m_inlineTextBox.renderer().frame()->inputMethodController().compositionNode() == m_inlineTextBox.renderer().node();
@@ -217,11 +217,10 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
         GraphicsContextStateSaver stateSaver(*context, false);
         TextPainter::updateGraphicsContext(context, textStyle, m_inlineTextBox.isHorizontal(), stateSaver);
         if (combinedText)
-
-            context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
+            context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
         paintDecoration(context, boxOrigin, textDecorations);
         if (combinedText)
-            context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Counterclockwise));
+            context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {
@@ -240,7 +239,7 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
     }
 
     if (shouldRotate)
-        context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Counterclockwise));
+        context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
 }
 
 unsigned InlineTextBoxPainter::underlinePaintStart(const CompositionUnderline& underline)

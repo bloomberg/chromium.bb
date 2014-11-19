@@ -26,7 +26,6 @@
 #include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
-#include "platform/fonts/TextBlob.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 
@@ -96,9 +95,6 @@ public:
     virtual void showBox(int = 0) const override;
     virtual const char* boxName() const override;
 #endif
-
-    enum RotationDirection { Counterclockwise, Clockwise };
-    static AffineTransform rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection);
 
 public:
     TextRun constructTextRunForInspector(RenderStyle*, const Font&) const;
@@ -177,12 +173,6 @@ private:
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
 
 void alignSelectionRectToDevicePixels(FloatRectWillBeLayoutRect&);
-
-inline AffineTransform InlineTextBox::rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection rotationDirection)
-{
-    return rotationDirection == Clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
-        : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
-}
 
 } // namespace blink
 

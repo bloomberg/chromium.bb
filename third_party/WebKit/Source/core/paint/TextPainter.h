@@ -5,11 +5,13 @@
 #ifndef TextPainter_h
 #define TextPainter_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -58,6 +60,9 @@ public:
     static Style textPaintingStyle(RenderObject&, RenderStyle*, bool forceBlackText, bool isPrinting);
     static Style selectionPaintingStyle(RenderObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
+    enum RotationDirection { Counterclockwise, Clockwise };
+    static AffineTransform rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection);
+
 private:
     void updateGraphicsContext(const Style& style, GraphicsContextStateSaver& saver)
     {
@@ -84,6 +89,12 @@ private:
     int m_emphasisMarkOffset;
     RenderCombineText* m_combinedText;
 };
+
+inline AffineTransform TextPainter::rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection rotationDirection)
+{
+    return rotationDirection == Clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
+        : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
+}
 
 } // namespace blink
 
