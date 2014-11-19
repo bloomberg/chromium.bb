@@ -62,7 +62,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
                              blink::WebFrame* frame,
                              scoped_ptr<BrowserPluginDelegate> delegate)
     : attached_(false),
-      attach_pending_(false),
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
@@ -94,7 +93,6 @@ BrowserPlugin::~BrowserPlugin() {
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
@@ -122,8 +120,7 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
 }
 
 void BrowserPlugin::Attach() {
-  if (ready()) {
-    attached_ = false;
+  if (attached()) {
     guest_crashed_ = false;
     EnableCompositing(false);
     if (compositing_helper_.get()) {
@@ -153,7 +150,7 @@ void BrowserPlugin::Attach() {
       browser_plugin_instance_id_,
       attach_params));
 
-  attach_pending_ = true;
+  attached_ = true;
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
@@ -165,12 +162,6 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
                                    bool reverse) {
   DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
-}
-
-void BrowserPlugin::OnAttachACK(int browser_plugin_instance_id) {
-  DCHECK(!attached());
-  attached_ = true;
-  attach_pending_ = false;
 }
 
 void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
@@ -279,7 +270,7 @@ void BrowserPlugin::UpdateDeviceScaleFactor() {
 }
 
 void BrowserPlugin::UpdateGuestFocusState() {
-  if (!ready())
+  if (!attached())
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetFocus(
@@ -405,7 +396,6 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     const IPC::Message& message) {
   switch (message.type()) {
-    case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_AdvanceFocus::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestGone::ID:
@@ -473,7 +463,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
     return;
 
   visible_ = visible;
-  if (!ready())
+  if (!attached())
     return;
 
   if (compositing_helper_.get())
@@ -491,7 +481,7 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
                                      blink::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !ready())
+  if (guest_crashed_ || !attached())
     return false;
 
   if (event.type == blink::WebInputEvent::ContextMenu)
@@ -521,7 +511,7 @@ bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,
                                            blink::WebDragOperationsMask mask,
                                            const blink::WebPoint& position,
                                            const blink::WebPoint& screen) {
-  if (guest_crashed_ || !ready())
+  if (guest_crashed_ || !attached())
     return false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
@@ -583,7 +573,7 @@ bool BrowserPlugin::setComposition(
     const blink::WebVector<blink::WebCompositionUnderline>& underlines,
     int selectionStart,
     int selectionEnd) {
-  if (!ready())
+  if (!attached())
     return false;
   std::vector<blink::WebCompositionUnderline> std_underlines;
   for (size_t i = 0; i < underlines.size(); ++i) {
@@ -603,7 +593,7 @@ bool BrowserPlugin::setComposition(
 bool BrowserPlugin::confirmComposition(
     const blink::WebString& text,
     blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) {
-  if (!ready())
+  if (!attached())
     return false;
   bool keep_selection = (selectionBehavior == blink::WebWidget::KeepSelection);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ImeConfirmComposition(
@@ -616,7 +606,7 @@ bool BrowserPlugin::confirmComposition(
 }
 
 void BrowserPlugin::extendSelectionAndDelete(int before, int after) {
-  if (!ready())
+  if (!attached())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_ExtendSelectionAndDelete(

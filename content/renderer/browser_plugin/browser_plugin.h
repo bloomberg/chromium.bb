@@ -37,7 +37,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int render_view_routing_id() const { return render_view_routing_id_; }
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
   bool attached() const { return attached_; }
-  bool ready() const { return attached_ || attach_pending_; }
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();
   }
@@ -170,7 +169,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnAttachACK(int browser_plugin_instance_id);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestGone(int instance_id);
   void OnSetContentsOpaque(int instance_id, bool opaque);
@@ -181,9 +179,8 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
 
   // This indicates whether this BrowserPlugin has been attached to a
-  // WebContents.
+  // WebContents and is ready to receive IPCs.
   bool attached_;
-  bool attach_pending_;
   const base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.
   // If the |render_view_| is destroyed before the BrowserPlugin is destroyed

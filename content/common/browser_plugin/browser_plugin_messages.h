@@ -162,11 +162,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
 
-// This message is sent in response to a completed attachment of a guest
-// to a BrowserPlugin.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_Attach_ACK,
-                     int /* browser_plugin_instance_id */)
-
 // When the guest crashes, the browser process informs the embedder through this
 // message.
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestGone,

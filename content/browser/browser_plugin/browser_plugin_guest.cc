@@ -251,10 +251,6 @@ void BrowserPluginGuest::Initialize(
         GetWebContents()->GetRenderViewHost());
     guest_rvh->SetInputMethodActive(true);
   }
-
-  // Inform the embedder of the guest's attachment.
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_Attach_ACK(browser_plugin_instance_id_));
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
