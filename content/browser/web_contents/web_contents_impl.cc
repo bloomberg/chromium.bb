@@ -2214,6 +2214,9 @@ void WebContentsImpl::SaveFrame(const GURL& url,
                                 const Referrer& referrer) {
   if (!GetURL().is_valid())
     return;
+  if (delegate_ && delegate_->SaveFrame(url, referrer))
+    return;
+
   bool is_main_frame = (url == GetURL());
 
   DownloadManager* dlm =

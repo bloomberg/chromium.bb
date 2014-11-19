@@ -178,6 +178,7 @@ void ExtensionMessageFilter::OnExtensionAttachGuest(
 void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
     int render_frame_id,
     const std::string& src,
+    const std::string& content_url,
     const std::string& mime_type,
     int element_instance_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -203,6 +204,7 @@ void ExtensionMessageFilter::OnExtensionCreateMimeHandlerViewGuest(
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kMimeType, mime_type);
   create_params.SetString(mime_handler_view::kSrc, src);
+  create_params.SetString(mime_handler_view::kContentUrl, content_url);
   manager->CreateGuest(MimeHandlerViewGuest::Type,
                        "",
                        embedder_web_contents,

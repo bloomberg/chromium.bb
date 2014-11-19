@@ -11,6 +11,7 @@ namespace mime_handler_view {
 
 extern const char kMimeType[];
 extern const char kSrc[];
+extern const char kContentUrl[];
 
 }  // namespace mime_handler_view
 

@@ -97,7 +97,8 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
 
   DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
   render_frame()->Send(new ExtensionHostMsg_CreateMimeHandlerViewGuest(
-      routing_id(), stream_url.spec(), mime_type_, element_instance_id()));
+      routing_id(), stream_url.spec(), original_url_.spec(), mime_type_,
+      element_instance_id()));
 }
 
 }  // namespace extensions

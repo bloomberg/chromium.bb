@@ -106,7 +106,7 @@ function PDFViewer(streamDetails) {
       this.viewport_.zoomIn.bind(this.viewport_));
   $('zoom-out-button').addEventListener('click',
       this.viewport_.zoomOut.bind(this.viewport_));
-  $('save-button-link').href = this.streamDetails.originalUrl;
+  $('save-button').addEventListener('click', this.save_.bind(this));
   $('print-button').addEventListener('click', this.print_.bind(this));
 
   // Setup the keyboard event listener.
@@ -228,15 +228,6 @@ PDFViewer.prototype = {
           });
         }
         return;
-      case 83:  // s key.
-        if (e.ctrlKey || e.metaKey) {
-          // Simulate a click on the button so that the <a download ...>
-          // attribute is used.
-          $('save-button-link').click();
-          // Since we do the saving of the page.
-          e.preventDefault();
-        }
-        return;
       case 80:  // p key.
         if (e.ctrlKey || e.metaKey) {
           this.print_();
@@ -268,6 +259,16 @@ PDFViewer.prototype = {
   print_: function() {
     this.plugin_.postMessage({
       type: 'print',
+    });
+  },
+
+  /**
+   * @private
+   * Notify the plugin to save.
+   */
+  save_: function() {
+    this.plugin_.postMessage({
+      type: 'save',
     });
   },
 

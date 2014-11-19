@@ -759,9 +759,10 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AttachGuest,
                      base::DictionaryValue /* attach_params */)
 
 // Tells the browser to create a mime handler guest view for a plugin.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_CreateMimeHandlerViewGuest,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_CreateMimeHandlerViewGuest,
                      int /* render_frame_id */,
                      std::string /* embedder_url */,
+                     std::string /* content_url */,
                      std::string /* mime_type */,
                      int /* element_instance_id */)
 

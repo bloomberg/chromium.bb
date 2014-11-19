@@ -58,6 +58,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
                  const gfx::Rect& selection_rect,
                  int active_match_ordinal,
                  bool final_update) override;
+  bool SaveFrame(const GURL& url, const content::Referrer& referrer) override;
 
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -71,6 +72,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
 
   scoped_ptr<MimeHandlerViewGuestDelegate> delegate_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+  GURL content_url_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

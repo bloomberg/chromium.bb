@@ -66,6 +66,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                               const base::DictionaryValue& attach_params);
   void OnExtensionCreateMimeHandlerViewGuest(int render_frame_id,
                                              const std::string& url,
+                                             const std::string& content_url,
                                              const std::string& mime_type,
                                              int element_instance_id);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,

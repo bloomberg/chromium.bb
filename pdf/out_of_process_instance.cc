@@ -85,6 +85,8 @@ const char kJSGetPasswordCompleteType[] = "getPasswordComplete";
 const char kJSPassword[] = "password";
 // Print (Page -> Plugin)
 const char kJSPrintType[] = "print";
+// Save (Page -> Plugin)
+const char kJSSaveType[] = "save";
 // Go to page (Plugin -> Page)
 const char kJSGoToPageType[] = "goToPage";
 const char kJSPageNumber[] = "page";
@@ -404,6 +406,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     }
   } else if (type == kJSPrintType) {
     Print();
+  } else if (type == kJSSaveType) {
+    pp::PDF::SaveAs(this);
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {

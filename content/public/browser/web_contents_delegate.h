@@ -488,6 +488,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true if the WebContents is never visible.
   virtual bool IsNeverVisible(WebContents* web_contents);
 
+  // Called in response to a request to save a frame. If this returns true, the
+  // default behavior is suppressed.
+  virtual bool SaveFrame(const GURL& url, const Referrer& referrer);
+
  protected:
   virtual ~WebContentsDelegate();
 
