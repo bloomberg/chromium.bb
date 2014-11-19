@@ -11,6 +11,10 @@ EXPERIMENTAL_TEST_SUITES = [
     'devtools_bridge_tests',
 ]
 
+TELEMETRY_EXPERIMENTAL_TEST_SUITES = [
+    'telemetry_unittests',
+]
+
 # Do not modify this list without approval of an android owner.
 # This list determines which suites are run by default, both for local
 # testing and on android trybots running on commit-queue.

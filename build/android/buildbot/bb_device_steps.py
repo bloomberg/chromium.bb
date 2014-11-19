@@ -81,8 +81,8 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     ])
 
 VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu',
-                   'telemetry_perf_unittests', 'ui', 'unit', 'webkit',
-                   'webkit_layout', 'python_unittests'])
+                   'telemetry_unittests', 'telemetry_perf_unittests', 'ui',
+                   'unit', 'webkit', 'webkit_layout', 'python_unittests'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -472,6 +472,11 @@ def RunUnitTests(options):
   RunTestSuites(options, suites)
 
 
+def RunTelemetryUnitTests(options):
+  suites = gtest_config.TELEMETRY_EXPERIMENTAL_TEST_SUITES
+  RunTestSuites(options, suites)
+
+
 def RunInstrumentationTests(options):
   for test in INSTRUMENTATION_TESTS.itervalues():
     RunInstrumentationSuite(options, test)
@@ -529,6 +534,7 @@ def GetTestStepCmds():
       ('chrome_proxy', RunChromeProxyTests),
       ('gpu', RunGPUTests),
       ('python_unittests', RunPythonUnitTests),
+      ('telemetry_unittests', RunTelemetryUnitTests),
       ('telemetry_perf_unittests', RunTelemetryPerfUnitTests),
       ('ui', RunInstrumentationTests),
       ('unit', RunUnitTests),
