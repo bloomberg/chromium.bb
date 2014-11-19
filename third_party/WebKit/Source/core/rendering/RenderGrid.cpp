@@ -337,26 +337,30 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
 
     // FIXME: Much of this method is boiler plate that matches RenderBox::layoutBlock and Render*FlexibleBox::layoutBlock.
     // It would be nice to refactor some of the duplicate code.
-    LayoutState state(*this, locationOffset());
+    {
+        // LayoutState needs this deliberate scope to pop before updating scroll information (which
+        // may trigger relayout).
+        LayoutState state(*this, locationOffset());
 
-    LayoutSize previousSize = size();
+        LayoutSize previousSize = size();
 
-    setLogicalHeight(0);
-    updateLogicalWidth();
+        setLogicalHeight(0);
+        updateLogicalWidth();
 
-    TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
+        TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
-    layoutGridItems();
+        layoutGridItems();
 
-    LayoutUnit oldClientAfterEdge = clientLogicalBottom();
-    updateLogicalHeight();
+        LayoutUnit oldClientAfterEdge = clientLogicalBottom();
+        updateLogicalHeight();
 
-    if (size() != previousSize)
-        relayoutChildren = true;
+        if (size() != previousSize)
+            relayoutChildren = true;
 
-    layoutPositionedObjects(relayoutChildren || isDocumentElement());
+        layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
-    computeOverflow(oldClientAfterEdge);
+        computeOverflow(oldClientAfterEdge);
+    }
 
     updateLayerTransformAfterLayout();
 

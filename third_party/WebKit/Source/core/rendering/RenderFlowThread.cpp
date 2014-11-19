@@ -309,6 +309,7 @@ void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject& object)
         }
     }
 
+    ASSERT(!m_statePusherObjectsStack.contains(&object));
     m_statePusherObjectsStack.add(&object);
 }
 
