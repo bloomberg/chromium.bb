@@ -309,7 +309,6 @@
       "extension_types": ["extension"],
       "whitelist": [
         // http://crbug.com/292856
-        "3F50C3A83839D9C76334BCE81CDEC06174F266AF",
         "09FDCB5851B8F3378DB630D06E316076E89C95A6",
         "A434B90223C3C52F2B69DB494736B63C612C774D"
       ]
