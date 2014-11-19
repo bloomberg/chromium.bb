@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DBUS_CONSOLE_SERVICE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_DBUS_CONSOLE_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_SERVICES_CONSOLE_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_SERVICES_CONSOLE_SERVICE_PROVIDER_H_
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -17,10 +19,20 @@ namespace chromeos {
 // chrome that it should release control of the display server.
 // The main client is the console application.  This can
 // also be used by crouton to take over the display.
-class ConsoleServiceProvider
+class CHROMEOS_EXPORT ConsoleServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  ConsoleServiceProvider();
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Performs the actual work needed by the provider methods with the same
+    // names.
+    virtual void TakeDisplayOwnership() = 0;
+    virtual void ReleaseDisplayOwnership() = 0;
+  };
+
+  explicit ConsoleServiceProvider(scoped_ptr<Delegate> delegate);
   ~ConsoleServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -46,6 +58,7 @@ class ConsoleServiceProvider
                   const std::string& method_name,
                   bool success);
 
+  scoped_ptr<Delegate> delegate_;
   base::WeakPtrFactory<ConsoleServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsoleServiceProvider);
@@ -53,4 +66,4 @@ class ConsoleServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DBUS_CONSOLE_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_SERVICES_CONSOLE_SERVICE_PROVIDER_H_

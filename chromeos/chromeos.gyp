@@ -212,6 +212,8 @@
       'dbus/power_policy_controller.h',
       'dbus/privet_daemon_client.cc',
       'dbus/privet_daemon_client.h',
+      'dbus/services/console_service_provider.cc',
+      'dbus/services/console_service_provider.h',
       'dbus/services/cros_dbus_service.cc',
       'dbus/services/cros_dbus_service.h',
       'dbus/services/liveness_service_provider.cc',

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/console_service_provider.h"
+#include "chromeos/dbus/services/console_service_provider.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/chromeos/display_configurator.h"
 
 namespace chromeos {
 
-ConsoleServiceProvider::ConsoleServiceProvider() : weak_ptr_factory_(this) {
+ConsoleServiceProvider::ConsoleServiceProvider(scoped_ptr<Delegate> delegate)
+    : delegate_(delegate.Pass()),
+      weak_ptr_factory_(this) {
 }
 
 ConsoleServiceProvider::~ConsoleServiceProvider() {
@@ -38,14 +38,14 @@ void ConsoleServiceProvider::Start(
 void ConsoleServiceProvider::TakeDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  ash::Shell::GetInstance()->display_configurator()->TakeControl();
+  delegate_->TakeDisplayOwnership();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void ConsoleServiceProvider::ReleaseDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  ash::Shell::GetInstance()->display_configurator()->RelinquishControl();
+  delegate_->ReleaseDisplayOwnership();
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 

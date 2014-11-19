@@ -29,7 +29,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/dbus/console_service_provider.h"
+#include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
@@ -96,6 +96,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/services/liveness_service_provider.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -182,7 +183,8 @@ class DBusServices {
 #endif
     service_providers.push_back(new LivenessServiceProvider);
     service_providers.push_back(new ScreenLockServiceProvider);
-    service_providers.push_back(new ConsoleServiceProvider);
+    service_providers.push_back(new ConsoleServiceProvider(
+        make_scoped_ptr(new ChromeConsoleServiceProviderDelegate)));
     CrosDBusService::Initialize(service_providers.Pass());
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
