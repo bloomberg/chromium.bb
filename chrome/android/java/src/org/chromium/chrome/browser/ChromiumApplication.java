@@ -18,15 +18,11 @@ public abstract class ChromiumApplication extends ContentApplication {
     @CalledByNative
     protected void openProtectedContentSettings() {}
 
-    protected void showSyncSettings() {}
-
     @CalledByNative
     protected void showAutofillSettings() {}
 
     @CalledByNative
     protected void showPasswordSettings() {}
-
-    protected void showTermsOfServiceDialog() {}
 
     /**
      * Opens the UI to clear browsing data.

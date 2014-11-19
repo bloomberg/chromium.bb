@@ -212,15 +212,6 @@ public class UrlUtilities {
         return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
     }
 
-    /**
-     * @param url A URL.
-     * @return Whether a given URL is one of [...]google.TLD or [...]youtube.TLD URLs.
-     */
-    public static boolean isGooglePropertyUrl(String url) {
-        if (TextUtils.isEmpty(url)) return false;
-        return nativeIsGooglePropertyUrl(url);
-    }
-
     private static native boolean nativeSameDomainOrHost(String primaryUrl, String secondaryUrl,
             boolean includePrivateRegistries);
     private static native String nativeGetDomainAndRegistry(String url,
@@ -228,5 +219,4 @@ public class UrlUtilities {
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
     public static native String nativeFixupUrl(String url, String desiredTld);
-    private static native boolean nativeIsGooglePropertyUrl(String url);
 }
