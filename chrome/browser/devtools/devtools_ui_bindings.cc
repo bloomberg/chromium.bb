@@ -239,8 +239,10 @@ class DevToolsUIBindings::FrontendWebContentsObserver
  private:
   // contents::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
+  // TODO(creis): Replace with RenderFrameCreated when http://crbug.com/425397
+  // is fixed.  See also http://crbug.com/424641.
+  void AboutToNavigateRenderFrame(
+      content::RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -277,13 +279,12 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
   devtools_bindings_->delegate_->RenderProcessGone(crashed);
 }
 
-void DevToolsUIBindings::FrontendWebContentsObserver::RenderFrameHostChanged(
-    content::RenderFrameHost* old_host,
-    content::RenderFrameHost* new_host) {
+void DevToolsUIBindings::FrontendWebContentsObserver::
+    AboutToNavigateRenderFrame(content::RenderFrameHost* render_frame_host) {
   // TODO(creis): Create should be refactored to operate on RenderFrameHosts.
   devtools_bindings_->frontend_host_.reset(
       content::DevToolsFrontendHost::Create(
-          new_host->GetRenderViewHost(), devtools_bindings_));
+          render_frame_host->GetRenderViewHost(), devtools_bindings_));
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
