@@ -39,6 +39,10 @@ class CONTENT_EXPORT WebContentsViewDelegate {
  public:
   virtual ~WebContentsViewDelegate();
 
+  // Returns the native window containing the WebContents, or NULL if the
+  // WebContents is not in any window.
+  virtual gfx::NativeWindow GetNativeWindow();
+
   // Returns a delegate to process drags not handled by content.
   virtual WebDragDestDelegate* GetDragDestDelegate();
 

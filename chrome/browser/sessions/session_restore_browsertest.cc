@@ -192,11 +192,10 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 };
 
-#if defined(USE_AURA)
 // Verifies that restored tabs have a root window. This is important
 // otherwise the wrong information is communicated to the renderer.
 // (http://crbug.com/342672).
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveWindow) {
   // Create tabs.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
@@ -215,15 +214,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
   const int tabs = tab_strip_model->count();
   ASSERT_EQ(3, tabs);
 
-  // Check the restored tabs have a root window.
+  // Check the restored tabs have a window to get screen info from.
+  // On Aura it should also have a root window.
   for (int i = 0; i < tabs; ++i) {
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
-    gfx::NativeView window = contents->GetNativeView();
-    bool tab_has_root_window = !!window->GetRootWindow();
-    EXPECT_TRUE(tab_has_root_window);
+    EXPECT_TRUE(contents->GetTopLevelNativeWindow());
+#if defined(USE_AURA)
+    EXPECT_TRUE(contents->GetNativeView()->GetRootWindow());
+#endif
   }
 }
-#endif  // USE_AURA
 
 // Verify that restored tabs have correct disposition. Only one tab should
 // have "visible" visibility state, the rest should not.

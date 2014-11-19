@@ -40,6 +40,7 @@ class ChromeWebContentsViewDelegateViews
   ~ChromeWebContentsViewDelegateViews() override;
 
   // Overridden from WebContentsViewDelegate:
+  gfx::NativeWindow GetNativeWindow() override;
   content::WebDragDestDelegate* GetDragDestDelegate() override;
   void StoreFocus() override;
   void RestoreFocus() override;

@@ -42,9 +42,6 @@ class ConstrainedWindowMac {
   web_modal::NativeWebContentsModalDialog GetNativeDialog();
 
  private:
-  // Gets the parent window of the dialog.
-  NSWindow* GetParentWindow() const;
-
   ConstrainedWindowMacDelegate* delegate_;  // weak, owns us.
 
   // The WebContents that owns and constrains this ConstrainedWindowMac. Weak.

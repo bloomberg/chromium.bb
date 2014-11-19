@@ -6,6 +6,9 @@
 
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
@@ -42,6 +45,11 @@ ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
+}
+
+gfx::NativeWindow ChromeWebContentsViewDelegateViews::GetNativeWindow() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  return browser ? browser->window()->GetNativeWindow() : nullptr;
 }
 
 content::WebDragDestDelegate*

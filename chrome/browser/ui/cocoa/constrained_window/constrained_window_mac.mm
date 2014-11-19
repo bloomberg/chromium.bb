@@ -49,7 +49,7 @@ void ConstrainedWindowMac::ShowWebContentsModalDialog() {
   if (shown_)
     return;
 
-  NSWindow* parent_window = GetParentWindow();
+  NSWindow* parent_window = web_contents_->GetTopLevelNativeWindow();
   NSView* parent_view = GetSheetParentViewForWebContents(web_contents_);
   if (!parent_window || !parent_view)
     return;
@@ -89,14 +89,4 @@ NativeWebContentsModalDialog ConstrainedWindowMac::GetNativeDialog() {
   // ConstrainedWindowSheet pointer, in conjunction with the corresponding
   // changes to NativeWebContentsModalDialogManagerCocoa.
   return this;
-}
-
-NSWindow* ConstrainedWindowMac::GetParentWindow() const {
-  // Tab contents in a tabbed browser may not be inside a window. For this
-  // reason use a browser window if possible.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (browser)
-    return browser->window()->GetNativeWindow();
-
-  return web_contents_->GetTopLevelNativeWindow();
 }

@@ -30,6 +30,7 @@ class ChromeWebContentsViewDelegateMac
   ~ChromeWebContentsViewDelegateMac() override;
 
   // Overridden from WebContentsViewDelegate:
+  gfx::NativeWindow GetNativeWindow() override;
   NSObject<RenderWidgetHostViewMacDelegate>* CreateRenderWidgetHostViewDelegate(
       content::RenderWidgetHost* render_widget_host) override;
   content::WebDragDestDelegate* GetDragDestDelegate() override;

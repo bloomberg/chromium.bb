@@ -108,7 +108,8 @@ gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
-  return [cocoa_view_.get() window];
+  NSWindow* window = [cocoa_view_.get() window];
+  return window ? window : delegate_->GetNativeWindow();
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {

@@ -50,7 +50,7 @@ void ShowManagePasswordsBubble(content::WebContents* webContents) {
 
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(webContents);
-  NSWindow* window = webContents->GetTopLevelNativeWindow();
+  NSWindow* window = [webContents->GetNativeView() window];
   if (!window) {
     // The tab isn't active right now.
     return;

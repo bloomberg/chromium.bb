@@ -11,6 +11,10 @@ namespace content {
 WebContentsViewDelegate::~WebContentsViewDelegate() {
 }
 
+gfx::NativeWindow WebContentsViewDelegate::GetNativeWindow() {
+  return nullptr;
+}
+
 WebDragDestDelegate* WebContentsViewDelegate::GetDragDestDelegate() {
   return NULL;
 }
