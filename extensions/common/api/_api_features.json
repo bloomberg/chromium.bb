@@ -215,9 +215,6 @@
     ],
     "matches": ["<all_urls>"]
   },
-  "runtime.setUninstallURL": {
-    "channel": "dev"
-  },
   "serial": {
     "dependencies": ["permission:serial"],
     "contexts": ["blessed_extension"]
