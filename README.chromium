@@ -239,8 +239,9 @@ This directory contains the source code of ICU 52.1 for C/C++
     - patches/bidi.patch
     - upstream bug : http://bugs.icu-project.org/trac/ticket/11054
 
-12. Apply the following patch for regex
-   - patches/regex.patch
+12. Apply the following patches for regex
+   - patches/regex.patch and patches/regex2.patch
    - upstream bugs : http://bugs.icu-project.org/trac/ticket/11369
                      http://bugs.icu-project.org/trac/ticket/11370
+                     http://bugs.icu-project.org/trac/ticket/11371
 

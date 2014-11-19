@@ -1,0 +1,991 @@
+Index: source/common/unicode/utypes.h
+===================================================================
+--- source/common/unicode/utypes.h	(revision 292709)
++++ source/common/unicode/utypes.h	(working copy)
+@@ -647,6 +647,7 @@
+     U_REGEX_STACK_OVERFLOW,               /**< Regular expression backtrack stack overflow.       */
+     U_REGEX_TIME_OUT,                     /**< Maximum allowed match time exceeded                */
+     U_REGEX_STOPPED_BY_CALLER,            /**< Matching operation aborted by user callback fn.    */
++    U_REGEX_PATTERN_TOO_BIG,              /**< Pattern exceeds limits on size or complexity.      */
+     U_REGEX_ERROR_LIMIT,                  /**< This must always be the last value to indicate the limit for regexp errors */
+ 
+     /*
+Index: source/common/utypes.c
+===================================================================
+--- source/common/utypes.c	(revision 292709)
++++ source/common/utypes.c	(working copy)
+@@ -165,7 +165,8 @@
+     "U_REGEX_INVALID_RANGE",
+     "U_REGEX_STACK_OVERFLOW",
+     "U_REGEX_TIME_OUT",
+-    "U_REGEX_STOPPED_BY_CALLER"
++    "U_REGEX_STOPPED_BY_CALLER",
++    "U_REGEX_PATTERN_TOO_BIG"
+ };
+ 
+ static const char * const
+Index: source/i18n/regexcmp.cpp
+===================================================================
+--- source/i18n/regexcmp.cpp	(revision 292943)
++++ source/i18n/regexcmp.cpp	(working copy)
+@@ -302,7 +302,7 @@
+     //   present in the saved state:  the input string position (int64_t) and
+     //   the position in the compiled pattern.
+     //
+-    fRXPat->fFrameSize+=RESTACKFRAME_HDRCOUNT;
++    allocateStackData(RESTACKFRAME_HDRCOUNT);
+ 
+     //
+     // Optimization pass 1: NOPs, back-references, and case-folding
+@@ -368,9 +368,9 @@
+         //                    the start of an ( grouping.
+         //4   NOP             Resreved, will be replaced by a save if there are
+         //                    OR | operators at the top level
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_STATE_SAVE, 2), *fStatus);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_JMP,  3), *fStatus);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_FAIL, 0), *fStatus);
++        appendOp(URX_BUILD(URX_STATE_SAVE, 2));
++        appendOp(URX_BUILD(URX_JMP,  3));
++        appendOp(URX_BUILD(URX_FAIL, 0));
+ 
+         // Standard open nonCapture paren action emits the two NOPs and
+         //   sets up the paren stack frame.
+@@ -393,7 +393,7 @@
+         }
+ 
+         // add the END operation to the compiled pattern.
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_END, 0), *fStatus);
++        appendOp(URX_BUILD(URX_END, 0));
+ 
+         // Terminate the pattern compilation state machine.
+         returnVal = FALSE;
+@@ -422,7 +422,7 @@
+             //  the JMP will eventually be the location following the ')' for the
+             //  group.  This will be patched in later, when the ')' is encountered.
+             op = URX_BUILD(URX_JMP, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Push the position of the newly added JMP op onto the parentheses stack.
+             // This registers if for fixup when this block's close paren is encountered.
+@@ -431,7 +431,7 @@
+             // Append a NOP to the compiled pattern.  This is the slot reserved
+             //   for a SAVE in the event that there is yet another '|' following
+             //   this one.
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
++            appendOp(URX_BUILD(URX_NOP, 0));
+             fParenStack.push(fRXPat->fCompiledPat->size()-1, *fStatus);
+         }
+         break;
+@@ -457,12 +457,11 @@
+         //      END_CAPTURE is encountered.
+         {
+             fixLiterals();
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
+-            int32_t  varsLoc    = fRXPat->fFrameSize;    // Reserve three slots in match stack frame.
+-            fRXPat->fFrameSize += 3;
+-            int32_t  cop        = URX_BUILD(URX_START_CAPTURE, varsLoc);
+-            fRXPat->fCompiledPat->addElement(cop, *fStatus);
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
++            appendOp(URX_BUILD(URX_NOP, 0));
++            int32_t  varsLoc = allocateStackData(3);    // Reserve three slots in match stack frame.
++            int32_t  cop     = URX_BUILD(URX_START_CAPTURE, varsLoc);
++            appendOp(cop);
++            appendOp(URX_BUILD(URX_NOP, 0));
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the two NOPs.  Depending on what follows in the pattern, the
+@@ -487,8 +486,8 @@
+         //             is an '|' alternation within the parens.
+         {
+             fixLiterals();
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
++            appendOp(URX_BUILD(URX_NOP, 0));
++            appendOp(URX_BUILD(URX_NOP, 0));
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the two NOPs.
+@@ -510,12 +509,11 @@
+         //             is an '|' alternation within the parens.
+         {
+             fixLiterals();
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
+-            int32_t  varLoc    = fRXPat->fDataSize;    // Reserve a data location for saving the
+-            fRXPat->fDataSize += 1;                    //  state stack ptr.
+-            int32_t  stoOp     = URX_BUILD(URX_STO_SP, varLoc);
+-            fRXPat->fCompiledPat->addElement(stoOp, *fStatus);
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
++            appendOp(URX_BUILD(URX_NOP, 0));
++            int32_t  varLoc = allocateData(1);    // Reserve a data location for saving the state stack ptr.
++            int32_t  stoOp = URX_BUILD(URX_STO_SP, varLoc);
++            appendOp(stoOp);
++            appendOp(URX_BUILD(URX_NOP, 0));
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the two NOPs.  Depending on what follows in the pattern, the
+@@ -558,26 +556,25 @@
+         //  Two data slots are reserved, for saving the stack ptr and the input position.
+         {
+             fixLiterals();
+-            int32_t dataLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize += 2;
++            int32_t dataLoc = allocateData(2);
+             int32_t op = URX_BUILD(URX_LA_START, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             op = URX_BUILD(URX_STATE_SAVE, fRXPat->fCompiledPat->size()+ 2);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             op = URX_BUILD(URX_JMP, fRXPat->fCompiledPat->size()+ 3);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            
++            appendOp(op);
++
+             op = URX_BUILD(URX_LA_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             op = URX_BUILD(URX_BACKTRACK, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            
++            appendOp(op);
++
+             op = URX_BUILD(URX_NOP, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
++            appendOp(op);
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the NOPs.
+@@ -602,16 +599,15 @@
+         //                                        an alternate (transparent) region.
+         {
+             fixLiterals();
+-            int32_t dataLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize += 2;
++            int32_t dataLoc = allocateData(2);
+             int32_t op = URX_BUILD(URX_LA_START, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             op = URX_BUILD(URX_STATE_SAVE, 0);    // dest address will be patched later.
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             op = URX_BUILD(URX_NOP, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the StateSave and NOP.
+@@ -649,23 +645,22 @@
+             fixLiterals();
+ 
+             // Allocate data space
+-            int32_t dataLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize += 4;
++            int32_t dataLoc = allocateData(4);
+ 
+             // Emit URX_LB_START
+             int32_t op = URX_BUILD(URX_LB_START, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Emit URX_LB_CONT
+             op = URX_BUILD(URX_LB_CONT, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            fRXPat->fCompiledPat->addElement(0,  *fStatus);    // MinMatchLength.  To be filled later.
+-            fRXPat->fCompiledPat->addElement(0,  *fStatus);    // MaxMatchLength.  To be filled later.
++            appendOp(op);
++            appendOp(0);    // MinMatchLength.  To be filled later.
++            appendOp(0);    // MaxMatchLength.  To be filled later.
+ 
+             // Emit the NOP
+             op = URX_BUILD(URX_NOP, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
++            appendOp(op);
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the URX_LB_CONT and the NOP.
+@@ -705,24 +700,23 @@
+             fixLiterals();
+ 
+             // Allocate data space
+-            int32_t dataLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize += 4;
++            int32_t dataLoc = allocateData(4);
+ 
+             // Emit URX_LB_START
+             int32_t op = URX_BUILD(URX_LB_START, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Emit URX_LBN_CONT
+             op = URX_BUILD(URX_LBN_CONT, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            fRXPat->fCompiledPat->addElement(0,  *fStatus);    // MinMatchLength.  To be filled later.
+-            fRXPat->fCompiledPat->addElement(0,  *fStatus);    // MaxMatchLength.  To be filled later.
+-            fRXPat->fCompiledPat->addElement(0,  *fStatus);    // Continue Loc.    To be filled later.
++            appendOp(op);
++            appendOp(0);    // MinMatchLength.  To be filled later.
++            appendOp(0);    // MaxMatchLength.  To be filled later.
++            appendOp(0);    // Continue Loc.    To be filled later.
+ 
+             // Emit the NOP
+             op = URX_BUILD(URX_NOP, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
++            appendOp(op);
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the URX_LB_CONT and the NOP.
+@@ -793,11 +787,10 @@
+                 if (URX_TYPE(repeatedOp) == URX_SETREF) {
+                     // Emit optimized code for [char set]+
+                     int32_t loopOpI = URX_BUILD(URX_LOOP_SR_I, URX_VAL(repeatedOp));
+-                    fRXPat->fCompiledPat->addElement(loopOpI, *fStatus);
+-                    frameLoc = fRXPat->fFrameSize;
+-                    fRXPat->fFrameSize++;
++                    appendOp(loopOpI);
++                    frameLoc = allocateStackData(1);
+                     int32_t loopOpC = URX_BUILD(URX_LOOP_C, frameLoc);
+-                    fRXPat->fCompiledPat->addElement(loopOpC, *fStatus);
++                    appendOp(loopOpC);
+                     break;
+                 }
+ 
+@@ -813,11 +806,10 @@
+                     if (fModeFlags & UREGEX_UNIX_LINES) {
+                         loopOpI |= 2;
+                     }
+-                    fRXPat->fCompiledPat->addElement(loopOpI, *fStatus);
+-                    frameLoc = fRXPat->fFrameSize;
+-                    fRXPat->fFrameSize++;
++                    appendOp(loopOpI);
++                    frameLoc = allocateStackData(1);
+                     int32_t loopOpC = URX_BUILD(URX_LOOP_C, frameLoc);
+-                    fRXPat->fCompiledPat->addElement(loopOpC, *fStatus);
++                    appendOp(loopOpC);
+                     break;
+                 }
+ 
+@@ -831,18 +823,17 @@
+                 // Zero length match is possible.
+                 // Emit the code sequence that can handle it.
+                 insertOp(topLoc);
+-                frameLoc =  fRXPat->fFrameSize;
+-                fRXPat->fFrameSize++;
++                frameLoc = allocateStackData(1);
+ 
+                 int32_t op = URX_BUILD(URX_STO_INP_LOC, frameLoc);
+                 fRXPat->fCompiledPat->setElementAt(op, topLoc);
+ 
+                 op = URX_BUILD(URX_JMP_SAV_X, topLoc+1);
+-                fRXPat->fCompiledPat->addElement(op, *fStatus);
++                appendOp(op);
+             } else {
+                 // Simpler code when the repeated body must match something non-empty
+                 int32_t  jmpOp  = URX_BUILD(URX_JMP_SAV, topLoc);
+-                fRXPat->fCompiledPat->addElement(jmpOp, *fStatus);
++                appendOp(jmpOp);
+             }
+         }
+         break;
+@@ -855,7 +846,7 @@
+         {
+             int32_t topLoc      = blockTopLoc(FALSE);
+             int32_t saveStateOp = URX_BUILD(URX_STATE_SAVE, topLoc);
+-            fRXPat->fCompiledPat->addElement(saveStateOp, *fStatus);
++            appendOp(saveStateOp);
+         }
+         break;
+ 
+@@ -892,10 +883,10 @@
+             fRXPat->fCompiledPat->setElementAt(jmp1_op, jmp1_loc);
+ 
+             int32_t  jmp2_op  = URX_BUILD(URX_JMP, jmp2_loc+2);
+-            fRXPat->fCompiledPat->addElement(jmp2_op, *fStatus);
++            appendOp(jmp2_op);
+ 
+             int32_t  save_op  = URX_BUILD(URX_STATE_SAVE, jmp1_loc+1);
+-            fRXPat->fCompiledPat->addElement(save_op, *fStatus);
++            appendOp(save_op);
+         }
+         break;
+ 
+@@ -937,10 +928,9 @@
+                     // Emit optimized code for a [char set]*
+                     int32_t loopOpI = URX_BUILD(URX_LOOP_SR_I, URX_VAL(repeatedOp));
+                     fRXPat->fCompiledPat->setElementAt(loopOpI, topLoc);
+-                    dataLoc = fRXPat->fFrameSize;
+-                    fRXPat->fFrameSize++;
++                    dataLoc = allocateStackData(1);
+                     int32_t loopOpC = URX_BUILD(URX_LOOP_C, dataLoc);
+-                    fRXPat->fCompiledPat->addElement(loopOpC, *fStatus);
++                    appendOp(loopOpC);
+                     break;
+                 }
+ 
+@@ -957,10 +947,9 @@
+                         loopOpI |= 2;
+                     }
+                     fRXPat->fCompiledPat->setElementAt(loopOpI, topLoc);
+-                    dataLoc = fRXPat->fFrameSize;
+-                    fRXPat->fFrameSize++;
++                    dataLoc = allocateStackData(1);
+                     int32_t loopOpC = URX_BUILD(URX_LOOP_C, dataLoc);
+-                    fRXPat->fCompiledPat->addElement(loopOpC, *fStatus);
++                    appendOp(loopOpC);
+                     break;
+                 }
+             }
+@@ -975,8 +964,7 @@
+             //    extra loop-breaking code.
+             if (minMatchLength(saveStateLoc, fRXPat->fCompiledPat->size()-1) == 0) {
+                 insertOp(saveStateLoc);
+-                dataLoc =  fRXPat->fFrameSize;
+-                fRXPat->fFrameSize++;
++                dataLoc = allocateStackData(1);
+ 
+                 int32_t op = URX_BUILD(URX_STO_INP_LOC, dataLoc);
+                 fRXPat->fCompiledPat->setElementAt(op, saveStateLoc+1);
+@@ -992,7 +980,7 @@
+             fRXPat->fCompiledPat->setElementAt(saveStateOp, saveStateLoc);
+ 
+             // Append the URX_JMP_SAV or URX_JMPX operation to the compiled pattern.
+-            fRXPat->fCompiledPat->addElement(jmpOp, *fStatus);
++            appendOp(jmpOp);
+         }
+         break;
+ 
+@@ -1009,7 +997,7 @@
+             int32_t     jmpOp   = URX_BUILD(URX_JMP, saveLoc);
+             int32_t     stateSaveOp = URX_BUILD(URX_STATE_SAVE, jmpLoc+1);
+             fRXPat->fCompiledPat->setElementAt(jmpOp, jmpLoc);
+-            fRXPat->fCompiledPat->addElement(stateSaveOp, *fStatus);
++            appendOp(stateSaveOp);
+         }
+         break;
+ 
+@@ -1078,9 +1066,9 @@
+ 
+             // First the STO_SP before the start of the loop
+             insertOp(topLoc);
+-            int32_t  varLoc    = fRXPat->fDataSize;    // Reserve a data location for saving the
+-            fRXPat->fDataSize += 1;                    //  state stack ptr.
+-            int32_t  op        = URX_BUILD(URX_STO_SP, varLoc);
++
++            int32_t  varLoc = allocateData(1);   // Reserve a data location for saving the
++            int32_t  op     = URX_BUILD(URX_STO_SP, varLoc);
+             fRXPat->fCompiledPat->setElementAt(op, topLoc);
+ 
+             int32_t loopOp = (int32_t)fRXPat->fCompiledPat->popi();
+@@ -1090,7 +1078,7 @@
+ 
+             // Then the LD_SP after the end of the loop
+             op = URX_BUILD(URX_LD_SP, varLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+ 
+         break;
+@@ -1134,7 +1122,7 @@
+             } else {
+                 op = URX_BUILD(URX_DOTANY, 0);
+             }
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -1151,7 +1139,7 @@
+             } else if ((fModeFlags & UREGEX_MULTILINE) != 0 && (fModeFlags & UREGEX_UNIX_LINES) != 0) {
+                 op = URX_CARET_M_UNIX;
+             }
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(op, 0), *fStatus);
++            appendOp(URX_BUILD(op, 0));
+         }
+         break;
+ 
+@@ -1168,13 +1156,13 @@
+             } else if ((fModeFlags & UREGEX_MULTILINE) != 0 && (fModeFlags & UREGEX_UNIX_LINES) != 0) {
+                 op = URX_DOLLAR_MD;
+             }
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(op, 0), *fStatus);
++            appendOp(URX_BUILD(op, 0));
+         }
+         break;
+ 
+     case doBackslashA:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_CARET, 0), *fStatus);
++        appendOp(URX_BUILD(URX_CARET, 0));
+         break;
+ 
+     case doBackslashB:
+@@ -1186,7 +1174,7 @@
+             #endif
+             fixLiterals(FALSE);
+             int32_t op = (fModeFlags & UREGEX_UWORD)? URX_BACKSLASH_BU : URX_BACKSLASH_B;
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(op, 1), *fStatus);
++            appendOp(URX_BUILD(op, 1));
+         }
+         break;
+ 
+@@ -1199,63 +1187,59 @@
+             #endif
+             fixLiterals(FALSE);
+             int32_t op = (fModeFlags & UREGEX_UWORD)? URX_BACKSLASH_BU : URX_BACKSLASH_B;
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(op, 0), *fStatus);
++            appendOp(URX_BUILD(op, 0));
+         }
+         break;
+ 
+     case doBackslashD:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKSLASH_D, 1), *fStatus);
++        appendOp(URX_BUILD(URX_BACKSLASH_D, 1));
+         break;
+ 
+     case doBackslashd:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKSLASH_D, 0), *fStatus);
++        appendOp(URX_BUILD(URX_BACKSLASH_D, 0));
+         break;
+ 
+     case doBackslashG:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKSLASH_G, 0), *fStatus);
++        appendOp(URX_BUILD(URX_BACKSLASH_G, 0));
+         break;
+ 
+     case doBackslashS:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(
+-            URX_BUILD(URX_STAT_SETREF_N, URX_ISSPACE_SET), *fStatus);
++        appendOp(URX_BUILD(URX_STAT_SETREF_N, URX_ISSPACE_SET));
+         break;
+ 
+     case doBackslashs:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(
+-            URX_BUILD(URX_STATIC_SETREF, URX_ISSPACE_SET), *fStatus);
++        appendOp(URX_BUILD(URX_STATIC_SETREF, URX_ISSPACE_SET));
+         break;
+ 
+     case doBackslashW:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(
+-            URX_BUILD(URX_STAT_SETREF_N, URX_ISWORD_SET), *fStatus);
++        appendOp(URX_BUILD(URX_STAT_SETREF_N, URX_ISWORD_SET));
+         break;
+ 
+     case doBackslashw:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(
+-            URX_BUILD(URX_STATIC_SETREF, URX_ISWORD_SET), *fStatus);
++        appendOp(URX_BUILD(URX_STATIC_SETREF, URX_ISWORD_SET));
+         break;
+ 
+     case doBackslashX:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKSLASH_X, 0), *fStatus);
++        appendOp(URX_BUILD(URX_BACKSLASH_X, 0));
+         break;
+ 
+ 
+     case doBackslashZ:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_DOLLAR, 0), *fStatus);
++        appendOp(URX_BUILD(URX_DOLLAR, 0));
+         break;
+ 
+     case doBackslashz:
+         fixLiterals(FALSE);
+-        fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKSLASH_Z, 0), *fStatus);
++        appendOp(URX_BUILD(URX_BACKSLASH_Z, 0));
+         break;
+ 
+     case doEscapeError:
+@@ -1321,7 +1305,7 @@
+             } else {
+                 op = URX_BUILD(URX_BACKREF, groupNum);
+             }
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -1342,22 +1326,21 @@
+         {
+             // Emit the STO_SP
+             int32_t   topLoc = blockTopLoc(TRUE);
+-            int32_t   stoLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize++;       // Reserve the data location for storing save stack ptr.
++            int32_t   stoLoc = allocateData(1);  // Reserve the data location for storing save stack ptr.
+             int32_t   op     = URX_BUILD(URX_STO_SP, stoLoc);
+             fRXPat->fCompiledPat->setElementAt(op, topLoc);
+ 
+             // Emit the STATE_SAVE
+             op = URX_BUILD(URX_STATE_SAVE, fRXPat->fCompiledPat->size()+2);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Emit the JMP
+             op = URX_BUILD(URX_JMP, topLoc+1);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Emit the LD_SP
+             op = URX_BUILD(URX_LD_SP, stoLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -1377,8 +1360,7 @@
+             insertOp(topLoc);
+ 
+             // emit   STO_SP     loc
+-            int32_t   stoLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize++;       // Reserve the data location for storing save stack ptr.
++            int32_t   stoLoc = allocateData(1);    // Reserve the data location for storing save stack ptr.
+             int32_t   op     = URX_BUILD(URX_STO_SP, stoLoc);
+             fRXPat->fCompiledPat->setElementAt(op, topLoc);
+ 
+@@ -1389,11 +1371,11 @@
+ 
+             // Append the JMP operation.
+             op = URX_BUILD(URX_JMP, topLoc+1);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Emit the LD_SP       loc
+             op = URX_BUILD(URX_LD_SP, stoLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -1412,8 +1394,7 @@
+             insertOp(topLoc);
+ 
+             // Emit the STO_SP
+-            int32_t   stoLoc = fRXPat->fDataSize;
+-            fRXPat->fDataSize++;       // Reserve the data location for storing save stack ptr.
++            int32_t   stoLoc = allocateData(1);   // Reserve the data location for storing save stack ptr.
+             int32_t   op     = URX_BUILD(URX_STO_SP, stoLoc);
+             fRXPat->fCompiledPat->setElementAt(op, topLoc);
+ 
+@@ -1424,7 +1405,7 @@
+ 
+             // Emit the LD_SP
+             op = URX_BUILD(URX_LD_SP, stoLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -1481,8 +1462,8 @@
+         //             is an '|' alternation within the parens.
+         {
+             fixLiterals(FALSE);
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_NOP, 0), *fStatus);
++            appendOp(URX_BUILD(URX_NOP, 0));
++            appendOp(URX_BUILD(URX_NOP, 0));
+ 
+             // On the Parentheses stack, start a new frame and add the postions
+             //   of the two NOPs (a normal non-capturing () frame, except for the
+@@ -1862,7 +1843,7 @@
+         } else {
+             op = URX_BUILD(URX_ONECHAR, lastCodePoint);
+         }
+-        fRXPat->fCompiledPat->addElement(op, *fStatus);
++        appendOp(op);
+     } else {
+         // Two or more chars, emit a URX_STRING to match them.
+         if (fModeFlags & UREGEX_CASE_INSENSITIVE) {
+@@ -1872,12 +1853,19 @@
+             //             into two single char ops, for efficiency.
+             op = URX_BUILD(URX_STRING, fRXPat->fLiteralText.length());
+         }
+-        fRXPat->fCompiledPat->addElement(op, *fStatus);
++        appendOp(op);
+         op = URX_BUILD(URX_STRING_LEN, fLiteralChars.length());
+-        fRXPat->fCompiledPat->addElement(op, *fStatus);
+-        
++        appendOp(op);
++
+         // Add this string into the accumulated strings of the compiled pattern.
++        // The total size of the accumulated strings must be restricted to 24 bits because
++        // string indexes appear as compiled pattern operand values.
++        // This is the only place that the pattern.fLiteralText string is modified.
++
+         fRXPat->fLiteralText.append(fLiteralChars);
++        if (U_SUCCESS(*fStatus) && fRXPat->fLiteralText.length() > 0x00ffffff) {
++            *fStatus = U_REGEX_PATTERN_TOO_BIG;
++        }
+     }
+ 
+     fLiteralChars.remove();
+@@ -1884,10 +1872,22 @@
+ }
+ 
+ 
++//------------------------------------------------------------------------------
++//
++//   appendOp()             Append a new instruction onto the compiled pattern
++//                          Includes error checking, limiting the size of the
++//                          pattern to lengths that can be represented in the
++//                          24 bit operand field of an instruction.
++//
++//------------------------------------------------------------------------------
++void RegexCompile::appendOp(int32_t op) {
++    fRXPat->fCompiledPat->addElement(op, *fStatus);
++    if ((fRXPat->fCompiledPat->size() > 0x00fffff0) && U_SUCCESS(*fStatus)) {
++        *fStatus = U_REGEX_PATTERN_TOO_BIG;
++    }
++}
+ 
+ 
+-
+-
+ //------------------------------------------------------------------------------
+ //
+ //   insertOp()             Insert a slot for a new opcode into the already
+@@ -1947,9 +1947,61 @@
+ }
+ 
+ 
++//------------------------------------------------------------------------------
++//
++//   allocateData()        Allocate storage in the matcher's static data area.
++//                         Return the index for the newly allocated data.
++//                         The storage won't actually exist until we are running a match
++//                         operation, but the storage indexes are inserted into various
++//                         opcodes while compiling the pattern.
++//
++//------------------------------------------------------------------------------
++int32_t RegexCompile::allocateData(int32_t size) {
++    if (U_FAILURE(*fStatus)) {
++        return 0;
++    }
++    if (size <= 0 || size > 0x100 || fRXPat->fDataSize < 0) {
++        *fStatus = U_REGEX_INTERNAL_ERROR;
++        return 0;
++    }
++    int32_t dataIndex = fRXPat->fDataSize;
++    fRXPat->fDataSize += size;
++    if (fRXPat->fDataSize >= 0x00fffff0) {
++        *fStatus = U_REGEX_PATTERN_TOO_BIG;
++    }
++    return dataIndex;
++}
+ 
++
+ //------------------------------------------------------------------------------
+ //
++//   allocateStackData()   Allocate space in the back-tracking stack frame.
++//                         Return the index for the newly allocated data.
++//                         The frame indexes are inserted into various
++//                         opcodes while compiling the pattern, meaning that frame
++//                         size must be restricted to the size that will fit
++//                         as an operand (24 bits).
++//
++//------------------------------------------------------------------------------
++int32_t RegexCompile::allocateStackData(int32_t size) {
++    if (U_FAILURE(*fStatus)) {
++        return 0;
++    }
++    if (size <= 0 || size > 0x100 || fRXPat->fFrameSize < 0) {
++        *fStatus = U_REGEX_INTERNAL_ERROR;
++        return 0;
++    }
++    int32_t dataIndex = fRXPat->fFrameSize;
++    fRXPat->fFrameSize += size;
++    if (fRXPat->fFrameSize >= 0x00fffff0) {
++        *fStatus = U_REGEX_PATTERN_TOO_BIG;
++    }
++    return dataIndex;
++}
++
++
++//------------------------------------------------------------------------------
++//
+ //   blockTopLoc()          Find or create a location in the compiled pattern
+ //                          at the start of the operation or block that has
+ //                          just been compiled.  Needed when a quantifier (* or
+@@ -2065,7 +2117,7 @@
+ 
+             int32_t   frameVarLocation = URX_VAL(captureOp);
+             int32_t   endCaptureOp = URX_BUILD(URX_END_CAPTURE, frameVarLocation);
+-            fRXPat->fCompiledPat->addElement(endCaptureOp, *fStatus);
++            appendOp(endCaptureOp);
+         }
+         break;
+     case atomic:
+@@ -2077,7 +2129,7 @@
+             U_ASSERT(URX_TYPE(stoOp) == URX_STO_SP);
+             int32_t   stoLoc = URX_VAL(stoOp);
+             int32_t   ldOp   = URX_BUILD(URX_LD_SP, stoLoc);
+-            fRXPat->fCompiledPat->addElement(ldOp, *fStatus);
++            appendOp(ldOp);
+         }
+         break;
+ 
+@@ -2087,7 +2139,7 @@
+             U_ASSERT(URX_TYPE(startOp) == URX_LA_START);
+             int32_t dataLoc  = URX_VAL(startOp);
+             int32_t op       = URX_BUILD(URX_LA_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+         }
+         break;
+ 
+@@ -2098,11 +2150,11 @@
+             U_ASSERT(URX_TYPE(startOp) == URX_LA_START);
+             int32_t dataLoc  = URX_VAL(startOp);
+             int32_t op       = URX_BUILD(URX_LA_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+             op               = URX_BUILD(URX_BACKTRACK, 0);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+             op               = URX_BUILD(URX_LA_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Patch the URX_SAVE near the top of the block.
+             // The destination of the SAVE is the final LA_END that was just added.
+@@ -2123,9 +2175,9 @@
+             U_ASSERT(URX_TYPE(startOp) == URX_LB_START);
+             int32_t dataLoc  = URX_VAL(startOp);
+             int32_t op       = URX_BUILD(URX_LB_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
+-                    op       = URX_BUILD(URX_LA_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
++            op = URX_BUILD(URX_LA_END, dataLoc);
++            appendOp(op);
+ 
+             // Determine the min and max bounds for the length of the
+             //  string that the pattern can match.
+@@ -2162,7 +2214,7 @@
+             U_ASSERT(URX_TYPE(startOp) == URX_LB_START);
+             int32_t dataLoc  = URX_VAL(startOp);
+             int32_t op       = URX_BUILD(URX_LBN_END, dataLoc);
+-            fRXPat->fCompiledPat->addElement(op, *fStatus);
++            appendOp(op);
+ 
+             // Determine the min and max bounds for the length of the
+             //  string that the pattern can match.
+@@ -2228,7 +2280,7 @@
+     case 0:
+         {
+             // Set of no elements.   Always fails to match.
+-            fRXPat->fCompiledPat->addElement(URX_BUILD(URX_BACKTRACK, 0), *fStatus);
++            appendOp(URX_BUILD(URX_BACKTRACK, 0));
+             delete theSet;
+         }
+         break;
+@@ -2250,7 +2302,7 @@
+             int32_t setNumber = fRXPat->fSets->size();
+             fRXPat->fSets->addElement(theSet, *fStatus);
+             int32_t setOp = URX_BUILD(URX_SETREF, setNumber);
+-            fRXPat->fCompiledPat->addElement(setOp, *fStatus);
++            appendOp(setOp);
+         }
+     }
+ }
+@@ -2289,11 +2341,8 @@
+     //        counterLoc   -->  Loop counter
+     //               +1    -->  Input index (for breaking non-progressing loops)
+     //                          (Only present if unbounded upper limit on loop)
+-    int32_t   counterLoc = fRXPat->fFrameSize;
+-    fRXPat->fFrameSize++;
+-    if (fIntervalUpper < 0) {
+-        fRXPat->fFrameSize++;
+-    }
++    int32_t   dataSize = fIntervalUpper < 0 ? 2 : 1;
++    int32_t   counterLoc = allocateStackData(dataSize);
+ 
+     int32_t   op = URX_BUILD(InitOp, counterLoc);
+     fRXPat->fCompiledPat->setElementAt(op, topOfBlock);
+@@ -2313,7 +2362,7 @@
+     // Apend the CTR_LOOP op.  The operand is the location of the CTR_INIT op.
+     //   Goes at end of the block being looped over, so just append to the code so far.
+     op = URX_BUILD(LoopOp, topOfBlock);
+-    fRXPat->fCompiledPat->addElement(op, *fStatus);
++    appendOp(op);
+ 
+     if ((fIntervalLow & 0xff000000) != 0 ||
+         (fIntervalUpper > 0 && (fIntervalUpper & 0xff000000) != 0)) {
+@@ -2380,12 +2429,12 @@
+     int32_t i;
+     for (i=1; i<fIntervalUpper; i++ ) {
+         if (i == fIntervalLow) {
+-            fRXPat->fCompiledPat->addElement(saveOp, *fStatus);
++            appendOp(saveOp);
+         }
+         if (i > fIntervalLow) {
+-            fRXPat->fCompiledPat->addElement(saveOp, *fStatus);
++            appendOp(saveOp);
+         }
+-        fRXPat->fCompiledPat->addElement(op, *fStatus);
++        appendOp(op);
+     }
+     return TRUE;
+ }
+Index: source/i18n/regexcmp.h
+===================================================================
+--- source/i18n/regexcmp.h	(revision 292943)
++++ source/i18n/regexcmp.h	(working copy)
+@@ -103,6 +103,11 @@
+     void        fixLiterals(UBool split=FALSE);      // Generate code for pending literal characters.
+     void        insertOp(int32_t where);             // Open up a slot for a new op in the
+                                                      //   generated code at the specified location.
++    void        appendOp(int32_t op);                // Append a new op to the compiled pattern.
++    int32_t     allocateData(int32_t size);          // Allocate space in the matcher data area.
++                                                     //   Return index of the newly allocated data.
++    int32_t     allocateStackData(int32_t size);     // Allocate space in the match back-track stack frame.
++                                                     //   Return offset index in the frame.
+     int32_t     minMatchLength(int32_t start,
+                                int32_t end);
+     int32_t     maxMatchLength(int32_t start,
+Index: source/i18n/regeximp.cpp
+===================================================================
+--- source/i18n/regeximp.cpp	(revision 292709)
++++ source/i18n/regeximp.cpp	(working copy)
+@@ -12,6 +12,8 @@
+ 
+ #if !UCONFIG_NO_REGULAR_EXPRESSIONS
+ #include "regeximp.h"
++
++#include "uassert.h"
+ #include "unicode/utf16.h"
+ 
+ U_NAMESPACE_BEGIN
+@@ -113,7 +115,27 @@
+     return fIndex;
+ }
+ 
++// Assemble a pcode instruction from the opcode and operand values.
++// Out-of-range values should not occur - if they do it is from an internal
++// error in the regex compiler. 
+ 
++// TODO: move into regexcmp, where it has access to fStatus.
++//       NOP cleanly if U_FAILURE.
++//       Set U_REGEX_INTERNAL_ERROR on bad operands.
++
++int32_t URX_BUILD(int32_t type, int32_t val) {
++    if (type < 0 || type > 255) {
++        U_ASSERT(FALSE);
++        type = URX_RESERVED_OP;
++    }
++    if (val > 0x00ffffff) {
++        U_ASSERT(FALSE);
++        val = 0;
++    }
++    return (type << 24) | val;
++}
++
++
+ U_NAMESPACE_END
+ 
+ #endif
+Index: source/i18n/regeximp.h
+===================================================================
+--- source/i18n/regeximp.h	(revision 292709)
++++ source/i18n/regeximp.h	(working copy)
+@@ -254,7 +254,7 @@
+ //
+ //  Convenience macros for assembling and disassembling a compiled operation.
+ //
+-#define URX_BUILD(type, val) (int32_t)((type << 24) | (val))
++int32_t URX_BUILD(int32_t val, int32_t type);
+ #define URX_TYPE(x)          ((uint32_t)(x) >> 24)
+ #define URX_VAL(x)           ((x) & 0xffffff)
+ 
+Index: source/test/intltest/regextst.cpp
+===================================================================
+--- source/test/intltest/regextst.cpp	(revision 292709)
++++ source/test/intltest/regextst.cpp	(working copy)
+@@ -131,6 +131,9 @@
+         case 21: name = "Bug 9283";
+             if (exec) Bug9283();
+             break;
++        case 22: name = "TestBug11371";
++            if (exec) TestBug11371();
++            break;
+ 
+         default: name = "";
+             break; //needed to end loop
+@@ -5229,5 +5232,47 @@
+   }
+ }
+ 
++void RegexTest::TestBug11371() {
++    UErrorCode status = U_ZERO_ERROR;
++    UnicodeString patternString;
++
++    for (int i=0; i<8000000; i++) {
++        patternString.append(UnicodeString("()"));
++    }
++    LocalPointer<RegexPattern> compiledPat(RegexPattern::compile(patternString, 0, status));
++    if (status != U_REGEX_PATTERN_TOO_BIG) {
++        errln("File %s, line %d expected status=U_REGEX_PATTERN_TOO_BIG; got %s.",
++              __FILE__, __LINE__, u_errorName(status));
++    }
++
++    status = U_ZERO_ERROR;
++    patternString = "(";
++    for (int i=0; i<20000000; i++) {
++        patternString.append(UnicodeString("A++"));
++    }
++    patternString.append(UnicodeString("){0}B++"));
++    LocalPointer<RegexPattern> compiledPat2(RegexPattern::compile(patternString, 0, status));
++    if (status != U_REGEX_PATTERN_TOO_BIG) {
++        errln("File %s, line %d expected status=U_REGEX_PATTERN_TOO_BIG; got %s.",
++              __FILE__, __LINE__, u_errorName(status));
++    }
++
++    // Pattern with too much string data, such that string indexes overflow operand data.
++    status = U_ZERO_ERROR;
++    patternString = "";
++    while (patternString.length() < 0x00ffffff) {
++        patternString.append(UnicodeString("stuff and things dont you know, these are a few of my favorite strings\n"));
++    }
++    patternString.append(UnicodeString("X? trailing string"));
++    LocalPointer<RegexPattern> compiledPat3(RegexPattern::compile(patternString, 0, status));
++    compiledPat3->dumpPattern();
++    if (status != U_REGEX_PATTERN_TOO_BIG) {
++        errln("File %s, line %d expected status=U_REGEX_PATTERN_TOO_BIG; got %s.",
++              __FILE__, __LINE__, u_errorName(status));
++    }
++
++
++
++}
++
+ #endif  /* !UCONFIG_NO_REGULAR_EXPRESSIONS  */
+-
+Index: source/test/intltest/regextst.h
+===================================================================
+--- source/test/intltest/regextst.h	(revision 292709)
++++ source/test/intltest/regextst.h	(working copy)
+@@ -47,6 +47,7 @@
+     virtual void Bug7029();
+     virtual void Bug9283();
+     virtual void CheckInvBufSize();
++    virtual void TestBug11371();
+     
+     // The following functions are internal to the regexp tests.
+     virtual void assertUText(const char *expected, UText *actual, const char *file, int line);

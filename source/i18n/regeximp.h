@@ -254,7 +254,7 @@ enum {
 //
 //  Convenience macros for assembling and disassembling a compiled operation.
 //
-#define URX_BUILD(type, val) (int32_t)((type << 24) | (val))
+int32_t URX_BUILD(int32_t val, int32_t type);
 #define URX_TYPE(x)          ((uint32_t)(x) >> 24)
 #define URX_VAL(x)           ((x) & 0xffffff)
 
