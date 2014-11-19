@@ -107,6 +107,14 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = ui::Accelerator(ui::VKEY_P, ui::EF_CONTROL_DOWN);
       return true;
 
+    case IDC_RELOAD:
+      *accel = ui::Accelerator(ui::VKEY_R, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDC_VIEW_SOURCE:
+      *accel = ui::Accelerator(ui::VKEY_U, ui::EF_CONTROL_DOWN);
+      return true;
+
     default:
       return false;
   }
