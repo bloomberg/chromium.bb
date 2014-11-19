@@ -93,7 +93,8 @@ class MockTransferBuffer : public TransferBufferInterface {
       CommandBuffer* command_buffer,
       unsigned int size,
       unsigned int result_size,
-      unsigned int alignment)
+      unsigned int alignment,
+      bool initialize_fail)
       : command_buffer_(command_buffer),
         size_(size),
         result_size_(result_size),
@@ -102,7 +103,8 @@ class MockTransferBuffer : public TransferBufferInterface {
         expected_buffer_index_(0),
         last_alloc_(NULL),
         expected_offset_(result_size),
-        actual_offset_(result_size) {
+        actual_offset_(result_size),
+        initialize_fail_(initialize_fail) {
     // We have to allocate the buffers here because
     // we need to know their address before GLES2Implementation::Initialize
     // is called.
@@ -220,6 +222,7 @@ class MockTransferBuffer : public TransferBufferInterface {
   void* last_alloc_;
   uint32 expected_offset_;
   uint32 actual_offset_;
+  bool initialize_fail_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransferBuffer);
 };
@@ -234,7 +237,7 @@ bool MockTransferBuffer::Initialize(
   // Just check they match.
   return size_ == starting_buffer_size &&
          result_size_ == result_size &&
-         alignment_ == alignment;
+         alignment_ == alignment && !initialize_fail_;
 };
 
 int MockTransferBuffer::GetShmId() {
@@ -394,7 +397,8 @@ class GLES2ImplementationTest : public testing::Test {
     bool Initialize(ShareGroup* share_group,
                     bool bind_generates_resource_client,
                     bool bind_generates_resource_service,
-                    bool lose_context_when_out_of_memory) {
+                    bool lose_context_when_out_of_memory,
+                    bool transfer_buffer_initialize_fail) {
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
       if (!command_buffer_->Initialize())
         return false;
@@ -403,7 +407,8 @@ class GLES2ImplementationTest : public testing::Test {
           new MockTransferBuffer(command_buffer_.get(),
                                  kTransferBufferSize,
                                  GLES2Implementation::kStartingOffset,
-                                 GLES2Implementation::kAlignment));
+                                 GLES2Implementation::kAlignment,
+                                 transfer_buffer_initialize_fail));
 
       helper_.reset(new GLES2CmdHelper(command_buffer()));
       helper_->Initialize(kCommandBufferSizeBytes);
@@ -522,11 +527,13 @@ class GLES2ImplementationTest : public testing::Test {
     ContextInitOptions()
         : bind_generates_resource_client(true),
           bind_generates_resource_service(true),
-          lose_context_when_out_of_memory(false) {}
+          lose_context_when_out_of_memory(false),
+          transfer_buffer_initialize_fail(false) {}
 
     bool bind_generates_resource_client;
     bool bind_generates_resource_service;
     bool lose_context_when_out_of_memory;
+    bool transfer_buffer_initialize_fail;
   };
 
   bool Initialize(const ContextInitOptions& init_options) {
@@ -538,7 +545,8 @@ class GLES2ImplementationTest : public testing::Test {
               share_group_.get(),
               init_options.bind_generates_resource_client,
               init_options.bind_generates_resource_service,
-              init_options.lose_context_when_out_of_memory))
+              init_options.lose_context_when_out_of_memory,
+              init_options.transfer_buffer_initialize_fail))
         success = false;
     }
 
@@ -3299,6 +3307,12 @@ TEST_F(GLES2ImplementationManualInitTest, FailInitOnBGRMismatch2) {
   ContextInitOptions init_options;
   init_options.bind_generates_resource_client = true;
   init_options.bind_generates_resource_service = false;
+  EXPECT_FALSE(Initialize(init_options));
+}
+
+TEST_F(GLES2ImplementationManualInitTest, FailInitOnTransferBufferFail) {
+  ContextInitOptions init_options;
+  init_options.transfer_buffer_initialize_fail = true;
   EXPECT_FALSE(Initialize(init_options));
 }
 

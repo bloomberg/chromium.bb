@@ -210,8 +210,11 @@ GLES2Implementation::~GLES2Implementation() {
   WaitForCmd();
   query_tracker_.reset();
 
-  if (support_client_side_arrays_)
+  // GLES2Implementation::Initialize() could fail before allocating
+  // reserved_ids_, so we need delete them carefully.
+  if (support_client_side_arrays_ && reserved_ids_[0]) {
     DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
+  }
 
   // Release any per-context data in share group.
   share_group_->FreeContext(this);
