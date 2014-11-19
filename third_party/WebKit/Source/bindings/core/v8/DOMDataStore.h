@@ -103,12 +103,8 @@ public:
 
     static v8::Handle<v8::Object> getWrapper(Node* node, v8::Isolate* isolate)
     {
-        if (canUseScriptWrappable(node)) {
-            v8::Handle<v8::Object> result = ScriptWrappable::fromNode(node)->newLocalWrapper(isolate);
-            // Security: always guard against malicious tampering.
-            ScriptWrappable::fromNode(node)->assertWrapperSanity(result);
-            return result;
-        }
+        if (canUseScriptWrappable(node))
+            return ScriptWrappable::fromNode(node)->newLocalWrapper(isolate);
         return current(isolate).get(ScriptWrappable::fromNode(node), isolate);
     }
 

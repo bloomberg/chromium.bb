@@ -82,6 +82,7 @@ public:
         ASSERT(!containsWrapper());
         if (!*wrapper)
             return;
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == this);
         m_wrapper.Reset(isolate, wrapper);
         wrapperTypeInfo->configureWrapper(&m_wrapper);
         m_wrapper.SetWeak(this, &setWeakCallback);
@@ -138,12 +139,6 @@ public:
     }
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
-
-    void assertWrapperSanity(v8::Local<v8::Object> object)
-    {
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
-            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == this);
-    }
 
 #if !ENABLE(OILPAN)
 protected:
