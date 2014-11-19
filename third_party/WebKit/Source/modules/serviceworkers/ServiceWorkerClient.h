@@ -18,7 +18,6 @@ public:
     static ServiceWorkerClient* create(unsigned id);
 
     // ServiceWorkerClient.idl
-    unsigned id() const { return m_id; }
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     void trace(Visitor*) { }
