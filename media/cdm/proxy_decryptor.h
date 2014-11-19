@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
+#ifndef MEDIA_CDM_PROXY_DECRYPTOR_H_
+#define MEDIA_CDM_PROXY_DECRYPTOR_H_
 
 #include <string>
 #include <vector>
@@ -13,15 +13,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 
 class GURL;
 
 namespace media {
-class CdmFactory;
-}
 
-namespace content {
+class CdmFactory;
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
@@ -30,13 +29,13 @@ namespace content {
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
 // objects. Fix this when needed.
 // TODO(xhwang): The ProxyDecryptor is not a Decryptor. Find a better name!
-class ProxyDecryptor {
+class MEDIA_EXPORT ProxyDecryptor {
  public:
   // These are similar to the callbacks in media_keys.h, but pass back the
   // web session ID rather than the internal session ID.
   typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
   typedef base::Callback<void(const std::string& session_id,
-                              media::MediaKeys::KeyError error_code,
+                              MediaKeys::KeyError error_code,
                               uint32 system_code)> KeyErrorCB;
   typedef base::Callback<void(const std::string& session_id,
                               const std::vector<uint8>& message,
@@ -49,7 +48,7 @@ class ProxyDecryptor {
 
   // Returns the Decryptor associated with this object. May be NULL if no
   // Decryptor is associated.
-  media::Decryptor* GetDecryptor();
+  Decryptor* GetDecryptor();
 
 #if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
@@ -58,7 +57,7 @@ class ProxyDecryptor {
 #endif
 
   // Only call this once.
-  bool InitializeCDM(media::CdmFactory* cdm_factory,
+  bool InitializeCDM(CdmFactory* cdm_factory,
                      const std::string& key_system,
                      const GURL& security_origin);
 
@@ -73,8 +72,8 @@ class ProxyDecryptor {
 
  private:
   // Helper function to create MediaKeys to handle the given |key_system|.
-  scoped_ptr<media::MediaKeys> CreateMediaKeys(
-      media::CdmFactory* cdm_factory,
+  scoped_ptr<MediaKeys> CreateMediaKeys(
+      CdmFactory* cdm_factory,
       const std::string& key_system,
       const GURL& security_origin);
 
@@ -89,7 +88,7 @@ class ProxyDecryptor {
   void OnSessionReady(const std::string& web_session_id);
   void OnSessionClosed(const std::string& web_session_id);
   void OnSessionError(const std::string& web_session_id,
-                      media::MediaKeys::Exception exception_code,
+                      MediaKeys::Exception exception_code,
                       uint32 system_code,
                       const std::string& error_message);
 
@@ -104,7 +103,7 @@ class ProxyDecryptor {
                     const std::string& web_session_id);
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
-  scoped_ptr<media::MediaKeys> media_keys_;
+  scoped_ptr<MediaKeys> media_keys_;
 
   // Callbacks for firing key events.
   KeyAddedCB key_added_cb_;
@@ -126,6 +125,6 @@ class ProxyDecryptor {
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
+#endif  // MEDIA_CDM_PROXY_DECRYPTOR_H_

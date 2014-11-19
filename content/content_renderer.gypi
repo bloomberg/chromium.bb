@@ -248,15 +248,11 @@
       'renderer/media/audio_message_filter.h',
       'renderer/media/audio_renderer_mixer_manager.cc',
       'renderer/media/audio_renderer_mixer_manager.h',
-      'renderer/media/crypto/encrypted_media_player_support_impl.cc',
-      'renderer/media/crypto/encrypted_media_player_support_impl.h',
       'renderer/media/crypto/pepper_cdm_wrapper.h',
       'renderer/media/crypto/pepper_cdm_wrapper_impl.cc',
       'renderer/media/crypto/pepper_cdm_wrapper_impl.h',
       'renderer/media/crypto/ppapi_decryptor.cc',
       'renderer/media/crypto/ppapi_decryptor.h',
-      'renderer/media/crypto/proxy_decryptor.cc',
-      'renderer/media/crypto/proxy_decryptor.h',
       'renderer/media/crypto/render_cdm_factory.cc',
       'renderer/media/crypto/render_cdm_factory.h',
       'renderer/media/media_stream_audio_level_calculator.cc',
@@ -744,7 +740,6 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
-        'renderer/media/crypto/encrypted_media_player_support_impl.cc',
       ],
       'sources': [
         'renderer/external_popup_menu.cc',

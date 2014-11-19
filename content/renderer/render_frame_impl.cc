@@ -70,7 +70,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
-#include "content/renderer/media/crypto/encrypted_media_player_support_impl.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
@@ -97,6 +96,7 @@
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/renderer.h"
+#include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -1773,15 +1773,22 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->GetGpuFactories(),
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->compositor_message_loop_proxy(),
-      base::Bind(&EncryptedMediaPlayerSupportImpl::Create),
       initial_cdm);
+
+#if defined(ENABLE_PEPPER_CDMS)
+  scoped_ptr<media::CdmFactory> cdm_factory(
+      new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame)));
+#else
+  scoped_ptr<media::CdmFactory> cdm_factory(new RenderCdmFactory());
+#endif
 
   scoped_ptr<media::Renderer> media_renderer =
       GetContentClient()->renderer()->CreateMediaRenderer(
           this, render_thread->GetMediaThreadTaskRunner());
 
   return new media::WebMediaPlayerImpl(
-      frame, client, weak_factory_.GetWeakPtr(), media_renderer.Pass(), params);
+      frame, client, weak_factory_.GetWeakPtr(), media_renderer.Pass(),
+      cdm_factory.Pass(), params);
 #endif  // defined(OS_ANDROID)
 }
 

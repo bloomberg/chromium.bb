@@ -1508,7 +1508,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
-      proxy_decryptor_.reset(new ProxyDecryptor(
+      proxy_decryptor_.reset(new media::ProxyDecryptor(
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyError,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/proxy_decryptor.h"
+#include "media/cdm/proxy_decryptor.h"
 
 #include <cstring>
 
@@ -15,7 +15,7 @@
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
-namespace content {
+namespace media {
 
 // Special system code to signal a closed persistent session in a SessionError()
 // call. This is needed because there is no SessionClosed() call in the prefixed
@@ -40,7 +40,7 @@ ProxyDecryptor::~ProxyDecryptor() {
   media_keys_.reset();
 }
 
-media::Decryptor* ProxyDecryptor::GetDecryptor() {
+Decryptor* ProxyDecryptor::GetDecryptor() {
   return media_keys_ ? media_keys_->GetDecryptor() : NULL;
 }
 
@@ -50,7 +50,7 @@ int ProxyDecryptor::GetCdmId() {
 }
 #endif
 
-bool ProxyDecryptor::InitializeCDM(media::CdmFactory* cdm_factory,
+bool ProxyDecryptor::InitializeCDM(CdmFactory* cdm_factory,
                                    const std::string& key_system,
                                    const GURL& security_origin) {
   DVLOG(1) << "InitializeCDM: key_system = " << key_system;
@@ -61,7 +61,7 @@ bool ProxyDecryptor::InitializeCDM(media::CdmFactory* cdm_factory,
     return false;
 
   is_clear_key_ =
-      media::IsClearKey(key_system) || media::IsExternalClearKey(key_system);
+      IsClearKey(key_system) || IsExternalClearKey(key_system);
   return true;
 }
 
@@ -96,8 +96,8 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
     StripHeader(init_data_vector, strlen(kPrefixedApiPersistentSessionHeader));
   }
 
-  scoped_ptr<media::NewSessionCdmPromise> promise(
-      new media::CdmCallbackPromise<std::string>(
+  scoped_ptr<NewSessionCdmPromise> promise(
+      new CdmCallbackPromise<std::string>(
           base::Bind(&ProxyDecryptor::SetSessionId,
                      weak_ptr_factory_.GetWeakPtr(),
                      session_creation_type),
@@ -115,10 +115,10 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
     return true;
   }
 
-  media::MediaKeys::SessionType session_type =
+  MediaKeys::SessionType session_type =
       session_creation_type == PersistentSession
-          ? media::MediaKeys::PERSISTENT_SESSION
-          : media::MediaKeys::TEMPORARY_SESSION;
+          ? MediaKeys::PERSISTENT_SESSION
+          : MediaKeys::TEMPORARY_SESSION;
 
   media_keys_->CreateSession(init_data_type,
                              init_data_vector_data,
@@ -145,14 +145,14 @@ void ProxyDecryptor::AddKey(const uint8* key,
       session_id = it->first;
     } else {
       OnSessionError(std::string(),
-                     media::MediaKeys::NOT_SUPPORTED_ERROR,
+                     MediaKeys::NOT_SUPPORTED_ERROR,
                      0,
                      "SessionId not specified.");
       return;
     }
   }
 
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
+  scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::OnSessionReady,
                  weak_ptr_factory_.GetWeakPtr(),
                  web_session_id),
@@ -174,7 +174,7 @@ void ProxyDecryptor::AddKey(const uint8* key,
     }
 
     std::string jwk =
-        media::GenerateJWKSet(key, key_length, init_data, init_data_length);
+        GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
     media_keys_->UpdateSession(session_id,
                                reinterpret_cast<const uint8*>(jwk.data()),
@@ -189,7 +189,7 @@ void ProxyDecryptor::AddKey(const uint8* key,
 void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
+  scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::OnSessionClosed,
                  weak_ptr_factory_.GetWeakPtr(),
                  web_session_id),
@@ -199,8 +199,8 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
   media_keys_->RemoveSession(web_session_id, promise.Pass());
 }
 
-scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
-    media::CdmFactory* cdm_factory,
+scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
+    CdmFactory* cdm_factory,
     const std::string& key_system,
     const GURL& security_origin) {
   base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
@@ -224,7 +224,7 @@ void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
   // as the message. If unable to extract the key, return the message unchanged.
   if (is_clear_key_) {
     std::vector<uint8> key;
-    if (media::ExtractFirstKeyIdFromLicenseRequest(message, &key)) {
+    if (ExtractFirstKeyIdFromLicenseRequest(message, &key)) {
       key_message_cb_.Run(web_session_id, key, destination_url);
       return;
     }
@@ -265,8 +265,7 @@ void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
     return;
 
   if (it->second) {
-    OnSessionError(web_session_id,
-                   media::MediaKeys::NOT_SUPPORTED_ERROR,
+    OnSessionError(web_session_id, MediaKeys::NOT_SUPPORTED_ERROR,
                    kSessionClosedSystemCode,
                    "Do not close persistent sessions.");
   }
@@ -274,24 +273,24 @@ void ProxyDecryptor::OnSessionClosed(const std::string& web_session_id) {
 }
 
 void ProxyDecryptor::OnSessionError(const std::string& web_session_id,
-                                    media::MediaKeys::Exception exception_code,
+                                    MediaKeys::Exception exception_code,
                                     uint32 system_code,
                                     const std::string& error_message) {
   // Convert |error_name| back to MediaKeys::KeyError if possible. Prefixed
   // EME has different error message, so all the specific error events will
   // get lost.
-  media::MediaKeys::KeyError error_code;
+  MediaKeys::KeyError error_code;
   switch (exception_code) {
-    case media::MediaKeys::CLIENT_ERROR:
-      error_code = media::MediaKeys::kClientError;
+    case MediaKeys::CLIENT_ERROR:
+      error_code = MediaKeys::kClientError;
       break;
-    case media::MediaKeys::OUTPUT_ERROR:
-      error_code = media::MediaKeys::kOutputError;
+    case MediaKeys::OUTPUT_ERROR:
+      error_code = MediaKeys::kOutputError;
       break;
     default:
       // This will include all other CDM4 errors and any error generated
       // by CDM5 or later.
-      error_code = media::MediaKeys::kUnknownError;
+      error_code = MediaKeys::kUnknownError;
       break;
   }
   key_error_cb_.Run(web_session_id, error_code, system_code);
@@ -309,4 +308,4 @@ void ProxyDecryptor::SetSessionId(SessionCreationType session_type,
     OnSessionReady(web_session_id);
 }
 
-}  // namespace content
+}  // namespace media

@@ -15,7 +15,6 @@
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer.h"
-#include "media/blink/null_encrypted_media_player_support.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
@@ -72,12 +71,12 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
       scoped_refptr<media::GpuVideoAcceleratorFactories>(),
       GetMediaThreadTaskRunner(),
       compositor_task_runner_,
-      base::Bind(&media::NullEncryptedMediaPlayerSupport::Create),
       NULL);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
-  return new media::WebMediaPlayerImpl(
-      frame, client, delegate, renderer.Pass(), params);
+  // TODO(xhwang): Provide a media based CdmFactory implementation.
+  return new media::WebMediaPlayerImpl(frame, client, delegate, renderer.Pass(),
+                                       nullptr, params);
 #endif
 }
 

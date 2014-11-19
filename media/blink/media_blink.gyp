@@ -43,8 +43,6 @@
         'encrypted_media_player_support.h',
         'new_session_cdm_result_promise.cc',
         'new_session_cdm_result_promise.h',
-        'null_encrypted_media_player_support.cc',
-        'null_encrypted_media_player_support.h',
         'texttrack_impl.cc',
         'texttrack_impl.h',
         'video_frame_compositor.cc',
@@ -72,6 +70,8 @@
       'conditions': [
         ['OS=="android"', {
           'sources!': [
+            'encrypted_media_player_support.cc',
+            'encrypted_media_player_support.h',
             'webmediaplayer_impl.cc',
             'webmediaplayer_impl.h',
           ],

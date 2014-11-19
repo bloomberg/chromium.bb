@@ -388,6 +388,8 @@
         'cdm/key_system_names.h',
         'cdm/player_tracker_impl.cc',
         'cdm/player_tracker_impl.h',
+        'cdm/proxy_decryptor.cc',
+        'cdm/proxy_decryptor.h',
         'ffmpeg/ffmpeg_common.cc',
         'ffmpeg/ffmpeg_common.h',
         'ffmpeg/ffmpeg_deleters.h',

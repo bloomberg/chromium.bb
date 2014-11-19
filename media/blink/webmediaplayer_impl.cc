@@ -138,6 +138,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     scoped_ptr<Renderer> renderer,
+    scoped_ptr<CdmFactory> cdm_factory,
     const WebMediaPlayerParams& params)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
@@ -167,12 +168,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       text_track_index_(0),
-      encrypted_media_support_(
-          params.CreateEncryptedMediaPlayerSupport(client)),
+      encrypted_media_support_(cdm_factory.Pass(),
+                               client,
+                               params.initial_cdm()),
       audio_hardware_config_(params.audio_hardware_config()),
       renderer_(renderer.Pass()) {
-  DCHECK(encrypted_media_support_);
-
   // Threaded compositing isn't enabled universally yet.
   if (!compositor_task_runner_.get())
     compositor_task_runner_ = base::MessageLoopProxy::current();
@@ -648,7 +648,7 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                                        unsigned init_data_length) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return encrypted_media_support_->GenerateKeyRequest(
+  return encrypted_media_support_.GenerateKeyRequest(
       frame_, key_system, init_data, init_data_length);
 }
 
@@ -661,7 +661,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
     const WebString& session_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return encrypted_media_support_->AddKey(
+  return encrypted_media_support_.AddKey(
       key_system, key, key_length, init_data, init_data_length, session_id);
 }
 
@@ -670,14 +670,14 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
     const WebString& session_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return encrypted_media_support_->CancelKeyRequest(key_system, session_id);
+  return encrypted_media_support_.CancelKeyRequest(key_system, session_id);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  encrypted_media_support_->SetContentDecryptionModule(cdm);
+  encrypted_media_support_.SetContentDecryptionModule(cdm);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
@@ -685,7 +685,7 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  encrypted_media_support_->SetContentDecryptionModule(cdm, result);
+  encrypted_media_support_.SetContentDecryptionModule(cdm, result);
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
@@ -737,7 +737,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   SetNetworkState(PipelineErrorToNetworkState(error));
 
   if (error == PIPELINE_ERROR_DECRYPT)
-    encrypted_media_support_->OnPipelineDecryptError();
+    encrypted_media_support_.OnPipelineDecryptError();
 }
 
 void WebMediaPlayerImpl::OnPipelineMetadata(
@@ -842,14 +842,14 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 // renderers.
 scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   SetDecryptorReadyCB set_decryptor_ready_cb =
-      encrypted_media_support_->CreateSetDecryptorReadyCB();
+      encrypted_media_support_.CreateSetDecryptorReadyCB();
 
   // Create our audio decoders and renderer.
   ScopedVector<AudioDecoder> audio_decoders;
 
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(
+  audio_decoders.push_back(new FFmpegAudioDecoder(
       media_task_runner_, base::Bind(&LogMediaSourceError, media_log_)));
-  audio_decoders.push_back(new media::OpusAudioDecoder(media_task_runner_));
+  audio_decoders.push_back(new OpusAudioDecoder(media_task_runner_));
 
   scoped_ptr<AudioRenderer> audio_renderer(
       new AudioRendererImpl(media_task_runner_,
@@ -892,7 +892,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   LogCB mse_log_cb;
   Demuxer::NeedKeyCB need_key_cb =
-      encrypted_media_support_->CreateNeedKeyCB();
+      encrypted_media_support_.CreateNeedKeyCB();
 
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {

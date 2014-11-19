@@ -22,12 +22,12 @@
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
-#include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
+#include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -473,7 +473,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   std::string init_data_type_;
 
   // Manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> proxy_decryptor_;
+  scoped_ptr<media::ProxyDecryptor> proxy_decryptor_;
 
   // Non-owned pointer to the CDM. Updated via calls to
   // setContentDecryptionModule().

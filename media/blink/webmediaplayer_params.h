@@ -8,17 +8,18 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
-#include "media/blink/encrypted_media_player_support.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace blink {
+class WebContentDecryptionModule;
 class WebMediaPlayerClient;
 }
 
 namespace media {
+
 class AudioHardwareConfig;
 class AudioRendererSink;
 class GpuVideoAcceleratorFactories;
@@ -28,10 +29,6 @@ class MediaLog;
 // to plumb arguments through various abstraction layers.
 class MEDIA_EXPORT WebMediaPlayerParams {
  public:
-  // Callback used to create EncryptedMediaPlayerSupport instances. This
-  // callback must always return a valid EncryptedMediaPlayerSupport object.
-  typedef base::Callback<scoped_ptr<EncryptedMediaPlayerSupport>(
-      blink::WebMediaPlayerClient*)> EncryptedMediaPlayerSupportCreateCB;
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
 
   // |defer_load_cb|, |audio_renderer_sink|, and |compositor_task_runner| may be
@@ -44,8 +41,6 @@ class MEDIA_EXPORT WebMediaPlayerParams {
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const EncryptedMediaPlayerSupportCreateCB&
-          encrypted_media_player_support_cb,
       blink::WebContentDecryptionModule* initial_cdm);
 
   ~WebMediaPlayerParams();
@@ -81,8 +76,9 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return compositor_task_runner_;
   }
 
-  scoped_ptr<EncryptedMediaPlayerSupport>
-  CreateEncryptedMediaPlayerSupport(blink::WebMediaPlayerClient* client) const;
+  blink::WebContentDecryptionModule* initial_cdm() const {
+    return initial_cdm_;
+  }
 
  private:
   base::Callback<void(const base::Closure&)> defer_load_cb_;
@@ -92,7 +88,6 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  EncryptedMediaPlayerSupportCreateCB encrypted_media_player_support_cb_;
   blink::WebContentDecryptionModule* initial_cdm_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
