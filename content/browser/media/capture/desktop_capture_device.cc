@@ -18,13 +18,13 @@
 #include "content/public/browser/power_save_blocker.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
+#include "third_party/webrtc/modules/desktop_capture/cropping_window_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
 namespace content {
 
@@ -397,13 +397,14 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   // Leave desktop effects enabled during WebRTC captures.
   options.set_disable_effects(false);
 
+#if defined(OS_WIN)
+      options.set_allow_use_magnification_api(true);
+#endif
+
   scoped_ptr<webrtc::DesktopCapturer> capturer;
 
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
-#if defined(OS_WIN)
-      options.set_allow_use_magnification_api(true);
-#endif
       scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
           webrtc::ScreenCapturer::Create(options));
       if (screen_capturer && screen_capturer->SelectScreen(source.id)) {
@@ -417,7 +418,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
     case DesktopMediaID::TYPE_WINDOW: {
       scoped_ptr<webrtc::WindowCapturer> window_capturer(
-          webrtc::WindowCapturer::Create(options));
+          webrtc::CroppingWindowCapturer::Create(options));
       if (window_capturer && window_capturer->SelectWindow(source.id)) {
         window_capturer->BringSelectedWindowToFront();
         capturer.reset(new webrtc::DesktopAndCursorComposer(
