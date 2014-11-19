@@ -57,6 +57,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
     const std::set<std::string>& permissions);
 
 // A MockExtensionSystem to serve an EventRouter.
+// NOTE: New code should prefer using MockExtensionSystem directly.
 class MockExtensionSystemWithEventRouter : public MockExtensionSystem {
  public:
   explicit MockExtensionSystemWithEventRouter(content::BrowserContext* context);

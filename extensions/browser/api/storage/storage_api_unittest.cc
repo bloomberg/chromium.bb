@@ -42,12 +42,7 @@ KeyedService* CreateStorageFrontendForTesting(
 class StorageApiUnittest : public ApiUnitTest {
  public:
   StorageApiUnittest() {}
-
-  void SetUp() override {
-    ApiUnitTest::SetUp();
-    extensions_browser_client()->set_extension_system_factory(
-        &extension_system_factory_);
-  }
+  ~StorageApiUnittest() override {}
 
  protected:
   // Runs the storage.set() API function with local storage.
@@ -77,13 +72,15 @@ class StorageApiUnittest : public ApiUnitTest {
     return testing::AssertionSuccess();
   }
 
-  MockExtensionSystemFactory<
-      settings_test_util::MockExtensionSystemWithEventRouter>
-      extension_system_factory_;
   ExtensionsAPIClient extensions_api_client_;
 };
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
+  EventRouter event_router(browser_context(), nullptr);
+  MockExtensionSystem* system = static_cast<MockExtensionSystem*>(
+      ExtensionSystem::Get(browser_context()));
+  system->set_event_router(&event_router);
+
   // Ensure a StorageFrontend can be created on demand. The StorageFrontend
   // will be owned by the KeyedService system.
   StorageFrontend::GetFactoryInstance()->SetTestingFactory(

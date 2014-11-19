@@ -8,12 +8,8 @@
 
 namespace extensions {
 
-//
-// MockExtensionSystem
-//
-
 MockExtensionSystem::MockExtensionSystem(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context), event_router_(nullptr) {
 }
 
 MockExtensionSystem::~MockExtensionSystem() {
@@ -23,51 +19,51 @@ void MockExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 }
 
 ExtensionService* MockExtensionSystem::extension_service() {
-  return NULL;
+  return nullptr;
 }
 
 RuntimeData* MockExtensionSystem::runtime_data() {
-  return NULL;
+  return nullptr;
 }
 
 ManagementPolicy* MockExtensionSystem::management_policy() {
-  return NULL;
+  return nullptr;
 }
 
 SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
-  return NULL;
+  return nullptr;
 }
 
 StateStore* MockExtensionSystem::state_store() {
-  return NULL;
+  return nullptr;
 }
 
 StateStore* MockExtensionSystem::rules_store() {
-  return NULL;
+  return nullptr;
 }
 
 InfoMap* MockExtensionSystem::info_map() {
-  return NULL;
+  return nullptr;
 }
 
 LazyBackgroundTaskQueue* MockExtensionSystem::lazy_background_task_queue() {
-  return NULL;
+  return nullptr;
 }
 
 EventRouter* MockExtensionSystem::event_router() {
-  return NULL;
+  return event_router_;
 }
 
 ErrorConsole* MockExtensionSystem::error_console() {
-  return NULL;
+  return nullptr;
 }
 
 InstallVerifier* MockExtensionSystem::install_verifier() {
-  return NULL;
+  return nullptr;
 }
 
 QuotaService* MockExtensionSystem::quota_service() {
-  return NULL;
+  return nullptr;
 }
 
 const OneShotEvent& MockExtensionSystem::ready() const {
@@ -75,13 +71,13 @@ const OneShotEvent& MockExtensionSystem::ready() const {
 }
 
 ContentVerifier* MockExtensionSystem::content_verifier() {
-  return NULL;
+  return nullptr;
 }
 
 DeclarativeUserScriptMaster*
       MockExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
           const ExtensionId& extension_id) {
-  return NULL;
+  return nullptr;
 }
 
 scoped_ptr<ExtensionSet> MockExtensionSystem::GetDependentExtensions(
