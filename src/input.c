@@ -2168,6 +2168,7 @@ WL_EXPORT void
 weston_seat_release_keyboard(struct weston_seat *seat)
 {
 	seat->keyboard_device_count--;
+	assert(seat->keyboard_device_count >= 0);
 	if (seat->keyboard_device_count == 0) {
 		weston_keyboard_set_focus(seat->keyboard, NULL);
 		weston_keyboard_cancel_grab(seat->keyboard);

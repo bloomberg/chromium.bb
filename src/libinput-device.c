@@ -470,7 +470,7 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 {
 	struct wl_array keys;
 
-	if (!seat->keyboard_device_count > 0)
+	if (seat->keyboard_device_count == 0)
 		return;
 
 	wl_array_init(&keys);
