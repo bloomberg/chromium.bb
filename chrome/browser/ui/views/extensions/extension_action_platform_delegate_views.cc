@@ -120,8 +120,9 @@ bool ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
-  views::BubbleBorder::Arrow arrow = base::i18n::IsRTL() ?
-      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
+  // TOP_RIGHT is correct for both RTL and LTR, because the views platform
+  // performs the flipping in RTL cases.
+  views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
 
   views::View* reference_view = GetDelegateViews()->GetReferenceViewForPopup();
 
