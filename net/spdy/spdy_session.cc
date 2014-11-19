@@ -271,6 +271,14 @@ base::Value* NetLogSpdyPushPromiseReceivedCallback(
   return dict;
 }
 
+base::Value* NetLogSpdyAdoptedPushStreamCallback(
+    SpdyStreamId stream_id, const GURL* url, NetLog::LogLevel log_level) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("stream_id", stream_id);
+  dict->SetString("url", url->spec());
+  return dict;
+}
+
 // Helper function to return the total size of an array of objects
 // with .size() member functions.
 template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
@@ -1963,7 +1971,9 @@ base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
     return base::WeakPtr<SpdyStream>();
   }
 
-  net_log_.AddEvent(NetLog::TYPE_SPDY_STREAM_ADOPTED_PUSH_STREAM);
+  net_log_.AddEvent(NetLog::TYPE_SPDY_STREAM_ADOPTED_PUSH_STREAM,
+                    base::Bind(&NetLogSpdyAdoptedPushStreamCallback,
+                               active_it->second.stream->stream_id(), &url));
   used_push_streams.Increment();
   return active_it->second.stream->GetWeakPtr();
 }

@@ -1325,6 +1325,10 @@ EVENT_TYPE(SPDY_SESSION_POOL_REMOVE_SESSION)
 EVENT_TYPE(SPDY_STREAM)
 
 // A stream is attached to a pushed stream.
+//   {
+//     "stream_id":  <The stream id>,
+//     "url":        <The url of the pushed resource>,
+//   }
 EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
 
 // A stream is unstalled by flow control.
