@@ -129,6 +129,7 @@ TestInProcessContextProvider::ContextCapabilities() {
   ContextProvider::Capabilities capabilities;
   capabilities.gpu.image = true;
   capabilities.gpu.texture_rectangle = true;
+  capabilities.gpu.sync_query = true;
 
   return capabilities;
 }
