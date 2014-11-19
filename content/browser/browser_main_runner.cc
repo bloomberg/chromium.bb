@@ -293,7 +293,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       // Forcefully terminates the RunLoop inside MessagePumpForUI, ensuring
       // proper shutdown for content_browsertests. Shutdown() is not used by
       // the actual browser.
-      base::MessageLoop::current()->QuitNow();
+      if (base::MessageLoop::current()->is_running())
+        base::MessageLoop::current()->QuitNow();
   #endif
       main_loop_.reset(NULL);
 

@@ -123,8 +123,6 @@ void NestedMessagePumpAndroid::Start(
   DCHECK(env);
   g_message_handler_obj.Get().Reset(
       Java_NestedSystemMessageHandler_create(env));
-
-  base::MessagePumpForUI::Start(delegate);
 }
 
 void NestedMessagePumpAndroid::Quit() {
@@ -133,7 +131,6 @@ void NestedMessagePumpAndroid::Quit() {
     state_->waitable_event.Signal();
     return;
   }
-  base::MessagePumpForUI::Quit();
 }
 
 void NestedMessagePumpAndroid::ScheduleWork() {
@@ -141,8 +138,6 @@ void NestedMessagePumpAndroid::ScheduleWork() {
     state_->waitable_event.Signal();
     return;
   }
-
-  base::MessagePumpForUI::ScheduleWork();
 }
 
 void NestedMessagePumpAndroid::ScheduleDelayedWork(
@@ -154,8 +149,6 @@ void NestedMessagePumpAndroid::ScheduleDelayedWork(
     state_->delayed_work_time = delayed_work_time;
     return;
   }
-
-  base::MessagePumpForUI::ScheduleDelayedWork(delayed_work_time);
 }
 
 // static

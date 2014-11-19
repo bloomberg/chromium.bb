@@ -81,7 +81,11 @@ BrowserCdmManager::~BrowserCdmManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_browser_cdm_manager_map.Get().count(render_process_id_));
 
-  g_browser_cdm_manager_map.Get().erase(render_process_id_);
+  // If an entry of |render_process_id| was overwritten, we shouldn't remove
+  // the entry. For example, see FrameTreeBrowserTest.FrameTreeAfterCrash test,
+  // and http://crbug.com/430251.
+  if (g_browser_cdm_manager_map.Get()[render_process_id_] == this)
+    g_browser_cdm_manager_map.Get().erase(render_process_id_);
 }
 
 // Makes sure BrowserCdmManager is always deleted on the Browser UI thread.
