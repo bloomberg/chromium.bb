@@ -259,6 +259,17 @@
             'src/common/simple_string_dictionary.cc',
             'src/common/string_conversion.cc',
           ],
+          'conditions': [
+            ['OS=="ios"', {
+              'xcode_settings' : {
+                'WARNING_CFLAGS': [
+                  # MinidumpGenerator uses an API deprecated in iOS 7.
+                  # crbug.com/408562
+                  '-Wno-deprecated-declarations',
+                ],
+              },
+            }],
+          ],
         },
         {
           # GN version: //breakpad:crash_inspector
