@@ -7,6 +7,10 @@
  * to VolumeManager. This class also filters Drive related data/events if
  * driveEnabled is set to false.
  *
+ * @constructor
+ * @extends {cr.EventTarget}
+ * @implements {VolumeManagerCommon.VolumeInfoProvider}
+ *
  * @param {VolumeManagerWrapper.DriveEnabledStatus} driveEnabled DRIVE_ENABLED
  *     if drive should be available. DRIVE_DISABLED if drive related
  *     data/events should be hidden.
@@ -14,8 +18,6 @@
  *     page. If this is specified, the class skips to get background page.
  *     TOOD(hirono): Let all clients of the class pass the background page and
  *     make the argument not optional.
- * @constructor
- * @extends {cr.EventTarget}
  */
 function VolumeManagerWrapper(driveEnabled, opt_backgroundPage) {
   cr.EventTarget.call(this);
@@ -225,11 +227,7 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
   return this.volumeManager_.getDriveConnectionState();
 };
 
-/**
- * Obtains a volume info containing the passed entry.
- * @param {Entry} entry Entry on the volume to be returned.
- * @return {VolumeInfo} The VolumeInfo instance or null if not found.
- */
+/** @override */
 VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
   return this.filterDisabledDriveVolume_(
       this.volumeManager_ && this.volumeManager_.getVolumeInfo(entry));

@@ -34,12 +34,15 @@ FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
  * @param {MetadataCache} metadataCache Metadata cache to find entries
  *                                      metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!importer.HistoryLoader} historyLoader
  */
-FileGrid.decorate = function(self, metadataCache, volumeManager) {
+FileGrid.decorate =
+    function(self, metadataCache, volumeManager, historyLoader) {
   cr.ui.Grid.decorate(self);
   self.__proto__ = FileGrid.prototype;
   self.metadataCache_ = metadataCache;
   self.volumeManager_ = volumeManager;
+  self.historyLoader_ = historyLoader;
 
   self.scrollBar_ = new MainPanelScrollBar();
   self.scrollBar_.initialize(self.parentElement, self);
@@ -71,6 +74,7 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
             entry,
             self.metadataCache_,
             self.volumeManager_,
+            self.historyLoader_,
             ThumbnailLoader.FillMode.AUTO,
             FileGrid.ThumbnailQuality.LOW,
             /* animation */ false);
@@ -120,6 +124,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
                                   entry,
                                   this.metadataCache_,
                                   this.volumeManager_,
+                                  this.historyLoader_,
                                   ThumbnailLoader.FillMode.AUTO,
                                   FileGrid.ThumbnailQuality.LOW,
                                   /* animation */ false);
@@ -151,8 +156,10 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * @param {Entry} entry Entry to render a thumbnail for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!importer.HistoryLoader} historyLoader
  */
-FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
+FileGrid.decorateThumbnail =
+    function(li, entry, metadataCache, volumeManager, historyLoader) {
   li.className = 'thumbnail-item';
   if (entry)
     filelist.decorateListItem(li, entry, metadataCache);
@@ -167,6 +174,7 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
                                   entry,
                                   metadataCache,
                                   volumeManager,
+                                  historyLoader,
                                   ThumbnailLoader.FillMode.AUTO,
                                   FileGrid.ThumbnailQuality.LOW,
                                   /* animation */ true);
@@ -175,6 +183,9 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
+  var badge = li.ownerDocument.createElement('div');
+  badge.className = 'badge';
+  bottom.appendChild(badge);
   bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
   frame.appendChild(bottom);
 };
@@ -186,6 +197,7 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!importer.HistoryLoader} historyLoader
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {FileGrid.ThumbnailQuality} quality Thumbnail quality.
  * @param {boolean} animation Whther to use fadein animation or not.
@@ -193,10 +205,15 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
  *     when the image has been loaded before inserting it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
-    box, entry, metadataCache, volumeManager, fillMode, quality,
+    box, entry, metadataCache, volumeManager, historyLoader, fillMode, quality,
     animation, opt_imageLoadCallback) {
   var locationInfo = volumeManager.getLocationInfo(entry);
   box.className = 'img-container';
+
+  if (importer.isEligibleEntry(entry, volumeManager)) {
+    historyLoader.getHistory().then(
+      FileGrid.applyHistoryBadges_.bind(null, entry, box));
+  }
 
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
@@ -206,6 +223,7 @@ FileGrid.decorateThumbnailBox = function(
           box.classList.add('shared');
       });
     }
+
     if (opt_imageLoadCallback)
       setTimeout(opt_imageLoadCallback, 0, null /* callback parameter */);
     return;
@@ -249,6 +267,31 @@ FileGrid.decorateThumbnailBox = function(
 };
 
 /**
+ * Applies cloud import history badges as appropriate for the Entry.
+ *
+ * @param {Entry} entry
+ * @param {Element} box Box to decorate.
+ * @param {!importer.ImportHistory} history
+ *
+ * @private
+ */
+FileGrid.applyHistoryBadges_ = function(entry, box, history) {
+  history.wasImported(entry, importer.Destination.GOOGLE_DRIVE)
+      .then(
+          function(imported) {
+            if (imported) {
+              // TODO(smckay): update badges when history changes
+              // "box" is currently the sibling of the elemement
+              // we want to style. So rather than employing
+              // a possibly-fragile sibling selector we just
+              // plop the imported class on the parent of both.
+              box.parentElement.classList.add('imported');
+            }
+          });
+};
+
+
+/**
  * Item for the Grid View.
  * @constructor
  * @extends {cr.ui.ListItem}
@@ -283,7 +326,7 @@ FileGrid.Item.decorate = function(li, entry, grid) {
   // TODO(mtomasz): Pass the metadata cache and the volume manager directly
   // instead of accessing private members of grid.
   FileGrid.decorateThumbnail(
-      li, entry, grid.metadataCache_, grid.volumeManager_);
+      li, entry, grid.metadataCache_, grid.volumeManager_, grid.historyLoader_);
 
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).

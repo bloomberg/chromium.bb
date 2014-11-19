@@ -29,7 +29,7 @@ var testFileEntry;
 /** @type {!importer.RecordStorage|undefined} */
 var storage;
 
-/** @type {!Promise.<importer.ImportHistory>|undefined} */
+/** @type {!Promise.<!importer.PersistentImportHistory>|undefined} */
 var historyProvider;
 
 // Set up the test components.
@@ -44,7 +44,7 @@ function setUp() {
 
   storage = new TestRecordStorage();
 
-  var history = new importer.ImportHistory(storage);
+  var history = new importer.PersistentImportHistory(storage);
   historyProvider = history.refresh();
 }
 
@@ -139,8 +139,8 @@ function testHistoryLoaderIntegration(callback) {
                 new TestSyncFileEntryProvider(fileEntry));
 
             var promises = [];
-            promises.push(loader.loadHistory());
-            promises.push(remoteLoader.loadHistory());
+            promises.push(loader.getHistory());
+            promises.push(remoteLoader.getHistory());
             return Promise.all(promises);
           })
       .then(

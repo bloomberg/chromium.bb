@@ -42,6 +42,7 @@
           '../../common/js/error_util.js',
           '../../common/js/async_util.js',
           '../../common/js/file_type.js',
+          '../../common/js/importer_common.js',
           '../../common/js/volume_manager_common.js',
           '../../common/js/util.js',
           '../../common/js/progress_center_common.js',

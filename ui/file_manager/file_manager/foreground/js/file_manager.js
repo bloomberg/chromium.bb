@@ -24,6 +24,13 @@ function FileManager() {
   this.volumeManager_ = null;
 
   /**
+   * History loader. Gimme summa 'dat history!
+   * @type {importer.HistoryLoader}
+   * @private
+   */
+  this.historyLoader_ = null;
+
+  /**
    * Metadata cache.
    * @type {MetadataCache}
    * @private
@@ -370,6 +377,12 @@ FileManager.prototype = /** @struct */ {
    */
   get volumeManager() {
     return this.volumeManager_;
+  },
+  /**
+   * @return {VolumeManagerWrapper}
+   */
+  get historyLoader() {
+    return this.historyLoader_;
   },
   /**
    * @return {FileManagerUI}
@@ -842,7 +855,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             loadTimeData.data = this.backgroundPage_.background.stringData;
             if (util.runningInBrowser())
               this.backgroundPage_.registerDialog(window);
-            callback();
+            this.backgroundPage_.background.historyLoaderPromise.then(
+                /**
+                 * @param {!importer.HistoryLoader} loader
+                 * @this {FileManager}
+                 */
+                function(loader) {
+                  this.historyLoader_ = loader;
+                  callback();
+                }.bind(this));
           }.bind(this));
         }.bind(this)));
   };
@@ -931,13 +952,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     FileManagerDialogBase.setFileManager(this);
 
     var table = queryRequiredElement(dom, '.detail-table');
+    // TODO(smckay): Work out the cloud import UI when in list view.
     FileTable.decorate(
         table,
         this.metadataCache_,
         this.volumeManager_,
         this.dialogType == DialogType.FULL_PAGE);
     var grid = queryRequiredElement(dom, '.thumbnail-grid');
-    FileGrid.decorate(grid, this.metadataCache_, this.volumeManager_);
+    FileGrid.decorate(
+        grid,
+        this.metadataCache_,
+        this.volumeManager_,
+        this.historyLoader_);
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),

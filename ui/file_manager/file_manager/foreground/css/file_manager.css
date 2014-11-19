@@ -750,6 +750,21 @@ body[type='full-page'] .detail-name .detail-icon {
   height: 30px;
 }
 
+.imported .badge {
+  background-image: -webkit-image-set(
+      url('../images/files/ui/drive_badge.png') 1x,
+      url('../images/files/ui/2x/drive_badge.png') 2x);
+  height: 16px;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 16px;
+}
+
+.imported .filename-label {
+  margin-right: 14px;
+}
+
 /* Padding counterweights negative margins of items, thus eliminating scroll
    bar when it's not needed. Max height is set to fit 8 items before showing
    scroll bar. */
@@ -1258,12 +1273,14 @@ div.shade[fadein] {
   top: 0;
 }
 
+body[drive='mounting'] .dialog-container #unmounted-panel,
 body[drive='error'] .dialog-container #unmounted-panel,
 body[unformatted] .dialog-container #format-panel {
   display: block;
 }
 
 body[drive='unmounted'] .dialog-container .filelist-panel,
+body[drive='mounting'] .dialog-container .filelist-panel,
 body[drive='error'] .dialog-container .filelist-panel,
 body[unformatted] .dialog-container .filelist-panel {
   /* Hide file list when Drive is not mounted.
@@ -1281,7 +1298,20 @@ body[unformatted] .dialog-container .filelist-panel {
   margin-bottom: 10px;
 }
 
+#unmounted-panel > .loading {
+  position: relative;
+}
+
+#unmounted-panel > .loading > .spinner-box {
+  bottom: 0;
+  position: absolute;
+  right: 100%;
+  top: 0;
+  width: 40px;
+}
+
 body[unformatted] #format-panel > .error,
+body[drive='mounting'] #unmounted-panel > .loading,
 body[drive='error'] #unmounted-panel > .error,
 #format-panel > #format-button,
 #unmounted-panel.retry-enabled > .learn-more {

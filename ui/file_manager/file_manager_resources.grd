@@ -23,6 +23,7 @@
       <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_COMMON_JS" file="file_manager/common/js/progress_center_common.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/common/js/util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_COMMON_JS" file="file_manager/common/js/volume_manager_common.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMPORTER_COMMON_JS" file="file_manager/common/js/importer_common.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Scripts working in background page. -->
       <include name="IDR_FILE_MANAGER_DEVICE_APP_WINDOW_WRAPPER_JS" file="file_manager/background/js/app_window_wrapper.js" flattenhtml="false" type="BINDATA" />

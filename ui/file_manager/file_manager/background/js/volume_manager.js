@@ -450,6 +450,7 @@ VolumeInfoList.prototype.item = function(index) {
  * VolumeManager is responsible for tracking list of mounted volumes.
  *
  * @constructor
+ * @implements {VolumeManagerCommon.VolumeInfoProvider}
  * @extends {cr.EventTarget}
  */
 function VolumeManager() {
@@ -737,11 +738,7 @@ VolumeManager.prototype.unmount = function(volumeInfo,
   this.startRequest_(requestKey, successCallback, errorCallback);
 };
 
-/**
- * Obtains a volume info containing the passed entry.
- * @param {Entry|Object} entry Entry on the volume to be returned. Can be fake.
- * @return {VolumeInfo} The VolumeInfo instance or null if not found.
- */
+/** @override */
 VolumeManager.prototype.getVolumeInfo = function(entry) {
   return this.volumeInfoList.findByEntry(entry);
 };

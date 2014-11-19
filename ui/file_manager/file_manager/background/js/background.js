@@ -46,26 +46,13 @@ function FileBrowserBackground() {
   this.fileOperationManager = new FileOperationManager();
 
   /**
-   * Manages loading of import history necessary for decorating files
-   * in some views and integral to local dedupling files during the
-   * cloud import process.
+   * Promise for the class that manages loading of import history
+   * necessary for decorating files in some views and integral to
+   * local dedupling files during the cloud import process.
    *
-   * @type {importer.HistoryLoader}
+   * @type {!Promise.<!importer.HistoryLoader>}
    */
-  this.historyLoader = null;
-
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-cloud-backup',
-      /**
-       * @param {boolean} enabled
-       * @this {!FileBrowserBackground}
-       */
-      function(enabled) {
-        if (enabled) {
-          this.historyLoader = new importer.SynchronizedHistoryLoader(
-              new importer.ChromeSyncFileEntryProvider());
-        }
-      }.bind(this));
+  this.historyLoaderPromise = FileBrowserBackground.initHistoryLoader_();
 
   /**
    * Event handler for progress center.
@@ -164,6 +151,32 @@ FileBrowserBackground.CLOSE_DELAY_MS_ = 5000;
 
 FileBrowserBackground.prototype = {
   __proto__: BackgroundBase.prototype
+};
+
+/**
+ * Prepares the Cloud Import {@code HistoryLoader} to be used at runtime.
+ *
+ * @return {!Promise.<!importer.HistoryLoader>}
+ */
+FileBrowserBackground.initHistoryLoader_ = function() {
+  return new Promise(
+      function(resolve) {
+        // Replaces the dummy history object with a real instance
+        // if cloud backup is enabled.
+        chrome.commandLinePrivate.hasSwitch(
+            'enable-cloud-backup',
+            /**
+             * @param {boolean} enabled
+             * @this {!FileBrowserBackground}
+             */
+            function(enabled) {
+              var loader = enabled ?
+                  new importer.SynchronizedHistoryLoader(
+                      new importer.ChromeSyncFileEntryProvider()) :
+                  new importer.DummyImportHistory(false);
+              resolve(loader);
+            });
+      });
 };
 
 /**

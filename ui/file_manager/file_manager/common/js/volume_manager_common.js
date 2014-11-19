@@ -165,3 +165,18 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
  * }}
  */
 VolumeManagerCommon.DriveConnectionState;
+
+/**
+ * Interface for classes providing access to {@code VolumeInfo}
+ * for {@code Entry} instances.
+ *
+ * @interface
+ */
+VolumeManagerCommon.VolumeInfoProvider = function() {};
+
+/**
+ * Obtains a volume info containing the passed entry.
+ * @param {Entry|Object} entry Entry on the volume to be returned. Can be fake.
+ * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
+ */
+VolumeManagerCommon.VolumeInfoProvider.prototype.getVolumeInfo;

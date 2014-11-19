@@ -177,6 +177,7 @@
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
         "common/js/async_util.js",
+        "common/js/importer_common.js",
         "common/js/progress_center_common.js",
         "common/js/util.js",
         "common/js/volume_manager_common.js",
