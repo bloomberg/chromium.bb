@@ -240,7 +240,6 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 {
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
     ScopedStyleResolver* resolver = &scope.treeScope().ensureScopedStyleResolver();
-    document().styleEngine()->addScopedStyleResolver(resolver);
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         resolver->addKeyframeStyle(keyframesRules[i]);
 
