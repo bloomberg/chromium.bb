@@ -63,6 +63,7 @@ public class BrowserAccessibilityManager {
     private int mSelectionGranularity;
     private int mSelectionStartIndex;
     private int mSelectionEndIndex;
+    private boolean mVisible = true;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -118,6 +119,21 @@ public class BrowserAccessibilityManager {
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         return null;
+    }
+
+    /**
+     * Set whether the web content made accessible by this class is currently visible.
+     * Set it to false if the web view is still on the screen but it's obscured by a
+     * dialog or overlay. This will make every virtual view in the web hierarchy report
+     * that it's not visible, and not accessibility focusable.
+     *
+     * @param visible Whether the web content is currently visible and not obscured.
+     */
+    public void setVisible(boolean visible) {
+        if (visible == mVisible) return;
+
+        mVisible = visible;
+        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     /**
@@ -520,7 +536,7 @@ public class BrowserAccessibilityManager {
         }
 
         // Populate the minimum required fields.
-        result.setVisibleToUser(source.isVisibleToUser());
+        result.setVisibleToUser(source.isVisibleToUser() && mVisible);
         result.setEnabled(source.isEnabled());
         result.setPackageName(source.getPackageName());
         result.setClassName(source.getClassName());
@@ -645,7 +661,7 @@ public class BrowserAccessibilityManager {
         node.setPassword(password);
         node.setScrollable(scrollable);
         node.setSelected(selected);
-        node.setVisibleToUser(visibleToUser);
+        node.setVisibleToUser(visibleToUser && mVisible);
 
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
@@ -672,7 +688,7 @@ public class BrowserAccessibilityManager {
         if (mAccessibilityFocusId == virtualViewId) {
             node.setAccessibilityFocused(true);
             node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
-        } else {
+        } else if (mVisible) {
             node.setAccessibilityFocused(false);
             node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
