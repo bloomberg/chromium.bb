@@ -2869,19 +2869,6 @@
         }],
       ],
     },  # target 'load_library_perf_tests'
-    # temporary target to keep cros compiling until it removes references to pyauto
-    {
-      'target_name': 'pyautolib',
-      'type': 'none',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..,'
-      ],
-    },
   ],
   'conditions': [
     ['OS!="mac"', {
