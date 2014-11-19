@@ -30789,6 +30789,41 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBOffDomainInclusion.Detected" enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which an off-domain
+    inclusion was detected by the OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion.EmptyMainFrameURL"
+    enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the main frame URL
+    was unexpectedly empty in the OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion.InvalidMainFrameURL"
+    enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request for which the main frame URL
+    was unexpectedly invalid (and not empty) in the OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
+<histogram name="SBOffDomainInclusion.RequestAnalyzed"
+    enum="ContentResourceType">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Logs the resource type of each resource request analyzed by the
+    OffDomainInclusionDetector.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.Advertisement_Count">
   <owner>rdsmith@chromium.org</owner>
   <summary>
@@ -34601,7 +34636,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34623,7 +34658,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.HTML.NoSniffBlocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34671,7 +34706,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34693,7 +34728,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.JSON.NoSniffBlocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34751,7 +34786,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.HTML.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34782,7 +34817,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.JSON.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34805,7 +34840,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.NoSniffBlocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -34854,7 +34889,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Plain.XML.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
@@ -34884,7 +34919,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.Blocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with renderable HTTP status codes sub-categorized by
@@ -34906,7 +34941,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SiteIsolation.XSD.XML.NoSniffBlocked.RenderableStatusCode"
-    enum="SiteIsolationResourceType">
+    enum="ContentResourceType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The count of responses with a renderable HTTP status code sub-categorized by
@@ -42240,6 +42275,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="PROBLEM"/>
   <int value="3" label="TEST_FAILURE_OCCURRED"/>
   <int value="4" label="TEST_NOT_RUN"/>
+</enum>
+
+<enum name="ContentResourceType" type="int">
+  <int value="0" label="MAIN_FRAME"/>
+  <int value="1" label="SUB_FRAME"/>
+  <int value="2" label="STYLESHEET"/>
+  <int value="3" label="SCRIPT"/>
+  <int value="4" label="IMAGE"/>
+  <int value="5" label="FONT_RESOURCE"/>
+  <int value="6" label="SUB_RESOURCE"/>
+  <int value="7" label="OBJECT"/>
+  <int value="8" label="MEDIA"/>
+  <int value="9" label="WORKER"/>
+  <int value="10" label="SHARED_WORKER"/>
+  <int value="11" label="PREFETCH"/>
+  <int value="12" label="FAVICON"/>
+  <int value="13" label="XHR"/>
+  <int value="14" label="PING"/>
+  <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
 </enum>
 
 <enum name="ContentSetting" type="int">
@@ -54450,24 +54504,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="JSON"/>
   <int value="3" label="Plain"/>
   <int value="4" label="Others"/>
-</enum>
-
-<enum name="SiteIsolationResourceType" type="int">
-  <int value="0" label="MAIN_FRAME"/>
-  <int value="1" label="SUB_FRAME"/>
-  <int value="2" label="STYLESHEET"/>
-  <int value="3" label="SCRIPT"/>
-  <int value="4" label="IMAGE"/>
-  <int value="5" label="FONT_RESOURCE"/>
-  <int value="6" label="SUB_RESOURCE"/>
-  <int value="7" label="OBJECT"/>
-  <int value="8" label="MEDIA"/>
-  <int value="9" label="WORKER"/>
-  <int value="10" label="SHARED_WORKER"/>
-  <int value="11" label="PREFETCH"/>
-  <int value="12" label="FAVICON"/>
-  <int value="13" label="XHR"/>
-  <int value="14" label="PING"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">

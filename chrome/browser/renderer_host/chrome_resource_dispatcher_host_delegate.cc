@@ -313,6 +313,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
+  if (safe_browsing_.get())
+    safe_browsing_->OnResourceRequest(request);
+
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   bool is_prerendering =
       info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender;
