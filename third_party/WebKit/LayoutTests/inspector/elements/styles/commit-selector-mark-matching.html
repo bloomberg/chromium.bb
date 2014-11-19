@@ -34,7 +34,7 @@ function test()
 
         function changeSelector(next)
         {
-            var section = stylesPane.sections[0][2];
+            var section = InspectorTest.firstMatchedStyleSection();
             section.startEditingSelector();
             var selectorElement = section._selectorElement;
             selectorElement.textContent = "#inspected, a, hr";

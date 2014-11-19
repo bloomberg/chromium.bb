@@ -12,7 +12,7 @@ function test()
     {
         InspectorTest.addResult("Before pasting:");
         InspectorTest.dumpSelectedElementStyles(true);
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+        var section = InspectorTest.inlineStyleSection();
         section.expand();
 
         var treeElement = section.addNewBlankProperty(0);
@@ -24,7 +24,7 @@ function test()
         InspectorTest.addResult("After pasting 'margin-left: 1px':");
         InspectorTest.dumpSelectedElementStyles(true);
 
-        var treeElement = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1].addNewBlankProperty(2);
+        var treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
         pasteProperty(treeElement, "margin-top: 1px; color: red;", pasteOverExistingProperty);
     }
 

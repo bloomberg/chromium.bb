@@ -26,7 +26,7 @@ function test()
 
     function step2()
     {
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+        var section = InspectorTest.firstMatchedStyleSection();
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         textInputController.insertText("color");

@@ -15,7 +15,7 @@ function test()
     {
         InspectorTest.addResult("Before append:");
         InspectorTest.dumpSelectedElementStyles(true);
-        section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+        section = InspectorTest.inlineStyleSection();
         section.expand();
 
         // Create and increment.

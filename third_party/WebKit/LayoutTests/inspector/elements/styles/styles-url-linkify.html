@@ -42,7 +42,7 @@ function test()
     function dumpHref(dumpLinkClass)
     {
         var hrefNode;
-        var valueChildNodes = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2].propertiesTreeOutline.children[0].valueElement.childNodes;
+        var valueChildNodes = InspectorTest.firstMatchedStyleSection().propertiesTreeOutline.children[0].valueElement.childNodes;
         for (var i = 0; i < valueChildNodes.length; ++i) {
             if (valueChildNodes[i].href) {
                 hrefNode = valueChildNodes[i];

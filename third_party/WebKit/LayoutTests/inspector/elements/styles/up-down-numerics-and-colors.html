@@ -22,7 +22,7 @@ function test()
 
             function expandSection()
             {
-                var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+                var section = InspectorTest.firstMatchedStyleSection();
                 section.expand();
                 next();
             }

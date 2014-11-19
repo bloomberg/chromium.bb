@@ -10,6 +10,21 @@ var initialize_ElementTest = function() {
 
 InspectorTest.preloadPanel("elements");
 
+InspectorTest.inlineStyleSection = function()
+{
+    return WebInspector.panels.elements.sidebarPanes.styles.sections[0][0];
+}
+
+InspectorTest.computedStyleSection = function()
+{
+    return WebInspector.panels.elements.sidebarPanes.styles._computedStylePane._computedStyleSection;
+}
+
+InspectorTest.firstMatchedStyleSection = function()
+{
+    return WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+}
+
 InspectorTest.findNode = function(matchFunction, callback)
 {
     callback = InspectorTest.safeWrap(callback);
@@ -197,66 +212,71 @@ InspectorTest.firstElementsTreeOutline = function()
 
 InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatched, omitLonghands, includeSelectorGroupMarks)
 {
-    function extractText(element)
-    {
-        var text = element.textContent;
-        if (text)
-            return text;
-        var anchor = element.querySelector("[data-uncopyable]");
-        if (!anchor)
-            return "";
-        var anchorText = anchor.getAttribute("data-uncopyable");
-        var uiLocation = anchor.__uiLocation;
-        var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
-        return anchorText + " -> " + anchorTarget;
-    }
-
-    function buildMarkedSelectors(element)
-    {
-        var result = "";
-        for (var node = element.firstChild; node; node = node.nextSibling) {
-            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains("selector-matches"))
-                result += "[$" + node.textContent + "$]";
-            else
-                result += node.textContent;
-        }
-        return result;
-    }
-
     var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
+    if (!excludeComputed)
+        printStyleSection(InspectorTest.computedStyleSection(), omitLonghands, includeSelectorGroupMarks);
     for (var pseudoId in styleSections) {
         var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[pseudoId];
-        var sections = styleSections[pseudoId];
+        var sections = styleSections[pseudoId].slice();
         for (var i = 0; i < sections.length; ++i) {
             var section = sections[i];
-            if (section.computedStyle && excludeComputed)
-                continue;
             if (section.rule && excludeMatched)
                 continue;
             if (section.element && section.element.classList.contains("user-rule") && !WebInspector.settings.showUserAgentStyles.get())
                 continue;
             if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator")
                 InspectorTest.addResult("======== " + section.element.previousSibling.textContent + " ========");
-            InspectorTest.addResult((section.expanded ? "[expanded] " : "[collapsed] ") + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
-            var chainEntries = section.titleElement.querySelectorAll(".media-list .media");
-            chainEntries = Array.prototype.slice.call(chainEntries);
-            if (section.titleElement.children[1])
-                chainEntries.push(section.titleElement.children[1]);
-
-            for (var j = 0; j < chainEntries.length; ++j) {
-                var chainEntry = chainEntries[j];
-                var entryLine = includeSelectorGroupMarks ? buildMarkedSelectors(chainEntry.children[1]) : chainEntry.children[1].textContent;
-                if (chainEntry.children[2])
-                    entryLine += " " + chainEntry.children[2].textContent;
-                entryLine += " (" + extractText(chainEntry.children[0]) + ")";
-                InspectorTest.addResult(entryLine);
-            }
-            section.expand();
-            InspectorTest.dumpStyleTreeOutline(section.propertiesTreeOutline, omitLonghands ? 1 : 2);
-            InspectorTest.addResult("");
+            printStyleSection(section, omitLonghands, includeSelectorGroupMarks);
         }
         InspectorTest.addResult("");
     }
+}
+
+function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
+{
+    InspectorTest.addResult((section.expanded ? "[expanded] " : "[collapsed] ") + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
+    var chainEntries = section.titleElement.querySelectorAll(".media-list .media");
+    chainEntries = Array.prototype.slice.call(chainEntries);
+    if (section.titleElement.children[1])
+        chainEntries.push(section.titleElement.children[1]);
+
+    for (var j = 0; j < chainEntries.length; ++j) {
+        var chainEntry = chainEntries[j];
+        var entryLine = includeSelectorGroupMarks ? buildMarkedSelectors(chainEntry.children[1]) : chainEntry.children[1].textContent;
+        if (chainEntry.children[2])
+            entryLine += " " + chainEntry.children[2].textContent;
+        entryLine += " (" + extractText(chainEntry.children[0]) + ")";
+        InspectorTest.addResult(entryLine);
+    }
+    section.expand();
+    InspectorTest.dumpStyleTreeOutline(section.propertiesTreeOutline, omitLonghands ? 1 : 2);
+    InspectorTest.addResult("");
+}
+
+function extractText(element)
+{
+    var text = element.textContent;
+    if (text)
+        return text;
+    var anchor = element.querySelector("[data-uncopyable]");
+    if (!anchor)
+        return "";
+    var anchorText = anchor.getAttribute("data-uncopyable");
+    var uiLocation = anchor.__uiLocation;
+    var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
+    return anchorText + " -> " + anchorTarget;
+}
+
+function buildMarkedSelectors(element)
+{
+    var result = "";
+    for (var node = element.firstChild; node; node = node.nextSibling) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains("selector-matches"))
+            result += "[$" + node.textContent + "$]";
+        else
+            result += node.textContent;
+    }
+    return result;
 }
 
 InspectorTest.toggleStyleProperty = function(propertyName, checked)
@@ -362,9 +382,7 @@ InspectorTest.dumpObjectPropertySectionDeep = function(section)
 // FIXME: this returns the first tree item found (may fail for same-named properties in a style).
 InspectorTest.getElementStylePropertyTreeItem = function(propertyName)
 {
-    var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[0];
-    var elementStyleSection = styleSections[1];
-    return InspectorTest.getFirstPropertyTreeItemForSection(elementStyleSection, propertyName);
+    return InspectorTest.getFirstPropertyTreeItemForSection(InspectorTest.inlineStyleSection(), propertyName);
 };
 
 // FIXME: this returns the first tree item found (may fail for same-named properties in a style).
@@ -374,10 +392,7 @@ InspectorTest.getMatchedStylePropertyTreeItem = function(propertyName)
     for (var pseudoId in sections) {
         var styleSections = sections[pseudoId];
         for (var i = 0; i < styleSections.length; ++i) {
-            var section = styleSections[i];
-            if (section.computedStyle)
-                continue;
-            var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(section, propertyName);
+            var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(styleSections[i], propertyName);
             if (treeItem)
                 return treeItem;
         }
@@ -817,7 +832,7 @@ InspectorTest.addNewRule = function(selector, callback)
 
 function onBlankSection(selector, callback)
 {
-    var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+    var section = InspectorTest.firstMatchedStyleSection();
     if (typeof selector === "string")
         section._selectorElement.textContent = selector;
     section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));

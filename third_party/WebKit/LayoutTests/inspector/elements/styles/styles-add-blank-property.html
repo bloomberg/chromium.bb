@@ -15,7 +15,7 @@ function test()
     {
         InspectorTest.addResult("Before append:");
         InspectorTest.dumpSelectedElementStyles(true);
-        section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+        section = InspectorTest.inlineStyleSection();
         section.expand();
 
         // Create and increment.
@@ -49,7 +49,7 @@ function test()
         InspectorTest.addResult("After insertion at index 0:");
         InspectorTest.dumpSelectedElementStyles(true);
 
-        treeElement = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1].addNewBlankProperty(2);
+        treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
         treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
@@ -69,7 +69,7 @@ function test()
         InspectorTest.addResult("After appending and changing a 'compound' property:");
         InspectorTest.dumpSelectedElementStyles(true);
 
-        treeElement = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1].addNewBlankProperty(2);
+        treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "third-property";
         treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));

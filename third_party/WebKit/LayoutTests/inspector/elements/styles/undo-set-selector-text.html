@@ -17,7 +17,7 @@ function test()
     {
         InspectorTest.addResult("=== Before selector modification ===");
         InspectorTest.dumpSelectedElementStyles(true);
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+        var section = InspectorTest.firstMatchedStyleSection();
         section.startEditingSelector();
         section._selectorElement.textContent = "#inspected, #other";
         section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
