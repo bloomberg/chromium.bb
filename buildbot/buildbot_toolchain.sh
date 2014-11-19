@@ -19,6 +19,8 @@ fi
 
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd)"
+readonly CORE_SDK=core_sdk
+readonly CORE_SDK_WORK=core_sdk_work
 
 export TOOLCHAINLOC=sdk
 export TOOLCHAINNAME=nacl-sdk
@@ -36,6 +38,8 @@ echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf ../scons-out \
     sdk-out \
     sdk \
+    ${CORE_SDK} \
+    ${CORE_SDK_WORK} \
     ../toolchain/${PLATFORM}_x86/nacl_*_newlib \
     BUILD/*
 
@@ -51,19 +55,27 @@ echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86/nacl_x86_newlib
 make -j8 clean buildbot-build-with-newlib
 
+echo @@@BUILD_STEP build_core_sdk@@@
+(
+  # Use scons to generate the SDK headers and libraries.
+  cd ..
+  ${NATIVE_PYTHON} scons.py MODE=nacl naclsdk_validate=0 \
+    nacl_newlib_dir=tools/sdk/nacl-sdk \
+    DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
+    includedir="tools/${CORE_SDK}/x86_64-nacl/include" \
+    libdir="tools/${CORE_SDK}/x86_64-nacl/lib" \
+    install
+)
+
 echo @@@BUILD_STEP canonicalize timestamps@@@
 ./canonicalize_timestamps.sh sdk
+./canonicalize_timestamps.sh "${CORE_SDK}"
 
 echo @@@BUILD_STEP tar_toolchain@@@
 # We don't just use tar's z flag because we want to pass the -n option
 # to gzip so that it won't embed a timestamp in the compressed file.
 tar cvf - sdk | gzip -n -9 > naclsdk.tgz
-chmod a+r naclsdk.tgz
-if [ "$PLATFORM" = "mac" ] ; then
-  echo "$(SHA1=$(openssl sha1 naclsdk.tgz) ; echo ${SHA1/* /})"
-else
-  echo "$(SHA1=$(sha1sum -b naclsdk.tgz) ; echo ${SHA1:0:40})"
-fi > naclsdk.tgz.sha1hash
+tar cvf - "${CORE_SDK}" | gzip -n -9 > core_sdk.tgz
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   GSD_BUCKET=nativeclient-archive2
@@ -83,11 +95,12 @@ echo @@@BUILD_STEP archive_build@@@
   gsutil=../buildbot/gsutil.sh
   GS_BASE=gs://${GSD_BUCKET}/toolchain
   for destrevision in ${UPLOAD_REV} latest ; do
-    for suffix in tgz tgz.sha1hash ; do
-      ${gsutil} cp -a public-read \
-        naclsdk.${suffix} \
-        ${GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.${suffix}
-    done
+    ${gsutil} cp -a public-read \
+      naclsdk.tgz \
+      {GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.tgz
+    ${gsutil} cp -a public-read \
+      core_sdk.tgz \
+      {GS_BASE}/${destrevision}/core_sdk_${PLATFORM}_x86.tgz
   done
 )
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/@@@
@@ -105,14 +118,25 @@ fi
 
 echo @@@BUILD_STEP archive_extract_package@@@
 ${NATIVE_PYTHON} ../build/package_version/package_version.py \
-  archive --archive-package=nacl_x86_newlib --extract \
+  archive --archive-package=${PLATFORM}_x86/nacl_x86_newlib --extract \
   --extra-archive ${GDB_TGZ} \
   naclsdk.tgz,sdk/nacl-sdk@https://storage.googleapis.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/naclsdk_${PLATFORM}_x86.tgz \
+  core_sdk.tgz,${CORE_SDK}@https://storage.googleapis.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/core_sdk_${PLATFORM}_x86.tgz
+
+${NATIVE_PYTHON} ../build/package_version/package_version.py \
+  archive --archive-package=${PLATFORM}_x86/nacl_x86_newlib_raw --extract \
+  --extra-archive ${GDB_TGZ} \
+  naclsdk.tgz,sdk/nacl-sdk@https://storage.googleapis.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/naclsdk_${PLATFORM}_x86.tgz
 
 ${NATIVE_PYTHON} ../build/package_version/package_version.py \
   --cloud-bucket=${GSD_BUCKET} --annotate \
   upload --skip-missing \
-  --upload-package=nacl_x86_newlib --revision=${UPLOAD_REV}
+  --upload-package=${PLATFORM}_x86/nacl_x86_newlib --revision=${UPLOAD_REV}
+
+${NATIVE_PYTHON} ../build/package_version/package_version.py \
+  --cloud-bucket=${GSD_BUCKET} --annotate \
+  upload --skip-missing \
+  --upload-package=${PLATFORM}_x86/nacl_x86_newlib_raw --revision=${UPLOAD_REV}
 
 # Before we start testing, put in dummy mock archives so gyp can still untar
 # the entire package.

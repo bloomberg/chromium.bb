@@ -15,7 +15,7 @@ set -e
 set -u
 
 # Transitionally, even though our new toolchain location is under
-# toolchain/win_x86_nacl_x86/nacl_x86_glibc we have to keep the old format
+# toolchain/win_x86/nacl_x86_glibc we have to keep the old format
 # inside of the tar (toolchain/win_x86) so that the untar toolchain script
 # is backwards compatible and can untar old tars. Eventually this will be
 # unnecessary with the new package_version scheme since how to untar the
@@ -25,8 +25,10 @@ export TOOLCHAINLOC=toolchain
 export TOOLCHAINNAME=win_x86
 
 # This is where we want the toolchain when moving to native_client/toolchain.
-OUT_TOOLCHAINLOC=toolchain/win_x86_nacl_x86
+OUT_TOOLCHAINLOC=toolchain/win_x86
 OUT_TOOLCHAINNAME=nacl_x86_glibc
+CORE_SDK=core_sdk
+CORE_SDK_WORK=core_sdk_work
 
 TOOL_TOOLCHAIN="$TOOLCHAINLOC/$TOOLCHAINNAME"
 OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
@@ -38,7 +40,8 @@ export ac_cv_func_mmap_fixed_mapped=yes
 
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf scons-out tools/BUILD/* tools/out tools/toolchain \
-  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" .tmp ||
+  tools/glibc tools/glibc.tar tools/toolchain.t* "${OUT_TOOLCHAIN}" \
+  tools/${CORE_SDK} tools/${CORE_SDK_WORK} .tmp ||
   echo already_clean
 mkdir -p "tools/${TOOL_TOOLCHAIN}"
 ln -sfn "$PWD"/cygwin/tmp "tools/${TOOL_TOOLCHAIN}"
@@ -73,6 +76,15 @@ echo @@@BUILD_STEP compile_toolchain@@@
   rm "${TOOL_TOOLCHAIN}/tmp"
 )
 
+echo @@@BUILD_STEP build_core_sdk@@@
+# Use scons to generate the SDK headers and libraries.
+${NATIVE_PYTHON} scons.py --nacl_glibc MODE=nacl naclsdk_validate=0 \
+  nacl_glibc_dir="tools/${TOOL_TOOLCHAIN}" \
+  DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
+  includedir="tools/${CORE_SDK}/x86_64-nacl/include" \
+  libdir="tools/${CORE_SDK}/x86_64-nacl/lib" \
+  install
+
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   GSD_BUCKET=nativeclient-archive2
   UPLOAD_REV=${BUILDBOT_GOT_REVISION}
@@ -87,37 +99,54 @@ fi
   cd tools
   echo @@@BUILD_STEP canonicalize timestamps@@@
   ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
+  ./canonicalize_timestamps.sh "${CORE_SDK}"
+
   echo @@@BUILD_STEP tar_toolchain@@@
   tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
   xz -k -9 toolchain.tar
   bzip2 -k -9 toolchain.tar
   gzip -n -9 toolchain.tar
-  for i in gz bz2 xz ; do
-    chmod a+x toolchain.tar.$i
-    echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
-      > toolchain.tar.$i.sha1hash
-  done
+
+  echo @@@BUILD_STEP tar_core_sdk@@@
+  tar Scf core_sdk.tar "${CORE_SDK}"
+  xz -k -9 core_sdk.tar
+  bzip2 -k -9 core_sdk.tar
+  gzip -n -9 core_sdk.tar
 )
 
 echo @@@BUILD_STEP archive_build@@@
-for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
+for suffix in gz bz2 xz ; do
   ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
     tools/toolchain.tar.$suffix \
     gs://${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.$suffix
+  ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
+    tools/core_sdk.tar.$suffix \
+    gs://${GSD_BUCKET}/${UPLOAD_LOC}/core_sdk_win_x86.tar.$suffix
 done
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/${UPLOAD_LOC}/@@@
 
-echo @@@BUILD_STEP archive_extract_package@@@
+echo @@@BUILD_STEP archive_extract_packages@@@
 ${NATIVE_PYTHON} build/package_version/package_version.py \
-  archive --archive-package=nacl_x86_glibc --extract \
+  archive --archive-package=${TOOLCHAINNAME}/nacl_x86_glibc --extract \
   --extra-archive gdb_i686_w64_mingw32.tgz \
-  tools/toolchain.tar.bz2,toolchain/win_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2 \
+  tools/toolchain.tar.bz2,${TOOL_TOOLCHAIN}@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2 \
+  tools/core_sdk.tar.bz2,${CORE_SDK}@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/core_sdk_win_x86.tar.bz2
+
+${NATIVE_PYTHON} build/package_version/package_version.py \
+  archive --archive-package=${TOOLCHAINNAME}/nacl_x86_glibc_raw --extract \
+  --extra-archive gdb_i686_w64_mingw32.tgz \
+  tools/toolchain.tar.bz2,${TOOL_TOOLCHAIN}@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2
 
 echo @@@BUILD_STEP upload_package_info@@@
 ${NATIVE_PYTHON} build/package_version/package_version.py \
   --cloud-bucket=${GSD_BUCKET} --annotate \
   upload --skip-missing \
-  --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
+  --upload-package=${TOOLCHAINNAME}/nacl_x86_glibc --revision=${UPLOAD_REV}
+
+${NATIVE_PYTHON} build/package_version/package_version.py \
+  --cloud-bucket=${GSD_BUCKET} --annotate \
+  upload --skip-missing \
+  --upload-package=${TOOLCHAINNAME}/nacl_x86_glibc_raw --revision=${UPLOAD_REV}
 
 # Before we start testing, put in dummy mock archives so gyp can still untar
 # the entire package.

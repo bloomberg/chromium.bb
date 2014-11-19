@@ -246,8 +246,10 @@ GDB_INJECT_HOSTS = [
   ]
 
 GDB_INJECT_PACKAGES = [
-  ('nacl_x86_newlib', ['naclsdk.tgz']),
-  ('nacl_x86_glibc', ['toolchain.tar.bz2']),
+  ('nacl_x86_newlib', ['core_sdk.tgz', 'naclsdk.tgz']),
+  ('nacl_x86_glibc', ['core_sdk.tar.bz2', 'toolchain.tar.bz2']),
+  ('nacl_x86_newlib_raw', ['naclsdk.tgz']),
+  ('nacl_x86_glibc_raw', ['toolchain.tar.bz2']),
   ]
 
 # These are extra arguments to pass gcc's configure that vary by target.
