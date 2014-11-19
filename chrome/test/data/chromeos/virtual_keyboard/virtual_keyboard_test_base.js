@@ -201,17 +201,48 @@ function onKeyboardReady(runTestCallback, opt_config) {
     name: 'English'
   };
   var config = opt_config || default_config;
+  var options = config.options || {};
   chrome.virtualKeyboardPrivate.keyboardLoaded = function() {
-    // Disarm to prevent repeated calls to run a test.
-    chrome.virtualKeyboardPrivate.keyboardLoaded = function() {};
     runTestCallback();
   };
   window.initializeVirtualKeyboard(config.keyset,
                                    config.languageCode,
                                    config.passwordLayout,
-                                   config.name);
+                                   config.name,
+                                   options);
 }
 
+/**
+ * Defers continuation of a test until a keyset is loaded.
+ * @param {string} keyset Name of the target keyset.
+ * @param {Function} continueTestCallback Callback function to invoke in order
+ *     to resume the test.
+ */
+function onKeysetReady(keyset, continueTestCallback) {
+  if (keyset in controller.keysetDataMap_) {
+    continueTestCallback();
+    return;
+  }
+  setTimeout(function() {
+    onKeysetReady(keyset, continueTestCallback);
+  }, 100);
+}
+
+/**
+ * Defers continuation of a test until a layout is loaded.
+ * @param {string} layout Name of the target layout.
+ * @param {Function} continueTestCallback Callback function to invoke in order
+ *     to resume the test.
+ */
+function onLayoutReady(layout, continueTestCallback) {
+  if (layout in controller.layoutDataMap_) {
+    continueTestCallback();
+    return;
+  }
+  setTimeout(function() {
+    onLayoutReady(layout, continueTestCallback);
+  }, 100);
+}
 
 /**
  * Mocks a touch event targeted on a key.

@@ -5,7 +5,13 @@
 var CLOSURE_NO_DEPS=true;
 
 var controller;
-var activeKeySet;
+
+/**
+ * Armed callback to be triggered when a keyset changes.
+ * @type {{string:target function:callback}}
+ * @private
+ */
+var keysetChangeListener_;
 
 /**
  * Registers a function, which may override a preexisting implementation.
@@ -57,8 +63,7 @@ function registerFunction(path, opt_fn) {
 
 /**
  * The chrome.i18n API is not compatible with component extensions due to the
- * way in which json files are handled. The messages.json files cannot be
- * properly referenced within the extensions.
+ * way component extensions are loaded (crbug/66834).
  */
 function overrideGetMessage() {
   var originalGetMessage = chrome.i18n.getMessage;
@@ -92,18 +97,39 @@ function overrideSwitchToKeyset() {
   KeyboardContainer.prototype.switchToKeyset = function() {
     var success = switcher.apply(this, arguments);
     if (success) {
-      var newKeySet = arguments[0];
-      if (activeKeySet != newKeySet) {
-        activeKeySet = newKeySet;
-        // The first resize call forces resizing of the keyboard window.
-        // The second resize call forces a clean layout for chrome://keyboard.
-        controller.resize(false);
-        controller.resize(true);
-        var settings = controller.model_.settings;
-        settings.supportCompact = true;
-        chrome.virtualKeyboardPrivate.keyboardLoaded();
+      // The first resize call forces resizing of the keyboard window.
+      // The second resize call forces a clean layout for chrome://keyboard.
+      controller.resize(false);
+      controller.resize(true);
+      var settings = controller.model_.settings;
+      settings.supportCompact = true;
+      if (keysetChangeListener_ &&
+          keysetChangeListener_.target == arguments[0]) {
+        var callback = keysetChangeListener_.callback;
+        keysetChangeListener_ = undefined;
+        callback();
       }
     }
+    return success;
+  };
+}
+
+/**
+ * Arms a one time callback to invoke when the VK switches to the target keyset.
+ * Only one keyset change callback may be armed at any time. Used to synchronize
+ * tests and to track initial load time for the virtual keyboard.
+ * @param {string} keyset The target keyset.
+ * @param {function} callback The callback to invoke when the keyset becomes
+ *     active.
+ */
+function onSwitchToKeyset(keyset, callback) {
+  if (keysetChangeListener_) {
+    console.error('A keyset change listener is already armed.');
+    return;
+  }
+  keysetChangeListener_ = {
+    target: keyset,
+    callback: callback
   };
 }
 
@@ -319,19 +345,31 @@ window.onload = function() {
 };
 
 /**
+ * Run cleanup tasks.
+ */
+window.onbeforeunload = function() {
+  if (controller)
+    goog.dispose(controller);
+};
+
+/**
  * Loads a virtual keyboard. If a keyboard was previously loaded, it is
  * reinitialized with the new configuration.
  * @param {string} keyset The keyboard keyset.
  * @param {string} languageCode The language code for this keyboard.
  * @param {string} passwordLayout The layout for password box.
  * @param {string} name The input tool name.
+ * @param {Object=} opt_config Optional configuration settings.
  */
 window.initializeVirtualKeyboard = function(keyset, languageCode,
-    passwordLayout, name) {
+    passwordLayout, name, opt_config) {
+  var Controller = i18n.input.chrome.inputview.Controller;
+  Controller.DISABLE_HWT = !(opt_config && opt_config.enableHwtForTesting);
+  onSwitchToKeyset(keyset, function() {
+    chrome.virtualKeyboardPrivate.keyboardLoaded();
+  });
   if (controller)
-    goog.dispose(controller);
-  activeKeySet = undefined;
-
-  controller = new i18n.input.chrome.inputview.Controller(keyset,
-      languageCode, passwordLayout, name);
+    controller.initialize(keyset, languageCode, passwordLayout, name);
+  else
+    controller = new Controller(keyset, languageCode, passwordLayout, name);
 };

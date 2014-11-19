@@ -45,6 +45,9 @@ function testFullQwertyLayoutAsync(testDoneCallback) {
       'ASDFGHJKL:"',
       'ZXCVBNM<>?'
     ];
+    var view = getActiveView();
+    assertTrue(!!view, 'Unable to find active view');
+    assertEquals('us', view.id, 'Expecting full layout');
     verifyLayout(lowercase);
     mockTap(findKeyById('ShiftLeft'));
     verifyLayout(uppercase);
@@ -86,6 +89,9 @@ function testCompactQwertyLayoutAsync(testDoneCallback) {
       '\u00a3\u00a2\u20ac\u00a5^\u00b0={}',
       '\\\u00a9\u00ae\u2122\u2105[]\u00a1\u00bf'
     ];
+    var view = getActiveView();
+    assertTrue(!!view, 'Unable to find active view');
+    assertEquals('us-compact-qwerty', view.id, 'Expecting compact layout');
     verifyLayout(lowercase);
     mockTap(findKeyById('ShiftLeft'));
     verifyLayout(uppercase);
@@ -102,6 +108,76 @@ function testCompactQwertyLayoutAsync(testDoneCallback) {
     languageCode: 'en',
     passwordLayout: 'us',
     name: 'English'
+  };
+  onKeyboardReady(testCallback, config);
+}
+
+/**
+ * Tests that handwriting support is disabled by default.
+ */
+function testHandwritingSupportAsync(testDoneCallback) {
+  onKeyboardReady(function() {
+    var menu = document.querySelector('.inputview-menu-view');
+    assertTrue(!!menu, 'Unable to access keyboard menu');
+    assertEquals('none', getComputedStyle(menu)['display'],
+                 'Menu should not be visible until activated');
+    mockTap(findKeyById('Menu'));
+    assertEquals('block', getComputedStyle(menu)['display'],
+                 'Menu should be visible once activated');
+    var hwt = menu.querySelector('#handwriting');
+    assertFalse(!!hwt, 'Handwriting should be disabled by default');
+    testDoneCallback();
+  });
+}
+
+/**
+ * Validates Handwriting layout. Though handwriting is disabled for the system
+ * VK, the layout is still available and useful for testing expected behavior of
+ * the IME-VKs since the codebase is shared.
+ */
+function testHandwritingLayoutAsync(testDoneCallback) {
+  var testCallback = function () {
+    var menu = document.querySelector('.inputview-menu-view');
+    assertEquals('none', getComputedStyle(menu).display,
+                 'Menu should be hidden initially');
+    mockTap(findKeyById('Menu'));
+    assertFalse(menu.hidden,
+                'Menu should be visible after tapping menu toggle button');
+    var hwtSelect = menu.querySelector('#handwriting');
+    assertTrue(!!hwtSelect, 'Handwriting should be available for testing');
+    // Keysets such as hwt and emoji lazy load in order to reduce latency before
+    // the virtual keyboard is shown. Wait until the load is complete to
+    // continue testing.
+    onKeysetReady('hwt', function() {
+      onLayoutReady('handwriting', function() {
+        // Tapping the handwriting selector button triggers loading of the
+        // handwriting canvas. Wait for keyset switch before continuing the
+        // test.
+        onSwitchToKeyset('hwt', function() {
+          var view = getActiveView();
+          assertEquals('hwt', view.id, 'Handwriting layout is not active.');
+          var hwtCanvasView = view.querySelector('#canvasView');
+          assertTrue(!!hwtCanvasView, 'Unable to find canvas view');
+          var candidateView = document.getElementById('candidateView');
+          assertTrue(!!candidateView, 'Unable to find candidate view');
+          var backButton = candidateView.querySelector(
+              '.inputview-candidate-button');
+          assertEquals('HANDWRITING_BACK', backButton.textContent);
+          mockTap(backButton);
+          assertEquals('us-compact-qwerty', getActiveView().id,
+                       'compact layout is not active.');
+          testDoneCallback();
+        });
+        mockTap(hwtSelect);
+      });
+    });
+  };
+  var config = {
+    keyset: 'us.compact.qwerty',
+    languageCode: 'en',
+    passwordLayout: 'us',
+    name: 'English',
+    options: {enableHwtForTesting: true}
   };
   onKeyboardReady(testCallback, config);
 }
