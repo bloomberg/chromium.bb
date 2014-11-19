@@ -1764,6 +1764,7 @@ class Upgrader(object):
       self._master_table = mps.MergeTables(tables)
     else:
       self._master_table = self._curr_table
+      # pylint: disable=protected-access
       self._master_table._arch = None
 
   def WriteTableFiles(self, csv=None):

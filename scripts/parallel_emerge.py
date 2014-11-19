@@ -1016,7 +1016,7 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
   # Disable flushing of caches to save on I/O.
   root = emerge.settings["ROOT"]
   vardb = emerge.trees[root]["vartree"].dbapi
-  vardb._flush_cache_enabled = False
+  vardb._flush_cache_enabled = False  # pylint: disable=protected-access
   bindb = emerge.trees[root]["bintree"].dbapi
   # Might be a set, might be a list, might be None; no clue, just use shallow
   # copy to ensure we can roll it back.

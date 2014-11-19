@@ -1081,9 +1081,9 @@ RawDiffEntry = collections.namedtuple('RawDiffEntry', _raw_diff_components)
 # This regular expression pulls apart a line of raw formatted git diff output.
 DIFF_RE = re.compile(
     r':(?P<src_mode>[0-7]*) (?P<dst_mode>[0-7]*) '
-     '(?P<src_sha>[0-9a-f]*)(\.)* (?P<dst_sha>[0-9a-f]*)(\.)* '
-     '(?P<status>[ACDMRTUX])(?P<score>[0-9]+)?\t'
-     '(?P<src_file>[^\t]+)\t?(?P<dst_file>[^\t]+)?')
+    r'(?P<src_sha>[0-9a-f]*)(\.)* (?P<dst_sha>[0-9a-f]*)(\.)* '
+    r'(?P<status>[ACDMRTUX])(?P<score>[0-9]+)?\t'
+    r'(?P<src_file>[^\t]+)\t?(?P<dst_file>[^\t]+)?')
 
 
 def RawDiff(path, target):

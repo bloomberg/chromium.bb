@@ -796,10 +796,10 @@ class BuildSpecsManager(object):
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
-    else:
-      # Cleanse any failed local changes and throw an exception.
-      self.RefreshManifestCheckout()
-      raise GenerateBuildSpecException(last_error)
+
+    # Cleanse any failed local changes and throw an exception.
+    self.RefreshManifestCheckout()
+    raise GenerateBuildSpecException(last_error)
 
   @staticmethod
   def _GetStatusUrl(builder, version):
@@ -922,7 +922,7 @@ class BuildSpecsManager(object):
         # Upload status to Google Storage as well.
         self.UploadStatus(success, message=message, dashboard_url=dashboard_url)
         return
-    else:
-      # Cleanse any failed local changes and throw an exception.
-      self.RefreshManifestCheckout()
-      raise StatusUpdateException(last_error)
+
+    # Cleanse any failed local changes and throw an exception.
+    self.RefreshManifestCheckout()
+    raise StatusUpdateException(last_error)

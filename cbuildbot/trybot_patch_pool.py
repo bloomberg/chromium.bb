@@ -57,8 +57,7 @@ class TrybotPatchPool(object):
       for key in kwargs:
         if getattr(patch, key, object()) != kwargs[key]:
           return False
-      else:
-        return True
+      return True
 
     return self.FilterFn(AttributeFilter)
 

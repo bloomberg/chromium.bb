@@ -275,6 +275,7 @@ class Cgroup(object):
     # Suppress initialization checks- if it exists on disk, we know it
     # is already initialized.
     for x in targets:
+      # pylint: disable=protected-access
       x._inited = True
     return targets
 
@@ -402,7 +403,7 @@ class Cgroup(object):
 
   # Since some of this code needs to check/reset this function to be ran,
   # we use a more developer friendly variable name.
-  Instantiate._cache_key = '_inited'
+  Instantiate._cache_key = '_inited'  # pylint: disable=protected-access
 
   def _SudoSet(self, key, value):
     """Set a cgroup file in this namespace to a specific value"""

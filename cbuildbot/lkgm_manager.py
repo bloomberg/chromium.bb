@@ -408,8 +408,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
         logging.error(err_msg)
         last_error = err_msg
-    else:
-      raise manifest_version.GenerateBuildSpecException(last_error)
+
+    raise manifest_version.GenerateBuildSpecException(last_error)
 
   def CreateFromManifest(self, manifest, retries=manifest_version.NUM_RETRIES,
                          build_id=None):
@@ -450,8 +450,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
         logging.error(err_msg)
         last_error = err_msg
-    else:
-      raise manifest_version.GenerateBuildSpecException(last_error)
+
+    raise manifest_version.GenerateBuildSpecException(last_error)
 
   def GetLatestCandidate(self, timeout=10 * 60):
     """Gets and syncs to the next candiate manifest.
@@ -534,8 +534,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         logging.error('Retrying to promote manifest:  Retry %d/%d', attempt + 1,
                       retries)
 
-    else:
-      raise PromoteCandidateException(last_error)
+    raise PromoteCandidateException(last_error)
 
   def _ShouldGenerateBlameListSinceLKGM(self):
     """Returns True if we should generate the blamelist."""

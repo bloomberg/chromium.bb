@@ -1662,6 +1662,7 @@ class ValidationPool(object):
     """
     with open(filename, 'rb') as p_file:
       pool = cPickle.load(p_file)
+      # pylint: disable=protected-access
       pool._run = builder_run
       return pool
 

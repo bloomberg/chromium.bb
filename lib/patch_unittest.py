@@ -532,7 +532,7 @@ class TestLocalPatchGit(GitRepoPatchTestCase):
     patch.ProjectDir = ProjectDirMock
     # First suppress carbon copy behaviour so we verify pushing
     # plain works.
-    # pylint: disable=E1101
+    # pylint: disable=E1101,protected-access
     sha1 = patch.sha1
     patch._GetCarbonCopy = lambda: sha1
     patch.Upload(git2, 'refs/testing/test1')

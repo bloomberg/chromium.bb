@@ -150,6 +150,7 @@ class VersionTest(AbstractGSContextTest):
 
   def testGetVersionCached(self):
     """Simple gsutil_version fetch test from cache."""
+    # pylint: disable=protected-access
     self.ctx._gsutil_version = '3.37'
     self.assertEquals('3.37', self.ctx.gsutil_version)
 

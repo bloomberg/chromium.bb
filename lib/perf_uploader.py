@@ -211,8 +211,8 @@ def _GetPresentationInfo(test_name):
         return PresentationInfo(**info)
       except:
         raise PerfUploadingError('No master found for %s' % test_name)
-  else:
-    raise PerfUploadingError('No presentation config found for %s' % test_name)
+
+  raise PerfUploadingError('No presentation config found for %s' % test_name)
 
 
 def _FormatForUpload(perf_data, platform_name, cros_version, chrome_version,

@@ -1463,8 +1463,8 @@ def MemoizedSingleCall(functor):
   notice updates to the cache.
   """
   # TODO(build): Should we rebase to snakeoil.klass.cached* functionality?
+  # pylint: disable=protected-access
   def f(obj):
-    # pylint: disable=W0212
     key = f._cache_key
     val = getattr(obj, key, None)
     if val is None:
@@ -1664,6 +1664,7 @@ class FrozenAttributesClass(type):
 
     # Add new cls.Freeze method.
     def Freeze(obj):
+      # pylint: disable=protected-access
       obj._frozen = True
     cls.Freeze = Freeze
 
