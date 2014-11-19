@@ -8,11 +8,12 @@
       "children": [
         {
           "position": [8, 26],
-          "bounds": [769, 2124],
+          "bounds": [769, 1974],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [10, 1574, 150, 550]
+            [10, 1824, 150, 150],
+            [10, 1424, 150, 150]
           ]
         }
       ]
