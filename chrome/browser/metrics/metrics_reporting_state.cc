@@ -62,6 +62,12 @@ void SetMetricsReporting(bool to_update_pref,
   g_browser_process->local_state()->SetBoolean(
       prefs::kMetricsReportingEnabled, updated_pref);
 #endif
+  // When a user opts in to the metrics reporting service, the previously
+  // collected data should be cleared to ensure that nothing is reported before
+  // a user opts in and all reported data is accurate.
+  if (updated_pref && metrics)
+    metrics->ClearSavedStabilityMetrics();
+
   if (to_update_pref == updated_pref) {
     RecordMetricsReportingHistogramValue(updated_pref ?
         METRICS_REPORTING_ENABLED : METRICS_REPORTING_DISABLED);

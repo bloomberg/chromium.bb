@@ -549,6 +549,19 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
     IncrementPrefValue(prefs::kStabilityDebuggerPresent);
 }
 
+void MetricsService::ClearSavedStabilityMetrics() {
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->ClearSavedStabilityMetrics();
+
+  // Reset the prefs that are managed by MetricsService/MetricsLog directly.
+  local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
+  local_state_->SetInteger(prefs::kStabilityExecutionPhase,
+                           UNINITIALIZED_PHASE);
+  local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
+  local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
+  local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
+}
+
 //------------------------------------------------------------------------------
 // private methods
 //------------------------------------------------------------------------------
@@ -600,18 +613,8 @@ void MetricsService::InitializeMetricsState() {
   // number of different edge cases, such as if the last version crashed before
   // it could save off a system profile or if UMA reporting is disabled (which
   // normally results in stats being accumulated).
-  if (!has_initial_stability_log_ && version_changed) {
-    for (size_t i = 0; i < metrics_providers_.size(); ++i)
-      metrics_providers_[i]->ClearSavedStabilityMetrics();
-
-    // Reset the prefs that are managed by MetricsService/MetricsLog directly.
-    local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
-    local_state_->SetInteger(prefs::kStabilityExecutionPhase,
-                             UNINITIALIZED_PHASE);
-    local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
-    local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
-    local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
-  }
+  if (!has_initial_stability_log_ && version_changed)
+    ClearSavedStabilityMetrics();
 
   // Update session ID.
   ++session_id_;
