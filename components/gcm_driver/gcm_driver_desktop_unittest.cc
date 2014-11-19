@@ -991,6 +991,13 @@ TEST_F(GCMDriverFunctionalTest, MessagesDeleted) {
   EXPECT_EQ(kTestAppID1, gcm_app_handler()->app_id());
 }
 
+TEST_F(GCMDriverFunctionalTest, LastTokenFetchTime) {
+  EXPECT_EQ(base::Time(), driver()->GetLastTokenFetchTime());
+  base::Time fetch_time = base::Time::Now();
+  driver()->SetLastTokenFetchTime(fetch_time);
+  EXPECT_EQ(fetch_time, driver()->GetLastTokenFetchTime());
+}
+
 // Tests a single instance of GCMDriver.
 class GCMChannelStatusSyncerTest : public GCMDriverTest {
  public:
