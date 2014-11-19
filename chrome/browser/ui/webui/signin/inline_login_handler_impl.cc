@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -373,12 +374,9 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   about_signin_internals->OnAuthenticationResultReceived(
       "GAIA Auth Successful");
 
-  GURL partition_url(switches::IsEnableWebviewBasedSignin() ?
-      "chrome-guest://chrome-signin/?" :
-      chrome::kChromeUIChromeSigninURL);
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
-          contents->GetBrowserContext(), partition_url);
+          contents->GetBrowserContext(), signin::GetSigninPartitionURL());
 
   SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(Profile::FromWebUI(web_ui()));

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -65,7 +66,7 @@ void UnloadGaiaAuthExtension(BrowserContext* context) {
 
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
-          context, GURL(chrome::kChromeUIChromeSigninURL));
+          context, signin::GetSigninPartitionURL());
   if (partition) {
     partition->ClearData(
         content::StoragePartition::REMOVE_DATA_MASK_ALL,

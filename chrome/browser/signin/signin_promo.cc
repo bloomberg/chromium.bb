@@ -254,6 +254,12 @@ GURL GetNextPageURLForPromoURL(const GURL& url) {
   return GURL();
 }
 
+GURL GetSigninPartitionURL() {
+  return GURL(switches::IsEnableWebviewBasedSignin() ?
+      "chrome-guest://chrome-signin/?" :
+      chrome::kChromeUIChromeSigninURL);
+}
+
 Source GetSourceForPromoURL(const GURL& url) {
   std::string value;
   if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeySource, &value)) {

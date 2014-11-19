@@ -94,6 +94,9 @@ GURL GetReauthURL(Profile* profile, const std::string& account_id);
 // Gets the next page URL from the query portion of the sign in promo URL.
 GURL GetNextPageURLForPromoURL(const GURL& url);
 
+// Gets the partition URL for the embedded sign in frame/webview.
+GURL GetSigninPartitionURL();
+
 // Gets the source from the query portion of the sign in promo URL.
 // The source identifies from where the sign in promo was opened.
 Source GetSourceForPromoURL(const GURL& url);
