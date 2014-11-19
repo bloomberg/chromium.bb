@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
+#include "url/url_constants.h"
 
 namespace translate {
 
@@ -23,9 +24,6 @@ const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
 const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
 const char kTranslatePageScheme[] = "Translate.PageScheme";
 const char kTranslateSimilarLanguageMatch[] = "Translate.SimilarLanguageMatch";
-
-const char kSchemeHttp[] = "http";
-const char kSchemeHttps[] = "https";
 
 struct MetricsEntry {
   MetricsNameIndex index;
@@ -106,9 +104,9 @@ void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end) {
 
 void ReportPageScheme(const std::string& scheme) {
   SchemeType type = SCHEME_OTHERS;
-  if (scheme == kSchemeHttp)
+  if (scheme == url::kHttpScheme)
     type = SCHEME_HTTP;
-  else if (scheme == kSchemeHttps)
+  else if (scheme == url::kHttpsScheme)
     type = SCHEME_HTTPS;
   UMA_HISTOGRAM_ENUMERATION(kTranslatePageScheme, type, SCHEME_MAX);
 }

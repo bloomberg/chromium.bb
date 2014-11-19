@@ -117,9 +117,7 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
 }
 
 bool FormIsHTTPS(const FormStructure& form) {
-  // TODO(blundell): Change this to use a constant once crbug.com/306258 is
-  // fixed.
-  return form.source_url().SchemeIs("https");
+  return form.source_url().SchemeIs(url::kHttpsScheme);
 }
 
 // Uses the existing personal data in |profiles| and |credit_cards| to determine

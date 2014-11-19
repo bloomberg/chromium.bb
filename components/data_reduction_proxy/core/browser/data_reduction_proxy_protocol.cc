@@ -29,7 +29,7 @@ bool SetProxyServerFromGURL(const GURL& gurl,
   DCHECK(proxy_server);
   if (!gurl.SchemeIsHTTPOrHTTPS())
     return false;
-  *proxy_server = net::ProxyServer(gurl.SchemeIs("http") ?
+  *proxy_server = net::ProxyServer(gurl.SchemeIs(url::kHttpScheme) ?
                                        net::ProxyServer::SCHEME_HTTP :
                                        net::ProxyServer::SCHEME_HTTPS,
                                    net::HostPortPair::FromURL(gurl));
@@ -174,7 +174,7 @@ bool IsRequestIdempotent(const net::URLRequest* request) {
 
 void MarkProxiesAsBadUntil(
     net::URLRequest* request,
-    base::TimeDelta& bypass_duration,
+    const base::TimeDelta& bypass_duration,
     bool bypass_all,
     const std::pair<GURL, GURL>& data_reduction_proxies) {
   DCHECK(!data_reduction_proxies.first.is_empty());

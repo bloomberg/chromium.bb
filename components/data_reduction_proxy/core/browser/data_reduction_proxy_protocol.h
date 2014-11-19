@@ -69,7 +69,7 @@ void OverrideResponseAsRedirect(
 // |data_reduction_proxies.second| to the retry list only if |bypass_all| is
 // true. Visible as part of the public API for testing.
 void MarkProxiesAsBadUntil(net::URLRequest* request,
-                           base::TimeDelta& bypass_duration,
+                           const base::TimeDelta& bypass_duration,
                            bool bypass_all,
                            const std::pair<GURL, GURL>& data_reduction_proxies);
 

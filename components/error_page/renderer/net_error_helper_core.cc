@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace error_page {
 
@@ -153,7 +154,7 @@ bool ShouldUseFixUrlServiceForError(const blink::WebURLError& error,
     return false;
 
   std::string domain = error.domain.utf8();
-  if (domain == "http" && error.reason == 404) {
+  if (domain == url::kHttpScheme && error.reason == 404) {
     *error_param = "http404";
     return true;
   }

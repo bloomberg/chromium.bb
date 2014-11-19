@@ -17,6 +17,7 @@
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+#include "url/url_constants.h"
 
 namespace data_reduction_proxy {
 
@@ -292,9 +293,9 @@ class DailyDataSavingUpdate {
 
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest* request) {
-  if (request->url().SchemeIs("https"))
+  if (request->url().SchemeIs(url::kHttpsScheme))
     return HTTPS;
-  if (!request->url().SchemeIs("http")) {
+  if (!request->url().SchemeIs(url::kHttpScheme)) {
     NOTREACHED();
     return UNKNOWN_TYPE;
   }

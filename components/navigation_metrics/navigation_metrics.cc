@@ -22,15 +22,15 @@ enum Scheme {
   SCHEME_MAX,
 };
 
-static const char* kSchemeNames[] = {
+const char* const kSchemeNames[] = {
   "unknown",
-  "http",
-  "https",
-  "file",
-  "ftp",
-  "data",
-  "javascript",
-  "about",
+  url::kHttpScheme,
+  url::kHttpsScheme,
+  url::kFileScheme,
+  url::kFtpScheme,
+  url::kDataScheme,
+  url::kJavaScriptScheme,
+  url::kAboutScheme,
   "chrome",
   "max",
 };
@@ -50,8 +50,7 @@ void RecordMainFrameNavigation(const GURL& url, bool is_in_page) {
       break;
     }
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "Navigation.MainFrameScheme", scheme, SCHEME_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme", scheme, SCHEME_MAX);
   if (!is_in_page) {
     UMA_HISTOGRAM_ENUMERATION(
         "Navigation.MainFrameSchemeDifferentPage", scheme, SCHEME_MAX);
