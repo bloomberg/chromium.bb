@@ -3164,6 +3164,12 @@
               'credui.lib',
               'netapi32.lib',
             ],
+            'AdditionalOptions': [
+              # Suggested by Microsoft Devrel to avoid
+              #   LINK : fatal error LNK1248: image size (80000000) exceeds maximum allowable size (80000000)
+              # which started happening more regularly after VS2013 Update 4.
+              '/maxilksize:2147483647',
+            ],
           },
         },
       },
