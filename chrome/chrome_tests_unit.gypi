@@ -1451,6 +1451,8 @@
     {
       # This target contains mocks and test utilities that don't belong in
       # production libraries but are used by more than one test executable.
+      #
+      # GN version: //chrome/test:test_support
       'target_name': 'test_support_common',
       'type': 'static_library',
       'dependencies': [
