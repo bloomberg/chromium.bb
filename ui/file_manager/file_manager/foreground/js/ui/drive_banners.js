@@ -17,7 +17,7 @@ function FileListBannerController(
     directoryModel, volumeManager, document, showOffers) {
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
-  this.document_ = document;
+  this.document_ = assert(document);
   this.showOffers_ = showOffers;
   this.driveEnabled_ = false;
 
@@ -148,7 +148,8 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
     function(type, messageId) {
   this.showWelcomeBanner_(type);
 
-  var container = this.document_.querySelector('.drive-welcome.' + type);
+  var container = queryRequiredElement(
+      this.document_, '.drive-welcome.' + type);
   if (container.firstElementChild)
     return;  // Do not re-create.
 

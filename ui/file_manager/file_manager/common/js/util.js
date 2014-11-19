@@ -272,17 +272,17 @@ util.extractFilePath = function(url) {
 /**
  * A shortcut function to create a child element with given tag and class.
  *
- * @param {Element} parent Parent element.
+ * @param {!HTMLElement} parent Parent element.
  * @param {string=} opt_className Class name.
  * @param {string=} opt_tag Element tag, DIV is omitted.
- * @return {Element} Newly created element.
+ * @return {!HTMLElement} Newly created element.
  */
 util.createChild = function(parent, opt_className, opt_tag) {
   var child = parent.ownerDocument.createElement(opt_tag || 'div');
   if (opt_className)
     child.className = opt_className;
   parent.appendChild(child);
-  return child;
+  return /** @type {!HTMLElement} */ (child);
 };
 
 /**

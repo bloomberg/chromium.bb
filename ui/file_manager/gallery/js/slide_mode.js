@@ -6,51 +6,458 @@
  * Slide mode displays a single image and has a set of controls to navigate
  * between the images and to edit an image.
  *
- * @param {Element} container Main container element.
- * @param {Element} content Content container element.
- * @param {Element} toolbar Toolbar element.
- * @param {ImageEditor.Prompt} prompt Prompt.
- * @param {ErrorBanner} errorBanner Error banner.
- * @param {cr.ui.ArrayDataModel} dataModel Data model.
- * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {Object} context Context.
- * @param {VolumeManager} volumeManager Volume manager.
+ * @param {!HTMLElement} container Main container element.
+ * @param {!HTMLElement} content Content container element.
+ * @param {!HTMLElement} toolbar Toolbar element.
+ * @param {!ImageEditor.Prompt} prompt Prompt.
+ * @param {!ErrorBanner} errorBanner Error banner.
+ * @param {!cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {!Object} context Context.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
  * @constructor
+ * @struct
  */
 function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
     selectionModel, context, volumeManager, toggleMode, displayStringFunction) {
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
   this.container_ = container;
-  this.document_ = container.ownerDocument;
+
+  /**
+   * @type {!Document}
+   * @private
+   * @const
+   */
+  this.document_ = assert(container.ownerDocument);
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
   this.content = content;
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
   this.toolbar_ = toolbar;
+
+  /**
+   * @type {!ImageEditor.Prompt}
+   * @private
+   * @const
+   */
   this.prompt_ = prompt;
+
+  /**
+   * @type {!ErrorBanner}
+   * @private
+   * @const
+   */
   this.errorBanner_ = errorBanner;
+
+  /**
+   * @type {!cr.ui.ArrayDataModel}
+   * @private
+   * @const
+   */
   this.dataModel_ = dataModel;
+
+  /**
+   * @type {!cr.ui.ListSelectionModel}
+   * @private
+   * @const
+   */
   this.selectionModel_ = selectionModel;
+
+  /**
+   * @type {!Object}
+   * @private
+   * @const
+   */
   this.context_ = context;
+
+  /**
+   * @type {!VolumeManager}
+   * @private
+   * @const
+   */
   this.volumeManager_ = volumeManager;
+
+  /**
+   * @type {!MetadataCache}
+   * @private
+   * @const
+   */
   this.metadataCache_ = context.metadataCache;
+
+  /**
+   * @type {function(function())}
+   * @private
+   * @const
+   */
   this.toggleMode_ = toggleMode;
+
+  /**
+   * @type {function(string):string}
+   * @private
+   * @const
+   */
   this.displayStringFunction_ = displayStringFunction;
 
+  /**
+   * @type {function(this:SlideMode)}
+   * @private
+   * @const
+   */
   this.onSelectionBound_ = this.onSelection_.bind(this);
+
+  /**
+   * @type {function(this:SlideMode,!Event)}
+   * @private
+   * @const
+   */
   this.onSpliceBound_ = this.onSplice_.bind(this);
 
-  // Unique numeric key, incremented per each load attempt used to discard
-  // old attempts. This can happen especially when changing selection fast or
-  // Internet connection is slow.
+  /**
+   * Unique numeric key, incremented per each load attempt used to discard
+   * old attempts. This can happen especially when changing selection fast or
+   * Internet connection is slow.
+   *
+   * @type {number}
+   * @private
+   */
   this.currentUniqueKey_ = 0;
 
-  this.initListeners_();
-  this.initDom_();
+  /**
+   * @type {number}
+   * @private
+   */
+  this.sequenceDirection_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.sequenceLength_ = 0;
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
+  this.savedSelection_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.displayedIndex_ = -1;
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.slideHint_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.active_ = false;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.leaveAfterSlideshow_ = false;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.fullscreenBeforeSlideshow_ = false;
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.slideShowTimeout_ = null;
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.spinnerTimer_ = null;
+
+  window.addEventListener('resize', this.onResize_.bind(this));
+
+  // ----------------------------------------------------------------
+  // Initializes the UI.
+
+  /**
+   * Container for displayed image.
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.imageContainer_ = util.createChild(queryRequiredElement(
+      this.document_, '.content'), 'image-container');
+  this.imageContainer_.addEventListener('click', this.onClick_.bind(this));
+
+  this.document_.addEventListener('click', this.onDocumentClick_.bind(this));
+
+  /**
+   * Overwrite options and info bubble.
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.options_ = util.createChild(queryRequiredElement(
+      this.toolbar_, '.filename-spacer'), 'options');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.savedLabel_ = util.createChild(this.options_, 'saved');
+  this.savedLabel_.textContent = this.displayStringFunction_('GALLERY_SAVED');
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var overwriteOriginalBox = util.createChild(
+      this.options_, 'overwrite-original');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.overwriteOriginal_ = util.createChild(
+      overwriteOriginalBox, '', 'input');
+  this.overwriteOriginal_.type = 'checkbox';
+  this.overwriteOriginal_.id = 'overwrite-checkbox';
+  chrome.storage.local.get(SlideMode.OVERWRITE_KEY, function(values) {
+    var value = values[SlideMode.OVERWRITE_KEY];
+    // Out-of-the box default is 'true'
+    this.overwriteOriginal_.checked =
+        (value === 'false' || value === false) ? false : true;
+  }.bind(this));
+  this.overwriteOriginal_.addEventListener('click',
+      this.onOverwriteOriginalClick_.bind(this));
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var overwriteLabel = util.createChild(overwriteOriginalBox, '', 'label');
+  overwriteLabel.textContent =
+      this.displayStringFunction_('GALLERY_OVERWRITE_ORIGINAL');
+  overwriteLabel.setAttribute('for', 'overwrite-checkbox');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.bubble_ = util.createChild(this.toolbar_, 'bubble');
+  this.bubble_.hidden = true;
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var bubbleContent = util.createChild(this.bubble_);
+  bubbleContent.innerHTML = this.displayStringFunction_(
+      'GALLERY_OVERWRITE_BUBBLE');
+
+  util.createChild(this.bubble_, 'pointer bottom', 'span');
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var bubbleClose = util.createChild(this.bubble_, 'close-x');
+  bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
+
+  /**
+   * Ribbon and related controls.
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.arrowBox_ = util.createChild(this.container_, 'arrow-box');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.arrowLeft_ = util.createChild(
+      this.arrowBox_, 'arrow left tool dimmable');
+  this.arrowLeft_.addEventListener('click',
+      this.advanceManually.bind(this, -1));
+  util.createChild(this.arrowLeft_);
+
+  util.createChild(this.arrowBox_, 'arrow-spacer');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.arrowRight_ = util.createChild(
+      this.arrowBox_, 'arrow right tool dimmable');
+  this.arrowRight_.addEventListener('click',
+      this.advanceManually.bind(this, 1));
+  util.createChild(this.arrowRight_);
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.ribbonSpacer_ = queryRequiredElement(this.toolbar_, '.ribbon-spacer');
+
+  /**
+   * @type {!Ribbon}
+   * @private
+   * @const
+   */
+  this.ribbon_ = new Ribbon(
+      this.document_, this.dataModel_, this.selectionModel_);
+  this.ribbonSpacer_.appendChild(this.ribbon_);
+
+  util.createChild(this.container_, 'spinner');
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var slideShowButton = queryRequiredElement(this.toolbar_, 'button.slideshow');
+  slideShowButton.title = this.displayStringFunction_('GALLERY_SLIDESHOW');
+  slideShowButton.addEventListener('click',
+      this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  var slideShowToolbar = util.createChild(
+      this.container_, 'tool slideshow-toolbar');
+  util.createChild(slideShowToolbar, 'slideshow-play').
+      addEventListener('click', this.toggleSlideshowPause_.bind(this));
+  util.createChild(slideShowToolbar, 'slideshow-end').
+      addEventListener('click', this.stopSlideshow_.bind(this));
+
+  // Editor.
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.editButton_ = queryRequiredElement(this.toolbar_, 'button.edit');
+  this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
+  this.editButton_.disabled = true;  // Disabled by default.
+  this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.printButton_ = queryRequiredElement(this.toolbar_, 'button.print');
+  this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
+  this.printButton_.disabled = true;  // Disabled by default.
+  this.printButton_.addEventListener('click', this.print_.bind(this));
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.editBarSpacer_ = queryRequiredElement(this.toolbar_, '.edit-bar-spacer');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.editBarMain_ = util.createChild(this.editBarSpacer_, 'edit-main');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.editBarModeWrapper_ = util.createChild(
+      this.editBarMode_, 'edit-modal-wrapper dimmable');
+  this.editBarModeWrapper_.hidden = true;
+
+  /**
+   * Objects supporting image display and editing.
+   * @type {!Viewport}
+   * @private
+   * @const
+   */
+  this.viewport_ = new Viewport();
+
+  /**
+   * @type {!ImageView}
+   * @private
+   * @const
+   */
+  this.imageView_ = new ImageView(
+      this.imageContainer_,
+      this.viewport_);
+
+  /**
+   * @type {!ImageEditor}
+   * @private
+   * @const
+   */
+  this.editor_ = new ImageEditor(
+      this.viewport_,
+      this.imageView_,
+      this.prompt_,
+      {
+        root: this.container_,
+        image: this.imageContainer_,
+        toolbar: this.editBarMain_,
+        mode: this.editBarModeWrapper_
+      },
+      SlideMode.EDITOR_MODES,
+      this.displayStringFunction_,
+      this.onToolsVisibilityChanged_.bind(this));
+
+  /**
+   * @type {!TouchHandler}
+   * @private
+   * @const
+   */
+  this.touchHandlers_ = new TouchHandler(this.imageContainer_, this);
 }
 
 /**
  * List of available editor modes.
- * @type {Array.<ImageEditor.Mode>}
+ * @type {!Array.<ImageEditor.Mode>}
  * @const
  */
 SlideMode.EDITOR_MODES = Object.freeze([
@@ -65,15 +472,15 @@ SlideMode.EDITOR_MODES = Object.freeze([
 
 /**
  * Map of the key identifier and offset delta.
- * @type {Object.<string, Array.<number>})
+ * @enum {!Array.<number>})
  * @const
  */
-SlideMode.KEY_OFFSET_MAP = Object.freeze({
-  'Up': Object.freeze([0, 20]),
-  'Down': Object.freeze([0, -20]),
-  'Left': Object.freeze([20, 0]),
-  'Right': Object.freeze([-20, 0])
-});
+SlideMode.KEY_OFFSET_MAP = {
+  'Up': [0, 20],
+  'Down': [0, -20],
+  'Left': [20, 0],
+  'Right': [-20, 0]
+};
 
 /**
  * SlideMode extends cr.EventTarget.
@@ -91,153 +498,13 @@ SlideMode.prototype.getName = function() { return 'slide'; };
 SlideMode.prototype.getTitle = function() { return 'GALLERY_SLIDE'; };
 
 /**
- * @return {Viewport} Viewport.
+ * @return {!Viewport} Viewport.
  */
 SlideMode.prototype.getViewport = function() { return this.viewport_; };
 
 /**
- * Initialize the listeners.
- * @private
- */
-SlideMode.prototype.initListeners_ = function() {
-  window.addEventListener('resize', this.onResize_.bind(this));
-};
-
-/**
- * Initialize the UI.
- * @private
- */
-SlideMode.prototype.initDom_ = function() {
-  // Container for displayed image.
-  this.imageContainer_ = util.createChild(
-      this.document_.querySelector('.content'), 'image-container');
-  this.imageContainer_.addEventListener('click', this.onClick_.bind(this));
-
-  this.document_.addEventListener('click', this.onDocumentClick_.bind(this));
-
-  // Overwrite options and info bubble.
-  this.options_ = util.createChild(
-      this.toolbar_.querySelector('.filename-spacer'), 'options');
-
-  this.savedLabel_ = util.createChild(this.options_, 'saved');
-  this.savedLabel_.textContent = this.displayStringFunction_('GALLERY_SAVED');
-
-  var overwriteOriginalBox =
-      util.createChild(this.options_, 'overwrite-original');
-
-  this.overwriteOriginal_ = util.createChild(
-      overwriteOriginalBox, '', 'input');
-  this.overwriteOriginal_.type = 'checkbox';
-  this.overwriteOriginal_.id = 'overwrite-checkbox';
-  chrome.storage.local.get(SlideMode.OVERWRITE_KEY, function(values) {
-    var value = values[SlideMode.OVERWRITE_KEY];
-    // Out-of-the box default is 'true'
-    this.overwriteOriginal_.checked =
-        (value === 'false' || value === false) ? false : true;
-  }.bind(this));
-  this.overwriteOriginal_.addEventListener('click',
-      this.onOverwriteOriginalClick_.bind(this));
-
-  var overwriteLabel = util.createChild(overwriteOriginalBox, '', 'label');
-  overwriteLabel.textContent =
-      this.displayStringFunction_('GALLERY_OVERWRITE_ORIGINAL');
-  overwriteLabel.setAttribute('for', 'overwrite-checkbox');
-
-  this.bubble_ = util.createChild(this.toolbar_, 'bubble');
-  this.bubble_.hidden = true;
-
-  var bubbleContent = util.createChild(this.bubble_);
-  bubbleContent.innerHTML = this.displayStringFunction_(
-      'GALLERY_OVERWRITE_BUBBLE');
-
-  util.createChild(this.bubble_, 'pointer bottom', 'span');
-
-  var bubbleClose = util.createChild(this.bubble_, 'close-x');
-  bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
-
-  // Ribbon and related controls.
-  this.arrowBox_ = util.createChild(this.container_, 'arrow-box');
-
-  this.arrowLeft_ =
-      util.createChild(this.arrowBox_, 'arrow left tool dimmable');
-  this.arrowLeft_.addEventListener('click',
-      this.advanceManually.bind(this, -1));
-  util.createChild(this.arrowLeft_);
-
-  util.createChild(this.arrowBox_, 'arrow-spacer');
-
-  this.arrowRight_ =
-      util.createChild(this.arrowBox_, 'arrow right tool dimmable');
-  this.arrowRight_.addEventListener('click',
-      this.advanceManually.bind(this, 1));
-  util.createChild(this.arrowRight_);
-
-  this.ribbonSpacer_ = this.toolbar_.querySelector('.ribbon-spacer');
-  this.ribbon_ = new Ribbon(
-      this.document_, this.dataModel_, this.selectionModel_);
-  this.ribbonSpacer_.appendChild(this.ribbon_);
-
-  util.createChild(this.container_, 'spinner');
-
-  var slideShowButton = this.toolbar_.querySelector('button.slideshow');
-  slideShowButton.title = this.displayStringFunction_('GALLERY_SLIDESHOW');
-  slideShowButton.addEventListener('click',
-      this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
-
-  var slideShowToolbar =
-      util.createChild(this.container_, 'tool slideshow-toolbar');
-  util.createChild(slideShowToolbar, 'slideshow-play').
-      addEventListener('click', this.toggleSlideshowPause_.bind(this));
-  util.createChild(slideShowToolbar, 'slideshow-end').
-      addEventListener('click', this.stopSlideshow_.bind(this));
-
-  // Editor.
-
-  this.editButton_ = this.toolbar_.querySelector('button.edit');
-  this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
-  this.editButton_.disabled = true;  // Disabled by default.
-  this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
-
-  this.printButton_ = this.toolbar_.querySelector('button.print');
-  this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
-  this.printButton_.disabled = true;  // Disabled by default.
-  this.printButton_.addEventListener('click', this.print_.bind(this));
-
-  this.editBarSpacer_ = this.toolbar_.querySelector('.edit-bar-spacer');
-  this.editBarMain_ = util.createChild(this.editBarSpacer_, 'edit-main');
-
-  this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
-  this.editBarModeWrapper_ = util.createChild(
-      this.editBarMode_, 'edit-modal-wrapper dimmable');
-  this.editBarModeWrapper_.hidden = true;
-
-  // Objects supporting image display and editing.
-  this.viewport_ = new Viewport();
-
-  this.imageView_ = new ImageView(
-      this.imageContainer_,
-      this.viewport_);
-
-  this.editor_ = new ImageEditor(
-      this.viewport_,
-      this.imageView_,
-      this.prompt_,
-      {
-        root: this.container_,
-        image: this.imageContainer_,
-        toolbar: this.editBarMain_,
-        mode: this.editBarModeWrapper_
-      },
-      SlideMode.EDITOR_MODES,
-      this.displayStringFunction_,
-      this.onToolsVisibilityChanged_.bind(this));
-
-  this.touchHandlers_ = new TouchHandler(this.imageContainer_, this);
-};
-
-/**
  * Load items, display the selected item.
- * @param {ImageRect} zoomFromRect Rectangle for zoom effect.
+ * @param {!ImageRect} zoomFromRect Rectangle for zoom effect.
  * @param {function()} displayCallback Called when the image is displayed.
  * @param {function()} loadCallback Called when the image is displayed.
  */
@@ -323,7 +590,7 @@ SlideMode.prototype.enter = function(
 
 /**
  * Leave the mode.
- * @param {ImageRect} zoomToRect Rectangle for zoom effect.
+ * @param {!ImageRect} zoomToRect Rectangle for zoom effect.
  * @param {function()} callback Called when the image is committed and
  *   the zoom-out animation has started.
  */
@@ -389,11 +656,13 @@ SlideMode.prototype.getItemCount_ = function() {
  * @return {Gallery.Item} Item.
  */
 SlideMode.prototype.getItem = function(index) {
-  return this.dataModel_.item(index);
+  var item =
+      /** @type {(Gallery.Item|undefined)} */ (this.dataModel_.item(index));
+  return item === undefined ? null : item;
 };
 
 /**
- * @return {Gallery.Item} Selected index.
+ * @return {number} Selected index.
  */
 SlideMode.prototype.getSelectedIndex = function() {
   return this.selectionModel_.selectedIndex;
@@ -452,8 +721,8 @@ SlideMode.prototype.onSelection_ = function() {
  * @private
  */
 SlideMode.prototype.onToolsVisibilityChanged_ = function() {
-  var headerDimmed =
-      this.document_.querySelector('.header').hasAttribute('dimmed');
+  var headerDimmed = queryRequiredElement(this.document_, '.header')
+      .hasAttribute('dimmed');
   this.context_.onAppRegionChanged(!headerDimmed);
 };
 
@@ -464,7 +733,7 @@ SlideMode.prototype.onToolsVisibilityChanged_ = function() {
  * @param {number=} opt_slideHint Slide animation direction (-1|1).
  */
 SlideMode.prototype.select = function(index, opt_slideHint) {
-  this.slideHint_ = opt_slideHint;
+  this.slideHint_ = opt_slideHint || null;
   this.selectionModel_.selectedIndex = index;
   this.selectionModel_.leadIndex = index;
 };
@@ -476,7 +745,7 @@ SlideMode.prototype.select = function(index, opt_slideHint) {
  */
 SlideMode.prototype.loadSelectedItem_ = function() {
   var slideHint = this.slideHint_;
-  this.slideHint_ = undefined;
+  this.slideHint_ = null;
 
   var index = this.getSelectedIndex();
   if (index === this.displayedIndex_)
@@ -498,7 +767,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   }
 
   this.displayedIndex_ = index;
-  var selectedItem = this.getSelectedItem();
+  var selectedItem = assertInstanceof(this.getSelectedItem(), Gallery.Item);
 
   if (this.sequenceLength_ <= 1) {
     // We have just broke the sequence. Touch the current image so that it stays
@@ -544,16 +813,17 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 /**
  * Unload the current image.
  *
- * @param {ImageRect} zoomToRect Rectangle for zoom effect.
+ * @param {ImageRect=} opt_zoomToRect Rectangle for zoom effect.
  * @private
  */
-SlideMode.prototype.unloadImage_ = function(zoomToRect) {
-  this.imageView_.unload(zoomToRect);
+SlideMode.prototype.unloadImage_ = function(opt_zoomToRect) {
+  this.imageView_.unload(opt_zoomToRect);
 };
 
 /**
  * Data model 'splice' event handler.
- * @param {Event} event Event.
+ * @param {!Event} event Event.
+ * @this {SlideMode}
  * @private
  */
 SlideMode.prototype.onSplice_ = function(event) {
@@ -668,8 +938,8 @@ SlideMode.prototype.selectLast = function() {
 /**
  * Load and display an item.
  *
- * @param {Gallery.Item} item Item.
- * @param {Object} effect Transition effect object.
+ * @param {!Gallery.Item} item Item.
+ * @param {!Object} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (which can happen before the image load due to caching).
  * @param {function(number, number)} loadCallback Called when the image is fully
@@ -678,72 +948,9 @@ SlideMode.prototype.selectLast = function() {
  */
 SlideMode.prototype.loadItem_ = function(
     item, effect, displayCallback, loadCallback) {
-  var entry = item.getEntry();
-  var metadata = item.getMetadata();
   this.showSpinner_(true);
 
-  var loadDone = function(loadType, delay, error) {
-    this.showSpinner_(false);
-    if (loadType === ImageView.LOAD_TYPE_ERROR) {
-      // if we have a specific error, then display it
-      if (error) {
-        this.errorBanner_.show(error);
-      } else {
-        // otherwise try to infer general error
-        this.errorBanner_.show('GALLERY_IMAGE_ERROR');
-      }
-    } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
-      this.errorBanner_.show('GALLERY_IMAGE_OFFLINE');
-    }
-
-    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
-
-    var toMillions = function(number) {
-      return Math.round(number / (1000 * 1000));
-    };
-
-    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-        toMillions(metadata.filesystem.size));
-
-    var canvas = this.imageView_.getCanvas();
-    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
-        toMillions(canvas.width * canvas.height));
-
-    var extIndex = entry.name.lastIndexOf('.');
-    var ext = extIndex < 0 ? '' :
-        entry.name.substr(extIndex + 1).toLowerCase();
-    if (ext === 'jpeg') ext = 'jpg';
-    ImageUtil.metrics.recordEnum(
-        ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
-
-    // Enable or disable buttons for editing and printing.
-    if (error) {
-      this.editButton_.disabled = true;
-      this.printButton_.disabled = true;
-    } else {
-      this.editButton_.disabled = false;
-      this.printButton_.disabled = false;
-    }
-
-    // For once edited image, disallow the 'overwrite' setting change.
-    ImageUtil.setAttribute(this.options_, 'saved',
-        !this.getSelectedItem().isOriginal());
-
-    chrome.storage.local.get(SlideMode.OVERWRITE_BUBBLE_KEY,
-        function(values) {
-          var times = values[SlideMode.OVERWRITE_BUBBLE_KEY] || 0;
-          if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
-            this.bubble_.hidden = false;
-            if (this.isEditing()) {
-              var items = {};
-              items[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
-              chrome.storage.local.set(items);
-            }
-          }
-        }.bind(this));
-
-    loadCallback(loadType, delay);
-  }.bind(this);
+  var loadDone = this.itemLoaded_.bind(this, item, loadCallback);
 
   var displayDone = function() {
     cr.dispatchSimpleEvent(this, 'image-displayed');
@@ -756,6 +963,83 @@ SlideMode.prototype.loadItem_ = function(
       this.saveCurrentImage_.bind(this, item),
       displayDone,
       loadDone);
+};
+
+/**
+ * A callback function when the editor opens a editing session for an image.
+ * @param {!Gallery.Item} item Gallery item.
+ * @param {function(number, number)} loadCallback Called when the image is fully
+ *     loaded.
+ * @param {number} loadType Load type.
+ * @param {number} delay Delay.
+ * @param {*=} opt_error Error.
+ * @private
+ */
+SlideMode.prototype.itemLoaded_ = function(
+    item, loadCallback, loadType, delay, opt_error) {
+  var entry = item.getEntry();
+  var metadata = item.getMetadata();
+
+  this.showSpinner_(false);
+  if (loadType === ImageView.LOAD_TYPE_ERROR) {
+    // if we have a specific error, then display it
+    if (opt_error) {
+      this.errorBanner_.show(/** @type {string} */ (opt_error));
+    } else {
+      // otherwise try to infer general error
+      this.errorBanner_.show('GALLERY_IMAGE_ERROR');
+    }
+  } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
+    this.errorBanner_.show('GALLERY_IMAGE_OFFLINE');
+  }
+
+  ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
+
+  var toMillions = function(number) {
+    return Math.round(number / (1000 * 1000));
+  };
+
+  ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
+      toMillions(metadata.filesystem.size));
+
+  var canvas = this.imageView_.getCanvas();
+  ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
+      toMillions(canvas.width * canvas.height));
+
+  var extIndex = entry.name.lastIndexOf('.');
+  var ext = extIndex < 0 ? '' :
+      entry.name.substr(extIndex + 1).toLowerCase();
+  if (ext === 'jpeg') ext = 'jpg';
+  ImageUtil.metrics.recordEnum(
+      ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+
+  // Enable or disable buttons for editing and printing.
+  if (opt_error) {
+    this.editButton_.disabled = true;
+    this.printButton_.disabled = true;
+  } else {
+    this.editButton_.disabled = false;
+    this.printButton_.disabled = false;
+  }
+
+  // For once edited image, disallow the 'overwrite' setting change.
+  ImageUtil.setAttribute(this.options_, 'saved',
+      !this.getSelectedItem().isOriginal());
+
+  chrome.storage.local.get(SlideMode.OVERWRITE_BUBBLE_KEY,
+      function(values) {
+        var times = values[SlideMode.OVERWRITE_BUBBLE_KEY] || 0;
+        if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
+          this.bubble_.hidden = false;
+          if (this.isEditing()) {
+            var items = {};
+            items[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
+            chrome.storage.local.set(items);
+          }
+        }
+      }.bind(this));
+
+  loadCallback(loadType, delay);
 };
 
 /**
@@ -797,7 +1081,7 @@ SlideMode.prototype.onUnload = function(exiting) {
 /**
  * Click handler for the image container.
  *
- * @param {Event} event Mouse click event.
+ * @param {!Event} event Mouse click event.
  * @private
  */
 SlideMode.prototype.onClick_ = function(event) {
@@ -805,15 +1089,17 @@ SlideMode.prototype.onClick_ = function(event) {
 
 /**
  * Click handler for the entire document.
- * @param {Event} e Mouse click event.
+ * @param {!Event} event Mouse click event.
  * @private
  */
-SlideMode.prototype.onDocumentClick_ = function(e) {
+SlideMode.prototype.onDocumentClick_ = function(event) {
+  event = assertInstanceof(event, MouseEvent);
+  var targetElement = assertInstanceof(event.target, HTMLElement);
   // Close the bubble if clicked outside of it and if it is visible.
-  if (!this.bubble_.contains(e.target) &&
-      !this.editButton_.contains(e.target) &&
-      !this.arrowLeft_.contains(e.target) &&
-      !this.arrowRight_.contains(e.target) &&
+  if (!this.bubble_.contains(targetElement) &&
+      !this.editButton_.contains(targetElement) &&
+      !this.arrowLeft_.contains(targetElement) &&
+      !this.arrowRight_.contains(targetElement) &&
       !this.bubble_.hidden) {
     this.bubble_.hidden = true;
   }
@@ -822,7 +1108,7 @@ SlideMode.prototype.onDocumentClick_ = function(e) {
 /**
  * Keydown handler.
  *
- * @param {Event} event Event.
+ * @param {!Event} event Event.
  * @return {boolean} True if handled.
  */
 SlideMode.prototype.onKeyDown = function(event) {
@@ -959,7 +1245,7 @@ SlideMode.prototype.updateThumbnails = function() {
 /**
  * Save the current image to a file.
  *
- * @param {Gallery.Item} item Item to save the image.
+ * @param {!Gallery.Item} item Item to save the image.
  * @param {function()} callback Callback.
  * @private
  */
@@ -1037,7 +1323,7 @@ SlideMode.prototype.shouldOverwriteOriginal_ = function() {
 
 /**
  * 'Overwrite original' checkbox handler.
- * @param {Event} event Event.
+ * @param {!Event} event Event.
  * @private
  */
 SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
@@ -1106,8 +1392,14 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   } else {
     // We are in the Mosaic mode. Toggle the mode but remember to return.
     this.leaveAfterSlideshow_ = true;
-    this.toggleMode_(this.startSlideshow.bind(
-        this, SlideMode.SLIDESHOW_INTERVAL, opt_event));
+
+    // Wait until the zoom animation from the mosaic mode is done.
+    var startSlideshowAfterTransition = function() {
+      setTimeout(function() {
+        this.startSlideshow.call(this, SlideMode.SLIDESHOW_INTERVAL, opt_event);
+      }.bind(this), ImageView.MODE_TRANSITION_DURATION);
+    }.bind(this);
+    this.toggleMode_(startSlideshowAfterTransition);
     return;
   }
 
@@ -1116,9 +1408,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
 
   this.fullscreenBeforeSlideshow_ = util.isFullScreen(this.context_.appWindow);
   if (!this.fullscreenBeforeSlideshow_) {
-    // Wait until the zoom animation from the mosaic mode is done.
-    setTimeout(this.toggleFullScreen_.bind(this),
-               ImageView.ZOOM_ANIMATION_DURATION);
+    this.toggleFullScreen_();
     opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
         SlideMode.FULLSCREEN_TOGGLE_DELAY;
   }
@@ -1305,22 +1595,25 @@ SlideMode.prototype.applyViewportChange = function() {
 
 /**
  * Touch handlers of the slide mode.
- * @param {Element} targetElement Event source.
- * @param {SlideMode} slideMode Slide mode to be operated by the handler.
+ * @param {!Element} targetElement Event source.
+ * @param {!SlideMode} slideMode Slide mode to be operated by the handler.
+ * @struct
  * @constructor
  */
 function TouchHandler(targetElement, slideMode) {
   /**
    * Event source.
-   * @type {Element}
+   * @type {!Element}
    * @private
+   * @const
    */
   this.targetElement_ = targetElement;
 
   /**
    * Target of touch operations.
-   * @type {SlideMode}
+   * @type {!SlideMode}
    * @private
+   * @const
    */
   this.slideMode_ = slideMode;
 
@@ -1401,9 +1694,9 @@ TouchHandler.ROTATION_THRESHOLD = 25;
 
 /**
  * Obtains distance between fingers.
- * @param {TouchEvent} event Touch event. It should include more than two
+ * @param {!TouchEvent} event Touch event. It should include more than two
  *     touches.
- * @return {boolean} Distance between touch[0] and touch[1].
+ * @return {number} Distance between touch[0] and touch[1].
  */
 TouchHandler.getDistance = function(event) {
   var touch1 = event.touches[0];
@@ -1415,9 +1708,9 @@ TouchHandler.getDistance = function(event) {
 
 /**
  * Obtains the degrees of the pinch twist angle.
- * @param {TouchEvent} event1 Start touch event. It should include more than two
- *     touches.
- * @param {TouchEvent} event2 Current touch event. It should include more than
+ * @param {!TouchEvent} event1 Start touch event. It should include more than
+ *     two touches.
+ * @param {!TouchEvent} event2 Current touch event. It should include more than
  *     two touches.
  * @return {number} Degrees of the pinch twist angle.
  */
@@ -1431,7 +1724,7 @@ TouchHandler.getTwistAngle = function(event1, event2) {
   return Math.atan2(outerProduct, innerProduct) * 180 / Math.PI;  // atan(y / x)
 };
 
-TouchHandler.prototype = {
+TouchHandler.prototype = /** @struct */ {
   /**
    * @param {boolean} flag New value.
    */
@@ -1455,20 +1748,22 @@ TouchHandler.prototype.stopOperation = function() {
 
 /**
  * Handles touch start events.
- * @param {TouchEvent} event Touch event.
+ * @param {!Event} event Touch event.
  * @private
  */
 TouchHandler.prototype.onTouchStart_ = function(event) {
+  event = assertInstanceof(event, TouchEvent);
   if (this.enabled_ && event.touches.length === 1)
     this.touchStarted_ = true;
 };
 
 /**
  * Handles touch move and touch end events.
- * @param {TouchEvent} event Touch event.
+ * @param {!Event} event Touch event.
  * @private
  */
 TouchHandler.prototype.onTouchEvent_ = function(event) {
+  event = assertInstanceof(event, TouchEvent);
   // Check if the current touch operation started from the target element or
   // not.
   if (!this.touchStarted_)
@@ -1536,6 +1831,7 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
       viewport.setZoom(zoom);
 
       // Pinch rotation.
+      assert(this.gestureStartEvent_);
       var angle = TouchHandler.getTwistAngle(this.gestureStartEvent_, event);
       if (angle > TouchHandler.ROTATION_THRESHOLD)
         viewport.setRotation(this.gestureStartRotation_ + 1);
@@ -1554,10 +1850,11 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
 
 /**
  * Handles mouse wheel events.
- * @param {MouseEvent} event Wheel event.
+ * @param {!Event} event Wheel event.
  * @private
  */
 TouchHandler.prototype.onMouseWheel_ = function(event) {
+  var event = assertInstanceof(event, MouseEvent);
   var viewport = this.slideMode_.getViewport();
   if (!this.enabled_ || !viewport.isZoomed())
     return;
