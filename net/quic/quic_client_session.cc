@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_activity_monitor.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -633,6 +634,18 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
             connection()->sent_packet_manager().consecutive_tlp_count());
       }
+      if (connection()->sent_packet_manager().HasUnackedPackets()) {
+        UMA_HISTOGRAM_TIMES(
+            "Net.QuicSession.LocallyTimedOutWithOpenStreams."
+                "TimeSinceLastReceived.UnackedPackets",
+            NetworkActivityMonitor::GetInstance()->GetTimeSinceLastReceived());
+      } else {
+        UMA_HISTOGRAM_TIMES(
+            "Net.QuicSession.LocallyTimedOutWithOpenStreams."
+                "TimeSinceLastReceived.NoUnackedPackets",
+            NetworkActivityMonitor::GetInstance()->GetTimeSinceLastReceived());
+      }
+
     } else {
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",

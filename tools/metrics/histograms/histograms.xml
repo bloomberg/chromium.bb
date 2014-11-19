@@ -17830,6 +17830,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="Net.QuicSession.LocallyTimedOutWithOpenStreams.TimeSinceLastReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    If a QUIC connection timed out locally with open streams, this contains the
+    time since any data was read from the network until the connection was
+    closed. The suffix specifies whether there were any unacked packets pending
+    when the connection timed out.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.MaxReordering">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -60480,6 +60491,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="TrackedSplitPreferences" separator=".">
   <suffix name="extensions.settings" label="Extension IDs dictionary"/>
   <affected-histogram name="Settings.TrackedSplitPreferenceChanged"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="UnackedPackets" separator=".">
+  <suffix name="HasUnackedPackets"
+      label="The session had outstanding unacked packets."/>
+  <suffix name="NoUnackedPackets"
+      label="The session had no outstanding unacked packets."/>
+  <affected-histogram
+      name="Net.QuicSession.LocallyTimedOutWithOpenStreams.TimeSinceLastReceived"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="V8SpecialApps" separator=".">
