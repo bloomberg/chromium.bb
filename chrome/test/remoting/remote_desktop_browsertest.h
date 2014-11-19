@@ -312,6 +312,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Checking whether the localHost has been initialized.
   bool IsLocalHostReady();
 
+  // Checking whether the hosts list has been initialized.
+  bool IsHostListReady();
+
   // Callback used by EnterPin to check whether the pin form is visible
   // and to dismiss the host-needs-update dialog.
   bool IsPinFormVisible();

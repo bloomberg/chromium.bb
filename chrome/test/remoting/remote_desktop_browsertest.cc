@@ -524,6 +524,16 @@ void RemoteDesktopBrowserTest::ConnectToLocalHost(bool remember_pin) {
 
 void RemoteDesktopBrowserTest::ConnectToRemoteHost(
     const std::string& host_name, bool remember_pin) {
+
+  // Wait for hosts list to be fetched.
+  // This test typically runs with a clean user-profile, with no host-list
+  // cached. Waiting for the host-list to be null is sufficient to proceed.
+  ConditionalTimeoutWaiter waiter(
+        base::TimeDelta::FromSeconds(5),
+        base::TimeDelta::FromMilliseconds(500),
+        base::Bind(&RemoteDesktopBrowserTest::IsHostListReady, this));
+  EXPECT_TRUE(waiter.Wait());
+
   std::string host_id = ExecuteScriptAndExtractString(
       "remoting.hostList.getHostIdForName('" + host_name + "')");
 
@@ -804,6 +814,14 @@ bool RemoteDesktopBrowserTest::IsLocalHostReady() {
   // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.hostList.setLocalHost_?
   return ExecuteScriptAndExtractBool("remoting.hostList.localHost_ != null");
+}
+
+bool RemoteDesktopBrowserTest::IsHostListReady() {
+  // Wait until hostList is not null.
+  // The connect-to-host tests are run on the waterfall using a new profile-dir.
+  // No hosts will be cached.
+  return ExecuteScriptAndExtractBool(
+    "remoting.hostList != null && remoting.hostList.hosts_ != null");
 }
 
 bool RemoteDesktopBrowserTest::IsSessionConnected() {
