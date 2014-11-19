@@ -34,6 +34,8 @@
 
 #define SKIP 77
 
+char __attribute__((weak)) *server_parameters="";
+
 extern const struct weston_test __start_test_section, __stop_test_section;
 
 static const struct weston_test *
@@ -151,6 +153,12 @@ int main(int argc, char *argv[])
 		    strcmp(testname, "-h") == 0) {
 			fprintf(stderr, "Usage: %s [test-name]\n", program_invocation_short_name);
 			list_tests();
+			exit(EXIT_SUCCESS);
+		}
+
+		if (strcmp(testname, "--params") == 0 ||
+		    strcmp(testname, "-p") == 0) {
+			printf("%s", server_parameters);
 			exit(EXIT_SUCCESS);
 		}
 

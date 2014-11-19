@@ -46,5 +46,6 @@ case $TESTNAME in
 			--shell=$SHELL_PLUGIN \
 			--log="$SERVERLOG" \
 			--modules=$TEST_PLUGIN,$XWAYLAND_PLUGIN \
+			$($abs_builddir/$TESTNAME --params) \
 			&> "$OUTLOG"
 esac
