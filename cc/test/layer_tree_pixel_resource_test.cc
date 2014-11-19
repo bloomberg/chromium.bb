@@ -25,14 +25,14 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
     case GL_GPU_RASTER_2D_DRAW:
     case GL_ZERO_COPY_2D_DRAW:
     case GL_ZERO_COPY_RECT_DRAW:
-    case GL_ONE_COPY_2D_STAGING_2D_DRAW:
     case GL_ASYNC_UPLOAD_2D_DRAW:
       return true;
     case GL_ZERO_COPY_EXTERNAL_DRAW:
+    case GL_ONE_COPY_2D_STAGING_2D_DRAW:
     case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
       // These should all be enabled in practice.
-      // TODO(reveman): one copy with rect not supported in unit tests yet.
+      // TODO(reveman): one copy not supported in unit tests yet.
       // TODO(enne): look into getting texture external oes enabled.
       return false;
   }
