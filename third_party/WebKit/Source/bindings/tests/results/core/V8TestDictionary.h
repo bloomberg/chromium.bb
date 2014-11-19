@@ -21,6 +21,7 @@ public:
 };
 
 v8::Handle<v8::Value> toV8(TestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+void toV8TestDictionary(TestDictionary&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& impl)

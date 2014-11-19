@@ -15,6 +15,7 @@
 namespace blink {
 
 class InternalDictionary;
+class InternalDictionaryDerived;
 
 class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -29,6 +30,9 @@ public:
     void set(const InternalDictionary&);
     // Sets each member of the given TestDictionary from fields
     void get(InternalDictionary&);
+
+    void setDerived(const InternalDictionaryDerived&);
+    void getDerived(InternalDictionaryDerived&);
 
     void trace(Visitor*);
 
@@ -59,6 +63,8 @@ private:
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMemberWithDefault;
+    String m_derivedStringMember;
+    String m_derivedStringMemberWithDefault;
 };
 
 } // namespace blink

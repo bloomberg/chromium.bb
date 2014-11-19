@@ -21,6 +21,7 @@ public:
 };
 
 v8::Handle<v8::Value> toV8({{cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+void toV8{{cpp_class}}({{cpp_class}}&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl)

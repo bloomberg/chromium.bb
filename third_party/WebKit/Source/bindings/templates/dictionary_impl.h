@@ -13,7 +13,8 @@
 
 namespace blink {
 
-class {{cpp_class}} final {
+{# FIXME: Add "final" if this class doesn't have subclasses #}
+class {{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     {{cpp_class}}();
@@ -24,7 +25,7 @@ public:
     void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
 
     {% endfor %}
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
 
 private:
     {% for member in members %}

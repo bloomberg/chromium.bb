@@ -22,6 +22,12 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
         return;
     }
 
+    {% if parent_v8_class %}
+    {{parent_v8_class}}::toImpl(isolate, v8Value, impl, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    {% endif %}
     // FIXME: Do not use Dictionary and DictionaryHelper
     // https://crbug.com/321462
     Dictionary dictionary(v8Value, isolate);
@@ -55,20 +61,28 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
 v8::Handle<v8::Value> toV8({{cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
+    {% if parent_v8_class %}
+    toV8{{parent_cpp_class}}(impl, v8Object, creationContext, isolate);
+    {% endif %}
+    toV8{{cpp_class}}(impl, v8Object, creationContext, isolate);
+    return v8Object;
+}
+
+void toV8{{cpp_class}}({{cpp_class}}& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
         {% if member.is_object %}
         ASSERT(impl.{{member.cpp_name}}().isObject());
         {% endif %}
-        v8Object->Set(v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}});
+        dictionary->Set(v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}});
     {% if member.v8_default_value %}
     } else {
-        v8Object->Set(v8String(isolate, "{{member.name}}"), {{member.v8_default_value}});
+        dictionary->Set(v8String(isolate, "{{member.name}}"), {{member.v8_default_value}});
     {% endif %}
     }
 
     {% endfor %}
-    return v8Object;
 }
 
 } // namespace blink

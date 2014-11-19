@@ -303,6 +303,10 @@ def cpp_name(definition_or_member):
     return extended_attributes['ImplementedAs']
 
 
+def cpp_name_from_interfaces_info(name, interfaces_info):
+    return interfaces_info.get(name, {}).get('implemented_as') or name
+
+
 def cpp_name_or_partial(interface):
     cpp_class_name = cpp_name(interface)
     if interface.is_partial:

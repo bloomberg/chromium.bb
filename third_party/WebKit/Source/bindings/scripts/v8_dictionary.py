@@ -7,6 +7,7 @@ implementation classes that are used by blink's core/modules.
 """
 
 import operator
+from idl_types import IdlType
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -42,17 +43,27 @@ def unwrap_nullable_if_needed(idl_type):
 
 # Context for V8 bindings
 
-def dictionary_context(dictionary):
+def dictionary_context(dictionary, interfaces_info):
     includes.clear()
     includes.update(DICTIONARY_CPP_INCLUDES)
-    return {
-        'cpp_class': v8_utilities.cpp_name(dictionary),
+    cpp_class = v8_utilities.cpp_name(dictionary)
+    context = {
+        'cpp_class': cpp_class,
         'header_includes': set(DICTIONARY_H_INCLUDES),
         'members': [member_context(member)
                     for member in sorted(dictionary.members,
                                          key=operator.attrgetter('name'))],
-        'v8_class': v8_utilities.v8_class_name(dictionary),
+        'v8_class': v8_types.v8_type(cpp_class),
     }
+    if dictionary.parent:
+        IdlType(dictionary.parent).add_includes_for_type()
+        parent_cpp_class = v8_utilities.cpp_name_from_interfaces_info(
+            dictionary.parent, interfaces_info)
+        context.update({
+            'parent_cpp_class': parent_cpp_class,
+            'parent_v8_class': v8_types.v8_type(parent_cpp_class),
+        })
+    return context
 
 
 def member_context(member):
@@ -96,13 +107,21 @@ def member_context(member):
 def dictionary_impl_context(dictionary, interfaces_info):
     includes.clear()
     header_includes = set(['platform/heap/Handle.h'])
-    return {
+    context = {
         'header_includes': header_includes,
         'cpp_class': v8_utilities.cpp_name(dictionary),
         'members': [member_impl_context(member, interfaces_info,
                                         header_includes)
                     for member in dictionary.members],
     }
+    if dictionary.parent:
+        context['parent_cpp_class'] = v8_utilities.cpp_name_from_interfaces_info(
+            dictionary.parent, interfaces_info)
+        parent_interface_info = interfaces_info.get(dictionary.parent)
+        if parent_interface_info:
+            context['header_includes'].add(
+                parent_interface_info['include_path'])
+    return context
 
 
 def member_impl_context(member, interfaces_info, header_includes):

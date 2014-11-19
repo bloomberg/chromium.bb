@@ -77,6 +77,34 @@ Test for passing invalid dictionary values
 PASS dictionaryTest.set(42) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..
 PASS dictionaryTest.set('string') threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..
 
+Test for derived dictionary
+PASS derived.longMember is undefined.
+PASS derived.longMemberWithDefault is 42
+PASS derived.longOrNullMember is undefined.
+PASS derived.longOrNullMemberWithDefault is null
+PASS derived.booleanMember is undefined.
+PASS derived.doubleMember is undefined.
+PASS derived.stringMember is undefined.
+PASS derived.stringMemberWithDefault is "defaultStringValue"
+PASS derived.stringSequenceMember is undefined.
+PASS derived.stringSequenceOrNullMember is undefined.
+PASS derived.elementMember is undefined.
+PASS derived.elementOrNullMember is undefined.
+PASS derived.enumMember is undefined.
+PASS derived.enumMemberWithDefault is "foo"
+PASS derived.enumOrNullMember is undefined.
+PASS derived.objectMember is undefined.
+PASS derived.objectOrNullMemberWithDefault is null
+PASS derived.derivedStringMember is undefined.
+PASS derived.derivedStringMemberWithDefault is "derivedDefaultStringValue"
+
+PASS derived.longMember is 1
+PASS derived.stringMemberWithDefault is "modifiedString"
+PASS derived.derivedStringMember is "modifiedString2"
+PASS derived.derivedStringMemberWithDefault is "modifiedString3"
+PASS derived.invalidMember is undefined.
+
+PASS dictionaryTest.setDerived({objectMember: 42}) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': member objectMember is not an object..
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -127,5 +127,46 @@ if (window.internals && internals.dictionaryTest) {
     shouldThrow("dictionaryTest.set(42)");
     shouldThrow("dictionaryTest.set('string')");
     debug('');
+
+    debug('Test for derived dictionary');
+    dictionaryTest.setDerived({});
+    derived = dictionaryTest.getDerived();
+    shouldBeUndefined('derived.longMember');
+    shouldBe('derived.longMemberWithDefault', '42');
+    shouldBeUndefined('derived.longOrNullMember');
+    shouldBeNull('derived.longOrNullMemberWithDefault');
+    shouldBeUndefined('derived.booleanMember');
+    shouldBeUndefined('derived.doubleMember');
+    shouldBeUndefined('derived.stringMember');
+    shouldBeEqualToString('derived.stringMemberWithDefault', 'defaultStringValue');
+    shouldBeUndefined('derived.stringSequenceMember');
+    shouldBeUndefined('derived.stringSequenceOrNullMember');
+    shouldBeUndefined('derived.elementMember');
+    shouldBeUndefined('derived.elementOrNullMember');
+    shouldBeUndefined('derived.enumMember');
+    shouldBeEqualToString('derived.enumMemberWithDefault', 'foo');
+    shouldBeUndefined('derived.enumOrNullMember');
+    shouldBeUndefined('derived.objectMember');
+    shouldBeNull('derived.objectOrNullMemberWithDefault');
+    shouldBeUndefined('derived.derivedStringMember');
+    shouldBeEqualToString('derived.derivedStringMemberWithDefault', 'derivedDefaultStringValue');
+    debug('');
+
+    dictionaryTest.setDerived({
+        longMember: 1,
+        stringMemberWithDefault: 'modifiedString',
+        derivedStringMember: 'modifiedString2',
+        derivedStringMemberWithDefault: 'modifiedString3',
+        invalidMember: 'shouldNotBeSet',
+    });
+    derived = dictionaryTest.getDerived();
+    shouldBe('derived.longMember', '1');
+    shouldBeEqualToString('derived.stringMemberWithDefault', 'modifiedString');
+    shouldBeEqualToString('derived.derivedStringMember', 'modifiedString2');
+    shouldBeEqualToString('derived.derivedStringMemberWithDefault', 'modifiedString3');
+    shouldBeUndefined('derived.invalidMember');
+
+    debug('');
+    shouldThrow("dictionaryTest.setDerived({objectMember: 42})");
 }
 </script>

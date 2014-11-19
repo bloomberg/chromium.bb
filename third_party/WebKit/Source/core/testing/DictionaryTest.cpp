@@ -6,6 +6,7 @@
 #include "DictionaryTest.h"
 
 #include "core/testing/InternalDictionary.h"
+#include "core/testing/InternalDictionaryDerived.h"
 
 namespace blink {
 
@@ -80,6 +81,21 @@ void DictionaryTest::get(InternalDictionary& result)
     result.setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
 }
 
+void DictionaryTest::setDerived(const InternalDictionaryDerived& derived)
+{
+    set(derived);
+    if (derived.hasDerivedStringMember())
+        m_derivedStringMember = derived.derivedStringMember();
+    m_derivedStringMemberWithDefault = derived.derivedStringMemberWithDefault();
+}
+
+void DictionaryTest::getDerived(InternalDictionaryDerived& result)
+{
+    get(result);
+    result.setDerivedStringMember(m_derivedStringMember);
+    result.setDerivedStringMemberWithDefault(m_derivedStringMemberWithDefault);
+}
+
 void DictionaryTest::reset()
 {
     m_longMember = Nullable<int>();
@@ -99,6 +115,8 @@ void DictionaryTest::reset()
     m_elementOrNullMember = nullptr;
     m_objectMember = ScriptValue();
     m_objectOrNullMemberWithDefault = ScriptValue();
+    m_derivedStringMember = String();
+    m_derivedStringMemberWithDefault = String();
 }
 
 void DictionaryTest::trace(Visitor* visitor)

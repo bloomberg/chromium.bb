@@ -205,7 +205,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
                                  dictionary):
         header_template = self.jinja_env.get_template('dictionary_v8.h')
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
-        template_context = v8_dictionary.dictionary_context(dictionary)
+        template_context = v8_dictionary.dictionary_context(
+            dictionary, self.interfaces_info)
         interface_info = self.interfaces_info[dictionary_name]
         include_paths = interface_info.get('dependencies_include_paths')
         # Add the include for interface itself

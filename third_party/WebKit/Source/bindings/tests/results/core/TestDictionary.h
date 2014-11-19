@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class TestDictionary final {
+class TestDictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestDictionary();
@@ -96,7 +96,7 @@ public:
     bool createMember() const { return m_createMember.get(); }
     void setCreateMember(bool value) { m_createMember = value; }
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
 
 private:
     Nullable<bool> m_booleanMember;
