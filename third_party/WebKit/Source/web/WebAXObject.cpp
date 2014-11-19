@@ -112,11 +112,6 @@ bool WebAXObject::updateLayoutAndCheckValidity()
     return !isDetached();
 }
 
-bool WebAXObject::updateBackingStoreAndCheckValidity()
-{
-    return updateLayoutAndCheckValidity();
-}
-
 WebString WebAXObject::accessibilityDescription() const
 {
     if (isDetached())
