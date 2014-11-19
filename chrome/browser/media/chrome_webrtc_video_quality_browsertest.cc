@@ -240,10 +240,17 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     DVLOG(0) << "Running " << compare_command.GetCommandLineString();
     std::string output;
     bool ok = base::GetAppOutput(compare_command, &output);
+
     // Print to stdout to ensure the perf numbers are parsed properly by the
-    // buildbot step.
+    // buildbot step. The tool should print a handful RESULT lines.
     printf("Output was:\n\n%s\n", output.c_str());
-    return ok;
+    bool has_result_lines = output.find("RESULT") != std::string::npos;
+    if (!ok || !has_result_lines) {
+      LOG(ERROR) << "Failed to compare videos; see output above to see what "
+                 << "the error was.";
+      return false;
+    }
+    return true;
   }
 
  protected:
