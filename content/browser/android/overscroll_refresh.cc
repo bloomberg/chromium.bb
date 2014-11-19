@@ -8,7 +8,9 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/gfx/screen.h"
 
+using std::abs;
 using std::max;
 using std::min;
 
@@ -19,8 +21,18 @@ const ui::SystemUIResourceType kIdleResourceType = ui::OVERSCROLL_REFRESH_IDLE;
 const ui::SystemUIResourceType kActiveResourceType =
     ui::OVERSCROLL_REFRESH_ACTIVE;
 
+// Default offset in dips from the top of the view to where the progress spinner
+// should stop.
+const int kDefaultSpinnerTargetDips = 64;
+
+// Drag movement multiplier between user input and effect translation.
+const float kDragRate = .5f;
+
 // Animation duration after the effect is released without triggering a refresh.
 const int kRecedeTimeMs = 300;
+
+// Animation duration immediately after the effect is released and activated.
+const int kActivationStartTimeMs = 150;
 
 // Animation duration after the effect is released and triggers a refresh.
 const int kActivationTimeMs = 1000;
@@ -31,24 +43,15 @@ const int kMaxActivationTimeMs = kActivationTimeMs * 3;
 // Animation duration after the refresh activated phase has completed.
 const int kActivationRecedeTimeMs = 300;
 
-// Input threshold required to activate the refresh.
-const float kPullActivationThreshold = .35f;
-
 // Input threshold required to start glowing.
-const float kGlowActivationThreshold = kPullActivationThreshold * 0.85f;
+const float kGlowActivationThreshold = 0.85f;
 
 // Useful for avoiding accidental triggering when a scroll janks (is delayed),
 // capping the impulse per event.
-const float kMaxNormalizedDeltaPerPull = kPullActivationThreshold / 4.f;
-
-// Maximum offset of the effect relative to the content size.
-const float kMaxRelativeOffset = .3f;
+const int kMinPullsToActivate = 4;
 
 // Minimum alpha for the effect layer.
-const float kMinAlpha = 0.25f;
-
-// Controls spin velocity.
-const float kPullRotationMultiplier = 180.f * (1.f / kPullActivationThreshold);
+const float kMinAlpha = 0.3f;
 
 // Experimentally determined constant used to allow activation even if touch
 // release results in a small upward fling (quite common during a slow scroll).
@@ -60,7 +63,7 @@ void UpdateLayer(cc::UIResourceLayer* layer,
                  cc::Layer* parent,
                  cc::UIResourceId res_id,
                  const gfx::SizeF& viewport_size,
-                 float relative_offset,
+                 float offset,
                  float opacity,
                  float rotation) {
   if (layer->parent() != parent)
@@ -96,11 +99,8 @@ void UpdateLayer(cc::UIResourceLayer* layer,
   layer->SetContentsOpaque(false);
   layer->SetOpacity(Clamp(opacity, 0.f, 1.f));
 
-  float min_viewport_size = min(viewport_size.width(), viewport_size.height());
   float offset_x = (viewport_size.width() - image_size.width()) * 0.5f;
-  float offset_y =
-      Damp(relative_offset, 1.2f) * min_viewport_size * kMaxRelativeOffset -
-      image_size.height();
+  float offset_y = offset - image_size.height();
   gfx::Transform transform;
   transform.Translate(offset_x, offset_y);
   transform.Rotate(rotation);
@@ -115,6 +115,11 @@ class OverscrollRefresh::Effect {
       : resource_manager_(resource_manager),
         idle_layer_(cc::UIResourceLayer::Create()),
         active_layer_(cc::UIResourceLayer::Create()),
+        target_drag_(kDefaultSpinnerTargetDips *
+                     gfx::Screen::GetNativeScreen()
+                         ->GetPrimaryDisplay()
+                         .device_scale_factor()),
+        drag_(0),
         idle_alpha_(0),
         active_alpha_(0),
         offset_(0),
@@ -128,32 +133,51 @@ class OverscrollRefresh::Effect {
         rotation_start_(0),
         rotation_finish_(0),
         state_(STATE_IDLE) {
+    DCHECK(target_drag_);
     idle_layer_->SetIsDrawable(false);
     active_layer_->SetIsDrawable(false);
   }
 
   ~Effect() { Detach(); }
 
-  void Pull(float normalized_delta) {
+  void Pull(float delta) {
     if (state_ != STATE_PULL)
-      offset_ = 0;
+      drag_ = 0;
 
     state_ = STATE_PULL;
 
-    normalized_delta = Clamp(normalized_delta, -kMaxNormalizedDeltaPerPull,
-                             kMaxNormalizedDeltaPerPull);
+    delta *= kDragRate;
+    float max_delta = target_drag_ / kMinPullsToActivate;
+    delta = Clamp(delta, -max_delta, max_delta);
 
-    offset_ += normalized_delta;
-    offset_ = Clamp(offset_, 0.f, 1.f);
+    drag_ += delta;
+    drag_ = Clamp(drag_, 0.f, target_drag_ * 3.f);
+
+    // The following logic and constants were taken from Android's refresh
+    // effect (see SwipeRefreshLayout.java from v4 of the AppCompat library).
+    float original_drag_percent = drag_ / target_drag_;
+    float drag_percent = min(1.f, abs(original_drag_percent));
+    float adjusted_percent = max(drag_percent - .4f, 0.f) * 5.f / 3.f;
+    float extra_os = abs(drag_) - target_drag_;
+    float slingshot_dist = target_drag_;
+    float tension_slingshot_percent =
+        max(0.f, min(extra_os, slingshot_dist * 2) / slingshot_dist);
+    float tension_percent = ((tension_slingshot_percent / 4) -
+                             std::pow((tension_slingshot_percent / 4), 2.f)) *
+                            2.f;
+    float extra_move = slingshot_dist * tension_percent * 2;
+
+    offset_ = slingshot_dist * drag_percent + extra_move;
+
+    rotation_ =
+        360.f * ((-0.25f + .4f * adjusted_percent + tension_percent * 2) * .5f);
 
     idle_alpha_ =
-        kMinAlpha + (1.f - kMinAlpha) * offset_ / kGlowActivationThreshold;
-    active_alpha_ = (offset_ - kGlowActivationThreshold) /
-                    (kPullActivationThreshold - kGlowActivationThreshold);
+        kMinAlpha + (1.f - kMinAlpha) * drag_percent / kGlowActivationThreshold;
+    active_alpha_ = (drag_percent - kGlowActivationThreshold) /
+                    (1.f - kGlowActivationThreshold);
     idle_alpha_ = Clamp(idle_alpha_, 0.f, 1.f);
     active_alpha_ = Clamp(active_alpha_, 0.f, 1.f);
-
-    rotation_ = kPullRotationMultiplier * Damp(offset_, 1.f);
   }
 
   bool Animate(base::TimeTicks current_time, bool still_refreshing) {
@@ -164,8 +188,8 @@ class OverscrollRefresh::Effect {
       return true;
 
     const double dt = (current_time - start_time_).InMilliseconds();
-    const double t = min(dt / duration_.InMilliseconds(), 1.);
-    const float interp = static_cast<float>(Damp(t, 1.));
+    const double t = dt / duration_.InMilliseconds();
+    const float interp = static_cast<float>(Damp(min(t, 1.), 1.));
 
     idle_alpha_ = Lerp(idle_alpha_start_, idle_alpha_finish_, interp);
     active_alpha_ = Lerp(active_alpha_start_, active_alpha_finish_, interp);
@@ -179,6 +203,18 @@ class OverscrollRefresh::Effect {
       case STATE_IDLE:
       case STATE_PULL:
         NOTREACHED() << "Invalidate state for animation.";
+        break;
+      case STATE_ACTIVATED_START:
+        // Briefly pause the animation after the rapid initial translation.
+        if (t < 1.5f)
+          break;
+        state_ = STATE_ACTIVATED;
+        start_time_ = current_time;
+        duration_ = base::TimeDelta::FromMilliseconds(kActivationTimeMs);
+        activated_start_time_ = current_time;
+        offset_start_ = offset_finish_ = offset_;
+        rotation_start_ = rotation_;
+        rotation_finish_ = rotation_start_ + 360.f;
         break;
       case STATE_ACTIVATED:
         start_time_ = current_time;
@@ -211,11 +247,23 @@ class OverscrollRefresh::Effect {
   }
 
   bool Release(base::TimeTicks current_time, bool allow_activation) {
-    if (state_ != STATE_ACTIVATED && state_ != STATE_PULL)
-      return false;
+    switch (state_) {
+      case STATE_PULL:
+        break;
 
-    if (state_ == STATE_ACTIVATED && allow_activation)
-      return false;
+      case STATE_ACTIVATED:
+      case STATE_ACTIVATED_START:
+        // Avoid redundant activations.
+        if (allow_activation)
+          return false;
+        break;
+
+      case STATE_IDLE:
+      case STATE_ACTIVATED_RECEDE:
+      case STATE_RECEDE:
+        // These states have already been "released" in some fashion.
+        return false;
+    }
 
     start_time_ = current_time;
     idle_alpha_start_ = idle_alpha_;
@@ -223,7 +271,7 @@ class OverscrollRefresh::Effect {
     offset_start_ = offset_;
     rotation_start_ = rotation_;
 
-    if (offset_ < kPullActivationThreshold || !allow_activation) {
+    if (drag_ < target_drag_ || !allow_activation) {
       state_ = STATE_RECEDE;
       duration_ = base::TimeDelta::FromMilliseconds(kRecedeTimeMs);
       idle_alpha_finish_ = 0;
@@ -233,13 +281,13 @@ class OverscrollRefresh::Effect {
       return false;
     }
 
-    state_ = STATE_ACTIVATED;
-    duration_ = base::TimeDelta::FromMilliseconds(kActivationTimeMs);
+    state_ = STATE_ACTIVATED_START;
+    duration_ = base::TimeDelta::FromMilliseconds(kActivationStartTimeMs);
     activated_start_time_ = current_time;
     idle_alpha_finish_ = idle_alpha_start_;
     active_alpha_finish_ = active_alpha_start_;
-    offset_finish_ = kPullActivationThreshold;
-    rotation_finish_ = rotation_start_ + 360.f;
+    offset_finish_ = target_drag_;
+    rotation_finish_ = rotation_start_;
     return true;
   }
 
@@ -258,20 +306,12 @@ class OverscrollRefresh::Effect {
     if (IsFinished())
       return;
 
-    UpdateLayer(idle_layer_.get(),
-                parent,
-                resource_manager_->GetUIResourceId(kIdleResourceType),
-                size,
-                offset_,
-                idle_alpha_,
-                rotation_);
-    UpdateLayer(active_layer_.get(),
-                parent,
-                resource_manager_->GetUIResourceId(kActiveResourceType),
-                size,
-                offset_,
-                active_alpha_,
-                rotation_);
+    UpdateLayer(idle_layer_.get(), parent,
+                resource_manager_->GetUIResourceId(kIdleResourceType), size,
+                offset_, idle_alpha_, rotation_);
+    UpdateLayer(active_layer_.get(), parent,
+                resource_manager_->GetUIResourceId(kActiveResourceType), size,
+                offset_, active_alpha_, rotation_);
   }
 
   bool IsFinished() const { return state_ == STATE_IDLE; }
@@ -280,6 +320,7 @@ class OverscrollRefresh::Effect {
   enum State {
     STATE_IDLE = 0,
     STATE_PULL,
+    STATE_ACTIVATED_START,
     STATE_ACTIVATED,
     STATE_ACTIVATED_RECEDE,
     STATE_RECEDE
@@ -295,6 +336,8 @@ class OverscrollRefresh::Effect {
   scoped_refptr<cc::UIResourceLayer> idle_layer_;
   scoped_refptr<cc::UIResourceLayer> active_layer_;
 
+  const float target_drag_;
+  float drag_;
   float idle_alpha_;
   float active_alpha_;
   float offset_;
@@ -369,9 +412,7 @@ bool OverscrollRefresh::WillHandleScrollUpdate(
       return false;
 
     case ENABLED: {
-      float normalized_delta = scroll_delta.y() / min(viewport_size_.height(),
-                                                      viewport_size_.width());
-      effect_->Pull(normalized_delta);
+      effect_->Pull(scroll_delta.y());
       return true;
     }
   }
