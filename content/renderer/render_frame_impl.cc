@@ -447,29 +447,29 @@ void UpdateFrameNavigationTiming(WebFrame* frame,
 
 // PlzNavigate
 FrameHostMsg_BeginNavigation_Params MakeBeginNavigationParams(
-    const blink::WebURLRequest& request) {
+    blink::WebURLRequest* request) {
   FrameHostMsg_BeginNavigation_Params params;
-  params.method = request.httpMethod().latin1();
-  params.headers = GetWebURLRequestHeaders(request);
-  params.load_flags = GetLoadFlagsForWebURLRequest(request);
+  params.method = request->httpMethod().latin1();
+  params.headers = GetWebURLRequestHeaders(*request);
+  params.load_flags = GetLoadFlagsForWebURLRequest(*request);
   // TODO(clamy): fill the http body.
-  params.has_user_gesture = request.hasUserGesture();
+  params.has_user_gesture = request->hasUserGesture();
   return params;
 }
 
 // PlzNavigate
 CommonNavigationParams MakeCommonNavigationParams(
-    const blink::WebURLRequest& request) {
+    blink::WebURLRequest* request) {
   const RequestExtraData kEmptyData;
   const RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(request.extraData());
+      static_cast<RequestExtraData*>(request->extraData());
   if (!extra_data)
     extra_data = &kEmptyData;
   CommonNavigationParams params;
-  params.url = request.url();
+  params.url = request->url();
   params.referrer = Referrer(
-      GURL(request.httpHeaderField(WebString::fromUTF8("Referer")).latin1()),
-      request.referrerPolicy());
+      GURL(request->httpHeaderField(WebString::fromUTF8("Referer")).latin1()),
+      request->referrerPolicy());
   params.transition = extra_data->transition_type();
   return params;
 }
@@ -3667,32 +3667,12 @@ void RenderFrameImpl::OnRequestNavigation(
     const RequestNavigationParams& request_params) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-
-  // TODO(clamy): Execute the beforeunload event.
-
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params,
                                     request_params,
                                     scoped_ptr<StreamOverrideParameters>(),
                                     frame_->isViewSourceModeEnabled());
-
-  // Note: At this stage, the goal is to apply all the modifications the
-  // renderer wants to make to the request, and then send it to the browser, so
-  // that the actual network request can be started. Ideally, all such
-  // modifications should take place in willSendRequest, and in the
-  // implementation of willSendRequest for the various InspectorAgents
-  // (devtools).
-  //
-  // TODO(clamy): Apply devtools override.
-  // TODO(clamy): Make sure that navigation requests are not modified somewhere
-  // else in blink.
-  willSendRequest(frame_, 0, request, blink::WebURLResponse());
-
-  // TODO(clamy): Same-document navigations should not be sent back to the
-  // browser.
-  Send(new FrameHostMsg_BeginNavigation(routing_id_,
-                                        MakeBeginNavigationParams(request),
-                                        MakeCommonNavigationParams(request)));
+  BeginNavigation(&request);
 }
 
 // PlzNavigate
@@ -3728,6 +3708,10 @@ void RenderFrameImpl::OnCommitNavigation(
                                     RequestNavigationParams(),
                                     stream_override.Pass(),
                                     frame_->isViewSourceModeEnabled());
+
+  // Make sure that blink loader will not try to use browser side navigation for
+  // this request (since it already went to the browser).
+  request.setCheckForBrowserSideNavigation(false);
 
   // Record this before starting the load. A lower bound of this time is needed
   // to sanitize the navigationStart override set below.
@@ -3957,6 +3941,14 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     return blink::WebNavigationPolicyIgnore;
   }
 
+  // PlzNavigate: send the request to the browser if needed.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation) &&
+      info.urlRequest.checkForBrowserSideNavigation()) {
+    BeginNavigation(&info.urlRequest);
+    return blink::WebNavigationPolicyIgnore;
+  }
+
   return info.defaultPolicy;
 }
 
@@ -4161,6 +4153,32 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
   render_view_->SetSwappedOut(false);
   is_swapped_out_ = false;
   return true;
+}
+
+void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  DCHECK(request);
+  // TODO(clamy): Execute the beforeunload event.
+
+  // Note: At this stage, the goal is to apply all the modifications the
+  // renderer wants to make to the request, and then send it to the browser, so
+  // that the actual network request can be started. Ideally, all such
+  // modifications should take place in willSendRequest, and in the
+  // implementation of willSendRequest for the various InspectorAgents
+  // (devtools).
+  //
+  // TODO(clamy): Apply devtools override.
+  // TODO(clamy): Make sure that navigation requests are not modified somewhere
+  // else in blink.
+  willSendRequest(frame_, 0, *request, blink::WebURLResponse());
+
+  // TODO(clamy): Same-document navigations should not be sent back to the
+  // browser.
+  // TODO(clamy): Data urls should not be sent back to the browser either.
+  Send(new FrameHostMsg_BeginNavigation(routing_id_,
+                                        MakeBeginNavigationParams(request),
+                                        MakeCommonNavigationParams(request)));
 }
 
 GURL RenderFrameImpl::GetLoadingUrl() const {

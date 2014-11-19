@@ -661,6 +661,11 @@ class CONTENT_EXPORT RenderFrameImpl
       bool* is_reload,
       blink::WebURLRequest::CachePolicy* cache_policy);
 
+  // PlzNavigate
+  // Sends a FrameHostMsg_BeginNavigation to the browser based on the contents
+  // of the WebURLRequest.
+  void BeginNavigation(blink::WebURLRequest* request);
+
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;
 

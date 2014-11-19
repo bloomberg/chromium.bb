@@ -719,10 +719,26 @@ void NavigatorImpl::OnBeginNavigation(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
 
-  // TODO(clamy): In case of a renderer initiated navigation create a new
-  // NavigationRequest.
   NavigationRequest* navigation_request =
       navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+
+  if (!navigation_request) {
+    // This is a renderer initiated navigation, so generate a new
+    // NavigationRequest and store it in the map.
+    // TODO(clamy): Check if some PageState should be provided here.
+    // TODO(clamy): See how we should handle override of the user agent when the
+    // navigation may start in a renderer and commit in another one.
+    // TODO(clamy): See if the navigation start time should be measured in the
+    // renderer and sent to the browser instead of being measured here.
+    scoped_ptr<NavigationRequest> scoped_request(new NavigationRequest(
+        frame_tree_node,
+        common_params,
+        CommitNavigationParams(
+            PageState(), false, base::TimeTicks::Now())));
+    navigation_request = scoped_request.get();
+    navigation_request_map_.set(
+        frame_tree_node->frame_tree_node_id(), scoped_request.Pass());
+  }
   DCHECK(navigation_request);
 
   // Update the referrer with the one received from the renderer.

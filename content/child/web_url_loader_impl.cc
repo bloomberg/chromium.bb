@@ -432,6 +432,13 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     url = stream_override_->stream_url;
   }
 
+  // PlzNavigate: the only navigation requests going through the WebURLLoader
+  // are the ones created by CommitNavigation.
+  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation) ||
+         stream_override_.get() ||
+         request.frameType() == WebURLRequest::FrameTypeNone);
+
   if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
