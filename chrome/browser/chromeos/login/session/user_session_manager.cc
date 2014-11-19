@@ -23,6 +23,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
@@ -60,6 +62,8 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/app_list/start_page_service.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -85,6 +89,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/gurl.h"
+
+#if defined(USE_ATHENA)
+#include "athena/main/public/athena_launcher.h"
+#endif
 
 namespace chromeos {
 
@@ -261,11 +269,6 @@ void LogCustomSwitches(const std::set<std::string>& switches) {
 }
 
 }  // namespace
-
-#if defined(ENABLE_RLZ)
-void UserSessionManagerDelegate::OnRlzInitialized() {
-}
-#endif
 
 UserSessionManagerDelegate::~UserSessionManagerDelegate() {
 }
@@ -488,6 +491,11 @@ void UserSessionManager::SetAppModeChromeClientOAuthInfo(
 
   chrome_client_id_ = chrome_client_id;
   chrome_client_secret_ = chrome_client_secret;
+}
+
+void UserSessionManager::DoBrowserLaunch(Profile* profile,
+                                         LoginDisplayHost* login_host) {
+  DoBrowserLaunchInternal(profile, login_host, false /* locale_pref_checked */);
 }
 
 bool UserSessionManager::RespectLocalePreference(
@@ -1164,8 +1172,6 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
       user_manager::UserManager::Get()->IsCurrentUserNew(),
       ping_delay < 0,
       base::TimeDelta::FromMilliseconds(abs(ping_delay)));
-  if (delegate_)
-    delegate_->OnRlzInitialized();
 #endif
 }
 
@@ -1395,6 +1401,90 @@ EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
     easy_unlock_key_manager_.reset(new EasyUnlockKeyManager);
 
   return easy_unlock_key_manager_.get();
+}
+
+void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
+                                                 LoginDisplayHost* login_host,
+                                                 bool locale_pref_checked) {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
+  if (!locale_pref_checked) {
+    RespectLocalePreferenceWrapper(
+        profile,
+        base::Bind(&UserSessionManager::DoBrowserLaunchInternal, AsWeakPtr(),
+                   profile, login_host, true /* locale_pref_checked */));
+    return;
+  }
+
+  if (!ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
+    ChromeUserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
+    return;
+  }
+
+  if (RestartToApplyPerSessionFlagsIfNeed(profile, false))
+    return;
+
+  if (login_host) {
+    login_host->SetStatusAreaVisible(true);
+    login_host->BeforeSessionStart();
+  }
+
+  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
+
+  VLOG(1) << "Launching browser...";
+  TRACE_EVENT0("login", "LaunchBrowser");
+
+#if defined(USE_ATHENA)
+  athena::StartAthenaSessionWithContext(profile);
+#else
+  StartupBrowserCreator browser_creator;
+  int return_code;
+  chrome::startup::IsFirstRun first_run =
+      ::first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                      : chrome::startup::IS_NOT_FIRST_RUN;
+
+  browser_creator.LaunchBrowser(
+      *CommandLine::ForCurrentProcess(), profile, base::FilePath(),
+      chrome::startup::IS_PROCESS_STARTUP, first_run, &return_code);
+
+  // Triggers app launcher start page service to load start page web contents.
+  app_list::StartPageService::Get(profile);
+#endif
+
+  // Mark login host for deletion after browser starts.  This
+  // guarantees that the message loop will be referenced by the
+  // browser before it is dereferenced by the login host.
+  if (login_host)
+    login_host->Finalize();
+  user_manager::UserManager::Get()->SessionStarted();
+  chromeos::BootTimesLoader::Get()->LoginDone(
+      user_manager::UserManager::Get()->IsCurrentUserNew());
+}
+
+void UserSessionManager::RespectLocalePreferenceWrapper(
+    Profile* profile,
+    const base::Closure& callback) {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
+  user_manager::User* const user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
+  locale_util::SwitchLanguageCallback locale_switched_callback(base::Bind(
+      &UserSessionManager::RunCallbackOnLocaleLoaded, callback,
+      base::Owned(new InputEventsBlocker)));  // Block UI events until
+                                              // the ResourceBundle is
+                                              // reloaded.
+  if (!RespectLocalePreference(profile, user, locale_switched_callback))
+    callback.Run();
+}
+
+// static
+void UserSessionManager::RunCallbackOnLocaleLoaded(
+    const base::Closure& callback,
+    InputEventsBlocker* /* input_events_blocker */,
+    const locale_util::LanguageSwitchResult& /* result */) {
+  callback.Run();
 }
 
 }  // namespace chromeos

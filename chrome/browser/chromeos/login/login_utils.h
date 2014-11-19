@@ -34,10 +34,6 @@ class LoginUtils {
     virtual void OnProfilePrepared(Profile* profile,
                                    bool browser_launched) = 0;
 
-#if defined(ENABLE_RLZ)
-    // Called after post-profile RLZ initialization.
-    virtual void OnRlzInitialized() {}
-#endif
    protected:
     virtual ~Delegate() {}
   };

@@ -778,11 +778,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
       user_context.GetAuthCode().empty();
 
-  // LoginPerformer instance will delete itself once online auth result is OK.
-  // In case of failure it'll bring up ScreenLock and ask for
-  // correct password/display error message.
-  // Even in case when following online,offline protocol and returning
-  // requests_pending = false, let LoginPerformer delete itself.
+  // LoginPerformer instance will delete itself in case of successful auth.
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 

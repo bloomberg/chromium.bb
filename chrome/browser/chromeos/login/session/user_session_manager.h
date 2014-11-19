@@ -37,6 +37,8 @@ class User;
 namespace chromeos {
 
 class EasyUnlockKeyManager;
+class InputEventsBlocker;
+class LoginDisplayHost;
 
 class UserSessionManagerDelegate {
  public:
@@ -46,10 +48,6 @@ class UserSessionManagerDelegate {
   virtual void OnProfilePrepared(Profile* profile,
                                  bool browser_launched) = 0;
 
-#if defined(ENABLE_RLZ)
-  // Called after post-profile RLZ initialization.
-  virtual void OnRlzInitialized();
-#endif
  protected:
   virtual ~UserSessionManagerDelegate();
 };
@@ -158,6 +156,11 @@ class UserSessionManager
   void SetAppModeChromeClientOAuthInfo(
       const std::string& chrome_client_id,
       const std::string& chrome_client_secret);
+
+  // Thin wrapper around StartupBrowserCreator::LaunchBrowser().  Meant to be
+  // used in a Task posted to the UI thread.  Once the browser is launched the
+  // login host is deleted.
+  void DoBrowserLaunch(Profile* profile, LoginDisplayHost* login_host);
 
   // Changes browser locale (selects best suitable locale from different
   // user settings). Returns true if callback will be called.
@@ -302,6 +305,23 @@ class UserSessionManager
   // Callback invoked when Easy unlock key operations are finished.
   void OnEasyUnlockKeyOpsFinished(const std::string& user_id,
                                   bool success);
+
+  // Internal implementation of DoBrowserLaunch. Initially should be called with
+  // |locale_pref_checked| set to false which will result in postponing browser
+  // launch till user locale is applied if needed. After locale check has
+  // completed this method is called with |locale_pref_checked| set to true.
+  void DoBrowserLaunchInternal(Profile* profile,
+                               LoginDisplayHost* login_host,
+                               bool locale_pref_checked);
+
+  // Switch to the locale that |profile| wishes to use and invoke |callback|.
+  void RespectLocalePreferenceWrapper(Profile* profile,
+                                      const base::Closure& callback);
+
+  static void RunCallbackOnLocaleLoaded(
+      const base::Closure& callback,
+      InputEventsBlocker* input_events_blocker,
+      const locale_util::LanguageSwitchResult& result);
 
   UserSessionManagerDelegate* delegate_;
 

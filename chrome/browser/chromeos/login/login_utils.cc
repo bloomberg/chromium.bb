@@ -4,98 +4,22 @@
 
 #include "chrome/browser/chromeos/login/login_utils.h"
 
-#include <algorithm>
-#include <set>
-#include <vector>
-
-#include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
-#include "base/prefs/pref_service.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
-#include "base/sys_info.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
-#include "base/time/time.h"
-#include "chrome/browser/about_flags.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/profile_auth_data.h"
-#include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
-#include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/google/google_brand_chromeos.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/app_list/start_page_service.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/logging_chrome.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
-#include "net/base/network_change_notifier.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-
-#if defined(USE_ATHENA)
-#include "athena/main/public/athena_launcher.h"
-#endif
-
-using content::BrowserThread;
 
 namespace chromeos {
 
 class LoginUtilsImpl : public LoginUtils,
-                       public base::SupportsWeakPtr<LoginUtilsImpl>,
                        public UserSessionManagerDelegate {
  public:
   LoginUtilsImpl()
@@ -120,24 +44,8 @@ class LoginUtilsImpl : public LoginUtils,
   // UserSessionManager::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile,
                                  bool browser_launched) override;
-#if defined(ENABLE_RLZ)
-  virtual void OnRlzInitialized() override;
-#endif
 
  private:
-  void DoBrowserLaunchInternal(Profile* profile,
-                               LoginDisplayHost* login_host,
-                               bool locale_pref_checked);
-
-  // Switch to the locale that |profile| wishes to use and invoke |callback|.
-  virtual void RespectLocalePreference(Profile* profile,
-                                       const base::Closure& callback);
-
-  static void RunCallbackOnLocaleLoaded(
-      const base::Closure& callback,
-      InputEventsBlocker* input_events_blocker,
-      const locale_util::LanguageSwitchResult& result);
-
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
   scoped_refptr<Authenticator> authenticator_;
 
@@ -175,101 +83,9 @@ class LoginUtilsWrapper {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
 
-void LoginUtilsImpl::DoBrowserLaunchInternal(Profile* profile,
-                                             LoginDisplayHost* login_host,
-                                             bool locale_pref_checked) {
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  if (!locale_pref_checked) {
-    RespectLocalePreference(profile,
-                            base::Bind(&LoginUtilsImpl::DoBrowserLaunchInternal,
-                                       base::Unretained(this),
-                                       profile,
-                                       login_host,
-                                       true /* locale_pref_checked */));
-    return;
-  }
-
-  if (!ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
-    ChromeUserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
-    return;
-  }
-
-  if (UserSessionManager::GetInstance()->RestartToApplyPerSessionFlagsIfNeed(
-          profile, false)) {
-    return;
-  }
-
-  if (login_host) {
-    login_host->SetStatusAreaVisible(true);
-    login_host->BeforeSessionStart();
-  }
-
-  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
-
-  VLOG(1) << "Launching browser...";
-  TRACE_EVENT0("login", "LaunchBrowser");
-
-#if defined(USE_ATHENA)
-  athena::StartAthenaSessionWithContext(profile);
-#else
-  StartupBrowserCreator browser_creator;
-  int return_code;
-  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-
-  browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
-                                profile,
-                                base::FilePath(),
-                                chrome::startup::IS_PROCESS_STARTUP,
-                                first_run,
-                                &return_code);
-
-  // Triggers app launcher start page service to load start page web contents.
-  app_list::StartPageService::Get(profile);
-#endif
-
-  // Mark login host for deletion after browser starts.  This
-  // guarantees that the message loop will be referenced by the
-  // browser before it is dereferenced by the login host.
-  if (login_host)
-    login_host->Finalize();
-  user_manager::UserManager::Get()->SessionStarted();
-  chromeos::BootTimesLoader::Get()->LoginDone(
-      user_manager::UserManager::Get()->IsCurrentUserNew());
-}
-
-// static
-void LoginUtilsImpl::RunCallbackOnLocaleLoaded(
-    const base::Closure& callback,
-    InputEventsBlocker* /* input_events_blocker */,
-    const locale_util::LanguageSwitchResult& /* result */) {
-  callback.Run();
-}
-
-void LoginUtilsImpl::RespectLocalePreference(Profile* profile,
-                                             const base::Closure& callback) {
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  user_manager::User* const user =
-      ProfileHelper::Get()->GetUserByProfile(profile);
-  locale_util::SwitchLanguageCallback locale_switched_callback(base::Bind(
-      &LoginUtilsImpl::RunCallbackOnLocaleLoaded,
-      callback,
-      base::Owned(new InputEventsBlocker)));  // Block UI events until
-                                              // the ResourceBundle is
-                                              // reloaded.
-  if (!UserSessionManager::GetInstance()->RespectLocalePreference(
-          profile, user, locale_switched_callback)) {
-    callback.Run();
-  }
-}
-
 void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {
-  DoBrowserLaunchInternal(profile, login_host, false /* locale_pref_checked */);
+  UserSessionManager::GetInstance()->DoBrowserLaunch(profile, login_host);
 }
 
 void LoginUtilsImpl::PrepareProfile(
@@ -326,13 +142,6 @@ void LoginUtilsImpl::OnProfilePrepared(Profile* profile,
   if (delegate_)
     delegate_->OnProfilePrepared(profile, browser_launched);
 }
-
-#if defined(ENABLE_RLZ)
-void LoginUtilsImpl::OnRlzInitialized() {
-  if (delegate_)
-    delegate_->OnRlzInitialized();
-}
-#endif
 
 // static
 LoginUtils* LoginUtils::Get() {
