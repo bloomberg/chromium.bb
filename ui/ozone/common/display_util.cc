@@ -9,6 +9,13 @@
 
 namespace ui {
 
+FindDisplayById::FindDisplayById(int64_t display_id) : display_id_(display_id) {
+}
+
+bool FindDisplayById::operator()(const DisplaySnapshot_Params& display) const {
+  return display.display_id == display_id_;
+}
+
 DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode) {
   DisplayMode_Params params;
   params.size = mode.size();

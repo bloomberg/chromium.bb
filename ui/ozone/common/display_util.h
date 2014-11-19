@@ -12,6 +12,18 @@ namespace ui {
 class DisplayMode;
 class DisplaySnapshot;
 
+// Conforms to the std::UnaryPredicate interface such that it can be used to
+// find a display with |display_id| in std:: containers (ie: std::vector).
+class FindDisplayById {
+ public:
+  FindDisplayById(int64_t display_id);
+
+  bool operator()(const DisplaySnapshot_Params& display) const;
+
+ private:
+  int64_t display_id_;
+};
+
 DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode);
 DisplaySnapshot_Params GetDisplaySnapshotParams(const DisplaySnapshot& display);
 

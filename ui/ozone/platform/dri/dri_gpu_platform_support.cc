@@ -17,22 +17,6 @@
 
 namespace ui {
 
-namespace {
-
-class FindDisplayById {
- public:
-  FindDisplayById(int64_t display_id) : display_id_(display_id) {}
-
-  bool operator()(const DisplaySnapshot_Params& display) const {
-    return display.display_id == display_id_;
-  }
-
- private:
-  int64_t display_id_;
-};
-
-}  // namespace
-
 DriGpuPlatformSupport::DriGpuPlatformSupport(
     DriSurfaceFactory* dri,
     DriWindowDelegateManager* window_manager,

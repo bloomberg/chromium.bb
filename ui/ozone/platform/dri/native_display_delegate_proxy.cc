@@ -141,6 +141,9 @@ void NativeDisplayDelegateProxy::ForceDPMSOn() {
 }
 
 std::vector<DisplaySnapshot*> NativeDisplayDelegateProxy::GetDisplays() {
+  // GetDisplays() is supposed to force a refresh of the display list.
+  proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(
+      std::vector<DisplaySnapshot_Params>()));
   return displays_.get();
 }
 
@@ -239,6 +242,22 @@ bool NativeDisplayDelegateProxy::OnMessageReceived(
 
 void NativeDisplayDelegateProxy::OnUpdateNativeDisplays(
     const std::vector<DisplaySnapshot_Params>& displays) {
+  bool has_new_displays = displays.size() != displays_.size();
+  if (!has_new_displays) {
+    for (DisplaySnapshot* display : displays_) {
+      auto it = std::find_if(displays.begin(), displays.end(),
+                             FindDisplayById(display->display_id()));
+      if (it == displays.end()) {
+        has_new_displays = true;
+        break;
+      }
+    }
+  }
+
+  // If the configuration hasn't changed do not update.
+  if (!has_new_displays)
+    return;
+
   displays_.clear();
   for (size_t i = 0; i < displays.size(); ++i)
     displays_.push_back(
