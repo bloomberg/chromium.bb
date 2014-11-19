@@ -9,6 +9,9 @@ How to use this tool:
 If you want to run the tool across all Chromium code:
 run_tool.py <tool> <path/to/compiledb>
 
+If you want to include all files mentioned in the compilation database:
+run_tool.py <tool> <path/to/compiledb> --all
+
 If you only want to run the tool across just chrome/browser and content/browser:
 run_tool.py <tool> <path/to/compiledb> chrome/browser content/browser
 
@@ -37,6 +40,7 @@ across Chromium, regardless of whether some instances failed or not.
 
 import collections
 import functools
+import json
 import multiprocessing
 import os.path
 import pipes
@@ -65,6 +69,20 @@ def _GetFilesFromGit(paths = None):
   command = subprocess.Popen(args, stdout=subprocess.PIPE)
   output, _ = command.communicate()
   return [os.path.realpath(p) for p in output.splitlines()]
+
+
+def _GetFilesFromCompileDB(build_directory):
+  """ Gets the list of files mentioned in the compilation database.
+
+  Args:
+    build_directory: Directory that contains the compile database.
+  """
+  compiledb_path = os.path.join(build_directory, 'compile_commands.json')
+  with open(compiledb_path, 'rb') as compiledb_file:
+    json_commands = json.load(compiledb_file)
+
+  return [os.path.join(entry['directory'], entry['file'])
+          for entry in json_commands]
 
 
 def _ExtractEditsFromStdout(build_directory, stdout):
@@ -295,7 +313,10 @@ def main(argv):
   if not os.path.isfile(clang_format_diff_path) or sys.platform == 'win32':
     clang_format_diff_path = None
 
-  filenames = frozenset(_GetFilesFromGit(argv[2:]))
+  if len(argv) == 3 and argv[2] == '--all':
+    filenames = frozenset(_GetFilesFromCompileDB(argv[1]))
+  else:
+    filenames = frozenset(_GetFilesFromGit(argv[2:]))
   # Filter out files that aren't C/C++/Obj-C/Obj-C++.
   extensions = frozenset(('.c', '.cc', '.m', '.mm'))
   dispatcher = _CompilerDispatcher(argv[0], argv[1],
