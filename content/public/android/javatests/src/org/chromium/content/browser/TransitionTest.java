@@ -37,6 +37,8 @@ public class TransitionTest extends ContentShellTestBase {
         private boolean mDidCallWillHandleDefer = false;
         private boolean mDidCallAddStylesheet = false;
         private boolean mHandleDefer = false;
+        private boolean mWillFetchTransitionElements = false;
+        private boolean mDidFetchTransitionElements = false;
         private ArrayList<String> mTransitionStylesheets;
         private WebContents mWebContents;
         private String mTransitionEnteringColor;
@@ -50,6 +52,8 @@ public class TransitionTest extends ContentShellTestBase {
         @Override
         public void didDeferAfterResponseStarted(String markup, String cssSelector,
                 String enteringColor) {
+            if (mWillFetchTransitionElements)
+                mWebContents.fetchTransitionElements(mWebContents.getUrl());
             mDidCallDefer = true;
             mWebContents.resumeResponseDeferredAtStart();
             mTransitionEnteringColor = enteringColor;
@@ -70,6 +74,16 @@ public class TransitionTest extends ContentShellTestBase {
         public void didStartNavigationTransitionForFrame(long frameId) {
         }
 
+        @Override
+        public void addNavigationTransitionElements(
+                String name, int x, int y, int width, int height) {
+        }
+
+        @Override
+        public void onTransitionElementsFetched(String cssSelector) {
+            mDidFetchTransitionElements = true;
+        }
+
         public boolean getDidCallDefer() {
             return mDidCallDefer;
         }
@@ -80,6 +94,14 @@ public class TransitionTest extends ContentShellTestBase {
 
         public boolean getDidCallAddStylesheet() {
             return mDidCallAddStylesheet;
+        }
+
+        public boolean getDidFetchTransitionElements() {
+            return mDidFetchTransitionElements;
+        }
+
+        public void setWillFetchTransitionElements() {
+            mWillFetchTransitionElements = true;
         }
 
         public ArrayList<String> getTransitionStylesheets() {
@@ -334,5 +356,29 @@ public class TransitionTest extends ContentShellTestBase {
         } finally {
             webServer.shutdown();
         }
+    }
+
+    /**
+     * Tests that transition elements are fetched.
+     */
+    @SmallTest
+    public void testTransitionElementsFetched() throws Throwable {
+        ContentShellActivity activity = launchContentShellWithUrl(URL_1);
+        waitForActiveShellToBeDoneLoading();
+        ContentViewCore contentViewCore = activity.getActiveContentViewCore();
+        TestCallbackHelperContainer testCallbackHelperContainer =
+                new TestCallbackHelperContainer(contentViewCore);
+
+        contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
+        TestNavigationTransitionDelegate delegate = new TestNavigationTransitionDelegate(
+                contentViewCore.getWebContents(),
+                true);
+        contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
+
+        delegate.setWillFetchTransitionElements();
+        loadUrl(contentViewCore.getWebContents().getNavigationController(),
+                testCallbackHelperContainer, new LoadUrlParams(URL_1));
+
+        assertTrue("did fetch transition elements.", delegate.getDidFetchTransitionElements());
     }
 }

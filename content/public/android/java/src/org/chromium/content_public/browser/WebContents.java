@@ -178,6 +178,11 @@ public interface WebContents {
     public void clearNavigationTransitionData();
 
     /**
+     * Fetch transition elements.
+     */
+    public void fetchTransitionElements(String url);
+
+    /**
      * Injects the passed Javascript code in the current page and evaluates it.
      * If a result is required, pass in a callback.
      *

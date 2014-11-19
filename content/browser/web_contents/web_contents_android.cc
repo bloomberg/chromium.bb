@@ -69,7 +69,8 @@ bool WebContentsAndroid::Register(JNIEnv* env) {
 
 WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
     : web_contents_(web_contents),
-      navigation_controller_(&(web_contents->GetController())) {
+      navigation_controller_(&(web_contents->GetController())),
+      weak_factory_(this) {
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(env,
              Java_WebContentsImpl_create(
@@ -205,6 +206,51 @@ void WebContentsAndroid::ShowTransitionElements(JNIEnv* env,
 void WebContentsAndroid::ClearNavigationTransitionData(JNIEnv* env,
                                                        jobject jobj) {
   static_cast<WebContentsImpl*>(web_contents_)->ClearNavigationTransitionData();
+}
+
+void WebContentsAndroid::FetchTransitionElements(JNIEnv* env,
+                                                 jobject jobj,
+                                                 jstring jurl) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  RenderFrameHost* frame = web_contents_->GetMainFrame();
+
+  scoped_ptr<TransitionLayerData> transition_data(new TransitionLayerData());
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&TransitionRequestManager::GetPendingTransitionRequest,
+                 base::Unretained(TransitionRequestManager::GetInstance()),
+                 frame->GetProcess()->GetID(),
+                 frame->GetRoutingID(),
+                 url,
+                 transition_data.get()),
+      base::Bind(&WebContentsAndroid::OnTransitionElementsFetched,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&transition_data)));
+}
+
+void WebContentsAndroid::OnTransitionElementsFetched(
+    scoped_ptr<const TransitionLayerData> transition_data,
+    bool has_transition_data) {
+  // FetchTransitionElements is called after the navigation transition state
+  // machine starts, which means there must be transition data.
+  DCHECK(has_transition_data);
+  JNIEnv* env = AttachCurrentThread();
+
+  std::vector<TransitionElement>::const_iterator it =
+      transition_data->elements.begin();
+  for (; it != transition_data->elements.end(); ++it) {
+    ScopedJavaLocalRef<jstring> jstring_name(ConvertUTF8ToJavaString(env,
+                                                                     it->id));
+    Java_WebContentsImpl_addNavigationTransitionElements(
+        env, obj_.obj(), jstring_name.obj(),
+        it->rect.x(), it->rect.y(), it->rect.width(), it->rect.height());
+  }
+
+  ScopedJavaLocalRef<jstring> jstring_css_selector(
+      ConvertUTF8ToJavaString(env, transition_data->css_selector));
+  Java_WebContentsImpl_onTransitionElementsFetched(
+      env, obj_.obj(), jstring_css_selector.obj());
 }
 
 void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
