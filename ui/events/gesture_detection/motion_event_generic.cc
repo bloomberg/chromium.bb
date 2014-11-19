@@ -9,16 +9,7 @@
 namespace ui {
 
 PointerProperties::PointerProperties()
-    : id(0),
-      tool_type(MotionEvent::TOOL_TYPE_UNKNOWN),
-      x(0),
-      y(0),
-      raw_x(0),
-      raw_y(0),
-      pressure(0),
-      touch_major(0),
-      touch_minor(0),
-      orientation(0) {
+    : PointerProperties(0, 0, 0) {
 }
 
 PointerProperties::PointerProperties(float x, float y, float touch_major)
@@ -31,7 +22,8 @@ PointerProperties::PointerProperties(float x, float y, float touch_major)
       pressure(0),
       touch_major(touch_major),
       touch_minor(0),
-      orientation(0) {
+      orientation(0),
+      source_device_id(0) {
 }
 
 PointerProperties::PointerProperties(const MotionEvent& event,
@@ -45,7 +37,8 @@ PointerProperties::PointerProperties(const MotionEvent& event,
       pressure(event.GetPressure(pointer_index)),
       touch_major(event.GetTouchMajor(pointer_index)),
       touch_minor(event.GetTouchMinor(pointer_index)),
-      orientation(event.GetOrientation(pointer_index)) {
+      orientation(event.GetOrientation(pointer_index)),
+      source_device_id(0) {
 }
 
 MotionEventGeneric::MotionEventGeneric(Action action,
@@ -85,6 +78,9 @@ MotionEvent::Action MotionEventGeneric::GetAction() const {
 }
 
 int MotionEventGeneric::GetActionIndex() const {
+  DCHECK(action_ == ACTION_POINTER_DOWN || action_ == ACTION_POINTER_UP);
+  DCHECK_GE(action_index_, 0);
+  DCHECK_LT(action_index_, static_cast<int>(pointers_->size()));
   return action_index_;
 }
 

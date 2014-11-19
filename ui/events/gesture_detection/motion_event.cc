@@ -46,6 +46,11 @@ int MotionEvent::FindPointerIndexOfId(int id) const {
   return -1;
 }
 
+int MotionEvent::GetSourceDeviceId(size_t pointer_index) const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 scoped_ptr<MotionEvent> MotionEvent::Clone() const {
   return MotionEventGeneric::CloneEvent(*this);
 }

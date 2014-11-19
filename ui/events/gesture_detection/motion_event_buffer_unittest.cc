@@ -83,7 +83,10 @@ class MotionEventBufferTest : public testing::Test,
                                bool ignore_history) {
     EXPECT_EQ(a.GetId(), b.GetId());
     EXPECT_EQ(a.GetAction(), b.GetAction());
-    EXPECT_EQ(a.GetActionIndex(), b.GetActionIndex());
+    if (a.GetAction() == MotionEvent::ACTION_POINTER_DOWN ||
+        a.GetAction() == MotionEvent::ACTION_POINTER_UP) {
+      EXPECT_EQ(a.GetActionIndex(), b.GetActionIndex());
+    }
     EXPECT_EQ(a.GetButtonState(), b.GetButtonState());
     EXPECT_EQ(a.GetEventTime(), b.GetEventTime());
 

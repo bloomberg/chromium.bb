@@ -169,9 +169,11 @@ void MockMotionEvent::ResolvePointers() {
 std::string ToString(const MotionEvent& event) {
   std::stringstream ss;
   ss << "MotionEvent {"
-     << "\n ID: " << event.GetId() << "\n Action: " << event.GetAction()
-     << "\n ActionIndex: " << event.GetActionIndex()
-     << "\n Flags: " << event.GetFlags()
+     << "\n ID: " << event.GetId() << "\n Action: " << event.GetAction();
+  if (event.GetAction() == MotionEvent::ACTION_POINTER_DOWN ||
+      event.GetAction() == MotionEvent::ACTION_POINTER_UP)
+    ss << "\n ActionIndex: " << event.GetActionIndex();
+  ss << "\n Flags: " << event.GetFlags()
      << "\n ButtonState: " << event.GetButtonState() << "\n Pointers: [";
   const size_t pointer_count = event.GetPointerCount();
   const size_t history_size = event.GetHistorySize();

@@ -28,6 +28,8 @@ struct GESTURE_DETECTION_EXPORT PointerProperties {
   float touch_major;
   float touch_minor;
   float orientation;
+  // source_device_id is only used on Aura.
+  int source_device_id;
 };
 
 // A generic MotionEvent implementation.

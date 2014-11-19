@@ -76,6 +76,9 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetHistoricalY(size_t pointer_index,
                                size_t historical_index) const;
 
+  // Get the id of the device which created the event. Currently Aura only.
+  virtual int GetSourceDeviceId(size_t pointer_index) const;
+
   // Utility accessor methods for convenience.
   float GetX() const { return GetX(0); }
   float GetY() const { return GetY(0); }

@@ -162,9 +162,9 @@ WebInputEvent::Type ToWebInputEventType(MotionEvent::Action action) {
 // Note that |is_action_pointer| is meaningful only in the context of
 // |ACTION_POINTER_UP| and |ACTION_POINTER_DOWN|; other actions map directly to
 // WebTouchPoint::State.
-WebTouchPoint::State ToWebTouchPointState(MotionEvent::Action action,
-                                          bool is_action_pointer) {
-  switch (action) {
+WebTouchPoint::State ToWebTouchPointState(const MotionEvent& event,
+                                          size_t pointer_index) {
+  switch (event.GetAction()) {
     case MotionEvent::ACTION_DOWN:
       return WebTouchPoint::StatePressed;
     case MotionEvent::ACTION_MOVE:
@@ -174,11 +174,13 @@ WebTouchPoint::State ToWebTouchPointState(MotionEvent::Action action,
     case MotionEvent::ACTION_CANCEL:
       return WebTouchPoint::StateCancelled;
     case MotionEvent::ACTION_POINTER_DOWN:
-      return is_action_pointer ? WebTouchPoint::StatePressed
-                               : WebTouchPoint::StateStationary;
+      return static_cast<int>(pointer_index) == event.GetActionIndex()
+                 ? WebTouchPoint::StatePressed
+                 : WebTouchPoint::StateStationary;
     case MotionEvent::ACTION_POINTER_UP:
-      return is_action_pointer ? WebTouchPoint::StateReleased
-                               : WebTouchPoint::StateStationary;
+      return static_cast<int>(pointer_index) == event.GetActionIndex()
+                 ? WebTouchPoint::StateReleased
+                 : WebTouchPoint::StateStationary;
   }
   NOTREACHED() << "Invalid MotionEvent::Action.";
   return WebTouchPoint::StateUndefined;
@@ -188,9 +190,7 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
                                   size_t pointer_index) {
   WebTouchPoint touch;
   touch.id = event.GetPointerId(pointer_index);
-  touch.state = ToWebTouchPointState(
-      event.GetAction(),
-      static_cast<int>(pointer_index) == event.GetActionIndex());
+  touch.state = ToWebTouchPointState(event, pointer_index);
   touch.position.x = event.GetX(pointer_index);
   touch.position.y = event.GetY(pointer_index);
   touch.screenPosition.x = event.GetRawX(pointer_index);
