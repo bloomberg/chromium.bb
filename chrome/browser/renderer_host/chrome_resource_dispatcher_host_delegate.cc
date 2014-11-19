@@ -406,7 +406,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #endif
 
   signin::AppendMirrorRequestHeaderIfPossible(
-      request, GURL() /* redirect_url */, io_data);
+      request, GURL() /* redirect_url */, io_data,
+      info->GetChildID(), info->GetRouteID());
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -704,9 +705,9 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceResponse* response) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
@@ -721,7 +722,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // response and let Chrome handle the action with native UI. The only
   // exception is requests from gaia webview, since the native profile
   // management UI is built on top of it.
-  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data);
+  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
+      info->GetChildID(), info->GetRouteID());
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(

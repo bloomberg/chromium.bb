@@ -70,7 +70,9 @@ struct ManageAccountsParams {
 bool AppendMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
     const GURL& redirect_url,
-    ProfileIOData* io_data);
+    ProfileIOData* io_data,
+    int child_id,
+    int route_id);
 
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the

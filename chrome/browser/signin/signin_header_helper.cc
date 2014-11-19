@@ -23,9 +23,10 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
-#else
+#elif !defined(OS_IOS)
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {
@@ -195,7 +196,9 @@ ManageAccountsParams::ManageAccountsParams() :
 bool AppendMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
     const GURL& redirect_url,
-    ProfileIOData* io_data) {
+    ProfileIOData* io_data,
+    int child_id,
+    int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (io_data->IsOffTheRecord() ||
@@ -228,6 +231,19 @@ bool AppendMirrorRequestHeaderIfPossible(
       !gaia::IsGaiaSignonRealm(origin)) {
     return false;
   }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  extensions::WebViewRendererState::WebViewInfo webview_info;
+  bool is_guest =  extensions::WebViewRendererState::GetInstance()->GetInfo(
+      child_id, route_id, &webview_info);
+  // Do not set the x-chrome-connected header on requests from a native signin
+  // webview, as identified by an empty extension id which means the webview is
+  // embedded in a webui page, otherwise user may end up with a blank page as
+  // gaia uses the header to decide whether it returns 204 for certain end
+  // points.
+  if (is_guest && webview_info.embedder_extension_id.empty())
+    return false;
+#endif // !OS_ANDROID && !OS_IOS
 
   std::string account_id(io_data->google_services_account_id()->GetValue());
 
