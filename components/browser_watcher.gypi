@@ -26,6 +26,8 @@
             'sources': [
               'browser_watcher/watcher_client_win.cc',
               'browser_watcher/watcher_client_win.h',
+              'browser_watcher/watcher_metrics_provider_win.cc',
+              'browser_watcher/watcher_metrics_provider_win.h',
             ],
             'dependencies': [
               'browser_watcher_lib',
