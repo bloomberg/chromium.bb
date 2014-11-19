@@ -140,7 +140,7 @@ cr.define('options.search_engines', function() {
 
       // And the URL column.
       var urlEl = this.createEditableTextCell(engine.url);
-      var makeDefaultButtonEl;
+      var makeDefaultButtonEl = null;
       // Extensions should not display a URL column.
       if (!engine.isOmniboxExtension) {
         var urlWithButtonEl = this.ownerDocument.createElement('div');
