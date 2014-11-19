@@ -5,7 +5,7 @@ InspectorTest.dumpSyntaxHighlight = function(str, mimeType)
     var node = document.createElement("span");
     node.textContent = str;
     var javascriptSyntaxHighlighter = new WebInspector.DOMSyntaxHighlighter(mimeType);
-    return javascriptSyntaxHighlighter.syntaxHighlightNodePromise(node).then(dumpSyntax);
+    return javascriptSyntaxHighlighter.syntaxHighlightNode(node).then(dumpSyntax);
 
     function dumpSyntax()
     {
