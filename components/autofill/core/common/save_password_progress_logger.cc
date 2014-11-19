@@ -176,6 +176,9 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "ChromePasswordManagerClient::WasLastNavigationHTTPError";
     case SavePasswordProgressLogger::STRING_HTTP_STATUS_CODE:
       return "HTTP status code for landing page";
+    case
+        SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
+      return "Provisionally saved form is not HTML";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

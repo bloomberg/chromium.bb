@@ -472,26 +472,32 @@ void PasswordManager::OnPasswordFormsRendered(
 
   // If we see the login form again, then the login failed.
   if (did_stop_loading) {
-    for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
-      // TODO(vabr): The similarity check is just action equality up to
-      // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
-      // make sense to consider modifying and using
-      // PasswordFormManager::DoesManage for it.
-      if (all_visible_forms_[i].action.is_valid() &&
-          URLsEqualUpToHttpHttpsSubstitution(
-              provisional_save_manager_->pending_credentials().action,
-              all_visible_forms_[i].action)) {
-        if (logger) {
-          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                  visible_forms[i]);
-          logger->LogMessage(Logger::STRING_DECISION_DROP);
+    if (provisional_save_manager_->pending_credentials().scheme
+        == PasswordForm::SCHEME_HTML) {
+      for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
+        // TODO(vabr): The similarity check is just action equality up to
+        // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
+        // make sense to consider modifying and using
+        // PasswordFormManager::DoesManage for it.
+        if (all_visible_forms_[i].action.is_valid() &&
+            URLsEqualUpToHttpHttpsSubstitution(
+                provisional_save_manager_->pending_credentials().action,
+                all_visible_forms_[i].action)) {
+          if (logger) {
+            logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
+                                    visible_forms[i]);
+            logger->LogMessage(Logger::STRING_DECISION_DROP);
+          }
+          provisional_save_manager_->SubmitFailed();
+          provisional_save_manager_.reset();
+          // Clear all_visible_forms_ once we found the match.
+          all_visible_forms_.clear();
+          return;
         }
-        provisional_save_manager_->SubmitFailed();
-        provisional_save_manager_.reset();
-        // Clear all_visible_forms_ once we found the match.
-        all_visible_forms_.clear();
-        return;
       }
+    } else {
+      if (logger)
+        logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML);
     }
 
     // Clear all_visible_forms_ after checking all the visible forms.
