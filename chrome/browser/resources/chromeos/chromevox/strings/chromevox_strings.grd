@@ -1802,6 +1802,9 @@
       <message desc="The spoken feedback when ChromeVox becomes inactive." name="IDS_CHROMEVOX_CHROMEVOX_INACTIVE">
         ChromeVox is now inactive.
       </message>
+      <message desc="The description of the command to toggle ChromeVox classic." name="IDS_CHROMEVOX_TOGGLE_CHROMEVOX">
+        Toggle ChromeVox classic.
+      </message>
       <message desc="The indicator of a pause to tts." name="IDS_CHROMEVOX_PAUSE">
         , '''
       </message>

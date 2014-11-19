@@ -3,9 +3,9 @@
   "key": "{{key}}",
 {% endif %}
   "manifest_version": 2,
-  "name": "ChromeVox",
+  "name": "__MSG_CHROMEVOX_NAME__",
   "version": "{{set_version}}",
-  "description": "ChromeVox - Giving Voice to Chrome.",
+  "description": "__MSG_CHROMEVOX_DESCRIPTION__",
 {% if is_guest_manifest == '1' %}
   "incognito": "split",
 {% endif %}
@@ -64,13 +64,13 @@
   },
   "commands": {
     "nextElement": {
-      "description": "Moves to the next element",
+      "description": "__MSG_CHROMEVOX_NEXT_OBJECT__",
       "suggested_key": {
         "chromeos": "Search+Right"
       }
     },
     "previousElement": {
-      "description": "Moves to the previous element",
+      "description": "__MSG_CHROMEVOX_PREVIOUS_OBJECT__",
       "suggested_key": {
         "chromeos": "Search+Left"
       }
@@ -136,13 +136,13 @@
       }
     },
     "goToBeginning": {
-      "description": "__MSG_CHROMEVOX_SKIP_TO_BEGINNING__",
+      "description": "__MSG_CHROMEVOX_JUMP_TO_TOP__",
       "suggested_key": {
         "chromeos": "Search+Ctrl+Left"
       }
     },
     "goToEnd": {
-      "description": "__MSG_CHROMEVOX_SKIP_TO_END__",
+      "description": "__MSG_CHROMEVOX_JUMP_TO_BOTTOM__",
       "suggested_key": {
         "chromeos": "Search+Ctrl+Right"
       }

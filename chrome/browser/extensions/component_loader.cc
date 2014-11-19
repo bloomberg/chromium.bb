@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/browser_resources.h"
@@ -80,6 +81,9 @@ LoadManifestOnFileThread(
   scoped_ptr<base::DictionaryValue> manifest(
       file_util::LoadManifest(chromevox_path, manifest_filename, &error));
   CHECK(manifest) << error;
+  bool localized = extension_l10n_util::LocalizeExtension(
+      chromevox_path, manifest.get(), &error);
+  CHECK(localized) << error;
   return manifest.Pass();
 }
 #endif  // defined(OS_CHROMEOS)
