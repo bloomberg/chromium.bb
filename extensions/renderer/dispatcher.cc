@@ -541,6 +541,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                       IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS));
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
+  resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
   resources.push_back(std::make_pair("webViewApiMethods",
                                      IDR_WEB_VIEW_API_METHODS_JS));
