@@ -304,9 +304,6 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (cssBox && cssBox->isRenderView())
         return WebAreaRole;
 
-    if (cssBox && cssBox->isTextField())
-        return TextFieldRole;
-
     if (cssBox && cssBox->isTextArea())
         return TextAreaRole;
 
@@ -343,6 +340,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
             return ColorWellRole;
         if (type == InputTypeNames::time)
             return TimeRole;
+        return TextFieldRole;
     }
 
     if (isFileUploadButton())
