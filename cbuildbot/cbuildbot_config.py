@@ -1244,6 +1244,7 @@ _x86_internal_release_boards = frozenset([
   'x86-zgb',
   'x86-zgb_he',
   'zako',
+  'zako_freon',
 ])
 
 _x86_external_boards = frozenset([
@@ -1371,6 +1372,7 @@ _moblab_boards = frozenset([
 _freon_boards = frozenset([
   'link_freon',
   'peppy_freon',
+  'zako_freon',
   'samus',
 ])
 
@@ -1882,6 +1884,7 @@ _non_paladin_boards = frozenset([
   'x86-pineview',
   'x86-zgb_he',
   'zako',
+  'zako_freon',
 ])
 
 _paladin_boards = frozenset(_all_boards - _non_paladin_boards)
