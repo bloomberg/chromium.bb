@@ -67,6 +67,8 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
                                       OnHostMsgSetSelectedText)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetLinkUnderCursor,
                                       OnHostMsgSetLinkUnderCursor)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetContentRestriction,
+                                      OnHostMsgSetContentRestriction)
   PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
