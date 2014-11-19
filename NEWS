@@ -27,7 +27,8 @@ Vietnamese and UEB to name just a few.
 ** Braille table improvements
 - Improvements to Bengali, Devanagari, Kannada, Gujarati, Malayalam,
   Telugu and Oriya, thanks to Sreeja Param
-- Fixes to en-GB-g2.ctb, thanks to Paul Wood
+- Corrections and improvements made to en-GB tables thanks to Paul
+  Wood
 - Vast restructuring to Korean tables. In 2006 the Institute for Korean
   Braille modified some dots in Korean Braille. Specifically, some
   punctuation dots are now based on English. To accommodate this change
