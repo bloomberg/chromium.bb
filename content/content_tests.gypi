@@ -331,6 +331,7 @@
         ['use_ozone==1', {
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
+            '../ui/platform_window/platform_window.gyp:platform_window',
           ],
         }],
         ['OS=="win"', {

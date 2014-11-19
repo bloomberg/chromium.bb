@@ -15,52 +15,37 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace {
 
-class MockSurfaceOzone : public ui::SurfaceOzoneCanvas {
+class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
  public:
-  MockSurfaceOzone() {}
-  virtual ~MockSurfaceOzone() {}
+  TestPlatformWindowDelegate() : widget_(gfx::kNullAcceleratedWidget) {}
+  ~TestPlatformWindowDelegate() override {}
 
-  // ui::SurfaceOzoneCanvas overrides:
-  virtual void ResizeCanvas(const gfx::Size& size) override {
-    surface_ = skia::AdoptRef(SkSurface::NewRaster(
-        SkImageInfo::MakeN32Premul(size.width(), size.height())));
+  gfx::AcceleratedWidget GetAcceleratedWidget() const { return widget_; }
+
+  // ui::PlatformWindowDelegate:
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnDamageRect(const gfx::Rect& damaged_region) override {}
+  void DispatchEvent(ui::Event* event) override {}
+  void OnCloseRequest() override {}
+  void OnClosed() override {}
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
+  void OnLostCapture() override {}
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
+    widget_ = widget;
   }
-  virtual skia::RefPtr<SkCanvas> GetCanvas() override {
-    return skia::SharePtr(surface_->getCanvas());
-  }
-  virtual void PresentCanvas(const gfx::Rect& damage) override {}
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
-    return scoped_ptr<gfx::VSyncProvider>();
-  }
+  void OnActivationChanged(bool active) override {}
 
  private:
-  skia::RefPtr<SkSurface> surface_;
+  gfx::AcceleratedWidget widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSurfaceOzone);
-};
-
-class MockSurfaceFactoryOzone : public ui::SurfaceFactoryOzone {
- public:
-  MockSurfaceFactoryOzone() {}
-  virtual ~MockSurfaceFactoryOzone() {}
-
-  virtual bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override {
-    return false;
-  }
-  virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget) override {
-    return make_scoped_ptr<ui::SurfaceOzoneCanvas>(new MockSurfaceOzone());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSurfaceFactoryOzone);
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformWindowDelegate);
 };
 
 }  // namespace
@@ -80,7 +65,8 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
  private:
   scoped_ptr<ui::Compositor> compositor_;
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<ui::SurfaceFactoryOzone> surface_factory_;
+  TestPlatformWindowDelegate window_delegate_;
+  scoped_ptr<ui::PlatformWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzoneTest);
 };
@@ -97,14 +83,12 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   ui::ContextFactory* context_factory =
       ui::InitializeContextFactoryForTests(enable_pixel_output_);
 
-  surface_factory_.reset(new MockSurfaceFactoryOzone());
-
   const gfx::Size size(500, 400);
-  const gfx::AcceleratedWidget kTestAcceleratedWidget = 1;
-  compositor_.reset(
-      new ui::Compositor(kTestAcceleratedWidget,
-                         context_factory,
-                         base::MessageLoopProxy::current()));
+  window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+      &window_delegate_, gfx::Rect(size));
+  compositor_.reset(new ui::Compositor(window_delegate_.GetAcceleratedWidget(),
+                                       context_factory,
+                                       base::MessageLoopProxy::current()));
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(
@@ -115,7 +99,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 void SoftwareOutputDeviceOzoneTest::TearDown() {
   output_device_.reset();
   compositor_.reset();
-  surface_factory_.reset();
+  window_.reset();
   ui::TerminateContextFactoryForTests();
 }
 
