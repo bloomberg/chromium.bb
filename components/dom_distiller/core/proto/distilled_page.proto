@@ -24,6 +24,9 @@ message DistilledPageProto {
 
     // The image data
     required bytes data = 2;
+
+    // The original url for the image.
+    optional string url = 3;
   }
 
   // The images referenced in the HTML.

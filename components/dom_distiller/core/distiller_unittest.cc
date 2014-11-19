@@ -34,6 +34,7 @@ using ::testing::_;
 
 using dom_distiller::proto::DomDistillerOptions;
 using dom_distiller::proto::DomDistillerResult;
+using dom_distiller::proto::DomDistillerResult_ContentImage;
 using dom_distiller::proto::TimingEntry;
 
 namespace {
@@ -63,7 +64,8 @@ scoped_ptr<base::Value> CreateDistilledValueReturnedFromJS(
   result.mutable_pagination_info()->set_prev_page(prev_page_url);
 
   for (size_t i = 0; i < image_indices.size(); ++i) {
-    result.add_image_urls(kImageURLs[image_indices[i]]);
+    DomDistillerResult_ContentImage* curr_image = result.add_content_images();
+    curr_image->set_url(kImageURLs[image_indices[i]]);
   }
 
   return dom_distiller::proto::json::DomDistillerResult::WriteToValue(result);
@@ -418,8 +420,10 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   EXPECT_EQ(kURL, first_page.url());
   ASSERT_EQ(2, first_page.image_size());
   EXPECT_EQ(kImageData[0], first_page.image(0).data());
+  EXPECT_EQ(kImageURLs[0], first_page.image(0).url());
   EXPECT_EQ(GetImageName(1, 0), first_page.image(0).name());
   EXPECT_EQ(kImageData[1], first_page.image(1).data());
+  EXPECT_EQ(kImageURLs[1], first_page.image(1).url());
   EXPECT_EQ(GetImageName(1, 1), first_page.image(1).name());
 }
 

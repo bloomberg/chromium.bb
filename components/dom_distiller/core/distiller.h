@@ -104,6 +104,7 @@ class DistillerImpl : public Distiller {
   void OnFetchImageDone(int page_num,
                         DistillerURLFetcher* url_fetcher,
                         const std::string& id,
+                        const std::string& original_url,
                         const std::string& response);
 
   void OnPageDistillationFinished(
@@ -114,7 +115,7 @@ class DistillerImpl : public Distiller {
 
   virtual void FetchImage(int page_num,
                           const std::string& image_id,
-                          const std::string& item);
+                          const std::string& image_url);
 
   // Distills the next page.
   void DistillNextPage();

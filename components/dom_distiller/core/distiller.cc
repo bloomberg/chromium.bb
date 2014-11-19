@@ -249,11 +249,12 @@ void DistillerImpl::OnPageDistillationFinished(
       }
     }
 
-    for (int img_num = 0; img_num < distiller_result->image_urls_size();
+    for (int img_num = 0; img_num < distiller_result->content_images_size();
          ++img_num) {
       std::string image_id =
           base::IntToString(page_num + 1) + "_" + base::IntToString(img_num);
-      FetchImage(page_num, image_id, distiller_result->image_urls(img_num));
+      FetchImage(page_num, image_id,
+          distiller_result->content_images(img_num).url());
     }
 
     AddPageIfDone(page_num);
@@ -266,24 +267,26 @@ void DistillerImpl::OnPageDistillationFinished(
 
 void DistillerImpl::FetchImage(int page_num,
                                const std::string& image_id,
-                               const std::string& item) {
+                               const std::string& image_url) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
   DistillerURLFetcher* fetcher =
       distiller_url_fetcher_factory_.CreateDistillerURLFetcher();
   page_data->image_fetchers_.push_back(fetcher);
 
-  fetcher->FetchURL(item,
+  fetcher->FetchURL(image_url,
                     base::Bind(&DistillerImpl::OnFetchImageDone,
                                weak_factory_.GetWeakPtr(),
                                page_num,
                                base::Unretained(fetcher),
-                               image_id));
+                               image_id,
+                               image_url));
 }
 
 void DistillerImpl::OnFetchImageDone(int page_num,
                                      DistillerURLFetcher* url_fetcher,
                                      const std::string& id,
+                                     const std::string& original_url,
                                      const std::string& response) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
@@ -304,6 +307,7 @@ void DistillerImpl::OnFetchImageDone(int page_num,
       page_data->distilled_page_proto->data.add_image();
   image->set_name(id);
   image->set_data(response);
+  image->set_url(original_url);
 
   AddPageIfDone(page_num);
 }
