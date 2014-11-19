@@ -94,9 +94,7 @@ enable_extensions = (!is_android && !is_ios)
 # disables it, 1 enables it fully, and 2 enables only UI and reporting features
 # without enabling phishing and malware detection. This is useful to integrate
 # a third party phishing/malware detection to existing safe browsing logic.
-if (is_android) {
-  safe_browsing_mode = 2
-} else if (is_ios) {
+if (is_ios) {
   safe_browsing_mode = 0
 } else {
   safe_browsing_mode = 1
