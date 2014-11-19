@@ -412,16 +412,24 @@ void ChevronMenuButton::OnDragExited() {
 }
 
 int ChevronMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
+  weak_factory_.InvalidateWeakPtrs();
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void ChevronMenuButton::OnMenuButtonClicked(views::View* source,
                                             const gfx::Point& point) {
   DCHECK_EQ(this, source);
-  ShowOverflowMenu(false);
+  // The menu could already be open if a user dragged an item over it but
+  // ultimately dropped elsewhere (as in that case the menu will close on a
+  // timer). In this case, the click should close the open menu.
+  if (menu_controller_)
+    menu_controller_->CloseMenu();
+  else
+    ShowOverflowMenu(false);
 }
 
 void ChevronMenuButton::ShowOverflowMenu(bool for_drop) {
+  // We should never try to show an overflow menu when one is already visible.
   DCHECK(!menu_controller_);
   menu_controller_.reset(new MenuController(
       this, browser_actions_container_, for_drop));
