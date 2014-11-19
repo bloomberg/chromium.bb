@@ -17,11 +17,10 @@ fixup_path.FixupPath()
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import filelib
-from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
 
 
-class TestFileManipulation(unittest_lib.TestCase):
+class TestFileManipulation(cros_test_lib.TestCase):
   """Test cases for filelib."""
 
   FILE1 = 'file1a'
@@ -116,7 +115,7 @@ class TestFileManipulation(unittest_lib.TestCase):
           shutil.rmtree(d)
 
 
-class TestFileLib(unittest_lib.MoxTestCase):
+class TestFileLib(cros_test_lib.MoxTestCase):
   """Test filelib module."""
 
   def _MD5Sum(self, file_path):
@@ -233,7 +232,7 @@ class TestFileLib(unittest_lib.MoxTestCase):
     # Set up the test replay script.
     # Run 1, success.
     filelib.os.path.isfile(path).AndReturn(True)
-    filelib.os.stat(path).AndReturn(unittest_lib.EasyAttr(st_size=size))
+    filelib.os.stat(path).AndReturn(cros_test_lib.EasyAttr(st_size=size))
     # Run 2, file not found.
     filelib.os.path.isfile(path).AndReturn(False)
     self.mox.ReplayAll()

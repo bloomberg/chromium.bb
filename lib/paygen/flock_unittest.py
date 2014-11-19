@@ -35,17 +35,6 @@ class FLockTest(mox.MoxTestBase):
     self.tempdir = None
     mox.MoxTestBase.__init__(self, testCaseNames)
 
-  def setUp(self):
-    """Prepare for each test."""
-    self.mox = mox.Mox()
-
-    # To make certain we don't self update while running tests.
-    os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
-
-  def tearDown(self):
-    """Cleanup after each test."""
-    self.mox.UnsetStubs()
-
   @osutils.TempDirDecorator
   def _HelperSingleLockTest(self, blocking, shared):
     """Helper method that runs a basic test with/without blocking/sharing."""

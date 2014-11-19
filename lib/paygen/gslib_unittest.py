@@ -20,7 +20,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 from chromite.lib.paygen import gslib
-from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
 
 
@@ -33,21 +32,16 @@ GS_RETRY_FAILURE = ('GSResponseError: status=403, code=InvalidAccessKeyId,'
 GS_DONE_FAILURE = ('AccessDeniedException:')
 
 
-class TestGsLib(unittest_lib.MoxTestCase):
+class TestGsLib(cros_test_lib.MoxTestCase):
   """Test gslib module."""
 
   def setUp(self):
-    unittest_lib.MoxTestCase.setUp(self)
     self.bucket_name = 'somebucket'
     self.bucket_uri = 'gs://%s' % self.bucket_name
 
     # Because of autodetection, we no longer know which gsutil binary
     # will be used.
     self.gsutil = mox.IsA(str)
-
-  def tearDown(self):
-    unittest_lib.MoxTestCase.tearDown(self)
-    self.mox.UnsetStubs()
 
   def testRetryGSLib(self):
     """Test our retry decorator"""
@@ -273,7 +267,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'cat', path]
-    result = unittest_lib.EasyAttr(error='', output='TheContent')
+    result = cros_test_lib.EasyAttr(error='', output='TheContent')
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      return_result=True
                      ).AndReturn(result)
@@ -305,7 +299,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'stat', path]
-    result = unittest_lib.EasyAttr(error='', output='')
+    result = cros_test_lib.EasyAttr(error='', output='')
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      return_result=True
                      ).AndReturn(result)
@@ -405,7 +399,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      return_result=True
-                     ).AndReturn(unittest_lib.EasyAttr(output=output))
+                     ).AndReturn(cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -423,7 +417,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
       '        96  2012-05-17T14:00:33  gs://bucket/chromeos.bin.md5',
       'TOTAL: 1 objects, 96 bytes (96.0 B)',
       ])
-    cmd_result = unittest_lib.EasyAttr(output=output)
+    cmd_result = cros_test_lib.EasyAttr(output=output)
 
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      return_result=True).AndReturn(cmd_result)
@@ -441,7 +435,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     # Set up the test replay script.
     # Run 1, versioning not enabled in bucket, one line of output.
     cmd = ['gsutil', '-d', 'cat', gs_uri]
-    cmd_result = unittest_lib.EasyAttr(output=cmd_output,
+    cmd_result = cros_test_lib.EasyAttr(output=cmd_output,
                                        error=cmd_error,
                                        cmdstr=' '.join(cmd))
     cmd[0] = mox.IsA(str)
@@ -500,7 +494,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     # Prepare cmd_result for a good run.
     output = '\n'.join(files + directories + ['']) # Fake a trailing empty line.
-    cmd_result_ok = unittest_lib.EasyAttr(output=output, returncode=0)
+    cmd_result_ok = cros_test_lib.EasyAttr(output=output, returncode=0)
 
     # Prepare exception for a run that finds nothing.
     stderr = 'CommandException: One or more URLs matched no objects.\n'
@@ -552,7 +546,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
 
     # Prepare cmd_result for a good run.
     output = '\n'.join(files + directories + ['']) # Fake a trailing empty line.
-    cmd_result = unittest_lib.EasyAttr(output=output, returncode=0)
+    cmd_result = cros_test_lib.EasyAttr(output=output, returncode=0)
 
     # Set up the test replay script.
     # Run 1.
@@ -634,7 +628,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     cmd = [self.gsutil, 'ls', '-L', gs_uri]
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      error_ok=True, return_result=True
-                     ).AndReturn(unittest_lib.EasyAttr(output=output))
+                     ).AndReturn(cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -675,7 +669,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     cmd = [self.gsutil, 'ls', '-L', gs_uri]
     utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
                      error_ok=True, return_result=True
-                     ).AndReturn(unittest_lib.EasyAttr(output=output))
+                     ).AndReturn(cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -716,7 +710,7 @@ class TestGsLib(unittest_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-class TestGsLibAccess(unittest_lib.MoxTestCase):
+class TestGsLibAccess(cros_test_lib.MoxTestCase):
   """Test access to gs lib functionality.
 
   The tests here require GS .boto access to the gs://chromeos-releases-public

@@ -125,9 +125,6 @@ class GSLockTest(cros_test_lib.MockTestCase):
     self.ctx.Remove(self.lock_uri, ignore_missing=True)
     self.ctx.Remove(self.data_uri, ignore_missing=True)
 
-    # To make certain we don't self update while running tests.
-    os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
-
   @cros_test_lib.NetworkTest()
   def tearDown(self):
     self.assertFalse(self.ctx.Exists(self.lock_uri))

@@ -45,9 +45,6 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     self.build_uri = ('gs://foo-bucket/foo-channel/foo-board/foo-version/'
                       'payloads/signing/foo-unique')
 
-    # To make certain we don't self update while running tests.
-    os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
-
     # Some tests depend on this timeout. Make it smaller, then restore.
     signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = 0.01
 

@@ -23,7 +23,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslib
-from chromite.lib.paygen import unittest_lib
 
 
 # We access a lot of protected members during testing.
@@ -62,7 +61,7 @@ def _inProcessGetFile(uri_tempdir):
     raise
 
 
-class DownloadCachePickleTest(unittest_lib.TestCase):
+class DownloadCachePickleTest(cros_test_lib.TestCase):
   """Test pickle/unpickle the download cache."""
 
   @osutils.TempDirDecorator
@@ -95,17 +94,6 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.hash_large = 'ce11166b2742c12c93efa307c4c4adbf'
     self.hash_a = '591430f83b55355d9233babd172baea5'
     self.hash_b = '22317eb6cccea8c87f960c45ecec3478'
-
-  def setUp(self):
-    """Prepare for each test."""
-    self.mox = mox.Mox()
-
-    # To make certain we don't self update while running tests.
-    os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
-
-  def tearDown(self):
-    """Cleanup after each test."""
-    self.mox.UnsetStubs()
 
   def _verifyFileContents(self, cache, uri):
     """Test helper to make sure a cached file contains correct contents."""

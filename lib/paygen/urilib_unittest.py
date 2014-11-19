@@ -17,7 +17,6 @@ from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
-from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import urilib
 
 
@@ -44,7 +43,7 @@ class FakeHttpResponse(object):
     return self.code
 
 
-class TestFileManipulation(unittest_lib.TestCase):
+class TestFileManipulation(cros_test_lib.TestCase):
   """Test general urilib file methods together."""
   # pylint: disable=E1101
 
@@ -139,7 +138,7 @@ class TestFileManipulation(unittest_lib.TestCase):
     self.assertFalse(urilib.ListFiles(self.GS_DIR))
 
 
-class TestUrilib(unittest_lib.MoxTestCase):
+class TestUrilib(cros_test_lib.MoxTestCase):
   """Test urilib module."""
 
   def testExtractProtocol(self):

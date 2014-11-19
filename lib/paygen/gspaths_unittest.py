@@ -18,8 +18,6 @@ from chromite.lib.paygen import gspaths
 
 class GsPathsDataTest(mox.MoxTestBase):
   """Tests for structs defined in GsPaths."""
-  def setUp(self):
-    self.mox = mox.Mox()
 
   def testBuild(self):
     default_input = { 'channel': 'foo-channel',
@@ -82,8 +80,6 @@ class GsPathsChromeosReleasesTest(mox.MoxTestBase):
       (_GS_PAYLOADS_PATH_TEMPLATE, _DELTA_PAYLOAD_NAME_TEMPLATE))
 
   def setUp(self):
-    self.mox = mox.Mox()
-
     # Shared attributes (signed + unsigned images).
     self.bucket = 'crt'
     self.channel = 'foo-channel'
@@ -123,9 +119,6 @@ class GsPathsChromeosReleasesTest(mox.MoxTestBase):
                           src_version=self.src_version,
                           random_str=self.random_str,
                           **self.unsigned_image_archive_attrs)
-
-  def tearDown(self):
-    self.mox.UnsetStubs()
 
   def _Populate(self, template, **kwargs):
     """Populates a template string with override attributes.
