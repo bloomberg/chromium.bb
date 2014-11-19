@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.util.ArrayList;
@@ -552,6 +553,7 @@ public final class PrefServiceBridge {
     /**
      * @return Whether the camera/microphone permission is enabled.
      */
+    @VisibleForTesting
     public boolean isCameraMicEnabled() {
         return nativeGetCameraMicEnabled();
     }
