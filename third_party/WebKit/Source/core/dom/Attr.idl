@@ -39,5 +39,9 @@ interface Attr : Node {
     readonly attribute DOMString? prefix;
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? localName;
-};
 
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26609
+    [MeasureAs=AttrChildAccess] readonly attribute NodeList childNodes;
+    [MeasureAs=AttrChildAccess] readonly attribute Node firstChild;
+    [MeasureAs=AttrChildAccess] readonly attribute Node lastChild;
+};

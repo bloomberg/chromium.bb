@@ -168,6 +168,8 @@ void Attr::childrenChanged(const ChildrenChange&)
     if (m_ignoreChildrenChanged > 0)
         return;
 
+    UseCounter::count(document(), UseCounter::AttrChildChange);
+
     QualifiedName name = qualifiedName();
     invalidateNodeListCachesInAncestors(&name, m_element);
 
