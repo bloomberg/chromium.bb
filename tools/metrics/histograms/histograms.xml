@@ -41839,11 +41839,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="CaptivePortalNotificationStatus" type="int">
-  <int value="0" label="UNKNOWN"/>
-  <int value="1" label="OFFLINE"/>
-  <int value="2" label="ONLINE"/>
-  <int value="3" label="PORTAL"/>
-  <int value="4" label="PROXY_AUTH_REQUIRED"/>
+  <int value="0" label="DISPLAYED"/>
+  <int value="1" label="ERROR"/>
 </enum>
 
 <enum name="CaptivePortalNotificationUserAction" type="int">

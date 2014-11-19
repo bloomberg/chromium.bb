@@ -20,6 +20,11 @@ class NetworkPortalNotificationController {
   // important that they don't change between releases.
   enum NotificationMetric {
     NOTIFICATION_METRIC_DISPLAYED = 0,
+
+    // This value is no longer used by is still kept here just for
+    // unify with histograms.xml.
+    NOTIFICATION_METRIC_ERROR = 1,
+
     NOTIFICATION_METRIC_COUNT = 2
   };
 
