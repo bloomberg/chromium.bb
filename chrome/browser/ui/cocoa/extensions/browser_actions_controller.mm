@@ -343,19 +343,25 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (NSPoint)popupPointForId:(const std::string&)id {
-  NSButton* button = [self buttonForId:id];
+  BrowserActionButton* button = [self buttonForId:id];
   if (!button)
     return NSZeroPoint;
 
-  if ([hiddenButtons_ containsObject:button])
-    button = chevronMenuButton_.get();
+  NSRect bounds;
+  NSButton* referenceButton = button;
+  if ([hiddenButtons_ containsObject:button]) {
+    bounds = [chevronMenuButton_ bounds];
+    referenceButton = chevronMenuButton_.get();
+  } else {
+    bounds = [button convertRect:[button frameAfterAnimation]
+                        fromView:[button superview]];
+  }
 
   // Anchor point just above the center of the bottom.
-  const NSRect bounds = [button bounds];
-  DCHECK([button isFlipped]);
+  DCHECK([referenceButton isFlipped]);
   NSPoint anchor = NSMakePoint(NSMidX(bounds),
                                NSMaxY(bounds) - kBrowserActionBubbleYOffset);
-  return [button convertPoint:anchor toView:nil];
+  return [referenceButton convertPoint:anchor toView:nil];
 }
 
 - (BOOL)chevronIsHidden {
@@ -425,7 +431,6 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
   [buttons_ insertObject:newButton atIndex:index];
-
 
   [[NSNotificationCenter defaultCenter]
       addObserver:self

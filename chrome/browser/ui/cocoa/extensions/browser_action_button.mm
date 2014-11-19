@@ -294,6 +294,16 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   return [moveAnimation_ isAnimating];
 }
 
+- (NSRect)frameAfterAnimation {
+  if ([moveAnimation_ isAnimating]) {
+    NSRect endFrame = [[[[moveAnimation_ viewAnimations] objectAtIndex:0]
+        valueForKey:NSViewAnimationEndFrameKey] rectValue];
+    return endFrame;
+  } else {
+    return [self frame];
+  }
+}
+
 - (ToolbarActionViewController*)viewController {
   return viewController_;
 }

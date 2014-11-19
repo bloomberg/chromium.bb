@@ -63,6 +63,10 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 - (BOOL)isAnimating;
 
+// Returns the frame the button will occupy once animation is complete, or its
+// current frame if it is not animating.
+- (NSRect)frameAfterAnimation;
+
 - (ToolbarActionViewController*)viewController;
 
 // Returns a pointer to an autoreleased NSImage with the badge, shadow and
