@@ -34,7 +34,6 @@ class DataReductionProxyParams;
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* params,
     net::URLRequest* request,
-    const net::HttpResponseHeaders* original_response_headers,
     DataReductionProxyBypassType* proxy_bypass_type);
 
 // Adds data reduction proxies to |result|, where applicable, if result

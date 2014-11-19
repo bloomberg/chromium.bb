@@ -39,7 +39,7 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
     return nullptr;
   DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
   bool should_retry = data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
-      params_, request, request->response_info().headers.get(), &bypass_type);
+      params_, request, &bypass_type);
   if (usage_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
     usage_stats_->SetBypassType(bypass_type);
   if (!should_retry)

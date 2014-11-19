@@ -43,9 +43,13 @@ namespace data_reduction_proxy {
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* data_reduction_proxy_params,
     net::URLRequest* request,
-    const net::HttpResponseHeaders* original_response_headers,
     DataReductionProxyBypassType* proxy_bypass_type) {
+  DCHECK(request);
   if (!data_reduction_proxy_params)
+    return false;
+  const net::HttpResponseHeaders* response_headers =
+      request->response_info().headers.get();
+  if (!response_headers)
     return false;
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!data_reduction_proxy_params->WasDataReductionProxyUsed(
@@ -68,15 +72,15 @@ bool MaybeBypassProxyAndPrepareToRetry(
   // via header, so detect and report cases where the via header is missing.
   DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
       !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
-      original_response_headers);
+      response_headers);
 
   DataReductionProxyTamperDetection::DetectAndReport(
-      original_response_headers,
+      response_headers,
       data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure());
 
   DataReductionProxyInfo data_reduction_proxy_info;
   DataReductionProxyBypassType bypass_type =
-      GetDataReductionProxyBypassType(original_response_headers,
+      GetDataReductionProxyBypassType(response_headers,
                                       &data_reduction_proxy_info);
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&

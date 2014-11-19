@@ -123,19 +123,10 @@ class DataReductionProxyProtocolTest : public testing::Test {
   // if |expect_response_body|.
   void TestProxyFallback(const char* method,
                          const char* first_response,
-                         bool has_origin,
                          bool expected_retry,
+                         bool generate_response_error,
                          size_t expected_bad_proxy_count,
                          bool expect_response_body) {
-    std::string payload1 =
-        (expected_retry ? "Bypass message" : "content");
-    MockRead data_reads[] = {
-      MockRead(first_response),
-      MockRead(payload1.c_str()),
-      MockRead(net::SYNCHRONOUS, net::OK),
-    };
-    std::string origin = has_origin ? "Origin: foo.com\r\n" : "";
-
     std::string m(method);
     std::string trailer =
         (m == "HEAD" || m == "PUT" || m == "POST") ?
@@ -144,56 +135,78 @@ class DataReductionProxyProtocolTest : public testing::Test {
     std::string request1 =
         base::StringPrintf("%s http://www.google.com/ HTTP/1.1\r\n"
                            "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n%s%s"
+                           "Proxy-Connection: keep-alive\r\n%s"
                            "User-Agent:\r\n"
                            "Accept-Encoding: gzip, deflate\r\n\r\n",
-                           method, origin.c_str(), trailer.c_str());
+                           method, trailer.c_str());
+
+    std::string payload1 =
+        (expected_retry ? "Bypass message" : "content");
+
     MockWrite data_writes[] = {
       MockWrite(request1.c_str()),
     };
+
+    MockRead data_reads[] = {
+      MockRead(first_response),
+      MockRead(payload1.c_str()),
+      MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    MockRead data_reads_error[] = {
+      MockRead(net::SYNCHRONOUS, net::ERR_INVALID_RESPONSE),
+    };
+
     StaticSocketDataProvider data1(data_reads, arraysize(data_reads),
                                   data_writes, arraysize(data_writes));
-    mock_socket_factory_.AddSocketDataProvider(&data1);
+    StaticSocketDataProvider data1_error(data_reads_error,
+                                         arraysize(data_reads_error),
+                                         data_writes, arraysize(data_writes));
+    if (!generate_response_error)
+      mock_socket_factory_.AddSocketDataProvider(&data1);
+    else
+      mock_socket_factory_.AddSocketDataProvider(&data1_error);
 
-      std::string response2;
-      std::string request2;
-      if (expected_bad_proxy_count >= 2u ||
-          (m != "POST" && expected_retry && expected_bad_proxy_count == 0u)) {
-        response2 =
-            "HTTP/1.0 200 OK\r\n"
-            "Server: not-proxy\r\n\r\n";
-        request2 = base::StringPrintf(
-            "%s / HTTP/1.1\r\n"
-            "Host: www.google.com\r\n"
-            "Connection: keep-alive\r\n%s%s"
-            "User-Agent:\r\n"
-            "Accept-Encoding: gzip, deflate\r\n\r\n",
-            method, origin.c_str(), trailer.c_str());
-      } else if (expected_bad_proxy_count <= 1u) {
-        response2 =
-            "HTTP/1.0 200 OK\r\n"
-            "Server: not-proxy\r\n"
-            "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n";
-        request2 = base::StringPrintf(
-            "%s http://www.google.com/ HTTP/1.1\r\n"
-            "Host: www.google.com\r\n"
-            "Proxy-Connection: keep-alive\r\n%s%s"
-            "User-Agent:\r\n"
-            "Accept-Encoding: gzip, deflate\r\n\r\n",
-            method, origin.c_str(), trailer.c_str());
-      }
-      MockRead data_reads2[] = {
-          MockRead(response2.c_str()),
-          MockRead("content"),
-          MockRead(net::SYNCHRONOUS, net::OK),
-      };
-      MockWrite data_writes2[] = {
-          MockWrite(request2.c_str()),
-      };
-      StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                     data_writes2, arraysize(data_writes2));
-      if (expected_retry) {
-        mock_socket_factory_.AddSocketDataProvider(&data2);
+    std::string response2;
+    std::string request2;
+    std::string response2_via_header = "";
+    std::string request2_connection_type = "";
+    std::string request2_path = "/";
+    bool idempotent_block_once =
+        m != "POST" && expected_retry && expected_bad_proxy_count == 0u;
+
+    if (expected_bad_proxy_count < 2u && !idempotent_block_once) {
+      request2_path = "http://www.google.com/";
+      request2_connection_type = "Proxy-";
+      response2_via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
+    }
+
+    request2 = base::StringPrintf(
+        "%s %s HTTP/1.1\r\n"
+        "Host: www.google.com\r\n"
+        "%sConnection: keep-alive\r\n%s"
+        "User-Agent:\r\n"
+        "Accept-Encoding: gzip, deflate\r\n\r\n",
+        method, request2_path.c_str(), request2_connection_type.c_str(),
+        trailer.c_str());
+
+    response2 = base::StringPrintf(
+        "HTTP/1.0 200 OK\r\n"
+        "Server: foo\r\n%s\r\n", response2_via_header.c_str());
+
+    MockWrite data_writes2[] = {
+      MockWrite(request2.c_str()),
+    };
+
+    MockRead data_reads2[] = {
+      MockRead(response2.c_str()),
+      MockRead("content"),
+      MockRead(net::SYNCHRONOUS, net::OK),
+    };
+
+    StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                   data_writes2, arraysize(data_writes2));
+    if (expected_retry) {
+      mock_socket_factory_.AddSocketDataProvider(&data2);
     }
 
     // Expect that we get "content" and not "Bypass message", and that there's
@@ -201,22 +214,16 @@ class DataReductionProxyProtocolTest : public testing::Test {
     ExecuteRequestExpectingContentAndHeader(
         method,
         (expect_response_body ? "content" : ""),
-        "server",
-        (expected_retry == 0 ? "proxy" : "not-proxy"),
-        has_origin,
-        expected_retry);
+        expected_retry,
+        generate_response_error);
   }
 
   // Starts a request with the given |method| and checks that the response
-  // contains |content| and the the header |header|: |value|, if |header| is
-  // non-empty. Verifies that the request's URL chain is the right length
-  // depending on whether or not a retry was expected (|expected_retry|).
+  // contains |content|.
   void ExecuteRequestExpectingContentAndHeader(const std::string& method,
                                                const std::string& content,
-                                               const std::string& header,
-                                               const std::string& value,
-                                               bool has_origin,
-                                               bool expected_retry) {
+                                               bool expected_retry,
+                                               bool expected_error) {
     TestDelegate d;
     scoped_ptr<URLRequest> r(context_->CreateRequest(
         GURL("http://www.google.com/"),
@@ -225,25 +232,23 @@ class DataReductionProxyProtocolTest : public testing::Test {
         NULL));
     r->set_method(method);
     r->SetLoadFlags(net::LOAD_NORMAL);
-    if (has_origin)
-      r->SetExtraRequestHeaderByName("Origin", "foo.com", true);
 
     r->Start();
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
-    EXPECT_EQ(net::OK, r->status().error());
-    if (expected_retry)
-      EXPECT_EQ(2, network_delegate_->headers_received_count());
-    else
-      EXPECT_EQ(1, network_delegate_->headers_received_count());
-
-    if (!header.empty()) {
-      // We also have a server header here that isn't set by the proxy.
-      EXPECT_TRUE(r->response_headers()->HasHeaderValue(header, value));
+    if (!expected_error) {
+      EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
+      EXPECT_EQ(net::OK, r->status().error());
+      if (expected_retry)
+        EXPECT_EQ(2, network_delegate_->headers_received_count());
+      else
+        EXPECT_EQ(1, network_delegate_->headers_received_count());
+      EXPECT_EQ(content, d.data_received());
+      return;
     }
-
-    EXPECT_EQ(content, d.data_received());
+    EXPECT_EQ(net::URLRequestStatus::FAILED, r->status().status());
+    EXPECT_EQ(net::ERR_INVALID_RESPONSE, r->status().error());
+    EXPECT_EQ(0, network_delegate_->headers_received_count());
   }
 
   // Returns the key to the |ProxyRetryInfoMap|.
@@ -343,8 +348,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
   const struct {
     const char* method;
     const char* first_response;
-    bool has_origin;
     bool expected_retry;
+    bool generate_response_error;
     size_t expected_bad_proxy_count;
     bool expect_response_body;
     int expected_duration;
@@ -357,6 +362,16 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
       false,
       false,
+      0u,
+      true,
+      -1,
+      BYPASS_EVENT_TYPE_MAX,
+    },
+    // Response error does not result in bypass.
+    { "GET",
+      "Not an HTTP response",
+      false,
+      true,
       0u,
       true,
       -1,
@@ -394,8 +409,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -407,8 +422,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=1\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       1,
@@ -420,8 +435,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -433,8 +448,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       false,
       0,
@@ -446,8 +461,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -459,8 +474,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -472,8 +487,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=0\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -484,8 +499,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "HTTP/1.1 500 Internal Server Error\r\n"
       "Server: proxy\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -496,8 +511,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "HTTP/1.1 502 Internal Server Error\r\n"
       "Server: proxy\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -508,8 +523,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "HTTP/1.1 503 Internal Server Error\r\n"
       "Server: proxy\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -519,8 +534,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
     { "GET",
       "HTTP/1.1 404 Not Found\r\n"
       "Server: proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       1,
@@ -530,8 +545,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
     { "GET",
       "HTTP/1.1 200 OK\r\n"
       "Server: proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -542,8 +557,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "HTTP/1.1 200 OK\r\n"
       "Server: proxy\r\n"
       "Via: 1.0 some-other-proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       0,
@@ -581,8 +596,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block=1\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       2u,
       true,
       1,
@@ -596,8 +611,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       true,
       0,
@@ -609,8 +624,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       true,
       0,
@@ -622,8 +637,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       false,
       0,
@@ -635,8 +650,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       true,
       0,
@@ -648,8 +663,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       true,
       0,
@@ -661,8 +676,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       0u,
       true,
       0,
@@ -692,8 +707,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: block=1, block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       2u,
       true,
       1,
@@ -707,8 +722,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n"
       "Chrome-Proxy: bypass=1, block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
       true,
+      false,
       1u,
       true,
       1,
@@ -726,8 +741,8 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
         &bypass_type);
     TestProxyFallback(tests[i].method,
                       tests[i].first_response,
-                      tests[i].has_origin,
                       tests[i].expected_retry,
+                      tests[i].generate_response_error,
                       tests[i].expected_bad_proxy_count,
                       tests[i].expect_response_body);
     EXPECT_EQ(tests[i].expected_bypass_type, usage_stats_->GetBypassType());
