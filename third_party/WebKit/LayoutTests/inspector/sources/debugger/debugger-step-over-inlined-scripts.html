@@ -1,0 +1,67 @@
+<html>
+<head>
+
+<script>
+function f1()
+{
+    return 1; // Breakpoint.
+}
+f1();
+</script>
+
+<script>
+function f2()
+{
+    return 2;
+}
+f2();
+</script>
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+
+function test()
+{
+    var numberOfStepOver = 7;
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.showScriptSource("debugger-step-over-inlined-scripts.html", step2);
+    }
+
+    function step2(sourceFrame)
+    {
+        InspectorTest.addResult("Script source was shown.");
+        InspectorTest.setBreakpoint(sourceFrame, 6, "", true);
+        InspectorTest.waitUntilPaused(step3);
+        InspectorTest.reloadPage(completeTest);
+    }
+
+    function step3()
+    {
+        var actions = ["Print"]; // First pause on breakpoint.
+        for (var i = 0; i < numberOfStepOver; ++i)
+            actions.push("StepOver", "Print");
+        actions.push("Resume");
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions);
+    }
+
+    function completeTest()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that debugger StepOver will step through inlined scripts.
+</p>
+</body>
+</html>

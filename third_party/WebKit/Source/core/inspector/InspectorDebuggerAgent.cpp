@@ -981,6 +981,12 @@ void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
 {
     if (!assertPaused(errorString))
         return;
+    // StepOver at function return point should fallback to StepInto.
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = scriptDebugServer().callFrameNoScopes(0);
+    if (frame && frame->isAtReturn()) {
+        stepInto(errorString);
+        return;
+    }
     m_scheduledDebuggerStep = StepOver;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
