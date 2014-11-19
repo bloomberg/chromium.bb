@@ -1201,6 +1201,7 @@ _arm_internal_release_boards = frozenset([
   'daisy_freon',
   'daisy_skate',
   'daisy_spring',
+  'kayle',
   'nyan',
   'nyan_big',
   'nyan_blaze',
@@ -1419,6 +1420,8 @@ _base_configs = dict()
 def _CreateBaseConfigs():
   for board in _all_boards:
     base = _config()
+    if board in _internal_boards:
+      base.update(internal)
     if board not in _x86_boards:
       base.update(non_testable_builder)
     if board in _brillo_boards:
@@ -1429,6 +1432,15 @@ def _CreateBaseConfigs():
       base.update(profile='minimal')
     if board in _freon_boards:
       base.update(vm_tests=[])
+
+    # TODO(akeshet) Eliminate or clean up this special case.
+    # kayle board has a lot of kayle-specific config changes.
+    if board == 'kayle':
+      base.update(manifest='kayle.xml',
+                  dev_manifest='kayle.xml',
+                  factory_toolkit=False,
+                  factory_install_netboot=False)
+
     _base_configs[board] = base.derive(boards=[board])
 
 _CreateBaseConfigs()
@@ -1443,13 +1455,16 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix):
                  board-name_suffix.
   """
   for board in boards:
-    base = _base_configs[board]
+    base = _config()
+
     if board in _internal_boards:
       base = base.derive(
-        internal, official_chrome,
+        official_chrome,
         manifest=constants.OFFICIAL_MANIFEST
       )
-    config_base.add_config('%s-%s' % (board, name_suffix), base)
+
+    config_base.add_config('%s-%s' % (board, name_suffix), base,
+                           _base_configs[board])
 
 
 full.add_config('mipsel-o32-generic-full',
@@ -1617,6 +1632,7 @@ incremental.add_config('x86-generic-incremental',
 
 incremental.add_config('daisy-incremental',
   _base_configs['daisy'],
+  delete_keys(internal),
 )
 
 incremental.add_config('amd64-generic-incremental',
@@ -2007,24 +2023,23 @@ _paladin_full_boards = frozenset([
 
 def _CreatePaladinConfigs():
   for board in _paladin_boards:
-    if not board in _base_configs:
-      continue
+    assert board in _base_configs, '%s not in _base_configs' % board
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
     paladin_builder_name = '%s %s' % (board, constants.PALADIN_TYPE)
-    base_config = _base_configs[board].derive()
+    customizations = _config()
+    base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
-      base_config.update(hw_tests=HWTestConfig.DefaultListCQ())
+      customizations.update(hw_tests=HWTestConfig.DefaultListCQ())
     if board not in _paladin_important_boards:
-      base_config.update(important=False)
+      customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
-      base_config.update(chroot_replace=True)
+      customizations.update(chroot_replace=True)
     if board in _paladin_full_boards:
-      base_config.update(full_paladin)
+      customizations.update(full_paladin)
     if board in _internal_boards:
-      base_config = base_config.derive(
-        internal, official_chrome,
-        manifest=constants.OFFICIAL_MANIFEST
-      )
+      customizations = customizations.derive(
+          internal, official_chrome,
+          manifest=constants.OFFICIAL_MANIFEST)
 
     if board not in _paladin_default_vmtest_boards:
       vm_tests = []
@@ -2036,14 +2051,15 @@ def _CreatePaladinConfigs():
         vm_tests.append(constants.DEV_MODE_TEST_TYPE)
       if board in _paladin_smoke_vmtest_boards:
         vm_tests.append(constants.SMOKE_SUITE_TEST_TYPE)
-      base_config.update(vm_tests=vm_tests)
+      customizations.update(vm_tests=vm_tests)
 
     if base_config.get('internal'):
-      base_config.update(prebuilts=constants.PRIVATE,
-                         description=paladin['description'] + ' (internal)')
+      customizations.update(prebuilts=constants.PRIVATE,
+                            description=paladin['description'] + ' (internal)')
     else:
-      base_config.update(prebuilts=constants.PUBLIC)
+      customizations.update(prebuilts=constants.PUBLIC)
     paladin.add_config(config_name,
+                       customizations,
                        base_config,
                        paladin_builder_name=paladin_builder_name)
 
@@ -2063,16 +2079,6 @@ internal_paladin.add_config('lumpy-incremental-paladin',
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
 ### itself.
 internal_notest_paladin = internal_paladin.derive(non_testable_builder)
-
-internal_notest_paladin.add_config('kayle-paladin',
-  brillo,
-  boards=['kayle'],
-  paladin_builder_name='kayle paladin',
-  manifest='kayle.xml',
-  dev_manifest='kayle.xml',
-  factory_toolkit=False,
-  factory_install_netboot=False,
-)
 
 internal_brillo_paladin = internal_paladin.derive(brillo)
 
@@ -2539,14 +2545,9 @@ _config.add_group('beaglebone-release-group',
 _non_testable_brillo_release = _brillo_release.derive(non_testable_builder)
 
 _non_testable_brillo_release.add_config('kayle-release',
-  boards=['kayle'],
-  manifest='kayle.xml',
-  dev_manifest='kayle.xml',
+  _base_configs['kayle'],
   paygen=False,
-  important=False,
   signer_tests=False,
-  factory_toolkit=False,
-  factory_install_netboot=False,
   images=['base', 'test'],
 )
 
