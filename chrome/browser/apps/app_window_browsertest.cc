@@ -174,7 +174,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestoreAfterClose) {
 #define MAYBE_TestInitialBounds TestInitialBounds
 #define MAYBE_TestInitialConstraints TestInitialConstraints
 #define MAYBE_TestSetBounds TestSetBounds
-#define MAYBE_TestSetSizeConstraints TestSetSizeConstraints
+// Disabled as flakey, see http://crbug.com/434532 for details.
+#define MAYBE_TestSetSizeConstraints DISABLED_TestSetSizeConstraints
 #endif
 
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestDeprecatedBounds) {
