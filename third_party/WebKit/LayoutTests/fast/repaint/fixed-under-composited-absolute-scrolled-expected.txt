@@ -1,19 +1,19 @@
 {
-  "bounds": [785, 5056],
+  "bounds": [785, 2001],
   "children": [
     {
-      "bounds": [785, 5056],
+      "bounds": [785, 2001],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 28],
-          "bounds": [769, 1972],
+          "position": [0, 400],
+          "bounds": [100, 1601],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
+          "backgroundColor": "#FF0000",
           "repaintRects": [
-            [10, 1822, 150, 150],
-            [10, 1422, 150, 150]
+            [0, 100, 100, 100]
           ]
         }
       ]

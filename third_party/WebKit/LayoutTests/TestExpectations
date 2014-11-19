@@ -498,6 +498,12 @@ crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
 
+crbug.com/432064 fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+crbug.com/432064 fast/repaint/fixed-scroll-simple.html [ NeedsRebaseline ]
+crbug.com/432064 fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ NeedsRebaseline ]
+crbug.com/432064 compositing/repaint/fixed-pos-inside-composited-intermediate-layer.html [ NeedsRebaseline ]
+crbug.com/432064 compositing/repaint/fixed-pos-with-abs-pos-child-scroll.html [ NeedsRebaseline ]
+
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 # On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).

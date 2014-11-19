@@ -86,8 +86,11 @@ public:
         IsNotFixedPosition,
         IsFixedPosition,
     };
+
+    static ViewportConstrainedPosition viewportConstrainedPosition(EPosition position) { return position == FixedPosition ? IsFixedPosition : IsNotFixedPosition; }
     void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
     virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
 
     void invalidatePaintForRectangle(const LayoutRect&, PaintInvalidationReason) const;
 

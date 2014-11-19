@@ -1762,11 +1762,13 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
         // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
         LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         rect.move(-containerOffset);
+        if (o->isRenderView())
+            toRenderView(o)->adjustViewportConstrainedOffset(rect, RenderView::viewportConstrainedPosition(position));
         return;
     }
 
     if (o->isRenderView())
-        toRenderView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, position == FixedPosition ? RenderView::IsFixedPosition : RenderView::IsNotFixedPosition, paintInvalidationState);
+        toRenderView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, RenderView::viewportConstrainedPosition(position), paintInvalidationState);
     else
         o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
