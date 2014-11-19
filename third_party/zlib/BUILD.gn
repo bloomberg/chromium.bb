@@ -57,7 +57,7 @@ static_library("zlib") {
     "zutil.h",
   ]
 
-  if (!is_win && (cpu_arch == "x86" || cpu_arch == "x64")) {
+  if (!is_ios && (cpu_arch == "x86" || cpu_arch == "x64")) {
     sources += [ "x86.c" ]
   }
 
