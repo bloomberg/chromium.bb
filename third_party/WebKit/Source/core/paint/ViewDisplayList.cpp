@@ -148,6 +148,8 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case DisplayItem::EndClip: return "EndClip";
     case DisplayItem::BeginFilter: return "BeginFilter";
     case DisplayItem::EndFilter: return "EndFilter";
+    case DisplayItem::BeginTransparency: return "BeginTransparency";
+    case DisplayItem::EndTransparency: return "EndTransparency";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

@@ -1522,6 +1522,8 @@
             'paint/TableSectionPainter.h',
             'paint/TextPainter.cpp',
             'paint/TextPainter.h',
+            'paint/TransparencyDisplayItem.cpp',
+            'paint/TransparencyDisplayItem.h',
             'paint/VideoPainter.cpp',
             'paint/VideoPainter.h',
             'paint/ViewDisplayList.cpp',

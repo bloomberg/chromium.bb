@@ -8,6 +8,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
+#include "core/paint/TransparencyDisplayItem.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
@@ -110,6 +111,7 @@ public:
     TransparencyLayerHelper(GraphicsContext* context, RenderLayer& renderLayer, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
         : m_transparencyLayerInProgress(false)
         , m_context(context)
+        , m_renderLayer(renderLayer)
     {
         // Blending operations must be performed only with the nearest ancestor stacking context.
         // Note that there is no need to create a transparency layer if we're painting the root.
@@ -118,33 +120,31 @@ public:
         if (!shouldUseTransparencyLayerForBlendMode && !renderLayer.paintsWithTransparency(paintBehavior))
             return;
 
-        context->save();
-        LayoutRect clipRect = renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
-        context->clip(clipRect);
+        OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(
+            renderLayer.renderer(), DisplayItem::BeginTransparency, renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior),
+            renderLayer.renderer()->hasBlendMode(), renderLayer.renderer()->style()->blendMode(), renderLayer.renderer()->opacity()));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            renderLayer.renderer()->view()->viewDisplayList().add(beginTransparencyDisplayItem.release());
+        else
+            beginTransparencyDisplayItem->replay(context);
 
-        if (renderLayer.renderer()->hasBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), renderLayer.renderer()->style()->blendMode());
-
-        context->beginTransparencyLayer(renderLayer.renderer()->opacity());
-
-        if (renderLayer.renderer()->hasBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
-#ifdef REVEAL_TRANSPARENCY_LAYERS
-        context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
-#endif
         m_transparencyLayerInProgress = true;
     }
 
     ~TransparencyLayerHelper()
     {
-        if (m_transparencyLayerInProgress) {
-            m_context->endLayer();
-            m_context->restore();
-        }
+        if (!m_transparencyLayerInProgress)
+            return;
+        OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderLayer.renderer(), DisplayItem::EndTransparency));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransparencyDisplayItem.release());
+        else
+            endTransparencyDisplayItem->replay(m_context);
     }
 private:
     bool m_transparencyLayerInProgress;
     GraphicsContext* m_context;
+    const RenderLayer& m_renderLayer;
 };
 
 void LayerPainter::paintLayerContentsAndReflection(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)

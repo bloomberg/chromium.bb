@@ -48,7 +48,9 @@ public:
         ClipLayerFragmentChildBlockBackgrounds = 26,
         EndClip = 27,
         BeginFilter = 28,
-        EndFilter = 29
+        EndFilter = 29,
+        BeginTransparency = 30,
+        EndTransparency = 31
     };
 
     virtual ~DisplayItem() { }
