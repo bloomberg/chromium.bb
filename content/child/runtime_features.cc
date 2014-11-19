@@ -147,6 +147,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableDisplayList2dCanvas)) {
     WebRuntimeFeatures::enableDisplayList2dCanvas(false);
+  } else if (command_line.HasSwitch(switches::kForceDisplayList2dCanvas)) {
+    WebRuntimeFeatures::forceDisplayList2dCanvas(true);
   } else if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
     WebRuntimeFeatures::enableDisplayList2dCanvas(true);
   } else {

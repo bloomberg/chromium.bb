@@ -340,9 +340,13 @@ const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 
-// Enables display list based 2d canvas implementation.
+// Enables display list based 2d canvas implementation. Options:
+//  1. Enable: allow browser to use display list for 2d canvas (browser makes
+//     decision).
+//  2. Force: browser always uses display list for 2d canvas.
 const char kEnableDisplayList2dCanvas[]     = "enable-display-list-2d-canvas";
-const char kDisableDisplayList2dCanvas[]     = "disable-display-list-2d-canvas";
+const char kForceDisplayList2dCanvas[]      = "force-display-list-2d-canvas";
+const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
 
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";

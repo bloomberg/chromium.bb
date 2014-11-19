@@ -1168,6 +1168,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebMIDI,
     switches::kEnableZeroCopy,
     switches::kForceDeviceScaleFactor,
+    switches::kForceDisplayList2dCanvas,
     switches::kFullMemoryCrashReport,
     switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
     switches::kIPCConnectionTimeout,
