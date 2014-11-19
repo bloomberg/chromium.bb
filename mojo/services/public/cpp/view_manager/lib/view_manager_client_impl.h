@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -23,10 +24,14 @@ class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
-                              public InterfaceImpl<ViewManagerClient>,
-                              public WindowManagerClient {
+                              public ViewManagerClient,
+                              public WindowManagerClient,
+                              public ErrorHandler {
  public:
-  ViewManagerClientImpl(ViewManagerDelegate* delegate, Shell* shell);
+  ViewManagerClientImpl(ViewManagerDelegate* delegate,
+                        Shell* shell,
+                        ScopedMessagePipeHandle handle,
+                        bool delete_on_error);
   ~ViewManagerClientImpl() override;
 
   bool connected() const { return connected_; }
@@ -83,9 +88,6 @@ class ViewManagerClientImpl : public ViewManager,
   const std::vector<View*>& GetRoots() const override;
   View* GetViewById(Id id) override;
 
-  // Overridden from InterfaceImpl:
-  void OnConnectionEstablished() override;
-
   // Overridden from ViewManagerClient:
   void OnEmbed(ConnectionSpecificId connection_id,
                const String& creator_url,
@@ -120,6 +122,9 @@ class ViewManagerClientImpl : public ViewManager,
   void OnActiveWindowChanged(Id old_focused_window,
                              Id new_focused_window) override;
 
+  // ErrorHandler implementation.
+  void OnConnectionError() override;
+
   void RemoveRoot(View* root);
 
   void OnActionCompleted(bool success);
@@ -142,9 +147,11 @@ class ViewManagerClientImpl : public ViewManager,
 
   IdToViewMap views_;
 
-  ViewManagerService* service_;
-
   WindowManagerPtr window_manager_;
+
+  Binding<ViewManagerClient> binding_;
+  ViewManagerService* service_;
+  const bool delete_on_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

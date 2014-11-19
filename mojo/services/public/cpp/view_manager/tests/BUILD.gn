@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 
-# GYP version: mojo/mojo_services.gypi:mojo_view_manager_lib_unittests
 test("mojo_view_manager_lib_unittests") {
   sources = [
     "view_unittest.cc",

@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/channel_info.h"
 
+#include <algorithm>
+
 namespace mojo {
 namespace system {
 
@@ -17,6 +19,12 @@ ChannelInfo::ChannelInfo(
 }
 
 ChannelInfo::~ChannelInfo() {
+}
+
+void ChannelInfo::Swap(ChannelInfo* other) {
+  // Note: Swapping avoids refcount churn.
+  std::swap(channel, other->channel);
+  std::swap(channel_thread_task_runner, other->channel_thread_task_runner);
 }
 
 }  // namespace system

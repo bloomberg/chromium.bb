@@ -4,7 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: mojo/mojo_services.gypi:mojo_native_viewport_bindings
 mojom("native_viewport") {
   sources = [
     "native_viewport.mojom",

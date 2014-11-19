@@ -4,7 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: mojo/mojo_services.gypi:mojo_geometry_bindings
 mojom("geometry") {
   sources = [
     "geometry.mojom",

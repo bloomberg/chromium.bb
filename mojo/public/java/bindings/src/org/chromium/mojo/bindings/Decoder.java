@@ -108,7 +108,7 @@ public class Decoder {
 
     private Decoder(Message message, Validator validator, int baseOffset) {
         mMessage = message;
-        mMessage.getData().order(ByteOrder.nativeOrder());
+        mMessage.getData().order(ByteOrder.LITTLE_ENDIAN);
         mBaseOffset = baseOffset;
         mValidator = validator;
     }
@@ -615,8 +615,8 @@ public class Decoder {
         }
         if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
                 && dataHeader.numFields != expectedLength) {
-            throw new DeserializationException("Incorrect array length. Expected: " +
-                    expectedLength + ", but got: " + dataHeader.numFields + ".");
+            throw new DeserializationException("Incorrect array length. Expected: "
+                    + expectedLength + ", but got: " + dataHeader.numFields + ".");
         }
         return dataHeader;
     }
@@ -631,8 +631,8 @@ public class Decoder {
         }
         if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
                 && dataHeader.numFields != expectedLength) {
-            throw new DeserializationException("Incorrect array length. Expected: " +
-                    expectedLength + ", but got: " + dataHeader.numFields + ".");
+            throw new DeserializationException("Incorrect array length. Expected: "
+                    + expectedLength + ", but got: " + dataHeader.numFields + ".");
         }
         return dataHeader;
     }

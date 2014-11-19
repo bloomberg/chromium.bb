@@ -20,6 +20,9 @@ MOJO_SYSTEM_IMPL_EXPORT void InitWithSimplePlatformSupport();
 // do more work to ensure that tests don't leak, etc.) Returns true if there
 // were no problems, false if there were leaks -- i.e., handles still open -- or
 // any other problems.
+//
+// Note: It is up to the caller to ensure that there are not outstanding
+// callbacks from |CreateChannel()| before calling this.
 MOJO_SYSTEM_IMPL_EXPORT bool Shutdown();
 
 }  // namespace test

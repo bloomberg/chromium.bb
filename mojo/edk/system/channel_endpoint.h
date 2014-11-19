@@ -26,13 +26,13 @@ class MessagePipe;
 //     refcounted, and not copyable. Make |Channel| a friend. Make things work.
 //   - (Done.) Give |ChannelEndpoint| a lock. The lock order (in order of
 //     allowable acquisition) is: |MessagePipe|, |ChannelEndpoint|, |Channel|.
-//   - Stop having |Channel| as a friend.
-//   - Move logic from |ProxyMessagePipeEndpoint| into |ChannelEndpoint|. Right
-//     now, we have to go through lots of contortions to manipulate state owned
-//     by |ProxyMessagePipeEndpoint| (in particular, |Channel::Endpoint| doesn't
-//     know about the remote ID; the local ID is duplicated in two places).
-//     Hollow out |ProxyMessagePipeEndpoint|, and have it just own a reference
-//     to |ChannelEndpoint| (hence the refcounting).
+//   - (Done) Stop having |Channel| as a friend.
+//   - (Done) Move logic from |ProxyMessagePipeEndpoint| into |ChannelEndpoint|.
+//     Right now, we have to go through lots of contortions to manipulate state
+//     owned by |ProxyMessagePipeEndpoint| (in particular, |Channel::Endpoint|
+//     doesn't know about the remote ID; the local ID is duplicated in two
+//     places). Hollow out |ProxyMessagePipeEndpoint|, and have it just own a
+//     reference to |ChannelEndpoint| (hence the refcounting).
 //   - In essence, |ChannelEndpoint| becomes the thing that knows about
 //     channel-specific aspects of an endpoint (notably local and remote IDs,
 //     and knowledge about handshaking), and mediates between the |Channel| and

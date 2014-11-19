@@ -1,5 +1,3 @@
-specific_include_rules = {
-  r"application_runner\.cc": [
-    "+mojo/public/cpp/utility",
-  ],
-}
+include_rules = [
+  "+mojo/public/cpp/utility",
+]

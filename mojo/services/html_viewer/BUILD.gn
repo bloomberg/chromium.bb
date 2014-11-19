@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo.gni")
+import("//mojo/public/mojo_application.gni")
 
 # GYP version: mojo/mojo_services.gypi:html_viewer
-shared_library("html_viewer") {
+mojo_native_application("html_viewer") {
   sources = [
     "blink_basic_type_converters.cc",
     "blink_basic_type_converters.h",

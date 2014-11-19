@@ -9,7 +9,7 @@
 
 #include <limits>
 
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -28,9 +28,8 @@ void RevalidateCreateOptions(
   // Nothing to check for flags.
   EXPECT_GT(validated_options.element_num_bytes, 0u);
   EXPECT_GT(validated_options.capacity_num_bytes, 0u);
-  EXPECT_EQ(0u,
-            validated_options.capacity_num_bytes %
-                validated_options.element_num_bytes);
+  EXPECT_EQ(0u, validated_options.capacity_num_bytes %
+                    validated_options.element_num_bytes);
 
   MojoCreateDataPipeOptions revalidated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -48,10 +47,10 @@ void RevalidateCreateOptions(
 // checks done by |RevalidateCreateOptions()|.)
 void CheckDefaultCapacity(const MojoCreateDataPipeOptions& validated_options) {
   EXPECT_LE(validated_options.capacity_num_bytes,
-            kDefaultDataPipeCapacityBytes);
+            GetConfiguration().default_data_pipe_capacity_bytes);
   EXPECT_GT(validated_options.capacity_num_bytes +
                 validated_options.element_num_bytes,
-            kDefaultDataPipeCapacityBytes);
+            GetConfiguration().default_data_pipe_capacity_bytes);
 }
 
 // Tests valid inputs to |ValidateCreateOptions()|.
@@ -59,9 +58,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
   // Default options.
   {
     MojoCreateDataPipeOptions validated_options = {};
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        DataPipe::ValidateCreateOptions(NullUserPointer(), &validated_options));
+    EXPECT_EQ(MOJO_RESULT_OK, DataPipe::ValidateCreateOptions(
+                                  NullUserPointer(), &validated_options));
     RevalidateCreateOptions(validated_options);
     CheckDefaultCapacity(validated_options);
   }

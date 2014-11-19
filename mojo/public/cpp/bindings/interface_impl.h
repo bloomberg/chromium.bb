@@ -5,40 +5,41 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_IMPL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_IMPL_H_
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/interface_impl_internal.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
+// DEPRECATED! Please use mojo::Binding instead of InterfaceImpl<> in new code.
+//
 // InterfaceImpl<..> is designed to be the base class of an interface
 // implementation. It may be bound to a pipe or a proxy, see BindToPipe and
 // BindToProxy.
 template <typename Interface>
-class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
+class InterfaceImpl : public Interface, public ErrorHandler {
  public:
-  typedef typename Interface::Client Client;
-  typedef Interface ImplementedInterface;
+  using ImplementedInterface = Interface;
+  using Client = typename Interface::Client;
 
-  InterfaceImpl() : internal_state_(this) {}
+  InterfaceImpl() : binding_(this), error_handler_impl_(this) {
+    binding_.set_error_handler(&error_handler_impl_);
+  }
   virtual ~InterfaceImpl() {}
 
-  // Returns a proxy to the client interface. This is null upon construction,
-  // and becomes non-null after OnClientConnected. NOTE: It remains non-null
-  // until this instance is deleted.
-  Client* client() { return internal_state_.client(); }
-
-  // Blocks the current thread for the first incoming method call, i.e., either
-  // a call to a method or a client callback method. Returns |true| if a method
-  // has been called, |false| in case of error. It must only be called on a
-  // bound object.
-  bool WaitForIncomingMethodCall() {
-    return internal_state_.WaitForIncomingMethodCall();
+  void BindToHandle(
+      ScopedMessagePipeHandle handle,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    binding_.Bind(handle.Pass(), waiter);
   }
 
-  // Called when the client has connected to this instance.
-  virtual void OnConnectionEstablished() {}
+  bool WaitForIncomingMethodCall() {
+    return binding_.WaitForIncomingMethodCall();
+  }
+
+  Client* client() { return binding_.client(); }
+  internal::Router* internal_router() { return binding_.internal_router(); }
 
   // Called when the client is no longer connected to this instance. NOTE: The
   // client() method continues to return a non-null pointer after this method
@@ -46,13 +47,42 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
   // will be silently ignored.
   virtual void OnConnectionError() {}
 
-  // DO NOT USE. Exposed only for internal use and for testing.
-  internal::InterfaceImplState<Interface>* internal_state() {
-    return &internal_state_;
+  void set_delete_on_error(bool delete_on_error) {
+    error_handler_impl_.set_delete_on_error(delete_on_error);
   }
 
  private:
-  internal::InterfaceImplState<Interface> internal_state_;
+  class ErrorHandlerImpl : public ErrorHandler {
+   public:
+    explicit ErrorHandlerImpl(InterfaceImpl* impl) : impl_(impl) {}
+    ~ErrorHandlerImpl() override {}
+
+    // ErrorHandler implementation:
+    void OnConnectionError() override {
+      // If the the instance is not bound to the pipe, the instance might choose
+      // to delete the binding in the OnConnectionError handler, which would in
+      // turn delete |this|.  Save the error behavior before invoking the error
+      // handler so we can correctly decide what to do.
+      bool delete_on_error = delete_on_error_;
+      impl_->OnConnectionError();
+      if (delete_on_error)
+        delete impl_;
+    }
+
+    void set_delete_on_error(bool delete_on_error) {
+      delete_on_error_ = delete_on_error;
+    }
+
+   private:
+    InterfaceImpl* impl_;
+    bool delete_on_error_ = false;
+
+    MOJO_DISALLOW_COPY_AND_ASSIGN(ErrorHandlerImpl);
+  };
+
+  Binding<Interface> binding_;
+  ErrorHandlerImpl error_handler_impl_;
+
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfaceImpl);
 };
 
@@ -67,14 +97,13 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
 // called on the current thread, and if the current thread exits, then the end
 // point of the pipe will be closed and the error handler's OnConnectionError
 // method will be called.
-//
-// Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl>
 Impl* BindToPipe(
     Impl* instance,
     ScopedMessagePipeHandle handle,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-  instance->internal_state()->Bind(handle.Pass(), true, waiter);
+  instance->set_delete_on_error(true);
+  instance->BindToHandle(handle.Pass(), waiter);
   return instance;
 }
 
@@ -84,7 +113,7 @@ Impl* WeakBindToPipe(
     Impl* instance,
     ScopedMessagePipeHandle handle,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-  instance->internal_state()->Bind(handle.Pass(), false, waiter);
+  instance->BindToHandle(handle.Pass(), waiter);
   return instance;
 }
 
@@ -97,14 +126,13 @@ Impl* WeakBindToPipe(
 // The instance is also bound to the current thread. Its methods will only be
 // called on the current thread, and if the current thread exits, then it will
 // also be deleted, and along with it, its end point of the pipe will be closed.
-//
-// Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl, typename Interface>
 Impl* BindToProxy(
     Impl* instance,
     InterfacePtr<Interface>* ptr,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-  instance->internal_state()->BindProxy(ptr, true, waiter);
+  instance->set_delete_on_error(true);
+  WeakBindToProxy(instance, ptr, waiter);
   return instance;
 }
 
@@ -114,7 +142,9 @@ Impl* WeakBindToProxy(
     Impl* instance,
     InterfacePtr<Interface>* ptr,
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-  instance->internal_state()->BindProxy(ptr, false, waiter);
+  MessagePipe pipe;
+  ptr->Bind(pipe.handle0.Pass(), waiter);
+  instance->BindToHandle(pipe.handle1.Pass(), waiter);
   return instance;
 }
 

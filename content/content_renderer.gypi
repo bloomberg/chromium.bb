@@ -4,7 +4,6 @@
 
 {
   'dependencies': [
-    'content_common_mojo_bindings',
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../cc/cc.gyp:cc',
@@ -18,7 +17,6 @@
     '../media/media.gyp:media',
     '../mojo/edk/mojo_edk.gyp:mojo_js_lib',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
-    '../mojo/public/mojo_public.gyp:mojo_application_bindings',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',

@@ -5,7 +5,6 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
-    '../mojo/public/mojo_public.gyp:mojo_application_bindings',
     '../skia/skia.gyp:skia',
     '../ui/gl/gl.gyp:gl',
   ],

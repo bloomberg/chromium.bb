@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
@@ -29,9 +31,7 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
   ~MathCalculatorImpl() override {}
 
-  MathCalculatorImpl() : total_(0.0), got_connection_(false) {}
-
-  void OnConnectionEstablished() override { got_connection_ = true; }
+  MathCalculatorImpl() : total_(0.0) {}
 
   void Clear() override { client()->Output(total_); }
 
@@ -45,11 +45,8 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
     client()->Output(total_);
   }
 
-  bool got_connection() const { return got_connection_; }
-
  private:
   double total_;
-  bool got_connection_;
 };
 
 class MathCalculatorUIImpl : public math::CalculatorUI {
@@ -123,12 +120,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
  public:
   ~ReentrantServiceImpl() override {}
 
-  ReentrantServiceImpl()
-      : got_connection_(false), call_depth_(0), max_call_depth_(0) {}
-
-  void OnConnectionEstablished() override { got_connection_ = true; }
-
-  bool got_connection() const { return got_connection_; }
+  ReentrantServiceImpl() : call_depth_(0), max_call_depth_(0) {}
 
   int max_call_depth() { return max_call_depth_; }
 
@@ -145,7 +137,6 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
   void GetPort(mojo::InterfaceRequest<sample::Port> port) override {}
 
  private:
-  bool got_connection_;
   int call_depth_;
   int max_call_depth_;
 };
@@ -163,8 +154,7 @@ class InterfacePtrTest : public testing::Test {
 
 TEST_F(InterfacePtrTest, EndToEnd) {
   math::CalculatorPtr calc;
-  MathCalculatorImpl* impl = BindToProxy(new MathCalculatorImpl(), &calc);
-  EXPECT_TRUE(impl->got_connection());
+  BindToProxy(new MathCalculatorImpl(), &calc);
 
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUIImpl calculator_ui(calc.Pass());
@@ -180,7 +170,6 @@ TEST_F(InterfacePtrTest, EndToEnd) {
 TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   math::CalculatorPtr calc;
   MathCalculatorImpl* impl = BindToProxy(new MathCalculatorImpl(), &calc);
-  EXPECT_TRUE(impl->got_connection());
 
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUIImpl calculator_ui(calc.Pass());
@@ -252,7 +241,7 @@ TEST_F(InterfacePtrTest, EncounteredError) {
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
-  server->internal_state()->router()->CloseMessagePipe();
+  server->internal_router()->CloseMessagePipe();
 
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
@@ -281,7 +270,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
-  server->internal_state()->router()->CloseMessagePipe();
+  server->internal_router()->CloseMessagePipe();
 
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
@@ -337,7 +326,6 @@ TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnClientMethod) {
 TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   sample::ServicePtr proxy;
   ReentrantServiceImpl* impl = BindToProxy(new ReentrantServiceImpl(), &proxy);
-  EXPECT_TRUE(impl->got_connection());
 
   proxy->Frobinate(sample::FooPtr(),
                    sample::Service::BAZ_OPTIONS_REGULAR,
@@ -349,6 +337,148 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   PumpMessages();
 
   EXPECT_EQ(2, impl->max_call_depth());
+}
+
+class StrongMathCalculatorImpl : public math::Calculator, public ErrorHandler {
+ public:
+  StrongMathCalculatorImpl(ScopedMessagePipeHandle handle,
+                           bool* error_received,
+                           bool* destroyed)
+      : error_received_(error_received),
+        destroyed_(destroyed),
+        binding_(this, handle.Pass()) {
+    binding_.set_error_handler(this);
+  }
+  ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
+
+  // math::Calculator implementation.
+  void Clear() override { binding_.client()->Output(total_); }
+
+  void Add(double value) override {
+    total_ += value;
+    binding_.client()->Output(total_);
+  }
+
+  void Multiply(double value) override {
+    total_ *= value;
+    binding_.client()->Output(total_);
+  }
+
+  // ErrorHandler implementation.
+  void OnConnectionError() override { *error_received_ = true; }
+
+ private:
+  double total_ = 0.0;
+  bool* error_received_;
+  bool* destroyed_;
+
+  StrongBinding<math::Calculator> binding_;
+};
+
+TEST(StrongConnectorTest, Math) {
+  Environment env;
+  RunLoop loop;
+
+  bool error_received = false;
+  bool destroyed = false;
+  MessagePipe pipe;
+  new StrongMathCalculatorImpl(pipe.handle0.Pass(), &error_received,
+                               &destroyed);
+
+  math::CalculatorPtr calc;
+  calc.Bind(pipe.handle1.Pass());
+
+  {
+    // Suppose this is instantiated in a process that has the other end of the
+    // message pipe.
+    MathCalculatorUIImpl calculator_ui(calc.Pass());
+
+    calculator_ui.Add(2.0);
+    calculator_ui.Multiply(5.0);
+
+    loop.RunUntilIdle();
+
+    EXPECT_EQ(10.0, calculator_ui.GetOutput());
+    EXPECT_FALSE(error_received);
+    EXPECT_FALSE(destroyed);
+  }
+  // Destroying calculator_ui should close the pipe and generate an error on the
+  // other
+  // end which will destroy the instance since it is strongly bound.
+
+  loop.RunUntilIdle();
+  EXPECT_TRUE(error_received);
+  EXPECT_TRUE(destroyed);
+}
+
+class WeakMathCalculatorImpl : public math::Calculator, public ErrorHandler {
+ public:
+  WeakMathCalculatorImpl(ScopedMessagePipeHandle handle,
+                         bool* error_received,
+                         bool* destroyed)
+      : error_received_(error_received),
+        destroyed_(destroyed),
+        binding_(this, handle.Pass()) {
+    binding_.set_error_handler(this);
+  }
+  ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
+
+  void Clear() override { binding_.client()->Output(total_); }
+
+  void Add(double value) override {
+    total_ += value;
+    binding_.client()->Output(total_);
+  }
+
+  void Multiply(double value) override {
+    total_ *= value;
+    binding_.client()->Output(total_);
+  }
+
+  // ErrorHandler implementation.
+  void OnConnectionError() override { *error_received_ = true; }
+
+ private:
+  double total_ = 0.0;
+  bool* error_received_;
+  bool* destroyed_;
+
+  Binding<math::Calculator> binding_;
+};
+
+TEST(WeakConnectorTest, Math) {
+  Environment env;
+  RunLoop loop;
+
+  bool error_received = false;
+  bool destroyed = false;
+  MessagePipe pipe;
+  WeakMathCalculatorImpl impl(pipe.handle0.Pass(), &error_received, &destroyed);
+
+  math::CalculatorPtr calc;
+  calc.Bind(pipe.handle1.Pass());
+
+  {
+    // Suppose this is instantiated in a process that has the other end of the
+    // message pipe.
+    MathCalculatorUIImpl calculator_ui(calc.Pass());
+
+    calculator_ui.Add(2.0);
+    calculator_ui.Multiply(5.0);
+
+    loop.RunUntilIdle();
+
+    EXPECT_EQ(10.0, calculator_ui.GetOutput());
+    EXPECT_FALSE(error_received);
+    EXPECT_FALSE(destroyed);
+    // Destroying calculator_ui should close the pipe and generate an error on
+    // the other
+    // end which will destroy the instance since it is strongly bound.
+  }
+
+  loop.RunUntilIdle();
+  EXPECT_TRUE(error_received);
+  EXPECT_FALSE(destroyed);
 }
 
 }  // namespace

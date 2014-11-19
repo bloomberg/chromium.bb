@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/message_in_transit.h"
 
 namespace mojo {
@@ -32,19 +32,20 @@ STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherPlatformHandles;
 
 // static
-const size_t TransportData::kMaxPlatformHandles =
-    kMaxMessageNumHandles * kMaxSerializedDispatcherPlatformHandles;
+size_t TransportData::GetMaxBufferSize() {
+  // In additional to the header, for each attached (Mojo) handle there'll be a
+  // handle table entry and serialized dispatcher data.
+  return sizeof(Header) +
+         GetConfiguration().max_message_num_handles *
+             (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize) +
+         GetMaxPlatformHandles() * kMaxSizePerPlatformHandle;
+}
 
-// In additional to the header, for each attached (Mojo) handle there'll be a
-// handle table entry and serialized dispatcher data.
-// Note: This definition must follow the one for |kMaxPlatformHandles|;
-// otherwise, we get a static initializer with gcc (but not clang).
 // static
-const size_t TransportData::kMaxBufferSize =
-    sizeof(Header) +
-    kMaxMessageNumHandles *
-        (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize) +
-    kMaxPlatformHandles * kMaxSizePerPlatformHandle;
+size_t TransportData::GetMaxPlatformHandles() {
+  return GetConfiguration().max_message_num_handles *
+         kMaxSerializedDispatcherPlatformHandles;
+}
 
 struct TransportData::PrivateStructForCompileAsserts {
   static_assert(sizeof(Header) % MessageInTransit::kMessageAlignment == 0,
@@ -90,11 +91,11 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 
       DCHECK_LE(max_size, kMaxSerializedDispatcherSize);
       estimated_size += MessageInTransit::RoundUpMessageAlignment(max_size);
-      DCHECK_LE(estimated_size, kMaxBufferSize);
+      DCHECK_LE(estimated_size, GetMaxBufferSize());
 
       DCHECK_LE(max_platform_handles, kMaxSerializedDispatcherPlatformHandles);
       estimated_num_platform_handles += max_platform_handles;
-      DCHECK_LE(estimated_num_platform_handles, kMaxPlatformHandles);
+      DCHECK_LE(estimated_num_platform_handles, GetMaxPlatformHandles());
 
 #if DCHECK_IS_ON
       all_max_sizes[i] = max_size;
@@ -109,7 +110,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
     DCHECK_LE(size_per_platform_handle, kMaxSizePerPlatformHandle);
     estimated_size += estimated_num_platform_handles * size_per_platform_handle;
     estimated_size = MessageInTransit::RoundUpMessageAlignment(estimated_size);
-    DCHECK_LE(estimated_size, kMaxBufferSize);
+    DCHECK_LE(estimated_size, GetMaxBufferSize());
   }
 
   buffer_.reset(static_cast<char*>(
@@ -148,10 +149,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
     void* destination = buffer_.get() + current_offset;
     size_t actual_size = 0;
     if (Dispatcher::TransportDataAccess::EndSerializeAndClose(
-            dispatcher,
-            channel,
-            destination,
-            &actual_size,
+            dispatcher, channel, destination, &actual_size,
             platform_handles_.get())) {
       handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
@@ -216,7 +214,7 @@ const char* TransportData::ValidateBuffer(
 
   // Always make sure that the buffer size is sane; if it's not, someone's
   // messing with us.
-  if (buffer_size < sizeof(Header) || buffer_size > kMaxBufferSize ||
+  if (buffer_size < sizeof(Header) || buffer_size > GetMaxBufferSize() ||
       buffer_size % MessageInTransit::kMessageAlignment != 0)
     return "Invalid message secondary buffer size";
 
@@ -233,7 +231,7 @@ const char* TransportData::ValidateBuffer(
 #endif
 
   // Sanity-check |num_handles| (before multiplying it against anything).
-  if (num_handles > kMaxMessageNumHandles)
+  if (num_handles > GetConfiguration().max_message_num_handles)
     return "Message handle payload too large";
 
   if (buffer_size < sizeof(Header) + num_handles * sizeof(HandleTableEntry))

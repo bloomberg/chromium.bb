@@ -161,6 +161,7 @@ public interface DataPipe {
         private static final int FLAG_NONE = 0;
         private static final int FLAG_ALL_OR_NONE = 1 << 0;
         private static final int FLAG_QUERY = 1 << 2;
+        private static final int FLAG_PEEK = 1 << 3;
 
         /**
          * Immutable flag with not bit set.
@@ -189,13 +190,25 @@ public interface DataPipe {
 
         /**
          * Change the query bit of this flag. If set query the number of elements available to read.
-         * Mutually exclusive with |dicard| and |allOrNone| is ignored if this flag is set.
+         * Mutually exclusive with |discard| and |allOrNone| is ignored if this flag is set.
          *
          * @param query the new value of the query bit.
          * @return this.
          */
         public ReadFlags query(boolean query) {
             return setFlag(FLAG_QUERY, query);
+        }
+
+        /**
+         * Change the peek bit of this flag. If set, read the requested number of elements, and
+         * leave those elements in the pipe. A later read will return the same data.
+         * Mutually exclusive with |discard| and |query|.
+         *
+         * @param peek the new value of the peek bit.
+         * @return this.
+         */
+        public ReadFlags peek(boolean peek) {
+            return setFlag(FLAG_PEEK, peek);
         }
 
         /**

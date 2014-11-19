@@ -66,7 +66,6 @@
       'dependencies': [
         '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/public/mojo_public.gyp:mojo_application_bindings',
      ],
     }],
   ],

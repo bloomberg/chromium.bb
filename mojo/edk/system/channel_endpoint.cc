@@ -109,8 +109,7 @@ bool ChannelEndpoint::OnReadMessage(
       DCHECK(message_view.transport_data_buffer());
       message->SetDispatchers(TransportData::DeserializeDispatchers(
           message_view.transport_data_buffer(),
-          message_view.transport_data_buffer_size(),
-          platform_handles.Pass(),
+          message_view.transport_data_buffer_size(), platform_handles.Pass(),
           channel_));
     }
 

@@ -66,6 +66,7 @@ const (
 	MOJO_READ_DATA_FLAG_ALL_OR_NONE                     = 1 << 0
 	MOJO_READ_DATA_FLAG_DISCARD                         = 1 << 1
 	MOJO_READ_DATA_FLAG_QUERY                           = 1 << 2
+	MOJO_READ_DATA_FLAG_PEEK                            = 1 << 3
 	MOJO_WRITE_DATA_FLAG_NONE        MojoWriteDataFlags = 0
 	MOJO_WRITE_DATA_FLAG_ALL_OR_NONE MojoWriteDataFlags = 1 << 0
 

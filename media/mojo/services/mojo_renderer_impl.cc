@@ -63,12 +63,16 @@ void MojoRendererImpl::Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 
   mojo::DemuxerStreamPtr audio_stream;
-  if (audio)
-    mojo::BindToProxy(new MojoDemuxerStreamImpl(audio), &audio_stream);
+  if (audio) {
+    mojo::BindToProxy(new MojoDemuxerStreamImpl(audio), &audio_stream)
+        ->DidConnect();
+  }
 
   mojo::DemuxerStreamPtr video_stream;
-  if (video)
-    mojo::BindToProxy(new MojoDemuxerStreamImpl(video), &video_stream);
+  if (video) {
+    mojo::BindToProxy(new MojoDemuxerStreamImpl(video), &video_stream)
+        ->DidConnect();
+  }
 
   remote_audio_renderer_->Initialize(
       audio_stream.Pass(),

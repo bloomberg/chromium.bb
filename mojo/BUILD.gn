@@ -26,7 +26,7 @@ group("tests") {
   deps = [
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
-    "//mojo/edk/js/tests:js_unittests",
+    "//mojo/edk/js/test:js_unittests",
     "//mojo/edk/system:mojo_message_pipe_perftests",
     "//mojo/edk/system:mojo_system_unittests",
     "//mojo/public/c/system/tests:perftests",

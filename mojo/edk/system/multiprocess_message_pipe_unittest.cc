@@ -72,12 +72,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 
     std::string read_buffer(1000, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(mp->ReadMessage(0,
-                             UserPointer<void>(&read_buffer[0]),
-                             MakeUserPointer(&read_buffer_size),
-                             nullptr,
-                             nullptr,
-                             MOJO_READ_MESSAGE_FLAG_NONE),
+    CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                             MakeUserPointer(&read_buffer_size), nullptr,
+                             nullptr, MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
     VLOG(2) << "Child got: " << read_buffer;
@@ -88,11 +85,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
     }
 
     std::string write_buffer = read_buffer + read_buffer;
-    CHECK_EQ(mp->WriteMessage(0,
-                              UserPointer<const void>(write_buffer.data()),
+    CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(write_buffer.data()),
                               static_cast<uint32_t>(write_buffer.size()),
-                              nullptr,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE),
+                              nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }
 
@@ -110,10 +105,8 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 
   std::string hello("hello");
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             UserPointer<const void>(hello.data()),
-                             static_cast<uint32_t>(hello.size()),
-                             nullptr,
+            mp->WriteMessage(0, UserPointer<const void>(hello.data()),
+                             static_cast<uint32_t>(hello.size()), nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   HandleSignalsState hss;
@@ -127,11 +120,8 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 
   std::string read_buffer(1000, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-  CHECK_EQ(mp->ReadMessage(0,
-                           UserPointer<void>(&read_buffer[0]),
-                           MakeUserPointer(&read_buffer_size),
-                           nullptr,
-                           nullptr,
+  CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                           MakeUserPointer(&read_buffer_size), nullptr, nullptr,
                            MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(read_buffer_size);
@@ -157,20 +147,16 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
   for (size_t i = 0; i < kNumMessages; i++) {
     std::string write_buffer(i, 'A' + (i % 26));
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp->WriteMessage(0,
-                               UserPointer<const void>(write_buffer.data()),
+              mp->WriteMessage(0, UserPointer<const void>(write_buffer.data()),
                                static_cast<uint32_t>(write_buffer.size()),
-                               nullptr,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+                               nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
   const std::string quitquitquit("quitquitquit");
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             UserPointer<const void>(quitquitquit.data()),
+            mp->WriteMessage(0, UserPointer<const void>(quitquitquit.data()),
                              static_cast<uint32_t>(quitquitquit.size()),
-                             nullptr,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+                             nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   for (size_t i = 0; i < kNumMessages; i++) {
     HandleSignalsState hss;
@@ -184,12 +170,9 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
 
     std::string read_buffer(kNumMessages * 2, '\0');
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
-    CHECK_EQ(mp->ReadMessage(0,
-                             UserPointer<void>(&read_buffer[0]),
-                             MakeUserPointer(&read_buffer_size),
-                             nullptr,
-                             nullptr,
-                             MOJO_READ_MESSAGE_FLAG_NONE),
+    CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                             MakeUserPointer(&read_buffer_size), nullptr,
+                             nullptr, MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     read_buffer.resize(read_buffer_size);
 
@@ -236,12 +219,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   DispatcherVector dispatchers;
   uint32_t num_dispatchers = 10;  // Maximum number to receive.
-  CHECK_EQ(mp->ReadMessage(0,
-                           UserPointer<void>(&read_buffer[0]),
-                           MakeUserPointer(&num_bytes),
-                           &dispatchers,
-                           &num_dispatchers,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                           MakeUserPointer(&num_bytes), &dispatchers,
+                           &num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(num_bytes);
   CHECK_EQ(read_buffer, std::string("go 1"));
@@ -269,10 +249,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
 
   // And send a message to signal that we've written stuff.
   const std::string go2("go 2");
-  CHECK_EQ(mp->WriteMessage(0,
-                            UserPointer<const void>(&go2[0]),
-                            static_cast<uint32_t>(go2.size()),
-                            nullptr,
+  CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(&go2[0]),
+                            static_cast<uint32_t>(go2.size()), nullptr,
                             MOJO_WRITE_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
 
@@ -287,11 +265,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
 
   read_buffer = std::string(100, '\0');
   num_bytes = static_cast<uint32_t>(read_buffer.size());
-  CHECK_EQ(mp->ReadMessage(0,
-                           UserPointer<void>(&read_buffer[0]),
-                           MakeUserPointer(&num_bytes),
-                           nullptr,
-                           nullptr,
+  CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                           MakeUserPointer(&num_bytes), nullptr, nullptr,
                            MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   read_buffer.resize(num_bytes);
@@ -322,12 +297,10 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // Make a shared buffer.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            SharedBufferDispatcher::Create(
-                platform_support(),
-                SharedBufferDispatcher::kDefaultCreateOptions,
-                100,
-                &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK, SharedBufferDispatcher::Create(
+                                platform_support(),
+                                SharedBufferDispatcher::kDefaultCreateOptions,
+                                100, &dispatcher));
   ASSERT_TRUE(dispatcher.get());
 
   // Make a mapping.
@@ -347,10 +320,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   std::vector<DispatcherTransport> transports;
   transports.push_back(transport);
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             UserPointer<const void>(&go1[0]),
-                             static_cast<uint32_t>(go1.size()),
-                             &transports,
+            mp->WriteMessage(0, UserPointer<const void>(&go1[0]),
+                             static_cast<uint32_t>(go1.size()), &transports,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
   transport.End();
 
@@ -367,11 +338,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->ReadMessage(0,
-                            UserPointer<void>(&read_buffer[0]),
-                            MakeUserPointer(&num_bytes),
-                            nullptr,
-                            nullptr,
+            mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                            MakeUserPointer(&num_bytes), nullptr, nullptr,
                             MOJO_READ_MESSAGE_FLAG_NONE));
   read_buffer.resize(num_bytes);
   EXPECT_EQ(std::string("go 2"), read_buffer);
@@ -388,10 +356,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   // And send a message to signal that we've written stuff.
   const std::string go3("go 3");
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             UserPointer<const void>(&go3[0]),
-                             static_cast<uint32_t>(go3.size()),
-                             nullptr,
+            mp->WriteMessage(0, UserPointer<const void>(&go3[0]),
+                             static_cast<uint32_t>(go3.size()), nullptr,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for |mp| to become readable, which should fail.
@@ -428,12 +394,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
   DispatcherVector dispatchers;
   uint32_t num_dispatchers = 10;  // Maximum number to receive.
-  CHECK_EQ(mp->ReadMessage(0,
-                           UserPointer<void>(&read_buffer[0]),
-                           MakeUserPointer(&num_bytes),
-                           &dispatchers,
-                           &num_dispatchers,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
+  CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer[0]),
+                           MakeUserPointer(&num_bytes), &dispatchers,
+                           &num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
   mp->Close(0);
 
@@ -496,10 +459,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
   std::vector<DispatcherTransport> transports;
   transports.push_back(transport);
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp->WriteMessage(0,
-                             UserPointer<const void>(&hello[0]),
-                             static_cast<uint32_t>(hello.size()),
-                             &transports,
+            mp->WriteMessage(0, UserPointer<const void>(&hello[0]),
+                             static_cast<uint32_t>(hello.size()), &transports,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
   transport.End();
 

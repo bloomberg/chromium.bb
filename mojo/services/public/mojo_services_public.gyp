@@ -82,6 +82,7 @@
       'sources': [
         'interfaces/gpu/command_buffer.mojom',
         'interfaces/gpu/gpu.mojom',
+        'interfaces/gpu/gpu_capabilities.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [

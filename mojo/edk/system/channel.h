@@ -32,6 +32,7 @@ class PlatformSupport;
 namespace system {
 
 class ChannelEndpoint;
+class ChannelManager;
 
 // This class is mostly thread-safe. It must be created on an I/O thread.
 // |Init()| must be called on that same thread before it becomes thread-safe (in
@@ -61,6 +62,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // failure, no other methods should be called (including |Shutdown()|).
   bool Init(scoped_ptr<RawChannel> raw_channel);
 
+  // Sets the channel manager associated with this channel. This should be set
+  // at most once and only called before |WillShutdownSoon()| (and
+  // |Shutdown()|).
+  void SetChannelManager(ChannelManager* channel_manager);
+
   // This must be called on the creation thread before destruction (which can
   // happen on any thread).
   void Shutdown();
@@ -69,6 +75,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // thread, unlike |Shutdown()|). Warnings will be issued if, e.g., messages
   // are written after this is called; other warnings may be suppressed. (This
   // may be called multiple times, or not at all.)
+  //
+  // If set, the channel manager associated with this channel will be reset.
   void WillShutdownSoon();
 
   // Attaches the given endpoint to this channel and runs it. |is_bootstrap|
@@ -174,6 +182,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   bool is_running_;
   // Set when |WillShutdownSoon()| is called.
   bool is_shutting_down_;
+
+  // Has a reference to us.
+  ChannelManager* channel_manager_;
 
   typedef base::hash_map<ChannelEndpointId, scoped_refptr<ChannelEndpoint>>
       IdToEndpointMap;

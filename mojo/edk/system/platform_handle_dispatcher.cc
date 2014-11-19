@@ -43,7 +43,7 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
     embedder::PlatformHandleVector* platform_handles) {
   if (size != sizeof(SerializedPlatformHandleDispatcher)) {
     LOG(ERROR) << "Invalid serialized platform handle dispatcher (bad size)";
-    return scoped_refptr<PlatformHandleDispatcher>();
+    return nullptr;
   }
 
   const SerializedPlatformHandleDispatcher* serialization =
@@ -58,7 +58,7 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
         platform_handle_index >= platform_handles->size()) {
       LOG(ERROR)
           << "Invalid serialized platform handle dispatcher (missing handles)";
-      return scoped_refptr<PlatformHandleDispatcher>();
+      return nullptr;
     }
 
     // We take ownership of the handle, so we have to invalidate the one in

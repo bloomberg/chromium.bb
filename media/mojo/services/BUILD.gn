@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo_application.gni")
+
 # Things needed by multiple targets, like renderer_impl and renderer_app.
 # GYP version: media/media.gyp:media_mojo_lib
 source_set("lib") {
@@ -49,7 +51,7 @@ source_set("renderer_impl_lib") {
 
 # mojo media::Renderer application.
 # GYP version: media/media.gyp:mojo_media_renderer_app
-shared_library("renderer_app") {
+mojo_native_application("renderer_app") {
   output_name = "mojo_media_renderer_app"
 
   deps = [
@@ -99,7 +101,7 @@ test("mojo_media_lib_unittests") {
 # libraries.
 # TODO(msw): Fix GYP build for ApplicationTestBase so that we can add a GYP
 # version of this test.
-shared_library("media_renderer_apptest") {
+mojo_native_application("media_renderer_apptest") {
   testonly = true
   output_name = "mojo_media_renderer_apptest"
 

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 
 namespace mojo {
 namespace system {
@@ -23,7 +23,8 @@ MojoResult MappingTable::AddMapping(
     scoped_ptr<embedder::PlatformSharedBufferMapping> mapping) {
   DCHECK(mapping);
 
-  if (address_to_mapping_map_.size() >= kMaxMappingTableSize)
+  if (address_to_mapping_map_.size() >=
+      GetConfiguration().max_mapping_table_sze)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   uintptr_t address = reinterpret_cast<uintptr_t>(mapping->GetBase());

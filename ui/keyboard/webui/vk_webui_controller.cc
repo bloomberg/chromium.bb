@@ -68,8 +68,7 @@ void VKWebUIController::RenderViewCreated(content::RenderViewHost* host) {
 
 void VKWebUIController::CreateAndStoreUIHandler(
     mojo::InterfaceRequest<KeyboardUIHandlerMojo> request) {
-  ui_handler_ = scoped_ptr<VKMojoHandler>(
-      mojo::WeakBindToRequest(new VKMojoHandler(), &request));
+  ui_handler_ = make_scoped_ptr(new VKMojoHandler(request.Pass()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

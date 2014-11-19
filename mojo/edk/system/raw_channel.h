@@ -14,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/system_impl_export.h"
 

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/public/c/system/macros.h"
@@ -69,7 +69,7 @@ MojoResult SharedBufferDispatcher::Create(
     scoped_refptr<SharedBufferDispatcher>* result) {
   if (!num_bytes)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_bytes > kMaxSharedMemoryNumBytes)
+  if (num_bytes > GetConfiguration().max_shared_memory_num_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
@@ -95,7 +95,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
 
   if (size != sizeof(SerializedSharedBufferDispatcher)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
-    return scoped_refptr<SharedBufferDispatcher>();
+    return nullptr;
   }
 
   const SerializedSharedBufferDispatcher* serialization =
@@ -106,13 +106,13 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (!num_bytes) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes)";
-    return scoped_refptr<SharedBufferDispatcher>();
+    return nullptr;
   }
 
   if (!platform_handles || platform_handle_index >= platform_handles->size()) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (missing handles)";
-    return scoped_refptr<SharedBufferDispatcher>();
+    return nullptr;
   }
 
   // Starts off invalid, which is what we want.
@@ -129,7 +129,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (!shared_buffer.get()) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
-    return scoped_refptr<SharedBufferDispatcher>();
+    return nullptr;
   }
 
   return scoped_refptr<SharedBufferDispatcher>(
@@ -163,8 +163,8 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
   if (!reader.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (!OPTIONS_STRUCT_HAS_MEMBER(
-          MojoDuplicateBufferHandleOptions, flags, reader))
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoDuplicateBufferHandleOptions, flags,
+                                 reader))
     return MOJO_RESULT_OK;
   if ((reader.options().flags & ~kKnownFlags))
     return MOJO_RESULT_UNIMPLEMENTED;

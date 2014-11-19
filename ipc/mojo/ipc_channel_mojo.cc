@@ -168,7 +168,7 @@ void ServerChannelMojo::Close() {
 
 void ChannelMojo::ChannelInfoDeleter::operator()(
     mojo::embedder::ChannelInfo* ptr) const {
-  mojo::embedder::DestroyChannelOnIOThread(ptr);
+  mojo::embedder::DestroyChannel(ptr);
 }
 
 //------------------------------------------------------------------------------

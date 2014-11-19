@@ -24,9 +24,9 @@ ViewManagerClientFactory::WeakBindViewManagerToPipe(
     ScopedMessagePipeHandle handle,
     Shell* shell,
     ViewManagerDelegate* delegate) {
-  scoped_ptr<ViewManagerClientImpl> client(
-      new ViewManagerClientImpl(delegate, shell));
-  WeakBindToPipe(client.get(), handle.Pass());
+  const bool delete_on_error = false;
+  scoped_ptr<ViewManagerClientImpl> client(new ViewManagerClientImpl(
+      delegate, shell, handle.Pass(), delete_on_error));
   return client.Pass();
 }
 
@@ -34,7 +34,9 @@ ViewManagerClientFactory::WeakBindViewManagerToPipe(
 void ViewManagerClientFactory::Create(
     ApplicationConnection* connection,
     InterfaceRequest<ViewManagerClient> request) {
-  BindToRequest(new ViewManagerClientImpl(delegate_, shell_), &request);
+  const bool delete_on_error = true;
+  new ViewManagerClientImpl(delegate_, shell_, request.PassMessagePipe(),
+                            delete_on_error);
 }
 
 }  // namespace mojo

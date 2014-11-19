@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/platform_support.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
@@ -126,11 +126,7 @@ MojoResult Core::Wait(MojoHandle handle,
                       UserPointer<MojoHandleSignalsState> signals_state) {
   uint32_t unused = static_cast<uint32_t>(-1);
   HandleSignalsState hss;
-  MojoResult rv = WaitManyInternal(&handle,
-                                   &signals,
-                                   1,
-                                   deadline,
-                                   &unused,
+  MojoResult rv = WaitManyInternal(&handle, &signals, 1, deadline, &unused,
                                    signals_state.IsNull() ? nullptr : &hss);
   if (rv != MOJO_RESULT_INVALID_ARGUMENT && !signals_state.IsNull())
     signals_state.Put(hss);
@@ -145,7 +141,7 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
                           UserPointer<MojoHandleSignalsState> signals_states) {
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_handles > kMaxWaitManyNumHandles)
+  if (num_handles > GetConfiguration().max_wait_many_num_handles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   UserPointer<const MojoHandle>::Reader handles_reader(handles, num_handles);
@@ -155,23 +151,17 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
   MojoResult rv;
   if (signals_states.IsNull()) {
     rv = WaitManyInternal(handles_reader.GetPointer(),
-                          signals_reader.GetPointer(),
-                          num_handles,
-                          deadline,
-                          &index,
-                          nullptr);
+                          signals_reader.GetPointer(), num_handles, deadline,
+                          &index, nullptr);
   } else {
     UserPointer<MojoHandleSignalsState>::Writer signals_states_writer(
         signals_states, num_handles);
     // Note: The |reinterpret_cast| is safe, since |HandleSignalsState| is a
     // subclass of |MojoHandleSignalsState| that doesn't add any data members.
     rv = WaitManyInternal(handles_reader.GetPointer(),
-                          signals_reader.GetPointer(),
-                          num_handles,
-                          deadline,
-                          &index,
-                          reinterpret_cast<HandleSignalsState*>(
-                              signals_states_writer.GetPointer()));
+                          signals_reader.GetPointer(), num_handles, deadline,
+                          &index, reinterpret_cast<HandleSignalsState*>(
+                                      signals_states_writer.GetPointer()));
     if (rv != MOJO_RESULT_INVALID_ARGUMENT)
       signals_states_writer.Commit();
   }
@@ -246,7 +236,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   // validity, even for dispatchers that don't support |WriteMessage()| and will
   // simply return failure unconditionally. It also breaks the usual
   // left-to-right verification order of arguments.)
-  if (num_handles > kMaxMessageNumHandles)
+  if (num_handles > GetConfiguration().max_message_num_handles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   UserPointer<const MojoHandle>::Reader handles_reader(handles, num_handles);
@@ -263,11 +253,9 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   // handles from the handle table.
   {
     base::AutoLock locker(handle_table_lock_);
-    MojoResult result =
-        handle_table_.MarkBusyAndStartTransport(message_pipe_handle,
-                                                handles_reader.GetPointer(),
-                                                num_handles,
-                                                &transports);
+    MojoResult result = handle_table_.MarkBusyAndStartTransport(
+        message_pipe_handle, handles_reader.GetPointer(), num_handles,
+        &transports);
     if (result != MOJO_RESULT_OK)
       return result;
   }
@@ -308,12 +296,12 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   MojoResult rv;
   if (num_handles_value == 0) {
     // Easy case: won't receive any handles.
-    rv = dispatcher->ReadMessage(
-        bytes, num_bytes, nullptr, &num_handles_value, flags);
+    rv = dispatcher->ReadMessage(bytes, num_bytes, nullptr, &num_handles_value,
+                                 flags);
   } else {
     DispatcherVector dispatchers;
-    rv = dispatcher->ReadMessage(
-        bytes, num_bytes, &dispatchers, &num_handles_value, flags);
+    rv = dispatcher->ReadMessage(bytes, num_bytes, &dispatchers,
+                                 &num_handles_value, flags);
     if (!dispatchers.empty()) {
       DCHECK_EQ(rv, MOJO_RESULT_OK);
       DCHECK(!num_handles.IsNull());
@@ -466,8 +454,8 @@ MojoResult Core::CreateSharedBuffer(
     return result;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::Create(
-      platform_support(), validated_options, num_bytes, &dispatcher);
+  result = SharedBufferDispatcher::Create(platform_support(), validated_options,
+                                          num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher.get());
     return result;

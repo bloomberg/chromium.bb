@@ -4,6 +4,8 @@
 
 module mojo;
 
+import "mojo/services/public/interfaces/gpu/gpu_capabilities.mojom";
+
 struct CommandBufferState {
   int32 num_entries;
   int32 get_offset;
@@ -15,7 +17,7 @@ struct CommandBufferState {
 };
 
 interface CommandBufferSyncClient {
-  DidInitialize(bool success);
+  DidInitialize(bool success, GpuCapabilities capabilities);
   DidMakeProgress(CommandBufferState? state);
 };
 

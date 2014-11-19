@@ -5,7 +5,7 @@
 #include "mojo/edk/system/dispatcher.h"
 
 #include "base/logging.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
@@ -58,8 +58,8 @@ bool Dispatcher::TransportDataAccess::EndSerializeAndClose(
     size_t* actual_size,
     embedder::PlatformHandleVector* platform_handles) {
   DCHECK(dispatcher);
-  return dispatcher->EndSerializeAndClose(
-      channel, destination, actual_size, platform_handles);
+  return dispatcher->EndSerializeAndClose(channel, destination, actual_size,
+                                          platform_handles);
 }
 
 // static
@@ -72,7 +72,7 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
   switch (static_cast<int32_t>(type)) {
     case kTypeUnknown:
       DVLOG(2) << "Deserializing invalid handle";
-      return scoped_refptr<Dispatcher>();
+      return nullptr;
     case kTypeMessagePipe:
       return scoped_refptr<Dispatcher>(
           MessagePipeDispatcher::Deserialize(channel, source, size));
@@ -81,7 +81,7 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
       // TODO(vtl): Implement.
       LOG(WARNING) << "Deserialization of dispatcher type " << type
                    << " not supported";
-      return scoped_refptr<Dispatcher>();
+      return nullptr;
     case kTypeSharedBuffer:
       return scoped_refptr<Dispatcher>(SharedBufferDispatcher::Deserialize(
           channel, source, size, platform_handles));
@@ -90,7 +90,7 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
           channel, source, size, platform_handles));
   }
   LOG(WARNING) << "Unknown dispatcher type " << type;
-  return scoped_refptr<Dispatcher>();
+  return nullptr;
 }
 
 MojoResult Dispatcher::Close() {
@@ -107,8 +107,9 @@ MojoResult Dispatcher::WriteMessage(
     uint32_t num_bytes,
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
-  DCHECK(!transports || (transports->size() > 0 &&
-                         transports->size() < kMaxMessageNumHandles));
+  DCHECK(!transports ||
+         (transports->size() > 0 &&
+          transports->size() < GetConfiguration().max_message_num_handles));
 
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -129,8 +130,8 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return ReadMessageImplNoLock(
-      bytes, num_bytes, dispatchers, num_dispatchers, flags);
+  return ReadMessageImplNoLock(bytes, num_bytes, dispatchers, num_dispatchers,
+                               flags);
 }
 
 MojoResult Dispatcher::WriteData(UserPointer<const void> elements,
@@ -473,8 +474,8 @@ bool Dispatcher::EndSerializeAndClose(
   base::AutoLock locker(lock_);
 #endif
 
-  return EndSerializeAndCloseImplNoLock(
-      channel, destination, actual_size, platform_handles);
+  return EndSerializeAndCloseImplNoLock(channel, destination, actual_size,
+                                        platform_handles);
 }
 
 // DispatcherTransport ---------------------------------------------------------

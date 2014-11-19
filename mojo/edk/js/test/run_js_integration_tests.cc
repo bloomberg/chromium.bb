@@ -11,7 +11,7 @@
 #include "gin/test/gtest.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
-#include "mojo/public/cpp/environment/environment.h"
+#include "mojo/edk/js/threading.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -23,40 +23,33 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
-    AddBuiltinModule(Support::kModuleName, Support::GetModule);
+    AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
+    AddBuiltinModule(Threading::kModuleName, Threading::GetModule);
   }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRunnerDelegate);
 };
 
-void RunTest(std::string test, bool run_until_idle) {
-  Environment env;
+void RunTest(std::string test, bool addSupportModule) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("mojo")
-             .AppendASCII("public")
+             .AppendASCII("edk")
              .AppendASCII("js")
+             .AppendASCII("tests")
              .AppendASCII(test);
   TestRunnerDelegate delegate;
-  gin::RunTestFromFile(path, &delegate, run_until_idle);
+  if (addSupportModule)
+    delegate.AddBuiltinModule(Support::kModuleName, Support::GetModule);
+  gin::RunTestFromFile(path, &delegate, true);
 }
 
-// TODO(abarth): Should we autogenerate these stubs from GYP?
-TEST(JSTest, core) {
-  RunTest("core_unittests.js", true);
+TEST(JSTest, connection) {
+  RunTest("connection_tests.js", false);
 }
 
-TEST(JSTest, codec) {
-  RunTest("codec_unittests.js", true);
-}
-
-TEST(JSTest, struct) {
-  RunTest("struct_unittests.js", true);
-}
-
-TEST(JSTest, validation) {
-  RunTest("validation_unittests.js", true);
+TEST(JSTest, sample_service) {
+  RunTest("sample_service_tests.js", true);
 }
 
 }  // namespace

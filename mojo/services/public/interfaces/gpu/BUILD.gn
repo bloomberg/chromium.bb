@@ -4,11 +4,11 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: mojo/mojo_services.gypi:mojo_gpu_bindings
 mojom("gpu") {
   sources = [
    "command_buffer.mojom",
    "gpu.mojom",
+   "gpu_capabilities.mojom",
   ]
 
   deps = [

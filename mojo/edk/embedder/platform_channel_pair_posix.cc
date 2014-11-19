@@ -46,14 +46,10 @@ PlatformChannelPair::PlatformChannelPair() {
   // fail with |EPIPE| instead). On Linux, we have to use |send...()| with
   // |MSG_NOSIGNAL| -- which is not supported on Mac -- instead.
   int no_sigpipe = 1;
-  PCHECK(
-      setsockopt(
-          fds[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe)) ==
-      0);
-  PCHECK(
-      setsockopt(
-          fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe)) ==
-      0);
+  PCHECK(setsockopt(fds[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                    sizeof(no_sigpipe)) == 0);
+  PCHECK(setsockopt(fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
+                    sizeof(no_sigpipe)) == 0);
 #endif  // defined(OS_MACOSX)
 
   server_handle_.reset(PlatformHandle(fds[0]));

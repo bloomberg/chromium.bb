@@ -15,7 +15,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 
 namespace mojo {
 namespace system {
@@ -301,7 +301,8 @@ void LocalDataPipe::EnsureBufferNoLock() {
   if (buffer_)
     return;
   buffer_.reset(static_cast<char*>(
-      base::AlignedAlloc(capacity_num_bytes(), kDataPipeBufferAlignmentBytes)));
+      base::AlignedAlloc(capacity_num_bytes(),
+                         GetConfiguration().data_pipe_buffer_alignment_bytes)));
 }
 
 void LocalDataPipe::DestroyBufferNoLock() {
