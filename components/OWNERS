@@ -228,10 +228,6 @@ per-file translate_strings.grdp=toyoshim@chromium.org
 
 per-file startup_metric_utils.gypi=jeremy@chromium.org
 
-per-file usb_service.gypi=pfeldman@chromium.org
-per-file usb_service.gypi=rockot@chromium.org
-per-file usb_service.gypi=rpaquay@chromium.org
-
 per-file user_manager.gypi=antrim@chromium.org
 per-file user_manager.gypi=dpolukhin@chromium.org
 per-file user_manager.gypi=dzhioev@chromium.org
