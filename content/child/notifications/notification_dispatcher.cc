@@ -15,7 +15,8 @@ namespace content {
 NotificationDispatcher::NotificationDispatcher(
     ThreadSafeSender* thread_safe_sender)
     : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(thread_safe_sender) {
+      thread_safe_sender_(thread_safe_sender),
+      next_notification_id_(0) {
 }
 
 NotificationDispatcher::~NotificationDispatcher() {}
