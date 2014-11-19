@@ -370,7 +370,7 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
     if (document().printing())
         return;
 
-    if (style()->slowIsFlippedBlocksWritingMode()) {
+    if (style()->isFlippedBlocksWritingMode()) {
         // We have to flip by hand since the view's logical height has not been determined.  We
         // can use the viewport width and height.
         if (style()->isHorizontalWritingMode())

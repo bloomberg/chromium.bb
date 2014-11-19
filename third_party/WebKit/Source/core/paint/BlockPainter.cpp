@@ -114,7 +114,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, PaintInfo& paintInfo, co
         return;
 
     LayoutPoint childPoint = paintOffset;
-    if (inlineBox.parent()->renderer().style()->slowIsFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+    if (inlineBox.parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(inlineBox.renderer()), childPoint);
 
     paintAsInlineBlock(&inlineBox.renderer(), paintInfo, childPoint);
@@ -325,7 +325,7 @@ void BlockPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pai
             ruleLogicalLeft = currLogicalLeftOffset;
         }
     } else {
-        bool topToBottom = !m_renderBlock.style()->slowIsFlippedBlocksWritingMode();
+        bool topToBottom = !m_renderBlock.style()->isFlippedBlocksWritingMode();
         LayoutUnit ruleLeft = m_renderBlock.isHorizontalWritingMode()
             ? m_renderBlock.borderLeft() + m_renderBlock.paddingLeft()
             : colGap / 2 - colGap - ruleThickness / 2 + m_renderBlock.borderBefore() + m_renderBlock.paddingBefore();
@@ -412,7 +412,7 @@ void BlockPainter::paintColumnContents(PaintInfo& paintInfo, const LayoutPoint& 
         }
 
         LayoutUnit blockDelta = (m_renderBlock.isHorizontalWritingMode() ? colRect.height() : colRect.width());
-        if (m_renderBlock.style()->slowIsFlippedBlocksWritingMode())
+        if (m_renderBlock.style()->isFlippedBlocksWritingMode())
             currLogicalTopOffset += blockDelta;
         else
             currLogicalTopOffset -= blockDelta;

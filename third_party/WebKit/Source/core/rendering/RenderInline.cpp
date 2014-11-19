@@ -1126,7 +1126,7 @@ LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, cons
 
     if (offsetDependsOnPoint) {
         *offsetDependsOnPoint = container->hasColumns()
-            || (container->isBox() && container->style()->slowIsFlippedBlocksWritingMode())
+            || (container->isBox() && container->style()->isFlippedBlocksWritingMode())
             || container->isRenderFlowThread();
     }
 
@@ -1152,7 +1152,7 @@ void RenderInline::mapLocalToContainer(const RenderLayerModelObject* paintInvali
         return;
 
     if (mode & ApplyContainerFlip && o->isBox()) {
-        if (o->style()->slowIsFlippedBlocksWritingMode()) {
+        if (o->style()->isFlippedBlocksWritingMode()) {
             IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
             transformState.move(toRenderBox(o)->flipForWritingModeIncludingColumns(centerPoint) - centerPoint);
         }

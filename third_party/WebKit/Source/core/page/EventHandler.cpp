@@ -915,7 +915,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
     RenderBox* curBox = node->renderer()->enclosingBox();
     while (curBox && (rootLayerScrolls || !curBox->isRenderView())) {
         ScrollDirection physicalDirection = toPhysicalDirection(
-            direction, curBox->isHorizontalWritingMode(), curBox->style()->slowIsFlippedBlocksWritingMode());
+            direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
         // If we're at the stopNode, we should try to scroll it but we shouldn't bubble past it
         bool shouldStopBubbling = stopNode && *stopNode && curBox->node() == *stopNode;

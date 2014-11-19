@@ -898,7 +898,7 @@ int RenderTableCell::borderHalfLeft(bool outer) const
     const RenderStyle* styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow->isHorizontalWritingMode())
         return styleForCellFlow->isLeftToRightDirection() ? borderHalfStart(outer) : borderHalfEnd(outer);
-    return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
+    return styleForCellFlow->isFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
 }
 
 int RenderTableCell::borderHalfRight(bool outer) const
@@ -906,14 +906,14 @@ int RenderTableCell::borderHalfRight(bool outer) const
     const RenderStyle* styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow->isHorizontalWritingMode())
         return styleForCellFlow->isLeftToRightDirection() ? borderHalfEnd(outer) : borderHalfStart(outer);
-    return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
+    return styleForCellFlow->isFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
 }
 
 int RenderTableCell::borderHalfTop(bool outer) const
 {
     const RenderStyle* styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow->isHorizontalWritingMode())
-        return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
+        return styleForCellFlow->isFlippedBlocksWritingMode() ? borderHalfAfter(outer) : borderHalfBefore(outer);
     return styleForCellFlow->isLeftToRightDirection() ? borderHalfStart(outer) : borderHalfEnd(outer);
 }
 
@@ -921,7 +921,7 @@ int RenderTableCell::borderHalfBottom(bool outer) const
 {
     const RenderStyle* styleForCellFlow = this->styleForCellFlow();
     if (styleForCellFlow->isHorizontalWritingMode())
-        return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
+        return styleForCellFlow->isFlippedBlocksWritingMode() ? borderHalfBefore(outer) : borderHalfAfter(outer);
     return styleForCellFlow->isLeftToRightDirection() ? borderHalfEnd(outer) : borderHalfStart(outer);
 }
 
@@ -945,7 +945,7 @@ int RenderTableCell::borderHalfBefore(bool outer) const
 {
     CollapsedBorderValue border = collapsedBeforeBorder(DoNotIncludeBorderColor);
     if (border.exists())
-        return (border.width() + ((styleForCellFlow()->slowIsFlippedBlocksWritingMode() ^ outer) ? 0 : 1)) / 2; // Give the extra pixel to top and left.
+        return (border.width() + ((styleForCellFlow()->isFlippedBlocksWritingMode() ^ outer) ? 0 : 1)) / 2; // Give the extra pixel to top and left.
     return 0;
 }
 
@@ -953,7 +953,7 @@ int RenderTableCell::borderHalfAfter(bool outer) const
 {
     CollapsedBorderValue border = collapsedAfterBorder(DoNotIncludeBorderColor);
     if (border.exists())
-        return (border.width() + ((styleForCellFlow()->slowIsFlippedBlocksWritingMode() ^ outer) ? 1 : 0)) / 2;
+        return (border.width() + ((styleForCellFlow()->isFlippedBlocksWritingMode() ^ outer) ? 1 : 0)) / 2;
     return 0;
 }
 

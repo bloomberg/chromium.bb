@@ -531,8 +531,7 @@ public:
     bool isHorizontalWritingMode() const { return m_bitfields.horizontalWritingMode(); }
     bool hasFlippedBlocksWritingMode() const
     {
-        return document().containsAnyRareWritingMode()
-            && style()->slowIsFlippedBlocksWritingMode();
+        return style()->isFlippedBlocksWritingMode();
     }
 
     bool hasLayer() const { return m_bitfields.hasLayer(); }
@@ -1049,7 +1048,7 @@ public:
 
     bool needsPaint() const { return m_bitfields.needsPaint(); }
 
-    bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->slowIsFlippedBlocksWritingMode(); }
+    bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
     void markContainingBlocksForOverflowRecalc();

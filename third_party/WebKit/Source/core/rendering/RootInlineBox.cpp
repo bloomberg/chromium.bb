@@ -461,7 +461,7 @@ LayoutUnit RootInlineBox::selectionBottom() const
 
 int RootInlineBox::blockDirectionPointInLine() const
 {
-    return !block().style()->slowIsFlippedBlocksWritingMode() ? std::max(lineTop(), selectionTop()) : std::min(lineBottom(), selectionBottom());
+    return !block().style()->isFlippedBlocksWritingMode() ? std::max(lineTop(), selectionTop()) : std::min(lineBottom(), selectionBottom());
 }
 
 RenderBlockFlow& RootInlineBox::block() const

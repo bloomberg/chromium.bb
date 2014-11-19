@@ -500,7 +500,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_directionSetOnDocumentElement(false)
     , m_writingModeSetOnDocumentElement(false)
-    , m_containsAnyRareWritingMode(false)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))

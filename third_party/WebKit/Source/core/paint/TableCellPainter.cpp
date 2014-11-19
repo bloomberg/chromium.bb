@@ -19,7 +19,7 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const Re
         return styleForCellFlow->isLeftToRightDirection() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSStart)
             : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSEnd);
     }
-    return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter)
+    return styleForCellFlow->isFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter)
         : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore);
 }
 
@@ -29,21 +29,21 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const R
         return styleForCellFlow->isLeftToRightDirection() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSEnd)
             : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSStart);
     }
-    return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore)
+    return styleForCellFlow->isFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore)
         : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter);
 }
 
 inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const RenderStyle* styleForCellFlow) const
 {
     if (styleForCellFlow->isHorizontalWritingMode())
-        return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter) : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore);
+        return styleForCellFlow->isFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter) : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore);
     return styleForCellFlow->isLeftToRightDirection() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSStart) : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSEnd);
 }
 
 inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const RenderStyle* styleForCellFlow) const
 {
     if (styleForCellFlow->isHorizontalWritingMode()) {
-        return styleForCellFlow->slowIsFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore)
+        return styleForCellFlow->isFlippedBlocksWritingMode() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSBefore)
             : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSAfter);
     }
     return styleForCellFlow->isLeftToRightDirection() ? m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSEnd)

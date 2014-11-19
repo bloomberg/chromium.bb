@@ -2034,7 +2034,7 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
     for (i = 0; i < colCount; i++) {
         LayoutRect colRect = columnBlock->columnRectAt(colInfo, i);
         LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->slowIsFlippedBlocksWritingMode())
+        if (columnBlock->style()->isFlippedBlocksWritingMode())
             currLogicalTopOffset += blockDelta;
         else
             currLogicalTopOffset -= blockDelta;
@@ -2045,7 +2045,7 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
         columnBlock->flipForWritingMode(colRect);
         LayoutUnit currLogicalLeftOffset = (isHorizontal ? colRect.x() : colRect.y()) - logicalLeft;
         LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->slowIsFlippedBlocksWritingMode())
+        if (columnBlock->style()->isFlippedBlocksWritingMode())
             currLogicalTopOffset -= blockDelta;
         else
             currLogicalTopOffset += blockDelta;
@@ -2236,9 +2236,6 @@ LayoutRect RenderLayer::logicalBoundingBox() const
 
 static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, RenderObject* renderer)
 {
-    if (!UNLIKELY(renderer->document().containsAnyRareWritingMode()))
-        return boundingBox;
-
     LayoutRect result = boundingBox;
     if (renderer->isBox())
         toRenderBox(renderer)->flipForWritingMode(result);

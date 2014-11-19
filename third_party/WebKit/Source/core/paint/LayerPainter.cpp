@@ -593,7 +593,7 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
 
         // Move to the next position.
         LayoutUnit blockDelta = isHorizontal ? colRect.height() : colRect.width();
-        if (columnBlock->style()->slowIsFlippedBlocksWritingMode())
+        if (columnBlock->style()->isFlippedBlocksWritingMode())
             currLogicalTopOffset += blockDelta;
         else
             currLogicalTopOffset -= blockDelta;

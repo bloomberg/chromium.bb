@@ -2167,7 +2167,7 @@ void RenderBlockFlow::removeFloatingObjects()
 
 LayoutPoint RenderBlockFlow::flipFloatForWritingModeForChild(const FloatingObject* child, const LayoutPoint& point) const
 {
-    if (!style()->slowIsFlippedBlocksWritingMode())
+    if (!style()->isFlippedBlocksWritingMode())
         return point;
 
     // This is similar to RenderBox::flipForWritingModeForChild. We have to subtract out our left/top offsets twice, since
