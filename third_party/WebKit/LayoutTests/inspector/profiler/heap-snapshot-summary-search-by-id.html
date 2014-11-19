@@ -70,7 +70,7 @@ function test()
                 view.performSearch({query: "@401", caseSensitive: false});
             }
 
-            function checkNodeIsSelected(constructorName, nodeId, onSuccess, parentNode, node)
+            function checkNodeIsSelected(constructorName, nodeId, onSuccess, callback, parentNode, node)
             {
                 if (!node) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");

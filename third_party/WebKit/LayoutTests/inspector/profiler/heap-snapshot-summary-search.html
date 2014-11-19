@@ -53,7 +53,7 @@ function test()
             function step2()
             {
                 addSearchResultSniffer(step3);
-                InspectorTest.currentProfileView().performSearch({query: "A", caseSensitive: false});
+                InspectorTest.currentProfileView().performSearch({query: "window", caseSensitive: false});
             }
 
             function step3(resultCount)
@@ -70,14 +70,14 @@ function test()
                 InspectorTest.currentProfileView().performSearch({query: "@999", caseSensitive: false});
             }
 
-            function step5(parentNode, node)
+            function step5(callback, parentNode, node)
             {
                 InspectorTest.assertEquals(false, !!node, "Search for not-existing node by id");
                 addNodeSelectedSniffer(step6);
                 InspectorTest.currentProfileView().performSearch({query: "@83", caseSensitive:false});
             }
 
-            function step6(parentNode, node)
+            function step6(callback, parentNode, node)
             {
                 InspectorTest.assertEquals(true, !!node, "Search for existing node by id");
                 next();
