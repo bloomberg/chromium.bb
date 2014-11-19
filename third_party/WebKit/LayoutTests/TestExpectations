@@ -438,8 +438,6 @@ crbug.com/282093 [ Mac ] svg/hixie/text/001.xml [ Crash Failure Pass ImageOnlyFa
 crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 
-crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeout ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/371716 [ Win ] http/tests/local/formdata/send-form-data.html [ Pass Timeout ]
 
@@ -817,7 +815,6 @@ crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pas
 crbug.com/357071 gamepad/gamepad-polling-access.html [ Crash Pass ]
 crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
-crbug.com/357075 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Pass Timeout ]
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
 crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
@@ -1201,8 +1198,6 @@ crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-goo
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
-crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
-
 crbug.com/420749 compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsManualRebaseline ]
 crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsManualRebaseline ]
@@ -1237,8 +1232,6 @@ crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Ima
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/textblob/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
-
-crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Pass Timeout ]
 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
@@ -1295,8 +1288,6 @@ crbug.com/426543 fast/js/mozilla/strict/15.4.4.9.html [ Pass Failure ]
 crbug.com/426543 fast/js/mozilla/strict/15.4.4.13.html [ Pass Failure ]
 
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
-
-crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
 
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
 
