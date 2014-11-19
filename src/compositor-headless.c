@@ -49,6 +49,7 @@ struct headless_parameters {
 	int width;
 	int height;
 	int use_pixman;
+	uint32_t transform;
 };
 
 static void
@@ -109,7 +110,7 @@ headless_output_destroy(struct weston_output *output_base)
 
 static int
 headless_compositor_create_output(struct headless_compositor *c,
-				 int width, int height)
+				  struct headless_parameters *param)
 {
 	struct headless_output *output;
 	struct wl_event_loop *loop;
@@ -120,15 +121,15 @@ headless_compositor_create_output(struct headless_compositor *c,
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	output->mode.width = width;
-	output->mode.height = height;
+	output->mode.width = param->width;
+	output->mode.height = param->height;
 	output->mode.refresh = 60;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
-	weston_output_init(&output->base, &c->base, 0, 0, width, height,
-			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
+	weston_output_init(&output->base, &c->base, 0, 0, param->width,
+			   param->height, param->transform, 1);
 
 	output->base.make = "weston";
 	output->base.model = "headless";
@@ -146,15 +147,15 @@ headless_compositor_create_output(struct headless_compositor *c,
 	output->base.switch_mode = NULL;
 
 	if (c->use_pixman) {
-		output->image_buf = malloc(width * height * 4);
+		output->image_buf = malloc(param->width * param->height * 4);
 		if (!output->image_buf)
 			return -1;
 
 		output->image = pixman_image_create_bits(PIXMAN_x8r8g8b8,
-							 width,
-							 height,
+							 param->width,
+							 param->height,
 							 output->image_buf,
-							 width * 4);
+							 param->width * 4);
 
 		if (pixman_renderer_output_create(&output->base) < 0)
 			return -1;
@@ -232,7 +233,7 @@ headless_compositor_create(struct wl_display *display,
 	if (c->use_pixman) {
 		pixman_renderer_init(&c->base);
 	}
-	if (headless_compositor_create_output(c, param->width, param->height) < 0)
+	if (headless_compositor_create_output(c, param) < 0)
 		goto err_input;
 
 	if (!c->use_pixman && noop_renderer_init(&c->base) < 0)
@@ -256,11 +257,13 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	int width = 1024, height = 640;
 	char *display_name = NULL;
 	struct headless_parameters param = { 0, };
+	const char *transform = "normal";
 
 	const struct weston_option headless_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &height },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &param.use_pixman },
+		{ WESTON_OPTION_STRING, "transform", 0, &transform },
 	};
 
 	parse_options(headless_options,
@@ -268,6 +271,9 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	param.width = width;
 	param.height = height;
+
+	if (weston_parse_transform(transform, &param.transform) < 0)
+		weston_log("Invalid transform \"%s\"\n", transform);
 
 	return headless_compositor_create(display, &param, display_name,
 					  argc, argv, config);
