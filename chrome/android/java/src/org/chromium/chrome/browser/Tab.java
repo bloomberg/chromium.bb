@@ -375,8 +375,10 @@ public class Tab {
         mContext = context;
         mApplicationContext = context != null ? context.getApplicationContext() : null;
         mWindowAndroid = window;
-        if (mContext != null)
-            mNumPixel16DP = (int) DeviceDisplayInfo.create(mContext).getDIPScale() * 16;
+        if (mContext != null) {
+            mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
+        }
+        if (mNumPixel16DP == 0) mNumPixel16DP = 16;
     }
 
     /**
