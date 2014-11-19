@@ -169,7 +169,7 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/fast_source_line_resolver_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/map_serializers_unittest \
-@DISABLE_PROCESSOR_FALSE@        src/processor/microdump_processor_unittest \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_address_map_unittest \
@@ -342,6 +342,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/fast_source_line_resolver.h \
 	src/google_breakpad/processor/memory_region.h \
+	src/google_breakpad/processor/microdump.h \
 	src/google_breakpad/processor/microdump_processor.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
@@ -378,7 +379,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/fast_source_line_resolver.cc \
 	src/processor/linked_ptr.h src/processor/logging.h \
 	src/processor/logging.cc src/processor/map_serializers-inl.h \
-	src/processor/map_serializers.h \
+	src/processor/map_serializers.h src/processor/microdump.cc \
 	src/processor/microdump_processor.cc src/processor/minidump.cc \
 	src/processor/minidump_processor.cc \
 	src/processor/module_comparer.cc \
@@ -442,6 +443,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/fast_source_line_resolver.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.$(OBJEXT) \
@@ -899,6 +901,31 @@ am__src_processor_microdump_processor_unittest_SOURCES_DIST =  \
 src_processor_microdump_processor_unittest_OBJECTS =  \
 	$(am_src_processor_microdump_processor_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_processor_minidump_dump_SOURCES_DIST =  \
@@ -1888,7 +1915,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/exploitability.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/fast_source_line_resolver.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/memory_region.h \
-@DISABLE_PROCESSOR_FALSE@        src/google_breakpad/processor/microdump_processor.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/microdump.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/microdump_processor.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump_processor.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_result.h \
@@ -1931,7 +1959,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/map_serializers-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/map_serializers.h \
-@DISABLE_PROCESSOR_FALSE@        src/processor/microdump_processor.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_comparer.cc \
@@ -2405,19 +2434,44 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_SOURCES = \
-@DISABLE_PROCESSOR_FALSE@  src/processor/microdump_processor_unittest.cc \
-@DISABLE_PROCESSOR_FALSE@  src/testing/gtest/src/gtest-all.cc \
-@DISABLE_PROCESSOR_FALSE@  src/testing/src/gmock-all.cc
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor_unittest.cc \
+@DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/gtest-all.cc \
+@DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_CPPFLAGS = \
-@DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src \
-@DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src/testing/include \
-@DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src/testing/gtest/include \
-@DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src/testing/gtest \
-@DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src/testing
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/include \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing/gtest \
+@DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_processor_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@  $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@  	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor_unittest.cc \
@@ -3198,6 +3252,8 @@ src/processor/fast_source_line_resolver.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/logging.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/microdump.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/microdump_processor.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
@@ -4313,6 +4369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/fast_source_line_resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/microdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/microdump_processor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@

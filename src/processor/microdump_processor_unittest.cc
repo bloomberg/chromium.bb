@@ -29,18 +29,152 @@
 
 // Unit test for MicrodumpProcessor.
 
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "breakpad_googletest_includes.h"
+#include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/microdump_processor.h"
+#include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/stack_frame.h"
+#include "google_breakpad/processor/stack_frame_symbolizer.h"
+#include "processor/simple_symbol_supplier.h"
+#include "processor/stackwalker_unittest_utils.h"
 
 namespace {
 
+using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::MicrodumpProcessor;
+using google_breakpad::ProcessState;
+using google_breakpad::SimpleSymbolSupplier;
+using google_breakpad::StackFrameSymbolizer;
+
 class MicrodumpProcessorTest : public ::testing::Test {
+ public:
+  MicrodumpProcessorTest()
+    : files_path_(string(getenv("srcdir") ? getenv("srcdir") : ".") +
+                  "/src/processor/testdata/") {
+  }
+
+  void ReadFile(const string& file_name, string* file_contents) {
+    assert(file_contents);
+    std::ifstream file_stream(file_name.c_str(), std::ios::in);
+    ASSERT_TRUE(file_stream.good());
+    std::vector<char> bytes;
+    file_stream.seekg(0, std::ios_base::end);
+    ASSERT_TRUE(file_stream.good());
+    bytes.resize(file_stream.tellg());
+    file_stream.seekg(0, std::ios_base::beg);
+    ASSERT_TRUE(file_stream.good());
+    file_stream.read(&bytes[0], bytes.size());
+    ASSERT_TRUE(file_stream.good());
+    *file_contents = string(&bytes[0], bytes.size());
+  }
+
+  google_breakpad::ProcessResult ProcessMicrodump(
+      const string& symbols_file,
+      const string& microdump_contents,
+      ProcessState* state) {
+    SimpleSymbolSupplier supplier(symbols_file);
+    BasicSourceLineResolver resolver;
+    StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+    MicrodumpProcessor processor(&frame_symbolizer);
+
+    return processor.Process(microdump_contents, state);
+  }
+
+  string files_path_;
 };
 
-// TODO(mmandlis): Add MicrodumpProcessor tests. See crbug.com/410294
+TEST_F(MicrodumpProcessorTest, TestProcess_Empty) {
+  ProcessState state;
+  google_breakpad::ProcessResult result =
+      ProcessMicrodump("", "", &state);
+  ASSERT_EQ(google_breakpad::PROCESS_ERROR_MINIDUMP_NOT_FOUND, result);
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcess_Invalid) {
+  ProcessState state;
+  google_breakpad::ProcessResult result =
+      ProcessMicrodump("", "This is not a valid microdump", &state);
+  ASSERT_EQ(google_breakpad::PROCESS_ERROR_NO_THREAD_LIST, result);
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcess_MissingSymbols) {
+  string microdump_file = files_path_ + "microdump.dmp";
+  string microdump_contents;
+  ReadFile(microdump_file, &microdump_contents);
+
+  ProcessState state;
+
+  google_breakpad::ProcessResult result =
+      ProcessMicrodump("", microdump_contents, &state);
+
+  ASSERT_EQ(google_breakpad::PROCESS_OK, result);
+
+  ASSERT_TRUE(state.crashed());
+  ASSERT_EQ(0, state.requesting_thread());
+
+  ASSERT_EQ(104U, state.modules()->module_count());
+  ASSERT_EQ(1U, state.threads()->size());
+  ASSERT_EQ(4U, state.threads()->at(0)->frames()->size());
+
+  ASSERT_EQ("",
+            state.threads()->at(0)->frames()->at(0)->function_name);
+  ASSERT_EQ("",
+            state.threads()->at(0)->frames()->at(3)->function_name);
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcess_UnsupportedArch) {
+  string microdump_contents =
+      "W/google-breakpad(26491): -----BEGIN BREAKPAD MICRODUMP-----\n"
+      "W/google-breakpad(26491): O A \"unsupported-arch\"\n"
+      "W/google-breakpad(26491): S 0 A48BD840 A48BD000 00002000\n";
+
+  ProcessState state;
+
+  google_breakpad::ProcessResult result =
+      ProcessMicrodump("", microdump_contents, &state);
+
+  ASSERT_EQ(google_breakpad::PROCESS_ERROR_NO_THREAD_LIST, result);
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcess) {
+  string symbols_file = files_path_ + "symbols/microdump";
+
+  string microdump_file = files_path_ + "microdump.dmp";
+  string microdump_contents;
+  ReadFile(microdump_file, &microdump_contents);
+
+  ProcessState state;
+
+  google_breakpad::ProcessResult result =
+      ProcessMicrodump(symbols_file, microdump_contents, &state);
+
+  ASSERT_EQ(google_breakpad::PROCESS_OK, result);
+  ASSERT_TRUE(state.crashed());
+  ASSERT_EQ(0, state.requesting_thread());
+  ASSERT_EQ(104U, state.modules()->module_count());
+  ASSERT_EQ(1U, state.threads()->size());
+
+  ASSERT_EQ(21U, state.threads()->at(0)->frames()->size());
+
+  ASSERT_EQ("content::::CrashIntentionally",
+            state.threads()->at(0)->frames()->at(0)->function_name);
+  ASSERT_EQ("content::::MaybeHandleDebugURL",
+            state.threads()->at(0)->frames()->at(1)->function_name);
+  ASSERT_EQ("content::Start",
+            state.threads()->at(0)->frames()->at(19)->function_name);
+  ASSERT_EQ("libchromeshell.so",
+            state.threads()->at(0)->frames()->at(19)->module->code_file());
+}
 
 }  // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

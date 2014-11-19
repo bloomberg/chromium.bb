@@ -27,6 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// microdump_processor.cc: A microdump processor.
+//
+// See microdump_processor.h for documentation.
+
 #include "google_breakpad/processor/microdump_processor.h"
 
 #include <assert.h>
@@ -35,8 +39,11 @@
 
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/microdump.h"
 #include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/stackwalker.h"
 #include "google_breakpad/processor/stack_frame_symbolizer.h"
+#include "processor/logging.h"
 
 namespace google_breakpad {
 
@@ -51,7 +58,40 @@ ProcessResult MicrodumpProcessor::Process(const string &microdump_contents,
                                           ProcessState* process_state) {
   assert(process_state);
 
-  // TODO(mmandlis): Implement MicrodumpProcessor. See crbug.com/410294
+  process_state->Clear();
+
+  if (microdump_contents.empty()) {
+    BPLOG(ERROR) << "Microdump is empty.";
+    return PROCESS_ERROR_MINIDUMP_NOT_FOUND;
+  }
+
+  Microdump microdump(microdump_contents);
+  process_state->modules_ = microdump.GetModules()->Copy();
+  scoped_ptr<Stackwalker> stackwalker(
+      Stackwalker::StackwalkerForCPU(
+                            &process_state->system_info_,
+                            microdump.GetContext(),
+                            microdump.GetMemory(),
+                            process_state->modules_,
+                            frame_symbolizer_));
+
+  scoped_ptr<CallStack> stack(new CallStack());
+  if (stackwalker.get()) {
+    if (!stackwalker->Walk(stack.get(),
+                           &process_state->modules_without_symbols_,
+                           &process_state->modules_with_corrupt_symbols_)) {
+      BPLOG(INFO) << "Processing was interrupted.";
+      return PROCESS_SYMBOL_SUPPLIER_INTERRUPTED;
+    }
+  } else {
+    BPLOG(ERROR) << "No stackwalker found for microdump.";
+    return PROCESS_ERROR_NO_THREAD_LIST;
+  }
+
+  process_state->threads_.push_back(stack.release());
+  process_state->thread_memory_regions_.push_back(microdump.GetMemory());
+  process_state->crashed_ = true;
+  process_state->requesting_thread_ = 0;
 
   return PROCESS_OK;
 }

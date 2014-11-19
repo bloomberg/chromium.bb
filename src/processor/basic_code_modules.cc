@@ -73,6 +73,11 @@ BasicCodeModules::BasicCodeModules(const CodeModules *that)
   }
 }
 
+BasicCodeModules::BasicCodeModules()
+  : main_address_(0),
+    map_(new RangeMap<uint64_t, linked_ptr<const CodeModule> >()) {
+}
+
 BasicCodeModules::~BasicCodeModules() {
   delete map_;
 }

@@ -27,6 +27,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// The processor for microdump (a reduced dump containing only the state of the
+// crashing thread). See crbug.com/410294 for more info and design docs.
+
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_MICRODUMP_PROCESSOR_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_MICRODUMP_PROCESSOR_H__
 

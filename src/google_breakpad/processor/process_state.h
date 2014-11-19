@@ -117,8 +117,10 @@ class ProcessState {
   ExploitabilityRating exploitability() const { return exploitability_; }
 
  private:
-  // MinidumpProcessor is responsible for building ProcessState objects.
+  // MinidumpProcessor and MicrodumpProcessor are responsible for building
+  // ProcessState objects.
   friend class MinidumpProcessor;
+  friend class MicrodumpProcessor;
 
   // The time-date stamp of the minidump (time_t format)
   uint32_t time_date_stamp_;
