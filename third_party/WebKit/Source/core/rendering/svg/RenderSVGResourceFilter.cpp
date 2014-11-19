@@ -144,19 +144,6 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     FloatRect boundaries = filterData->boundaries;
     context->save();
 
-    FloatSize deviceSize = context->getCTM().mapSize(boundaries.size());
-    float scaledArea = deviceSize.width() * deviceSize.height();
-
-    // If area of scaled size is bigger than the upper limit, adjust the scale
-    // to fit. Note that this only really matters in the non-impl-side painting
-    // case, since the impl-side case never allocates a full-sized backing
-    // store, only tile-sized.
-    // FIXME: remove this once all platforms are using impl-side painting.
-    // crbug.com/169282.
-    if (scaledArea > FilterEffect::maxFilterArea()) {
-        float scale = sqrtf(FilterEffect::maxFilterArea() / scaledArea);
-        context->scale(scale, scale);
-    }
     // Clip drawing of filtered image to the minimum required paint rect.
     FilterEffect* lastEffect = filterData->builder->lastEffect();
     context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));

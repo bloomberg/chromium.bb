@@ -29,8 +29,6 @@
 
 namespace blink {
 
-static const float kMaxFilterArea = 4096 * 4096;
-
 FilterEffect::FilterEffect(Filter* filter)
     : m_alphaImage(false)
     , m_filter(filter)
@@ -52,20 +50,6 @@ FilterEffect::~FilterEffect()
 void FilterEffect::trace(Visitor* visitor)
 {
     visitor->trace(m_inputEffects);
-}
-
-float FilterEffect::maxFilterArea()
-{
-    return kMaxFilterArea;
-}
-
-bool FilterEffect::isFilterSizeValid(const FloatRect& rect)
-{
-    if (rect.width() < 0 || rect.height() < 0
-        ||  (rect.height() * rect.width() > kMaxFilterArea))
-        return false;
-
-    return true;
 }
 
 FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)

@@ -68,9 +68,6 @@ public:
     virtual ~FilterEffect();
     virtual void trace(Visitor*);
 
-    static bool isFilterSizeValid(const FloatRect&);
-    static float maxFilterArea();
-
     void clearResult();
     void clearResultsRecursive();
 
