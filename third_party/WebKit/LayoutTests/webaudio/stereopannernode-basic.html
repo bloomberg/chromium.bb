@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+  <script src="../resources/js-test.js"></script>
+</head>
+
+<body>
+  <div id="description"></div>
+  <div id="console"></div>
+  <script>
+    description("Test attribute and basic functionality of StereoPannerNode.");
+
+    function checkAttributes() {
+      window.jsTestIsAsync = true;
+
+      var context = new AudioContext();
+      var panner = context.createStereoPanner();
+      window.panner = panner;
+
+      shouldBeTrue('panner.numberOfInputs === 1');
+      shouldBeTrue('panner.numberOfOutputs === 1');
+      shouldBeTrue('panner.pan.defaultValue === 0.0');
+      shouldBeTrue('panner.pan.value === 0.0');
+      panner.pan.value = 1.0;
+      shouldBeTrue('panner.pan.value === 1.0');
+
+      shouldNotThrow('panner.channelCount = 1');
+      shouldThrow('panner.channelCount = 3');
+      shouldNotThrow('panner.channelCountMode = "explicit"');
+      shouldThrow('panner.channelCountMode = "max"');
+
+      finishJSTest();
+    }
+
+    checkAttributes();
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

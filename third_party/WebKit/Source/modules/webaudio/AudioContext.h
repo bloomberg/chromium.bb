@@ -68,6 +68,7 @@ class OscillatorNode;
 class PannerNode;
 class PeriodicWave;
 class ScriptProcessorNode;
+class StereoPannerNode;
 class WaveShaperNode;
 
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
@@ -122,6 +123,7 @@ public:
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
     ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
+    StereoPannerNode* createStereoPanner();
     ChannelSplitterNode* createChannelSplitter(ExceptionState&);
     ChannelSplitterNode* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
     ChannelMergerNode* createChannelMerger(ExceptionState&);

@@ -126,6 +126,8 @@ String AudioNode::nodeTypeName() const
         return "BiquadFilterNode";
     case NodeTypePanner:
         return "PannerNode";
+    case NodeTypeStereoPanner:
+        return "StereoPannerNode";
     case NodeTypeConvolver:
         return "ConvolverNode";
     case NodeTypeDelay:

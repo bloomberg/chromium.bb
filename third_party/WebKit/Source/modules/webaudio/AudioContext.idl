@@ -67,6 +67,7 @@
     DynamicsCompressorNode createDynamicsCompressor();
     AnalyserNode createAnalyser();
     [RaisesException] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
+    StereoPannerNode createStereoPanner();
     OscillatorNode createOscillator();
     [RaisesException] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag);
 

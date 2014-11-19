@@ -77,6 +77,7 @@ public:
         NodeTypeJavaScript,
         NodeTypeBiquadFilter,
         NodeTypePanner,
+        NodeTypeStereoPanner,
         NodeTypeConvolver,
         NodeTypeDelay,
         NodeTypeGain,

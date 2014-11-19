@@ -60,6 +60,7 @@
 #include "modules/webaudio/PannerNode.h"
 #include "modules/webaudio/PeriodicWave.h"
 #include "modules/webaudio/ScriptProcessorNode.h"
+#include "modules/webaudio/StereoPannerNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/HRTFPanner.h"
@@ -368,6 +369,12 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
 
     refNode(node); // context keeps reference until we stop making javascript rendering callbacks
     return node;
+}
+
+StereoPannerNode* AudioContext::createStereoPanner()
+{
+    ASSERT(isMainThread());
+    return StereoPannerNode::create(this, m_destinationNode->sampleRate());
 }
 
 BiquadFilterNode* AudioContext::createBiquadFilter()
