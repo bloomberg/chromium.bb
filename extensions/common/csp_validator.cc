@@ -54,6 +54,11 @@ bool isNonWildcardTLD(const std::string& url,
   if (end_of_host == std::string::npos)
     end_of_host = url.size();
 
+  // A missing host such as "chrome-extension://" is invalid, but for backwards-
+  // compatibility, accept such CSP parts. They will be ignored by Blink anyway.
+  if (start_of_host == end_of_host)
+    return true;
+
   // Note: It is sufficient to only compare the first character against '*'
   // because the CSP only allows wildcards at the start of a directive, see
   // host-source and host-part at http://www.w3.org/TR/CSP2/#source-list-syntax
