@@ -349,23 +349,16 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override {
     DCHECK(agent_host == agent_host_.get());
-    agent_host_ = NULL;
 
-    base::DictionaryValue notification;
-    notification.SetString(
-        devtools::Inspector::detached::kParamReason,
-        replaced_with_another_client ?
-            "replaced_with_devtools" : "target_closed");
-    std::string response = DevToolsProtocol::CreateNotification(
-        devtools::Inspector::detached::kName,
-        notification.DeepCopy())->Serialize();
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ServerWrapper::SendOverWebSocket,
-                   base::Unretained(server_wrapper_),
-                   connection_id_,
-                   response));
+    base::Callback<void(const std::string&)> raw_message_callback(
+        base::Bind(&DevToolsAgentHostClientImpl::DispatchProtocolMessage,
+                   base::Unretained(this), base::Unretained(agent_host)));
+    devtools::inspector::Client inspector(raw_message_callback);
+    inspector.Detached(devtools::inspector::DetachedParams::Create()
+       ->set_reason(replaced_with_another_client ?
+            "replaced_with_devtools" : "target_closed"));
 
+    agent_host_ = nullptr;
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&ServerWrapper::Close,
