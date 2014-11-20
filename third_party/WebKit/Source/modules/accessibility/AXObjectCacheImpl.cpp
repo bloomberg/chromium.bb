@@ -108,11 +108,6 @@ AXObjectCacheImpl::~AXObjectCacheImpl()
     }
 }
 
-AXObject* AXObjectCacheImpl::getOrCreateAXObjectFromRenderView(RenderView* renderView)
-{
-    return getOrCreate(renderView);
-}
-
 AXObject* AXObjectCacheImpl::root()
 {
     return getOrCreate(&m_document);
@@ -679,11 +674,6 @@ void AXObjectCacheImpl::childrenChanged(Node* node)
 void AXObjectCacheImpl::childrenChanged(RenderObject* renderer)
 {
     childrenChanged(get(renderer));
-}
-
-void AXObjectCacheImpl::childrenChanged(Widget* widget)
-{
-    childrenChanged(get(widget));
 }
 
 void AXObjectCacheImpl::childrenChanged(AXObject* obj)

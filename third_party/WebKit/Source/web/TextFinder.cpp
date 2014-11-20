@@ -32,7 +32,6 @@
 #include "config.h"
 #include "web/TextFinder.h"
 
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Range.h"
@@ -44,6 +43,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAXObject.h"
@@ -212,7 +212,7 @@ void TextFinder::stopFindingAndClearSelection()
 
 void TextFinder::reportFindInPageResultToAccessibility(int identifier)
 {
-    AXObjectCache* axObjectCache = ownerFrame().frame()->document()->existingAXObjectCache();
+    AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(ownerFrame().frame()->document()->existingAXObjectCache());
     if (!axObjectCache)
         return;
 

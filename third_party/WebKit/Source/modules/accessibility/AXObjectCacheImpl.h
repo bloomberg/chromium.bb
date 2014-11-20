@@ -61,31 +61,19 @@ public:
 
     static AXObject* focusedUIElementForPage(const Page*);
 
-    virtual AXObject* objectFromAXID(AXID id) const override { return m_objects.get(id); }
-
-    virtual AXObject* root() override;
-    virtual AXObject* getOrCreateAXObjectFromRenderView(RenderView*) override;
-
     virtual void selectionChanged(Node*) override;
     virtual void childrenChanged(Node*) override;
     virtual void childrenChanged(RenderObject*) override;
-    virtual void childrenChanged(Widget*) override;
     virtual void checkedStateChanged(Node*) override;
     virtual void selectedChildrenChanged(Node*) override;
-
-    // will only return the AXObject if it already exists
-    virtual AXObject* get(Node*);
 
     virtual void remove(RenderObject*) override;
     virtual void remove(Node*) override;
     virtual void remove(Widget*) override;
-    virtual void remove(AbstractInlineTextBox*) override;
 
     virtual const Element* rootAXEditableElement(const Node*) override;
-    virtual bool nodeIsTextControl(const Node*) override;
 
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(Node*) override;
     virtual void textChanged(RenderObject*) override;
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
     virtual void updateCacheAfterNodeIsAttached(Node*) override;
@@ -118,6 +106,9 @@ public:
     // Returns the root object for the entire document.
     AXObject* rootObject();
 
+    AXObject* objectFromAXID(AXID id) const { return m_objects.get(id); }
+    AXObject* root();
+
     // used for objects without backing elements
     AXObject* getOrCreate(AccessibilityRole);
     AXObject* getOrCreate(RenderObject*);
@@ -126,11 +117,13 @@ public:
     AXObject* getOrCreate(AbstractInlineTextBox*);
 
     // will only return the AXObject if it already exists
+    AXObject* get(Node*);
     AXObject* get(RenderObject*);
     AXObject* get(Widget*);
     AXObject* get(AbstractInlineTextBox*);
 
     void remove(AXID);
+    void remove(AbstractInlineTextBox*);
 
     void detachWrapper(AXObject*);
     void attachWrapper(AXObject*);
@@ -190,6 +183,9 @@ private:
     static AXObject* focusedImageMapUIElement(HTMLAreaElement*);
 
     AXID getAXID(AXObject*);
+
+    void textChanged(Node*);
+    bool nodeIsTextControl(const Node*);
 
     Settings* settings();
 };

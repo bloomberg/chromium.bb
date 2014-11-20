@@ -34,7 +34,6 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -87,6 +86,7 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
@@ -3744,7 +3744,7 @@ WebAXObject WebViewImpl::accessibilityObject()
         return WebAXObject();
 
     Document* document = mainFrameImpl()->frame()->document();
-    return WebAXObject(document->axObjectCache()->root());
+    return WebAXObject(toAXObjectCacheImpl(document->axObjectCache())->root());
 }
 
 void WebViewImpl::performCustomContextMenuAction(unsigned action)

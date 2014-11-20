@@ -80,31 +80,19 @@ public:
         AXValueChanged
     };
 
-    virtual AXObject* objectFromAXID(AXID) const = 0;
-
-    virtual AXObject* root() = 0;
-    virtual AXObject* getOrCreateAXObjectFromRenderView(RenderView*) = 0;
-
-    // will only return the AXObject if it already exists
-    virtual AXObject* get(Node*) = 0;
-
     virtual void selectionChanged(Node*) = 0;
     virtual void childrenChanged(Node*) = 0;
     virtual void childrenChanged(RenderObject*) = 0;
-    virtual void childrenChanged(Widget*) = 0;
     virtual void checkedStateChanged(Node*) = 0;
     virtual void selectedChildrenChanged(Node*) = 0;
 
     virtual void remove(RenderObject*) = 0;
     virtual void remove(Node*) = 0;
     virtual void remove(Widget*) = 0;
-    virtual void remove(AbstractInlineTextBox*) = 0;
 
     virtual const Element* rootAXEditableElement(const Node*) = 0;
-    virtual bool nodeIsTextControl(const Node*) = 0;
 
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(Node*) = 0;
     virtual void textChanged(RenderObject*) = 0;
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
     virtual void updateCacheAfterNodeIsAttached(Node*) = 0;

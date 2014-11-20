@@ -43,7 +43,9 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
+#include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
@@ -278,7 +280,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
         return 0;
     AXObjectCache* cache = document->axObjectCache();
     ASSERT(cache);
-    return cache->getOrCreateAXObjectFromRenderView(document->renderView());
+    return toAXObjectCacheImpl(cache)->getOrCreate(document->renderView());
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)
