@@ -449,6 +449,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_TIME_ELAPSED_EXT",
     },
     {
+     0x6003,
+     "GL_GET_ERROR_QUERY_CHROMIUM",
+    },
+    {
      0x0C10,
      "GL_SCISSOR_BOX",
     },
@@ -1089,6 +1093,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_RGBA32F_EXT",
     },
     {
+     0x6004,
+     "GL_COMMANDS_ISSUED_CHROMIUM",
+    },
+    {
      0x813D,
      "GL_TEXTURE_MAX_LEVEL_APPLE",
     },
@@ -1126,7 +1134,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x84F5,
-     "GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM",
+     "GL_TEXTURE_RECTANGLE_ARB",
     },
     {
      0x882A,
@@ -1142,7 +1150,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x84F6,
-     "GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM",
+     "GL_TEXTURE_BINDING_RECTANGLE_ARB",
     },
     {
      0x80AB,
@@ -1151,6 +1159,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     {
      0x8E7D,
      "GL_MAX_PATCH_VERTICES_EXT",
+    },
+    {
+     0x6005,
+     "GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM",
     },
     {
      0x9105,
@@ -1193,6 +1205,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_ISOLINES_EXT",
     },
     {
+     0x6006,
+     "GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM",
+    },
+    {
      0x8A4A,
      "GL_SKIP_DECODE_EXT",
     },
@@ -1219,6 +1235,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     {
      0x92CE,
      "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTER_BUFFERS_EXT",
+    },
+    {
+     0x6007,
+     "GL_LATENCY_QUERY_CHROMIUM",
     },
     {
      0x8916,

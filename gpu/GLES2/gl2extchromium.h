@@ -200,7 +200,7 @@ typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUMPROC) (
 
 #ifndef GL_GET_ERROR_QUERY_CHROMIUM
 // TODO(gman): Get official numbers for this constants.
-#define GL_GET_ERROR_QUERY_CHROMIUM 0x84F3
+#define GL_GET_ERROR_QUERY_CHROMIUM 0x6003
 #endif
 #endif  /* GL_CHROMIUM_get_error_query */
 
@@ -256,7 +256,7 @@ typedef void (GL_APIENTRYP PFNGLBINDUNIFORMLOCATIONCHROMIUMPROC) (
 
 #ifndef GL_COMMANDS_ISSUED_CHROMIUM
 // TODO(gman): Get official numbers for this constants.
-#define GL_COMMANDS_ISSUED_CHROMIUM 0x84F2
+#define GL_COMMANDS_ISSUED_CHROMIUM 0x6004
 #endif
 #endif  /* GL_CHROMIUM_command_buffer_query */
 
@@ -367,10 +367,10 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 #define GL_CHROMIUM_async_pixel_transfers 1
 
 #ifndef GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM
-#define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM 0x84F5
+#define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM 0x6005
 #endif
 #ifndef GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM
-#define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM 0x84F6
+#define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM 0x6006
 #endif
 #endif  /* GL_CHROMIUM_async_pixel_transfers */
 
@@ -455,7 +455,7 @@ typedef GLboolean (GL_APIENTRYP PFNGLENABLEFEATURECHROMIUMPROC) (
 
 #ifndef GL_LATENCY_QUERY_CHROMIUM
 // TODO(gman): Get official numbers for these constants.
-#define GL_LATENCY_QUERY_CHROMIUM 0x84F4
+#define GL_LATENCY_QUERY_CHROMIUM 0x6007
 #endif
 #endif  /* GL_CHROMIUM_command_buffer_latency_query */
 

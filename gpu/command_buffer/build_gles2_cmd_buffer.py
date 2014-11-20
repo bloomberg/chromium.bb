@@ -8309,8 +8309,14 @@ extern const NameToFunc g_gles2_function_table[] = {
         if m:
           name = m.group(1)
           value = m.group(2)
-          if len(value) <= 10 and not value in dict:
-            dict[value] = name
+          if len(value) <= 10:
+            if not value in dict:
+              dict[value] = name
+            # check our own _CHROMIUM macro conflicts with khronos GL headers.
+            elif dict[value] != name and (name.endswith('_CHROMIUM') or
+                dict[value].endswith('_CHROMIUM')):
+              self.Error("code collision: %s and %s have the same code %s" %
+                         (dict[value], name, value))
 
     file = CHeaderWriter(filename)
     file.Write("static const GLES2Util::EnumToString "

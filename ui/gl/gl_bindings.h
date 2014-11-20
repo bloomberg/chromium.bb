@@ -116,17 +116,17 @@
 #define GL_QUERY_RESULT_AVAILABLE_EXT                    0x8867
 
 // GL_CHROMIUM_command_buffer_query
-#define GL_COMMANDS_ISSUED_CHROMIUM                      0x84F2
+#define GL_COMMANDS_ISSUED_CHROMIUM                      0x6004
 
 /* GL_CHROMIUM_get_error_query */
-#define GL_GET_ERROR_QUERY_CHROMIUM                      0x84F3
+#define GL_GET_ERROR_QUERY_CHROMIUM                      0x6003
 
 /* GL_CHROMIUM_command_buffer_latency_query */
-#define GL_LATENCY_QUERY_CHROMIUM                        0x84F4
+#define GL_LATENCY_QUERY_CHROMIUM                        0x6007
 
 /* GL_CHROMIUM_async_pixel_transfers */
-#define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM         0x84F5
-#define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM           0x84F6
+#define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM         0x6005
+#define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM           0x6006
 
 // GL_CHROMIUM_sync_query
 #define GL_COMMANDS_COMPLETED_CHROMIUM                   0x84F7
