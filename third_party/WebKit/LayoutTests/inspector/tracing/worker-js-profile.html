@@ -44,25 +44,33 @@ function test()
         "disabled-by-default-devtools.timeline.stack", true);
 
     var seenFunctions = new Set();
+    var allEvents = [];
     function processTracingEvents()
     {
         InspectorTest.addResult("Main thread");
         InspectorTest.tracingTimelineModel()._mainThreadEvents.forEach(processEvent);
         var threads = InspectorTest.tracingTimelineModel()._virtualThreads;
         for (var i = 0; i < threads.length; ++i) {
+            if (threads[i].name !== "WebCore: Worker")
+                continue;
             InspectorTest.addResult(threads[i].name);
             threads[i].events.forEach(processEvent);
         }
-        InspectorTest.assertTrue(seenFunctions.has("startSecondWorker"));
-        InspectorTest.assertTrue(seenFunctions.has("worker2.onmessage"));
+        if (!seenFunctions.has("worker2.onmessage")) {
+            InspectorTest.addResult("Frame is missing. Dumping the entire trace:");
+            allEvents.forEach(InspectorTest.addResult);
+        }
         InspectorTest.completeTest();
     }
 
     function processEvent(event)
     {
-        if (event.name !== WebInspector.TimelineModel.RecordType.JSFrame)
-            return;
-        seenFunctions.add(event.args.data.functionName);
+        var eventString = event.name;
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
+            seenFunctions.add(event.args.data.functionName);
+            eventString = eventString + ": " + event.args.data.functionName;
+        }
+        allEvents.push(eventString);
     }
 }
 
