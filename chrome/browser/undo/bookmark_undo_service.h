@@ -22,7 +22,7 @@ class BookmarkUndoOperation;
 
 // BookmarkUndoService is owned by the profile, and is responsible for observing
 // BookmarkModel changes in order to provide an undo for those changes.
-class BookmarkUndoService : public BaseBookmarkModelObserver,
+class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
                             public KeyedService,
                             public BookmarkRenumberObserver {
  public:
@@ -32,7 +32,7 @@ class BookmarkUndoService : public BaseBookmarkModelObserver,
   UndoManager* undo_manager() { return &undo_manager_; }
 
  private:
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override {}
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;

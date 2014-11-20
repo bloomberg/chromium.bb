@@ -38,7 +38,7 @@ class Widget;
 // MenuDelegate as its assumed another class is going to forward the appropriate
 // methods to this class. Doing so allows this class to be used for both menus
 // on the bookmark bar and the bookmarks in the wrench menu.
-class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
+class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
                              public BookmarkContextMenuObserver {
  public:
   enum ShowOptions {

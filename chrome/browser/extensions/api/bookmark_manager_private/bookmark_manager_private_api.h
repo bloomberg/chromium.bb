@@ -30,13 +30,14 @@ class WebContents;
 
 namespace extensions {
 
-class BookmarkManagerPrivateEventRouter : public BaseBookmarkModelObserver {
+class BookmarkManagerPrivateEventRouter
+    : public bookmarks::BaseBookmarkModelObserver {
  public:
   BookmarkManagerPrivateEventRouter(content::BrowserContext* browser_context,
                                     BookmarkModel* bookmark_model);
   ~BookmarkManagerPrivateEventRouter() override;
 
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,

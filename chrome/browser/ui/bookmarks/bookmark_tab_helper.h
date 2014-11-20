@@ -21,7 +21,7 @@ class WebContents;
 
 // Per-tab class to manage bookmarks.
 class BookmarkTabHelper
-    : public BaseBookmarkModelObserver,
+    : public bookmarks::BaseBookmarkModelObserver,
       public content::WebContentsObserver,
       public content::WebContentsUserData<BookmarkTabHelper> {
  public:
@@ -65,7 +65,7 @@ class BookmarkTabHelper
   // the delegate is notified.
   void UpdateStarredStateForCurrentURL();
 
-  // Overridden from BaseBookmarkModelObserver:
+  // Overridden from bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkNodeAdded(BookmarkModel* model,

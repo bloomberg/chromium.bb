@@ -25,7 +25,7 @@ class Profile;
 // The delegate to fetch bookmarks information for the Android native
 // bookmark page. This fetches the bookmarks, title, urls, folder
 // hierarchy.
-class BookmarksBridge : public BaseBookmarkModelObserver,
+class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                         public PartnerBookmarksShim::Observer {
  public:
   BookmarksBridge(JNIEnv* env, jobject obj, jobject j_profile);
@@ -175,7 +175,7 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   bool IsFolderAvailable(const BookmarkNode* folder) const;
   void NotifyIfDoneLoading();
 
-  // Override BaseBookmarkModelObserver.
+  // Override bookmarks::BaseBookmarkModelObserver.
   // Called when there are changes to the bookmark model that don't trigger
   // any of the other callback methods. For example, this is called when
   // partner bookmarks change.

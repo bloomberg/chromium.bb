@@ -272,7 +272,8 @@ class FakeServerChange {
   syncer::ChangeRecordList changes_;
 };
 
-class ExtensiveChangesBookmarkModelObserver : public BaseBookmarkModelObserver {
+class ExtensiveChangesBookmarkModelObserver
+    : public bookmarks::BaseBookmarkModelObserver {
  public:
   ExtensiveChangesBookmarkModelObserver()
       : started_count_(0),

@@ -114,7 +114,7 @@ class BookmarksAPI : public BrowserContextKeyedAPI,
 };
 
 class BookmarksFunction : public ChromeAsyncExtensionFunction,
-                          public BaseBookmarkModelObserver {
+                          public bookmarks::BaseBookmarkModelObserver {
  public:
   // AsyncExtensionFunction:
   bool RunAsync() override;
@@ -159,7 +159,7 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   bool CanBeModified(const BookmarkNode* node);
 
  private:
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
 

@@ -34,7 +34,7 @@ class EnhancedBookmarkModelObserver;
 // Wrapper around BookmarkModel providing utility functions for enhanced
 // bookmarks.
 class EnhancedBookmarkModel : public KeyedService,
-                              public BaseBookmarkModelObserver {
+                              public bookmarks::BaseBookmarkModelObserver {
  public:
   EnhancedBookmarkModel(BookmarkModel* bookmark_model,
                         const std::string& version);
@@ -138,7 +138,7 @@ class EnhancedBookmarkModel : public KeyedService,
   typedef std::map<std::string, const BookmarkNode*> IdToNodeMap;
   typedef std::map<const BookmarkNode*, std::string> NodeToIdMap;
 
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkNodeAdded(BookmarkModel* model,

@@ -37,7 +37,7 @@ class Widget;
 // each item in the menu represents a bookmark.
 // BookmarkMenuController deletes itself as necessary, although the menu can
 // be explicitly hidden by way of the Cancel method.
-class BookmarkMenuController : public BaseBookmarkModelObserver,
+class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
                                public views::MenuDelegate {
  public:
   // Creates a BookmarkMenuController showing the children of |node| starting
@@ -110,7 +110,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                                       views::MenuButton** button) override;
   int GetMaxWidthForMenu(views::MenuItemView* view) override;
 
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
 
  private:

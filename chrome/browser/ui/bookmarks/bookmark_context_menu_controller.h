@@ -40,8 +40,9 @@ class BookmarkContextMenuControllerDelegate {
 
 // BookmarkContextMenuController creates and manages state for the context menu
 // shown for any bookmark item.
-class BookmarkContextMenuController : public BaseBookmarkModelObserver,
-                                      public ui::SimpleMenuModel::Delegate {
+class BookmarkContextMenuController
+    : public bookmarks::BaseBookmarkModelObserver,
+      public ui::SimpleMenuModel::Delegate {
  public:
   // Creates the bookmark context menu.
   // |browser| is used to open the bookmark manager and is NULL in tests.
@@ -85,7 +86,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   // Adds a checkable item to the menu.
   void AddCheckboxItem(int id, int localization_id);
 
-  // Overridden from BaseBookmarkModelObserver:
+  // Overridden from bookmarks::BaseBookmarkModelObserver:
   // Any change to the model results in closing the menu.
   void BookmarkModelChanged() override;
 

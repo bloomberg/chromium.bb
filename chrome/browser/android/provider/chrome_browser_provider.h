@@ -30,7 +30,7 @@ class Statement;
 }
 
 // This class implements the native methods of ChromeBrowserProvider.java
-class ChromeBrowserProvider : public BaseBookmarkModelObserver,
+class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                               public content::NotificationObserver,
                               public history::HistoryServiceObserver {
  public:
@@ -177,7 +177,7 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
  private:
   virtual ~ChromeBrowserProvider();
 
-  // Override BaseBookmarkModelObserver.
+  // Override bookmarks::BaseBookmarkModelObserver.
   virtual void BookmarkModelChanged() override;
   virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
   virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
@@ -185,14 +185,14 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
   // Deals with updates to the history service.
   void OnHistoryChanged();
 
-  // Override HistoryServiceObserver.
+  // Override history::HistoryServiceObserver.
   virtual void OnURLVisited(HistoryService* history_service,
                             ui::PageTransition transition,
                             const history::URLRow& row,
                             const history::RedirectList& redirects,
                             base::Time visit_time) override;
 
-  // Override NotificationObserver.
+  // Override content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;

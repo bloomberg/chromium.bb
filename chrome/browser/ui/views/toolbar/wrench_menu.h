@@ -36,7 +36,7 @@ class View;
 
 // WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
 class WrenchMenu : public views::MenuDelegate,
-                   public BaseBookmarkModelObserver,
+                   public bookmarks::BaseBookmarkModelObserver,
                    public content::NotificationObserver {
  public:
   enum RunFlags {
@@ -102,7 +102,7 @@ class WrenchMenu : public views::MenuDelegate,
   void WillHideMenu(views::MenuItemView* menu) override;
   bool ShouldCloseOnDragComplete() override;
 
-  // BaseBookmarkModelObserver overrides:
+  // bookmarks::BaseBookmarkModelObserver overrides:
   void BookmarkModelChanged() override;
 
   // content::NotificationObserver overrides:

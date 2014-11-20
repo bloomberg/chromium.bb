@@ -22,7 +22,7 @@ class HistoryServiceFactory;
 class Profile;
 
 class ChromeBookmarkClient : public bookmarks::BookmarkClient,
-                             public BaseBookmarkModelObserver {
+                             public bookmarks::BaseBookmarkModelObserver {
  public:
   explicit ChromeBookmarkClient(Profile* profile);
   ~ChromeBookmarkClient() override;
@@ -64,7 +64,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   friend class HistoryServiceFactory;
   void SetHistoryService(HistoryService* history_service);
 
-  // BaseBookmarkModelObserver:
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,

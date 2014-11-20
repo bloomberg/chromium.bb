@@ -11,7 +11,8 @@
 
 class Profile;
 
-class BookmarkModelLoadedObserver : public BaseBookmarkModelObserver {
+class BookmarkModelLoadedObserver
+    : public bookmarks::BaseBookmarkModelObserver {
  public:
   explicit BookmarkModelLoadedObserver(Profile* profile);
 

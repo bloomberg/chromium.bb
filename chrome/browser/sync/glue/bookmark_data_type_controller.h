@@ -18,16 +18,16 @@ namespace browser_sync {
 // A class that manages the startup and shutdown of bookmark sync.
 class BookmarkDataTypeController : public FrontendDataTypeController,
                                    public content::NotificationObserver,
-                                   public BaseBookmarkModelObserver {
+                                   public bookmarks::BaseBookmarkModelObserver {
  public:
   BookmarkDataTypeController(ProfileSyncComponentsFactory* profile_sync_factory,
                              Profile* profile,
                              ProfileSyncService* sync_service);
 
-  // FrontendDataTypeController interface.
+  // FrontendDataTypeController:
   syncer::ModelType type() const override;
 
-  // content::NotificationObserver interface.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -35,12 +35,12 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
  private:
   ~BookmarkDataTypeController() override;
 
-  // FrontendDataTypeController interface.
+  // FrontendDataTypeController:
   bool StartModels() override;
   void CleanUpState() override;
   void CreateSyncComponents() override;
 
-  // BaseBookmarkModelObserver interface.
+  // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* model) override;

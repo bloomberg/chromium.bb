@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 
+namespace bookmarks {
+
 void BaseBookmarkModelObserver::BookmarkModelLoaded(BookmarkModel* model,
                                                     bool ids_reassigned) {}
 
@@ -57,3 +59,5 @@ void BaseBookmarkModelObserver::BookmarkNodeChildrenReordered(
     const BookmarkNode* node) {
   BookmarkModelChanged();
 }
+
+}  // namespace bookmarks
