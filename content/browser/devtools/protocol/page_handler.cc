@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/devtools/protocol/usage_and_quota_query.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
@@ -46,7 +47,7 @@ static const char kJpeg[] = "jpeg";
 static int kDefaultScreenshotQuality = 80;
 static int kFrameRetryDelayMs = 100;
 static int kCaptureRetryLimit = 2;
-static int kMaxScreencastFramesInFlight = 4;
+static int kMaxScreencastFramesInFlight = 2;
 
 void QueryUsageAndQuotaCompletedOnIOThread(
     const UsageAndQuotaQuery::Callback& callback,
@@ -64,6 +65,42 @@ void QueryUsageAndQuotaOnIOThread(
       security_origin,
       base::Bind(&QueryUsageAndQuotaCompletedOnIOThread,
                  callback));
+}
+
+std::string EncodeScreencastFrame(const SkBitmap& bitmap,
+                                  const std::string& format,
+                                  int quality) {
+  std::vector<unsigned char> data;
+  SkAutoLockPixels lock_image(bitmap);
+  bool encoded;
+  if (format == kPng) {
+    encoded = gfx::PNGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::PNGCodec::FORMAT_SkBitmap,
+        gfx::Size(bitmap.width(), bitmap.height()),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        false, std::vector<gfx::PNGCodec::Comment>(), &data);
+  } else if (format == kJpeg) {
+    encoded = gfx::JPEGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::JPEGCodec::FORMAT_SkBitmap,
+        bitmap.width(),
+        bitmap.height(),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        quality, &data);
+  } else {
+    encoded = false;
+  }
+
+  if (!encoded)
+    return std::string();
+
+  std::string base_64_data;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
+      &base_64_data);
+
+  return base_64_data;
 }
 
 }  // namespace
@@ -477,16 +514,12 @@ void PageHandler::InnerSwapCompositorFrame() {
         snapshot_size_dip,
         base::Bind(&PageHandler::ScreencastFrameCaptured,
                    weak_factory_.GetWeakPtr(),
-                   screencast_format_,
-                   screencast_quality_,
                    last_compositor_frame_metadata_),
         kN32_SkColorType);
   }
 }
 
 void PageHandler::ScreencastFrameCaptured(
-    const std::string& format,
-    int quality,
     const cc::CompositorFrameMetadata& metadata,
     const SkBitmap& bitmap,
     ReadbackResponse response) {
@@ -501,39 +534,20 @@ void PageHandler::ScreencastFrameCaptured(
     }
     return;
   }
+  base::PostTaskAndReplyWithResult(
+      base::WorkerPool::GetTaskRunner(true).get(),
+      FROM_HERE,
+      base::Bind(&EncodeScreencastFrame,
+                 bitmap, screencast_format_, screencast_quality_),
+      base::Bind(&PageHandler::ScreencastFrameEncoded,
+                 weak_factory_.GetWeakPtr(), metadata));
+}
 
-  std::vector<unsigned char> data;
-  SkAutoLockPixels lock_image(bitmap);
-  bool encoded;
-  if (format == kPng) {
-    encoded = gfx::PNGCodec::Encode(
-        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-        gfx::PNGCodec::FORMAT_SkBitmap,
-        gfx::Size(bitmap.width(), bitmap.height()),
-        bitmap.width() * bitmap.bytesPerPixel(),
-        false, std::vector<gfx::PNGCodec::Comment>(), &data);
-  } else if (format == kJpeg) {
-    encoded = gfx::JPEGCodec::Encode(
-        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-        gfx::JPEGCodec::FORMAT_SkBitmap,
-        bitmap.width(),
-        bitmap.height(),
-        bitmap.width() * bitmap.bytesPerPixel(),
-        quality, &data);
-  } else {
-    encoded = false;
-  }
-
-  if (!encoded)
-    return;
-
-  std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
-      &base_64_data);
-
+void PageHandler::ScreencastFrameEncoded(
+    const cc::CompositorFrameMetadata& metadata,
+    const std::string& data) {
   // Consider metadata empty in case it has no device scale factor.
-  if (metadata.device_scale_factor == 0 || !host_)
+  if (metadata.device_scale_factor == 0 || !host_ || data.empty())
     return;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -552,7 +566,7 @@ void PageHandler::ScreencastFrameCaptured(
           ->set_scroll_offset_x(metadata.root_scroll_offset.x())
           ->set_scroll_offset_y(metadata.root_scroll_offset.y());
   client_->ScreencastFrame(ScreencastFrameParams::Create()
-      ->set_data(base_64_data)
+      ->set_data(data)
       ->set_metadata(param_metadata)
       ->set_frame_number(++screencast_frame_sent_));
 }

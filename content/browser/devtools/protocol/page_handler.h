@@ -90,11 +90,11 @@ class PageHandler {
 
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
-  void ScreencastFrameCaptured(const std::string& format,
-                               int quality,
-                               const cc::CompositorFrameMetadata& metadata,
+  void ScreencastFrameCaptured(const cc::CompositorFrameMetadata& metadata,
                                const SkBitmap& bitmap,
                                ReadbackResponse response);
+  void ScreencastFrameEncoded(const cc::CompositorFrameMetadata& metadata,
+                              const std::string& data);
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
