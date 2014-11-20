@@ -33,7 +33,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
                          NULL,
                          NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
-  registry()->AddChildProcessSender(mock_render_process_id, this);
+  registry()->AddChildProcessSender(mock_render_process_id, this, nullptr);
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
@@ -44,7 +44,7 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(
     const GURL& pattern,
     int process_id) {
-  registry()->AddChildProcessSender(process_id, this);
+  registry()->AddChildProcessSender(process_id, this, nullptr);
   wrapper_->process_manager()->AddProcessReferenceToPattern(
       pattern, process_id);
 }

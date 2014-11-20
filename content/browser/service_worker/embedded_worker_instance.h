@@ -30,6 +30,7 @@ class Message;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 struct ServiceWorkerFetchRequest;
 
@@ -98,6 +99,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   int worker_devtools_agent_route_id() const {
     return worker_devtools_agent_route_id_;
   }
+  MessagePortMessageFilter* message_port_message_filter() const;
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);

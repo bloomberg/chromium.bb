@@ -122,7 +122,7 @@ void ServiceWorkerDispatcherHost::Init(
 
   context_wrapper_ = context_wrapper;
   GetContext()->embedded_worker_registry()->AddChildProcessSender(
-      render_process_id_, this);
+      render_process_id_, this, message_port_message_filter_);
 }
 
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
@@ -470,13 +470,8 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     return;
   }
 
-  std::vector<int> new_routing_ids;
-  message_port_message_filter_->UpdateMessagePortsWithNewRoutes(
-      sent_message_port_ids, &new_routing_ids);
-  handle->version()->SendMessage(
-      ServiceWorkerMsg_MessageToWorker(message,
-                                       sent_message_port_ids,
-                                       new_routing_ids),
+  handle->version()->DispatchMessageEvent(
+      message, sent_message_port_ids,
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 

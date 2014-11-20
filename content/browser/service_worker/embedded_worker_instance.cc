@@ -340,6 +340,11 @@ void EmbeddedWorkerInstance::OnReportConsoleMessage(
           source_identifier, message_level, message, line_number, source_url));
 }
 
+MessagePortMessageFilter* EmbeddedWorkerInstance::message_port_message_filter()
+    const {
+  return registry_->MessagePortMessageFilterForProcess(process_id_);
+}
+
 void EmbeddedWorkerInstance::AddListener(Listener* listener) {
   listener_list_.AddObserver(listener);
 }

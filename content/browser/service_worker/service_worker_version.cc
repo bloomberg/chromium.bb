@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -244,6 +245,30 @@ void ServiceWorkerVersion::SendMessage(
   }
 
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(message);
+  RunSoon(base::Bind(callback, status));
+}
+
+void ServiceWorkerVersion::DispatchMessageEvent(
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const StatusCallback& callback) {
+  if (running_status() != RUNNING) {
+    // Schedule calling this method after starting the worker.
+    StartWorker(base::Bind(
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
+        base::Bind(&self::DispatchMessageEvent, weak_factory_.GetWeakPtr(),
+                   message, sent_message_port_ids, callback)));
+    return;
+  }
+
+  MessagePortMessageFilter* filter =
+      embedded_worker_->message_port_message_filter();
+  std::vector<int> new_routing_ids;
+  filter->UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
+                                          &new_routing_ids);
+  ServiceWorkerStatusCode status =
+      embedded_worker_->SendMessage(ServiceWorkerMsg_MessageToWorker(
+          message, sent_message_port_ids, new_routing_ids));
   RunSoon(base::Bind(callback, status));
 }
 

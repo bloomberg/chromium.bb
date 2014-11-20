@@ -155,6 +155,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // message is successfully sent or not.
   void SendMessage(const IPC::Message& message, const StatusCallback& callback);
 
+  // Sends a message event to the associated embedded worker.
+  void DispatchMessageEvent(const base::string16& message,
+                            const std::vector<int>& sent_message_port_ids,
+                            const StatusCallback& callback);
+
   // Sends install event to the associated embedded worker and asynchronously
   // calls |callback| when it errors out or it gets a response from the worker
   // to notify install completion.
