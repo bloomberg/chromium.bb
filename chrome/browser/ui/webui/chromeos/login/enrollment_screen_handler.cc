@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -117,6 +118,7 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       network_state_informer_(network_state_informer),
       error_screen_actor_(error_screen_actor),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
+      auth_extension_(nullptr),
       weak_ptr_factory_(this) {
   set_async_assets_load_id(OobeUI::kScreenOobeEnrollment);
   DCHECK(network_state_informer_.get());
@@ -173,6 +175,11 @@ void EnrollmentScreenHandler::PrepareToShow() {
 }
 
 void EnrollmentScreenHandler::Show() {
+  if (!auth_extension_) {
+    Profile* signin_profile = ProfileHelper::GetSigninProfile();
+    auth_extension_.reset(new ScopedGaiaAuthExtension(signin_profile));
+  }
+
   if (!page_is_ready())
     show_on_init_ = true;
   else
