@@ -31,17 +31,6 @@
 #include "weston-test-client-helper.h"
 #include "presentation_timing-client-protocol.h"
 
-static inline void *
-xzalloc(size_t size)
-{
-	void *p;
-
-	p = calloc(1, size);
-	assert(p);
-
-	return p;
-}
-
 static struct presentation *
 get_presentation(struct client *client)
 {

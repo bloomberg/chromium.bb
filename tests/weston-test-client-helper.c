@@ -32,17 +32,6 @@
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
-static inline void *
-xzalloc(size_t size)
-{
-	void *p;
-
-	p = calloc(1, size);
-	assert(p);
-
-	return p;
-}
-
 int
 surface_contains(struct surface *surface, int x, int y)
 {
