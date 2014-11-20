@@ -5,28 +5,23 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
+#include "base/tuple.h"
 #include "sandbox/sandbox_export.h"
 
 struct sock_filter;
 
 namespace sandbox {
-struct BasicBlock;
-struct Instruction;
-
-typedef std::vector<Instruction*> Instructions;
-typedef std::vector<BasicBlock*> BasicBlocks;
-typedef std::map<const Instruction*, int> BranchTargets;
-typedef std::map<const Instruction*, BasicBlock*> TargetsToBlocks;
-typedef std::map<const BasicBlock*, int> IncomingBranches;
 
 // The code generator implements a basic assembler that can convert a
 // graph of BPF instructions into a well-formed array of BPF
-// instructions.  Most notably, it ensures that jumps are always
+// instructions. Most notably, it ensures that jumps are always
 // forward and don't exceed the limit of 255 instructions imposed by
 // the instruction set.
 //
@@ -62,19 +57,18 @@ class SANDBOX_EXPORT CodeGen {
   typedef std::vector<struct sock_filter> Program;
 
   // Node represents a node within the instruction DAG being compiled.
-  // Nodes are owned by the CodeGen object and need not be explicitly
-  // deleted.
-  using Node = Instruction*;
+  using Node = Program::size_type;
 
   // kNullNode represents the "null" node; i.e., the reserved node
   // value guaranteed to not equal any actual nodes.
-  static const Node kNullNode;
+  static const Node kNullNode = -1;
 
   CodeGen();
   ~CodeGen();
 
   // MakeInstruction creates a node representing the specified
-  // instruction. For details on the possible parameters refer to
+  // instruction, or returns and existing equivalent node if one
+  // exists. For details on the possible parameters refer to
   // https://www.kernel.org/doc/Documentation/networking/filter.txt.
   // TODO(mdempsky): Reconsider using default arguments here.
   Node MakeInstruction(uint16_t code,
@@ -82,72 +76,39 @@ class SANDBOX_EXPORT CodeGen {
                        Node jt = kNullNode,
                        Node jf = kNullNode);
 
-  // Compile linearizes the instruction DAG into a BPF program that
-  // can be executed by a BPF virtual machine. Please note that this
-  // function modifies the graph in place and must therefore only be
-  // called once per graph.
+  // Compile linearizes the instruction DAG rooted at |head| into a
+  // program that can be executed by a BPF virtual machine.
   void Compile(Node head, Program* program);
 
  private:
-  friend class CodeGenUnittestHelper;
+  using MemoKey = Tuple4<uint16_t, uint32_t, Node, Node>;
+  struct MemoKeyLess {
+    bool operator()(const MemoKey& lhs, const MemoKey& rhs) const;
+  };
 
-  // Find all the instructions that are the target of BPF_JMPs.
-  void FindBranchTargets(const Instruction& instructions,
-                         BranchTargets* branch_targets);
+  // AppendInstruction adds a new instruction, ensuring that |jt| and
+  // |jf| are within range as necessary for |code|.
+  Node AppendInstruction(uint16_t code, uint32_t k, Node jt, Node jf);
 
-  // Combine instructions between "head" and "tail" into a new basic block.
-  // Basic blocks are defined as sequences of instructions whose only branch
-  // target is the very first instruction; furthermore, any BPF_JMP or BPF_RET
-  // instruction must be at the very end of the basic block.
-  BasicBlock* MakeBasicBlock(Instruction* head, Instruction* tail);
+  // WithinRange returns a node equivalent to |next| that is at most
+  // |range| instructions away from the (logical) beginning of the
+  // program.
+  Node WithinRange(Node next, size_t range);
 
-  // Creates a basic block and adds it to "basic_blocks"; sets "first_block"
-  // if it is still NULL.
-  void AddBasicBlock(Instruction* head,
-                     Instruction* tail,
-                     const BranchTargets& branch_targets,
-                     TargetsToBlocks* basic_blocks,
-                     BasicBlock** first_block);
+  // Append appends a new instruction to the physical end (i.e.,
+  // logical beginning) of |program_|.
+  Node Append(uint16_t code, uint32_t k, size_t jt, size_t jf);
 
-  // Cuts the DAG of instructions into basic blocks.
-  BasicBlock* CutGraphIntoBasicBlocks(Instruction* instructions,
-                                      const BranchTargets& branch_targets,
-                                      TargetsToBlocks* blocks);
+  // Offset returns how many instructions exist in |program_| after |target|.
+  size_t Offset(Node target) const;
 
-  // Find common tail sequences of basic blocks and coalesce them.
-  void MergeTails(TargetsToBlocks* blocks);
+  // NOTE: program_ is the compiled program in *reverse*, so that
+  // indices remain stable as we add instructions.
+  Program program_;
 
-  // For each basic block, compute the number of incoming branches.
-  void ComputeIncomingBranches(BasicBlock* block,
-                               const TargetsToBlocks& targets_to_blocks,
-                               IncomingBranches* incoming_branches);
+  std::map<MemoKey, Node, MemoKeyLess> memos_;
 
-  // Topologically sort the basic blocks so that all jumps are forward jumps.
-  // This is a requirement for any well-formed BPF program.
-  void TopoSortBasicBlocks(BasicBlock* first_block,
-                           const TargetsToBlocks& blocks,
-                           BasicBlocks* basic_blocks);
-
-  // Convert jt_ptr_ and jf_ptr_ fields in BPF_JMP instructions to valid
-  // jt_ and jf_ jump offsets. This can result in BPF_JA instructions being
-  // inserted, if we need to jump over more than 256 instructions.
-  void ComputeRelativeJumps(BasicBlocks* basic_blocks,
-                            const TargetsToBlocks& targets_to_blocks);
-
-  // Concatenate instructions from all basic blocks into a BPF program that
-  // can be passed to the kernel.
-  void ConcatenateBasicBlocks(const BasicBlocks&, Program* program);
-
-  // We stick all instructions and basic blocks into pools that get destroyed
-  // when the CodeGen object is destroyed. This way, we neither need to worry
-  // about explicitly managing ownership, nor do we need to worry about using
-  // smart pointers in the presence of circular references.
-  Instructions instructions_;
-  BasicBlocks basic_blocks_;
-
-  // Compile() must only ever be called once as it makes destructive changes
-  // to the DAG.
-  bool compiled_;
+  DISALLOW_COPY_AND_ASSIGN(CodeGen);
 };
 
 }  // namespace sandbox

@@ -116,13 +116,7 @@ class ProgramTest : public ::testing::Test {
     CodeGen::Node res = gen_.MakeInstruction(code, k, jt, jf);
     EXPECT_NE(CodeGen::kNullNode, res);
 
-    Hash digest;
-    if (code == BPF_JMP + BPF_JA) {
-      // TODO(mdempsky): Disallow use of JA.
-      digest = Lookup(jt);
-    } else {
-      digest = Hash(code, k, Lookup(jt), Lookup(jf));
-    }
+    Hash digest(code, k, Lookup(jt), Lookup(jf));
     auto it = node_hashes_.insert(std::make_pair(res, digest));
     EXPECT_EQ(digest, it.first->second);
 
@@ -224,12 +218,12 @@ TEST_F(ProgramTest, Complex) {
   //    RET 42                           (insn3+)
   CodeGen::Node insn0 = MakeInstruction(BPF_RET + BPF_K, 42);
   CodeGen::Node insn1 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42, insn0);
-  CodeGen::Node insn2 = MakeInstruction(BPF_JMP + BPF_JA, 0, insn1);
+  CodeGen::Node insn2 = insn1;  // Implicit JUMP
 
-  // We explicitly duplicate instructions so that MergeTails() can coalesce
-  // them later.
+  // We explicitly duplicate instructions to test that they're merged.
   CodeGen::Node insn3 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42,
                                         MakeInstruction(BPF_RET + BPF_K, 42));
+  EXPECT_EQ(insn2, insn3);
 
   CodeGen::Node insn4 =
       MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn2, insn3);
@@ -326,6 +320,51 @@ TEST_F(ProgramTest, ConfusingTailsMergeable) {
   CodeGen::Node i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
 
   RunTest(i0);
+}
+
+TEST_F(ProgramTest, InstructionFolding) {
+  // Check that simple instructions are folded as expected.
+  CodeGen::Node a = MakeInstruction(BPF_RET + BPF_K, 0);
+  EXPECT_EQ(a, MakeInstruction(BPF_RET + BPF_K, 0));
+  CodeGen::Node b = MakeInstruction(BPF_RET + BPF_K, 1);
+  EXPECT_EQ(a, MakeInstruction(BPF_RET + BPF_K, 0));
+  EXPECT_EQ(b, MakeInstruction(BPF_RET + BPF_K, 1));
+  EXPECT_EQ(b, MakeInstruction(BPF_RET + BPF_K, 1));
+
+  // Check that complex sequences are folded too.
+  CodeGen::Node c =
+      MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0,
+                      MakeInstruction(BPF_JMP + BPF_JSET + BPF_K, 0x100, a, b));
+  EXPECT_EQ(c, MakeInstruction(
+                   BPF_LD + BPF_W + BPF_ABS, 0,
+                   MakeInstruction(BPF_JMP + BPF_JSET + BPF_K, 0x100, a, b)));
+
+  RunTest(c);
+}
+
+TEST_F(ProgramTest, FarBranches) {
+  // BPF instructions use 8-bit fields for branch offsets, which means
+  // branch targets must be within 255 instructions of the branch
+  // instruction. CodeGen abstracts away this detail by inserting jump
+  // instructions as needed, which we test here by generating programs
+  // that should trigger any interesting boundary conditions.
+
+  // Populate with 260 initial instruction nodes.
+  std::vector<CodeGen::Node> nodes;
+  nodes.push_back(MakeInstruction(BPF_RET + BPF_K, 0));
+  for (size_t i = 1; i < 260; ++i) {
+    nodes.push_back(
+        MakeInstruction(BPF_ALU + BPF_ADD + BPF_K, i, nodes.back()));
+  }
+
+  // Exhaustively test branch offsets near BPF's limits.
+  for (size_t jt = 250; jt < 260; ++jt) {
+    for (size_t jf = 250; jf < 260; ++jf) {
+      nodes.push_back(MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 0,
+                                      nodes.rbegin()[jt], nodes.rbegin()[jf]));
+      RunTest(nodes.back());
+    }
+  }
 }
 
 }  // namespace
