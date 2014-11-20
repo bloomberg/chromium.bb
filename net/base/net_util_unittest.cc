@@ -1146,7 +1146,7 @@ bool FillAdapterAddress(IP_ADAPTER_ADDRESSES* adapter_address,
                         const IPAddressNumber& ip_netmask,
                         sockaddr_storage sock_addrs[2]) {
   adapter_address->AdapterName = const_cast<char*>(ifname);
-  adapter_address->FriendlyName = L"interface";
+  adapter_address->FriendlyName = const_cast<PWCHAR>(L"interface");
   adapter_address->IfType = IF_TYPE_ETHERNET_CSMACD;
   adapter_address->OperStatus = IfOperStatusUp;
   adapter_address->FirstUnicastAddress->DadState = IpDadStatePreferred;
@@ -1292,7 +1292,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
       addresses /* sock_addrs */));
   adapter_address.FirstUnicastAddress->PreferredLifetime = 0;
-  adapter_address.FriendlyName = L"FriendlyInterfaceName";
+  adapter_address.FriendlyName = const_cast<PWCHAR>(L"FriendlyInterfaceName");
   EXPECT_TRUE(net::internal::GetNetworkListImpl(
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
