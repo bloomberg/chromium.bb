@@ -21,6 +21,10 @@ void FakePolicyWatcher::SetPolicies(const base::DictionaryValue* policies) {
   UpdatePolicies(policies);
 }
 
+void FakePolicyWatcher::SignalTransientErrorForTest() {
+  SignalTransientPolicyError();
+}
+
 void FakePolicyWatcher::StartWatchingInternal() {
 }
 

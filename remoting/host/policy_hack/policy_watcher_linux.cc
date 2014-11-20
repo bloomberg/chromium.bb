@@ -186,6 +186,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     } else {
       // A failure to load policy definitions is probably temporary, so try
       // again soon.
+      SignalTransientPolicyError();
       ScheduleReloadTask(base::TimeDelta::FromSeconds(kSettleIntervalSeconds));
     }
   }

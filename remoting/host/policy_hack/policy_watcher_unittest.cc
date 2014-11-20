@@ -24,8 +24,12 @@ class PolicyWatcherTest : public testing::Test {
 
   void SetUp() override {
     message_loop_proxy_ = base::MessageLoopProxy::current();
-    policy_callback_ = base::Bind(&MockPolicyCallback::OnPolicyUpdate,
-                                  base::Unretained(&mock_policy_callback_));
+    policy_updated_callback_ = base::Bind(
+        &MockPolicyCallback::OnPolicyUpdate,
+        base::Unretained(&mock_policy_callback_));
+    policy_error_callback_ = base::Bind(
+        &MockPolicyCallback::OnPolicyError,
+        base::Unretained(&mock_policy_callback_));
     policy_watcher_.reset(new FakePolicyWatcher(message_loop_proxy_));
     nat_true_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
     nat_false_.SetBoolean(PolicyWatcher::kNatPolicyName, false);
@@ -94,7 +98,9 @@ class PolicyWatcherTest : public testing::Test {
 
  protected:
   void StartWatching() {
-    policy_watcher_->StartWatching(policy_callback_);
+    policy_watcher_->StartWatching(
+        policy_updated_callback_,
+        policy_error_callback_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -112,7 +118,8 @@ class PolicyWatcherTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockPolicyCallback mock_policy_callback_;
-  PolicyWatcher::PolicyCallback policy_callback_;
+  PolicyWatcher::PolicyUpdatedCallback policy_updated_callback_;
+  PolicyWatcher::PolicyErrorCallback policy_error_callback_;
   scoped_ptr<FakePolicyWatcher> policy_watcher_;
   base::DictionaryValue empty_;
   base::DictionaryValue nat_true_;
@@ -401,6 +408,43 @@ TEST_F(PolicyWatcherTest, UdpPortRange) {
   policy_watcher_->SetPolicies(&empty_);
   policy_watcher_->SetPolicies(&port_range_full_);
   policy_watcher_->SetPolicies(&port_range_empty_);
+  StopWatching();
+}
+
+const int kMaxTransientErrorRetries = 5;
+
+TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
+  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
+
+  StartWatching();
+  policy_watcher_->SignalTransientErrorForTest();
+  StopWatching();
+}
+
+TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
+  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr());
+
+  StartWatching();
+  for (int i = 0; i < kMaxTransientErrorRetries; i++) {
+    policy_watcher_->SignalTransientErrorForTest();
+  }
+  StopWatching();
+}
+
+TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
+  testing::InSequence s;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_, OnPolicyErrorPtr()).Times(0);
+
+  StartWatching();
+  for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
+    policy_watcher_->SignalTransientErrorForTest();
+  }
+  policy_watcher_->SetPolicies(&nat_true_);
+  for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
+    policy_watcher_->SignalTransientErrorForTest();
+  }
   StopWatching();
 }
 
