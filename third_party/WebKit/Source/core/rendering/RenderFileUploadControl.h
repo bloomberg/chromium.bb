@@ -52,7 +52,7 @@ private:
     virtual void updateFromElement() override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
 
     int maxFilenameWidth() const;
 

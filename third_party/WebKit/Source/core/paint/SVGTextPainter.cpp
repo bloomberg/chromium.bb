@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void SVGTextPainter::paint(PaintInfo& paintInfo)
+void SVGTextPainter::paint(const PaintInfo& paintInfo)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;

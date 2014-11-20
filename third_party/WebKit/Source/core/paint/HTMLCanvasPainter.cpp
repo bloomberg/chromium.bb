@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void HTMLCanvasPainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     GraphicsContext* context = paintInfo.context;
 

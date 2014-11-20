@@ -98,7 +98,7 @@ bool RenderSVGContainer::selfWillPaint()
     return resources && resources->filter();
 }
 
-void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGContainerPainter(*this).paint(paintInfo);
 }

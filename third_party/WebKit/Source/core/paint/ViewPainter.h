@@ -16,8 +16,8 @@ class ViewPainter {
 public:
     ViewPainter(RenderView& renderView) : m_renderView(renderView) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
-    void paintBoxDecorationBackground(PaintInfo&);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintBoxDecorationBackground(const PaintInfo&);
 
 private:
     bool rootFillsViewportBackground(RenderBox* rootBox) const;

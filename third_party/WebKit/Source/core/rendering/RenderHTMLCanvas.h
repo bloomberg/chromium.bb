@@ -43,7 +43,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderHTMLCanvas"; }
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
     virtual void intrinsicSizeChanged() override { canvasSizeChanged(); }
 
     virtual CompositingReasons additionalCompositingReasons() const override;

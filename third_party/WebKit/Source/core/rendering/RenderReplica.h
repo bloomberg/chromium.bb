@@ -45,7 +45,7 @@ public:
 
     virtual void layout() override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
 private:
     RenderReplica();

@@ -59,7 +59,7 @@ RenderDetailsMarker::Orientation RenderDetailsMarker::orientation() const
     return Right;
 }
 
-void RenderDetailsMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     DetailsMarkerPainter(*this).paint(paintInfo, paintOffset);
 }

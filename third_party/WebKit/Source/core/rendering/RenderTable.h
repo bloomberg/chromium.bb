@@ -269,9 +269,9 @@ public:
     void addColumn(const RenderTableCol*);
     void removeColumn(const RenderTableCol*);
 
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override final;
 
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintMask(const PaintInfo&, const LayoutPoint&) override final;
 
     const CollapsedBorderValues& collapsedBorders() { return m_collapsedBorders; }
     void subtractCaptionRect(LayoutRect&) const;
@@ -286,8 +286,8 @@ private:
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTable || RenderBlock::isOfType(type); }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
     virtual void computePreferredLogicalWidths() override;

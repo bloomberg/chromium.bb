@@ -219,7 +219,7 @@ bool RenderTableRow::nodeAtPoint(const HitTestRequest& request, HitTestResult& r
     return false;
 }
 
-void RenderTableRow::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableRow::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableRowPainter(*this).paint(paintInfo, paintOffset);
 }

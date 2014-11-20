@@ -24,7 +24,7 @@ class DocumentMarker;
 class SVGInlineTextBoxPainter {
 public:
     SVGInlineTextBoxPainter(SVGInlineTextBox& svgInlineTextBox) : m_svgInlineTextBox(svgInlineTextBox) { }
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
     void paintSelectionBackground(const PaintInfo&);
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint&, DocumentMarker*, RenderStyle*, const Font&);
 

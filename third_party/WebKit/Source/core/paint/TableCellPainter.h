@@ -20,12 +20,12 @@ class TableCellPainter {
 public:
     TableCellPainter(RenderTableCell& renderTableCell) : m_renderTableCell(renderTableCell) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
-    void paintCollapsedBorders(PaintInfo&, const LayoutPoint&);
-    void paintBackgroundsBehindCell(PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
-    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint& paintOffset);
-    void paintMask(PaintInfo&, const LayoutPoint& paintOffset);
+    void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
+    void paintBackgroundsBehindCell(const PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
 
     enum PaintBoundOffsetBehavior { AddOffsetFromParent, DoNotAddOffsetFromParent };
     // Returns the bonds of the table cell for painting, offset by paintOffset, and if desired, the offset from the cell

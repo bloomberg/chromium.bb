@@ -126,7 +126,7 @@ public:
 
     virtual void layout() override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     LayoutUnit cellBaselinePosition() const;
     bool isBaselineAligned() const
@@ -229,8 +229,8 @@ private:
 
     virtual void updateLogicalWidth() override;
 
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override;
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
+    virtual void paintMask(const PaintInfo&, const LayoutPoint&) override;
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override;
 

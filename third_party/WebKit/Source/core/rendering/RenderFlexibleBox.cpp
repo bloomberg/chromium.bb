@@ -271,7 +271,7 @@ void RenderFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)
     }
 }
 
-void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderFlexibleBox::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BlockPainter::paintChildrenOfFlexibleBox(*this, paintInfo, paintOffset);
 }

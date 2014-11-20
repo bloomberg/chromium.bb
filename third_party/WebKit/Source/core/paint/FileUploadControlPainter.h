@@ -15,7 +15,7 @@ class FileUploadControlPainter {
 public:
     FileUploadControlPainter(RenderFileUploadControl& renderFileUploadControl) : m_renderFileUploadControl(renderFileUploadControl) { }
 
-    void paintObject(PaintInfo&, const LayoutPoint&);
+    void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderFileUploadControl& m_renderFileUploadControl;

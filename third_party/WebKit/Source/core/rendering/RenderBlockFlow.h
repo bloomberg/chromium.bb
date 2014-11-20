@@ -284,8 +284,8 @@ private:
 
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants) override final;
     virtual void invalidatePaintForOverflow() override final;
-    virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool preservePhase = false) override final;
-    virtual void paintSelection(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) override final;
+    virtual void paintSelection(const PaintInfo&, const LayoutPoint&) override final;
     virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const override;
     void clearFloats(EClear);
 

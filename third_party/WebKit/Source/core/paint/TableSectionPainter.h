@@ -16,11 +16,11 @@ class TableSectionPainter {
 public:
     TableSectionPainter(RenderTableSection& renderTableSection) : m_renderTableSection(renderTableSection) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
-    void paintObject(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
+    void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
-    void paintCell(RenderTableCell*, PaintInfo&, const LayoutPoint&);
+    void paintCell(RenderTableCell*, const PaintInfo&, const LayoutPoint&);
 
     RenderTableSection& m_renderTableSection;
 };

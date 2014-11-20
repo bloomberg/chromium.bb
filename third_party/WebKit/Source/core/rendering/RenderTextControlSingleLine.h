@@ -51,7 +51,7 @@ private:
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override final;
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextField || RenderTextControl::isOfType(type); }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;

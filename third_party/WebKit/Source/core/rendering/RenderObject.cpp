@@ -1039,7 +1039,7 @@ LayoutRect RenderObject::paintingRootRect(LayoutRect& topLevelRect)
     return result;
 }
 
-void RenderObject::paint(PaintInfo&, const LayoutPoint&)
+void RenderObject::paint(const PaintInfo&, const LayoutPoint&)
 {
 }
 

@@ -426,7 +426,7 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
     return overflowRect;
 }
 
-void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }

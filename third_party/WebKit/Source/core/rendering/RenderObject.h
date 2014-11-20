@@ -694,7 +694,7 @@ public:
     void updateShapeImage(const ShapeValue*, const ShapeValue*);
 
     // paintOffset is the offset from the origin of the GraphicsContext at which to paint the current object.
-    virtual void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
     // Subclasses must reimplement this method to compute the size and position
     // of this object and all its descendants.

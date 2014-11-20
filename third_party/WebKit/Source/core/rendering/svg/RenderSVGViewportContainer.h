@@ -40,7 +40,7 @@ public:
     virtual void determineIfLayoutSizeChanged() override;
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
 private:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGViewportContainer || RenderSVGContainer::isOfType(type); }

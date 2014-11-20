@@ -14,8 +14,8 @@ class RenderBlockFlow;
 class BlockFlowPainter {
 public:
     BlockFlowPainter(RenderBlockFlow& renderBlockFlow) : m_renderBlockFlow(renderBlockFlow) { }
-    void paintFloats(PaintInfo&, const LayoutPoint&, bool preservePhase);
-    void paintSelection(PaintInfo&, const LayoutPoint&);
+    void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase);
+    void paintSelection(const PaintInfo&, const LayoutPoint&);
 private:
     RenderBlockFlow& m_renderBlockFlow;
 };

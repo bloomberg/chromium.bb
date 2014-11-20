@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void SVGForeignObjectPainter::paint(PaintInfo& paintInfo)
+void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;

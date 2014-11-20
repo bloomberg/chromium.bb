@@ -50,7 +50,7 @@ LayerType RenderHTMLCanvas::layerTypeRequired() const
     return NormalLayer;
 }
 
-void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     HTMLCanvasPainter(*this).paintReplaced(paintInfo, paintOffset);
 }

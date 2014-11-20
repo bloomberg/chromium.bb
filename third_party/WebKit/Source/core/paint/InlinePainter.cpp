@@ -19,13 +19,13 @@
 
 namespace blink {
 
-void InlinePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderInline);
     LineBoxListPainter(*m_renderInline.lineBoxes()).paint(&m_renderInline, paintInfo, paintOffset);
 }
 
-void InlinePainter::paintOutline(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     RenderStyle* styleToUse = m_renderInline.style();
     if (!styleToUse->hasOutline())

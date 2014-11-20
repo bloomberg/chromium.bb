@@ -15,7 +15,7 @@ class ReplacedPainter {
 public:
     ReplacedPainter(RenderReplaced& renderReplaced) : m_renderReplaced(renderReplaced) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderReplaced& m_renderReplaced;

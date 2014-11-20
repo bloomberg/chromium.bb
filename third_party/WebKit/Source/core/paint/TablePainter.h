@@ -15,10 +15,10 @@ class TablePainter {
 public:
     TablePainter(RenderTable& renderTable) : m_renderTable(renderTable) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
-    void paintObject(PaintInfo&, const LayoutPoint&);
-    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
-    void paintMask(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
+    void paintObject(const PaintInfo&, const LayoutPoint&);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+    void paintMask(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderTable& m_renderTable;

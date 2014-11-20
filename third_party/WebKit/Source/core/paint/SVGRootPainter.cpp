@@ -15,7 +15,7 @@
 
 namespace blink {
 
-void SVGRootPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // An empty viewport disables rendering.
     if (m_renderSVGRoot.pixelSnappedBorderBoxRect().isEmpty())

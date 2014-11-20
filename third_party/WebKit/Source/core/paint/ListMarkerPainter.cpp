@@ -18,7 +18,7 @@
 
 namespace blink {
 
-void ListMarkerPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderListMarker);
 

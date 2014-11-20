@@ -32,7 +32,7 @@
 
 namespace blink {
 
-void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
+void SVGRootInlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
     SVGRootInlineBoxPainter(*this).paint(paintInfo, paintOffset);
 }

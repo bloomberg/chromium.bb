@@ -14,11 +14,11 @@ class SVGImagePainter {
 public:
     SVGImagePainter(RenderSVGImage& renderSVGImage) : m_renderSVGImage(renderSVGImage) { }
 
-    void paint(PaintInfo&);
+    void paint(const PaintInfo&);
 
 private:
     // Assumes the PaintInfo context has had all local transforms applied.
-    void paintForeground(PaintInfo&);
+    void paintForeground(const PaintInfo&);
 
     RenderSVGImage& m_renderSVGImage;
 };

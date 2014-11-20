@@ -17,7 +17,7 @@
 
 namespace blink {
 
-void TablePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TablePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderTable);
 
@@ -31,11 +31,13 @@ void TablePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             return;
     }
 
-    BoxClipper boxClipper(m_renderTable, paintInfo, adjustedPaintOffset, ForceContentsClip);
-    paintObject(paintInfo, adjustedPaintOffset);
+    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
+    PaintInfo localPaintInfo(paintInfo);
+    BoxClipper boxClipper(m_renderTable, localPaintInfo, adjustedPaintOffset, ForceContentsClip);
+    paintObject(localPaintInfo, adjustedPaintOffset);
 }
 
-void TablePainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderTable.hasBoxDecorationBackground() && m_renderTable.style()->visibility() == VISIBLE)
@@ -88,7 +90,7 @@ void TablePainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
         ObjectPainter(m_renderTable).paintOutline(paintInfo, LayoutRect(paintOffset, m_renderTable.size()));
 }
 
-void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TablePainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderTable))
         return;
@@ -98,7 +100,7 @@ void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layo
     BoxPainter(m_renderTable).paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 
-void TablePainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderTable.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;

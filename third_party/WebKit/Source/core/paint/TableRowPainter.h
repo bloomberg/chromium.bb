@@ -13,8 +13,8 @@ class TableRowPainter {
 public:
     TableRowPainter(RenderTableRow& renderTableRow) : m_renderTableRow(renderTableRow) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
-    void paintOutlineForRowIfNeeded(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
+    void paintOutlineForRowIfNeeded(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderTableRow& m_renderTableRow;

@@ -611,12 +611,12 @@ void RenderTable::addOverflowFromChildren()
         addOverflowFromChild(section);
 }
 
-void RenderTable::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTable::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TablePainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderTable::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTable::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TablePainter(*this).paintObject(paintInfo, paintOffset);
 }
@@ -638,12 +638,12 @@ void RenderTable::subtractCaptionRect(LayoutRect& rect) const
     }
 }
 
-void RenderTable::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTable::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TablePainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void RenderTable::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTable::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TablePainter(*this).paintMask(paintInfo, paintOffset);
 }

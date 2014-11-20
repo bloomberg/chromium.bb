@@ -19,14 +19,14 @@ class RenderObject;
 class BoxPainter {
 public:
     BoxPainter(RenderBox& renderBox) : m_renderBox(renderBox) { }
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
-    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
-    void paintMask(PaintInfo&, const LayoutPoint&);
-    void paintClippingMask(PaintInfo&, const LayoutPoint&);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+    void paintMask(const PaintInfo&, const LayoutPoint&);
+    void paintClippingMask(const PaintInfo&, const LayoutPoint&);
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0);
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
-    void paintBoxDecorationBackgroundWithRect(PaintInfo&, const LayoutPoint&, const LayoutRect&);
+    void paintBoxDecorationBackgroundWithRect(const PaintInfo&, const LayoutPoint&, const LayoutRect&);
     static void paintFillLayerExtended(RenderBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0, bool skipBaseColor = false);
     static void calculateBackgroundImageGeometry(RenderBoxModelObject&, const RenderLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, RenderObject* = 0);
     static InterpolationQuality chooseInterpolationQuality(RenderBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);

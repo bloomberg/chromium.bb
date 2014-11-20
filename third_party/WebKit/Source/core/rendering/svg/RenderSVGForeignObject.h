@@ -36,7 +36,7 @@ public:
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     virtual void layout() override;
 

@@ -103,12 +103,12 @@ void RenderReplaced::intrinsicSizeChanged()
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
-void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ReplacedPainter(*this).paint(paintInfo, paintOffset);
 }
 
-bool RenderReplaced::shouldPaint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+bool RenderReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline
         && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask && paintInfo.phase != PaintPhaseClippingMask)

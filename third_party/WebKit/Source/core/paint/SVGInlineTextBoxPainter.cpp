@@ -29,7 +29,7 @@ static inline bool textShouldBePainted(RenderSVGInlineText& textRenderer)
     return textRenderer.scaledFont().fontDescription().computedPixelSize();
 }
 
-void SVGInlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.shouldPaintWithinRoot(&m_svgInlineTextBox.renderer()));
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);

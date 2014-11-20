@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void EllipsisBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     GraphicsContext* context = paintInfo.context;
     RenderStyle* style = m_ellipsisBox.renderer().style(m_ellipsisBox.isFirstLineStyle());
@@ -48,7 +48,7 @@ void EllipsisBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOff
     paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
-void EllipsisBoxPainter::paintMarkupBox(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
+void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
 {
     InlineBox* markupBox = m_ellipsisBox.markupBox();
     if (!markupBox)

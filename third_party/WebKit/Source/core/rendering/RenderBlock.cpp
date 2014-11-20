@@ -1767,17 +1767,17 @@ void RenderBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutSc
         layoutScope.setChildNeedsLayout(this);
 }
 
-void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBlock::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BlockPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderBlock::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBlock::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BlockPainter(*this).paintChildren(paintInfo, paintOffset);
 }
 
-void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BlockPainter(*this).paintObject(paintInfo, paintOffset);
 }

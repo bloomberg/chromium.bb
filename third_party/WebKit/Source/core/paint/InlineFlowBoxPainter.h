@@ -22,11 +22,11 @@ class RenderStyle;
 class InlineFlowBoxPainter {
 public:
     InlineFlowBoxPainter(InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
-    void paint(PaintInfo&, const LayoutPoint&, const LayoutUnit lineTop, const LayoutUnit lineBottom);
+    void paint(const PaintInfo&, const LayoutPoint&, const LayoutUnit lineTop, const LayoutUnit lineBottom);
 
 private:
-    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
-    void paintMask(PaintInfo&, const LayoutPoint&);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+    void paintMask(const PaintInfo&, const LayoutPoint&);
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, CompositeOperator = CompositeSourceOver);
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, CompositeOperator);
     void paintBoxShadow(const PaintInfo&, RenderStyle*, ShadowStyle, const LayoutRect&);

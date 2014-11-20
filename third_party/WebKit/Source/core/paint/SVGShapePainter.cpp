@@ -40,7 +40,7 @@ static void useStrokeStyleToFill(GraphicsContext* context)
         context->setFillColor(context->strokeColor());
 }
 
-void SVGShapePainter::paint(PaintInfo& paintInfo)
+void SVGShapePainter::paint(const PaintInfo& paintInfo)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderSVGShape);
     if (paintInfo.phase != PaintPhaseForeground
@@ -143,7 +143,7 @@ void SVGShapePainter::strokeShape(GraphicsContext* context)
     }
 }
 
-void SVGShapePainter::paintMarkers(PaintInfo& paintInfo)
+void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo)
 {
     const Vector<MarkerPosition>* markerPositions = m_renderSVGShape.markerPositions();
     if (!markerPositions || markerPositions->isEmpty())
@@ -167,7 +167,7 @@ void SVGShapePainter::paintMarkers(PaintInfo& paintInfo)
     }
 }
 
-void SVGShapePainter::paintMarker(PaintInfo& paintInfo, RenderSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
+void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, RenderSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
 {
     // An empty viewBox disables rendering.
     SVGMarkerElement* markerElement = toSVGMarkerElement(marker.element());

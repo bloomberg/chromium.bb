@@ -167,7 +167,7 @@ AffineTransform RenderSVGShape::nonScalingStrokeTransform() const
     return toSVGGraphicsElement(element())->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
 }
 
-void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGShapePainter(*this).paint(paintInfo);
 }

@@ -15,8 +15,8 @@ class FieldsetPainter {
 public:
     FieldsetPainter(RenderFieldset& renderFieldset) : m_renderFieldset(renderFieldset) { }
 
-    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
-    void paintMask(PaintInfo&, const LayoutPoint&);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+    void paintMask(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderFieldset& m_renderFieldset;

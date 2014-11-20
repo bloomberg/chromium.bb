@@ -551,7 +551,7 @@ void RenderInline::addChildToContinuation(RenderObject* newChild, RenderObject* 
     }
 }
 
-void RenderInline::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderInline::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     InlinePainter(*this).paint(paintInfo, paintOffset);
 }

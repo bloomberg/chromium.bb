@@ -40,7 +40,7 @@ protected:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGHiddenContainer || RenderSVGContainer::isOfType(type); }
 
 private:
-    virtual void paint(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*, const PaintInvalidationState* = 0) const override final { return LayoutRect(); }
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
 

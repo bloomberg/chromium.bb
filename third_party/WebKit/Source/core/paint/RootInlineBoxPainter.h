@@ -16,10 +16,10 @@ class RootInlineBoxPainter {
 public:
     RootInlineBoxPainter(RootInlineBox& rootInlineBox) : m_rootInlineBox(rootInlineBox) { }
 
-    void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
 
 private:
-    void paintEllipsisBox(PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const;
+    void paintEllipsisBox(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const;
 
     RootInlineBox& m_rootInlineBox;
 };

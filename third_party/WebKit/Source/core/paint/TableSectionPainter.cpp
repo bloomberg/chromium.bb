@@ -19,7 +19,7 @@
 
 namespace blink {
 
-void TableSectionPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderTableSection);
 
@@ -35,14 +35,15 @@ void TableSectionPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableSection.location();
-
+    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
+    PaintInfo localPaintInfo(paintInfo);
     {
-        BoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
-        paintObject(paintInfo, adjustedPaintOffset);
+        BoxClipper boxClipper(m_renderTableSection, localPaintInfo, adjustedPaintOffset, ForceContentsClip);
+        paintObject(localPaintInfo, adjustedPaintOffset);
     }
 
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
-        ObjectPainter(m_renderTableSection).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
+    if ((localPaintInfo.phase == PaintPhaseOutline || localPaintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
+        ObjectPainter(m_renderTableSection).paintOutline(localPaintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
 }
 
 static inline bool compareCellPositions(RenderTableCell* elem1, RenderTableCell* elem2)
@@ -60,7 +61,7 @@ static inline bool compareCellPositionsWithOverflowingCells(RenderTableCell* ele
     return elem1->col() < elem2->col();
 }
 
-void TableSectionPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutRect localPaintInvalidationRect = paintInfo.rect;
     localPaintInvalidationRect.moveBy(-paintOffset);
@@ -158,7 +159,7 @@ void TableSectionPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& p
     }
 }
 
-void TableSectionPainter::paintCell(RenderTableCell* cell, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableSectionPainter::paintCell(RenderTableCell* cell, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint cellPoint = m_renderTableSection.flipForWritingModeForChild(cell, paintOffset);
     PaintPhase paintPhase = paintInfo.phase;

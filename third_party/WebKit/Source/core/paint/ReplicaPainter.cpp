@@ -13,7 +13,7 @@
 
 namespace blink {
 
-void ReplicaPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderReplica);
 

@@ -44,8 +44,8 @@ private:
     virtual void computePreferredLogicalWidths() override;
     virtual bool avoidsFloats() const override { return true; }
 
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override;
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
+    virtual void paintMask(const PaintInfo&, const LayoutPoint&) override;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());

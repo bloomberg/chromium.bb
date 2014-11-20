@@ -20,7 +20,7 @@
 
 namespace blink {
 
-void SVGImagePainter::paint(PaintInfo& paintInfo)
+void SVGImagePainter::paint(const PaintInfo& paintInfo)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderSVGImage);
 
@@ -64,7 +64,7 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
         ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(invalBox));
 }
 
-void SVGImagePainter::paintForeground(PaintInfo& paintInfo)
+void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
 {
     RefPtr<Image> image = m_renderSVGImage.imageResource()->image();
     FloatRect destRect = m_renderSVGImage.objectBoundingBox();

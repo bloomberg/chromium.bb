@@ -102,7 +102,7 @@ private:
     virtual const char* renderName() const override { return "RenderSVGShape"; }
 
     virtual void layout() override final;
-    virtual void paint(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override final;

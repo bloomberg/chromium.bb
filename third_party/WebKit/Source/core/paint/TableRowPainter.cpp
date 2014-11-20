@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void TableRowPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(m_renderTableRow.hasSelfPaintingLayer());
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderTableRow);
@@ -29,7 +29,7 @@ void TableRowPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset
     }
 }
 
-void TableRowPainter::paintOutlineForRowIfNeeded(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableRowPainter::paintOutlineForRowIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableRow.location();
     PaintPhase paintPhase = paintInfo.phase;

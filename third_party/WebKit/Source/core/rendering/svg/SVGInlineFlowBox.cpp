@@ -28,12 +28,12 @@
 
 namespace blink {
 
-void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)
+void SVGInlineFlowBox::paintSelectionBackground(const PaintInfo& paintInfo)
 {
     SVGInlineFlowBoxPainter(*this).paintSelectionBackground(paintInfo);
 }
 
-void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
+void SVGInlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
     SVGInlineFlowBoxPainter(*this).paint(paintInfo, paintOffset);
 }

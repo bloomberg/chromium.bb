@@ -13,7 +13,7 @@ class RenderSVGForeignObject;
 class SVGForeignObjectPainter {
 public:
     SVGForeignObjectPainter(RenderSVGForeignObject& renderSVGForeignObject) : m_renderSVGForeignObject(renderSVGForeignObject) { }
-    void paint(PaintInfo&);
+    void paint(const PaintInfo&);
 
 private:
     RenderSVGForeignObject& m_renderSVGForeignObject;

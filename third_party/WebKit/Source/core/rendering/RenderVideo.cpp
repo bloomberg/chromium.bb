@@ -143,7 +143,7 @@ bool RenderVideo::shouldDisplayVideo() const
     return !videoElement()->shouldDisplayPosterImage();
 }
 
-void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
 }

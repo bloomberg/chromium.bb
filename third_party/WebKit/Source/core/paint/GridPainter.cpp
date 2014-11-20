@@ -37,7 +37,7 @@ public:
     }
 };
 
-void GridPainter::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!m_renderGrid.gridIsDirty());
 
@@ -79,7 +79,7 @@ void GridPainter::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOf
     }
 }
 
-void GridPainter::paintChild(RenderBox& child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void GridPainter::paintChild(RenderBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderGrid.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating())

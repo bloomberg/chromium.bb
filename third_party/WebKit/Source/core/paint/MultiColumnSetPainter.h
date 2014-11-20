@@ -14,10 +14,10 @@ class RenderMultiColumnSet;
 class MultiColumnSetPainter {
 public:
     MultiColumnSetPainter(RenderMultiColumnSet& renderMultiColumnSet) : m_renderMultiColumnSet(renderMultiColumnSet) { }
-    void paintObject(PaintInfo&, const LayoutPoint& paintOffset);
+    void paintObject(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    void paintColumnRules(PaintInfo&, const LayoutPoint& paintOffset);
+    void paintColumnRules(const PaintInfo&, const LayoutPoint& paintOffset);
 
     RenderMultiColumnSet& m_renderMultiColumnSet;
 };

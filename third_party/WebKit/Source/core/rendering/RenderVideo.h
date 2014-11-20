@@ -60,7 +60,7 @@ private:
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectVideo || RenderMedia::isOfType(type); }
 
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
     virtual void layout() override;
 

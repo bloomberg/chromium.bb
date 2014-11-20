@@ -308,12 +308,12 @@ void RenderView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layout
     rects.append(LayoutRect(LayoutPoint::zero(), frameView()->contentsSize()));
 }
 
-void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderView::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ViewPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderView::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     ViewPainter(*this).paintBoxDecorationBackground(paintInfo);
 }

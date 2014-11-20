@@ -137,12 +137,12 @@ RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
     return 0;
 }
 
-void RenderFieldset::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FieldsetPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void RenderFieldset::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FieldsetPainter(*this).paintMask(paintInfo, paintOffset);
 }

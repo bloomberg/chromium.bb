@@ -225,7 +225,7 @@ public:
         return createAnonymousWithParentRenderer(parent);
     }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     // Flip the rect so it aligns with the coordinates used by the rowPos and columnPos vectors.
     LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
@@ -251,7 +251,7 @@ private:
 
     virtual void layout() override;
 
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 

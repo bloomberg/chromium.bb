@@ -60,7 +60,7 @@ private:
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     virtual void layout() override;
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     FloatSize computeImageViewportSize(ImageResource&) const;
 

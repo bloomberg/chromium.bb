@@ -15,7 +15,7 @@
 
 namespace blink {
 
-void ObjectPainter::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
+void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
 {
     Vector<LayoutRect> focusRingRects;
     m_renderObject.addFocusRingRects(focusRingRects, paintOffset);
@@ -26,7 +26,7 @@ void ObjectPainter::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& pain
     paintInfo.context->drawFocusRing(focusRingIntRects, style->outlineWidth(), style->outlineOffset(), m_renderObject.resolveColor(style, CSSPropertyOutlineColor));
 }
 
-void ObjectPainter::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRect)
+void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
     RenderStyle* styleToUse = m_renderObject.style();
     if (!styleToUse->hasOutline())

@@ -18,7 +18,7 @@ class LineBoxListPainter {
 public:
     LineBoxListPainter(RenderLineBoxList& renderLineBoxList) : m_renderLineBoxList(renderLineBoxList) { }
 
-    void paint(RenderBoxModelObject*, PaintInfo&, const LayoutPoint&) const;
+    void paint(RenderBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
 
 private:
     RenderLineBoxList& m_renderLineBoxList;

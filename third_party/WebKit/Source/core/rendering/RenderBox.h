@@ -320,7 +320,7 @@ public:
     LayoutRect reflectedRect(const LayoutRect&) const;
 
     virtual void layout() override;
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     virtual LayoutUnit minPreferredLogicalWidth() const override;
@@ -488,10 +488,10 @@ public:
     virtual bool hasControlClip() const { return false; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const { return LayoutRect(); }
 
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&);
-    virtual void paintMask(PaintInfo&, const LayoutPoint&);
-    virtual void paintClippingMask(PaintInfo&, const LayoutPoint&);
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }
+    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+    virtual void paintMask(const PaintInfo&, const LayoutPoint&);
+    virtual void paintClippingMask(const PaintInfo&, const LayoutPoint&);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     LayoutRect borderBoxAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop);

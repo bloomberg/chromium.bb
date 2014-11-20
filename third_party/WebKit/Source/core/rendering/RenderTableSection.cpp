@@ -1262,7 +1262,7 @@ int RenderTableSection::firstLineBoxBaseline() const
     return firstLineBaseline;
 }
 
-void RenderTableSection::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableSection::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableSectionPainter(*this).paint(paintInfo, paintOffset);
 }
@@ -1372,7 +1372,7 @@ CellSpan RenderTableSection::spannedColumns(const LayoutRect& flippedRect) const
 }
 
 
-void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableSection::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableSectionPainter(*this).paintObject(paintInfo, paintOffset);
 }

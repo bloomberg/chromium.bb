@@ -25,7 +25,7 @@
 
 namespace blink {
 
-void ImagePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     m_renderImage.RenderReplaced::paint(paintInfo, paintOffset);
 
@@ -33,7 +33,7 @@ void ImagePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         paintAreaElementFocusRing(paintInfo);
 }
 
-void ImagePainter::paintAreaElementFocusRing(PaintInfo& paintInfo)
+void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 {
     Document& document = m_renderImage.document();
 
@@ -71,7 +71,7 @@ void ImagePainter::paintAreaElementFocusRing(PaintInfo& paintInfo)
         m_renderImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
 }
 
-void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutUnit cWidth = m_renderImage.contentWidth();
     LayoutUnit cHeight = m_renderImage.contentHeight();
@@ -200,7 +200,7 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     InspectorInstrumentation::didPaintImage(&m_renderImage);
 }
 
-void ImagePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ImagePainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // Don't anti-alias the background of an image. See crbug.com/423834 for the reason why.
     // However, don't turn off anti-aliasing for subclasses such as video.

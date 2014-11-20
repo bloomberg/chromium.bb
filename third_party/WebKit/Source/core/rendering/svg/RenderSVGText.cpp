@@ -456,7 +456,7 @@ void RenderSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) cons
     quads.append(localToAbsoluteQuad(strokeBoundingBox(), 0 /* mode */, wasFixed));
 }
 
-void RenderSVGText::paint(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGTextPainter(*this).paint(paintInfo);
 }

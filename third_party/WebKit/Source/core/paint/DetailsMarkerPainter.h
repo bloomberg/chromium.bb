@@ -16,7 +16,7 @@ class DetailsMarkerPainter {
 public:
     DetailsMarkerPainter(RenderDetailsMarker& renderDetailsMarker) : m_renderDetailsMarker(renderDetailsMarker) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     Path getCanonicalPath() const;

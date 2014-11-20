@@ -15,8 +15,8 @@ class SVGInlineFlowBoxPainter {
 public:
     SVGInlineFlowBoxPainter(SVGInlineFlowBox& svgInlineFlowBox) : m_svgInlineFlowBox(svgInlineFlowBox) { }
 
-    void paintSelectionBackground(PaintInfo&);
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paintSelectionBackground(const PaintInfo&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
     SVGInlineFlowBox& m_svgInlineFlowBox;

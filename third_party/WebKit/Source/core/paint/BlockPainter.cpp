@@ -29,7 +29,7 @@
 
 namespace blink {
 
-void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderBlock);
 
@@ -49,6 +49,9 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             return;
     }
 
+    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
+    PaintInfo localPaintInfo(paintInfo);
+
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.
     ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
@@ -56,24 +59,24 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     {
-        BoxClipper boxClipper(m_renderBlock, paintInfo, adjustedPaintOffset, contentsClipBehavior);
-        GraphicsContextCullSaver cullSaver(*paintInfo.context);
+        BoxClipper boxClipper(m_renderBlock, localPaintInfo, adjustedPaintOffset, contentsClipBehavior);
+        GraphicsContextCullSaver cullSaver(*localPaintInfo.context);
         // Cull if we have more than one child and we didn't already clip.
         bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !boxClipper.pushedClip() && !m_renderBlock.isDocumentElement()
             && m_renderBlock.firstChild() && m_renderBlock.lastChild() && m_renderBlock.firstChild() != m_renderBlock.lastChild();
         if (shouldCull)
             cullSaver.cull(overflowBox);
 
-        m_renderBlock.paintObject(paintInfo, adjustedPaintOffset);
+        m_renderBlock.paintObject(localPaintInfo, adjustedPaintOffset);
     }
 
     // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with
     // z-index. We paint after we painted the background/border, so that the scrollbars will
     // sit above the background/border.
-    paintOverflowControlsIfNeeded(paintInfo, adjustedPaintOffset);
+    paintOverflowControlsIfNeeded(localPaintInfo, adjustedPaintOffset);
 }
 
-void BlockPainter::paintOverflowControlsIfNeeded(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase phase = paintInfo.phase;
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
@@ -82,33 +85,33 @@ void BlockPainter::paintOverflowControlsIfNeeded(PaintInfo& paintInfo, const Lay
     }
 }
 
-void BlockPainter::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = m_renderBlock.firstChildBox(); child; child = child->nextSiblingBox())
         paintChild(child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChild(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChild(RenderBox* child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
     if (!child->hasSelfPaintingLayer() && !child->isFloating())
         child->paint(paintInfo, childPoint);
 }
 
-void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildrenOfFlexibleBox(RenderFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (RenderBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
         BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChildAsInlineBlock(RenderBox* child, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildAsInlineBlock(RenderBox* child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_renderBlock.flipForWritingModeForChild(child, paintOffset);
     if (!child->hasSelfPaintingLayer() && !child->isFloating())
         paintAsInlineBlock(child, paintInfo, childPoint);
 }
 
-void BlockPainter::paintInlineBox(InlineBox& inlineBox, PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&inlineBox.renderer()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
         return;
@@ -120,7 +123,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, PaintInfo& paintInfo, co
     paintAsInlineBlock(&inlineBox.renderer(), paintInfo, childPoint);
 }
 
-void BlockPainter::paintAsInlineBlock(RenderObject* renderer, PaintInfo& paintInfo, const LayoutPoint& childPoint)
+void BlockPainter::paintAsInlineBlock(RenderObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;
@@ -145,7 +148,7 @@ void BlockPainter::paintAsInlineBlock(RenderObject* renderer, PaintInfo& paintIn
     }
 }
 
-void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
 
@@ -243,7 +246,7 @@ static inline bool hasDragCaret(const DragCaretController& dragCaretController, 
     return dragCaretController.caretRenderer() == block && (dragCaretController.isContentEditable() || caretBrowsing);
 }
 
-void BlockPainter::paintCarets(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     bool caretBrowsing = caretBrowsingEnabled(m_renderBlock.frame());
 
@@ -276,7 +279,7 @@ bool BlockPainter::hasCaret() const
         || hasDragCaret(m_renderBlock.frame()->page()->dragCaretController(), &m_renderBlock, caretBrowsing);
 }
 
-void BlockPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     const Color& ruleColor = m_renderBlock.resolveColor(CSSPropertyWebkitColumnRuleColor);
     bool ruleTransparent = m_renderBlock.style()->columnRuleIsTransparent();
@@ -361,7 +364,7 @@ void BlockPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pai
     }
 }
 
-void BlockPainter::paintColumnContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool paintingFloats)
+void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool paintingFloats)
 {
     // We need to do multiple passes, breaking up our child painting into strips.
     GraphicsContext* context = paintInfo.context;
@@ -419,7 +422,7 @@ void BlockPainter::paintColumnContents(PaintInfo& paintInfo, const LayoutPoint& 
     }
 }
 
-void BlockPainter::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // Avoid painting descendants of the root element when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverChanged() on the Document
@@ -441,7 +444,7 @@ void BlockPainter::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
     }
 }
 
-void BlockPainter::paintContinuationOutlines(PaintInfo& info, const LayoutPoint& paintOffset)
+void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const LayoutPoint& paintOffset)
 {
     RenderInline* inlineCont = m_renderBlock.inlineElementContinuation();
     if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {

@@ -50,7 +50,7 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const 
         : m_renderTableCell.section()->cachedCollapsedBorder(&m_renderTableCell, CBSStart);
 }
 
-void TableCellPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableCellPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase != PaintPhaseCollapsedTableBorders);
     BlockPainter(m_renderTableCell).paint(paintInfo, paintOffset);
@@ -114,7 +114,7 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style)
     return style;
 }
 
-void TableCellPainter::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseCollapsedTableBorders);
 
@@ -179,7 +179,7 @@ void TableCellPainter::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutP
     }
 }
 
-void TableCellPainter::paintBackgroundsBehindCell(PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderObject* backgroundObject)
+void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderObject* backgroundObject)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderTableCell))
         return;
@@ -214,7 +214,7 @@ void TableCellPainter::paintBackgroundsBehindCell(PaintInfo& paintInfo, const La
     }
 }
 
-void TableCellPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderTableCell))
         return;
@@ -238,7 +238,7 @@ void TableCellPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const 
     BoxPainter::paintBorder(m_renderTableCell, paintInfo, paintRect, m_renderTableCell.style());
 }
 
-void TableCellPainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderTableCell.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;

@@ -102,7 +102,7 @@ private:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFrameSet || RenderBox::isOfType(type); }
 
     virtual void layout() override;
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void computePreferredLogicalWidths() override;
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override;

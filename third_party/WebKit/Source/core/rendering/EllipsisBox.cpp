@@ -33,7 +33,7 @@
 
 namespace blink {
 
-void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     EllipsisBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }

@@ -14,7 +14,7 @@ class RenderHTMLCanvas;
 class HTMLCanvasPainter {
 public:
     HTMLCanvasPainter(RenderHTMLCanvas& renderHTMLCanvas) : m_renderHTMLCanvas(renderHTMLCanvas) { }
-    void paintReplaced(PaintInfo&, const LayoutPoint&);
+    void paintReplaced(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderHTMLCanvas& m_renderHTMLCanvas;

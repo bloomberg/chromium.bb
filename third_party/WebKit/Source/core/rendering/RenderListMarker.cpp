@@ -1126,7 +1126,7 @@ LayoutRect RenderListMarker::localSelectionRect()
     return LayoutRect(newLogicalTop, 0, root.selectionHeight(), height());
 }
 
-void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ListMarkerPainter(*this).paint(paintInfo, paintOffset);
 }

@@ -69,7 +69,7 @@ private:
 
     virtual const char* renderName() const override { return "RenderMedia"; }
     virtual bool isImage() const override final { return false; }
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
     RenderObjectChildList m_children;
 };

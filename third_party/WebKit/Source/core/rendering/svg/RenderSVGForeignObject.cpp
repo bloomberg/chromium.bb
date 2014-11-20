@@ -48,7 +48,7 @@ bool RenderSVGForeignObject::isChildAllowed(RenderObject* child, RenderStyle* st
     return !child->isSVG() || child->isSVGRoot();
 }
 
-void RenderSVGForeignObject::paint(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGForeignObjectPainter(*this).paint(paintInfo);
 }

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-void VideoPainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     WebMediaPlayer* mediaPlayer = m_renderVideo.mediaElement()->webMediaPlayer();
     bool displayingPoster = m_renderVideo.videoElement()->shouldDisplayPosterImage();

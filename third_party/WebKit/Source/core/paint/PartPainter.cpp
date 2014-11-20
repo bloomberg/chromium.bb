@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void PartPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderPart);
 
@@ -67,7 +67,7 @@ void PartPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         m_renderPart.layer()->scrollableArea()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
 }
 
-void PartPainter::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderPart.location();
 

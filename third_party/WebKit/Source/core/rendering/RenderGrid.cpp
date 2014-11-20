@@ -1505,7 +1505,7 @@ LayoutPoint RenderGrid::findChildLogicalPosition(const RenderBox& child) const
     return LayoutPoint(columnPositionForChild(child), rowPositionForChild(child));
 }
 
-void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     GridPainter(*this).paintChildren(paintInfo, paintOffset);
 }

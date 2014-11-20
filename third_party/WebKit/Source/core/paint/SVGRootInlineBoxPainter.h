@@ -15,7 +15,7 @@ class SVGRootInlineBoxPainter {
 public:
     SVGRootInlineBoxPainter(SVGRootInlineBox& svgRootInlineBox) : m_svgRootInlineBox(svgRootInlineBox) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
     SVGRootInlineBox& m_svgRootInlineBox;

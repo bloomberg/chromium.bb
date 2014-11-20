@@ -223,12 +223,12 @@ void RenderPart::layout()
     clearNeedsLayout();
 }
 
-void RenderPart::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderPart::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PartPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderPart::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PartPainter(*this).paintContents(paintInfo, paintOffset);
 }

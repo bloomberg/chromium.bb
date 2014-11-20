@@ -11,14 +11,14 @@
 
 namespace blink {
 
-void RootInlineBoxPainter::paintEllipsisBox(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
+void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
     if (m_rootInlineBox.hasEllipsisBox() && paintInfo.shouldPaintWithinRoot(&m_rootInlineBox.renderer()) && m_rootInlineBox.renderer().style()->visibility() == VISIBLE
         && paintInfo.phase == PaintPhaseForeground)
         m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
-void RootInlineBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
+void RootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     m_rootInlineBox.InlineFlowBox::paint(paintInfo, paintOffset, lineTop, lineBottom);
     paintEllipsisBox(paintInfo, paintOffset, lineTop, lineBottom);

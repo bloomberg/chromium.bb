@@ -266,14 +266,14 @@ protected:
 
     int beforeMarginInLineDirection(LineDirectionMode) const;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 public:
-    virtual void paintObject(PaintInfo&, const LayoutPoint&) override;
-    virtual void paintChildren(PaintInfo&, const LayoutPoint&);
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
+    virtual void paintChildren(const PaintInfo&, const LayoutPoint&);
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
-    virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool) { }
-    virtual void paintSelection(PaintInfo&, const LayoutPoint&) { }
+    virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool) { }
+    virtual void paintSelection(const PaintInfo&, const LayoutPoint&) { }
 
 protected:
     virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, float& /* logicalLeft */, float& /* logicalWidth */) const { }

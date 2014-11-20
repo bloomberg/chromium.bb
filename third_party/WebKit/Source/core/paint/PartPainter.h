@@ -15,8 +15,8 @@ class PartPainter {
 public:
     PartPainter(RenderPart& renderPart) : m_renderPart(renderPart) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
-    void paintContents(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
+    void paintContents(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderPart& m_renderPart;

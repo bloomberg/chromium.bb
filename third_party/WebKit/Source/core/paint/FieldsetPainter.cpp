@@ -13,7 +13,7 @@
 
 namespace blink {
 
-void FieldsetPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderFieldset))
         return;
@@ -67,7 +67,7 @@ void FieldsetPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const L
     BoxPainter::paintBorder(m_renderFieldset, paintInfo, paintRect, m_renderFieldset.style());
 }
 
-void FieldsetPainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderFieldset.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;

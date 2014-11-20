@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void ReplacedPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderReplaced);
 

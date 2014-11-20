@@ -45,11 +45,11 @@ public:
     static const int defaultWidth;
     static const int defaultHeight;
     virtual bool canHaveChildren() const override { return false; }
-    bool shouldPaint(PaintInfo&, const LayoutPoint&);
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
+    bool shouldPaint(const PaintInfo&, const LayoutPoint&);
+    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) { }
     LayoutRect localSelectionRect(bool checkWhetherSelected = true) const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     bool isSelected() const;
 

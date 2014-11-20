@@ -13,7 +13,7 @@
 
 namespace blink {
 
-void MultiColumnSetPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderMultiColumnSet.style()->visibility() != VISIBLE)
         return;
@@ -31,7 +31,7 @@ void MultiColumnSetPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint&
     paintColumnRules(paintInfo, paintOffset);
 }
 
-void MultiColumnSetPainter::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderMultiColumnSet.flowThread()->isRenderPagedFlowThread())
         return;

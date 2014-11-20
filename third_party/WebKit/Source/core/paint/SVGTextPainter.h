@@ -13,7 +13,7 @@ class RenderSVGText;
 class SVGTextPainter {
 public:
     SVGTextPainter(RenderSVGText& renderSVGText) : m_renderSVGText(renderSVGText) { }
-    void paint(PaintInfo&);
+    void paint(const PaintInfo&);
 
 private:
     RenderSVGText& m_renderSVGText;

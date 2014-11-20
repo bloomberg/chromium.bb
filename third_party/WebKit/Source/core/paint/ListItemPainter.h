@@ -16,7 +16,7 @@ class ListItemPainter {
 public:
     ListItemPainter(RenderListItem& renderListItem) : m_renderListItem(renderListItem) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     Path getCanonicalPath() const;

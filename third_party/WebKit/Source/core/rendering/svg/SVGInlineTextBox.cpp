@@ -168,7 +168,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     return enclosingIntRect(selectionRect);
 }
 
-void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
+void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
 
     SVGInlineTextBoxPainter(*this).paint(paintInfo, paintOffset);

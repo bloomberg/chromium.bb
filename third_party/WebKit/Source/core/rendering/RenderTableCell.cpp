@@ -957,7 +957,7 @@ int RenderTableCell::borderHalfAfter(bool outer) const
     return 0;
 }
 
-void RenderTableCell::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableCell::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableCellPainter(*this).paint(paintInfo, paintOffset);
 }
@@ -997,12 +997,12 @@ void RenderTableCell::sortBorderValues(RenderTable::CollapsedBorderValues& borde
         compareBorderValuesForQSort);
 }
 
-void RenderTableCell::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableCell::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableCellPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void RenderTableCell::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderTableCell::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TableCellPainter(*this).paintMask(paintInfo, paintOffset);
 }

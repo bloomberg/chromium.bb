@@ -70,7 +70,7 @@ void RenderReplica::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderReplica::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderReplica::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ReplicaPainter(*this).paint(paintInfo, paintOffset);
 }

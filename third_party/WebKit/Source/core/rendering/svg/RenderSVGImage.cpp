@@ -132,7 +132,7 @@ void RenderSVGImage::layout()
     clearNeedsLayout();
 }
 
-void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
+void RenderSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGImagePainter(*this).paint(paintInfo);
 }

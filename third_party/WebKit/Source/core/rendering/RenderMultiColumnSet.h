@@ -136,7 +136,7 @@ private:
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) override;
+    virtual void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
 
     virtual void addOverflowFromChildren() override;
 

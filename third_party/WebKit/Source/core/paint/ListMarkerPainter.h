@@ -16,7 +16,7 @@ class ListMarkerPainter {
 public:
     ListMarkerPainter(RenderListMarker& renderListMarker) : m_renderListMarker(renderListMarker) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     Path getCanonicalPath() const;

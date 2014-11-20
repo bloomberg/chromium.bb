@@ -29,7 +29,7 @@
 
 namespace blink {
 
-void BoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderBox.location();
     // default implementation. Just pass paint through to the children
@@ -39,7 +39,7 @@ void BoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         child->paint(childInfo, adjustedPaintOffset);
 }
 
-void BoxPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderBox))
         return;
@@ -49,7 +49,7 @@ void BoxPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layout
     paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
 }
 
-void BoxPainter::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
+void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
     RenderStyle* style = m_renderBox.style();
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), paintInfo.context);
@@ -503,7 +503,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
     }
 }
 
-void BoxPainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderBox) || m_renderBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
@@ -547,7 +547,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         paintInfo.context->endLayer();
 }
 
-void BoxPainter::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_renderBox) || m_renderBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseClippingMask)
         return;

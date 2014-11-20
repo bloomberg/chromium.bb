@@ -212,7 +212,7 @@ bool RenderSVGRoot::shouldApplyViewportClip() const
         || this->isDocumentElement();
 }
 
-void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     SVGRootPainter(*this).paint(paintInfo, paintOffset);
 }

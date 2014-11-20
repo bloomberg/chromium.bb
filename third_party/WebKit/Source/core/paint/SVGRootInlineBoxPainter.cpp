@@ -16,7 +16,7 @@
 
 namespace blink {
 
-void SVGRootInlineBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
@@ -33,11 +33,11 @@ void SVGRootInlineBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& pai
         }
     }
 
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    SVGRenderingContext renderingContext(&m_svgRootInlineBox.renderer(), paintInfo);
+    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
+    SVGRenderingContext renderingContext(&m_svgRootInlineBox.renderer(), childPaintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintInfo, paintOffset, 0, 0);
+            child->paint(childPaintInfo, paintOffset, 0, 0);
     }
 }
 

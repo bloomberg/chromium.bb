@@ -65,7 +65,7 @@ private:
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     virtual void layout() override;
 

@@ -20,8 +20,8 @@ class InlinePainter {
 public:
     InlinePainter(RenderInline& renderInline) : m_renderInline(renderInline) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
-    void paintOutline(PaintInfo&, const LayoutPoint& paintOffset);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     void paintOutlineForLine(GraphicsContext*, const LayoutPoint&, const LayoutRect& prevLine, const LayoutRect& thisLine,

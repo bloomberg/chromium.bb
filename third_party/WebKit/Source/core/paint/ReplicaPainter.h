@@ -15,7 +15,7 @@ class ReplicaPainter {
 public:
     ReplicaPainter(RenderReplica& renderReplica) : m_renderReplica(renderReplica) { }
 
-    void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     RenderReplica& m_renderReplica;

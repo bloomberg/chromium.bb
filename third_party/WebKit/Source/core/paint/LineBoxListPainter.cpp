@@ -15,7 +15,7 @@
 
 namespace blink {
 
-void LineBoxListPainter::paint(RenderBoxModelObject* renderer, PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
+void LineBoxListPainter::paint(RenderBoxModelObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     // Only paint during the foreground/selection phases.
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseOutline

@@ -14,7 +14,7 @@ class SVGContainerPainter {
 public:
     SVGContainerPainter(RenderSVGContainer& renderSVGContainer) : m_renderSVGContainer(renderSVGContainer) { }
 
-    void paint(PaintInfo&);
+    void paint(const PaintInfo&);
 
 private:
     RenderSVGContainer& m_renderSVGContainer;

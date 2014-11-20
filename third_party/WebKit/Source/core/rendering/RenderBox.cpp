@@ -1067,13 +1067,13 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     return false;
 }
 
-void RenderBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
 
-void RenderBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BoxPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
@@ -1239,12 +1239,12 @@ bool RenderBox::backgroundHasOpaqueTopLayer() const
     return false;
 }
 
-void RenderBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BoxPainter(*this).paintMask(paintInfo, paintOffset);
 }
 
-void RenderBox::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderBox::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BoxPainter(*this).paintClippingMask(paintInfo, paintOffset);
 }

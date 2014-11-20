@@ -14,7 +14,7 @@ namespace blink {
 
 const int buttonShadowHeight = 2;
 
-void FileUploadControlPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderFileUploadControl.style()->visibility() != VISIBLE)
         return;

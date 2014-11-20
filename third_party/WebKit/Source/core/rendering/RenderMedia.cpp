@@ -87,7 +87,7 @@ bool RenderMedia::isChildAllowed(RenderObject* child, RenderStyle*) const
     return child->isFlexibleBox();
 }
 
-void RenderMedia::paintReplaced(PaintInfo&, const LayoutPoint&)
+void RenderMedia::paintReplaced(const PaintInfo&, const LayoutPoint&)
 {
 }
 

@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void BlockFlowPainter::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)
+void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)
 {
     if (!m_renderBlockFlow.floatingObjects())
         return;
@@ -45,7 +45,7 @@ void BlockFlowPainter::paintFloats(PaintInfo& paintInfo, const LayoutPoint& pain
     }
 }
 
-void BlockFlowPainter::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_renderBlockFlow.shouldPaintSelectionGaps() && paintInfo.phase == PaintPhaseForeground) {
         LayoutUnit lastTop = 0;

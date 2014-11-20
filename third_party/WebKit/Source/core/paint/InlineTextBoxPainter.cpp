@@ -41,7 +41,7 @@ static TextBlobPtr* addToTextBlobCache(InlineTextBox& inlineTextBox)
     return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
 }
 
-void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.renderer()) || m_inlineTextBox.renderer().style()->visibility() != VISIBLE
         || m_inlineTextBox.truncation() == cFullTruncation || paintInfo.phase == PaintPhaseOutline || !m_inlineTextBox.len())

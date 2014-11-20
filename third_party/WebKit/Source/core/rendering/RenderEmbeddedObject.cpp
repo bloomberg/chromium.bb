@@ -103,7 +103,7 @@ bool RenderEmbeddedObject::showsUnavailablePluginIndicator() const
     return m_showsUnavailablePluginIndicator;
 }
 
-void RenderEmbeddedObject::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     Element* element = toElement(node());
     if (!isHTMLPlugInElement(element))
@@ -112,7 +112,7 @@ void RenderEmbeddedObject::paintContents(PaintInfo& paintInfo, const LayoutPoint
     RenderPart::paintContents(paintInfo, paintOffset);
 }
 
-void RenderEmbeddedObject::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (showsUnavailablePluginIndicator()) {
         RenderReplaced::paint(paintInfo, paintOffset);
@@ -122,7 +122,7 @@ void RenderEmbeddedObject::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
     RenderPart::paint(paintInfo, paintOffset);
 }
 
-void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!showsUnavailablePluginIndicator())
         return;

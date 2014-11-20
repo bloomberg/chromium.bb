@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void ViewPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
     ASSERT(!m_renderView.needsLayout());
@@ -51,7 +51,7 @@ static inline bool rendererObscuresBackground(RenderBox* rootBox)
     return true;
 }
 
-void ViewPainter::paintBoxDecorationBackground(PaintInfo& paintInfo)
+void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 {
     if (m_renderView.document().ownerElement() || !m_renderView.view())
         return;

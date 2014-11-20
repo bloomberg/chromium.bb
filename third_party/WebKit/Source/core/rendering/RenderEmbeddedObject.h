@@ -44,9 +44,9 @@ public:
     bool showsUnavailablePluginIndicator() const;
 
 private:
-    virtual void paintContents(PaintInfo&, const LayoutPoint&) override final;
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override final;
-    virtual void paint(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintContents(const PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override final;
+    virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
 
     virtual void layout() override final;
 

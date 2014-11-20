@@ -269,17 +269,17 @@ void RenderImage::notifyFinished(Resource* newImage)
     }
 }
 
-void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderImage::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ImagePainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-void RenderImage::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ImagePainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderImage::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderImage::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ImagePainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-void InlineFlowBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom)
+void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom)
 {
     LayoutRect overflowRect(m_inlineFlowBox.visualOverflowRect(lineTop, lineBottom));
     m_inlineFlowBox.flipForWritingMode(overflowRect);
@@ -176,7 +176,7 @@ static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NineP
     return clipRect;
 }
 
-void InlineFlowBoxPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
     if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.renderer()) || m_inlineFlowBox.renderer().style()->visibility() != VISIBLE)
@@ -254,7 +254,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, co
     }
 }
 
-void InlineFlowBoxPainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.renderer()) || m_inlineFlowBox.renderer().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;

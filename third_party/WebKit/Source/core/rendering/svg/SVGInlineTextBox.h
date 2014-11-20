@@ -39,7 +39,7 @@ public:
     virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const override;
     virtual float positionForOffset(int offset) const override;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     virtual LayoutRect localSelectionRect(int startPosition, int endPosition) override;
 
     bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;

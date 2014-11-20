@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void SVGInlineFlowBoxPainter::paintSelectionBackground(PaintInfo& paintInfo)
+void SVGInlineFlowBoxPainter::paintSelectionBackground(const PaintInfo& paintInfo)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
@@ -27,15 +27,17 @@ void SVGInlineFlowBoxPainter::paintSelectionBackground(PaintInfo& paintInfo)
     }
 }
 
-void SVGInlineFlowBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    SVGRenderingContext renderingContext(&m_svgInlineFlowBox.renderer(), paintInfo);
+    // FIXME: SVGRenderingContext wants a non-const PaintInfo to muck with.
+    PaintInfo localPaintInfo(paintInfo);
+    GraphicsContextStateSaver stateSaver(*localPaintInfo.context);
+    SVGRenderingContext renderingContext(&m_svgInlineFlowBox.renderer(), localPaintInfo);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintInfo, paintOffset, 0, 0);
+            child->paint(localPaintInfo, paintOffset, 0, 0);
     }
 }
 

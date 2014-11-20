@@ -127,7 +127,7 @@ private:
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 
-    virtual void paintChildren(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintChildren(const PaintInfo&, const LayoutPoint&) override;
     bool needToStretchChildLogicalHeight(const RenderBox&) const;
     LayoutUnit childIntrinsicHeight(const RenderBox&) const;
     LayoutUnit childIntrinsicWidth(const RenderBox&) const;

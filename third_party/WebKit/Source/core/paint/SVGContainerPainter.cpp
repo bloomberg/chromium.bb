@@ -19,7 +19,7 @@
 
 namespace blink {
 
-void SVGContainerPainter::paint(PaintInfo& paintInfo)
+void SVGContainerPainter::paint(const PaintInfo& paintInfo)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderSVGContainer);
 

@@ -15,7 +15,7 @@ class SVGRootPainter {
 public:
     SVGRootPainter(RenderSVGRoot& renderSVGRoot) : m_renderSVGRoot(renderSVGRoot) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
+    void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
     RenderSVGRoot& m_renderSVGRoot;

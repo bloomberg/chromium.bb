@@ -120,7 +120,7 @@ void RenderFrameSet::paintRowBorder(const PaintInfo& paintInfo, const IntRect& b
     }
 }
 
-void RenderFrameSet::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
 
