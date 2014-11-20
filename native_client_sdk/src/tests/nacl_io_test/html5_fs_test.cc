@@ -251,9 +251,9 @@ TEST_F(Html5FsTest, OpenForCreate) {
   ASSERT_EQ(0, fs->Open(path, O_CREAT | O_RDWR, &node));
 
   // Write some data.
-  char contents[] = "contents";
+  const char* contents = "contents";
   int bytes_written = 0;
-  EXPECT_EQ(0, node->Write(HandleAttr(), &contents[0], strlen(contents),
+  EXPECT_EQ(0, node->Write(HandleAttr(), contents, strlen(contents),
                            &bytes_written));
   EXPECT_EQ(strlen(contents), bytes_written);
 
@@ -280,7 +280,7 @@ TEST_F(Html5FsTest, OpenForCreate) {
 }
 
 TEST_F(Html5FsTest, Read) {
-  const char contents[] = "contents";
+  const char* contents = "contents";
   ASSERT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
   ASSERT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
@@ -322,7 +322,7 @@ TEST_F(Html5FsTest, Read) {
 }
 
 TEST_F(Html5FsTest, Write) {
-  const char contents[] = "contents";
+  const char* contents = "contents";
   EXPECT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
@@ -363,7 +363,7 @@ TEST_F(Html5FsTest, GetStat) {
   const int creation_time = 1000;
   const int access_time = 2000;
   const int modified_time = 3000;
-  const char contents[] = "contents";
+  const char* contents = "contents";
 
   // Create fake file.
   FakeHtml5FsNode* fake_node;
@@ -422,7 +422,7 @@ TEST_F(Html5FsTest, GetStat) {
 }
 
 TEST_F(Html5FsTest, FTruncate) {
-  const char contents[] = "contents";
+  const char* contents = "contents";
   EXPECT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
   EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
@@ -465,7 +465,7 @@ TEST_F(Html5FsTest, Chmod) {
 }
 
 TEST_F(Html5FsTest, GetDents) {
-  const char contents[] = "contents";
+  const char* contents = "contents";
   EXPECT_TRUE(
       ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
 
