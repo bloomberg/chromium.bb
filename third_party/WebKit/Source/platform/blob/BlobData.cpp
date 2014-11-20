@@ -34,8 +34,6 @@
 #include "platform/UUID.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/text/LineEnding.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -120,16 +118,6 @@ void BlobData::appendBytes(const void* bytes, size_t length)
     Vector<char>* buffer = data->mutableData();
     buffer->append(static_cast<const char *>(bytes), length);
     m_items.append(BlobDataItem(data.release()));
-}
-
-void BlobData::appendArrayBuffer(const ArrayBuffer* arrayBuffer)
-{
-    appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
-}
-
-void BlobData::appendArrayBufferView(const ArrayBufferView* arrayBufferView)
-{
-    appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
 }
 
 void BlobData::swapItems(BlobDataItemList& items)

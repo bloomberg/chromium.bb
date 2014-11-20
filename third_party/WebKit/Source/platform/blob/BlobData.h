@@ -179,8 +179,6 @@ public:
     void appendBlob(PassRefPtr<BlobDataHandle>, long long offset, long long length);
     void appendFileSystemURL(const KURL&, long long offset, long long length, double expectedModificationTime);
     void appendText(const String&, bool normalizeLineEndingsToNative);
-    void appendArrayBuffer(const ArrayBuffer*);
-    void appendArrayBufferView(const ArrayBufferView*);
 
     // The value of the size property for a Blob who has this data.
     // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet determined.

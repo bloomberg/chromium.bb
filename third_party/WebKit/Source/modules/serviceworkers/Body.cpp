@@ -173,7 +173,7 @@ void Body::didFinishLoading()
         ASSERT(blobDataHandle()->size() == kuint64max);
         OwnPtr<BlobData> blobData = BlobData::create();
         RefPtr<DOMArrayBuffer> buffer = m_loader->arrayBufferResult();
-        blobData->appendArrayBuffer(buffer->buffer());
+        blobData->appendBytes(buffer->data(), buffer->byteLength());
         const size_t length = blobData->length();
         m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), length)));
         break;

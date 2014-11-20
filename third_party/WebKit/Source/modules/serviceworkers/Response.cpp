@@ -79,15 +79,17 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
     }
     if (body.isArrayBuffer()) {
+        RefPtr<DOMArrayBuffer> arrayBuffer = body.getAsArrayBuffer();
         OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendArrayBuffer(body.getAsArrayBuffer()->buffer());
+        blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
         const long long length = blobData->length();
         Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
     }
     if (body.isArrayBufferView()) {
+        RefPtr<DOMArrayBufferView> arrayBufferView = body.getAsArrayBufferView();
         OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendArrayBufferView(body.getAsArrayBufferView()->view());
+        blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
         const long long length = blobData->length();
         Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
