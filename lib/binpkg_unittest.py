@@ -16,7 +16,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 from chromite.lib import binpkg
 from chromite.lib import cros_test_lib
 from chromite.lib import gs_unittest
+from chromite.lib import osutils
 
+
+PACKAGES_CONTENT = """USE: test
+
+CPV: chromeos-base/shill-0.0.1-r1
+
+CPV: chromeos-base/test-0.0.1-r1
+DEBUG_SYMBOLS: yes
+"""
 
 class FetchTarballsTest(cros_test_lib.MockTempDirTestCase):
   """Tests for GSContext that go over the network."""
@@ -41,6 +50,23 @@ PATH boo/baz.tbz2
     """Actually fetch a real binhost from the network."""
     uri = 'gs://chromeos-prebuilt/board/lumpy/paladin-R37-5905.0.0-rc2/packages'
     binpkg.FetchTarballs([uri], self.tempdir)
+
+
+class DebugSymbolsTest(cros_test_lib.TempDirTestCase):
+  """Tests for the debug symbols handling in binpkg."""
+
+  def testDebugSymbolsDetected(self):
+    """When generating the Packages file, DEBUG_SYMBOLS is updated."""
+    osutils.WriteFile(os.path.join(self.tempdir,
+                                   'chromeos-base/shill-0.0.1-r1.debug.tbz2'),
+                      'hello', makedirs=True)
+    osutils.WriteFile(os.path.join(self.tempdir, 'Packages'),
+                      PACKAGES_CONTENT)
+
+    index = binpkg.GrabLocalPackageIndex(self.tempdir)
+    self.assertEquals(index.packages[0]['CPV'], 'chromeos-base/shill-0.0.1-r1')
+    self.assertEquals(index.packages[0].get('DEBUG_SYMBOLS'), 'yes')
+    self.assertFalse('DEBUG_SYMBOLS' in index.packages[1])
 
 
 if __name__ == '__main__':

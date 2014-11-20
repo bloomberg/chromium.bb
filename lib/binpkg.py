@@ -27,7 +27,7 @@ TWO_WEEKS = 60 * 60 * 24 * 7 * 2
 HTTP_FORBIDDEN_CODES = (401, 403)
 HTTP_NOT_FOUND_CODES = (404, 410)
 
-_Package = collections.namedtuple('_Package', ['mtime', 'uri'])
+_Package = collections.namedtuple('_Package', ['mtime', 'uri', 'debug_symbols'])
 
 class PackageIndex(object):
   """A parser for the Portage Packages index file.
@@ -69,10 +69,12 @@ class PackageIndex(object):
     uri = gs.CanonicalizeURL(self.header['URI'])
     for pkg in self.packages:
       cpv, sha1, mtime = pkg['CPV'], pkg.get('SHA1'), pkg.get('MTIME')
-      oldpkg = db.get(sha1, _Package(0, None))
+      oldpkg = db.get(sha1, _Package(0, None, False))
       if sha1 and mtime and int(mtime) > max(expires, oldpkg.mtime):
         path = pkg.get('PATH', cpv + '.tbz2')
-        db[sha1] = _Package(int(mtime), '%s/%s' % (uri.rstrip('/'), path))
+        db[sha1] = _Package(int(mtime),
+                            '%s/%s' % (uri.rstrip('/'), path),
+                            pkg.get('DEBUG_SYMBOLS') == 'yes')
 
   def _ReadPkgIndex(self, pkgfile):
     """Read a list of key/value pairs from the Packages file into a dictionary.
@@ -208,9 +210,18 @@ class PackageIndex(object):
     for pkg in self.packages:
       sha1 = pkg.get('SHA1')
       dup = db.get(sha1)
-      if sha1 and dup and dup.uri.startswith(base_uri):
+
+      # If the debug symbols are available locally but are not available in the
+      # remote binhost, re-upload them.
+      # Note: this should never happen as we would have pulled the debug symbols
+      # from said binhost.
+      if (sha1 and dup and dup.uri.startswith(base_uri)
+          and (pkg.get('DEBUG_SYMBOLS') != 'yes' or dup.debug_symbols)):
         pkg['PATH'] = dup.uri[len(base_uri):].lstrip('/')
         pkg['MTIME'] = str(dup.mtime)
+
+        if dup.debug_symbols:
+          pkg['DEBUG_SYMBOLS'] = 'yes'
       else:
         pkg['MTIME'] = str(now)
         uploads.append(pkg)
@@ -349,6 +360,21 @@ def GrabLocalPackageIndex(package_path):
   pkgindex = PackageIndex()
   pkgindex.Read(packages_file)
   packages_file.close()
+
+  # List all debug symbols available in package_path.
+  symbols = set()
+  for f in cros_build_lib.ListFiles(package_path):
+    if f.endswith('.debug.tbz2'):
+      f = os.path.relpath(f, package_path)[:-len('.debug.tbz2')]
+      symbols.add(f)
+
+  for p in pkgindex.packages:
+    # If the Packages file has DEBUG_SYMBOLS set but no debug symbols are
+    # found, unset it.
+    p.pop('DEBUG_SYMBOLS', None)
+    if p['CPV'] in symbols:
+      p['DEBUG_SYMBOLS'] = 'yes'
+
   return pkgindex
 
 

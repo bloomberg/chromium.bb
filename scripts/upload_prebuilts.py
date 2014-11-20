@@ -235,15 +235,13 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
     suffix = pkg['CPV'] + '.tbz2'
     local_path = os.path.join(base_local_path, suffix)
     assert os.path.exists(local_path)
-    remote_path = '%s/%s' % (base_remote_path.rstrip('/'), suffix)
-    upload_files[local_path] = remote_path
+    upload_files[local_path] = os.path.join(base_remote_path, suffix)
 
-    debugsuffix = pkg['CPV'] + '.debug.tbz2'
-    local_path = os.path.join(base_local_path, debugsuffix)
-    if not os.path.exists(local_path):
-      continue
-    remote_path = '%s/%s' % (base_remote_path.rstrip('/'), debugsuffix)
-    upload_files[local_path] = remote_path
+    if pkg.get('DEBUG_SYMBOLS') == 'yes':
+      debugsuffix = pkg['CPV'] + '.debug.tbz2'
+      local_path = os.path.join(base_local_path, debugsuffix)
+      assert os.path.exists(local_path)
+      upload_files[local_path] = os.path.join(base_remote_path, debugsuffix)
 
   return upload_files
 

@@ -116,16 +116,27 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
 class TestPrebuilt(cros_test_lib.MockTestCase):
   """Tests for Prebuilt logic."""
 
+  def setUp(self):
+    self._base_local_path = '/b/cbuild/build/chroot/build/x86-dogfood/'
+    self._gs_bucket_path = 'gs://chromeos-prebuilt/host/version'
+    self._local_path = os.path.join(self._base_local_path, 'public1.tbz2')
+
   def testGenerateUploadDict(self):
-    base_local_path = '/b/cbuild/build/chroot/build/x86-dogfood/'
-    gs_bucket_path = 'gs://chromeos-prebuilt/host/version'
-    local_path = os.path.join(base_local_path, 'public1.tbz2')
     self.PatchObject(prebuilt.os.path, 'exists', return_true=True)
     pkgs = [{'CPV': 'public1'}]
-    result = prebuilt.GenerateUploadDict(base_local_path, gs_bucket_path, pkgs)
-    expected = {local_path: gs_bucket_path + '/public1.tbz2',
-                local_path.replace('tbz2', 'debug.tbz2'):
-                    gs_bucket_path + '/public1.debug.tbz2'}
+    result = prebuilt.GenerateUploadDict(self._base_local_path,
+                                         self._gs_bucket_path, pkgs)
+    expected = {self._local_path: self._gs_bucket_path + '/public1.tbz2', }
+    self.assertEqual(result, expected)
+
+  def testGenerateUploadDictWithDebug(self):
+    self.PatchObject(prebuilt.os.path, 'exists', return_true=True)
+    pkgs = [{'CPV': 'public1', 'DEBUG_SYMBOLS': 'yes'}]
+    result = prebuilt.GenerateUploadDict(self._base_local_path,
+                                         self._gs_bucket_path, pkgs)
+    expected = {self._local_path: self._gs_bucket_path + '/public1.tbz2',
+                self._local_path.replace('.tbz2', '.debug.tbz2'):
+                self._gs_bucket_path + '/public1.debug.tbz2'}
     self.assertEqual(result, expected)
 
   def testDeterminePrebuiltConfHost(self):
@@ -257,6 +268,21 @@ class TestResolveDuplicateUploads(cros_test_lib.MockTestCase, TestPkgIndex):
     del self.pkgindex.packages[0]['MTIME']
     del self.expected_pkgindex.packages[0]['MTIME']
     self.assertEqual(self.pkgindex.packages, self.expected_pkgindex.packages)
+
+  def testSymbolsAvailable(self):
+    """If symbols are available remotely, re-use them and set DEBUG_SYMBOLS."""
+    self.dup.packages[0]['DEBUG_SYMBOLS'] = 'yes'
+
+    uploads = self.pkgindex.ResolveDuplicateUploads([self.dup])
+    self.assertEqual(uploads, [])
+    self.assertEqual(self.pkgindex.packages[0].get('DEBUG_SYMBOLS'), 'yes')
+
+  def testSymbolsAvailableLocallyOnly(self):
+    """If the symbols are only available locally, reupload them."""
+    self.pkgindex.packages[0]['DEBUG_SYMBOLS'] = 'yes'
+
+    uploads = self.pkgindex.ResolveDuplicateUploads([self.dup])
+    self.assertEqual(uploads, [self.pkgindex.packages[0]])
 
 
 class TestWritePackageIndex(cros_test_lib.MockTestCase, TestPkgIndex):
