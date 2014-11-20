@@ -119,6 +119,12 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   if (!screenlock_bridge_->IsLocked())
     return;
 
+  // Do nothing when auth type is online.
+  if (screenlock_bridge_->lock_handler()->GetAuthType(user_email_) ==
+      ScreenlockBridge::LockHandler::ONLINE_SIGN_IN) {
+    return;
+  }
+
   // No hardlock UI for trial run.
   if (!is_trial_run_ && hardlock_state_ != NO_HARDLOCK) {
     ShowHardlockUI();
@@ -313,8 +319,7 @@ void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
   // Do not override online signin.
   const ScreenlockBridge::LockHandler::AuthType existing_auth_type =
       screenlock_bridge_->lock_handler()->GetAuthType(user_email_);
-  if (existing_auth_type == ScreenlockBridge::LockHandler::ONLINE_SIGN_IN)
-    return;
+  DCHECK_NE(ScreenlockBridge::LockHandler::ONLINE_SIGN_IN, existing_auth_type);
 
   if (state_ == STATE_AUTHENTICATED) {
     if (existing_auth_type != ScreenlockBridge::LockHandler::USER_CLICK) {

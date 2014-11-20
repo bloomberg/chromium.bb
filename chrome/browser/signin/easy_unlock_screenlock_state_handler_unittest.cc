@@ -768,6 +768,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
     state_handler_->ChangeState(states[i]);
     EXPECT_EQ(ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
               lock_handler_->GetAuthType(user_email_));
+    EXPECT_FALSE(lock_handler_->HasCustomIcon());
   }
 
   std::vector<EasyUnlockScreenlockStateHandler::HardlockState> hardlock_states;
@@ -782,6 +783,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
     state_handler_->SetHardlockState(hardlock_states[i]);
     EXPECT_EQ(ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
               lock_handler_->GetAuthType(user_email_));
+    EXPECT_FALSE(lock_handler_->HasCustomIcon());
   }
 }
 
