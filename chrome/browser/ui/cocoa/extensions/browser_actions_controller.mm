@@ -682,6 +682,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
                                   kBrowserActionOriginYOffset,
                                   kChevronWidth,
                                   ToolbarActionsBar::IconHeight());
+  [chevronAnimation_ stopAnimation];
   [chevronMenuButton_ setFrame:buttonFrame];
 }
 
@@ -722,19 +723,17 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
     return;
   }
 
-  NSDictionary* animationDictionary;
+  NSString* animationEffect;
   if (hidden) {
-    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-        chevronMenuButton_.get(), NSViewAnimationTargetKey,
-        NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
-        nil];
+    animationEffect = NSViewAnimationFadeOutEffect;
   } else {
     [chevronMenuButton_ setHidden:NO];
-    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-        chevronMenuButton_.get(), NSViewAnimationTargetKey,
-        NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-        nil];
+    animationEffect = NSViewAnimationFadeInEffect;
   }
+  NSDictionary* animationDictionary = @{
+      NSViewAnimationTargetKey : chevronMenuButton_.get(),
+      NSViewAnimationEffectKey : animationEffect
+  };
   [chevronAnimation_ setViewAnimations:
       [NSArray arrayWithObject:animationDictionary]];
   [chevronAnimation_ startAnimation];
