@@ -168,6 +168,7 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
+    gfx::AcceleratedWidget widget,
     gfx::Size size,
     BufferFormat format,
     BufferUsage usage) {

@@ -65,6 +65,7 @@ ui::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
 }
 
 scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
+    gfx::AcceleratedWidget widget,
     gfx::Size size,
     BufferFormat format,
     BufferUsage usage) {

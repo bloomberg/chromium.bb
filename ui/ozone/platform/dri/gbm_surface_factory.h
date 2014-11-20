@@ -35,6 +35,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   scoped_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<ui::NativePixmap> CreateNativePixmap(
+      gfx::AcceleratedWidget widget,
       gfx::Size size,
       BufferFormat format,
       BufferUsage usage) override;

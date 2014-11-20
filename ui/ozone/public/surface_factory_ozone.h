@@ -126,10 +126,14 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual OverlayCandidatesOzone* GetOverlayCandidates(
       gfx::AcceleratedWidget w);
 
-  // Cleate a single native buffer to be used for overlay planes or zero copy.
-  virtual scoped_refptr<NativePixmap> CreateNativePixmap(gfx::Size size,
-                                                         BufferFormat format,
-                                                         BufferUsage usage);
+  // Create a single native buffer to be used for overlay planes or zero copy
+  // for |widget| representing a particular display controller or default
+  // display controller for kNullAcceleratedWidget.
+  virtual scoped_refptr<NativePixmap> CreateNativePixmap(
+      gfx::AcceleratedWidget widget,
+      gfx::Size size,
+      BufferFormat format,
+      BufferUsage usage);
 
   // Sets the overlay plane to switch to at the next page flip.
   // |w| specifies the screen to display this overlay plane on.
