@@ -2058,9 +2058,7 @@ bool LayerTreeHostImpl::CanUseZeroCopyRasterizer() const {
 }
 
 bool LayerTreeHostImpl::CanUseOneCopyRasterizer() const {
-  // Sync query support is required by one-copy rasterizer.
-  return GetRendererCapabilities().using_image &&
-         resource_provider_->use_sync_query();
+  return GetRendererCapabilities().using_image;
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
