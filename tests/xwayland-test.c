@@ -25,7 +25,7 @@
  * general works with Weston.
  */
 
-#include "weston-test-runner.h"
+#include "config.h"
 
 #include <assert.h>
 #include <unistd.h>
@@ -36,6 +36,8 @@
 #include <xcb/xcb.h>
 #include <xcb/dri2.h>
 #include <xf86drm.h>
+
+#include "weston-test-runner.h"
 
 
 static int
