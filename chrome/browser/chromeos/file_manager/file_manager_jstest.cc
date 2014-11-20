@@ -75,3 +75,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("directory_tree_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("media_scanner_unittest.html")));
+}
