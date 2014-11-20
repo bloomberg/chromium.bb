@@ -9,6 +9,7 @@
 
 namespace switches {
 
+#if !defined(DISABLE_NACL)
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kDisablePnaclCrashThrottling[];
@@ -22,6 +23,7 @@ extern const char kNaClGdb[];
 extern const char kNaClLoaderNonSfiProcess[];
 extern const char kNaClLoaderProcess[];
 extern const char kUseNaClHelperNonSfi[];
+#endif  // !defined(DISABLE_NACL)
 
 }  // namespace switches
 

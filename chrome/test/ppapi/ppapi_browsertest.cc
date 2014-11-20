@@ -1494,8 +1494,10 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+#if !defined(DISABLE_NACL)
     NonSfiPackagedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+#endif
   }
 };
 
