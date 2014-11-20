@@ -1083,6 +1083,10 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
                 for (const auto& element : elementsToPushDown) {
                     RefPtrWillBeRawPtr<Element> wrapper = element->cloneElementWithoutChildren();
                     wrapper->removeAttribute(styleAttr);
+                    // Delete id attribute from the second element because the same id cannot be used for more than one element
+                    element->removeAttribute(HTMLNames::idAttr);
+                    if (isHTMLAnchorElement(element))
+                        element->removeAttribute(HTMLNames::nameAttr);
                     surroundNodeRangeWithElement(child, child, wrapper);
                 }
             }
