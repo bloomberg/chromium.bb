@@ -2888,6 +2888,23 @@ def MakeTrustedLinuxEnv(platform=None):
 (linux_debug_env, linux_optimized_env) = \
     GenerateOptimizationLevels(MakeTrustedLinuxEnv())
 
+
+def BiasedBitcodeFlags(env):
+  """ Return clang flags to use biased bitcode and generate native-ABI-compliant
+      code. Does not imply pre-translation.
+  """
+  if env.Bit('target_x86_32'):
+    return ['--target=i686-unknown-nacl']
+  if env.Bit('target_x86_64'):
+    return ['--target=x86_64-unknown-nacl']
+  if env.Bit('target_arm'):
+    return ['--target=armv7-unknown-nacl-gnueabihf', '-mfloat-abi=hard']
+  if env.Bit('target_mips'):
+    return []
+  raise UserError('No known target bits set')
+
+pre_base_env.AddMethod(BiasedBitcodeFlags)
+
 # Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
 pre_base_env.Append(
     PNACL_BCLDFLAGS = ARGUMENTS.get('pnacl_bcldflags', '').split(':'))
@@ -3160,6 +3177,9 @@ if nacl_env.Bit('bitcode'):
   # Allow unused private fields.  (Until these are removed.)
   # http://code.google.com/p/nativeclient/issues/detail?id=2861
   nacl_env.Append(CCFLAGS=['-Wno-unused-private-field'])
+  # native_client/src/nonsfi/linux/linux_syscall_structs.h uses designated
+  # initializers, which causes a warning when included from c++98 code.
+  nacl_env.Append(CXXFLAGS=['-Wno-c99-extensions'])
 
 if nacl_env.Bit('nacl_clang'):
   # third_party/valgrind/nacl_valgrind.h uses asm instead of __asm__

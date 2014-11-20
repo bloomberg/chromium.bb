@@ -348,6 +348,18 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
 # Test that Exception Handling works with the calling conventions that
 # match the PPAPI PNaCl IRT shim's calling conventions.
 exc_env = env.Clone()
+# Clear the --target= flags from CFLAGS because zerocost EH is the one nonpexe
+# feature that is really intended to work with portable bitcode. This means
+# that the test code bitcode has a different target triple than the other
+# scons-built code (e.g. libnacl) so the test should be careful in its use of
+# external calls.
+exc_env['BASE_CFLAGS'] = ''
+exc_env['BASE_CXXFLAGS'] = ''
+exc_env['BASE_LINKFLAGS'] = ''
+# Clearing NACL_SDK_LIB means that the crt files, newlib, and libcxx will be
+# le32 instead of biased.
+exc_env['NACL_SDK_LIB'] = ''
+
 if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
   # Test what happens when all objects are bitcode w/ bitcode linking.
   exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])

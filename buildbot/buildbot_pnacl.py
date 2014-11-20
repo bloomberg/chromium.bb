@@ -40,10 +40,6 @@ def RunSconsTests(status, context):
   with Step('large_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=False, args=flags_run + ['large_tests'])
 
-  # non-pexe-mode tests. Build everything to make sure it all builds in nonpexe
-  # mode, but just run the nonpexe_tests
-  with Step('build_nonpexe ' + arch, status):
-    SCons(context, parallel=True, args=flags_build + ['pnacl_generate_pexe=0'])
   with Step('nonpexe_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True,
           args=flags_run + ['pnacl_generate_pexe=0', 'nonpexe_tests'])
