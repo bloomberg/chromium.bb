@@ -36,6 +36,12 @@ class WebstoreInlineInstaller
                           const GURL& requestor_url,
                           const Callback& callback);
 
+  // Returns true if given |requestor_url| is a verified site according to the
+  // given |webstore_data|.
+  static bool IsRequestorPermitted(const base::DictionaryValue& webstore_data,
+                                   const GURL& requestor_url,
+                                   std::string* error);
+
  protected:
   friend class base::RefCountedThreadSafe<WebstoreInlineInstaller>;
 

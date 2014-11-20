@@ -628,6 +628,8 @@
       'browser/extensions/extension_management_internal.h',
       'browser/extensions/extension_message_bubble_controller.cc',
       'browser/extensions/extension_message_bubble_controller.h',
+      'browser/extensions/extension_reenabler.cc',
+      'browser/extensions/extension_reenabler.h',
       'browser/extensions/extension_renderer_state.cc',
       'browser/extensions/extension_renderer_state.h',
       'browser/extensions/extension_resource_protocols.cc',

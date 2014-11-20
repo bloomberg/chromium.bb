@@ -47,6 +47,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
@@ -90,7 +91,8 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       location_bar_controller_(new LocationBarController(web_contents)),
       active_script_controller_(new ActiveScriptController(web_contents)),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()),
-      image_loader_ptr_factory_(this) {
+      image_loader_ptr_factory_(this),
+      weak_ptr_factory_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
@@ -322,7 +324,7 @@ void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
           ExtensionSystem::Get(profile_)->extension_service(),
           web_app_info_, web_contents()));
       bookmark_app_helper_->Create(base::Bind(
-          &TabHelper::FinishCreateBookmarkApp, base::Unretained(this)));
+          &TabHelper::FinishCreateBookmarkApp, weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case UPDATE_SHORTCUT: {
@@ -349,7 +351,8 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
   // Check that the listener is reasonable. We should never get anything other
   // than an install stage listener, a download listener, or both.
   if ((listeners_mask & ~(api::webstore::INSTALL_STAGE_LISTENER |
-                          api::webstore::DOWNLOAD_PROGRESS_LISTENER)) != 0) {
+                          api::webstore::DOWNLOAD_PROGRESS_LISTENER)) != 0 ||
+      requestor_url.is_empty()) {
     NOTREACHED();
     return;
   }
@@ -357,21 +360,45 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
   // page requested status updates.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  WebstoreAPI::Get(profile)->OnInlineInstallStart(
-      return_route_id, this, webstore_item_id, listeners_mask);
 
-  WebstoreStandaloneInstaller::Callback callback =
-      base::Bind(&TabHelper::OnInlineInstallComplete,
-                 base::Unretained(this),
-                 install_id,
-                 return_route_id);
-  scoped_refptr<WebstoreInlineInstaller> installer(
-      webstore_inline_installer_factory_->CreateInstaller(
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  if (registry->disabled_extensions().Contains(webstore_item_id) &&
+      (ExtensionPrefs::Get(profile)->GetDisableReasons(webstore_item_id) &
+           Extension::DISABLE_PERMISSIONS_INCREASE) != 0) {
+      // The extension was disabled due to permissions increase. Prompt for
+      // re-enable.
+      // TODO(devlin): We should also prompt for re-enable for other reasons,
+      // like user-disabled.
+      // For clarity, explicitly end any prior reenable process.
+      extension_reenabler_.reset();
+      extension_reenabler_ = ExtensionReenabler::PromptForReenable(
+          registry->disabled_extensions().GetByID(webstore_item_id),
+          profile,
           web_contents(),
-          webstore_item_id,
           requestor_url,
-          callback));
-  installer->BeginInstall();
+          base::Bind(&TabHelper::OnReenableComplete,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     install_id,
+                     return_route_id));
+  } else {
+    // TODO(devlin): We should adddress the case of the extension already
+    // being installed and enabled.
+    WebstoreAPI::Get(profile)->OnInlineInstallStart(
+        return_route_id, this, webstore_item_id, listeners_mask);
+
+    WebstoreStandaloneInstaller::Callback callback =
+        base::Bind(&TabHelper::OnInlineInstallComplete,
+                   base::Unretained(this),
+                   install_id,
+                   return_route_id);
+    scoped_refptr<WebstoreInlineInstaller> installer(
+        webstore_inline_installer_factory_->CreateInstaller(
+            web_contents(),
+            webstore_item_id,
+            requestor_url,
+            callback));
+    installer->BeginInstall();
+  }
 }
 
 void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
@@ -489,6 +516,37 @@ void TabHelper::OnImageLoaded(const gfx::Image& image) {
 
 WindowController* TabHelper::GetExtensionWindowController() const  {
   return ExtensionTabUtil::GetWindowControllerOfTab(web_contents());
+}
+
+void TabHelper::OnReenableComplete(int install_id,
+                                   int return_route_id,
+                                   ExtensionReenabler::ReenableResult result) {
+  extension_reenabler_.reset();
+  // Map the re-enable results to webstore-install results.
+  webstore_install::Result webstore_result = webstore_install::SUCCESS;
+  std::string error;
+  switch (result) {
+    case ExtensionReenabler::REENABLE_SUCCESS:
+      break;  // already set
+    case ExtensionReenabler::USER_CANCELED:
+      webstore_result = webstore_install::USER_CANCELLED;
+      error = "User canceled install.";
+      break;
+    case ExtensionReenabler::NOT_ALLOWED:
+      webstore_result = webstore_install::NOT_PERMITTED;
+      error = "Install not permitted.";
+      break;
+    case ExtensionReenabler::ABORTED:
+      webstore_result = webstore_install::ABORTED;
+      error = "Aborted due to tab closing.";
+      break;
+  }
+
+  OnInlineInstallComplete(install_id,
+                          return_route_id,
+                          result == ExtensionReenabler::REENABLE_SUCCESS,
+                          error,
+                          webstore_result);
 }
 
 void TabHelper::OnInlineInstallComplete(int install_id,

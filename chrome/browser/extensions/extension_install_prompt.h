@@ -78,6 +78,9 @@ class ExtensionInstallPrompt
     NUM_PROMPT_TYPES
   };
 
+  // The last prompt type to display; only used for testing.
+  static PromptType g_last_prompt_type_for_tests;
+
   // Enumeration for permissions and retained files details.
   enum DetailsType {
     PERMISSIONS_DETAILS = 0,

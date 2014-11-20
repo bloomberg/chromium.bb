@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "url/gurl.h"
 
@@ -149,21 +150,49 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
   RunTest("runTest");
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  ASSERT_TRUE(extension_service->GetExtensionById(kTestExtensionId, false));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 
   // Disable the extension.
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
   extension_service->DisableExtension(kTestExtensionId,
                                       Extension::DISABLE_USER_ACTION);
-  ASSERT_FALSE(extension_service->IsExtensionEnabled(kTestExtensionId));
+  EXPECT_TRUE(registry->disabled_extensions().GetByID(kTestExtensionId));
 
   // Revisit the inline install site and reinstall the extension. It should
   // simply be re-enabled, rather than try to install again.
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
   RunTest("runTest");
-  ASSERT_TRUE(extension_service->IsExtensionEnabled(kTestExtensionId));
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
+  // Since it was disabled by user action, the prompt should have just been the
+  // inline install prompt.
+  EXPECT_EQ(ExtensionInstallPrompt::INLINE_INSTALL_PROMPT,
+            ExtensionInstallPrompt::g_last_prompt_type_for_tests);
+
+  // Disable the extension due to a permissions increase.
+  extension_service->DisableExtension(kTestExtensionId,
+                                      Extension::DISABLE_PERMISSIONS_INCREASE);
+  EXPECT_TRUE(registry->disabled_extensions().GetByID(kTestExtensionId));
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
+  RunTest("runTest");
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
+  // The displayed prompt should be for the permissions increase, versus a
+  // normal inline install prompt.
+  EXPECT_EQ(ExtensionInstallPrompt::RE_ENABLE_PROMPT,
+            ExtensionInstallPrompt::g_last_prompt_type_for_tests);
+
+  ExtensionInstallPrompt::g_last_prompt_type_for_tests =
+      ExtensionInstallPrompt::UNSET_PROMPT_TYPE;
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
+  RunTest("runTest");
+  // If the extension was already enabled, we should still display an inline
+  // install prompt (until we come up with something better).
+  EXPECT_EQ(ExtensionInstallPrompt::INLINE_INSTALL_PROMPT,
+            ExtensionInstallPrompt::g_last_prompt_type_for_tests);
 }
 
 class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {

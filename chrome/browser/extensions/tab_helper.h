@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/extension_reenabler.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
@@ -187,11 +188,16 @@ class TabHelper : public content::WebContentsObserver,
   void OnImageLoaded(const gfx::Image& image);
 
   // WebstoreStandaloneInstaller::Callback.
-  virtual void OnInlineInstallComplete(int install_id,
-                                       int return_route_id,
-                                       bool success,
-                                       const std::string& error,
-                                       webstore_install::Result result);
+  void OnInlineInstallComplete(int install_id,
+                               int return_route_id,
+                               bool success,
+                               const std::string& error,
+                               webstore_install::Result result);
+
+  // ExtensionReenabler::Callback.
+  void OnReenableComplete(int install_id,
+                          int return_route_id,
+                          ExtensionReenabler::ReenableResult result);
 
   // content::NotificationObserver.
   void Observe(int type,
@@ -254,8 +260,14 @@ class TabHelper : public content::WebContentsObserver,
   // Creates WebstoreInlineInstaller instances for inline install triggers.
   scoped_ptr<WebstoreInlineInstallerFactory> webstore_inline_installer_factory_;
 
+  // The reenable prompt for disabled extensions, if any.
+  scoped_ptr<ExtensionReenabler> extension_reenabler_;
+
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
+
+  // Generic weak ptr factory for posting callbacks.
+  base::WeakPtrFactory<TabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };

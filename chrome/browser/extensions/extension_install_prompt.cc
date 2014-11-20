@@ -190,6 +190,10 @@ ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
 ExtensionInstallPrompt::AutoConfirmForTests
 ExtensionInstallPrompt::g_auto_confirm_for_tests = ExtensionInstallPrompt::NONE;
 
+ExtensionInstallPrompt::PromptType
+ExtensionInstallPrompt::g_last_prompt_type_for_tests =
+    ExtensionInstallPrompt::UNSET_PROMPT_TYPE;
+
 // This should match the PromptType enum.
 std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
   switch (type) {
@@ -941,6 +945,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       NOTREACHED() << "Unknown message";
       return;
   }
+
+  g_last_prompt_type_for_tests = prompt_->type();
 
   if (AutoConfirmPrompt(delegate_))
     return;

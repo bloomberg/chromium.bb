@@ -38,6 +38,54 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(
 
 WebstoreInlineInstaller::~WebstoreInlineInstaller() {}
 
+// static
+bool WebstoreInlineInstaller::IsRequestorPermitted(
+    const base::DictionaryValue& webstore_data,
+    const GURL& requestor_url,
+    std::string* error) {
+  // Ensure that there is at least one verified site present.
+  const bool data_has_single_site = webstore_data.HasKey(kVerifiedSiteKey);
+  const bool data_has_site_list = webstore_data.HasKey(kVerifiedSitesKey);
+  if (!data_has_single_site && !data_has_site_list) {
+    *error = kNoVerifiedSitesError;
+    return false;
+  }
+  bool requestor_is_ok = false;
+  // Handle the deprecated single-site case.
+  if (!data_has_site_list) {
+    std::string verified_site;
+    if (!webstore_data.GetString(kVerifiedSiteKey, &verified_site)) {
+      *error = kInvalidWebstoreResponseError;
+      return false;
+    }
+    requestor_is_ok = IsRequestorURLInVerifiedSite(requestor_url,
+                                                   verified_site);
+  } else {
+    const base::ListValue* verified_sites = NULL;
+    if (!webstore_data.GetList(kVerifiedSitesKey, &verified_sites)) {
+      *error = kInvalidWebstoreResponseError;
+      return false;
+    }
+    for (base::ListValue::const_iterator it = verified_sites->begin();
+         it != verified_sites->end() && !requestor_is_ok; ++it) {
+      std::string verified_site;
+      if (!(*it)->GetAsString(&verified_site)) {
+        *error = kInvalidWebstoreResponseError;
+        return false;
+      }
+      if (IsRequestorURLInVerifiedSite(requestor_url, verified_site)) {
+        requestor_is_ok = true;
+      }
+    }
+  }
+  if (!requestor_is_ok) {
+    *error = kNotFromVerifiedSitesError;
+    return false;
+  }
+  *error = "";
+  return true;
+}
+
 bool WebstoreInlineInstaller::CheckRequestorAlive() const {
   // The tab may have gone away - cancel installation in that case.
   return web_contents() != NULL;
@@ -111,47 +159,7 @@ bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
 bool WebstoreInlineInstaller::CheckRequestorPermitted(
     const base::DictionaryValue& webstore_data,
     std::string* error) const {
-  // Ensure that there is at least one verified site present.
-  const bool data_has_single_site = webstore_data.HasKey(kVerifiedSiteKey);
-  const bool data_has_site_list = webstore_data.HasKey(kVerifiedSitesKey);
-  if (!data_has_single_site && !data_has_site_list) {
-    *error = kNoVerifiedSitesError;
-    return false;
-  }
-  bool requestor_is_ok = false;
-  // Handle the deprecated single-site case.
-  if (!data_has_site_list) {
-    std::string verified_site;
-    if (!webstore_data.GetString(kVerifiedSiteKey, &verified_site)) {
-      *error = kInvalidWebstoreResponseError;
-      return false;
-    }
-    requestor_is_ok = IsRequestorURLInVerifiedSite(requestor_url_,
-                                                   verified_site);
-  } else {
-    const base::ListValue* verified_sites = NULL;
-    if (!webstore_data.GetList(kVerifiedSitesKey, &verified_sites)) {
-      *error = kInvalidWebstoreResponseError;
-      return false;
-    }
-    for (base::ListValue::const_iterator it = verified_sites->begin();
-         it != verified_sites->end() && !requestor_is_ok; ++it) {
-      std::string verified_site;
-      if (!(*it)->GetAsString(&verified_site)) {
-        *error = kInvalidWebstoreResponseError;
-        return false;
-      }
-      if (IsRequestorURLInVerifiedSite(requestor_url_, verified_site)) {
-        requestor_is_ok = true;
-      }
-    }
-  }
-  if (!requestor_is_ok) {
-    *error = kNotFromVerifiedSitesError;
-    return false;
-  }
-  *error = "";
-  return true;
+  return IsRequestorPermitted(webstore_data, requestor_url_, error);
 }
 
 //

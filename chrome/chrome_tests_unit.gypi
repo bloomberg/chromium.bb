@@ -405,6 +405,7 @@
       'browser/extensions/extension_prefs_unittest.cc',
       'browser/extensions/extension_prefs_unittest.h',
       'browser/extensions/extension_protocols_unittest.cc',
+      'browser/extensions/extension_reenabler_unittest.cc',
       'browser/extensions/extension_service_test_base.h',
       'browser/extensions/extension_service_test_base.cc',
       'browser/extensions/extension_service_unittest.cc',
