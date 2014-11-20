@@ -424,6 +424,7 @@ android_apk("chrome_shell_test_apk") {
     ":chrome_javatests",
     ":chrome_shell_test_java",
     "//sync/android:sync_javatests",
+    "//ui/android:ui_javatests",
   ]
   apk_name = "ChromeShellTest"
   android_manifest = "shell/javatests/AndroidManifest.xml"

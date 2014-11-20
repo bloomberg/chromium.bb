@@ -2965,6 +2965,7 @@
             '../components/components.gyp:invalidation_javatests',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
+            '../ui/android/ui_android.gyp:ui_javatests',
           ],
           'variables': {
             'apk_name': 'ChromeShellTest',

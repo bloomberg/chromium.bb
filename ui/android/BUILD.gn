@@ -87,3 +87,14 @@ android_library("ui_java") {
     ":java_enums_srcjar",
   ]
 }
+
+android_library("ui_javatests") {
+  DEPRECATED_java_in_dir = "javatests/src"
+  testonly = true
+  deps = [
+    ":ui_java_resources",
+    ":ui_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+  ]
+}

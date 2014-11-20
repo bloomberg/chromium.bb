@@ -59,6 +59,18 @@
       'includes': [ '../../build/java.gypi' ],
     },
     {
+      'target_name': 'ui_javatests',
+      'type': 'none',
+      'variables': {
+        'java_in_dir': '../../ui/android/javatests',
+      },
+      'dependencies': [
+        '../../base/base.gyp:base_java_test_support',
+        'ui_java',
+      ],
+      'includes': [ '../../build/java.gypi' ],
+    },
+    {
       'target_name': 'ui_strings_grd',
        # The android_webview/Android.mk file depends on this target directly.
       'android_unmangled_name': 1,
