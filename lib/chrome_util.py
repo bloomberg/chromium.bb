@@ -332,8 +332,10 @@ _COPY_PATHS_COMMON = (
        exe=True,
        optional=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('natives_blob.bin', optional=True),
   Path('pnacl/',
        cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('snapshot_blob.bin', optional=True),
 )
 
 _COPY_PATHS_APP_SHELL = (
