@@ -11,9 +11,34 @@ import argparse
 import os
 import sys
 
+
 def run(command):
   print command
   return os.system(command)
+
+
+def build(out_dir):
+  return run ('ninja -C ' + out_dir + ' cronet_test_instrumentation_apk')
+
+
+def install(release_arg):
+  return run ('build/android/adb_install_apk.py ' + release_arg + \
+              ' --apk=CronetTest.apk')
+
+
+def test(release_arg, extra_options):
+  return run ('build/android/test_runner.py instrumentation '+ \
+              release_arg + ' --test-apk=CronetTestInstrumentation ' + \
+              extra_options)
+
+
+def debug(extra_options):
+  return run ('build/android/adb_gdb --start ' + \
+              '--activity=.CronetTestActivity ' + \
+              '--program-name=CronetTest ' + \
+              '--package-name=org.chromium.cronet_test_apk ' + \
+              ' '.join(extra_options))
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -24,18 +49,21 @@ def main():
                                'install',
                                'proguard',
                                'test',
-                               'debug'])
+                               'build-test',
+                               'debug',
+                               'build-debug'])
   parser.add_argument('-r', '--release', action='store_true',
                       help='use release configuration')
 
-  options, unknown_options = parser.parse_known_args()
+  options, extra_options_list = parser.parse_known_args()
   print options
-  print unknown_options
+  print extra_options_list
   gyp_defines = 'GYP_DEFINES="OS=android enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
       'use_icu_alternatives_on_android=1" '
   out_dir = 'out/Debug'
   release_arg = ''
+  extra_options = ' '.join(extra_options_list)
   if options.release:
     out_dir = 'out/Release'
     release_arg = ' --release'
@@ -45,22 +73,20 @@ def main():
   if (options.command=='sync'):
     return run ('git pull --rebase && ' + gyp_defines + ' gclient sync')
   if (options.command=='build'):
-    return run ('ninja -C ' + out_dir + ' cronet_test_instrumentation_apk')
+    return build(out_dir)
   if (options.command=='install'):
-    return run ('build/android/adb_install_apk.py ' + release_arg + \
-                ' --apk=CronetTest.apk')
+    return install(release_arg)
   if (options.command=='proguard'):
     return run ('ninja -C ' + out_dir + ' cronet_sample_proguard_apk')
   if (options.command=='test'):
-    return run ('build/android/test_runner.py instrumentation '+ \
-                release_arg + ' --test-apk=CronetTestInstrumentation ' + \
-                ' '.join(unknown_options))
+    return install(release_arg) or test(release_arg, extra_options)
+  if (options.command=='build-test'):
+    return build(out_dir) or install(release_arg) or \
+        test(release_arg, extra_options)
   if (options.command=='debug'):
-    return run ('build/android/adb_gdb --start ' + \
-                '--activity=.CronetTestActivity ' + \
-                '--program-name=CronetTest ' + \
-                '--package-name=org.chromium.cronet_test_apk ' + \
-                ' '.join(unknown_options))
+    return install(release_arg) or debug(extra_options)
+  if (options.command=='build-debug'):
+    return build(out_dir) or install(release_arg) or debug(extra_options)
 
   parser.print_help()
   return 1
