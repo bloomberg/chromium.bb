@@ -682,7 +682,7 @@ text_entry_update_layout(struct text_entry *entry)
 	       (entry->preedit.text ? strlen(entry->preedit.text) : 0)));
 
 	if (entry->preedit.text) {
-		text = malloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
+		text = xmalloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
 		strncpy(text, entry->text, entry->cursor);
 		strcpy(text + entry->cursor, entry->preedit.text);
 		strcpy(text + entry->cursor + strlen(entry->preedit.text),
@@ -764,7 +764,7 @@ static void
 text_entry_insert_at_cursor(struct text_entry *entry, const char *text,
 			    int32_t cursor, int32_t anchor)
 {
-	char *new_text = malloc(strlen(entry->text) + strlen(text) + 1);
+	char *new_text = xmalloc(strlen(entry->text) + strlen(text) + 1);
 
 	strncpy(new_text, entry->text, entry->cursor);
 	strcpy(new_text + entry->cursor, text);

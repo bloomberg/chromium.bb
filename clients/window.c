@@ -5391,7 +5391,7 @@ init_dummy_surface(struct display *display)
 	void *data;
 
 	len = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, 1);
-	data = malloc(len);
+	data = xmalloc(len);
 	display->dummy_surface =
 		cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32,
 						    1, 1, len);
