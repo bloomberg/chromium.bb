@@ -732,9 +732,10 @@ def SDKLibs(arch, is_canonical):
                  'pnacl_newlib_dir=%(abs_sdk_compiler)s',
                  'DESTINATION_ROOT=%(work_dir)s']
   if arch == 'le32':
-    scons_flags.append('bitcode=1')
+    scons_flags.extend(['bitcode=1', 'platform=x86-32'])
   elif not IsBCArch(arch):
-    scons_flags.append('nacl_clang=1')
+    scons_flags.extend(['nacl_clang=1',
+                        'platform=' + pynacl.platform.GetArch3264(arch)])
   else:
     raise ValueError('Should not be building SDK libs for', arch)
   libs = {
