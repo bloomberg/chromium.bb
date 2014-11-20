@@ -2147,7 +2147,7 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
-    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, LTR, false, true, true);
+    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, toTextDirection(state().m_direction), false, true, true);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
 
     // x direction
