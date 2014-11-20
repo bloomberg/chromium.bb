@@ -20,6 +20,8 @@ crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/float/float-avoidance.
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/positioning/inline-block-relposition.html [ ImageOnlyFailure ]
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/margin-collapse/103.html [ ImageOnlyFailure ]
 
+crbug.com/423071 [ Mac ] virtual/slimmingpaint/fast/inline-block/tricky-baseline.html [ NeedsRebaseline ]
+
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
