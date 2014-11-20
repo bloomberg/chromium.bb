@@ -294,6 +294,9 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
     glGetVertexAttribfv(
         i, GL_CURRENT_VERTEX_ATTRIB, vertex_attrib_[i].current_vertex_attrib);
   }
+
+  // Android 5.0.0 specific qualcomm workaround. See crbug.com/434570.
+  glBindRenderbufferEXT(GL_RENDERBUFFER, 0);
   DCHECK(ClearGLErrors(false, NULL));
 }
 
