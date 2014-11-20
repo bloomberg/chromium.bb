@@ -211,7 +211,7 @@ ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
 
 /**
  * Shows the dialog.
- * @param {FileEntry} entry Entry to share.
+ * @param {!Entry} entry Entry to share.
  * @param {function(ShareDialog.Result)} callback Callback to be called when the
  *     showing task is completed. The argument is whether to succeed or not.
  *     Note that cancel is regarded as success.

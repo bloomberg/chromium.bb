@@ -107,23 +107,6 @@ CommandUtil.canExecuteAlways = function(event) {
 };
 
 /**
- * Returns a single selected/passed entry or null.
- * @param {!Event} event Command event.
- * @param {!FileManager} fileManager FileManager to use.
- * @return {FileEntry} The entry or null.
- */
-CommandUtil.getSingleEntry = function(event, fileManager) {
-  if (event.target.entry) {
-    return event.target.entry;
-  }
-  var selection = fileManager.getSelection();
-  if (selection.totalCount == 1) {
-    return selection.entries[0];
-  }
-  return null;
-};
-
-/**
  * Obtains target entries that can be pinned from the selection.
  * If directories are included in the selection, it just returns an empty
  * array to avoid confusing because pinning directory is not supported
@@ -236,7 +219,7 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
     return null;
   if (!selection.entries[0].isDirectory)
     return null;
-  return selection.entries[0];
+  return /** @type {!DirectoryEntry} */(selection.entries[0]);
 };
 
 /**

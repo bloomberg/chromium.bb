@@ -385,6 +385,12 @@ FileManager.prototype = /** @struct */ {
     return this.historyLoader_;
   },
   /**
+   * @return {MetadataCache}
+   */
+  get metadataCache() {
+    return this.metadataCache_;
+  },
+  /**
    * @return {FileManagerUI}
    */
   get ui() {
@@ -1805,7 +1811,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var entry = selection.entries[0];
     if (entry.isDirectory) {
-      this.onDirectoryAction_(entry);
+      this.onDirectoryAction_(/** @type {!DirectoryEntry} */(entry));
     } else {
       this.dispatchSelectionAction_();
     }
@@ -2190,7 +2196,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           // directory.
           if (!item.hasAttribute('renaming')) {
             event.preventDefault();
-            this.onDirectoryAction_(selection.entries[0]);
+            this.onDirectoryAction_(
+                /** @type {DirectoryEntry} */(selection.entries[0]));
           }
         } else if (this.dispatchSelectionAction_()) {
           event.preventDefault();
