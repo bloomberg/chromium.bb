@@ -199,34 +199,34 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
   CHECK(!val.IsEmpty());
   *did_create = false;
 
+  v8::Isolate* isolate = context->GetIsolate();
   // Even though every v8 string primitive encountered will be a unique object,
   // we still add them to |visited_handles| so that the corresponding string
   // PP_Var created will be properly refcounted.
   if (val->IsObject() || val->IsString()) {
-    if (parent_handles->count(HashedHandle(val->ToObject())) != 0)
+    if (parent_handles->count(HashedHandle(val->ToObject(isolate))) != 0)
       return false;
 
     HandleVarMap::const_iterator it =
-        visited_handles->find(HashedHandle(val->ToObject()));
+        visited_handles->find(HashedHandle(val->ToObject(isolate)));
     if (it != visited_handles->end()) {
       *result = it->second.get();
       return true;
     }
   }
 
-  v8::Isolate* isolate = context->GetIsolate();
   if (val->IsUndefined()) {
     *result = PP_MakeUndefined();
   } else if (val->IsNull()) {
     *result = PP_MakeNull();
   } else if (val->IsBoolean() || val->IsBooleanObject()) {
-    *result = PP_MakeBool(PP_FromBool(val->ToBoolean()->Value()));
+    *result = PP_MakeBool(PP_FromBool(val->ToBoolean(isolate)->Value()));
   } else if (val->IsInt32()) {
-    *result = PP_MakeInt32(val->ToInt32()->Value());
+    *result = PP_MakeInt32(val->ToInt32(isolate)->Value());
   } else if (val->IsNumber() || val->IsNumberObject()) {
-    *result = PP_MakeDouble(val->ToNumber()->Value());
+    *result = PP_MakeDouble(val->ToNumber(isolate)->Value());
   } else if (val->IsString() || val->IsStringObject()) {
-    v8::String::Utf8Value utf8(val->ToString());
+    v8::String::Utf8Value utf8(val->ToString(isolate));
     *result = StringVar::StringToPPVar(std::string(*utf8, utf8.length()));
   } else if (val->IsObject()) {
     // For any other v8 objects, the conversion happens as follows:

@@ -138,7 +138,7 @@ v8::Local<v8::Object> Load(const char* name, v8::Handle<v8::Context> context) {
   v8::Local<v8::Value> value =
       context->Global()->GetHiddenValue(MakeKey(name, context->GetIsolate()));
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
-  return value->ToObject();
+  return v8::Local<v8::Object>::Cast(value);
 }
 
 class ExtensionImpl : public v8::Extension {
@@ -166,9 +166,10 @@ class ExtensionImpl : public v8::Extension {
     v8::Local<v8::Function> function = info[0].As<v8::Function>();
     v8::Local<v8::Object> recv;
     if (info[1]->IsObject()) {
-      recv = info[1]->ToObject();
+      recv = v8::Local<v8::Object>::Cast(info[1]);
     } else if (info[1]->IsString()) {
-      recv = v8::StringObject::New(info[1]->ToString())->ToObject();
+      recv = v8::StringObject::New(v8::Local<v8::String>::Cast(info[1]))
+                 ->ToObject(info.GetIsolate());
     } else {
       info.GetIsolate()->ThrowException(
           v8::Exception::TypeError(v8::String::NewFromUtf8(
@@ -176,9 +177,9 @@ class ExtensionImpl : public v8::Extension {
               "The first argument is the receiver and must be an object")));
       return;
     }
-    v8::Local<v8::Object> args = info[2]->ToObject();
-    int first_arg_index = static_cast<int>(info[3]->ToInt32()->Value());
-    int args_length = static_cast<int>(info[4]->ToInt32()->Value());
+    v8::Local<v8::Object> args = v8::Local<v8::Object>::Cast(info[2]);
+    int first_arg_index = info[3]->ToInt32(info.GetIsolate())->Value();
+    int args_length = info[4]->ToInt32(info.GetIsolate())->Value();
 
     int argc = args_length - first_arg_index;
     scoped_ptr<v8::Local<v8::Value> []> argv(new v8::Local<v8::Value>[argc]);

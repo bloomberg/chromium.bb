@@ -196,7 +196,7 @@ bool V8ObjectToUTF16String(v8::Local<v8::Value> object,
     return false;
 
   v8::HandleScope scope(isolate);
-  v8::Local<v8::String> str_object = object->ToString();
+  v8::Local<v8::String> str_object = object->ToString(isolate);
   if (str_object.IsEmpty())
     return false;
   *utf16_result = V8StringToUTF16(str_object);
@@ -211,7 +211,8 @@ bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
   if (args.Length() == 0 || args[0].IsEmpty() || !args[0]->IsString())
     return false;
 
-  const base::string16 hostname_utf16 = V8StringToUTF16(args[0]->ToString());
+  const base::string16 hostname_utf16 =
+      V8StringToUTF16(v8::Local<v8::String>::Cast(args[0]));
 
   // If the hostname is already in ASCII, simply return it as is.
   if (base::IsStringASCII(hostname_utf16)) {
@@ -393,7 +394,7 @@ class ProxyResolverV8::Context {
       return ERR_PAC_SCRIPT_FAILED;
     }
 
-    base::string16 ret_str = V8StringToUTF16(ret->ToString());
+    base::string16 ret_str = V8StringToUTF16(v8::Local<v8::String>::Cast(ret));
 
     if (!base::IsStringASCII(ret_str)) {
       // TODO(eroman): Rather than failing when a wide string is returned, we
@@ -656,7 +657,8 @@ class ProxyResolverV8::Context {
       return;
     }
 
-    std::string ip_address_list = V8StringToUTF8(args[0]->ToString());
+    std::string ip_address_list =
+        V8StringToUTF8(v8::Local<v8::String>::Cast(args[0]));
     if (!base::IsStringASCII(ip_address_list)) {
       args.GetReturnValue().SetNull();
       return;
@@ -681,12 +683,14 @@ class ProxyResolverV8::Context {
       return;
     }
 
-    std::string ip_address = V8StringToUTF8(args[0]->ToString());
+    std::string ip_address =
+        V8StringToUTF8(v8::Local<v8::String>::Cast(args[0]));
     if (!base::IsStringASCII(ip_address)) {
       args.GetReturnValue().Set(false);
       return;
     }
-    std::string ip_prefix = V8StringToUTF8(args[1]->ToString());
+    std::string ip_prefix =
+        V8StringToUTF8(v8::Local<v8::String>::Cast(args[1]));
     if (!base::IsStringASCII(ip_prefix)) {
       args.GetReturnValue().Set(false);
       return;

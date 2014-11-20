@@ -24,7 +24,7 @@ void PrintNativeHandler::Print(
 
   std::vector<std::string> components;
   for (int i = 0; i < args.Length(); ++i)
-    components.push_back(*v8::String::Utf8Value(args[i]->ToString()));
+    components.push_back(*v8::String::Utf8Value(args[i]));
 
   LOG(ERROR) << JoinString(components, ',');
 }

@@ -18,7 +18,7 @@ v8::Handle<v8::Object> GetOrCreateChromeObject(
     chrome = v8::Object::New(isolate);
     global->Set(gin::StringToSymbol(isolate, "chrome"), chrome);
   } else {
-    chrome = chrome_value->ToObject();
+    chrome = v8::Handle<v8::Object>::Cast(chrome_value);
   }
   return chrome;
 }

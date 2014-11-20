@@ -92,7 +92,8 @@ MessageChannel* MessageChannel::Create(PepperPluginInstanceImpl* instance,
   v8::Context::Scope context_scope(instance->GetMainWorldContext());
   gin::Handle<MessageChannel> handle =
       gin::CreateHandle(instance->GetIsolate(), message_channel);
-  result->Reset(instance->GetIsolate(), handle.ToV8()->ToObject());
+  result->Reset(instance->GetIsolate(),
+                handle.ToV8()->ToObject(instance->GetIsolate()));
   return message_channel;
 }
 

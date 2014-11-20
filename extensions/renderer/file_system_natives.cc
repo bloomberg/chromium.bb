@@ -72,7 +72,7 @@ void FileSystemNatives::GetFileEntry(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 5);
   DCHECK(args[0]->IsString());
-  std::string type_string = *v8::String::Utf8Value(args[0]->ToString());
+  std::string type_string = *v8::String::Utf8Value(args[0]);
   blink::WebFileSystemType type;
   bool is_valid_type = storage::GetFileSystemPublicType(type_string, &type);
   DCHECK(is_valid_type);
@@ -83,9 +83,9 @@ void FileSystemNatives::GetFileEntry(
   DCHECK(args[1]->IsString());
   DCHECK(args[2]->IsString());
   DCHECK(args[3]->IsString());
-  std::string file_system_name(*v8::String::Utf8Value(args[1]->ToString()));
-  GURL file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
-  std::string file_path_string(*v8::String::Utf8Value(args[3]->ToString()));
+  std::string file_system_name(*v8::String::Utf8Value(args[1]));
+  GURL file_system_root_url(*v8::String::Utf8Value(args[2]));
+  std::string file_path_string(*v8::String::Utf8Value(args[3]));
   base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_path_string);
   DCHECK(storage::VirtualPath::IsAbsolute(file_path.value()));
 
@@ -113,7 +113,7 @@ void FileSystemNatives::CrackIsolatedFileSystemName(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK_EQ(args.Length(), 1);
   DCHECK(args[0]->IsString());
-  std::string filesystem_name = *v8::String::Utf8Value(args[0]->ToString());
+  std::string filesystem_name = *v8::String::Utf8Value(args[0]);
   std::string filesystem_id;
   if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
     return;

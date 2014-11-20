@@ -142,7 +142,7 @@ void EventBindings::AttachEvent(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsString());
 
-  std::string event_name = *v8::String::Utf8Value(args[0]->ToString());
+  std::string event_name = *v8::String::Utf8Value(args[0]);
 
   if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
     return;
@@ -216,8 +216,8 @@ void EventBindings::AttachFilteredEvent(
       content::V8ValueConverter::create());
 
   base::DictionaryValue* filter_dict = NULL;
-  base::Value* filter_value =
-      converter->FromV8Value(args[1]->ToObject(), context()->v8_context());
+  base::Value* filter_value = converter->FromV8Value(
+      v8::Local<v8::Object>::Cast(args[1]), context()->v8_context());
   if (!filter_value) {
     args.GetReturnValue().Set(static_cast<int32_t>(-1));
     return;
@@ -276,8 +276,9 @@ void EventBindings::MatchAgainstEventFilter(
   v8::Isolate* isolate = args.GetIsolate();
   typedef std::set<EventFilter::MatcherID> MatcherIDs;
   EventFilter& event_filter = g_event_filter.Get();
-  std::string event_name = *v8::String::Utf8Value(args[0]->ToString());
-  EventFilteringInfo info = ParseFromObject(args[1]->ToObject(), isolate);
+  std::string event_name = *v8::String::Utf8Value(args[0]);
+  EventFilteringInfo info =
+      ParseFromObject(args[1]->ToObject(isolate), isolate);
   // Only match events routed to this context's RenderView or ones that don't
   // have a routingId in their filter.
   MatcherIDs matched_event_filters = event_filter.MatchEvent(

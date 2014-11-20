@@ -57,7 +57,8 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
       options_value->IsUndefined()) {
     result = MojoCreateMessagePipe(NULL, &handle0, &handle1);
   } else if (options_value->IsObject()) {
-    gin::Dictionary options_dict(args.isolate(), options_value->ToObject());
+    gin::Dictionary options_dict(args.isolate(),
+                                 options_value->ToObject(args.isolate()));
     MojoCreateMessagePipeOptions options;
     // For future struct_size, we can probably infer that from the presence of
     // properties in options_dict. For now, it's always 8.
@@ -156,7 +157,8 @@ gin::Dictionary CreateDataPipe(const gin::Arguments& args) {
       options_value->IsUndefined()) {
     result = MojoCreateDataPipe(NULL, &producer_handle, &consumer_handle);
   } else if (options_value->IsObject()) {
-    gin::Dictionary options_dict(args.isolate(), options_value->ToObject());
+    gin::Dictionary options_dict(args.isolate(),
+                                 options_value->ToObject(args.isolate()));
     MojoCreateDataPipeOptions options;
     // For future struct_size, we can probably infer that from the presence of
     // properties in options_dict. For now, it's always 16.

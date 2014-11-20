@@ -64,9 +64,9 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   if (extension && !extension->is_hosted_app())
     info.source_id = extension->id();
 
-  info.target_id = *v8::String::Utf8Value(args[0]->ToString());
+  info.target_id = *v8::String::Utf8Value(args[0]);
   info.source_url = context()->GetURL();
-  std::string channel_name = *v8::String::Utf8Value(args[1]->ToString());
+  std::string channel_name = *v8::String::Utf8Value(args[1]);
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
@@ -100,8 +100,8 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
   // The Javascript code should validate/fill the arguments.
   CHECK(args.Length() >= 2 && args[0]->IsString() && args[1]->IsString());
 
-  std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
-  std::string native_app_name = *v8::String::Utf8Value(args[1]->ToString());
+  std::string extension_id = *v8::String::Utf8Value(args[0]);
+  std::string native_app_name = *v8::String::Utf8Value(args[1]);
 
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
@@ -130,7 +130,7 @@ void RuntimeCustomBindings::GetExtensionViews(
   // all views for the current extension.
   int browser_window_id = args[0]->Int32Value();
 
-  std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
+  std::string view_type_string = *v8::String::Utf8Value(args[1]);
   StringToUpperASCII(&view_type_string);
   // |view_type| == VIEW_TYPE_INVALID means getting any type of
   // views.

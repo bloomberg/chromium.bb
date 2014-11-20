@@ -28,8 +28,8 @@ void TakeBrowserProcessBlob(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsString());
   DCHECK(args[2]->IsInt32());
-  std::string uuid(*v8::String::Utf8Value(args[0]->ToString()));
-  std::string type(*v8::String::Utf8Value(args[1]->ToString()));
+  std::string uuid(*v8::String::Utf8Value(args[0]));
+  std::string type(*v8::String::Utf8Value(args[1]));
   blink::WebBlob blob =
       blink::WebBlob::createFromUUID(blink::WebString::fromUTF8(uuid),
                                      blink::WebString::fromUTF8(type),

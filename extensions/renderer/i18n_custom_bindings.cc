@@ -34,7 +34,7 @@ void I18NCustomBindings::GetL10nMessage(
   if (args[2]->IsNull() || !args[2]->IsString()) {
     return;
   } else {
-    extension_id = *v8::String::Utf8Value(args[2]->ToString());
+    extension_id = *v8::String::Utf8Value(args[2]);
     if (extension_id.empty())
       return;
   }
@@ -73,13 +73,12 @@ void I18NCustomBindings::GetL10nMessage(
     if (count > 9)
       return;
     for (uint32_t i = 0; i < count; ++i) {
-      substitutions.push_back(
-          *v8::String::Utf8Value(
-              placeholders->Get(v8::Integer::New(isolate, i))->ToString()));
+      substitutions.push_back(*v8::String::Utf8Value(placeholders->Get(
+          v8::Integer::New(isolate, i))));
     }
   } else if (args[1]->IsString()) {
     // chrome.i18n.getMessage("message_name", "one param");
-    substitutions.push_back(*v8::String::Utf8Value(args[1]->ToString()));
+    substitutions.push_back(*v8::String::Utf8Value(args[1]));
   }
 
   args.GetReturnValue().Set(v8::String::NewFromUtf8(

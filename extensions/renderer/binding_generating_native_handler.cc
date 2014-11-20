@@ -18,17 +18,17 @@ v8::Handle<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
   v8::Isolate* isolate = module_system_->GetIsolate();
   v8::EscapableHandleScope scope(isolate);
   v8::Handle<v8::Object> binding_module =
-      module_system_->Require("binding")->ToObject();
+      module_system_->Require("binding")->ToObject(isolate);
   v8::Handle<v8::Object> binding =
       binding_module->Get(v8::String::NewFromUtf8(isolate, "Binding"))
-          ->ToObject();
+          ->ToObject(isolate);
   v8::Handle<v8::Function> create_binding =
       binding->Get(v8::String::NewFromUtf8(isolate, "create"))
           .As<v8::Function>();
   v8::Handle<v8::Value> argv[] = {
       v8::String::NewFromUtf8(isolate, api_name_.c_str())};
   v8::Handle<v8::Object> binding_instance =
-      create_binding->Call(binding, arraysize(argv), argv)->ToObject();
+      create_binding->Call(binding, arraysize(argv), argv)->ToObject(isolate);
   v8::Handle<v8::Function> generate =
       binding_instance->Get(v8::String::NewFromUtf8(isolate, "generate"))
           .As<v8::Function>();

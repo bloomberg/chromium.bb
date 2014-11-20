@@ -96,12 +96,9 @@ void EnterprisePlatformKeysNatives::NormalizeAlgorithm(
   blink::WebString error_details;
   int exception_code = 0;
 
-  blink::WebCryptoAlgorithm algorithm =
-      blink::normalizeCryptoAlgorithm(call_info[0]->ToObject(),
-                                      operation,
-                                      &exception_code,
-                                      &error_details,
-                                      call_info.GetIsolate());
+  blink::WebCryptoAlgorithm algorithm = blink::normalizeCryptoAlgorithm(
+      v8::Local<v8::Object>::Cast(call_info[0]), operation, &exception_code,
+      &error_details, call_info.GetIsolate());
 
   scoped_ptr<base::DictionaryValue> algorithm_dict;
   if (!algorithm.isNull())

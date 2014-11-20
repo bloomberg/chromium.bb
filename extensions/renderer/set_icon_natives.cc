@@ -39,7 +39,8 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
     v8::Local<v8::Value>* image_data_bitmap) {
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> data =
-      image_data->Get(v8::String::NewFromUtf8(isolate, "data"))->ToObject();
+      image_data->Get(v8::String::NewFromUtf8(isolate, "data"))
+          ->ToObject(isolate);
   int width =
       image_data->Get(v8::String::NewFromUtf8(isolate, "width"))->Int32Value();
   int height =
@@ -107,7 +108,8 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     v8::Local<v8::Object>* bitmap_set_value) {
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> image_data_set =
-      details->Get(v8::String::NewFromUtf8(isolate, "imageData"))->ToObject();
+      details->Get(v8::String::NewFromUtf8(isolate, "imageData"))
+          ->ToObject(isolate);
 
   DCHECK(bitmap_set_value);
   for (size_t i = 0; i < arraysize(kImageSizeKeys); i++) {
@@ -116,7 +118,7 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
       continue;
     v8::Local<v8::Object> image_data =
         image_data_set->Get(v8::String::NewFromUtf8(isolate, kImageSizeKeys[i]))
-            ->ToObject();
+            ->ToObject(isolate);
     v8::Local<v8::Value> image_data_bitmap;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
@@ -130,7 +132,7 @@ void SetIconNatives::SetIconCommon(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsObject());
-  v8::Local<v8::Object> details = args[0]->ToObject();
+  v8::Local<v8::Object> details = args[0]->ToObject(args.GetIsolate());
   v8::Local<v8::Object> bitmap_set_value(v8::Object::New(args.GetIsolate()));
   if (!ConvertImageDataSetToBitmapValueSet(details, &bitmap_set_value))
     return;
