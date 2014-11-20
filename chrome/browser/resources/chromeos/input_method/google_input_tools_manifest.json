@@ -13,7 +13,8 @@
     "metricsPrivate",
     "https://dl.google.com/",
     "https://clients4.google.com/",
-    "accessibilityFeatures.read"
+    "accessibilityFeatures.read",
+    "audioCapture"
   ],
   "background": {
     "page": "background.html"
