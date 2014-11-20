@@ -53,11 +53,73 @@ public:
     bool hasCallbackForObject(const void*);
 #endif
 
+#if ENABLE_PARALLEL_MARKING
     static const size_t blockSize = 128;
+#else
+    static const size_t blockSize = 8192;
+#endif
 
 private:
-    class Block;
+    class Block {
+    public:
+        explicit Block(Block* next)
+            : m_limit(&(m_buffer[blockSize]))
+            , m_current(&(m_buffer[0]))
+            , m_next(next)
+        {
+            clearUnused();
+        }
 
+        ~Block()
+        {
+            clearUnused();
+        }
+
+        void clear();
+
+        Block* next() const { return m_next; }
+        void setNext(Block* next) { m_next = next; }
+
+        bool isEmptyBlock() const
+        {
+            return m_current == &(m_buffer[0]);
+        }
+
+        size_t size() const
+        {
+            return blockSize - (m_limit - m_current);
+        }
+
+        Item* allocateEntry()
+        {
+            if (LIKELY(m_current < m_limit))
+                return m_current++;
+            return 0;
+        }
+
+        Item* pop()
+        {
+            if (UNLIKELY(isEmptyBlock()))
+                return 0;
+            return --m_current;
+        }
+
+        void invokeEphemeronCallbacks(Visitor*);
+#if ENABLE(ASSERT)
+        bool hasCallbackForObject(const void*);
+#endif
+
+    private:
+        void clearUnused();
+
+        Item m_buffer[blockSize];
+        Item* m_limit;
+        Item* m_current;
+        Block* m_next;
+    };
+
+    Item* popSlow();
+    Item* allocateEntrySlow();
     void invokeOldestCallbacks(Block*, Block*, Visitor*);
     bool hasJustOneBlock() const;
     void swap(CallbackStack* other);
@@ -66,6 +128,24 @@ private:
     Block* m_last;
 };
 
+ALWAYS_INLINE CallbackStack::Item* CallbackStack::allocateEntry()
+{
+    Item* item = m_first->allocateEntry();
+    if (LIKELY(!!item))
+        return item;
+
+    return allocateEntrySlow();
 }
+
+ALWAYS_INLINE CallbackStack::Item* CallbackStack::pop()
+{
+    Item* item = m_first->pop();
+    if (LIKELY(!!item))
+        return item;
+
+    return popSlow();
+}
+
+} // namespace blink
 
 #endif // CallbackStack_h

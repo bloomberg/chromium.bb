@@ -9,108 +9,59 @@
 
 namespace blink {
 
-class CallbackStack::Block {
-public:
-    explicit Block(Block* next)
-        : m_limit(&(m_buffer[blockSize]))
-        , m_current(&(m_buffer[0]))
-        , m_next(next)
-    {
-        clearUnused();
+void CallbackStack::Block::clear()
+{
+    m_current = &m_buffer[0];
+    m_next = 0;
+    clearUnused();
+}
+
+void CallbackStack::Block::invokeEphemeronCallbacks(Visitor* visitor)
+{
+    // This loop can tolerate entries being added by the callbacks after
+    // iteration starts.
+    for (unsigned i = 0; m_buffer + i < m_current; i++) {
+        Item& item = m_buffer[i];
+
+        // We don't need to check for orphaned pages when popping an ephemeron
+        // callback since the callback is only pushed after the object containing
+        // it has been traced. There are basically three cases to consider:
+        // 1. Member<EphemeronCollection>
+        // 2. EphemeronCollection is part of a containing object
+        // 3. EphemeronCollection is a value object in a collection
+        //
+        // Ad. 1. In this case we push the start of the ephemeron on the
+        // marking stack and do the orphaned page check when popping it off
+        // the marking stack.
+        // Ad. 2. The containing object cannot be on an orphaned page since
+        // in that case we wouldn't have traced its parts. This also means
+        // the ephemeron collection is not on the orphaned page.
+        // Ad. 3. Is the same as 2. The collection containing the ephemeron
+        // collection as a value object cannot be on an orphaned page since
+        // it would not have traced its values in that case.
+        item.call(visitor);
     }
-
-    ~Block()
-    {
-        clearUnused();
-    }
-
-    void clear()
-    {
-        m_current = &m_buffer[0];
-        m_next = 0;
-        clearUnused();
-    }
-
-    Block* next() const { return m_next; }
-    void setNext(Block* next) { m_next = next; }
-
-    bool isEmptyBlock() const
-    {
-        return m_current == &(m_buffer[0]);
-    }
-
-    size_t size() const
-    {
-        return blockSize - (m_limit - m_current);
-    }
-
-    Item* allocateEntry()
-    {
-        if (m_current < m_limit)
-            return m_current++;
-        return 0;
-    }
-
-    Item* pop()
-    {
-        if (isEmptyBlock())
-            return 0;
-        return --m_current;
-    }
-
-    void invokeEphemeronCallbacks(Visitor* visitor)
-    {
-        // This loop can tolerate entries being added by the callbacks after
-        // iteration starts.
-        for (unsigned i = 0; m_buffer + i < m_current; i++) {
-            Item& item = m_buffer[i];
-
-            // We don't need to check for orphaned pages when popping an ephemeron
-            // callback since the callback is only pushed after the object containing
-            // it has been traced. There are basically three cases to consider:
-            // 1. Member<EphemeronCollection>
-            // 2. EphemeronCollection is part of a containing object
-            // 3. EphemeronCollection is a value object in a collection
-            //
-            // Ad. 1. In this case we push the start of the ephemeron on the
-            // marking stack and do the orphaned page check when popping it off
-            // the marking stack.
-            // Ad. 2. The containing object cannot be on an orphaned page since
-            // in that case we wouldn't have traced its parts. This also means
-            // the ephemeron collection is not on the orphaned page.
-            // Ad. 3. Is the same as 2. The collection containing the ephemeron
-            // collection as a value object cannot be on an orphaned page since
-            // it would not have traced its values in that case.
-            item.call(visitor);
-        }
-    }
+}
 
 #if ENABLE(ASSERT)
-    bool hasCallbackForObject(const void* object)
-    {
-        for (unsigned i = 0; m_buffer + i < m_current; i++) {
-            Item* item = &m_buffer[i];
-            if (item->object() == object)
-                return true;
-        }
-        return false;
+bool CallbackStack::Block::hasCallbackForObject(const void* object)
+{
+    for (unsigned i = 0; m_buffer + i < m_current; i++) {
+        Item* item = &m_buffer[i];
+        if (item->object() == object)
+            return true;
     }
+    return false;
+}
 #endif
 
-private:
-    void clearUnused()
-    {
+void CallbackStack::Block::clearUnused()
+{
 #if ENABLE(ASSERT)
-        for (size_t i = 0; i < blockSize; i++)
-            m_buffer[i] = Item(0, 0);
+    for (size_t i = 0; i < blockSize; i++)
+        m_buffer[i] = Item(0, 0);
 #endif
-    }
-
-    Item m_buffer[blockSize];
-    Item* m_limit;
-    Item* m_current;
-    Block* m_next;
-};
+}
 
 CallbackStack::CallbackStack() : m_first(new Block(0)), m_last(m_first)
 {
@@ -161,18 +112,18 @@ void CallbackStack::takeBlockFrom(CallbackStack* other)
     m_last = m_first;
 }
 
-CallbackStack::Item* CallbackStack::allocateEntry()
+CallbackStack::Item* CallbackStack::allocateEntrySlow()
 {
-    if (Item* item = m_first->allocateEntry())
-        return item;
+    ASSERT(!m_first->allocateEntry());
     m_first = new Block(m_first);
     return m_first->allocateEntry();
 }
 
-CallbackStack::Item* CallbackStack::pop()
+CallbackStack::Item* CallbackStack::popSlow()
 {
-    Item* item = m_first->pop();
-    while (!item) {
+    ASSERT(m_first->isEmptyBlock());
+
+    for (;;) {
         if (hasJustOneBlock()) {
 #if ENABLE(ASSERT)
             m_first->clear();
@@ -182,9 +133,12 @@ CallbackStack::Item* CallbackStack::pop()
         Block* next = m_first->next();
         delete m_first;
         m_first = next;
-        item = m_first->pop();
+        if (Item* item = m_first->pop())
+            return item;
     }
-    return item;
+
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 void CallbackStack::invokeEphemeronCallbacks(Visitor* visitor)
