@@ -82,6 +82,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
     return observers_.HasObserver(observer);
   }
 
+  virtual void SetRenderProcessManagerDelegate(
+      base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
+    DCHECK(!render_process_manager_delegate_)
+        << "There can be only one! ...RenderProcessManagerDelegate";
+    render_process_manager_delegate_ = delegate;
+  }
+
   virtual void DecreaseScreenBrightness(bool allow_off) override {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -534,6 +541,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     VLOG(1) << "Got " << power_manager::kSuspendDoneSignal << " signal:"
             << " suspend_id=" << proto.suspend_id()
             << " duration=" << duration.InSeconds() << " sec";
+
+    if (render_process_manager_delegate_)
+      render_process_manager_delegate_->SuspendDone();
+
     FOR_EACH_OBSERVER(
         PowerManagerClient::Observer, observers_, SuspendDone(duration));
     base::PowerMonitorDeviceSource::HandleSystemResumed();
@@ -679,6 +690,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
       delay_id = suspend_delay_id_;
     }
 
+    if (render_process_manager_delegate_ && !suspending_from_dark_resume_)
+      render_process_manager_delegate_->SuspendImminent();
+
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface, method_name);
     dbus::MessageWriter writer(&method_call);
@@ -735,6 +749,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_;
 
+  // The delegate used to manage the power consumption of Chrome's renderer
+  // processes.
+  base::WeakPtr<RenderProcessManagerDelegate> render_process_manager_delegate_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
@@ -782,6 +800,10 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
+  }
+
+  virtual void SetRenderProcessManagerDelegate(
+      base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
   }
 
   virtual void DecreaseScreenBrightness(bool allow_off) override {

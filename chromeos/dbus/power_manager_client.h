@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -101,6 +102,27 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
+
+  // Interface for managing the power consumption of renderer processes.
+  class RenderProcessManagerDelegate {
+   public:
+    virtual ~RenderProcessManagerDelegate() {}
+
+    // Called when a suspend attempt is imminent but after all registered
+    // observers have reported readiness to suspend.  This is only called for
+    // suspends from the fully powered on state and not for suspends from dark
+    // resume.
+    virtual void SuspendImminent() = 0;
+
+    // Called when a previously announced suspend attempt has completed but
+    // before observers are notified about it.
+    virtual void SuspendDone() = 0;
+  };
+
+  // Sets the PowerManagerClient's RenderProcessManagerDelegate.  There can only
+  // be one delegate.
+  virtual void SetRenderProcessManagerDelegate(
+      base::WeakPtr<RenderProcessManagerDelegate> delegate) = 0;
 
   // Decreases the screen brightness. |allow_off| controls whether or not
   // it's allowed to turn off the back light.
