@@ -39,8 +39,8 @@
 #include "net/websockets/websocket_deflate_stream.h"
 #include "net/websockets/websocket_deflater.h"
 #include "net/websockets/websocket_extension_parser.h"
+#include "net/websockets/websocket_handshake_challenge.h"
 #include "net/websockets/websocket_handshake_constants.h"
-#include "net/websockets/websocket_handshake_handler.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_stream.h"
@@ -435,8 +435,8 @@ int WebSocketBasicHandshakeStream::SendRequest(
                             requested_sub_protocols_,
                             &enriched_headers);
 
-  ComputeSecWebSocketAccept(handshake_challenge,
-                            &handshake_challenge_response_);
+  handshake_challenge_response_ =
+      ComputeSecWebSocketAccept(handshake_challenge);
 
   DCHECK(connect_delegate_);
   scoped_ptr<WebSocketHandshakeRequestInfo> request(
