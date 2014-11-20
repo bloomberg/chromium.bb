@@ -15,6 +15,17 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
+// Singly-included section for types and/or struct declarations.
+#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#define CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+
+// Custom data consists of arbitrary MIME types an untrusted sender wants to
+// write to the clipboard. Note that exposing a general interface to do this is
+// dangerous--an untrusted sender could cause a DoS or code execution.
+typedef std::map<base::string16, base::string16> CustomDataMap;
+
+#endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+
 #define IPC_MESSAGE_START ClipboardMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ClipboardFormat,
@@ -68,11 +79,7 @@ IPC_MESSAGE_CONTROL3(ClipboardHostMsg_WriteHTML,
                      base::string16 /* markup */,
                      GURL /* url */)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_WriteSmartPasteMarker,
-                     ui::ClipboardType /* type */);
-// Custom data consists of arbitrary MIME types an untrusted sender wants to
-// write to the clipboard. Note that exposing a general interface to do this is
-// dangerous--an untrusted sender could cause a DoS or code execution.
-typedef std::map<base::string16, base::string16> CustomDataMap;
+                     ui::ClipboardType /* type */)
 IPC_MESSAGE_CONTROL2(ClipboardHostMsg_WriteCustomData,
                      ui::ClipboardType /* type */,
                      CustomDataMap /* custom data */)
