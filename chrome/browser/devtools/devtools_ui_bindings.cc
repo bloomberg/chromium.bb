@@ -820,10 +820,8 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
                                 extensions::APIPermission::kExperimental)));
     results.Append(extension_info);
   }
-  // TODO(dgozman): remove the |WebInspector.addExtensions| call in M45.
-  CallClientFunction(
-      "(InspectorFrontendAPI.addExtensions || WebInspector.addExtensions)",
-      &results, NULL, NULL);
+  CallClientFunction("InspectorFrontendAPI.addExtensions",
+                     &results, NULL, NULL);
 }
 
 void DevToolsUIBindings::SetDelegate(Delegate* delegate) {
