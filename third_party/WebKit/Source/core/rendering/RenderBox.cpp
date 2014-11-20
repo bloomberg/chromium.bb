@@ -2455,16 +2455,9 @@ bool RenderBox::logicalHeightComputesAsNone(SizeType sizeType) const
     if (logicalHeight == initialLogicalHeight)
         return true;
 
-    if (!logicalHeight.isPercent() || isOutOfFlowPositioned())
-        return false;
-
-    // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
-    // the closest non-anonymous ancestor box is used instead.
-    RenderBlock* containingBlock = this->containingBlock();
-    while (containingBlock->isAnonymous())
-        containingBlock = containingBlock->containingBlock();
-
-    return containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight();
+    if (RenderBlock* cb = containingBlockForAutoHeightDetection(logicalHeight))
+        return cb->hasAutoHeightOrContainingBlockWithAutoHeight();
+    return false;
 }
 
 LayoutUnit RenderBox::computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit logicalHeight) const

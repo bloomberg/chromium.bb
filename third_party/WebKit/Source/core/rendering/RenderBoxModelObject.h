@@ -179,6 +179,7 @@ protected:
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
+    RenderBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
 
 public:
     // These functions are only used internally to manipulate the render tree structure via remove/insert/appendChildNode.
