@@ -273,11 +273,6 @@ group("root") {
   #
 
   if (is_mac) {
-    # TODO(dpranke): Need to fix the unused function errors in breakpad.
-    deps -= [
-      "//breakpad:symupload"
-    ]
-
     # TODO(dpranke): These need a webrtc fix in order to build.
     deps -= [
       "//jingle:notifier",

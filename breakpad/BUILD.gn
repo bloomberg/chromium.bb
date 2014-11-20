@@ -227,6 +227,9 @@ if (current_toolchain == host_toolchain && is_mac) {
     ]
 
     libs = [ "Foundation.framework" ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 }
 
@@ -255,10 +258,9 @@ if (is_mac) {
 
     configs += [ ":internal_config" ]
     
-    # TODO(GYP): TODO(dpranke): Fix the compile for this.
-    sources -= [
-      "src/client/mac/handler/dynamic_images.cc",
-    ]
+    # There are some warnings in this code.
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 
   executable("crash_inspector") {
@@ -287,6 +289,8 @@ if (is_mac) {
   # TODO(GYP) this target has some mac_bundle_resources stuff.
   # executable("crash_report_sender") {
   # }
+  group("crash_report_sender") {
+  }
 
   config("breakpad_config") {
     include_dirs = [ "src/client/apple/Framework" ]
@@ -313,8 +317,7 @@ if (is_mac) {
     deps = [
       ":utilities",
       ":crash_inspector",
-      # TODO(GYP): Make this link
-      #":crash_report_sender",
+      ":crash_report_sender",
     ]
   }
 
