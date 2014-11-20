@@ -42,8 +42,8 @@ class MEDIA_EXPORT BufferedDataSourceHost {
 // A data source capable of loading URLs and buffering the data using an
 // in-memory sliding window.
 //
-// BufferedDataSource must be created and initialized on the render thread
-// before being passed to other threads. It may be deleted on any thread.
+// BufferedDataSource must be created and destroyed on the thread associated
+// with the |task_runner| passed in the constructor.
 class MEDIA_EXPORT BufferedDataSource : public DataSource {
  public:
   // Used to specify video preload states. They are "hints" to the browser about

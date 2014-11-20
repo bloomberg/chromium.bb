@@ -105,9 +105,12 @@ BufferedDataSource::BufferedDataSource(
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(host_);
   DCHECK(!downloading_cb_.is_null());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 }
 
-BufferedDataSource::~BufferedDataSource() {}
+BufferedDataSource::~BufferedDataSource() {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+}
 
 // A factory method to create BufferedResourceLoader using the read parameters.
 // This method can be overridden to inject mock BufferedResourceLoader object
