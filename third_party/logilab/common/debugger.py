@@ -26,9 +26,6 @@
 
 
 """
-
-from __future__ import print_function
-
 __docformat__ = "restructuredtext en"
 
 try:
@@ -39,9 +36,8 @@ import os
 import os.path as osp
 import sys
 from pdb import Pdb
+from cStringIO import StringIO
 import inspect
-
-from logilab.common.compat import StringIO
 
 try:
     from IPython import PyColorize
@@ -186,8 +182,8 @@ class Debugger(Pdb):
         if not arg:
             try:
                 source, start_lineno = getsource(self.curframe)
-                print(colorize(''.join(source), start_lineno,
-                               self.curframe.f_lineno))
+                print colorize(''.join(source), start_lineno,
+                               self.curframe.f_lineno)
             except KeyboardInterrupt:
                 pass
             except IOError:

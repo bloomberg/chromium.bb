@@ -1,31 +1,32 @@
-# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
+# copyright 2003-2010 Sylvain Thenault, all rights reserved.
+# contact mailto:thenault@gmail.com
 #
-# This file is part of astroid.
+# This file is part of logilab-astng.
 #
-# astroid is free software: you can redistribute it and/or modify it
+# logilab-astng is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# astroid is distributed in the hope that it will be useful, but
+# logilab-astng is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with astroid. If not, see <http://www.gnu.org/licenses/>.
+# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
 """this module contains some utilities to navigate in the tree or to
 extract information from it
 """
 
 __docformat__ = "restructuredtext en"
 
-from astroid.exceptions import AstroidBuildingException
-from astroid.builder import parse
+from logilab.astng.exceptions import ASTNGBuildingException
 
 
-class ASTWalker(object):
+class ASTWalker:
     """a walker visiting a tree in preorder, calling on the handler:
 
     * visit_<class name> on entering a node, where class name is the class of
@@ -98,7 +99,7 @@ class LocalsVisitor(ASTWalker):
         if methods[0] is not None:
             methods[0](node)
         if 'locals' in node.__dict__: # skip Instance and other proxy
-            for local_node in node.values():
+            for name, local_node in node.items():
                 self.visit(local_node)
         if methods[1] is not None:
             return methods[1](node)
@@ -112,25 +113,27 @@ def _check_children(node):
             print "Hm, child of %s is None" % node
             continue
         if not hasattr(child, 'parent'):
-            print " ERROR: %s has child %s %x with no parent" % (
-                node, child, id(child))
+            print " ERROR: %s has child %s %x with no parent" % (node, child, id(child))
         elif not child.parent:
-            print " ERROR: %s has child %s %x with parent %r" % (
-                node, child, id(child), child.parent)
+            print " ERROR: %s has child %s %x with parent %r" % (node, child, id(child), child.parent)
         elif child.parent is not node:
-            print " ERROR: %s %x has child %s %x with wrong parent %s" % (
-                node, id(node), child, id(child), child.parent)
+            print " ERROR: %s %x has child %s %x with wrong parent %s" % (node,
+                                      id(node), child, id(child), child.parent)
         else:
             ok = True
         if not ok:
             print "lines;", node.lineno, child.lineno
             print "of module", node.root(), node.root().name
-            raise AstroidBuildingException
+            raise ASTNGBuildingException
         _check_children(child)
 
 
+from _ast import PyCF_ONLY_AST
+def parse(string):
+    return compile(string, "<string>", 'exec', PyCF_ONLY_AST)
+
 class TreeTester(object):
-    '''A helper class to see _ast tree and compare with astroid tree
+    '''A helper class to see _ast tree and compare with astng tree
 
     indent: string for tree indent representation
     lineno: bool to tell if we should print the line numbers
@@ -143,11 +146,11 @@ class TreeTester(object):
     .   <Print>
     .   .   nl = True
     .   ]
-    >>> print tester.astroid_tree_repr()
+    >>> print tester.astng_tree_repr()
     Module()
         body = [
         Print()
-            dest =
+            dest = 
             values = [
             ]
         ]
@@ -182,8 +185,8 @@ class TreeTester(object):
         if _done is None:
             _done = set()
         if node in _done:
-            self._string += '\nloop in tree: %r (%s)' % (
-                node, getattr(node, 'lineno', None))
+            self._string += '\nloop in tree: %r (%s)' % (node,
+                                            getattr(node, 'lineno', None))
             return
         _done.add(node)
         self._string += '\n' + indent +  '<%s>' % node.__class__.__name__
@@ -199,7 +202,7 @@ class TreeTester(object):
                     continue
                 if a in ("lineno", "col_offset") and not self.lineno:
                     continue
-                self._string += '\n' +  indent + a + " = " + repr(attr)
+                self._string +='\n' +  indent + a + " = " + repr(attr)
         for field in node._fields or ():
             attr = node_dict[field]
             if attr is None:
@@ -221,16 +224,16 @@ class TreeTester(object):
                 self._string += '\n' + indent + field + " = " + repr(attr)
 
 
-    def build_astroid_tree(self):
-        """build astroid tree from the _ast tree
+    def build_astng_tree(self):
+        """build astng tree from the _ast tree
         """
-        from astroid.builder import AstroidBuilder
-        tree = AstroidBuilder().string_build(self.sourcecode)
+        from logilab.astng.builder import ASTNGBuilder
+        tree = ASTNGBuilder().string_build(self.sourcecode)
         return tree
 
-    def astroid_tree_repr(self, ids=False):
-        """build the astroid tree and return a nice tree representation"""
-        mod = self.build_astroid_tree()
+    def astng_tree_repr(self, ids=False):
+        """build the astng tree and return a nice tree representation"""
+        mod = self.build_astng_tree()
         return mod.repr_tree(ids)
 
 

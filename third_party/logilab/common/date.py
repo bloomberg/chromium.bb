@@ -1,4 +1,4 @@
-# copyright 2003-2012 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -22,13 +22,10 @@ __docformat__ = "restructuredtext en"
 
 import math
 import re
-import sys
-from locale import getlocale, LC_TIME
+from locale import getpreferredencoding
 from datetime import date, time, datetime, timedelta
 from time import strptime as time_strptime
 from calendar import monthrange, timegm
-
-from six.moves import range
 
 try:
     from mx.DateTime import RelativeDateTime, Date, DateTimeType
@@ -133,7 +130,7 @@ def get_national_holidays(begin, end):
     end = datefactory(end.year, end.month, end.day, end)
     holidays = [str2date(datestr, begin)
                 for datestr in FRENCH_MOBILE_HOLIDAYS.values()]
-    for year in range(begin.year, end.year+1):
+    for year in xrange(begin.year, end.year+1):
         for datestr in FRENCH_FIXED_HOLIDAYS.values():
             date = str2date(datestr % year, begin)
             if date not in holidays:
@@ -190,8 +187,8 @@ def date_range(begin, end, incday=None, incmonth=None):
     end = todate(end)
     if incmonth:
         while begin < end:
-            yield begin
             begin = next_month(begin, incmonth)
+            yield begin
     else:
         incr = get_step(begin, incday or 1)
         while begin < end:
@@ -282,34 +279,29 @@ def last_day(somedate):
 
 def ustrftime(somedate, fmt='%Y-%m-%d'):
     """like strftime, but returns a unicode string instead of an encoded
-    string which may be problematic with localized date.
+    string which' may be problematic with localized date.
+
+    encoding is guessed by locale.getpreferredencoding()
     """
-    if sys.version_info >= (3, 3):
-        # datetime.date.strftime() supports dates since year 1 in Python >=3.3.
-        return somedate.strftime(fmt)
-    else:
-        try:
-            if sys.version_info < (3, 0):
-                encoding = getlocale(LC_TIME)[1] or 'ascii'
-                return unicode(somedate.strftime(str(fmt)), encoding)
-            else:
-                return somedate.strftime(fmt)
-        except ValueError:
-            if somedate.year >= 1900:
-                raise
-            # datetime is not happy with dates before 1900
-            # we try to work around this, assuming a simple
-            # format string
-            fields = {'Y': somedate.year,
-                      'm': somedate.month,
-                      'd': somedate.day,
-                      }
-            if isinstance(somedate, datetime):
-                fields.update({'H': somedate.hour,
-                               'M': somedate.minute,
-                               'S': somedate.second})
-            fmt = re.sub('%([YmdHMS])', r'%(\1)02d', fmt)
-            return unicode(fmt) % fields
+    encoding = getpreferredencoding(do_setlocale=False) or 'UTF-8'
+    try:
+        return unicode(somedate.strftime(str(fmt)), encoding)
+    except ValueError, exc:
+        if somedate.year >= 1900:
+            raise
+        # datetime is not happy with dates before 1900
+        # we try to work around this, assuming a simple
+        # format string
+        fields = {'Y': somedate.year,
+                  'm': somedate.month,
+                  'd': somedate.day,
+                  }
+        if isinstance(somedate, datetime):
+            fields.update({'H': somedate.hour,
+                           'M': somedate.minute,
+                           'S': somedate.second})
+        fmt = re.sub('%([YmdHMS])', r'%(\1)02d', fmt)
+        return unicode(fmt) % fields
 
 def utcdatetime(dt):
     if dt.tzinfo is None:

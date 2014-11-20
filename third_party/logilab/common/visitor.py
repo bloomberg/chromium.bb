@@ -35,13 +35,11 @@ class FilteredIterator(object):
             filter_func = no_filter
         self._list = list_func(node, filter_func)
 
-    def __next__(self):
+    def next(self):
         try:
             return self._list.pop(0)
         except :
             return None
-
-    next = __next__
 
 # Base Visitor ################################################################
 class Visitor(object):
@@ -63,10 +61,10 @@ class Visitor(object):
 
     def _visit(self, node):
         iterator = self._get_iterator(node)
-        n = next(iterator)
+        n = iterator.next()
         while n:
             result = n.accept(self)
-            n = next(iterator)
+            n = iterator.next()
         return result
 
     def _get_iterator(self, node):

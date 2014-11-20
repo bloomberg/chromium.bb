@@ -26,8 +26,6 @@ import sys
 import time
 import warnings
 
-from six.moves import range
-
 def setugid(user):
     """Change process user and group ID
 
@@ -48,7 +46,7 @@ def setugid(user):
             raise OSError(err, os.strerror(err), 'initgroups')
     os.setgid(passwd.pw_gid)
     os.setuid(passwd.pw_uid)
-    os.environ['HOME'] = passwd.pw_dir
+    os.putenv('HOME', passwd.pw_dir)
 
 
 def daemonize(pidfile=None, uid=None, umask=077):
@@ -79,7 +77,7 @@ def daemonize(pidfile=None, uid=None, umask=077):
     for i in range(3):
         try:
             os.dup2(null, i)
-        except OSError as e:
+        except OSError, e:
             if e.errno != errno.EBADF:
                 raise
     os.close(null)
