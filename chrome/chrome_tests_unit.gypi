@@ -1595,6 +1595,8 @@
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.h',
+        'browser/ui/webui/signin/login_ui_test_utils.cc',
+        'browser/ui/webui/signin/login_ui_test_utils.h',
         'renderer/chrome_mock_render_thread.cc',
         'renderer/chrome_mock_render_thread.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',

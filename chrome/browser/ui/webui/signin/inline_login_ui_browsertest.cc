@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,6 +38,9 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+
+using login_ui_test_utils::ExecuteJsToSigninInSigninFrame;
+using login_ui_test_utils::WaitUntilUIReady;
 
 namespace {
 
@@ -149,35 +153,6 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
  public:
   FooWebUIProvider& foo_provider() { return foo_provider_; }
 
-  void WaitUntilUIReady() {
-    content::DOMMessageQueue message_queue;
-    ASSERT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "if (!inline.login.getAuthExtHost())"
-        "  inline.login.initialize();"
-        "var handler = function() {"
-        "  window.domAutomationController.setAutomationId(0);"
-        "  window.domAutomationController.send('ready');"
-        "};"
-        "if (inline.login.isAuthReady())"
-        "  handler();"
-        "else"
-        "  inline.login.getAuthExtHost().addEventListener('ready', handler);"));
-
-    std::string message;
-    do {
-      ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    } while (message != "\"ready\"");
-  }
-
- // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
-  void ExecuteJsInSigninFrame(const std::string& js) {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(content::ExecuteScript(InlineLoginUI::GetAuthIframe(
-        web_contents, GURL(), "signin-frame"), js));
-  }
-
  private:
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -255,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
       signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
       "frameUrl", deframe_url.spec()));
   ui_test_utils::NavigateToURL(browser(), url);
-  WaitUntilUIReady();
+  WaitUntilUIReady(browser());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -278,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
     MAYBE_NavigationToOtherChromeURLDisallowed) {
   ui_test_utils::NavigateToURL(
       browser(), signin::GetPromoURL(signin::SOURCE_START_PAGE, false));
-  WaitUntilUIReady();
+  WaitUntilUIReady(browser());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -308,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   // untrusted signin confirmation dialog upon submitting credentials below.
   ui_test_utils::NavigateToURL(
       browser(), signin::GetPromoURL(signin::SOURCE_START_PAGE, false));
-  WaitUntilUIReady();
+  WaitUntilUIReady(browser());
 
   MockLoginUIObserver observer;
   LoginUIServiceFactory::GetForProfile(browser()->profile())
@@ -317,12 +292,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
   EXPECT_CALL(observer, OnUntrustedLoginUIShown())
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  std::string js =
-      "document.getElementById('Email').value = 'email';"
-      "document.getElementById('Passwd').value = 'password';"
-      "document.getElementById('signIn').click();";
-  ExecuteJsInSigninFrame(js);
-
+  ExecuteJsToSigninInSigninFrame(browser(), "email", "password");
   run_loop.Run();
   base::MessageLoop::current()->RunUntilIdle();
 }
