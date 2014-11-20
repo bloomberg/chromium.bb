@@ -36,26 +36,33 @@ namespace blink {
 template<typename S, typename T>
 class WebCallbacks {
 public:
-    virtual ~WebCallbacks() { };
-    virtual void onSuccess(S*) { };
-    virtual void onError(T*) { };
+    virtual ~WebCallbacks() { }
+    virtual void onSuccess(S*) { }
+    virtual void onError(T*) { }
 };
 
 template<typename T>
 class WebCallbacks<void, T> {
 public:
-    virtual ~WebCallbacks() { };
-    virtual void onSuccess() { };
-    virtual void onError(T*) { };
+    virtual ~WebCallbacks() { }
+    virtual void onSuccess() { }
+    virtual void onError(T*) { }
 };
-
 
 template<typename S>
 class WebCallbacks<S, void> {
 public:
-    virtual ~WebCallbacks() { };
-    virtual void onSuccess(S*) { };
-    virtual void onError() { };
+    virtual ~WebCallbacks() { }
+    virtual void onSuccess(S*) { }
+    virtual void onError() { }
+};
+
+template<>
+class WebCallbacks<void, void> {
+public:
+    virtual ~WebCallbacks() { }
+    virtual void onSuccess() { }
+    virtual void onError() { }
 };
 
 } // namespace blink
