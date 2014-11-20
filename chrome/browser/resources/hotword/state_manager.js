@@ -106,6 +106,9 @@ cr.define('hotword', function() {
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
 
     // Setup the chime and insert into the page.
+    // Set preload=none to prevent an audio output stream from being created
+    // when the extension loads.
+    this.chime_.preload = 'none';
     this.chime_.src = chrome.extension.getURL(
         hotword.constants.SHARED_MODULE_ROOT + '/audio/chime.wav');
     document.body.appendChild(this.chime_);
