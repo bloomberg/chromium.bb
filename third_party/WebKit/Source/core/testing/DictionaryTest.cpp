@@ -23,6 +23,10 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
     reset();
     if (testingDictionary.hasLongMember())
         m_longMember = testingDictionary.longMember();
+    if (testingDictionary.hasLongMemberWithClamp())
+        m_longMemberWithClamp = testingDictionary.longMemberWithClamp();
+    if (testingDictionary.hasLongMemberWithEnforceRange())
+        m_longMemberWithEnforceRange = testingDictionary.longMemberWithEnforceRange();
     m_longMemberWithDefault = testingDictionary.longMemberWithDefault();
     if (testingDictionary.hasLongOrNullMember())
         m_longOrNullMember = testingDictionary.longOrNullMember();
@@ -55,6 +59,10 @@ void DictionaryTest::get(InternalDictionary& result)
 {
     if (m_longMember)
         result.setLongMember(m_longMember.get());
+    if (m_longMemberWithClamp)
+        result.setLongMemberWithClamp(m_longMemberWithClamp.get());
+    if (m_longMemberWithEnforceRange)
+        result.setLongMemberWithEnforceRange(m_longMemberWithEnforceRange.get());
     result.setLongMemberWithDefault(m_longMemberWithDefault);
     if (m_longOrNullMember)
         result.setLongOrNullMember(m_longOrNullMember.get());
@@ -99,6 +107,8 @@ void DictionaryTest::getDerived(InternalDictionaryDerived& result)
 void DictionaryTest::reset()
 {
     m_longMember = Nullable<int>();
+    m_longMemberWithClamp = Nullable<int>();
+    m_longMemberWithEnforceRange = Nullable<int>();
     m_longMemberWithDefault = -1; // This value should not be returned.
     m_longOrNullMember = Nullable<int>();
     m_longOrNullMemberWithDefault = Nullable<int>();

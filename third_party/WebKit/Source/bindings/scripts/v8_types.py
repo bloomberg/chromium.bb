@@ -519,7 +519,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        return v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index)
+        return v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index, isolate)
 
     # Simple types
     idl_type = idl_type.preprocessed_type

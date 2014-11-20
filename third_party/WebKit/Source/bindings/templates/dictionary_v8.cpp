@@ -28,15 +28,12 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
         return;
 
     {% endif %}
-    // FIXME: Do not use Dictionary and DictionaryHelper
-    // https://crbug.com/321462
-    Dictionary dictionary(v8Value, isolate);
-    // FIXME: Remove this v8::TryCatch once the code is switched from
-    // Dictionary/DictionaryHelper to something that uses ExceptionState.
+    v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
     v8::TryCatch block;
     {% for member in members %}
-    {{member.cpp_type}} {{member.name}};
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "{{member.name}}", {{member.name}})) {
+    v8::Local<v8::Value> {{member.name}}Value = v8Object->Get(v8String(isolate, "{{member.name}}"));
+    if (!{{member.name}}Value.IsEmpty() && !isUndefinedOrNull({{member.name}}Value)) {
+        {{member.v8_value_to_local_cpp_value}};
     {% if member.enum_validation_expression %}
         String string = {{member.name}};
         if (!({{member.enum_validation_expression}})) {

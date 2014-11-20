@@ -6,6 +6,8 @@ enum InternalEnum { "foo", "bar", "baz" };
 
 dictionary InternalDictionary {
     long longMember;
+    [Clamp] long longMemberWithClamp;
+    [EnforceRange] long longMemberWithEnforceRange;
     long longMemberWithDefault = 42;
     long? longOrNullMember;
     long? longOrNullMemberWithDefault = null;

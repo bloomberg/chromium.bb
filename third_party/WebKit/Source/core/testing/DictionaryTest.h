@@ -47,6 +47,8 @@ private:
     //  - |longMemberWithDefault| has a non-null default value
     //  - String and PtrTypes can express whether they are null
     Nullable<int> m_longMember;
+    Nullable<int> m_longMemberWithClamp;
+    Nullable<int> m_longMemberWithEnforceRange;
     int m_longMemberWithDefault;
     Nullable<int> m_longOrNullMember;
     Nullable<int> m_longOrNullMemberWithDefault;

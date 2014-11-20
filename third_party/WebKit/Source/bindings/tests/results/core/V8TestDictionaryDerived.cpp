@@ -7,7 +7,6 @@
 #include "config.h"
 #include "V8TestDictionaryDerivedImplementedAs.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8TestDictionary.h"
 
@@ -26,22 +25,20 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Hand
     if (exceptionState.hadException())
         return;
 
-    // FIXME: Do not use Dictionary and DictionaryHelper
-    // https://crbug.com/321462
-    Dictionary dictionary(v8Value, isolate);
-    // FIXME: Remove this v8::TryCatch once the code is switched from
-    // Dictionary/DictionaryHelper to something that uses ExceptionState.
+    v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
     v8::TryCatch block;
-    String derivedStringMember;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "derivedStringMember", derivedStringMember)) {
+    v8::Local<v8::Value> derivedStringMemberValue = v8Object->Get(v8String(isolate, "derivedStringMember"));
+    if (!derivedStringMemberValue.IsEmpty() && !isUndefinedOrNull(derivedStringMemberValue)) {
+        TOSTRING_VOID(V8StringResource<>, derivedStringMember, derivedStringMemberValue);
         impl.setDerivedStringMember(derivedStringMember);
     } else if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return;
     }
 
-    String derivedStringMemberWithDefault;
-    if (DictionaryHelper::getWithUndefinedOrNullCheck(dictionary, "derivedStringMemberWithDefault", derivedStringMemberWithDefault)) {
+    v8::Local<v8::Value> derivedStringMemberWithDefaultValue = v8Object->Get(v8String(isolate, "derivedStringMemberWithDefault"));
+    if (!derivedStringMemberWithDefaultValue.IsEmpty() && !isUndefinedOrNull(derivedStringMemberWithDefaultValue)) {
+        TOSTRING_VOID(V8StringResource<>, derivedStringMemberWithDefault, derivedStringMemberWithDefaultValue);
         impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefault);
     } else if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());

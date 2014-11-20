@@ -20,8 +20,6 @@ DICTIONARY_H_INCLUDES = frozenset([
 
 DICTIONARY_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ExceptionState.h',
-    # FIXME: Remove this, http://crbug.com/321462
-    'bindings/core/v8/Dictionary.h',
 ])
 
 
@@ -99,6 +97,9 @@ def member_context(member):
         'name': member.name,
         'setter_name': setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,
+        'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
+            member.extended_attributes, member.name + 'Value',
+            member.name, isolate='isolate'),
     }
 
 
