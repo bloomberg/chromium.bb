@@ -79,7 +79,7 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 void ShellContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
-  extensions_client_.reset(new ShellExtensionsClient);
+  extensions_client_.reset(CreateExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
 
   extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
@@ -187,6 +187,10 @@ ShellContentRendererClient::CreateBrowserPluginDelegate(
     return new extensions::MimeHandlerViewContainer(
         render_frame, mime_type, original_url);
   }
+}
+
+ExtensionsClient* ShellContentRendererClient::CreateExtensionsClient() {
+  return new ShellExtensionsClient;
 }
 
 }  // namespace extensions

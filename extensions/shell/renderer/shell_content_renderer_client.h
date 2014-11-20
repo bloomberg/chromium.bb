@@ -14,7 +14,7 @@ namespace extensions {
 
 class Dispatcher;
 class DispatcherDelegate;
-class ShellExtensionsClient;
+class ExtensionsClient;
 class ShellExtensionsRendererClient;
 class ShellRendererMainDelegate;
 
@@ -52,8 +52,13 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       const std::string& mime_type,
       const GURL& original_url) override;
 
+ protected:
+  // app_shell embedders may need custom extensions client interfaces.
+  // This class takes ownership of the returned object.
+  virtual ExtensionsClient* CreateExtensionsClient();
+
  private:
-  scoped_ptr<ShellExtensionsClient> extensions_client_;
+  scoped_ptr<ExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
   scoped_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
   scoped_ptr<Dispatcher> extension_dispatcher_;

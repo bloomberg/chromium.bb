@@ -14,6 +14,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 
 namespace content {
+class BrowserContext;
 class DevToolsHttpHandler;
 struct MainFunctionParams;
 }
@@ -30,11 +31,11 @@ namespace extensions {
 
 class AppWindowClient;
 class DesktopController;
+class ExtensionsBrowserClient;
+class ExtensionsClient;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
 class ShellDeviceClient;
-class ShellExtensionsBrowserClient;
-class ShellExtensionsClient;
 class ShellExtensionSystem;
 class ShellOAuth2TokenService;
 class ShellOmahaQueryParamsDelegate;
@@ -65,6 +66,13 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 
+ protected:
+  // app_shell embedders may need custom extensions client interfaces.
+  // This class takes ownership of the returned objects.
+  virtual ExtensionsClient* CreateExtensionsClient();
+  virtual ExtensionsBrowserClient* CreateExtensionsBrowserClient(
+      content::BrowserContext* context);
+
  private:
   // Creates and initializes the ExtensionSystem.
   void CreateExtensionSystem();
@@ -77,8 +85,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellDeviceClient> device_client_;
   scoped_ptr<AppWindowClient> app_window_client_;
-  scoped_ptr<ShellExtensionsClient> extensions_client_;
-  scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
+  scoped_ptr<ExtensionsClient> extensions_client_;
+  scoped_ptr<ExtensionsBrowserClient> extensions_browser_client_;
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
   scoped_ptr<ShellOmahaQueryParamsDelegate> omaha_query_params_delegate_;

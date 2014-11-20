@@ -143,11 +143,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   device_client_.reset(new ShellDeviceClient);
 
-  extensions_client_.reset(new ShellExtensionsClient());
+  extensions_client_.reset(CreateExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
 
   extensions_browser_client_.reset(
-      new ShellExtensionsBrowserClient(browser_context_.get()));
+      CreateExtensionsBrowserClient(browser_context_.get()));
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   omaha_query_params_delegate_.reset(new ShellOmahaQueryParamsDelegate);
@@ -250,6 +250,15 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   chromeos::NetworkHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
+}
+
+ExtensionsClient* ShellBrowserMainParts::CreateExtensionsClient() {
+  return new ShellExtensionsClient();
+}
+
+ExtensionsBrowserClient* ShellBrowserMainParts::CreateExtensionsBrowserClient(
+    content::BrowserContext* context) {
+  return new ShellExtensionsBrowserClient(context);
 }
 
 void ShellBrowserMainParts::CreateExtensionSystem() {
