@@ -129,10 +129,29 @@ class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
   base::FilePath::StringType Variant() override;
 };
 
+// "Transitional" here means that this uses nacl_helper_nonsfi which has
+// nacl_helper feature for Non-SFI mode, but statically linked to newlib
+// instead of using host glibc. It is still under development.
+// TODO(hidehiko): Switch NonSfi tests to use nacl_helper_nonsfi, when
+// it is launched officially.
+class NaClBrowserTestPnaclTransitionalNonSfi
+    : public NaClBrowserTestPnaclNonSfi {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+};
+
 class NaClBrowserTestNonSfiMode : public NaClBrowserTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   base::FilePath::StringType Variant() override;
+};
+
+// TODO(hidehiko): Switch NonSfi tests to use nacl_helper_nonsfi, when
+// it is launched officially. See NaClBrowserTestPnaclTransitionalNonSfi
+// for more details.
+class NaClBrowserTestTransitionalNonSfi : public NaClBrowserTestNonSfiMode {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // A NaCl browser test only using static files.
@@ -181,6 +200,16 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #  define MAYBE_NONSFI(test_case) DISABLED_##test_case
 #endif
 
+// Currently, we only support it on x86-32 architecture.
+// TODO(hidehiko,mazda): Enable this on ARM, too, when it is supported.
+#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER) && \
+    !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+  !defined(LEAK_SANITIZER) && defined(ARCH_CPU_X86)
+#  define MAYBE_TRANSITIONAL_NONSFI(test_case) test_case
+#else
+#  define MAYBE_TRANSITIONAL_NONSFI(test_case) DISABLED_##test_case
+#endif
+
 // Currently, translation from pexe to non-sfi nexe is supported only for
 // x86-32 or ARM binary.
 #if defined(OS_LINUX) && (defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL))
@@ -188,6 +217,16 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #else
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
 #endif
+
+// Similar to MAYBE_NACL_HELPER_NONSFI, this is not available on ARM yet.
+// TODO(hidehiko,mazda): Merge this to the MAYBE_PNACL_NONSFI when it is
+// supported on ARM.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+#  define MAYBE_PNACL_TRANSITIONAL_NONSFI(test_case) test_case
+#else
+#  define MAYBE_PNACL_TRANSITIONAL_NONSFI(test_case) DISABLED_##test_case
+#endif
+
 
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
