@@ -292,6 +292,6 @@ HWND VersionUpdaterWin::GetElevationParent() {
 
 }  // namespace
 
-VersionUpdater* VersionUpdater::Create() {
+VersionUpdater* VersionUpdater::Create(content::BrowserContext* /* context */) {
   return new VersionUpdaterWin;
 }

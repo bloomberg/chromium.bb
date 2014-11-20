@@ -28,7 +28,7 @@ class VersionUpdaterCros : public VersionUpdater,
   friend class VersionUpdater;
 
   // Clients must use VersionUpdater::Create().
-  VersionUpdaterCros();
+  explicit VersionUpdaterCros(content::BrowserContext* context);
   virtual ~VersionUpdaterCros();
 
  private:
@@ -38,6 +38,9 @@ class VersionUpdaterCros : public VersionUpdater,
 
   // Callback from UpdateEngineClient::RequestUpdateCheck().
   void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
+
+  // BrowserContext in which the class was instantiated.
+  content::BrowserContext* context_;
 
   // Callback used to communicate update status to the client.
   StatusCallback callback_;

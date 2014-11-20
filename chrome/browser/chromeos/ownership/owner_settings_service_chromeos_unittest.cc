@@ -93,8 +93,8 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     InitOwner(device_policy_.policy_data().username(), true);
     FlushDeviceSettings();
 
-    service_ =
-        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+        profile_.get());
     ASSERT_TRUE(service_);
     ASSERT_TRUE(service_->IsOwner());
   }
@@ -169,8 +169,8 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
     provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
                                                &device_settings_service_));
     FlushDeviceSettings();
-    service_ =
-        OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+    service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+        profile_.get());
     ASSERT_TRUE(service_);
     ASSERT_FALSE(service_->IsOwner());
   }

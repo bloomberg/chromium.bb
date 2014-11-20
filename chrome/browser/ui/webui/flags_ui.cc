@@ -292,15 +292,15 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
 
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS() &&
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile)) {
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+          profile)) {
     chromeos::OwnerSettingsServiceChromeOS* service =
-        chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile);
+        chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+            profile);
     service->IsOwnerAsync(base::Bind(
         &FinishInitialization, weak_factory_.GetWeakPtr(), profile, handler));
   } else {
-    FinishInitialization(weak_factory_.GetWeakPtr(),
-                         profile,
-                         handler,
+    FinishInitialization(weak_factory_.GetWeakPtr(), profile, handler,
                          false /* current_user_is_owner */);
   }
 #else
