@@ -81,6 +81,28 @@ template <typename T> struct IsMoveOnlyType {
                             !is_const<T>::value;
 };
 
+// Returns |Then| as SelectType::Type if |condition| is true. Otherwise returns
+// |Else|.
+template <bool condition, typename Then, typename Else>
+struct SelectType {
+  typedef Then Type;
+};
+
+template <typename Then, typename Else>
+struct SelectType<false, Then, Else> {
+  typedef Else Type;
+};
+
+template <typename>
+struct CallbackParamTraitsForMoveOnlyType;
+
+template <typename>
+struct CallbackParamTraitsForNonMoveOnlyType;
+
+// TODO(tzik): Use a default parameter once MSVS supports variadic templates
+// with default values.
+// http://connect.microsoft.com/VisualStudio/feedbackdetail/view/957801/compilation-error-with-variadic-templates
+//
 // This is a typetraits object that's used to take an argument type, and
 // extract a suitable type for storing and forwarding arguments.
 //
@@ -92,8 +114,15 @@ template <typename T> struct IsMoveOnlyType {
 // parameters by const reference. In this case, we end up passing an actual
 // array type in the initializer list which C++ does not allow.  This will
 // break passing of C-string literals.
-template <typename T, bool is_move_only = IsMoveOnlyType<T>::value>
-struct CallbackParamTraits {
+template <typename T>
+struct CallbackParamTraits
+    : SelectType<IsMoveOnlyType<T>::value,
+         CallbackParamTraitsForMoveOnlyType<T>,
+         CallbackParamTraitsForNonMoveOnlyType<T> >::Type {
+};
+
+template <typename T>
+struct CallbackParamTraitsForNonMoveOnlyType {
   typedef const T& ForwardType;
   typedef T StorageType;
 };
@@ -104,7 +133,7 @@ struct CallbackParamTraits {
 //
 // The ForwardType should only be used for unbound arguments.
 template <typename T>
-struct CallbackParamTraits<T&, false> {
+struct CallbackParamTraitsForNonMoveOnlyType<T&> {
   typedef T& ForwardType;
   typedef T StorageType;
 };
@@ -115,14 +144,14 @@ struct CallbackParamTraits<T&, false> {
 // T[n]" does not seem to match correctly, so we are stuck with this
 // restriction.
 template <typename T, size_t n>
-struct CallbackParamTraits<T[n], false> {
+struct CallbackParamTraitsForNonMoveOnlyType<T[n]> {
   typedef const T* ForwardType;
   typedef const T* StorageType;
 };
 
 // See comment for CallbackParamTraits<T[n]>.
 template <typename T>
-struct CallbackParamTraits<T[], false> {
+struct CallbackParamTraitsForNonMoveOnlyType<T[]> {
   typedef const T* ForwardType;
   typedef const T* StorageType;
 };
@@ -141,7 +170,7 @@ struct CallbackParamTraits<T[], false> {
 // reference cannot be used with temporaries which means the result of a
 // function or a cast would not be usable with Callback<> or Bind().
 template <typename T>
-struct CallbackParamTraits<T, true> {
+struct CallbackParamTraitsForMoveOnlyType {
   typedef T ForwardType;
   typedef T StorageType;
 };
