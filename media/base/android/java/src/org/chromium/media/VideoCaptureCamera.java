@@ -170,7 +170,6 @@ public abstract class VideoCaptureCamera extends VideoCapture
         parameters.setPreviewSize(matchedWidth, matchedHeight);
         parameters.setPreviewFpsRange(chosenFpsRange[0], chosenFpsRange[1]);
         parameters.setPreviewFormat(mCaptureFormat.mPixelFormat);
-        parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         try {
             mCamera.setParameters(parameters);
         } catch (RuntimeException ex) {
