@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).
 This tests mapping of lang/xml:lang to -webkit-locale with dynamic attribute changes. WebKit bug 76364
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -14,6 +15,9 @@ PASS localeOfNode('x2') is "ja"
 PASS localeOfNode('x3') is "ar"
 PASS localeOfNode('x3') is "auto"
 PASS localeOfNode('x3') is "ja"
+PASS localeOfNode('x2') is "zh"
+PASS localeOfNode('x2') is "ja"
+PASS localeOfNode('x2') is "ja"
 PASS successfullyParsed is true
 
 TEST COMPLETE

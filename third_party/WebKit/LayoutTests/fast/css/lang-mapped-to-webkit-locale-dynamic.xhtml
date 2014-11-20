@@ -31,6 +31,21 @@ function runTest() {
     x3.removeAttribute("lang");
     shouldBeEqualToString("localeOfNode('x3')", "ja");
 
+    // The "lang" attribute in the XML namespace should affect locale (since this is an XHTML document).
+    var attr1 = document.createAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:lang");
+    attr1.value = "zh";
+    x2.setAttributeNodeNS(attr1);
+    shouldBeEqualToString("localeOfNode('x2')", "zh");
+
+    x2.removeAttributeNode(attr1);
+    shouldBeEqualToString("localeOfNode('x2')", "ja");
+
+    // An attribute with local name "lang" not in the XML namespace should not affect locale.
+    var attr2 = document.createAttributeNS("foobar", "fb:lang");
+    attr2.value = "ph";
+    x2.setAttributeNodeNS(attr2);
+    shouldBeEqualToString("localeOfNode('x2')", "ja");
+
     // If we include js-test-post.js directly, the "TEST COMPLETE" output comes out of order.
     wasPostTestScriptParsed = true;
     finishJSTest();

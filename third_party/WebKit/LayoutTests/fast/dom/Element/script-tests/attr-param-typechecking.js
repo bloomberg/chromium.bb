@@ -12,3 +12,7 @@ shouldThrow('element.removeAttributeNode("style");');
 shouldThrow('element.removeAttributeNode(null);');
 shouldThrow('element.removeAttributeNode(undefined);');
 shouldThrow('element.removeAttributeNode(new Object);');
+shouldThrow('element.setAttributeNodeNS("style");');
+shouldThrow('element.setAttributeNodeNS(null);');
+shouldThrow('element.setAttributeNodeNS(undefined);');
+shouldThrow('element.setAttributeNodeNS(new Object);');

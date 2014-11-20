@@ -101,7 +101,7 @@ function nodeinsertbefore20() {
       element = childList.item(2);
       refNode = element.firstChild;
 
-      newNode = doc.createAttribute("xml:lang");
+      newNode = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
       
 	{
 		success = false;

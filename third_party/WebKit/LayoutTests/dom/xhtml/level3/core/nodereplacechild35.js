@@ -98,10 +98,10 @@ function nodereplacechild35() {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      parent = doc.createAttribute("xml:lang");
+      parent = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
       oldChild = doc.createEntityReference("delta");
       appendedChild = parent.appendChild(oldChild);
-      newChild = doc.createAttribute("xml:lang");
+      newChild = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
       
 	{
 		success = false;

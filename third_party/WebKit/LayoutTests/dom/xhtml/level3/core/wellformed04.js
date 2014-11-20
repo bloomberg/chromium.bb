@@ -105,7 +105,7 @@ doc = domImpl.createDocument("http://www.w3.org/1999/xhtml","html",nullDoctype);
 	{
 		success = false;
 		try {
-            attr = doc.createAttribute("LegalNameࢎ");
+            attr = doc.createAttributeNS(nullNS,"LegalNameࢎ");
         }
 		catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);

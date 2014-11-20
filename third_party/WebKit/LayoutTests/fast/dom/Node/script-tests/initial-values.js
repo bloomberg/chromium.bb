@@ -13,6 +13,16 @@ shouldBe("attr.namespaceURI", "null");
 shouldBe("attr.prefix", "null");
 shouldBe("attr.value", "''");
 
+debug("Attribute creation using createElementNS on an HTML doc:")
+attr = document.createAttributeNS("http://www.example.com", "example:foo");
+shouldBe("attr.nodeName", "'example:foo'");
+shouldBe("attr.name", "'example:foo'");
+shouldBe("attr.localName", "'foo'");
+shouldBe("attr.namespaceURI", "'http://www.example.com'");
+shouldBe("attr.prefix", "'example'");
+shouldBe("attr.nodeValue", "''");
+shouldBe("attr.value", "''");
+
 debug("Attribute creation using createElement on an XHTML doc:")
 attr = xmlDoc.createAttribute("foo");
 shouldBe("attr.nodeName", "'foo'");
@@ -22,6 +32,16 @@ shouldBe("attr.name", "'foo'");
 shouldBe("attr.localName", "null");
 shouldBe("attr.namespaceURI", "null");
 shouldBe("attr.prefix", "null");
+shouldBe("attr.value", "''");
+
+debug("Attribute creation using createElementNS on an XHTML doc:")
+attr = xmlDoc.createAttributeNS("http://www.example.com", "example:foo");
+shouldBe("attr.nodeName", "'example:foo'");
+shouldBe("attr.name", "'example:foo'");
+shouldBe("attr.localName", "'foo'");
+shouldBe("attr.namespaceURI", "'http://www.example.com'");
+shouldBe("attr.prefix", "'example'");
+shouldBe("attr.nodeValue", "''");
 shouldBe("attr.value", "''");
 
 var comment = document.createComment("foo");
