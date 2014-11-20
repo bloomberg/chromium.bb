@@ -635,7 +635,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_domain_per_etldp1_count_;
   base::HistogramBase* histogram_number_duplicate_db_cookies_;
   base::HistogramBase* histogram_cookie_deletion_cause_;
-  base::HistogramBase* histogram_time_get_;
   base::HistogramBase* histogram_time_mac_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 

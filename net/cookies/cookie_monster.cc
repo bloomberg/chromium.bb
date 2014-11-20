@@ -1319,15 +1319,11 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   if (!HasCookieableScheme(url))
     return std::string();
 
-  TimeTicks start_time(TimeTicks::Now());
-
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, true, &cookies);
   std::sort(cookies.begin(), cookies.end(), CookieSorter);
 
   std::string cookie_line = BuildCookieLine(cookies);
-
-  histogram_time_get_->AddTime(TimeTicks::Now() - start_time);
 
   VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
 
@@ -2245,9 +2241,6 @@ void CookieMonster::InitializeHistograms() {
       base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
-  histogram_time_get_ = base::Histogram::FactoryTimeGet("Cookie.TimeGet",
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
-      50, base::Histogram::kUmaTargetedHistogramFlag);
   histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(
       "Cookie.TimeBlockedOnLoad",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
