@@ -1349,8 +1349,6 @@ void Element::detach(const AttachContext& context)
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     cancelFocusAppearanceUpdate();
     removeCallbackSelectors();
-    if (svgFilterNeedsLayerUpdate())
-        document().unscheduleSVGFilterLayerUpdateHack(*this);
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->clearPseudoElements();
@@ -1377,7 +1375,12 @@ void Element::detach(const AttachContext& context)
         if (ElementShadow* shadow = data->shadow())
             shadow->detach(context);
     }
+
     ContainerNode::detach(context);
+
+    ASSERT(needsAttach());
+    if (svgFilterNeedsLayerUpdate())
+        document().unscheduleSVGFilterLayerUpdateHack(*this);
 }
 
 bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
