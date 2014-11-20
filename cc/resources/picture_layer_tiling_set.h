@@ -6,6 +6,7 @@
 #define CC_RESOURCES_PICTURE_LAYER_TILING_SET_H_
 
 #include <set>
+#include <vector>
 
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -45,6 +46,12 @@ class CC_EXPORT PictureLayerTilingSet {
   const PictureLayerTilingClient* client() const { return client_; }
 
   void RemoveTilesInRegion(const Region& region);
+  void CleanUpTilings(float min_acceptable_high_res_scale,
+                      float max_acceptable_high_res_scale,
+                      const std::vector<PictureLayerTiling*>& needed_tilings,
+                      bool should_have_low_res,
+                      PictureLayerTilingSet* twin_set,
+                      PictureLayerTilingSet* recycled_twin_set);
 
   // Make this set of tilings match the same set of content scales from |other|.
   // Delete any tilings that don't meet |minimum_contents_scale|.  Recreate
@@ -84,10 +91,6 @@ class CC_EXPORT PictureLayerTilingSet {
 
   // Remove all tilings.
   void RemoveAllTilings();
-
-  // Remove one tiling.
-  void Remove(PictureLayerTiling* tiling);
-  void RemoveTilingWithScale(float scale);
 
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
@@ -153,6 +156,9 @@ class CC_EXPORT PictureLayerTilingSet {
 
  private:
   explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
+
+  // Remove one tiling.
+  void Remove(PictureLayerTiling* tiling);
 
   PictureLayerTilingClient* client_;
   ScopedPtrVector<PictureLayerTiling> tilings_;

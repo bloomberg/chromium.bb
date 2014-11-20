@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <set>
+#include <vector>
 
 namespace cc {
 
@@ -48,6 +49,68 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
 void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->RemoveTilesInRegion(region);
+}
+
+void PictureLayerTilingSet::CleanUpTilings(
+    float min_acceptable_high_res_scale,
+    float max_acceptable_high_res_scale,
+    const std::vector<PictureLayerTiling*>& needed_tilings,
+    bool should_have_low_res,
+    PictureLayerTilingSet* twin_set,
+    PictureLayerTilingSet* recycled_twin_set) {
+  float twin_low_res_scale = 0.f;
+  if (twin_set) {
+    PictureLayerTiling* tiling =
+        twin_set->FindTilingWithResolution(LOW_RESOLUTION);
+    if (tiling)
+      twin_low_res_scale = tiling->contents_scale();
+  }
+
+  std::vector<PictureLayerTiling*> to_remove;
+  for (auto* tiling : tilings_) {
+    // Keep all tilings within the min/max scales.
+    if (tiling->contents_scale() >= min_acceptable_high_res_scale &&
+        tiling->contents_scale() <= max_acceptable_high_res_scale) {
+      continue;
+    }
+
+    // Keep low resolution tilings, if the tiling set should have them.
+    if (should_have_low_res &&
+        (tiling->resolution() == LOW_RESOLUTION ||
+         tiling->contents_scale() == twin_low_res_scale)) {
+      continue;
+    }
+
+    // Don't remove tilings that are required.
+    if (std::find(needed_tilings.begin(), needed_tilings.end(), tiling) !=
+        needed_tilings.end()) {
+      continue;
+    }
+
+    to_remove.push_back(tiling);
+  }
+
+  for (auto* tiling : to_remove) {
+    PictureLayerTiling* twin_tiling =
+        twin_set ? twin_set->FindTilingWithScale(tiling->contents_scale())
+                 : nullptr;
+    // Only remove tilings from the twin layer if they have
+    // NON_IDEAL_RESOLUTION.
+    if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
+      twin_set->Remove(twin_tiling);
+
+    PictureLayerTiling* recycled_twin_tiling =
+        recycled_twin_set
+            ? recycled_twin_set->FindTilingWithScale(tiling->contents_scale())
+            : nullptr;
+    // Remove the tiling from the recycle tree. Note that we ignore resolution,
+    // since we don't need to maintain high/low res on the recycle set.
+    if (recycled_twin_tiling)
+      recycled_twin_set->Remove(recycled_twin_tiling);
+
+    DCHECK_NE(HIGH_RESOLUTION, tiling->resolution());
+    Remove(tiling);
+  }
 }
 
 void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
@@ -166,16 +229,6 @@ void PictureLayerTilingSet::RemoveAllTilings() {
 void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
   ScopedPtrVector<PictureLayerTiling>::iterator iter =
     std::find(tilings_.begin(), tilings_.end(), tiling);
-  if (iter == tilings_.end())
-    return;
-  tilings_.erase(iter);
-}
-
-void PictureLayerTilingSet::RemoveTilingWithScale(float scale) {
-  auto iter = std::find_if(tilings_.begin(), tilings_.end(),
-                           [scale](const PictureLayerTiling* tiling) {
-    return tiling->contents_scale() == scale;
-  });
   if (iter == tilings_.end())
     return;
   tilings_.erase(iter);

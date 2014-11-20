@@ -885,16 +885,6 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   return tiling;
 }
 
-void PictureLayerImpl::RemoveTiling(float contents_scale) {
-  if (!tilings_ || tilings_->num_tilings() == 0)
-    return;
-
-  tilings_->RemoveTilingWithScale(contents_scale);
-  if (tilings_->num_tilings() == 0)
-    ResetRasterScale();
-  SanityCheckTilingState();
-}
-
 void PictureLayerImpl::RemoveAllTilings() {
   if (tilings_)
     tilings_->RemoveAllTilings();
@@ -1096,7 +1086,6 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       raster_contents_scale_, ideal_contents_scale_);
   float max_acceptable_high_res_scale = std::max(
       raster_contents_scale_, ideal_contents_scale_);
-  float twin_low_res_scale = 0.f;
 
   PictureLayerImpl* twin = GetPendingOrActiveTwinLayer();
   if (twin && twin->CanHaveTilings()) {
@@ -1106,63 +1095,23 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     max_acceptable_high_res_scale = std::max(
         max_acceptable_high_res_scale,
         std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
-
-    // TODO(danakj): Remove the tilings_ check when we create them in the
-    // constructor.
-    if (twin->tilings_) {
-      PictureLayerTiling* tiling =
-          twin->tilings_->FindTilingWithResolution(LOW_RESOLUTION);
-      if (tiling)
-        twin_low_res_scale = tiling->contents_scale();
-    }
   }
 
-  // TODO(vmpstr): Put this logic into PictureLayerTilingSet.
-  std::vector<PictureLayerTiling*> to_remove;
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_->tiling_at(i);
-
-    // Keep multiple high resolution tilings even if not used to help
-    // activate earlier at non-ideal resolutions.
-    if (tiling->contents_scale() >= min_acceptable_high_res_scale &&
-        tiling->contents_scale() <= max_acceptable_high_res_scale)
-      continue;
-
-    // Keep low resolution tilings, if the layer should have them.
-    if (layer_tree_impl()->create_low_res_tiling()) {
-      if (tiling->resolution() == LOW_RESOLUTION ||
-          tiling->contents_scale() == twin_low_res_scale)
-        continue;
-    }
-
-    // Don't remove tilings that are being used (and thus would cause a flash.)
-    if (std::find(used_tilings.begin(), used_tilings.end(), tiling) !=
-        used_tilings.end())
-      continue;
-
-    to_remove.push_back(tiling);
-  }
-
-  if (to_remove.empty())
-    return;
-
+  PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;
   PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
-  // Remove tilings on this tree and the twin tree.
-  for (size_t i = 0; i < to_remove.size(); ++i) {
-    const PictureLayerTiling* twin_tiling =
-        GetPendingOrActiveTwinTiling(to_remove[i]);
-    // Only remove tilings from the twin layer if they have
-    // NON_IDEAL_RESOLUTION.
-    if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
-      twin->RemoveTiling(to_remove[i]->contents_scale());
-    // Remove the tiling from the recycle tree. Note that we ignore resolution,
-    // since we don't need to maintain high/low res on the recycle tree.
-    if (recycled_twin)
-      recycled_twin->RemoveTiling(to_remove[i]->contents_scale());
-    // TODO(enne): temporary sanity CHECK for http://crbug.com/358350
-    CHECK_NE(HIGH_RESOLUTION, to_remove[i]->resolution());
-    tilings_->Remove(to_remove[i]);
-  }
+  PictureLayerTilingSet* recycled_twin_set =
+      recycled_twin ? recycled_twin->tilings_.get() : nullptr;
+
+  tilings_->CleanUpTilings(min_acceptable_high_res_scale,
+                           max_acceptable_high_res_scale, used_tilings,
+                           layer_tree_impl()->create_low_res_tiling(), twin_set,
+                           recycled_twin_set);
+
+  if (twin_set && twin_set->num_tilings() == 0)
+    twin->ResetRasterScale();
+
+  if (recycled_twin_set && recycled_twin_set->num_tilings() == 0)
+    recycled_twin->ResetRasterScale();
 
   DCHECK_GT(tilings_->num_tilings(), 0u);
   SanityCheckTilingState();
