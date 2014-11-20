@@ -7,14 +7,18 @@ package org.chromium.cronet_test_apk;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.ChromiumUrlRequest;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestListener;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 
 /**
  * Test fixture to test upload APIs.  Uses an in-process test server.
@@ -232,6 +236,65 @@ public class UploadTest extends CronetTestBase {
 
             assertEquals(200, listener.mHttpStatusCode);
             assertEquals(contentType, listener.mResponseAsString);
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testAppendChunkRaceWithCancel() throws Exception {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        byteBuffer.put(UPLOAD_DATA.getBytes());
+        byteBuffer.position(0);
+
+        // Try to recreate race described in crbug.com/434855 when request
+        // is canceled from another thread while adding chunks to upload.
+        for (int test = 0; test < 100; ++test) {
+            TestHttpUrlRequestListener listener =
+                    new TestHttpUrlRequestListener();
+            final ChromiumUrlRequest request =
+                    (ChromiumUrlRequest) createRequest("http://127.0.0.1:8000",
+                                                       listener);
+            request.setChunkedUpload("dangerous/crocodile");
+            request.start();
+            Runnable cancelTask = new Runnable() {
+                public void run() {
+                    request.cancel();
+                }
+            };
+            Executors.newCachedThreadPool().execute(cancelTask);
+            request.appendChunk(byteBuffer, false);
+            request.appendChunk(byteBuffer, false);
+            request.appendChunk(byteBuffer, false);
+            request.appendChunk(byteBuffer, true);
+            listener.blockForComplete();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testAppendChunkPreAndPost() throws Exception {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        byteBuffer.put(UPLOAD_DATA.getBytes());
+        byteBuffer.position(0);
+
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        ChromiumUrlRequest request = (ChromiumUrlRequest) createRequest(
+                UploadTestServer.getEchoBodyURL(), listener);
+        request.setChunkedUpload("dangerous/crocodile");
+        try {
+            request.appendChunk(byteBuffer, false);
+            fail("Exception not thrown.");
+        } catch (IllegalStateException e) {
+            assertEquals("Request not yet started.", e.getMessage());
+        }
+        request.start();
+        request.appendChunk(byteBuffer, true);
+        listener.blockForComplete();
+        try {
+            request.appendChunk(byteBuffer, true);
+            fail("Exception not thrown.");
+        } catch (IOException e) {
+            assertEquals("Native peer destroyed.", e.getMessage());
         }
     }
 }

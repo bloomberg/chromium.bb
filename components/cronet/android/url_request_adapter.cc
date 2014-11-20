@@ -126,6 +126,13 @@ void URLRequestAdapter::Start() {
 void URLRequestAdapter::OnAppendChunk(const scoped_ptr<char[]> bytes,
                                       int bytes_len, bool is_last_chunk) {
   DCHECK(OnNetworkThread());
+  // Request could have completed and been destroyed on the network thread
+  // while appendChunk was posting the task from an application thread.
+  if (!url_request_) {
+    VLOG(1) << "Cannot append chunk to destroyed request: "
+            << url_.possibly_invalid_spec().c_str();
+    return;
+  }
   url_request_->AppendChunkToUpload(bytes.get(), bytes_len, is_last_chunk);
 }
 
