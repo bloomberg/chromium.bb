@@ -69,7 +69,6 @@ StyleEngine::StyleEngine(Document& document)
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
     , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
-    , m_xslStyleSheet(nullptr)
 {
     if (m_fontSelector)
         m_fontSelector->registerForInvalidationCallbacks(this);
@@ -323,37 +322,6 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
     m_activeTreeScopes.remove(&treeScope);
 }
 
-void StyleEngine::addXSLStyleSheet(ProcessingInstruction* node, bool createdByParser)
-{
-    if (!node->inDocument())
-        return;
-
-    ASSERT(isXSLStyleSheet(*node));
-    bool needToUpdate = false;
-    if (createdByParser || !m_xslStyleSheet) {
-        needToUpdate = !m_xslStyleSheet;
-    } else {
-        unsigned position = m_xslStyleSheet->compareDocumentPosition(node, Node::TreatShadowTreesAsDisconnected);
-        needToUpdate = position & Node::DOCUMENT_POSITION_FOLLOWING;
-    }
-
-    if (!needToUpdate)
-        return;
-
-    markTreeScopeDirty(*m_document);
-    m_xslStyleSheet = node;
-}
-
-void StyleEngine::removeXSLStyleSheet(ProcessingInstruction* node)
-{
-    ASSERT(isXSLStyleSheet(*node));
-    if (m_xslStyleSheet != node)
-        return;
-
-    markTreeScopeDirty(*m_document);
-    m_xslStyleSheet = nullptr;
-}
-
 void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
 {
     if (!node->inDocument())
@@ -535,13 +503,6 @@ bool StyleEngine::shouldClearResolver() const
     return !m_didCalculateResolver && !haveStylesheetsLoaded();
 }
 
-bool StyleEngine::shouldApplyXSLTransform() const
-{
-    if (!RuntimeEnabledFeatures::xsltEnabled())
-        return false;
-    return m_xslStyleSheet && !m_document->transformSourceDocument();
-}
-
 void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
     if (!isMaster()) {
@@ -554,15 +515,6 @@ void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
     // and haven't calculated the style selector for the first time.
     if (!document().isActive() || shouldClearResolver()) {
         clearResolver();
-        return;
-    }
-
-    if (shouldApplyXSLTransform()) {
-        // Processing instruction (XML documents only).
-        // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
-        // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
-        if (!m_document->parsing() && !m_xslStyleSheet->isLoading())
-            m_document->applyXSLTransform(m_xslStyleSheet.get());
         return;
     }
 
@@ -717,7 +669,6 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
-    visitor->trace(m_xslStyleSheet);
 #endif
     CSSFontSelectorClient::trace(visitor);
 }

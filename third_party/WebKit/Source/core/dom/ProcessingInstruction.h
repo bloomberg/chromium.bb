@@ -31,6 +31,7 @@ namespace blink {
 
 class StyleSheet;
 class CSSStyleSheet;
+class EventListener;
 
 class ProcessingInstruction final : public CharacterData, private ResourceOwner<StyleSheetResource> {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,6 +53,11 @@ public:
 
     void didAttributeChanged();
     bool isLoading() const;
+
+    // For XSLT
+    void setEventListenerForXSLT(PassRefPtr<EventListener> listener) { m_listenerForXSLT = listener; }
+    EventListener* eventListenerForXSLT() { return m_listenerForXSLT.get(); }
+    void clearEventListenerForXSLT() { m_listenerForXSLT.clear(); }
 
 private:
     ProcessingInstruction(Document&, const String& target, const String& data);
@@ -84,6 +90,8 @@ private:
     bool m_createdByParser;
     bool m_isCSS;
     bool m_isXSL;
+
+    RefPtr<EventListener> m_listenerForXSLT;
 };
 
 DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, nodeType() == Node::PROCESSING_INSTRUCTION_NODE);

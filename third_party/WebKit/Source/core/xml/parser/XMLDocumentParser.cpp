@@ -53,6 +53,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "core/xml/DocumentXSLT.h"
 #include "core/xml/parser/SharedBufferReader.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "core/xml/parser/XMLParserInput.h"
@@ -102,7 +103,7 @@ static inline AtomicString toAtomicString(const xmlChar* string)
 
 static inline bool hasNoStyleInformation(Document* document)
 {
-    if (document->sawElementsInKnownNamespaces() || document->transformSourceDocument())
+    if (document->sawElementsInKnownNamespaces() || DocumentXSLT::hasTransformSourceDocument(*document))
         return false;
 
     if (!document->frame() || !document->frame()->page())
@@ -1165,7 +1166,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
         return;
 
     m_sawXSLTransform = !m_sawFirstElement && pi->isXSL();
-    if (m_sawXSLTransform && !document()->transformSourceDocument()) {
+    if (m_sawXSLTransform && !DocumentXSLT::hasTransformSourceDocument(*document())) {
         // This behavior is very tricky. We call stopParsing() here because we
         // want to stop processing the document until we're ready to apply the
         // transform, but we actually still want to be fed decoded string pieces

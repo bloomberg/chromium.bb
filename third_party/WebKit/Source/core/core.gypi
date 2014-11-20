@@ -1917,6 +1917,8 @@
             'xml/DOMParser.h',
             'xml/DocumentXPathEvaluator.cpp',
             'xml/DocumentXPathEvaluator.h',
+            'xml/DocumentXSLT.cpp',
+            'xml/DocumentXSLT.h',
             'xml/NativeXPathNSResolver.cpp',
             'xml/NativeXPathNSResolver.h',
             'xml/XMLSerializer.cpp',

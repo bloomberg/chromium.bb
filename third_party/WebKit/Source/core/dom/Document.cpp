@@ -4422,27 +4422,6 @@ void Document::popCurrentScript()
     m_currentScriptStack.removeLast();
 }
 
-void Document::applyXSLTransform(ProcessingInstruction* pi)
-{
-    ASSERT(!pi->isLoading());
-    UseCounter::count(*this, UseCounter::XSLProcessingInstruction);
-    RefPtrWillBeRawPtr<XSLTProcessor> processor = XSLTProcessor::create(*this);
-    processor->setXSLStyleSheet(toXSLStyleSheet(pi->sheet()));
-    String resultMIMEType;
-    String newSource;
-    String resultEncoding;
-    setParsingState(Parsing);
-    if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding)) {
-        setParsingState(FinishedParsing);
-        return;
-    }
-    // FIXME: If the transform failed we should probably report an error (like Mozilla does).
-    LocalFrame* ownerFrame = frame();
-    processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, ownerFrame);
-    InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
-    setParsingState(FinishedParsing);
-}
-
 void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 {
     m_transformSource = source;
@@ -4857,8 +4836,6 @@ void Document::initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> csp)
     setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
     if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && (shouldInheritSecurityOriginFromOwner(m_url) || isPluginDocument()))
         contentSecurityPolicy()->copyStateFrom(toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy());
-    if (transformSourceDocument())
-        contentSecurityPolicy()->copyStateFrom(transformSourceDocument()->contentSecurityPolicy());
     contentSecurityPolicy()->bindToExecutionContext(this);
 }
 
@@ -5801,7 +5778,6 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_cssTarget);
     visitor->trace(m_currentScriptStack);
     visitor->trace(m_scriptRunner);
-    visitor->trace(m_transformSourceDocument);
     visitor->trace(m_listsInvalidatedAtDocument);
     for (int i = 0; i < numNodeListInvalidationTypes; ++i)
         visitor->trace(m_nodeLists[i]);
