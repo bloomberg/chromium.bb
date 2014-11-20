@@ -14,27 +14,6 @@
 
 namespace ui {
 
-namespace {
-
-// Valides a shared bitmap on the clipboard.
-// Returns true if the clipboard data makes sense and it's safe to access the
-// bitmap.
-bool ValidateAndMapSharedBitmap(size_t bitmap_bytes,
-                                base::SharedMemory* bitmap_data) {
-  using base::SharedMemory;
-
-  if (!bitmap_data || !SharedMemory::IsHandleValid(bitmap_data->handle()))
-    return false;
-
-  if (!bitmap_data->Map(bitmap_bytes)) {
-    PLOG(ERROR) << "Failed to map bitmap memory";
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 base::LazyInstance<Clipboard::AllowedThreadsVector>
     Clipboard::allowed_threads_ = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<Clipboard::ClipboardMap> Clipboard::clipboard_map_ =
@@ -95,13 +74,12 @@ void Clipboard::DestroyClipboardForCurrentThread() {
 }
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
-  // All types apart from CBF_WEBKIT need at least 1 non-empty param.
-  if (type != CBF_WEBKIT && (params.empty() || params[0].empty()))
-    return;
-  // Some other types need a non-empty 2nd param.
-  if ((type == CBF_BOOKMARK || type == CBF_SMBITMAP || type == CBF_DATA) &&
-      (params.size() != 2 || params[1].empty()))
-    return;
+  // Ignore writes with empty parameters.
+  for (const auto& param : params) {
+    if (param.empty())
+      return;
+  }
+
   switch (type) {
     case CBF_TEXT:
       WriteText(&(params[0].front()), params[0].size());
@@ -132,41 +110,12 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       break;
 
     case CBF_SMBITMAP: {
-      using base::SharedMemory;
-      using base::SharedMemoryHandle;
-
-      if (params[0].size() != sizeof(SharedMemory*) ||
-          params[1].size() != sizeof(gfx::Size)) {
-        return;
-      }
-
-      SkBitmap bitmap;
-      const gfx::Size* unvalidated_size =
-          reinterpret_cast<const gfx::Size*>(&params[1].front());
-      // Let Skia do some sanity checking for us (no negative widths/heights, no
-      // overflows while calculating bytes per row, etc).
-      if (!bitmap.setInfo(SkImageInfo::MakeN32Premul(
-          unvalidated_size->width(), unvalidated_size->height()))) {
-        return;
-      }
-      // Make sure the size is representable as a signed 32-bit int, so
-      // SkBitmap::getSize() won't be truncated.
-      if (!sk_64_isS32(bitmap.computeSize64()))
-        return;
-
-      // It's OK to cast away constness here since we map the handle as
-      // read-only.
-      const char* raw_bitmap_data_const =
-          reinterpret_cast<const char*>(&params[0].front());
-      char* raw_bitmap_data = const_cast<char*>(raw_bitmap_data_const);
-      scoped_ptr<SharedMemory> bitmap_data(
-          *reinterpret_cast<SharedMemory**>(raw_bitmap_data));
-
-      if (!ValidateAndMapSharedBitmap(bitmap.getSize(), bitmap_data.get()))
-        return;
-      bitmap.setPixels(bitmap_data->memory());
-
-      WriteBitmap(bitmap);
+      // Usually, the params are just UTF-8 strings. However, for images,
+      // ScopedClipboardWriter actually sizes the buffer to sizeof(SkBitmap*),
+      // aliases the contents of the vector to a SkBitmap**, and writes the
+      // pointer to the actual SkBitmap in the clipboard object param.
+      const char* packed_pointer_buffer = &params[0].front();
+      WriteBitmap(**reinterpret_cast<SkBitmap* const*>(packed_pointer_buffer));
       break;
     }
 
@@ -181,42 +130,6 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
     default:
       NOTREACHED();
   }
-}
-
-// static
-bool Clipboard::ReplaceSharedMemHandle(ObjectMap* objects,
-                                       base::SharedMemoryHandle bitmap_handle,
-                                       base::ProcessHandle process) {
-  using base::SharedMemory;
-  bool has_shared_bitmap = false;
-
-  for (ObjectMap::iterator iter = objects->begin(); iter != objects->end();
-       ++iter) {
-    if (iter->first == CBF_SMBITMAP) {
-      // The code currently only accepts sending a single bitmap over this way.
-      // Fail if we ever encounter more than one shmem bitmap structure to fill.
-      if (has_shared_bitmap)
-        return false;
-
-#if defined(OS_WIN)
-      SharedMemory* bitmap = new SharedMemory(bitmap_handle, true, process);
-#else
-      SharedMemory* bitmap = new SharedMemory(bitmap_handle, true);
-#endif
-
-      // There must always be two parameters associated with each shmem bitmap.
-      if (iter->second.size() != 2)
-        return false;
-
-      // We store the shared memory object pointer so it can be retrieved by the
-      // UI thread (see DispatchObject()).
-      iter->second[0].clear();
-      for (size_t i = 0; i < sizeof(SharedMemory*); ++i)
-        iter->second[0].push_back(reinterpret_cast<char*>(&bitmap)[i]);
-      has_shared_bitmap = true;
-    }
-  }
-  return true;
 }
 
 }  // namespace ui

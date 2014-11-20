@@ -7,13 +7,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
@@ -22,38 +26,17 @@ namespace content {
 
 namespace {
 
-enum BitmapPolicy {
-  kFilterBitmap,
-  kAllowBitmap,
-};
-void SanitizeObjectMap(ui::Clipboard::ObjectMap* objects,
-                       BitmapPolicy bitmap_policy) {
-  if (bitmap_policy != kAllowBitmap)
-    objects->erase(ui::Clipboard::CBF_SMBITMAP);
-
-  ui::Clipboard::ObjectMap::iterator data_it =
-      objects->find(ui::Clipboard::CBF_DATA);
-  if (data_it != objects->end()) {
-    const ui::Clipboard::FormatType& web_custom_format =
-        ui::Clipboard::GetWebCustomDataFormatType();
-    if (data_it->second.size() != 2 ||
-        !web_custom_format.Equals(
-            ui::Clipboard::FormatType::Deserialize(std::string(
-                &data_it->second[0].front(),
-                data_it->second[0].size())))) {
-      // CBF_DATA should always have two parameters associated with it, and the
-      // associated FormatType should always be web custom data. If not, then
-      // data is malformed and we'll ignore it.
-      objects->erase(ui::Clipboard::CBF_DATA);
-    }
-  }
+void ReleaseSharedMemoryPixels(void* addr, void* context) {
+  delete reinterpret_cast<base::SharedMemory*>(context);
 }
 
 }  // namespace
 
-
 ClipboardMessageFilter::ClipboardMessageFilter()
-    : BrowserMessageFilter(ClipboardMsgStart) {}
+    : BrowserMessageFilter(ClipboardMsgStart),
+      clipboard_writer_(
+          new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+}
 
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
@@ -80,8 +63,6 @@ void ClipboardMessageFilter::OverrideThreadForMessage(
 bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ClipboardMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsAsync, OnWriteObjectsAsync)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsSync, OnWriteObjectsSync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_IsFormatAvailable, OnIsFormatAvailable)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_Clear, OnClear)
@@ -92,6 +73,14 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadRTF, OnReadRTF)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadCustomData, OnReadCustomData)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteText, OnWriteText)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteHTML, OnWriteHTML)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteSmartPasteMarker,
+                        OnWriteSmartPasteMarker)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteCustomData, OnWriteCustomData)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteBookmark, OnWriteBookmark)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteImage, OnWriteImage)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_CommitWrite, OnCommitWrite);
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
@@ -102,71 +91,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 ClipboardMessageFilter::~ClipboardMessageFilter() {
-}
-
-void ClipboardMessageFilter::OnWriteObjectsSync(
-    const ui::Clipboard::ObjectMap& objects,
-    base::SharedMemoryHandle bitmap_handle) {
-  DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
-      << "Bad bitmap handle";
-
-  // On Windows, we can't write directly from the IO thread, so we copy the data
-  // into a heap allocated map and post a task to the UI thread. On other
-  // platforms, to lower the amount of time the renderer has to wait for the
-  // sync IPC to complete, we also take a copy and post a task to flush the data
-  // to the clipboard later.
-  scoped_ptr<ui::Clipboard::ObjectMap> long_living_objects(
-      new ui::Clipboard::ObjectMap(objects));
-  SanitizeObjectMap(long_living_objects.get(), kAllowBitmap);
-  // Splice the shared memory handle into the data. |long_living_objects| now
-  // contains a heap-allocated SharedMemory object that references
-  // |bitmap_handle|. This reference will keep the shared memory section alive
-  // when this IPC returns, and the SharedMemory object will eventually be
-  // freed by ui::Clipboard::WriteObjects().
-  if (!ui::Clipboard::ReplaceSharedMemHandle(
-           long_living_objects.get(), bitmap_handle, PeerHandle()))
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ClipboardMessageFilter::WriteObjectsOnUIThread,
-                 base::Owned(long_living_objects.release())));
-}
-
-// On Windows, the write must be performed on the UI thread because the
-// clipboard object from the IO thread cannot create windows so it cannot be
-// the "owner" of the clipboard's contents. See http://crbug.com/5823.
-// TODO(dcheng): Temporarily a member of ClipboardMessageFilter so it can access
-// ui::Clipboard::WriteObjects().
-void ClipboardMessageFilter::WriteObjectsOnUIThread(
-    const ui::Clipboard::ObjectMap* objects) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, *objects);
-}
-
-void ClipboardMessageFilter::OnWriteObjectsAsync(
-    const ui::Clipboard::ObjectMap& objects) {
-  // This async message doesn't support shared-memory based bitmaps; they must
-  // be removed otherwise we might dereference a rubbish pointer.
-  scoped_ptr<ui::Clipboard::ObjectMap> sanitized_objects(
-      new ui::Clipboard::ObjectMap(objects));
-  SanitizeObjectMap(sanitized_objects.get(), kFilterBitmap);
-
-#if defined(OS_WIN)
-  // We cannot write directly from the IO thread, and cannot service the IPC
-  // on the UI thread. We'll copy the relevant data and post a task to preform
-  // the write on the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &WriteObjectsOnUIThread, base::Owned(sanitized_objects.release())));
-#else
-  GetClipboard()->WriteObjects(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, *sanitized_objects.get());
-#endif
 }
 
 void ClipboardMessageFilter::OnGetSequenceNumber(ui::ClipboardType type,
@@ -284,6 +208,91 @@ void ClipboardMessageFilter::OnReadCustomData(ui::ClipboardType clipboard_type,
                                               const base::string16& type,
                                               base::string16* result) {
   GetClipboard()->ReadCustomData(clipboard_type, type, result);
+}
+
+void ClipboardMessageFilter::OnWriteText(ui::ClipboardType clipboard_type,
+                                         const base::string16& text) {
+  clipboard_writer_->WriteText(text);
+}
+
+void ClipboardMessageFilter::OnWriteHTML(ui::ClipboardType clipboard_type,
+                                         const base::string16& markup,
+                                         const GURL& url) {
+  clipboard_writer_->WriteHTML(markup, url.spec());
+}
+
+void ClipboardMessageFilter::OnWriteSmartPasteMarker(
+    ui::ClipboardType clipboard_type) {
+  clipboard_writer_->WriteWebSmartPaste();
+}
+
+void ClipboardMessageFilter::OnWriteCustomData(
+    ui::ClipboardType clipboard_type,
+    const std::map<base::string16, base::string16>& data) {
+  Pickle pickle;
+  ui::WriteCustomDataToPickle(data, &pickle);
+  clipboard_writer_->WritePickledData(
+      pickle, ui::Clipboard::GetWebCustomDataFormatType());
+}
+
+void ClipboardMessageFilter::OnWriteBookmark(ui::ClipboardType clipboard_type,
+                                             const GURL& url,
+                                             const base::string16& title) {
+  clipboard_writer_->WriteBookmark(title, url.spec());
+}
+
+void ClipboardMessageFilter::OnWriteImage(ui::ClipboardType clipboard_type,
+                                          const gfx::Size& size,
+                                          base::SharedMemoryHandle handle) {
+  if (!base::SharedMemory::IsHandleValid(handle)) {
+    return;
+  }
+
+  scoped_ptr<base::SharedMemory> bitmap_buffer(
+#if defined(OS_WIN)
+      new base::SharedMemory(handle, true, PeerHandle()));
+#else
+      new base::SharedMemory(handle, true));
+#endif
+
+  SkBitmap bitmap;
+  // Let Skia do some sanity checking for (no negative widths/heights, no
+  // overflows while calculating bytes per row, etc).
+  if (!bitmap.setInfo(
+          SkImageInfo::MakeN32Premul(size.width(), size.height()))) {
+    return;
+  }
+
+  // Make sure the size is representable as a signed 32-bit int, so
+  // SkBitmap::getSize() won't be truncated.
+  if (!sk_64_isS32(bitmap.computeSize64()))
+    return;
+
+  if (!bitmap_buffer->Map(bitmap.getSize()))
+    return;
+
+  if (!bitmap.installPixels(bitmap.info(), bitmap_buffer->memory(),
+                            bitmap.rowBytes(), NULL, &ReleaseSharedMemoryPixels,
+                            bitmap_buffer.get()))
+    return;
+
+  // On success, SkBitmap now owns the SharedMemory.
+  ignore_result(bitmap_buffer.release());
+  clipboard_writer_->WriteImage(bitmap);
+}
+
+void ClipboardMessageFilter::OnCommitWrite(ui::ClipboardType clipboard_type) {
+#if defined(OS_WIN)
+  // On non-Windows platforms, all clipboard IPCs are handled on the UI thread.
+  // However, Windows handles the clipboard IPCs on the IO thread to prevent
+  // deadlocks. Clipboard writes must still occur on the UI thread because the
+  // clipboard object from the IO thread cannot create windows so it cannot be
+  // the "owner" of the clipboard's contents. See http://crbug.com/5823.
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
+                            clipboard_writer_.release());
+#endif
+  clipboard_writer_.reset(
+      new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE));
 }
 
 // static

@@ -6,18 +6,17 @@
 #define CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
 
 #include "base/compiler_specific.h"
-
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
 
 #include <string>
 
 namespace content {
-class ClipboardClient;
+class RendererClipboardDelegate;
 
 class WebClipboardImpl : public blink::WebClipboard {
  public:
-  explicit WebClipboardImpl(ClipboardClient* client);
+  explicit WebClipboardImpl(RendererClipboardDelegate* delegate);
 
   virtual ~WebClipboardImpl();
 
@@ -49,7 +48,7 @@ class WebClipboardImpl : public blink::WebClipboard {
 
  private:
   bool ConvertBufferType(Buffer, ui::ClipboardType*);
-  ClipboardClient* client_;
+  RendererClipboardDelegate* const delegate_;
 };
 
 }  // namespace content

@@ -607,6 +607,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
       ],
       'conditions': [
         ['OS != "ios"', {

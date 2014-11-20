@@ -42,7 +42,7 @@ class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
-class RendererClipboardClient;
+class RendererClipboardDelegate;
 class RendererScheduler;
 class RenderView;
 class ThreadSafeSender;
@@ -206,7 +206,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   scoped_ptr<WebSchedulerImpl> web_scheduler_;
 
-  scoped_ptr<RendererClipboardClient> clipboard_client_;
+  scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;
   scoped_ptr<WebClipboardImpl> clipboard_;
 
   class FileUtilities;

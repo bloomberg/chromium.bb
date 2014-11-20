@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"
 
@@ -61,10 +62,12 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   void WritePickledData(const Pickle& pickle,
                         const Clipboard::FormatType& format);
 
+  void WriteImage(const SkBitmap& bitmap);
+
   // Removes all objects that would be written to the clipboard.
   void Reset();
 
- protected:
+ private:
   // Converts |text| to UTF-8 and adds it to the clipboard.  If it's a URL, we
   // also notify the clipboard of that fact.
   void WriteTextOrURL(const base::string16& text, bool is_url);
@@ -74,11 +77,12 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   Clipboard::ObjectMap objects_;
   const ClipboardType type_;
 
+  SkBitmap bitmap_;
+
   // We keep around the UTF-8 text of the URL in order to pass it to
   // Clipboard::DidWriteURL().
   std::string url_text_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };
 

@@ -16,7 +16,10 @@ class TestClipboard : public Clipboard {
   TestClipboard();
   ~TestClipboard() override;
 
-  static void UseForCurrentThread();
+  // Creates and associates a TestClipboard with the current thread. When no
+  // longer needed, the returned clipboard must be freed by calling
+  // Clipboard::DestroyClipboardForCurrentThread() on the same thread.
+  static Clipboard* CreateForCurrentThread();
 
   // Clipboard overrides.
   uint64 GetSequenceNumber(ClipboardType type) const override;

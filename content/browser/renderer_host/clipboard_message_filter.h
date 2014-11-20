@@ -9,15 +9,23 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/clipboard_format.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
 
+namespace ui {
+class ScopedClipboardWriter;
+}  // namespace ui
+
 namespace content {
 
-class ClipboardMessageFilter : public BrowserMessageFilter {
+class ClipboardMessageFilterTest;
+
+class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
  public:
   ClipboardMessageFilter();
 
@@ -26,12 +34,9 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  ~ClipboardMessageFilter() override;
+  friend class ClipboardMessageFilterTest;
 
-  void OnWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
-  void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
-                          base::SharedMemoryHandle bitmap_handle);
-  static void WriteObjectsOnUIThread(const ui::Clipboard::ObjectMap* objects);
+  ~ClipboardMessageFilter() override;
 
   void OnGetSequenceNumber(const ui::ClipboardType type,
                            uint64* sequence_number);
@@ -57,6 +62,22 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnReadData(const ui::Clipboard::FormatType& format,
                   std::string* data);
 
+  void OnWriteText(ui::ClipboardType clipboard_type,
+                   const base::string16& text);
+  void OnWriteHTML(ui::ClipboardType clipboard_type,
+                   const base::string16& markup,
+                   const GURL& url);
+  void OnWriteSmartPasteMarker(ui::ClipboardType clipboard_type);
+  void OnWriteCustomData(ui::ClipboardType clipboard_type,
+                         const std::map<base::string16, base::string16>& data);
+  void OnWriteBookmark(ui::ClipboardType clipboard_type,
+                       const GURL& url,
+                       const base::string16& title);
+  void OnWriteImage(ui::ClipboardType clipboard_type,
+                    const gfx::Size& size,
+                    base::SharedMemoryHandle handle);
+  void OnCommitWrite(ui::ClipboardType clipboard_type);
+
 #if defined(OS_MACOSX)
   void OnFindPboardWriteString(const base::string16& text);
 #endif
@@ -66,6 +87,8 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   // thread. This instance of the clipboard should be accessed only on the IO
   // thread.
   static ui::Clipboard* GetClipboard();
+
+  scoped_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMessageFilter);
 };
