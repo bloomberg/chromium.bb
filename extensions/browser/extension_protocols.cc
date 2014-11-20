@@ -19,7 +19,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -87,11 +86,6 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
               std::string* charset,
               std::string* data,
               const net::CompletionCallback& callback) const override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422489 GeneratedBackgroundPageJob::GetData"));
-
     *mime_type = "text/html";
     *charset = "utf-8";
 
