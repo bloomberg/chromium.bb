@@ -1486,7 +1486,6 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
 }
 
 void EventSender::SetPageScaleFactor(float scale_factor, int x, int y) {
-  view_->setPageScaleFactorLimits(scale_factor, scale_factor);
   view_->setPageScaleFactor(scale_factor, WebPoint(x, y));
 }
 
