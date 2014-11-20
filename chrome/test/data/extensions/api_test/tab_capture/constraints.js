@@ -20,7 +20,7 @@ chrome.test.runTests([
     });
   },
 
-  function supportsOptionalMediaConstraints() {
+  function rejectsOptionalMediaConstraints() {
     chrome.tabCapture.capture({
       video: true,
       audio: true,
@@ -35,6 +35,32 @@ chrome.test.runTests([
     }, function(stream) {
       chrome.test.assertTrue(!stream);
       chrome.test.succeed();
+    });
+  },
+
+  function rejectsInvalidConstraints() {
+    chrome.tabCapture.capture({
+      video: true,
+      audio: true,
+      videoConstraints: {
+        mandatory: {
+          notValid: '123'
+        }
+      }
+    }, function(stream) {
+      chrome.test.assertTrue(!stream);
+
+      chrome.tabCapture.capture({
+        audio: true,
+        audioConstraints: {
+          mandatory: {
+            notValid: '123'
+          }
+        }
+      }, function(stream) {
+        chrome.test.assertTrue(!stream);
+        chrome.test.succeed();
+      });
     });
   }
 ]);

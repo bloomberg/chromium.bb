@@ -45,7 +45,7 @@ chrome.test.runTests([
       }
 
       // Step 4: After the second tab is closed, check that getCapturedTabs()
-      // returns no info at all about the second tab.  http://crbug.com/338445
+      // returns no info at all about the second tab.
       chrome.tabs.onRemoved.addListener(function() {
         tabCapture.getCapturedTabs(function checkNoInfos(infos) {
           checkInfoForSecondTabHasStatus(infos, null);
@@ -105,6 +105,14 @@ chrome.test.runTests([
     });
   },
 
+  function onlyAudio() {
+    tabCapture.capture({audio: true}, function(stream) {
+      chrome.test.assertTrue(!!stream);
+      stream.stop();
+      chrome.test.succeed();
+    });
+  },
+
   function noAudioOrVideoRequested() {
     // If not specified, video is not requested.
     tabCapture.capture({audio: false}, function(stream) {
@@ -112,5 +120,4 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   }
-
 ]);

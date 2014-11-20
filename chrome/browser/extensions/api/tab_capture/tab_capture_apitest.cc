@@ -36,6 +36,13 @@ const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 
 class TabCaptureApiTest : public ExtensionApiTest {
  public:
+  void SetUpCommandLine(CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Specify smallish window size to make testing of tab capture less CPU
+    // intensive.
+    command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
+  }
+
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kExtensionId);
@@ -44,11 +51,6 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 class TabCaptureApiPixelTest : public TabCaptureApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) override {
-    TabCaptureApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
-  }
-
   void SetUp() override {
     if (!IsTooIntensiveForThisPlatform())
       EnablePixelOutput();
@@ -78,29 +80,10 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
   }
 };
 
+// Tests API behaviors, including info queries, and constraints violations.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
-#if defined(OS_WIN)
-  // TODO(justinlin): Disabled for WinXP due to timeout issues.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return;
-  }
-#endif
-
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
-#if defined(OS_WIN)
-  // TODO(justinlin): Disabled for WinXP due to timeout issues.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return;
-  }
-#endif
-
-  AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests_audio.html"))
-      << message_;
 }
 
 // Tests that tab capture video frames can be received in a VIDEO element.
@@ -136,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndThroughWebRTC) {
 #else
 #define MAYBE_GetUserMediaTest GetUserMediaTest
 #endif
-// Test that we can't get tabCapture streams using GetUserMedia directly.
+// Tests that getUserMedia() is NOT a way to start tab capture.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   ExtensionTestMessageListener listener("ready", true);
 
@@ -224,13 +207,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
 #define MAYBE_FullscreenEvents FullscreenEvents
 #endif
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
-#if defined(OS_WIN)
-  // TODO(justinlin): Disabled for WinXP due to timeout issues.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return;
-  }
-#endif
-
   AddExtensionToCommandLineWhitelist();
 
   content::OpenURLParams params(GURL("chrome://version"),
@@ -262,10 +238,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Times out on Win dbg bots: http://crbug.com/177163
-// #if defined(OS_WIN) && !defined(NDEBUG)
-// Times out on all Win bots, flaky on MSan bots: http://crbug.com/294431
-#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_GrantForChromePages DISABLED_GrantForChromePages
 #else
 #define MAYBE_GrantForChromePages GrantForChromePages
@@ -296,17 +270,16 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
 }
 
 // http://crbug.com/177163
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
-// http://crbug.com/326319
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
 #else
 #define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
 #endif
-// Test that a tab can be captured in split incognito mode.
+// Tests that a tab in incognito mode can be captured.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture",
-                                  "incognito.html",
+                                  "start_tab_capture.html",
                                   kFlagEnableIncognito | kFlagUseIncognito))
       << message_;
 }
@@ -317,6 +290,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
 #else
 #define MAYBE_Constraints Constraints
 #endif
+// Tests that valid constraints allow tab capture to start, while invalid ones
+// do not.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
@@ -329,6 +304,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
 #else
 #define MAYBE_TabIndicator TabIndicator
 #endif
+// Tests that the tab indicator (in the tab strip) is shown during tab capture.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
   ASSERT_EQ(TAB_MEDIA_STATE_NONE,
             chrome::GetTabMediaStateForContents(
