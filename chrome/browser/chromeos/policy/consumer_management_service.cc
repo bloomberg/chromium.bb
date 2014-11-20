@@ -151,6 +151,10 @@ void ConsumerManagementService::OnDeviceSettingsServiceShutdown() {
   device_settings_service_ = nullptr;
 }
 
+void ConsumerManagementService::NotifyStatusChanged() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnConsumerManagementStatusChanged());
+}
+
 void ConsumerManagementService::OnGetBootAttributeDone(
     const GetOwnerCallback& callback,
     chromeos::DBusMethodCallStatus call_status,
@@ -197,10 +201,6 @@ void ConsumerManagementService::OnFlushAndSignBootAttributesDone(
   }
 
   callback.Run(true);
-}
-
-void ConsumerManagementService::NotifyStatusChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnConsumerManagementStatusChanged());
 }
 
 }  // namespace policy

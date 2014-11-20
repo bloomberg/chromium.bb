@@ -219,6 +219,8 @@
       'browser/chromeos/policy/configuration_policy_handler_chromeos_unittest.cc',
       'browser/chromeos/policy/consumer_enrollment_handler_factory_unittest.cc',
       'browser/chromeos/policy/consumer_enrollment_handler_unittest.cc',
+      'browser/chromeos/policy/consumer_management_notifier_factory_unittest.cc',
+      'browser/chromeos/policy/consumer_management_notifier_unittest.cc',
       'browser/chromeos/policy/consumer_management_service_unittest.cc',
       'browser/chromeos/policy/device_cloud_policy_invalidator_unittest.cc',
       'browser/chromeos/policy/device_cloud_policy_manager_chromeos_unittest.cc',

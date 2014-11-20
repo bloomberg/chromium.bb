@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_ENROLLMENT_HANDLER_FACTORY_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_ENROLLMENT_HANDLER_FACTORY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_MANAGEMENT_NOTIFIER_FACTORY_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_MANAGEMENT_NOTIFIER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -17,31 +15,30 @@ class BrowserContext;
 
 namespace policy {
 
-class ConsumerEnrollmentHandler;
-class ConsumerManagementService;
+class ConsumerManagementNotifier;
 
-class ConsumerEnrollmentHandlerFactory
+class ConsumerManagementNotifierFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static ConsumerEnrollmentHandler* GetForBrowserContext(
+  static ConsumerManagementNotifier* GetForBrowserContext(
       content::BrowserContext* context);
 
-  static ConsumerEnrollmentHandlerFactory* GetInstance();
+  static ConsumerManagementNotifierFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ConsumerEnrollmentHandlerFactory>;
+  friend struct DefaultSingletonTraits<ConsumerManagementNotifierFactory>;
 
-  ConsumerEnrollmentHandlerFactory();
-  virtual ~ConsumerEnrollmentHandlerFactory();
+  ConsumerManagementNotifierFactory();
+  virtual ~ConsumerManagementNotifierFactory();
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   virtual bool ServiceIsCreatedWithBrowserContext() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(ConsumerEnrollmentHandlerFactory);
+  DISALLOW_COPY_AND_ASSIGN(ConsumerManagementNotifierFactory);
 };
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_ENROLLMENT_HANDLER_FACTORY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_CONSUMER_MANAGEMENT_NOTIFIER_FACTORY_H_

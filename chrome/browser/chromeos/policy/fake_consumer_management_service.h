@@ -15,23 +15,17 @@ class FakeConsumerManagementService : public ConsumerManagementService {
   FakeConsumerManagementService();
   virtual ~FakeConsumerManagementService();
 
+  // Set both status and enrollment stage.
+  void SetStatusAndEnrollmentStage(Status status, EnrollmentStage stage);
+
   // ConsumerManagementServcie:
   virtual Status GetStatus() const override;
   virtual EnrollmentStage GetEnrollmentStage() const override;
   virtual void SetEnrollmentStage(EnrollmentStage stage) override;
 
-  EnrollmentStage enrollment_stage_before_reset() const {
-    return enrollment_stage_before_reset_;
-  }
-
-  void set_status(Status status) {
-    status_ = status;
-  }
-
  private:
   Status status_;
   EnrollmentStage enrollment_stage_;
-  EnrollmentStage enrollment_stage_before_reset_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConsumerManagementService);
 };

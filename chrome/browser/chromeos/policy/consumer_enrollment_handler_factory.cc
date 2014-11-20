@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_manager/user_manager.h"
 
 namespace policy {
 
@@ -42,38 +43,31 @@ ConsumerEnrollmentHandlerFactory::ConsumerEnrollmentHandlerFactory()
 ConsumerEnrollmentHandlerFactory::~ConsumerEnrollmentHandlerFactory() {
 }
 
-bool ConsumerEnrollmentHandlerFactory::ShouldCreateHandler(
-    Profile* profile,
-    ConsumerManagementService* service) const {
-  if (!service)
-    return false;
-
-  // On a fresh device, the first time the owner signs in, IsOwnerProfile()
-  // will return false. But it is okay since there's no enrollment in progress
-  // so we don't need to create a handler.
-  if (!chromeos::ProfileHelper::IsOwnerProfile(profile))
-    return false;
-
-  return service->GetStatus() == ConsumerManagementService::STATUS_ENROLLING ||
-      service->HasPendingEnrollmentNotification();
-}
-
 KeyedService* ConsumerEnrollmentHandlerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  // Some tests don't have a user manager and may crash at IsOwnerProfile().
+  if (!user_manager::UserManager::IsInitialized())
+    return nullptr;
+
+  // On a fresh device, the first time the owner signs in, IsOwnerProfile()
+  // will return false. But it is okay since there's no enrollment in progress.
   Profile* profile = Profile::FromBrowserContext(context);
+  if (!chromeos::ProfileHelper::IsOwnerProfile(profile))
+    return nullptr;
+
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   ConsumerManagementService* service =
       connector->GetConsumerManagementService();
-
-  if (ShouldCreateHandler(profile, service)) {
-    return new ConsumerEnrollmentHandler(
-        profile,
-        service,
-        connector->GetDeviceManagementServiceForConsumer());
-  } else {
+  if (!service ||
+      service->GetStatus() != ConsumerManagementService::STATUS_ENROLLING) {
     return nullptr;
   }
+
+  return new ConsumerEnrollmentHandler(
+      profile,
+      service,
+      connector->GetDeviceManagementServiceForConsumer());
 }
 
 bool ConsumerEnrollmentHandlerFactory::ServiceIsCreatedWithBrowserContext()

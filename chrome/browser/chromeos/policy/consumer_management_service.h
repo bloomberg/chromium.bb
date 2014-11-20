@@ -145,6 +145,9 @@ class ConsumerManagementService
   virtual void DeviceSettingsUpdated() override;
   virtual void OnDeviceSettingsServiceShutdown() override;
 
+ protected:
+  void NotifyStatusChanged();
+
  private:
   void OnGetBootAttributeDone(
       const GetOwnerCallback& callback,
@@ -162,8 +165,6 @@ class ConsumerManagementService
       chromeos::DBusMethodCallStatus call_status,
       bool dbus_success,
       const cryptohome::BaseReply& reply);
-
-  void NotifyStatusChanged();
 
   chromeos::CryptohomeClient* client_;
   chromeos::DeviceSettingsService* device_settings_service_;

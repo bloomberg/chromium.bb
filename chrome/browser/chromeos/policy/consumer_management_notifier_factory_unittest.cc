@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/consumer_enrollment_handler_factory.h"
+#include "chrome/browser/chromeos/policy/consumer_management_notifier_factory.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/consumer_management_notifier.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -22,9 +23,9 @@ const char* kTestUser = "test.user@chromium.org.test";
 
 namespace policy {
 
-class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
+class ConsumerManagementNotifierFactoryTest : public testing::Test {
  public:
-  ConsumerEnrollmentHandlerFactoryTest()
+  ConsumerManagementNotifierFactoryTest()
       : fake_service_(new FakeConsumerManagementService()),
         fake_user_manager_(new chromeos::FakeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_),
@@ -32,8 +33,8 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())) {
     // Set up FakeConsumerManagementService.
     fake_service_->SetStatusAndEnrollmentStage(
-        ConsumerManagementService::STATUS_ENROLLING,
-        ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
+        ConsumerManagementService::STATUS_UNENROLLED,
+        ConsumerManagementService::ENROLLMENT_STAGE_NONE);
 
     // Inject fake objects.
     BrowserPolicyConnectorChromeOS* connector =
@@ -57,24 +58,17 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
 };
 
-TEST_F(ConsumerEnrollmentHandlerFactoryTest, ServiceIsCreated) {
+TEST_F(ConsumerManagementNotifierFactoryTest, ServiceIsCreated) {
   Profile* profile = testing_profile_manager_->CreateTestingProfile(kTestOwner);
-  EXPECT_TRUE(ConsumerEnrollmentHandlerFactory::GetForBrowserContext(profile));
+  EXPECT_TRUE(
+      ConsumerManagementNotifierFactory::GetForBrowserContext(profile));
 }
 
-TEST_F(ConsumerEnrollmentHandlerFactoryTest, ServiceIsNotCreatedForNonOwner) {
+TEST_F(ConsumerManagementNotifierFactoryTest,
+       ServiceIsNotCreatedForNonOwner) {
   Profile* profile = testing_profile_manager_->CreateTestingProfile(kTestUser);
-  EXPECT_FALSE(ConsumerEnrollmentHandlerFactory::GetForBrowserContext(profile));
-}
-
-TEST_F(ConsumerEnrollmentHandlerFactoryTest,
-       ServiceIsNotCreatedIfItHasNothingToDo) {
-  fake_service_->SetStatusAndEnrollmentStage(
-      ConsumerManagementService::STATUS_UNENROLLED,
-      ConsumerManagementService::ENROLLMENT_STAGE_NONE);
-
-  Profile* profile = testing_profile_manager_->CreateTestingProfile(kTestOwner);
-  EXPECT_FALSE(ConsumerEnrollmentHandlerFactory::GetForBrowserContext(profile));
+  EXPECT_FALSE(
+      ConsumerManagementNotifierFactory::GetForBrowserContext(profile));
 }
 
 }  // namespace policy

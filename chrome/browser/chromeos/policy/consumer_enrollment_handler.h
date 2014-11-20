@@ -53,8 +53,6 @@ class ConsumerEnrollmentHandler
   }
 
  private:
-  void Start();
-
   // Continues the enrollment process after the owner ID is stored into the boot
   // lockbox and the owner signs in.
   void ContinueEnrollmentProcess();
@@ -68,19 +66,8 @@ class ConsumerEnrollmentHandler
   // Called upon the completion of the enrollment process.
   void OnEnrollmentCompleted(EnrollmentStatus status);
 
-  // Ends the enrollment process and shows a desktop notification if the
-  // current user is the owner.
+  // Ends the enrollment process.
   void EndEnrollment(ConsumerManagementService::EnrollmentStage stage);
-
-  // Shows a desktop notification and resets the enrollment stage.
-  void ShowDesktopNotificationAndResetStage(
-      ConsumerManagementService::EnrollmentStage stage);
-
-  // Opens the settings page.
-  void OpenSettingsPage() const;
-
-  // Opens the enrollment confirmation dialog in the settings page.
-  void TryEnrollmentAgain() const;
 
   Profile* profile_;
   ConsumerManagementService* consumer_management_service_;
