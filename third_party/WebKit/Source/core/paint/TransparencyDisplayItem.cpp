@@ -14,12 +14,13 @@ void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
     context->save();
     context->clip(m_clipRect);
 
-    if (m_hasBlendMode)
+    bool hasBlendMode = this->hasBlendMode();
+    if (hasBlendMode)
         context->setCompositeOperation(context->compositeOperation(), m_blendMode);
 
     context->beginTransparencyLayer(m_opacity);
 
-    if (m_hasBlendMode)
+    if (hasBlendMode)
         context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 #ifdef REVEAL_TRANSPARENCY_LAYERS
     context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
@@ -32,7 +33,7 @@ WTF::String BeginTransparencyDisplayItem::asDebugString() const
     return String::format("{%s, type: \"%s\", clip bounds: [%f,%f,%f,%f], hasBlendMode: %d, blendMode: %d, opacity: %f}",
         rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
         m_clipRect.x().toFloat(), m_clipRect.y().toFloat(), m_clipRect.width().toFloat(), m_clipRect.height().toFloat(),
-        m_hasBlendMode, m_blendMode, m_opacity);
+        hasBlendMode(), m_blendMode, m_opacity);
 }
 #endif
 

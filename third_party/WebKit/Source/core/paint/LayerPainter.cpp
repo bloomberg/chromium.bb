@@ -122,7 +122,7 @@ public:
 
         OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(
             renderLayer.renderer(), DisplayItem::BeginTransparency, renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior),
-            renderLayer.renderer()->hasBlendMode(), renderLayer.renderer()->style()->blendMode(), renderLayer.renderer()->opacity()));
+            renderLayer.renderer()->style()->blendMode(), renderLayer.renderer()->opacity()));
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             renderLayer.renderer()->view()->viewDisplayList().add(beginTransparencyDisplayItem.release());
         else
