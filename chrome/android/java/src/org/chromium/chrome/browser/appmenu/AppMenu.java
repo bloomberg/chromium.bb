@@ -38,8 +38,6 @@ import java.util.List;
  *   - Disabled items are grayed out.
  */
 public class AppMenu implements OnItemClickListener, OnKeyListener {
-    /** Whether or not to show the software menu button in the menu. */
-    private static final boolean SHOW_SW_MENU_BUTTON = true;
 
     private static final float LAST_ITEM_SHOW_FRACTION = 0.5f;
 
@@ -154,13 +152,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             sizingPadding.bottom = originalPadding.bottom;
         }
 
-        boolean showMenuButton = !mIsByHardwareButton;
-        if (!SHOW_SW_MENU_BUTTON) showMenuButton = false;
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
         mAdapter = new AppMenuAdapter(
                 this, menuItems, LayoutInflater.from(context),
-                showMenuButton, menuButtonStartPaddingPx);
+                false, menuButtonStartPaddingPx);
         mPopup.setAdapter(mAdapter);
 
         setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight, sizingPadding);
