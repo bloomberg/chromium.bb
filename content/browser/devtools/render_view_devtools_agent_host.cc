@@ -10,10 +10,10 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
-#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
+#include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/power_handler.h"
@@ -116,6 +116,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
       dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
+      inspector_handler_(new devtools::inspector::InspectorHandler()),
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
@@ -125,6 +126,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       reattaching_(false) {
   handler_impl_->SetDOMHandler(dom_handler_.get());
   handler_impl_->SetInputHandler(input_handler_.get());
+  handler_impl_->SetInspectorHandler(inspector_handler_.get());
   handler_impl_->SetNetworkHandler(network_handler_.get());
   handler_impl_->SetPageHandler(page_handler_.get());
   handler_impl_->SetPowerHandler(power_handler_.get());
@@ -460,10 +462,7 @@ void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
 }
 
 void RenderViewDevToolsAgentHost::RenderViewCrashed() {
-  scoped_refptr<DevToolsProtocol::Notification> notification =
-      DevToolsProtocol::CreateNotification(
-          devtools::Inspector::targetCrashed::kName, NULL);
-  SendMessageToClient(notification->Serialize());
+  inspector_handler_->TargetCrashed();
 }
 
 bool RenderViewDevToolsAgentHost::DispatchIPCMessage(

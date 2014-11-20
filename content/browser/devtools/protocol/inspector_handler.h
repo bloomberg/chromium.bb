@@ -18,6 +18,8 @@ class InspectorHandler {
 
   void SetClient(scoped_ptr<Client> client);
 
+  void TargetCrashed();
+
  private:
   scoped_ptr<Client> client_;
 

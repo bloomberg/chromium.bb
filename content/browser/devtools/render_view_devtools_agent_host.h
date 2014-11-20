@@ -34,6 +34,7 @@ class PowerSaveBlockerImpl;
 namespace devtools {
 namespace dom { class DOMHandler; }
 namespace input { class InputHandler; }
+namespace inspector { class InspectorHandler; }
 namespace network { class NetworkHandler; }
 namespace page { class PageHandler; }
 namespace power { class PowerHandler; }
@@ -120,6 +121,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewHostImpl* render_view_host_;
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;
   scoped_ptr<devtools::input::InputHandler> input_handler_;
+  scoped_ptr<devtools::inspector::InspectorHandler> inspector_handler_;
   scoped_ptr<devtools::network::NetworkHandler> network_handler_;
   scoped_ptr<devtools::page::PageHandler> page_handler_;
   scoped_ptr<devtools::power::PowerHandler> power_handler_;

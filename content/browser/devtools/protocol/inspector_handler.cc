@@ -18,6 +18,10 @@ void InspectorHandler::SetClient(scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
+void InspectorHandler::TargetCrashed() {
+  client_->TargetCrashed(TargetCrashedParams::Create());
+}
+
 }  // namespace inspector
 }  // namespace devtools
 }  // namespace content
