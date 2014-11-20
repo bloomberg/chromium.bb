@@ -97,10 +97,10 @@ echo @@@BUILD_STEP archive_build@@@
   for destrevision in ${UPLOAD_REV} latest ; do
     ${gsutil} cp -a public-read \
       naclsdk.tgz \
-      {GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.tgz
+      ${GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.tgz
     ${gsutil} cp -a public-read \
       core_sdk.tgz \
-      {GS_BASE}/${destrevision}/core_sdk_${PLATFORM}_x86.tgz
+      ${GS_BASE}/${destrevision}/core_sdk_${PLATFORM}_x86.tgz
   done
 )
 echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/toolchain/${UPLOAD_REV}/@@@
