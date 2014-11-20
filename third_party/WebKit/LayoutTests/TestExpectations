@@ -1267,6 +1267,8 @@ crbug.com/424974 http/tests/appcache/different-https-origin-resource-main.html [
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
+crbug.com/435232 http/tests/misc/webtiming-buffer-full-no-event.html [ Pass Failure ]
+
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 crbug.com/422846 [ Linux ] virtual/textblob/fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 
