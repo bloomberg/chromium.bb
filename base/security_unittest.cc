@@ -194,7 +194,9 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
   }
   // On windows, the compiler prevents static array sizes of more than
   // 0x7fffffff (error C2148).
-#if !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
+#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+  ALLOW_UNUSED_LOCAL(kDynamicArraySize);
+#else
   {
     scoped_ptr<char[][kArraySize2]> array_pointer(new (nothrow)
         char[kDynamicArraySize][kArraySize2]);

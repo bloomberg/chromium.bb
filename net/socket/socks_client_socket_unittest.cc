@@ -287,12 +287,12 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
   const char kSOCKSPartialRequest2[] = { 0x00, 0x50, 127, 0, 0, 1, 0 };
 
   MockWrite data_writes[] = {
-      MockWrite(ASYNC, arraysize(kSOCKSPartialRequest1)),
+      MockWrite(ASYNC, kSOCKSPartialRequest1, arraysize(kSOCKSPartialRequest1)),
       // simulate some empty writes
       MockWrite(ASYNC, 0),
       MockWrite(ASYNC, 0),
-      MockWrite(ASYNC, kSOCKSPartialRequest2,
-                arraysize(kSOCKSPartialRequest2)) };
+      MockWrite(ASYNC, kSOCKSPartialRequest2, arraysize(kSOCKSPartialRequest2)),
+  };
   MockRead data_reads[] = {
       MockRead(ASYNC, kSOCKSOkReply, arraysize(kSOCKSOkReply)) };
   CapturingNetLog log;

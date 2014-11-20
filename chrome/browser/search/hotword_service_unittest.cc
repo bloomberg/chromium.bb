@@ -117,13 +117,10 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedBadFieldTrial) {
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
-  HotwordServiceFactory* hotword_service_factory =
-      HotwordServiceFactory::GetInstance();
-
   // Check that the service exists so that a NULL service be ruled out in
   // following tests.
   HotwordService* hotword_service =
-      hotword_service_factory->GetForProfile(profile.get());
+      HotwordServiceFactory::GetForProfile(profile.get());
   EXPECT_TRUE(hotword_service != NULL);
 
   // When the field trial is empty or Disabled, it should not be allowed.
@@ -137,7 +134,7 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedBadFieldTrial) {
      hotword_internal::kHotwordFieldTrialDisabledGroupName));
   group = base::FieldTrialList::FindFullName(
       hotword_internal::kHotwordFieldTrialName);
-  EXPECT_TRUE(group ==hotword_internal::kHotwordFieldTrialDisabledGroupName);
+  EXPECT_TRUE(group == hotword_internal::kHotwordFieldTrialDisabledGroupName);
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
 
   // Set a valid locale with invalid field trial to be sure it is
@@ -154,13 +151,10 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
-  HotwordServiceFactory* hotword_service_factory =
-      HotwordServiceFactory::GetInstance();
-
   // Check that the service exists so that a NULL service be ruled out in
   // following tests.
   HotwordService* hotword_service =
-      hotword_service_factory->GetForProfile(profile.get());
+      HotwordServiceFactory::GetForProfile(profile.get());
   EXPECT_TRUE(hotword_service != NULL);
 
   // Set the field trial to a valid one.
@@ -194,10 +188,8 @@ TEST_P(HotwordServiceTest, AudioLoggingPrefSetCorrectly) {
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
-  HotwordServiceFactory* hotword_service_factory =
-      HotwordServiceFactory::GetInstance();
   HotwordService* hotword_service =
-      hotword_service_factory->GetForProfile(profile.get());
+      HotwordServiceFactory::GetForProfile(profile.get());
   EXPECT_TRUE(hotword_service != NULL);
 
   // If it's a fresh profile, although the default value is true,

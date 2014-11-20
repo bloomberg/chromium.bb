@@ -45,7 +45,6 @@ bool SafeCreateDirectory(const base::FilePath& path) {
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   // Due to large paths on windows, it can't simply do a
   // CreateDirectory("a/b/c").  Instead, create each subdirectory manually.
-  bool rv = false;
   std::wstring::size_type pos(0);
   std::wstring backslash(L"\\");
 

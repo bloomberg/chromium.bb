@@ -147,11 +147,10 @@ LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
   if (n_code == HC_ACTION && w_param == VK_ESCAPE) {
     if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       int value = TRUE;
-      HRESULT result = DwmSetWindowAttribute(
-          instance_->host_->hwnd(),
-          DWMWA_TRANSITIONS_FORCEDISABLED,
-          &value,
-          sizeof(value));
+      DwmSetWindowAttribute(instance_->host_->hwnd(),
+                            DWMWA_TRANSITIONS_FORCEDISABLED,
+                            &value,
+                            sizeof(value));
     }
     if (instance_->hide_on_escape_)
       instance_->host_->Hide();
@@ -1134,7 +1133,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // Changing the window region is going to force a paint. Only change the
   // window region if the region really differs.
   base::win::ScopedRegion current_rgn(CreateRectRgn(0, 0, 0, 0));
-  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
+  GetWindowRgn(hwnd(), current_rgn);
 
   RECT window_rect;
   GetWindowRect(hwnd(), &window_rect);

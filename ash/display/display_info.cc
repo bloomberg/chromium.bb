@@ -95,18 +95,17 @@ void DisplayInfo::SetUse125DSFForUIScaling(bool enable) {
 // static
 DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
                                               int64 id) {
-  // Default bounds for a display.
-  const int kDefaultHostWindowX = 200;
-  const int kDefaultHostWindowY = 200;
-  const int kDefaultHostWindowWidth = 1366;
-  const int kDefaultHostWindowHeight = 768;
-
   // Use larger than max int to catch overflow early.
   static int64 synthesized_display_id = 2200000000LL;
 
 #if defined(OS_WIN)
   gfx::Rect bounds_in_native(aura::WindowTreeHost::GetNativeScreenSize());
 #else
+  // Default bounds for a display.
+  const int kDefaultHostWindowX = 200;
+  const int kDefaultHostWindowY = 200;
+  const int kDefaultHostWindowWidth = 1366;
+  const int kDefaultHostWindowHeight = 768;
   gfx::Rect bounds_in_native(kDefaultHostWindowX, kDefaultHostWindowY,
                              kDefaultHostWindowWidth, kDefaultHostWindowHeight);
 #endif

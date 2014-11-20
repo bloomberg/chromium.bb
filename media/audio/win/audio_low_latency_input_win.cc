@@ -240,9 +240,10 @@ void WASAPIAudioInputStream::SetVolume(double volume) {
 
   // Set a new master volume level. Valid volume levels are in the range
   // 0.0 to 1.0. Ignore volume-change events.
-  HRESULT hr = simple_audio_volume_->SetMasterVolume(static_cast<float>(volume),
-      NULL);
-  DLOG_IF(WARNING, FAILED(hr)) << "Failed to set new input master volume.";
+  HRESULT hr =
+      simple_audio_volume_->SetMasterVolume(static_cast<float>(volume), NULL);
+  if (FAILED(hr))
+    DLOG(WARNING) << "Failed to set new input master volume.";
 
   // Update the AGC volume level based on the last setting above. Note that,
   // the volume-level resolution is not infinite and it is therefore not
@@ -260,7 +261,8 @@ double WASAPIAudioInputStream::GetVolume() {
   // Retrieve the current volume level. The value is in the range 0.0 to 1.0.
   float level = 0.0f;
   HRESULT hr = simple_audio_volume_->GetMasterVolume(&level);
-  DLOG_IF(WARNING, FAILED(hr)) << "Failed to get input master volume.";
+  if (FAILED(hr))
+    DLOG(WARNING) << "Failed to get input master volume.";
 
   return static_cast<double>(level);
 }
@@ -274,7 +276,8 @@ bool WASAPIAudioInputStream::IsMuted() {
   // Retrieves the current muting state for the audio session.
   BOOL is_muted = FALSE;
   HRESULT hr = simple_audio_volume_->GetMute(&is_muted);
-  DLOG_IF(WARNING, FAILED(hr)) << "Failed to get input master volume.";
+  if (FAILED(hr))
+    DLOG(WARNING) << "Failed to get input master volume.";
 
   return is_muted != FALSE;
 }

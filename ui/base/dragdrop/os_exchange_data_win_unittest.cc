@@ -49,8 +49,6 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   STGMEDIUM medium;
   medium.tymed = TYMED_HGLOBAL;
   HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
-  size_t stringsz = input.size();
-  SIZE_T sz = GlobalSize(glob);
   base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
   wchar_t* buffer_handle = global_lock.get();
   wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
@@ -87,8 +85,6 @@ TEST(OSExchangeDataWinTest, RemoveData) {
   medium.tymed = TYMED_HGLOBAL;
   {
     HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
-    size_t stringsz = input.size();
-    SIZE_T sz = GlobalSize(glob);
     base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
     wchar_t* buffer_handle = global_lock.get();
     wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
@@ -99,8 +95,6 @@ TEST(OSExchangeDataWinTest, RemoveData) {
   // This should clobber the existing data.
   {
     HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input2.size() + 1));
-    size_t stringsz = input2.size();
-    SIZE_T sz = GlobalSize(glob);
     base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
     wchar_t* buffer_handle = global_lock.get();
     wcscpy_s(buffer_handle, input2.size() + 1, input2.c_str());

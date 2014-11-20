@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Work around warning in atlbase.h
+// https://connect.microsoft.com/VisualStudio/feedback/details/1032199/atlbase-h-gives-warning-c4189-when-compiling-with-atl-no-com-support
+#pragma warning(push)
+#pragma warning(disable:4189)
 #include <atlbase.h>
+#pragma warning(pop)
 #include <security.h>
 
 #include <iomanip>
@@ -334,10 +339,9 @@ class CloudPrintServiceModule
     base::FilePath file = user_data_dir.Append(chrome::kServiceStateFileName);
 
     std::string contents;
+    base::ReadFileToString(file, &contents);
     ServiceState service_state;
-
-    bool is_valid = base::ReadFileToString(file, &contents) &&
-                    service_state.FromString(contents);
+    service_state.FromString(contents);
     std::string proxy_id = service_state.proxy_id();
 
     LOG(INFO) << file.value() << ": " << contents;

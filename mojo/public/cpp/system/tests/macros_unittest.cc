@@ -67,6 +67,7 @@ static_assert(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
 
 TEST(MacrosCppTest, ArraySize) {
   double local_array[4] = {6.7, 7.8, 8.9, 9.0};
+  MOJO_ALLOW_UNUSED_LOCAL(local_array);
   EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
 }
 

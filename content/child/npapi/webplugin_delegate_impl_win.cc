@@ -823,7 +823,7 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
   // Reset this flag before entering the instance in case of side-effects.
   windowed_did_set_window_ = true;
 
-  NPError err = instance()->NPP_SetWindow(&window_);
+  instance()->NPP_SetWindow(&window_);
   if (quirks_ & PLUGIN_QUIRK_SETWINDOW_TWICE)
     instance()->NPP_SetWindow(&window_);
 

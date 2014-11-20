@@ -68,14 +68,13 @@ int FileStream::Context::Read(IOBuffer* buf,
   if (!ReadFile(file_.GetPlatformFile(), buf->data(), buf_len,
                 &bytes_read, &io_context_.overlapped)) {
     IOResult error = IOResult::FromOSError(GetLastError());
-    if (error.os_error == ERROR_IO_PENDING) {
-      IOCompletionIsPending(callback, buf);
-    } else if (error.os_error == ERROR_HANDLE_EOF) {
+    if (error.os_error == ERROR_HANDLE_EOF)
       return 0;  // Report EOF by returning 0 bytes read.
-    } else {
+    if (error.os_error == ERROR_IO_PENDING)
+      IOCompletionIsPending(callback, buf);
+    else
       LOG(WARNING) << "ReadFile failed: " << error.os_error;
-    }
-    return error.result;
+    return static_cast<int>(error.result);
   }
 
   IOCompletionIsPending(callback, buf);
@@ -89,12 +88,11 @@ int FileStream::Context::Write(IOBuffer* buf,
   if (!WriteFile(file_.GetPlatformFile(), buf->data(), buf_len,
                  &bytes_written, &io_context_.overlapped)) {
     IOResult error = IOResult::FromOSError(GetLastError());
-    if (error.os_error == ERROR_IO_PENDING) {
+    if (error.os_error == ERROR_IO_PENDING)
       IOCompletionIsPending(callback, buf);
-    } else {
+    else
       LOG(WARNING) << "WriteFile failed: " << error.os_error;
-    }
-    return error.result;
+    return static_cast<int>(error.result);
   }
 
   IOCompletionIsPending(callback, buf);
@@ -149,7 +147,7 @@ void FileStream::Context::OnIOCompleted(
     result = 0;
   } else if (error) {
     IOResult error_result = IOResult::FromOSError(error);
-    result = error_result.result;
+    result = static_cast<int>(error_result.result);
   } else {
     result = bytes_read;
     IncrementOffset(&io_context_.overlapped, bytes_read);

@@ -374,7 +374,6 @@ TEST_F(InstallerStateTest, WithProduct) {
 
 TEST_F(InstallerStateTest, InstallerResult) {
   const bool system_level = true;
-  bool multi_install = false;
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   RegKey key;

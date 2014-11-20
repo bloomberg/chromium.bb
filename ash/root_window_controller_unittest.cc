@@ -376,8 +376,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
 
 TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
   UpdateDisplay("600x600");
-  Shell* shell = Shell::GetInstance();
-  RootWindowController* controller = shell->GetPrimaryRootWindowController();
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
   for (int block_reason = FIRST_BLOCK_REASON;

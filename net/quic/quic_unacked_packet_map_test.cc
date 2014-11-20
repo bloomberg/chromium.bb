@@ -196,8 +196,8 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittedPacket) {
 
   unacked_packets_.RemoveFromInFlight(2);
   QuicPacketSequenceNumber unacked2[] = { 1 };
-  VerifyUnackedPackets(unacked, arraysize(unacked2));
-  VerifyInFlightPackets(unacked, arraysize(unacked2));
+  VerifyUnackedPackets(unacked2, arraysize(unacked2));
+  VerifyInFlightPackets(unacked2, arraysize(unacked2));
   VerifyRetransmittablePackets(nullptr, 0);
 
   unacked_packets_.RemoveFromInFlight(1);

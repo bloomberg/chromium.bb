@@ -351,7 +351,7 @@ void PanelFrameView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
   // window region if the region really differs.
   HWND native_window = views::HWNDForWidget(panel_view_->window());
   base::win::ScopedRegion current_region(::CreateRectRgn(0, 0, 0, 0));
-  int current_region_result = ::GetWindowRgn(native_window, current_region);
+  ::GetWindowRgn(native_window, current_region);
 
   gfx::Path window_mask;
   GetWindowMask(size(), &window_mask);

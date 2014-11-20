@@ -644,11 +644,10 @@ TEST_P(GLES2DecoderTest, ReadPixelsOutOfRange) {
 
 TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   typedef ReadPixels::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
   uint32 result_shm_offset = kSharedMemoryOffset;
   uint32 pixels_shm_id = kSharedMemoryId;
-  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   EXPECT_CALL(*gl_, ReadPixels(_, _, _, _, _, _, _)).Times(0);
   ReadPixels cmd;
   cmd.Init(0,
@@ -750,14 +749,13 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   InitDecoder(init);
 
   typedef ReadPixels::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
 
   const GLsizei kWidth = 4;
   const GLsizei kHeight = 4;
   uint32 result_shm_id = kSharedMemoryId;
   uint32 result_shm_offset = kSharedMemoryOffset;
   uint32 pixels_shm_id = kSharedMemoryId;
-  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
 
   EXPECT_CALL(*gl_, GetError())
       // first error check must pass to get to the test
@@ -1637,11 +1635,10 @@ TEST_P(GLES2DecoderTest, ReadPixelsGLError) {
   GLsizei width = 2;
   GLsizei height = 4;
   typedef ReadPixels::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
   uint32 result_shm_offset = kSharedMemoryOffset;
   uint32 pixels_shm_id = kSharedMemoryId;
-  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -1765,11 +1762,10 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
       .Times(1)
       .RetiresOnSaturation();
   typedef ReadPixels::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
   uint32 result_shm_offset = kSharedMemoryOffset;
   uint32 pixels_shm_id = kSharedMemoryId;
-  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   ReadPixels cmd;
   cmd.Init(0,
            0,

@@ -282,11 +282,6 @@ class NativeMenuWin::MenuHostWindow {
           state = draw_item_struct->itemState & ODS_SELECTED ?
               NativeTheme::kHovered : NativeTheme::kNormal;
         }
-        int height =
-            draw_item_struct->rcItem.bottom - draw_item_struct->rcItem.top;
-        int icon_y = kItemTopMargin +
-            (height - kItemTopMargin - kItemBottomMargin -
-             config.check_height) / 2;
         gfx::Canvas canvas(gfx::Size(config.check_width, config.check_height),
                            1.0f,
                            false);
@@ -436,7 +431,6 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
 
   // Command dispatch is done through WM_MENUCOMMAND, handled by the host
   // window.
-  HWND hwnd = host_window_->hwnd();
   menu_to_select_ = NULL;
   position_to_select_ = -1;
   menu_to_select_factory_.InvalidateWeakPtrs();

@@ -160,7 +160,6 @@ bool ProcessLaunchNotification(
     return false;
 
   // Handle the WM_COPYDATA message from another process.
-  HWND hwnd = reinterpret_cast<HWND>(wparam);
   const COPYDATASTRUCT* cds = reinterpret_cast<COPYDATASTRUCT*>(lparam);
 
   CommandLine parsed_command_line(CommandLine::NO_PROGRAM);

@@ -221,6 +221,6 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 // May return NULL (e.g., if sync is disabled on the command line).
 ProfileSyncService* SyncInternalsMessageHandler::GetProfileSyncService() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncServiceFactory* factory = ProfileSyncServiceFactory::GetInstance();
-  return factory->GetForProfile(profile->GetOriginalProfile());
+  return ProfileSyncServiceFactory::GetForProfile(
+      profile->GetOriginalProfile());
 }

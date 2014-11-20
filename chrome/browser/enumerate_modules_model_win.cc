@@ -979,8 +979,6 @@ void EnumerateModulesModel::MaybePostScanningTask() {
   static bool done = false;
   if (!done) {
     done = true;
-
-    const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
     if (base::win::GetVersion() == base::win::VERSION_XP) {
       check_modules_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kModuleCheckDelayMs),

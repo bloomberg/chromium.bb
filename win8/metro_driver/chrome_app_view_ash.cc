@@ -284,7 +284,7 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
   // 1 - User action like ALT-F4.
   // 2 - Calling ICoreApplicationExit::Exit().
   // 3-  Posting WM_CLOSE to the core window.
-  HRESULT hr = dispatcher->ProcessEvents(
+  dispatcher->ProcessEvents(
       winui::Core::CoreProcessEventsOption
           ::CoreProcessEventsOption_ProcessUntilQuit);
 
@@ -775,7 +775,7 @@ void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
   sei.lpFile = file.c_str();
   sei.lpDirectory = L"";
   sei.lpParameters = url.c_str();
-  BOOL result = ShellExecuteEx(&sei);
+  ShellExecuteEx(&sei);
 }
 
 void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {

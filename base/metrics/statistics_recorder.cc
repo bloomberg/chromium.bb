@@ -289,9 +289,8 @@ StatisticsRecorder::StatisticsRecorder() {
 void StatisticsRecorder::DumpHistogramsToVlog(void* instance) {
   DCHECK(VLOG_IS_ON(1));
 
-  StatisticsRecorder* me = reinterpret_cast<StatisticsRecorder*>(instance);
   string output;
-  me->WriteGraph(std::string(), &output);
+  StatisticsRecorder::WriteGraph(std::string(), &output);
   VLOG(1) << output;
 }
 

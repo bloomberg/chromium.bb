@@ -1532,8 +1532,7 @@ void GLES2DecoderTestBase::DoBufferSubData(
 void GLES2DecoderTestBase::SetupVertexBuffer() {
   DoEnableVertexAttribArray(1);
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
-  GLfloat f = 0;
-  DoBufferData(GL_ARRAY_BUFFER, kNumVertices * 2 * sizeof(f));
+  DoBufferData(GL_ARRAY_BUFFER, kNumVertices * 2 * sizeof(GLfloat));
 }
 
 void GLES2DecoderTestBase::SetupAllNeededVertexBuffers() {

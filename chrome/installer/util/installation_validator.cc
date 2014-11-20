@@ -29,9 +29,6 @@ BrowserDistribution::Type
 void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
     const ProductContext& ctx,
     SwitchExpectations* expectations) const {
-  const bool is_multi_install =
-      ctx.state.uninstall_command().HasSwitch(switches::kMultiInstall);
-
   // --chrome should be present for uninstall iff --multi-install.  This wasn't
   // the case in Chrome 10 (between r68996 and r72497), though, so consider it
   // optional.
@@ -40,9 +37,6 @@ void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
 void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
     const ProductContext& ctx,
     SwitchExpectations* expectations) const {
-  const bool is_multi_install =
-      ctx.state.uninstall_command().HasSwitch(switches::kMultiInstall);
-
   // --chrome should not be present for rename.  It was for a time, so we'll be
   // lenient so that mini_installer tests pass.
 

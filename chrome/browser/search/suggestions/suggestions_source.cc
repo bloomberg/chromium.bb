@@ -116,11 +116,8 @@ std::string SuggestionsSource::GetSource() const {
 void SuggestionsSource::StartDataRequest(
     const std::string& path, int render_process_id, int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  SuggestionsServiceFactory* suggestions_service_factory =
-      SuggestionsServiceFactory::GetInstance();
-
-  SuggestionsService* suggestions_service(
-      suggestions_service_factory->GetForProfile(profile_));
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile_);
 
   if (!suggestions_service) {
     callback.Run(NULL);

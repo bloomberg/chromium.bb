@@ -258,7 +258,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     const char partial1[] = { 0x05, 0x01 };
     const char partial2[] = { 0x00 };
     MockWrite data_writes[] = {
-        MockWrite(ASYNC, arraysize(partial1)),
+        MockWrite(ASYNC, partial1, arraysize(partial1)),
         MockWrite(ASYNC, partial2, arraysize(partial2)),
         MockWrite(ASYNC, kOkRequest, arraysize(kOkRequest)) };
     MockRead data_reads[] = {

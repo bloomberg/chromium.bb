@@ -670,7 +670,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   aura::WindowTreeHost* host = window_->GetHost();
   if (!host)
     return static_cast<gfx::NativeViewAccessible>(NULL);
-  HWND hwnd = host->GetAcceleratedWidget();
   BrowserAccessibilityManager* manager =
       host_->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)

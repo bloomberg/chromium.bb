@@ -300,14 +300,13 @@ base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
 #elif defined(OS_WIN)
     // Map the error code to a human-readable string.
     LPWSTR error_string = NULL;
-    int size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                             FORMAT_MESSAGE_FROM_SYSTEM,
-                             0,  // Use the internal message table.
-                             os_error,
-                             0,  // Use default language.
-                             (LPWSTR)&error_string,
-                             0,  // Buffer size.
-                             0);  // Arguments (unused).
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                  0,  // Use the internal message table.
+                  os_error,
+                  0,  // Use default language.
+                  (LPWSTR)&error_string,
+                  0,  // Buffer size.
+                  0);  // Arguments (unused).
     dict->SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
 #endif

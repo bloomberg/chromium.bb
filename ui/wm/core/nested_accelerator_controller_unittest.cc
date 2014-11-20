@@ -83,7 +83,6 @@ void DispatchKeyReleaseA(aura::Window* root_window) {
   aura::WindowTreeHost* host = root_window->GetHost();
   HWND hwnd = host->GetAcceleratedWidget();
   ::PostMessage(hwnd, WM_KEYDOWN, ui::VKEY_A, 0);
-  MSG native_event_up = {NULL, WM_KEYUP, ui::VKEY_A, 0};
   ::PostMessage(hwnd, WM_KEYUP, ui::VKEY_A, 0);
 #elif defined(USE_X11)
   ui::ScopedXI2Event native_event;

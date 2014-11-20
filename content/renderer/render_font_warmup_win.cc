@@ -191,7 +191,7 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
     IDWriteFactory* factory;
     CreateDirectWriteFactory(&factory);
 
-    IDWriteFontCollection* collection = GetCustomFontCollection(factory);
+    GetCustomFontCollection(factory);
 
     PatchDWriteFactory(factory);
 

@@ -336,10 +336,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   EXPECT_EQ(TRUE, ::IsWindow(hwnd));
 
   // Create a new browser window to prevent the message loop from terminating.
-  Browser* new_browser = chrome::FindBrowserWithWebContents(
-      browser()->OpenURL(content::OpenURLParams(
-          GURL("about:"), content::Referrer(), NEW_WINDOW,
-          ui::PAGE_TRANSITION_TYPED, false)));
+  browser()->OpenURL(content::OpenURLParams(GURL("about:"), content::Referrer(),
+                                            NEW_WINDOW,
+                                            ui::PAGE_TRANSITION_TYPED, false));
 
   // Forcibly closing the browser HWND should not cause a crash.
   EXPECT_EQ(TRUE, ::CloseWindow(hwnd));

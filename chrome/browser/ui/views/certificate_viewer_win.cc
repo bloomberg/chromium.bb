@@ -45,7 +45,7 @@ void ShowCertificateViewerImpl(content::WebContents* web_contents,
       base::MessageLoop::current());
   // This next call blocks but keeps processing windows messages, making it
   // modal to the browser window.
-  BOOL rv = ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
+  ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
 
   CertFreeCertificateContext(cert_list);
 }

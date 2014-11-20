@@ -210,21 +210,21 @@ TEST_F(BufferManagerTest, DoBufferSubData) {
 TEST_F(BufferManagerTest, GetRange) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const GLsizeiptr kDataSize = 10;
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   Buffer* buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer != NULL);
   manager_->SetTarget(buffer, GL_ELEMENT_ARRAY_BUFFER);
-  DoBufferData(buffer, sizeof(data), GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  DoBufferData(buffer, kDataSize, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   const char* buf =
-      static_cast<const char*>(buffer->GetRange(0, sizeof(data)));
+      static_cast<const char*>(buffer->GetRange(0, kDataSize));
   ASSERT_TRUE(buf != NULL);
   const char* buf1 =
-      static_cast<const char*>(buffer->GetRange(1, sizeof(data) - 1));
+      static_cast<const char*>(buffer->GetRange(1, kDataSize - 1));
   EXPECT_EQ(buf + 1, buf1);
-  EXPECT_TRUE(buffer->GetRange(sizeof(data), 1) == NULL);
-  EXPECT_TRUE(buffer->GetRange(0, sizeof(data) + 1) == NULL);
-  EXPECT_TRUE(buffer->GetRange(-1, sizeof(data)) == NULL);
+  EXPECT_TRUE(buffer->GetRange(kDataSize, 1) == NULL);
+  EXPECT_TRUE(buffer->GetRange(0, kDataSize + 1) == NULL);
+  EXPECT_TRUE(buffer->GetRange(-1, kDataSize) == NULL);
   EXPECT_TRUE(buffer->GetRange(-0, -1) == NULL);
   const int size = 0x20000;
   DoBufferData(buffer, size / 2, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
@@ -350,7 +350,7 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
 TEST_F(BufferManagerTest, UseDeletedBuffer) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
-  const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const GLsizeiptr kDataSize = 10;
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   scoped_refptr<Buffer> buffer = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(buffer.get() != NULL);
@@ -358,7 +358,7 @@ TEST_F(BufferManagerTest, UseDeletedBuffer) {
   // Remove buffer
   manager_->RemoveBuffer(kClientBufferId);
   // Use it after removing
-  DoBufferData(buffer.get(), sizeof(data), GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  DoBufferData(buffer.get(), kDataSize, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   // Check that it gets deleted when the last reference is released.
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kServiceBufferId)))
       .Times(1)

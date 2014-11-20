@@ -54,8 +54,7 @@ namespace gles2 {
 using namespace cmds;
 
 TEST_P(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
-  const float dummy = 0;
-  const GLuint kOffsetToTestFor = sizeof(dummy) * 4;
+  const GLuint kOffsetToTestFor = sizeof(float) * 4;
   const GLuint kIndexToTest = 1;
   GetVertexAttribPointerv::Result* result =
       static_cast<GetVertexAttribPointerv::Result*>(shared_memory_address_);

@@ -1532,7 +1532,6 @@ InstallStatus InstallProductsHelper(
       COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 4,
                      add_support_for_new_products_here_);
       const uint32 kBrowserBit = 1 << BrowserDistribution::CHROME_BROWSER;
-      const uint32 kAppHostBit = 1 << BrowserDistribution::CHROME_APP_HOST;
       int message_id = 0;
 
       proceed_with_installation = false;
