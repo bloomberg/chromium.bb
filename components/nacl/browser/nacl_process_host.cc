@@ -226,6 +226,10 @@ bool ShareHandleToSelLdr(
   return true;
 }
 
+void CloseFile(base::File file) {
+  // The base::File destructor will close the file for us.
+}
+
 }  // namespace
 
 unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
@@ -628,10 +632,8 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnQueryKnownToValidate)
       IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
                           OnSetKnownToValidate)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_ResolveFileToken,
-                                      OnResolveFileToken)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileTokenAsync,
-                          OnResolveFileTokenAsync)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileToken,
+                          OnResolveFileToken)
 
 #if defined(OS_WIN)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -818,11 +820,6 @@ bool NaClProcessHost::StartNaClExecution() {
     params.enable_debug_stub = enable_debug_stub_ &&
         NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
 
-    // TODO(teravest): Resolve the file tokens right now instead of making the
-    // loader send IPC to resolve them later.
-    params.nexe_token_lo = nexe_token_.lo;
-    params.nexe_token_hi = nexe_token_.hi;
-
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,
                              socket_for_sel_ldr_.TakePlatformFile(),
@@ -873,16 +870,61 @@ bool NaClProcessHost::StartNaClExecution() {
 #endif
   }
 
-  params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
-                                                   process_->GetData().handle);
   if (!crash_info_shmem_.ShareToProcess(process_->GetData().handle,
                                         &params.crash_info_shmem_handle)) {
     DLOG(ERROR) << "Failed to ShareToProcess() a shared memory buffer";
     return false;
   }
 
+  base::FilePath file_path;
+  // Don't retrieve the file path when using nonsfi mode; there's no validation
+  // caching in that case, so it's unnecessary work, and would expose the file
+  // path to the plugin.
+  if (!uses_nonsfi_mode_ &&
+      NaClBrowser::GetInstance()->GetFilePath(nexe_token_.lo,
+                                              nexe_token_.hi,
+                                              &file_path)) {
+    // We have to reopen the file in the browser process; we don't want a
+    // compromised renderer to pass an arbitrary fd that could get loaded
+    // into the plugin process.
+    if (base::PostTaskAndReplyWithResult(
+           content::BrowserThread::GetBlockingPool(),
+           FROM_HERE,
+           base::Bind(OpenNaClReadExecImpl,
+                      file_path,
+                      true /* is_executable */),
+           base::Bind(&NaClProcessHost::StartNaClFileResolved,
+                      weak_factory_.GetWeakPtr(),
+                      params,
+                      file_path))) {
+      return true;
+    }
+  }
+
+  params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
+                                                   process_->GetData().handle);
   process_->Send(new NaClProcessMsg_Start(params));
   return true;
+}
+
+void NaClProcessHost::StartNaClFileResolved(
+    NaClStartParams params,
+    const base::FilePath& file_path,
+    base::File checked_nexe_file) {
+  if (checked_nexe_file.IsValid()) {
+    // Release the file received from the renderer. This has to be done on a
+    // thread where IO is permitted, though.
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(&CloseFile, base::Passed(nexe_file_.Pass())));
+    params.nexe_file_path_metadata = file_path;
+    params.nexe_file = IPC::TakeFileHandleForProcess(
+        checked_nexe_file.Pass(), process_->GetData().handle);
+  } else {
+    params.nexe_file = IPC::TakeFileHandleForProcess(
+        nexe_file_.Pass(), process_->GetData().handle);
+  }
+  process_->Send(new NaClProcessMsg_Start(params));
 }
 
 // This method is called when NaClProcessHostMsg_PpapiChannelCreated is
@@ -988,8 +1030,7 @@ void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
 }
 
 void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
-                                         uint64 file_token_hi,
-                                         IPC::Message* reply_msg) {
+                                         uint64 file_token_hi) {
   // Was the file registered?
   //
   // Note that the file path cache is of bounded size, and old entries can get
@@ -1017,40 +1058,7 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   base::FilePath file_path;
   if (!NaClBrowser::GetInstance()->GetFilePath(
         file_token_lo, file_token_hi, &file_path)) {
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        IPC::InvalidPlatformFileForTransit(),
-        base::FilePath());
-    Send(reply_msg);
-    return;
-  }
-
-  // Open the file.
-  if (!base::PostTaskAndReplyWithResult(
-          content::BrowserThread::GetBlockingPool(),
-          FROM_HERE,
-          base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
-          base::Bind(&NaClProcessHost::FileResolved,
-                     weak_factory_.GetWeakPtr(),
-                     file_path,
-                     reply_msg))) {
-     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-         reply_msg,
-         IPC::InvalidPlatformFileForTransit(),
-         base::FilePath());
-     Send(reply_msg);
-  }
-}
-
-void NaClProcessHost::OnResolveFileTokenAsync(uint64 file_token_lo,
-                                              uint64 file_token_hi) {
-  // See the comment at OnResolveFileToken() for details of the file path cache
-  // behavior.
-  CHECK(!uses_nonsfi_mode_);
-  base::FilePath file_path;
-  if (!NaClBrowser::GetInstance()->GetFilePath(
-        file_token_lo, file_token_hi, &file_path)) {
-    Send(new NaClProcessMsg_ResolveFileTokenAsyncReply(
+    Send(new NaClProcessMsg_ResolveFileTokenReply(
              file_token_lo,
              file_token_hi,
              IPC::PlatformFileForTransit(),
@@ -1063,12 +1071,12 @@ void NaClProcessHost::OnResolveFileTokenAsync(uint64 file_token_lo,
           content::BrowserThread::GetBlockingPool(),
           FROM_HERE,
           base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
-          base::Bind(&NaClProcessHost::FileResolvedAsync,
+          base::Bind(&NaClProcessHost::FileResolved,
                      weak_factory_.GetWeakPtr(),
                      file_token_lo,
                      file_token_hi,
                      file_path))) {
-    Send(new NaClProcessMsg_ResolveFileTokenAsyncReply(
+    Send(new NaClProcessMsg_ResolveFileTokenReply(
             file_token_lo,
             file_token_hi,
             IPC::PlatformFileForTransit(),
@@ -1077,27 +1085,6 @@ void NaClProcessHost::OnResolveFileTokenAsync(uint64 file_token_lo,
 }
 
 void NaClProcessHost::FileResolved(
-    const base::FilePath& file_path,
-    IPC::Message* reply_msg,
-    base::File file) {
-  if (file.IsValid()) {
-    IPC::PlatformFileForTransit handle = IPC::TakeFileHandleForProcess(
-        file.Pass(),
-        process_->GetData().handle);
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        handle,
-        file_path);
-  } else {
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        IPC::InvalidPlatformFileForTransit(),
-        base::FilePath());
-  }
-  Send(reply_msg);
-}
-
-void NaClProcessHost::FileResolvedAsync(
     uint64_t file_token_lo,
     uint64_t file_token_hi,
     const base::FilePath& file_path,
@@ -1112,7 +1099,7 @@ void NaClProcessHost::FileResolvedAsync(
   } else {
     out_handle = IPC::InvalidPlatformFileForTransit();
   }
-  Send(new NaClProcessMsg_ResolveFileTokenAsyncReply(
+  Send(new NaClProcessMsg_ResolveFileTokenReply(
            file_token_lo,
            file_token_hi,
            out_handle,

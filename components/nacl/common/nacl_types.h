@@ -63,8 +63,8 @@ struct NaClStartParams {
   ~NaClStartParams();
 
   IPC::PlatformFileForTransit nexe_file;
-  uint64_t nexe_token_lo;
-  uint64_t nexe_token_hi;
+  // Used only as a key for validation caching.
+  base::FilePath nexe_file_path_metadata;
 
   std::vector<FileDescriptor> handles;
   FileDescriptor debug_stub_server_bound_socket;

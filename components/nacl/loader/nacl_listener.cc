@@ -29,8 +29,8 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
+#include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/public/nacl_file_info.h"
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -41,7 +41,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include <fcntl.h>
 #include <io.h>
 
 #include "content/public/common/sandbox_init.h"
@@ -183,42 +182,6 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     }
   }
 
-  // This is the "old" code path for resolving file tokens. It's only
-  // used for resolving the main nexe.
-  // TODO(teravest): Remove this.
-  bool ResolveFileToken(struct NaClFileToken* file_token,
-                        int32* fd,
-                        std::string* path) override {
-    *fd = -1;
-    *path = "";
-    if (!NaClFileTokenIsValid(file_token)) {
-      return false;
-    }
-    IPC::PlatformFileForTransit ipc_fd = IPC::InvalidPlatformFileForTransit();
-    base::FilePath ipc_path;
-    if (!listener_->Send(new NaClProcessMsg_ResolveFileToken(file_token->lo,
-                                                             file_token->hi,
-                                                             &ipc_fd,
-                                                             &ipc_path))) {
-      return false;
-    }
-    if (ipc_fd == IPC::InvalidPlatformFileForTransit()) {
-      return false;
-    }
-    base::PlatformFile handle =
-        IPC::PlatformFileForTransitToPlatformFile(ipc_fd);
-#if defined(OS_WIN)
-    // On Windows, valid handles are 32 bit unsigned integers so this is safe.
-    *fd = reinterpret_cast<int32>(handle);
-#else
-    *fd = handle;
-#endif
-    // It doesn't matter if the path is invalid UTF8 as long as it's consistent
-    // and unforgeable.
-    *path = ipc_path.AsUTF8Unsafe();
-    return true;
-  }
-
  private:
   // The listener never dies, otherwise this might be a dangling reference.
   NaClListener* listener_;
@@ -266,14 +229,14 @@ class FileTokenMessageFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FileTokenMessageFilter, msg)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileTokenAsyncReply,
-                          OnResolveFileTokenAsyncReply)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_ResolveFileTokenReply,
+                          OnResolveFileTokenReply)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
   }
 
-  void OnResolveFileTokenAsyncReply(
+  void OnResolveFileTokenReply(
       uint64_t token_lo,
       uint64_t token_hi,
       IPC::PlatformFileForTransit ipc_fd,
@@ -454,21 +417,11 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif
 
-  NaClFileInfo nexe_file_info;
   base::PlatformFile nexe_file = IPC::PlatformFileForTransitToPlatformFile(
       params.nexe_file);
-#if defined(OS_WIN)
-  nexe_file_info.desc =
-      _open_osfhandle(reinterpret_cast<intptr_t>(nexe_file),
-                      _O_RDONLY | _O_BINARY);
-#elif defined(OS_POSIX)
-  nexe_file_info.desc = nexe_file;
-#else
-#error Unsupported target platform.
-#endif
-  nexe_file_info.file_token.lo = params.nexe_token_lo;
-  nexe_file_info.file_token.hi = params.nexe_token_hi;
-  args->nexe_desc = NaClDescIoFromFileInfo(nexe_file_info, NACL_ABI_O_RDONLY);
+  std::string file_path_str = params.nexe_file_path_metadata.AsUTF8Unsafe();
+  args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_file,
+                                                       file_path_str.c_str());
 
   int exit_status;
   if (!NaClChromeMainStart(nap, args, &exit_status))
@@ -483,7 +436,7 @@ void NaClListener::ResolveFileToken(
     uint64_t token_lo,
     uint64_t token_hi,
     base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)> cb) {
-  if (!Send(new NaClProcessMsg_ResolveFileTokenAsync(token_lo, token_hi))) {
+  if (!Send(new NaClProcessMsg_ResolveFileToken(token_lo, token_hi))) {
     cb.Run(IPC::PlatformFileForTransit(), base::FilePath());
     return;
   }

@@ -67,14 +67,6 @@ class MockValidationDB : public NaClValidationDB {
                         NaClValidationQuery::kDigestLength));
   }
 
-  bool ResolveFileToken(struct NaClFileToken* file_token,
-                        int32* fd,
-                        std::string* path) override {
-    *fd = -1;
-    *path = "";
-    return false;
-  }
-
   bool did_query_;
   bool did_set_;
   bool status_;

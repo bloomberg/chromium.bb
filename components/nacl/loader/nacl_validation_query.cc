@@ -35,7 +35,9 @@ bool NaClValidationQueryContext::ResolveFileToken(
     struct NaClFileToken* file_token,
     int32* fd,
     std::string* path) {
-  return db_->ResolveFileToken(file_token, fd, path);
+  // This should no longer be used.
+  CHECK(false);
+  return false;
 }
 
 NaClValidationQuery::NaClValidationQuery(NaClValidationDB* db,

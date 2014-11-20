@@ -144,6 +144,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // on success.
   bool StartNaClExecution();
 
+  void StartNaClFileResolved(
+      NaClStartParams params,
+      const base::FilePath& file_path,
+      base::File nexe_file);
+
   // Does post-process-launching tasks for starting the NaCl process once
   // we have a connection.
   //
@@ -153,16 +158,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);
   void OnSetKnownToValidate(const std::string& signature);
-  void OnResolveFileToken(uint64 file_token_lo, uint64 file_token_hi,
-                          IPC::Message* reply_msg);
-  void OnResolveFileTokenAsync(uint64 file_token_lo, uint64 file_token_hi);
-  void FileResolved(const base::FilePath& file_path,
-                    IPC::Message* reply_msg,
+  void OnResolveFileToken(uint64 file_token_lo, uint64 file_token_hi);
+  void FileResolved(uint64_t file_token_lo,
+                    uint64_t file_token_hi,
+                    const base::FilePath& file_path,
                     base::File file);
-  void FileResolvedAsync(uint64_t file_token_lo,
-                         uint64_t file_token_hi,
-                         const base::FilePath& file_path,
-                         base::File file);
 #if defined(OS_WIN)
   // Message handler for Windows hardware exception handling.
   void OnAttachDebugExceptionHandler(const std::string& info,

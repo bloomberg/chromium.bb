@@ -154,8 +154,8 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   CHECK(params.process_type == kNativeNaClProcessType);
 
   CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
-  CHECK(params.nexe_token_lo == 0);
-  CHECK(params.nexe_token_hi == 0);
+  CHECK(params.nexe_file_path_metadata.empty());
+
   MainStart(IPC::PlatformFileForTransitToPlatformFile(params.nexe_file));
 }
 
