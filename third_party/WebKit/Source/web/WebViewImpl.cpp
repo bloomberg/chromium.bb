@@ -2039,7 +2039,9 @@ static String inputTypeToName(WebInputEvent::Type type)
 
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
-    UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
+    WebAutofillClient* autofillClient = m_autofillClient ? m_autofillClient :
+        mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
+    UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
     // On the first input event since page load, |notifier| instructs the
     // autofill client to unblock values of password input fields of any forms
     // on the page. There is a single input event, GestureTap, which can both
@@ -2047,9 +2049,9 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     // case, the form submission happens before the autofill client is told
     // to unblock the password values, and so the password values are not
     // submitted. To avoid that, GestureTap is handled explicitly:
-    if (inputEvent.type == WebInputEvent::GestureTap && m_autofillClient) {
+    if (inputEvent.type == WebInputEvent::GestureTap && autofillClient) {
         m_userGestureObserved = true;
-        m_autofillClient->firstUserGestureObserved();
+        autofillClient->firstUserGestureObserved();
     }
 
     TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type).ascii());
@@ -2068,8 +2070,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
 
     if (isPointerLocked() && WebInputEvent::isMouseEventType(inputEvent.type)) {
-      pointerLockMouseEvent(inputEvent);
-      return true;
+        pointerLockMouseEvent(inputEvent);
+        return true;
     }
 
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
@@ -2168,13 +2170,16 @@ void WebViewImpl::setFocus(bool enable)
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             // Finish an ongoing composition to delete the composition node.
             if (toLocalFrame(focusedFrame.get())->inputMethodController().hasComposition()) {
-                if (m_autofillClient)
-                    m_autofillClient->setIgnoreTextChanges(true);
+                WebAutofillClient* autofillClient = m_autofillClient ? m_autofillClient :
+                    WebLocalFrameImpl::fromFrame(toLocalFrame(focusedFrame.get()))->autofillClient();
+
+                if (autofillClient)
+                    autofillClient->setIgnoreTextChanges(true);
 
                 toLocalFrame(focusedFrame.get())->inputMethodController().confirmComposition();
 
-                if (m_autofillClient)
-                    m_autofillClient->setIgnoreTextChanges(false);
+                if (autofillClient)
+                    autofillClient->setIgnoreTextChanges(false);
             }
             m_imeAcceptEvents = false;
         }
@@ -3571,7 +3576,9 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 {
     ASSERT(m_currentDragData);
 
-    UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
+    WebAutofillClient* autofillClient =  m_autofillClient ? m_autofillClient :
+        mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
+    UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
 
     // If this webview transitions from the "drop accepting" state to the "not
     // accepting" state, then our IPC message reply indicating that may be in-

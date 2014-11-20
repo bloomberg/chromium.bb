@@ -175,6 +175,7 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebAutofillClient.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
@@ -1537,6 +1538,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebFrameClient* client)
 WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     : m_frameLoaderClientImpl(this)
     , m_client(client)
+    , m_autofillClient(0)
     , m_permissionClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
@@ -1847,6 +1849,11 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
     m_frame->init();
+}
+
+void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)
+{
+    m_autofillClient = autofillClient;
 }
 
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)

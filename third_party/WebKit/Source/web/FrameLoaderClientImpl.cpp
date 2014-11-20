@@ -848,8 +848,11 @@ void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(WebRTCPe
 
 void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form)
 {
+    // FIXME: remove.
     if (m_webFrame->viewImpl() && m_webFrame->viewImpl()->autofillClient())
         m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(WebFormElement(form));
+    if (m_webFrame->autofillClient())
+        m_webFrame->autofillClient()->didRequestAutocomplete(WebFormElement(form));
 }
 
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)

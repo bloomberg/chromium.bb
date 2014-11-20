@@ -799,10 +799,14 @@ void ChromeClientImpl::annotatedRegionsChanged()
         client->draggableRegionsChanged();
 }
 
-void ChromeClientImpl::didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >& elements)
+void ChromeClientImpl::didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >& elements, LocalFrame* frame)
 {
+    // FIXME: remove. See http://crbug.com/425756
     if (m_webView->autofillClient())
         m_webView->autofillClient()->didAssociateFormControls(elements);
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
+    if (webframe->autofillClient())
+        webframe->autofillClient()->didAssociateFormControls(elements);
 }
 
 void ChromeClientImpl::didCancelCompositionOnSelectionChange()
@@ -831,28 +835,42 @@ void ChromeClientImpl::showImeIfNeeded()
 
 void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputElement, KeyboardEvent& event)
 {
-    if (!m_webView->autofillClient())
-        return;
-    m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(&inputElement), WebKeyboardEventBuilder(event));
+    // FIXME: remove. See http://crbug.com/425756
+    if (m_webView->autofillClient())
+        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(&inputElement), WebKeyboardEventBuilder(event));
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(inputElement.document().frame());
+    if (webframe->autofillClient())
+        webframe->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(&inputElement), WebKeyboardEventBuilder(event));
 }
 
 void ChromeClientImpl::didChangeValueInTextField(HTMLFormControlElement& element)
 {
-    if (!m_webView->autofillClient())
-        return;
-    m_webView->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
+    // FIXME: remove. See http://crbug.com/425756
+    if (m_webView->autofillClient())
+        m_webView->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(element.document().frame());
+    if (webframe->autofillClient())
+        webframe->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
 }
 
 void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
 {
+    // FIXME: remove. See http://crbug.com/425756
     if (m_webView->autofillClient())
         m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(inputElement.document().frame());
+    if (webframe->autofillClient())
+        webframe->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
 }
 
 void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
 {
+    // FIXME: remove. See http://crbug.com/425756
     if (m_webView->autofillClient())
         m_webView->autofillClient()->openTextDataListChooser(WebInputElement(&input));
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(input.document().frame());
+    if (webframe->autofillClient())
+        webframe->autofillClient()->openTextDataListChooser(WebInputElement(&input));
 }
 
 void ChromeClientImpl::textFieldDataListChanged(HTMLFormControlElement& element)

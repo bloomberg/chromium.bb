@@ -52,6 +52,7 @@ class Range;
 class ScriptSourceCode;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
+class WebAutofillClient;
 class WebDataSourceImpl;
 class WebFrameClient;
 class WebPerformance;
@@ -222,6 +223,7 @@ public:
 
     // WebLocalFrame methods:
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) override;
+    virtual void setAutofillClient(WebAutofillClient*) override;
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) override;
     virtual bool isLoading() const override;
     virtual bool isResourceLoadInProgress() const override;
@@ -294,6 +296,7 @@ public:
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
+    WebAutofillClient* autofillClient() { return m_autofillClient; }
     WebPermissionClient* permissionClient() { return m_permissionClient; }
     SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const { return m_sharedWorkerRepositoryClient.get(); }
 
@@ -338,6 +341,7 @@ private:
     RefPtrWillBeMember<LocalFrame> m_frame;
 
     WebFrameClient* m_client;
+    WebAutofillClient* m_autofillClient;
     WebPermissionClient* m_permissionClient;
     OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 

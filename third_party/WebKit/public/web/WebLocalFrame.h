@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class WebAutofillClient;
 class WebScriptExecutionCallback;
 struct WebPrintPresetOptions;
 
@@ -41,6 +42,8 @@ public:
     // Creates a provisional, semi-attached frame that will be fully
     // swapped into the frame tree if it commits.
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) = 0;
+
+    virtual void setAutofillClient(WebAutofillClient*) = 0;
 
 
     // Navigation Ping --------------------------------------------------------
