@@ -150,11 +150,9 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case DisplayItem::EndFilter: return "EndFilter";
     case DisplayItem::BeginTransparency: return "BeginTransparency";
     case DisplayItem::EndTransparency: return "EndTransparency";
-    case ClipBoxChildBlockBackground: return "ClipBoxChildBlockBackground";
     case ClipBoxChildBlockBackgrounds: return "ClipBoxChildBlockBackgrounds";
     case ClipBoxFloat: return "ClipBoxFloat";
     case ClipBoxForeground: return "ClipBoxForeground";
-    case ClipBoxOutline: return "ClipBoxOutline";
     case ClipBoxChildOutlines: return "ClipBoxChildOutlines";
     case ClipBoxSelection: return "ClipBoxSelection";
     case ClipBoxCollapsedTableBorders: return "ClipBoxCollapsedTableBorders";

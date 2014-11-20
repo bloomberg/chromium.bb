@@ -64,9 +64,6 @@ BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& 
     DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         switch (m_paintInfo.phase) {
-        case PaintPhaseChildBlockBackground:
-            clipType = DisplayItem::ClipBoxChildBlockBackground;
-            break;
         case PaintPhaseChildBlockBackgrounds:
             clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
             break;
@@ -75,9 +72,6 @@ BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& 
             break;
         case PaintPhaseForeground:
             clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
-            break;
-        case PaintPhaseOutline:
-            clipType = DisplayItem::ClipBoxOutline;
             break;
         case PaintPhaseChildOutlines:
             clipType = DisplayItem::ClipBoxChildOutlines;
@@ -94,6 +88,8 @@ BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& 
         case PaintPhaseClippingMask:
             clipType = DisplayItem::ClipBoxClippingMask;
             break;
+        case PaintPhaseChildBlockBackground:
+        case PaintPhaseOutline:
         case PaintPhaseBlockBackground:
         case PaintPhaseSelfOutline:
         case PaintPhaseMask:
