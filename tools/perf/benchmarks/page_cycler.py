@@ -77,11 +77,14 @@ class PageCyclerNetsimTop10(_PageCycler):
       'pageset_repeat': 5,
   }
 
-  def __init__(self):
-    super(PageCyclerNetsimTop10, self).__init__()
-    # TODO: This isn't quite right.
-    # This option will still apply to page cyclers that run after this one.
-    self.test.clear_cache_before_each_run = True
+  def CreatePageTest(self, options):
+    return page_cycler.PageCycler(
+        page_repeat = options.page_repeat,
+        pageset_repeat = options.pageset_repeat,
+        cold_load_percent = options.cold_load_percent,
+        record_v8_object_stats = options.v8_object_stats,
+        report_speed_index = options.report_speed_index,
+        clear_cache_before_each_run = True)
 
 
 @benchmark.Enabled('android')

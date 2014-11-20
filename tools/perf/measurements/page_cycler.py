@@ -31,8 +31,10 @@ from telemetry.value import scalar
 
 class PageCycler(page_test.PageTest):
   def __init__(self, page_repeat, pageset_repeat, cold_load_percent=50,
-               record_v8_object_stats=False, report_speed_index=False):
-    super(PageCycler, self).__init__()
+               record_v8_object_stats=False, report_speed_index=False,
+               clear_cache_before_each_run=False):
+    super(PageCycler, self).__init__(
+        clear_cache_before_each_run=clear_cache_before_each_run)
 
     with open(os.path.join(os.path.dirname(__file__),
                            'page_cycler.js'), 'r') as f:
