@@ -10,9 +10,14 @@
 function fix_rpath {
   if [ -w "$1" ]
   then
-    echo "fix_rpaths.sh: fixing $1"
-    chrpath -r $(chrpath $1 | cut -d " " -f 2 | sed s/XORIGIN/\$ORIGIN/g \
-      | sed s/RPATH=//g) $1 > /dev/null
+    # Only attempt to fix RPATH if the entry actually exists.
+    # FIXME(earthdok): find out why zlib1g on Precise doesn't get RPATH set.
+    if chrpath -l $1
+    then
+      echo "fix_rpaths.sh: fixing $1"
+      chrpath -r $(chrpath $1 | cut -d " " -f 2 | sed s/XORIGIN/\$ORIGIN/g \
+        | sed s/RPATH=//g) $1
+    fi
   else
     # FIXME(earthdok): libcups2 DSOs are created non-writable, causing this
     # script to fail. As a temporary measure, ignore non-writable files.
