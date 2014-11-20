@@ -449,6 +449,8 @@ public:
             float velocityX;
             float velocityY;
 
+            // TODO: Use a bitfield instead of two ints for these flags
+
             // Whether any previous GestureScrollUpdate in the current scroll
             // sequence was suppressed (e.g., the causal touchmove was
             // preventDefault'ed). This bit is particularly useful for
@@ -456,6 +458,9 @@ public:
             // the entirety of the generative motion.
             // See comment at the top for why an int is used here instead of a bool.
             int previousUpdateInSequencePrevented;
+            // See comment at the top of the file for why an int is used here
+            // instead of a bool.
+            int preventPropagation;
         } scrollUpdate;
 
         struct {

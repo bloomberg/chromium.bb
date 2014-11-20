@@ -43,7 +43,7 @@ public:
         memset(&m_data, 0, sizeof(m_data));
     }
 
-    PlatformGestureEvent(Type type, const IntPoint& position, const IntPoint& globalPosition, const IntSize& area, double timestamp, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY)
+    PlatformGestureEvent(Type type, const IntPoint& position, const IntPoint& globalPosition, const IntSize& area, double timestamp, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, float deltaX, float deltaY, float velocityX, float velocityY, bool preventPropagation)
         : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
@@ -58,6 +58,7 @@ public:
             m_data.m_scrollUpdate.m_deltaY = deltaY;
             m_data.m_scrollUpdate.m_velocityX = velocityX;
             m_data.m_scrollUpdate.m_velocityY = velocityY;
+            m_data.m_scrollUpdate.m_preventPropagation = preventPropagation;
         }
     }
 
@@ -98,6 +99,13 @@ public:
         ASSERT(m_type == PlatformEvent::GestureScrollUpdate
             || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
         return m_data.m_scrollUpdate.m_velocityY;
+    }
+
+    bool preventPropagation() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
+            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        return m_data.m_scrollUpdate.m_preventPropagation;
     }
 
     float scale() const
@@ -158,6 +166,7 @@ protected:
             float m_deltaY;
             float m_velocityX;
             float m_velocityY;
+            int m_preventPropagation;
         } m_scrollUpdate;
 
         struct {

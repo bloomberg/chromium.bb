@@ -2457,7 +2457,8 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     Node* stopNode = nullptr;
-    bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation;
+    bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation
+        || (gestureEvent.type() == PlatformEvent::GestureScrollUpdate && gestureEvent.preventPropagation());
 
     // Try to send the event to the correct view.
     if (passScrollGestureEventToWidget(gestureEvent, renderer)) {

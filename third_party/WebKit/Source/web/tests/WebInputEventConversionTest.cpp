@@ -259,19 +259,27 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
         webGestureEvent.x = 10;
-        webGestureEvent.y = 10;
-        webGestureEvent.globalX = 10;
-        webGestureEvent.globalY = 10;
-        webGestureEvent.data.scrollUpdate.deltaX = 10;
-        webGestureEvent.data.scrollUpdate.deltaY = 10;
+        webGestureEvent.y = 12;
+        webGestureEvent.globalX = 20;
+        webGestureEvent.globalY = 22;
+        webGestureEvent.data.scrollUpdate.deltaX = 30;
+        webGestureEvent.data.scrollUpdate.deltaY = 32;
+        webGestureEvent.data.scrollUpdate.velocityX = 40;
+        webGestureEvent.data.scrollUpdate.velocityY = 42;
+        webGestureEvent.data.scrollUpdate.preventPropagation = true;
 
         PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
         EXPECT_EQ(5, platformGestureBuilder.position().x());
-        EXPECT_EQ(5, platformGestureBuilder.position().y());
-        EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
-        EXPECT_EQ(10, platformGestureBuilder.globalPosition().y());
-        EXPECT_EQ(5, platformGestureBuilder.deltaX());
-        EXPECT_EQ(5, platformGestureBuilder.deltaY());
+        EXPECT_EQ(6, platformGestureBuilder.position().y());
+        EXPECT_EQ(20, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(22, platformGestureBuilder.globalPosition().y());
+        EXPECT_EQ(15, platformGestureBuilder.deltaX());
+        EXPECT_EQ(16, platformGestureBuilder.deltaY());
+        // TODO: The velocity values may need to be scaled to page scale in
+        // order to remain consist with delta values.
+        EXPECT_EQ(40, platformGestureBuilder.velocityX());
+        EXPECT_EQ(42, platformGestureBuilder.velocityY());
+        EXPECT_TRUE(platformGestureBuilder.preventPropagation());
     }
 
     {
@@ -391,16 +399,23 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), IntSize(10, 10), 0, false, false, false, false, 10, 10, 10, 10);
+        PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0, false, false, false, false, 30, 32, 40, 42, true);
+        // TODO: GestureEvent does not preserve velocityX, velocityY, and
+        // preventPropagation. It also fails to scale coordinates (x,y, deltaX,
+        // deltaY) to the page scale. This may lead to unexpected bugs if a
+        // PlatformGestureEvent is transformed into WebGestureEvent and back.
         RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
         WebGestureEventBuilder webGestureBuilder(view, documentRenderView, *gestureEvent);
 
         EXPECT_EQ(10, webGestureBuilder.x);
-        EXPECT_EQ(10, webGestureBuilder.y);
-        EXPECT_EQ(10, webGestureBuilder.globalX);
-        EXPECT_EQ(10, webGestureBuilder.globalY);
-        EXPECT_EQ(10, webGestureBuilder.data.scrollUpdate.deltaX);
-        EXPECT_EQ(10, webGestureBuilder.data.scrollUpdate.deltaY);
+        EXPECT_EQ(12, webGestureBuilder.y);
+        EXPECT_EQ(20, webGestureBuilder.globalX);
+        EXPECT_EQ(22, webGestureBuilder.globalY);
+        EXPECT_EQ(30, webGestureBuilder.data.scrollUpdate.deltaX);
+        EXPECT_EQ(32, webGestureBuilder.data.scrollUpdate.deltaY);
+        EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityX);
+        EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityY);
+        EXPECT_FALSE(webGestureBuilder.data.scrollUpdate.preventPropagation);
     }
 
     {

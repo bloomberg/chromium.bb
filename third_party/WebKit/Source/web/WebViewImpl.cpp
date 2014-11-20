@@ -622,7 +622,8 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
     } else {
         WebGestureEvent syntheticGestureEvent;
 
-        syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdateWithoutPropagation;
+        syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        syntheticGestureEvent.data.scrollUpdate.preventPropagation = true;
         syntheticGestureEvent.data.scrollUpdate.deltaX = delta.width;
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
         syntheticGestureEvent.x = m_positionOnFlingStart.x;
@@ -1853,7 +1854,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
                 IntSize(), 0, false, false, false, false,
-                0, 0, 0, 0);
+                0, 0, 0, 0, false);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }
