@@ -514,8 +514,8 @@ VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosit
     if (highestRootOfPos == highestRoot)
         return pos;
 
-    // If |pos| has an editable root, skip to the start
-    if (highestRootOfPos)
+    // If this is not editable but |pos| has an editable root, skip to the start
+    if (!highestRoot && highestRootOfPos)
         return VisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, Position::PositionIsBeforeAnchor).parentAnchoredEquivalent()));
 
     // That must mean that |pos| is not editable. Return the last position before pos that is in the same editable region as this position
@@ -534,8 +534,8 @@ VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePositio
     if (highestRootOfPos == highestRoot)
         return pos;
 
-    // If |pos| has an editable root, skip to the end
-    if (highestRootOfPos)
+    // If this is not editable but |pos| has an editable root, skip to the end
+    if (!highestRoot && highestRootOfPos)
         return VisiblePosition(Position(highestRootOfPos, Position::PositionIsAfterAnchor).parentAnchoredEquivalent());
 
     // That must mean that |pos| is not editable. Return the next position after pos that is in the same editable region as this position
