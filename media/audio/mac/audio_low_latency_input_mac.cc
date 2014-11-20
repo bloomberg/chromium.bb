@@ -466,15 +466,18 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   // |mDataByteSize| needs to be exactly mapping to |number_of_frames|,
   // otherwise it will put CoreAudio into bad state and results in
   // AudioUnitRender() returning -50 for the new created stream.
+  // We have also seen kAudioUnitErr_TooManyFramesToProcess (-10874) and
+  // kAudioUnitErr_CannotDoInCurrentContext (-10863) as error codes.
   // See crbug/428706 for details.
   UInt32 new_size = number_of_frames * audio_input->format_.mBytesPerFrame;
   AudioBuffer* audio_buffer = audio_input->audio_buffer_list()->mBuffers;
   if (new_size != audio_buffer->mDataByteSize) {
     if (new_size > audio_buffer->mDataByteSize) {
-      // This can happen iff the device is unpluged during recording. In such
-      // case the buffer will not be used anymore since |audio_unit_| becomes
-      // invalid. We allocate enough memory here to avoid depending on
-      // how CoreAudio handles it.
+      // This can happen if the device is unpluged during recording. We
+      // allocate enough memory here to avoid depending on how CoreAudio
+      // handles it.
+      // See See http://www.crbug.com/434681 for one example when we can enter
+      // this scope.
       audio_input->audio_data_buffer_.reset(new uint8[new_size]);
       audio_buffer->mData = audio_input->audio_data_buffer_.get();
     }
@@ -492,7 +495,7 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
                                     audio_input->audio_buffer_list());
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
-    OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed.";
+    OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed ";
     return result;
   }
 
@@ -521,6 +524,21 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   DCHECK(audio_data);
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
+
+  // Dynamically increase capacity of the FIFO to handle larger buffers from
+  // CoreAudio. This can happen in combination with Apple Thunderbolt Displays
+  // when the Display Audio is used as capture source and the cable is first
+  // remove and then inserted again.
+  // See http://www.crbug.com/434681 for details.
+  if (static_cast<int>(number_of_frames) > fifo_.GetUnfilledFrames()) {
+    // Derive required increase in number of FIFO blocks. The increase is
+    // typically one block.
+    const int blocks =
+        static_cast<int>((number_of_frames - fifo_.GetUnfilledFrames()) /
+                         number_of_frames_) + 1;
+    DLOG(WARNING) << "Increasing FIFO capacity by " << blocks << " blocks";
+    fifo_.IncreaseCapacity(blocks);
+  }
 
   // Copy captured (and interleaved) data into FIFO.
   fifo_.Push(audio_data, number_of_frames, format_.mBitsPerChannel / 8);
