@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/session_types.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -980,7 +980,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         extensions::ExtensionRegistry::Get(profile())
             ->enabled_extensions().GetAppByURL(url);
     if (extension) {
-      CoreAppLauncherHandler::RecordAppLaunchType(
+      extensions::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_SESSION_RESTORE,
           extension->GetType());
     }

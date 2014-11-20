@@ -15,9 +15,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_details.h"
@@ -183,7 +183,7 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
     const extensions::Extension* extension,
     const std::vector<base::FilePath>& files) {
-  CoreAppLauncherHandler::RecordAppLaunchType(
+  extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (files.empty()) {
     apps::LaunchPlatformApp(

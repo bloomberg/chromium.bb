@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
@@ -1272,12 +1272,8 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
     const Extension* extension =
         extension_dispatcher_->extensions()->GetExtensionOrAppByURL(url);
     if (extension && extension->is_app()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          extension->is_platform_app() ?
-          extension_misc::kPlatformAppLaunchHistogram :
-          extension_misc::kAppLaunchHistogram,
-          extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
-          extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      extensions::RecordAppLaunchType(
+          extension_misc::APP_LAUNCH_CONTENT_NAVIGATION, extension->GetType());
     }
     return true;
   }

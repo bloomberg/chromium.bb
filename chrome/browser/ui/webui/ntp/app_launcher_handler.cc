@@ -35,9 +35,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -511,10 +511,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
         webui::GetDispositionFromClick(args, 3) : CURRENT_TAB;
   if (extension_id != extensions::kWebStoreAppId) {
     CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
-    CoreAppLauncherHandler::RecordAppLaunchType(launch_bucket,
-                                                extension->GetType());
+    extensions::RecordAppLaunchType(launch_bucket, extension->GetType());
   } else {
-    CoreAppLauncherHandler::RecordWebStoreLaunch();
+    extensions::RecordWebStoreLaunch();
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB ||

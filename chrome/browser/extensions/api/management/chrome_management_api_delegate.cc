@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_context.h"
@@ -245,8 +245,8 @@ bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   OpenApplication(AppLaunchParams(Profile::FromBrowserContext(context),
                                   extension, launch_container,
                                   NEW_FOREGROUND_TAB));
-  CoreAppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_EXTENSION_API, extension->GetType());
+  extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_EXTENSION_API,
+                                  extension->GetType());
 
   return true;
 }

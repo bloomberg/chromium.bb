@@ -109,12 +109,6 @@ extern const char kYoutubeAppId[];
 // The extension id of the in-app payments support application.
 extern const char kInAppPaymentsSupportAppId[];
 
-// The name of the app launch histogram.
-extern const char kAppLaunchHistogram[];
-
-// The name of the app launch histogram for platform apps.
-extern const char kPlatformAppLaunchHistogram[];
-
 // The buckets used for app launches.
 enum AppLaunchBucket {
   // Launch from NTP apps section while maximized.

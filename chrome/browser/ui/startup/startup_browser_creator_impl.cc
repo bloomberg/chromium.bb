@@ -69,13 +69,13 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -211,9 +211,8 @@ bool GetAppLaunchContainer(
 }
 
 void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
-  CoreAppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_CMD_LINE_APP,
-      app_type);
+  extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_CMD_LINE_APP,
+                                  app_type);
 }
 
 void RecordAppLaunches(Profile* profile,
@@ -225,18 +224,16 @@ void RecordAppLaunches(Profile* profile,
     const extensions::Extension* extension =
         extensions.GetAppByURL(cmd_line_urls.at(i));
     if (extension) {
-      CoreAppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_CMD_LINE_URL,
-          extension->GetType());
+      extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_CMD_LINE_URL,
+                                      extension->GetType());
     }
   }
   for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
     const extensions::Extension* extension =
         extensions.GetAppByURL(autolaunch_tabs.at(i).url);
     if (extension) {
-      CoreAppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_AUTOLAUNCH,
-          extension->GetType());
+      extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_AUTOLAUNCH,
+                                      extension->GetType());
     }
   }
 }
@@ -495,7 +492,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
       if (extension) {
         RecordCmdLineAppHistogram(extension->GetType());
       } else {
-        CoreAppLauncherHandler::RecordAppLaunchType(
+        extensions::RecordAppLaunchType(
             extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
             extensions::Manifest::TYPE_HOSTED_APP);
       }

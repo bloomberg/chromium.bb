@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
@@ -318,7 +318,7 @@ void ExtensionAppItem::Activate(int event_flags) {
     return;
 
   content::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
-  CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
+  extensions::RecordAppListMainLaunch(extension);
   GetController()->ActivateApp(profile_,
                                extension,
                                AppListControllerDelegate::LAUNCH_FROM_APP_LIST,

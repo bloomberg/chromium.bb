@@ -59,8 +59,6 @@ const char kStreamsPrivateTestExtensionId[] =
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 
-const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
-const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
 #if defined(OS_CHROMEOS)
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] =

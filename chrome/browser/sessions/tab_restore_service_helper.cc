@@ -23,8 +23,8 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_metrics.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -45,7 +45,7 @@ void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
   if (!extension)
     return;
 
-  CoreAppLauncherHandler::RecordAppLaunchType(
+  extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED,
       extension->GetType());
 #endif  // defined(ENABLE_EXTENSIONS)
