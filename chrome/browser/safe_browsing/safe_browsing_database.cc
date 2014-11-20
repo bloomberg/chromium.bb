@@ -344,7 +344,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
 // static
 SafeBrowsingDatabaseFactory* SafeBrowsingDatabase::factory_ = NULL;
 
-// Factory method, non-thread safe. Caller has to make sure this s called
+// Factory method, non-thread safe. Caller has to make sure this is called
 // on SafeBrowsing Thread.
 // TODO(shess): There's no need for a factory any longer.  Convert
 // SafeBrowsingDatabaseNew to SafeBrowsingDatabase, and have Create()
@@ -460,11 +460,14 @@ void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
-    : creation_loop_(base::MessageLoop::current()),
-      browse_store_(new SafeBrowsingStoreFile),
-      corruption_detected_(false),
-      change_detected_(false),
-      reset_factory_(this) {
+    : SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL) {
   DCHECK(browse_store_.get());
   DCHECK(!download_store_.get());
   DCHECK(!csd_whitelist_store_.get());
@@ -494,6 +497,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       ip_blacklist_store_(ip_blacklist_store),
       unwanted_software_store_(unwanted_software_store),
       corruption_detected_(false),
+      change_detected_(false),
       reset_factory_(this) {
   DCHECK(browse_store_.get());
 }
