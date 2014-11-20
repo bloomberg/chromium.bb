@@ -6,11 +6,13 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -222,6 +224,10 @@ TEST_F(ComponentLoaderTest, Remove) {
 }
 
 TEST_F(ComponentLoaderTest, LoadAll) {
+  // This loads the hotword component extension which has a dependency on sync.
+  // However, this doesn't work with unittests so disable sync.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+
   extension_service_.set_ready(false);
   ExtensionRegistry* registry = ExtensionRegistry::Get(&profile_);
 
@@ -243,6 +249,10 @@ TEST_F(ComponentLoaderTest, LoadAll) {
 }
 
 TEST_F(ComponentLoaderTest, AddOrReplace) {
+  // This loads the hotword component extension which has a dependency on sync.
+  // However, this doesn't work with unittests so disable sync.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+
   EXPECT_EQ(0u, component_loader_.registered_extensions_count());
   component_loader_.AddDefaultComponentExtensions(false);
   size_t const default_count = component_loader_.registered_extensions_count();

@@ -476,6 +476,7 @@
       'browser/history/visit_database_unittest.cc',
       'browser/history/visit_filter_unittest.cc',
       'browser/history/visit_tracker_unittest.cc',
+      'browser/history/web_history_service_unittest.cc',
       'browser/image_holder_unittest.cc',
       'browser/importer/firefox_profile_lock_unittest.cc',
       'browser/importer/profile_writer_unittest.cc',

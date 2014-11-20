@@ -40,6 +40,12 @@ const char kHistoryQueryHistoryUrl[] =
 const char kHistoryDeleteHistoryUrl[] =
     "https://history.google.com/history/api/delete?client=chrome";
 
+const char kHistoryAudioHistoryUrl[] =
+    "https://history.google.com/history/api/lookup?client=audio";
+
+const char kHistoryAudioHistoryChangeUrl[] =
+    "https://history.google.com/history/api/change";
+
 const char kPostDataMimeType[] = "text/plain";
 
 // The maximum number of retries for the URLFetcher requests.
@@ -53,21 +59,19 @@ class RequestImpl : public WebHistoryService::Request,
 
   // Returns the response code received from the server, which will only be
   // valid if the request succeeded.
-  int response_code() { return response_code_; }
+  int GetResponseCode() override { return response_code_; }
 
   // Returns the contents of the response body received from the server.
-  const std::string& response_body() { return response_body_; }
+  const std::string& GetResponseBody() override { return response_body_; }
 
-  bool is_pending() override { return is_pending_; }
+  bool IsPending() override { return is_pending_; }
 
  private:
   friend class history::WebHistoryService;
 
-  typedef base::Callback<void(Request*, bool)> CompletionCallback;
-
   RequestImpl(Profile* profile,
               const GURL& url,
-              const CompletionCallback& callback)
+              const WebHistoryService::CompletionCallback& callback)
       : OAuth2TokenService::Consumer("web_history"),
         profile_(profile),
         url_(url),
@@ -78,7 +82,7 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // Tells the request to do its thang.
-  void Start() {
+  void Start() override {
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(kHistoryOAuthScope);
 
@@ -171,7 +175,7 @@ class RequestImpl : public WebHistoryService::Request,
     return fetcher;
   }
 
-  void set_post_data(const std::string& post_data) {
+  void SetPostData(const std::string& post_data) override {
     post_data_ = post_data;
   }
 
@@ -203,26 +207,11 @@ class RequestImpl : public WebHistoryService::Request,
   int auth_retry_count_;
 
   // The callback to execute when the query is complete.
-  CompletionCallback callback_;
+  WebHistoryService::CompletionCallback callback_;
 
   // True if the request was started and has not yet completed, otherwise false.
   bool is_pending_;
 };
-
-// Extracts a JSON-encoded HTTP response into a DictionaryValue.
-// If |request|'s HTTP response code indicates failure, or if the response
-// body is not JSON, a null pointer is returned.
-scoped_ptr<base::DictionaryValue> ReadResponse(RequestImpl* request) {
-  scoped_ptr<base::DictionaryValue> result;
-  if (request->response_code() == net::HTTP_OK) {
-    base::Value* value = base::JSONReader::Read(request->response_body());
-    if (value && value->IsType(base::Value::TYPE_DICTIONARY))
-      result.reset(static_cast<base::DictionaryValue*>(value));
-    else
-      DLOG(WARNING) << "Non-JSON response received from history server.";
-  }
-  return result.Pass();
-}
 
 // Converts a time into a string for use as a parameter in a request to the
 // history server.
@@ -303,6 +292,27 @@ WebHistoryService::WebHistoryService(Profile* profile)
 
 WebHistoryService::~WebHistoryService() {
   STLDeleteElements(&pending_expire_requests_);
+  STLDeleteElements(&pending_audio_history_requests_);
+}
+
+WebHistoryService::Request* WebHistoryService::CreateRequest(
+    const GURL& url,
+    const CompletionCallback& callback) {
+  return new RequestImpl(profile_, url, callback);
+}
+
+// static
+scoped_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
+  WebHistoryService::Request* request) {
+  scoped_ptr<base::DictionaryValue> result;
+  if (request->GetResponseCode() == net::HTTP_OK) {
+    base::Value* value = base::JSONReader::Read(request->GetResponseBody());
+    if (value && value->IsType(base::Value::TYPE_DICTIONARY))
+      result.reset(static_cast<base::DictionaryValue*>(value));
+    else
+      DLOG(WARNING) << "Non-JSON response received from history server.";
+  }
+  return result.Pass();
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
@@ -310,12 +320,11 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
     const QueryOptions& options,
     const WebHistoryService::QueryWebHistoryCallback& callback) {
   // Wrap the original callback into a generic completion callback.
-  RequestImpl::CompletionCallback completion_callback = base::Bind(
+  CompletionCallback completion_callback = base::Bind(
       &WebHistoryService::QueryHistoryCompletionCallback, callback);
 
   GURL url = GetQueryUrl(text_query, options, server_version_info_);
-  scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, url, completion_callback));
+  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
   request->Start();
   return request.Pass();
 }
@@ -358,14 +367,13 @@ void WebHistoryService::ExpireHistory(
     url = net::AppendQueryParameter(url, "kvi", server_version_info_);
 
   // Wrap the original callback into a generic completion callback.
-  RequestImpl::CompletionCallback completion_callback =
+  CompletionCallback completion_callback =
       base::Bind(&WebHistoryService::ExpireHistoryCompletionCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback);
 
-  scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, url, completion_callback));
-  request->set_post_data(post_data);
+  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  request->SetPostData(post_data);
   request->Start();
   pending_expire_requests_.insert(request.release());
 }
@@ -382,6 +390,48 @@ void WebHistoryService::ExpireHistoryBetween(
   ExpireHistory(expire_list, callback);
 }
 
+void WebHistoryService::GetAudioHistoryEnabled(
+    const AudioWebHistoryCallback& callback) {
+  // Wrap the original callback into a generic completion callback.
+  CompletionCallback completion_callback =
+    base::Bind(&WebHistoryService::AudioHistoryCompletionCallback,
+    weak_ptr_factory_.GetWeakPtr(),
+    callback);
+
+  GURL url(kHistoryAudioHistoryUrl);
+  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  request->Start();
+  pending_audio_history_requests_.insert(request.release());
+}
+
+void WebHistoryService::SetAudioHistoryEnabled(
+  bool new_enabled_value,
+  const AudioWebHistoryCallback& callback) {
+  // Wrap the original callback into a generic completion callback.
+  CompletionCallback completion_callback =
+      base::Bind(&WebHistoryService::AudioHistoryCompletionCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback);
+
+  GURL url(kHistoryAudioHistoryChangeUrl);
+  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+
+  base::DictionaryValue enable_audio_history;
+  enable_audio_history.SetBoolean("enable_history_recording",
+                                  new_enabled_value);
+  enable_audio_history.SetString("client", "audio");
+  std::string post_data;
+  base::JSONWriter::Write(&enable_audio_history, &post_data);
+  request->SetPostData(post_data);
+
+  request->Start();
+  pending_audio_history_requests_.insert(request.release());
+}
+
+size_t WebHistoryService::GetNumberOfPendingAudioHistoryRequests() {
+  return pending_audio_history_requests_.size();
+}
+
 // static
 void WebHistoryService::QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
@@ -389,7 +439,7 @@ void WebHistoryService::QueryHistoryCompletionCallback(
     bool success) {
   scoped_ptr<base::DictionaryValue> response_value;
   if (success)
-    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+    response_value = ReadResponse(request);
   callback.Run(request, response_value.get());
 }
 
@@ -399,7 +449,7 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     bool success) {
   scoped_ptr<base::DictionaryValue> response_value;
   if (success) {
-    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+    response_value = ReadResponse(request);
     if (response_value)
       response_value->GetString("version_info", &server_version_info_);
   }
@@ -407,6 +457,23 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
   // Clean up from pending requests.
   pending_expire_requests_.erase(request);
   delete request;
+}
+
+void WebHistoryService::AudioHistoryCompletionCallback(
+    const WebHistoryService::AudioWebHistoryCallback& callback,
+    WebHistoryService::Request* request,
+    bool success) {
+  pending_audio_history_requests_.erase(request);
+  scoped_ptr<WebHistoryService::Request> request_ptr(request);
+
+  scoped_ptr<base::DictionaryValue> response_value;
+  bool enabled_value = false;
+  if (success) {
+    response_value = ReadResponse(request_ptr.get());
+    if (response_value)
+      response_value->GetBoolean("history_recording_enabled", &enabled_value);
+  }
+  callback.Run(success, enabled_value);
 }
 
 }  // namespace history

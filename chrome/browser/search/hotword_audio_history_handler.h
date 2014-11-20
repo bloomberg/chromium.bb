@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SEARCH_HOTWORD_AUDIO_HISTORY_HANDLER_H_
 #define CHROME_BROWSER_SEARCH_HOTWORD_AUDIO_HISTORY_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "content/public/browser/browser_context.h"
 
@@ -18,19 +19,20 @@ class HotwordAudioHistoryHandler {
   explicit HotwordAudioHistoryHandler(content::BrowserContext* context);
   ~HotwordAudioHistoryHandler();
 
-  // Returns the current preference value based on the user's account info
+  // Updates the current preference value based on the user's account info
   // or false if the user is not signed in.
-  // TODO(rlp): Determine return value -- pref value or success?
-  bool GetAudioHistoryEnabled();
+  void GetAudioHistoryEnabled();
 
- private:
   // Sets the user's global pref value for enabling audio history.
   void SetAudioHistoryEnabled(const bool enabled);
 
-  void OnAudioHistoryEnabledChanged(const std::string& pref_name);
+ private:
+  // Callback called upon completion of the web history request.
+  void AudioHistoryComplete(bool success, bool new_enabled_value);
 
   Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
+
+  base::WeakPtrFactory<HotwordAudioHistoryHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordAudioHistoryHandler);
 };

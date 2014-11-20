@@ -5,17 +5,15 @@
 #include "chrome/browser/search/hotword_audio_history_handler.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/history/web_history_service.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
 HotwordAudioHistoryHandler::HotwordAudioHistoryHandler(
     content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-    prefs::kHotwordAudioHistoryEnabled,
-    base::Bind(&HotwordAudioHistoryHandler::OnAudioHistoryEnabledChanged,
-    base::Unretained(this)));
+    : profile_(Profile::FromBrowserContext(context)),
+      weak_factory_(this) {
 
   // Poll for current value on init which should happen on first use by
   // way of the hotword service init.
@@ -25,19 +23,36 @@ HotwordAudioHistoryHandler::HotwordAudioHistoryHandler(
 HotwordAudioHistoryHandler::~HotwordAudioHistoryHandler() {
 }
 
-bool HotwordAudioHistoryHandler::GetAudioHistoryEnabled() {
-  // TODO(rlp): fill in.
-  return false;
+void HotwordAudioHistoryHandler::GetAudioHistoryEnabled() {
+  history::WebHistoryService* web_history =
+    WebHistoryServiceFactory::GetForProfile(profile_);
+  if (web_history) {
+    web_history->GetAudioHistoryEnabled(
+        base::Bind(&HotwordAudioHistoryHandler::AudioHistoryComplete,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    // If web_history is null, the user is not signed in.
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->SetBoolean(prefs::kHotwordAudioHistoryEnabled, false);
+  }
 }
 
 void HotwordAudioHistoryHandler::SetAudioHistoryEnabled(const bool enabled) {
-  // TODO(rlp): fill in.
+  history::WebHistoryService* web_history =
+  WebHistoryServiceFactory::GetForProfile(profile_);
+  if (web_history) {
+    web_history->SetAudioHistoryEnabled(
+        enabled,
+        base::Bind(&HotwordAudioHistoryHandler::AudioHistoryComplete,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
-void HotwordAudioHistoryHandler::OnAudioHistoryEnabledChanged(
-    const std::string& pref_name) {
-  DCHECK(pref_name == std::string(prefs::kHotwordAudioHistoryEnabled));
-
+void HotwordAudioHistoryHandler::AudioHistoryComplete(
+  bool success, bool new_enabled_value) {
   PrefService* prefs = profile_->GetPrefs();
-  SetAudioHistoryEnabled(prefs->GetBoolean(prefs::kHotwordAudioHistoryEnabled));
+  // Set preference to false if the call was not successful to err on the safe
+  // side.
+  prefs->SetBoolean(prefs::kHotwordAudioHistoryEnabled,
+                    success && new_enabled_value);
 }

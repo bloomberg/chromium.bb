@@ -36,7 +36,19 @@ class WebHistoryService : public KeyedService {
 
     // Returns true if the request is "pending" (i.e., it has been started, but
     // is not yet been complete).
-    virtual bool is_pending() = 0;
+    virtual bool IsPending() = 0;
+
+    // Returns the response code received from the server, which will only be
+    // valid if the request succeeded.
+    virtual int GetResponseCode() = 0;
+
+    // Returns the contents of the response body received from the server.
+    virtual const std::string& GetResponseBody() = 0;
+
+    virtual void SetPostData(const std::string& post_data) = 0;
+
+    // Tells the request to begin.
+    virtual void Start() = 0;
 
    protected:
     Request();
@@ -49,6 +61,11 @@ class WebHistoryService : public KeyedService {
       QueryWebHistoryCallback;
 
   typedef base::Callback<void(bool success)> ExpireWebHistoryCallback;
+
+  typedef base::Callback<void(bool success, bool new_enabled_value)>
+      AudioWebHistoryCallback;
+
+  typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
   explicit WebHistoryService(Profile* profile);
   ~WebHistoryService() override;
@@ -76,7 +93,27 @@ class WebHistoryService : public KeyedService {
                             base::Time end_time,
                             const ExpireWebHistoryCallback& callback);
 
- private:
+  // Requests whether audio history recording is enabled.
+  void GetAudioHistoryEnabled(const AudioWebHistoryCallback& callback);
+
+  // Sets the state of audio history recording to |new_enabled_value|.
+  void SetAudioHistoryEnabled(bool new_enabled_value,
+                              const AudioWebHistoryCallback& callback);
+
+  // Used for tests.
+  size_t GetNumberOfPendingAudioHistoryRequests();
+
+ protected:
+  // This function is pulled out for testing purposes. Caller takes ownership of
+  // the new Request.
+  virtual Request* CreateRequest(const GURL& url,
+                                 const CompletionCallback& callback);
+
+  // Extracts a JSON-encoded HTTP response into a DictionaryValue.
+  // If |request|'s HTTP response code indicates failure, or if the response
+  // body is not JSON, a null pointer is returned.
+  static scoped_ptr<base::DictionaryValue> ReadResponse(Request* request);
+
   // Called by |request| when a web history query has completed. Unpacks the
   // response and calls |callback|, which is the original callback that was
   // passed to QueryHistory().
@@ -93,6 +130,17 @@ class WebHistoryService : public KeyedService {
       WebHistoryService::Request* request,
       bool success);
 
+  // Called by |request| when a request to get or set audio history from the
+  // server has completed. Unpacks the response and calls |callback|, which is
+  // the original callback that was passed to AudioHistory().
+  void AudioHistoryCompletionCallback(
+    const WebHistoryService::AudioWebHistoryCallback& callback,
+    WebHistoryService::Request* request,
+    bool success);
+
+ private:
+  friend class WebHistoryServiceTest;
+
   Profile* profile_;
 
   // Stores the version_info token received from the server in response to
@@ -103,6 +151,9 @@ class WebHistoryService : public KeyedService {
   // Pending expiration requests to be canceled if not complete by profile
   // shutdown.
   std::set<Request*> pending_expire_requests_;
+
+  // Pending requests to be canceled if not complete by profile shutdown.
+  std::set<Request*> pending_audio_history_requests_;
 
   base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 
