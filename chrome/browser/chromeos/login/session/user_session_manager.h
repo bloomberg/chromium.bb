@@ -142,6 +142,9 @@ class UserSessionManager
   // and start certificate loader with it.
   void InitializeCerts(Profile* profile);
 
+  // Starts loading CRL set.
+  void InitializeCRLSetFetcher(const user_manager::User* user);
+
   // Invoked when the user is logging in for the first time, or is logging in to
   // an ephemeral session type, such as guest or a public session.
   void SetFirstLoginPrefs(Profile* profile,
@@ -280,9 +283,6 @@ class UserSessionManager
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
-
-  // Starts loading CRL set.
-  void InitializeCRLSetFetcher(const user_manager::User* user);
 
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(

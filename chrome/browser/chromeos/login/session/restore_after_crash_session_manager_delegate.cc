@@ -37,8 +37,10 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
   if (command_line->HasSwitch(chromeos::switches::kLoginUser)) {
     // This is done in SessionManager::OnProfileCreated during normal login.
     UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     user_session_mgr->InitRlz(profile());
     user_session_mgr->InitializeCerts(profile());
+    user_session_mgr->InitializeCRLSetFetcher(user_manager->GetActiveUser());
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
@@ -48,7 +50,7 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
         content::Details<Profile>(profile()));
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
-    user_manager::UserManager::Get()->SessionStarted();
+    user_manager->SessionStarted();
 
     // Now is the good time to retrieve other logged in users for this session.
     // First user has been already marked as logged in and active in
