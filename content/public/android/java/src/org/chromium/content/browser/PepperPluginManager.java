@@ -96,8 +96,8 @@ public class PepperPluginManager {
         for (ResolveInfo info : plugins) {
             // Retrieve the plugin's service information.
             ServiceInfo serviceInfo = info.serviceInfo;
-            if (serviceInfo == null || serviceInfo.metaData == null ||
-                    serviceInfo.packageName == null) {
+            if (serviceInfo == null || serviceInfo.metaData == null
+                    || serviceInfo.packageName == null) {
                 Log.e(LOGTAG, "Can't get service information from " + info);
                 continue;
             }
@@ -110,8 +110,8 @@ public class PepperPluginManager {
                 Log.e(LOGTAG, "Can't find plugin: " + serviceInfo.packageName);
                 continue;
             }
-            if (pkgInfo == null ||
-                    (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+            if (pkgInfo == null
+                    || (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
                 continue;
             }
             Log.i(LOGTAG, "The given plugin package is preloaded: " + serviceInfo.packageName);

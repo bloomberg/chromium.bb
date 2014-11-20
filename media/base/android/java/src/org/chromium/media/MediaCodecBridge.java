@@ -227,8 +227,8 @@ class MediaCodecBridge {
                 codecName = mediaCodec.getName();
                 mediaCodec.release();
             } catch (Exception e) {
-                Log.w(TAG, "getDefaultCodecName: Failed to create MediaCodec: " +
-                        mime + ", direction: " + direction, e);
+                Log.w(TAG, "getDefaultCodecName: Failed to create MediaCodec: "
+                        + mime + ", direction: " + direction, e);
             }
         }
         return codecName;
@@ -688,8 +688,8 @@ class MediaCodecBridge {
         }
         int size = mAudioTrack.write(buf, 0, buf.length);
         if (buf.length != size) {
-            Log.i(TAG, "Failed to send all data to audio output, expected size: " +
-                    buf.length + ", actual size: " + size);
+            Log.i(TAG, "Failed to send all data to audio output, expected size: "
+                    + buf.length + ", actual size: " + size);
         }
         // TODO(qinmin): Returning the head position allows us to estimate
         // the current presentation time in native code. However, it is

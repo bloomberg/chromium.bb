@@ -208,8 +208,8 @@ public class CallbackHelper {
         synchronized (mLock) {
             final long startTime = SystemClock.uptimeMillis();
             boolean isSatisfied = criteria.isSatisfied();
-            while (!isSatisfied &&
-                    SystemClock.uptimeMillis() - startTime < unit.toMillis(timeout)) {
+            while (!isSatisfied
+                    && SystemClock.uptimeMillis() - startTime < unit.toMillis(timeout)) {
                 mLock.wait(unit.toMillis(timeout));
                 isSatisfied = criteria.isSatisfied();
             }

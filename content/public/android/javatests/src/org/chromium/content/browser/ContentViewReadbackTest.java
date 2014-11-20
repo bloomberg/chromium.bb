@@ -37,8 +37,8 @@ public class ContentViewReadbackTest extends ContentShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(
-                "<html style=\"background: #00f;\"><head><style>body { height: 5000px; }</style>" +
-                "</head></html>"));
+                "<html style=\"background: #00f;\"><head><style>body { height: 5000px; }</style>"
+                        + "</head></html>"));
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
     }
 

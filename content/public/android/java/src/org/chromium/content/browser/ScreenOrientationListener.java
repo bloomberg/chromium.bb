@@ -231,9 +231,9 @@ public class ScreenOrientationListener {
     }
 
     private ScreenOrientationListener() {
-        mBackend = Build.VERSION.SDK_INT >= 17 ?
-                new ScreenOrientationDisplayListener() :
-                new ScreenOrientationConfigurationListener();
+        mBackend = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
+                ? new ScreenOrientationDisplayListener()
+                : new ScreenOrientationConfigurationListener();
     }
 
     /**

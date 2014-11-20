@@ -64,12 +64,11 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
                 "<html><body><iframe></iframe></body></html>", "text/html", false);
         // In case there is anything wrong with the JS wrapper, an attempt
         // to look up its properties will result in an exception being thrown.
-        String script =
-                "(function(){ try {" +
-                "  return typeof testController.setStringValue;" +
-                "} catch (e) {" +
-                "  return e.toString();" +
-                "} })()";
+        String script = "(function(){ try {"
+                + "  return typeof testController.setStringValue;"
+                + "} catch (e) {"
+                + "  return e.toString();"
+                + "} })()";
         assertEquals("\"function\"",
                 executeJavaScriptAndGetResult(getWebContents(), script));
         // Make sure calling a method also works.
@@ -86,15 +85,15 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
         // Test by setting a custom property on the parent page's injected
         // object and then checking that child frame doesn't see the property.
         loadDataSync(getWebContents().getNavigationController(),
-                "<html><head>" +
-                "<script>" +
-                "  window.wProperty = 42;" +
-                "  testController.tcProperty = 42;" +
-                "  function queryProperties(w) {" +
-                "    return w.wProperty + ' / ' + w.testController.tcProperty;" +
-                "  }" +
-                "</script>" +
-                "</head><body><iframe></iframe></body></html>", "text/html", false);
+                "<html><head>"
+                        + "<script>"
+                        + "  window.wProperty = 42;"
+                        + "  testController.tcProperty = 42;"
+                        + "  function queryProperties(w) {"
+                        + "    return w.wProperty + ' / ' + w.testController.tcProperty;"
+                        + "  }"
+                        + "</script>"
+                        + "</head><body><iframe></iframe></body></html>", "text/html", false);
         assertEquals("\"42 / 42\"",
                 executeJavaScriptAndGetResult(getWebContents(), "queryProperties(window)"));
         assertEquals("\"undefined / undefined\"",

@@ -53,9 +53,8 @@ public class LocalizationUtils {
         if (sIsLayoutRtl == null) {
             Configuration configuration =
                     ApplicationStatus.getApplicationContext().getResources().getConfiguration();
-            sIsLayoutRtl = Boolean.valueOf(
-                    ApiCompatibilityUtils.getLayoutDirection(configuration) ==
-                    View.LAYOUT_DIRECTION_RTL);
+            sIsLayoutRtl = Boolean.valueOf(ApiCompatibilityUtils.getLayoutDirection(configuration)
+                    == View.LAYOUT_DIRECTION_RTL);
         }
 
         return sIsLayoutRtl.booleanValue();

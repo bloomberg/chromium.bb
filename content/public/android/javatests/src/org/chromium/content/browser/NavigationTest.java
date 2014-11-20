@@ -105,9 +105,9 @@ public class NavigationTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"Navigation"})
     public void testPageReload() throws Throwable {
-        final String htmlLoadTime = "<html><head>" +
-                "<script type=\"text/javascript\">var loadTimestamp = new Date().getTime();" +
-                "function getLoadtime() { return loadTimestamp; }</script></head></html>";
+        final String htmlLoadTime = "<html><head>"
+                + "<script type=\"text/javascript\">var loadTimestamp = new Date().getTime();"
+                + "function getLoadtime() { return loadTimestamp; }</script></head></html>";
         final String urlLoadTime = UrlUtils.encodeHtmlDataUri(htmlLoadTime);
 
         ContentShellActivity activity = launchContentShellWithUrl(urlLoadTime);

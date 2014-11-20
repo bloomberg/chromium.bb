@@ -51,8 +51,8 @@ public class ContentSettings {
      */
     public boolean getJavaScriptEnabled() {
         ThreadUtils.assertOnUiThread();
-        return mNativeContentSettings != 0 ?
-                nativeGetJavaScriptEnabled(mNativeContentSettings) : false;
+        return mNativeContentSettings != 0
+                ? nativeGetJavaScriptEnabled(mNativeContentSettings) : false;
     }
 
     // Initialize the ContentSettings native side.

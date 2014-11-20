@@ -123,8 +123,8 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             signature.update(message);
             return signature.sign();
         } catch (Exception e) {
-            Log.e(TAG, "Exception while signing message with " + javaKey.getAlgorithm() +
-                        " private key: " + e);
+            Log.e(TAG, "Exception while signing message with " + javaKey.getAlgorithm()
+                    + " private key: " + e);
             return null;
         }
     }
@@ -170,8 +170,8 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             // This may happen if the PrivateKey was not created by the "AndroidOpenSSL"
             // provider, which should be the default. That could happen if an OEM decided
             // to implement a different default provider. Also highly unlikely.
-            Log.e(TAG, "Private key is not an OpenSSLRSAPrivateKey instance, its class name is:" +
-                       javaKey.getClass().getCanonicalName());
+            Log.e(TAG, "Private key is not an OpenSSLRSAPrivateKey instance, its class name is:"
+                    + javaKey.getClass().getCanonicalName());
             return null;
         }
 
@@ -284,8 +284,8 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             }
             // Sanity-check the returned engine.
             if (!engineClass.isInstance(engine)) {
-                Log.e(TAG, "Engine is not an OpenSSLEngine instance, its class name is:" +
-                        engine.getClass().getCanonicalName());
+                Log.e(TAG, "Engine is not an OpenSSLEngine instance, its class name is:"
+                        + engine.getClass().getCanonicalName());
                 return null;
             }
             return engine;

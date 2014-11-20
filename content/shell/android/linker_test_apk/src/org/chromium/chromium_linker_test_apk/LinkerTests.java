@@ -38,8 +38,8 @@ public class LinkerTests implements Linker.TestRunner {
                     checkSharedRelro = true;
                     break;
                 default:
-                    Log.e(TAG, "Invalid shared RELRO linker configuration: " +
-                            Linker.BROWSER_SHARED_RELRO_CONFIG);
+                    Log.e(TAG, "Invalid shared RELRO linker configuration: "
+                            + Linker.BROWSER_SHARED_RELRO_CONFIG);
                     return false;
             }
         } else {

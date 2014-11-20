@@ -65,8 +65,8 @@ public class SessionConnector implements JniInterface.ConnectionListener,
     @Override
     public void onConnectionState(JniInterface.ConnectionListener.State state,
             JniInterface.ConnectionListener.Error error) {
-        if (state == JniInterface.ConnectionListener.State.FAILED &&
-                error == JniInterface.ConnectionListener.Error.PEER_IS_OFFLINE) {
+        if (state == JniInterface.ConnectionListener.State.FAILED
+                && error == JniInterface.ConnectionListener.Error.PEER_IS_OFFLINE) {
             // The host is offline, which may mean the JID is out of date, so refresh the host list
             // and try to connect again.
             reloadHostListAndConnect();

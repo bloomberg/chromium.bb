@@ -41,8 +41,8 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 case ScreenOrientationValues.PORTRAIT_PRIMARY:
                     return mObserver.mOrientation == 0;
                 case ScreenOrientationValues.PORTRAIT_SECONDARY:
-                    return mObserver.mOrientation == 180 ||
-                           (ALLOW_0_FOR_180 && mObserver.mOrientation == 0);
+                    return mObserver.mOrientation == 180
+                            || (ALLOW_0_FOR_180 && mObserver.mOrientation == 0);
                 case ScreenOrientationValues.LANDSCAPE_PRIMARY:
                     return mObserver.mOrientation == 90;
                 case ScreenOrientationValues.LANDSCAPE_SECONDARY:
@@ -66,8 +66,8 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 case ScreenOrientationValues.LANDSCAPE_PRIMARY:
                     return mObserver.mOrientation == 0;
                 case ScreenOrientationValues.LANDSCAPE_SECONDARY:
-                    return mObserver.mOrientation == 180 ||
-                           (ALLOW_0_FOR_180 && mObserver.mOrientation == 0);
+                    return mObserver.mOrientation == 180
+                            || (ALLOW_0_FOR_180 && mObserver.mOrientation == 0);
                 case ScreenOrientationValues.PORTRAIT:
                     return mObserver.mOrientation == 90 || mObserver.mOrientation == -90;
                 case ScreenOrientationValues.LANDSCAPE:
@@ -184,18 +184,18 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY));
 
-        lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY |
-                ScreenOrientationValues.PORTRAIT_SECONDARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY |
-                ScreenOrientationValues.PORTRAIT_SECONDARY));
+        lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY
+                | ScreenOrientationValues.PORTRAIT_SECONDARY);
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY
+                | ScreenOrientationValues.PORTRAIT_SECONDARY));
 
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_SECONDARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_SECONDARY));
 
-        lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY |
-                ScreenOrientationValues.PORTRAIT_SECONDARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY |
-                ScreenOrientationValues.PORTRAIT_SECONDARY));
+        lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY
+                | ScreenOrientationValues.PORTRAIT_SECONDARY);
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY
+                | ScreenOrientationValues.PORTRAIT_SECONDARY));
     }
 
     @MediumTest
@@ -204,18 +204,18 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
 
-        lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                ScreenOrientationValues.LANDSCAPE_SECONDARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                ScreenOrientationValues.LANDSCAPE_SECONDARY));
+        lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY
+                | ScreenOrientationValues.LANDSCAPE_SECONDARY);
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY
+                | ScreenOrientationValues.LANDSCAPE_SECONDARY));
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_SECONDARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
 
-        lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                ScreenOrientationValues.LANDSCAPE_SECONDARY);
-        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                ScreenOrientationValues.LANDSCAPE_SECONDARY));
+        lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY
+                | ScreenOrientationValues.LANDSCAPE_SECONDARY);
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY
+                | ScreenOrientationValues.LANDSCAPE_SECONDARY));
     }
 
     // There is no point in testing the case where we try to lock to

@@ -43,8 +43,8 @@ public class GtestLoggerTest {
                 Description.createTestDescription(GtestLoggerTest.class, "testTestFinishedPassed"),
                 true, 123);
         Assert.assertEquals(
-                "[       OK ] org.chromium.testing.local.GtestLoggerTest.testTestFinishedPassed" +
-                        " (123 ms)\n",
+                "[       OK ] org.chromium.testing.local.GtestLoggerTest.testTestFinishedPassed"
+                        + " (123 ms)\n",
                 actual.toString());
     }
 
@@ -56,8 +56,8 @@ public class GtestLoggerTest {
                 Description.createTestDescription(GtestLoggerTest.class, "testTestFinishedPassed"),
                 false, 123);
         Assert.assertEquals(
-                "[   FAILED ] org.chromium.testing.local.GtestLoggerTest.testTestFinishedPassed" +
-                        " (123 ms)\n",
+                "[   FAILED ] org.chromium.testing.local.GtestLoggerTest.testTestFinishedPassed"
+                        + " (123 ms)\n",
                 actual.toString());
     }
 
@@ -79,8 +79,8 @@ public class GtestLoggerTest {
         loggerUnderTest.testCaseFinished(
                 Description.createSuiteDescription(GtestLoggerTest.class), 456, 123);
         Assert.assertEquals(
-                "[----------] Run 456 test cases from org.chromium.testing.local.GtestLoggerTest" +
-                        " (123 ms)\n\n",
+                "[----------] Run 456 test cases from org.chromium.testing.local.GtestLoggerTest"
+                        + " (123 ms)\n\n",
                 actual.toString());
     }
 
@@ -90,8 +90,8 @@ public class GtestLoggerTest {
         GtestLogger loggerUnderTest = new GtestLogger(new PrintStream(actual));
         loggerUnderTest.testRunStarted(1234);
         Assert.assertEquals(
-                "[==========] Running 1234 tests.\n" +
-                "[----------] Global test environment set-up.\n\n",
+                "[==========] Running 1234 tests.\n"
+                        + "[----------] Global test environment set-up.\n\n",
                 actual.toString());
     }
 
@@ -101,9 +101,9 @@ public class GtestLoggerTest {
         GtestLogger loggerUnderTest = new GtestLogger(new PrintStream(actual));
         loggerUnderTest.testRunFinished(1234, new HashSet<Description>(), 4321);
         Assert.assertEquals(
-                "[----------] Global test environment tear-down.\n" +
-                "[==========] 1234 tests ran. (4321 ms total)\n" +
-                "[  PASSED  ] 1234 tests.\n",
+                "[----------] Global test environment tear-down.\n"
+                        + "[==========] 1234 tests ran. (4321 ms total)\n"
+                        + "[  PASSED  ] 1234 tests.\n",
                 actual.toString());
     }
 
@@ -120,13 +120,13 @@ public class GtestLoggerTest {
 
         loggerUnderTest.testRunFinished(1232, failures, 4312);
         Assert.assertEquals(
-                "[----------] Global test environment tear-down.\n" +
-                "[==========] 1234 tests ran. (4312 ms total)\n" +
-                "[  PASSED  ] 1232 tests.\n" +
-                "[  FAILED  ] 2 tests.\n" +
-                "[  FAILED  ] GtestLoggerTest.testTestRunFinishedNoFailures\n" +
-                "[  FAILED  ] GtestLoggerTest.testTestRunFinishedWithFailures\n" +
-                "\n",
+                "[----------] Global test environment tear-down.\n"
+                        + "[==========] 1234 tests ran. (4312 ms total)\n"
+                        + "[  PASSED  ] 1232 tests.\n"
+                        + "[  FAILED  ] 2 tests.\n"
+                        + "[  FAILED  ] GtestLoggerTest.testTestRunFinishedNoFailures\n"
+                        + "[  FAILED  ] GtestLoggerTest.testTestRunFinishedWithFailures\n"
+                        + "\n",
                 actual.toString());
     }
 

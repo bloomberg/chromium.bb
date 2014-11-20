@@ -289,9 +289,9 @@ public class AccountManagerHelper {
     private void onGotAuthTokenResult(Account account, String authTokenType, String authToken,
             GetAuthTokenCallback callback, AtomicInteger numTries, AtomicBoolean errorEncountered,
             ConnectionRetry retry) {
-        if (authToken != null || !errorEncountered.get() ||
-                numTries.incrementAndGet() == MAX_TRIES ||
-                !NetworkChangeNotifier.isInitialized()) {
+        if (authToken != null || !errorEncountered.get()
+                || numTries.incrementAndGet() == MAX_TRIES
+                || !NetworkChangeNotifier.isInitialized()) {
             callback.tokenAvailable(authToken);
             return;
         }

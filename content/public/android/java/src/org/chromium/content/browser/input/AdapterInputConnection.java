@@ -75,8 +75,8 @@ public class AdapterInputConnection extends BaseInputConnection {
             if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             }
-        } else if (inputType == ImeAdapter.sTextInputTypeTextArea ||
-                inputType == ImeAdapter.sTextInputTypeContentEditable) {
+        } else if (inputType == ImeAdapter.sTextInputTypeTextArea
+                || inputType == ImeAdapter.sTextInputTypeContentEditable) {
             // TextArea or contenteditable.
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
                     | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
@@ -197,10 +197,10 @@ public class AdapterInputConnection extends BaseInputConnection {
         int compositionStart = getComposingSpanStart(mEditable);
         int compositionEnd = getComposingSpanEnd(mEditable);
         // Avoid sending update if we sent an exact update already previously.
-        if (mLastUpdateSelectionStart == selectionStart &&
-                mLastUpdateSelectionEnd == selectionEnd &&
-                mLastUpdateCompositionStart == compositionStart &&
-                mLastUpdateCompositionEnd == compositionEnd) {
+        if (mLastUpdateSelectionStart == selectionStart
+                && mLastUpdateSelectionEnd == selectionEnd
+                && mLastUpdateCompositionStart == compositionStart
+                && mLastUpdateCompositionEnd == compositionEnd) {
             return;
         }
         if (DEBUG) {

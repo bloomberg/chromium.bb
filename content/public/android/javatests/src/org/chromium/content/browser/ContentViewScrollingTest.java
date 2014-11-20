@@ -24,13 +24,12 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
  */
 public class ContentViewScrollingTest extends ContentShellTestBase {
 
-    private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri(
-            "<html><head>" +
-            "<meta name=\"viewport\" content=\"width=device-width, " +
-            "initial-scale=2.0, maximum-scale=2.0\" />" +
-            "<style>body { width: 5000px; height: 5000px; }</style></head>" +
-            "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>" +
-            "</html>");
+    private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri("<html><head>"
+            + "<meta name=\"viewport\" content=\"width=device-width, "
+            + "initial-scale=2.0, maximum-scale=2.0\" />"
+            + "<style>body { width: 5000px; height: 5000px; }</style></head>"
+            + "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>"
+            + "</html>");
 
     /**
      * InternalAccessDelegate to ensure AccessibilityEvent notifications (Eg:TYPE_VIEW_SCROLLED)
@@ -108,12 +107,12 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
                 final int minThreshold = 5;
                 final int maxThreshold = 100;
 
-                boolean xCorrect = hugLeft ?
-                        getContentViewCore().getNativeScrollXForTest() < minThreshold :
-                        getContentViewCore().getNativeScrollXForTest() > maxThreshold;
-                boolean yCorrect = hugTop ?
-                        getContentViewCore().getNativeScrollYForTest() < minThreshold :
-                        getContentViewCore().getNativeScrollYForTest() > maxThreshold;
+                boolean xCorrect = hugLeft
+                        ? getContentViewCore().getNativeScrollXForTest() < minThreshold
+                        : getContentViewCore().getNativeScrollXForTest() > maxThreshold;
+                boolean yCorrect = hugTop
+                        ? getContentViewCore().getNativeScrollYForTest() < minThreshold
+                        : getContentViewCore().getNativeScrollYForTest() > maxThreshold;
                 return xCorrect && yCorrect;
             }
         }));

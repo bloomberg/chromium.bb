@@ -207,19 +207,18 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     private String makeHtmlPageOfSize(int widthCss, int heightCss, boolean heightPercent) {
         String content = "<div class=\"normal\">a</div>";
         if (heightPercent) content += "<div class=\"heightPercent\"></div>";
-        return CommonResources.makeHtmlPageFrom(
-            "<style type=\"text/css\">" +
-                "body { margin:0px; padding:0px; } " +
-                ".normal { " +
-                   "width:" + widthCss + "px; " +
-                   "height:" + heightCss + "px; " +
-                   "background-color: red; " +
-                 "} " +
-                 ".heightPercent { " +
-                   "height: 150%; " +
-                   "background-color: blue; " +
-                 "} " +
-            "</style>", content);
+        return CommonResources.makeHtmlPageFrom("<style type=\"text/css\">"
+                + "  body { margin:0px; padding:0px; } "
+                + "  .normal { "
+                + "    width:" + widthCss + "px; "
+                + "    height:" + heightCss + "px; "
+                + "    background-color: red; "
+                + "  } "
+                + "  .heightPercent { "
+                + "    height: 150%; "
+                + "    background-color: blue; "
+                + "  } "
+                + "</style>", content);
     }
 
     private void waitForContentSizeToChangeTo(OnContentSizeChangedHelper helper, int callCount,
@@ -227,8 +226,8 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int maxSizeChangeNotificationsToWaitFor = 5;
         for (int i = 1; i <= maxSizeChangeNotificationsToWaitFor; i++) {
             helper.waitForCallback(callCount, i);
-            if ((heightCss == -1 || helper.getHeight() == heightCss) &&
-                    (widthCss == -1 || helper.getWidth() == widthCss)) {
+            if ((heightCss == -1 || helper.getHeight() == heightCss)
+                    && (widthCss == -1 || helper.getWidth() == widthCss)) {
                 break;
             }
             // This means that we hit the max number of iterations but the expected contents size
@@ -282,16 +281,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int widthCss = 142;
         final int heightCss = 180;
 
-        final String htmlData = CommonResources.makeHtmlPageFrom(
-                "<style type=\"text/css\">" +
-                "  body { margin:0px; padding:0px; } " +
-                "  div { " +
-                "    position: absolute; " +
-                "    width:" + widthCss + "px; " +
-                "    height:" + heightCss + "px; " +
-                "    background-color: red; " +
-                "  } " +
-                "</style>", "<div>a</div>");
+        final String htmlData = CommonResources.makeHtmlPageFrom("<style type=\"text/css\">"
+                + "  body { margin:0px; padding:0px; } "
+                + "  div { "
+                + "    position: absolute; "
+                + "    width:" + widthCss + "px; "
+                + "    height:" + heightCss + "px; "
+                + "    background-color: red; "
+                + "  } "
+                + "</style>", "<div>a</div>");
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
         loadDataAsync(testContainerView.getAwContents(), htmlData, "text/html", false);

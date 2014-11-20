@@ -86,8 +86,8 @@ public class MemoryPressureListener {
     public static void maybeNotifyMemoryPresure(int level) {
         if (level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
             nativeOnMemoryPressure(MemoryPressureLevel.CRITICAL);
-        } else if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ||
-                level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
+        } else if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND
+                || level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
             // Don't notifiy on TRIM_MEMORY_UI_HIDDEN, since this class only
             // dispatches actionable memory pressure signals to native.
             nativeOnMemoryPressure(MemoryPressureLevel.MODERATE);

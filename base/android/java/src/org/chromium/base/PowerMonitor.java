@@ -31,11 +31,11 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
     // would be too aggressive. An Android activity can be in the "paused" state quite often. This
     // can happen when a dialog window shows up for instance.
     private static final Runnable sSuspendTask = new Runnable() {
-            @Override
-            public void run() {
-                nativeOnMainActivitySuspended();
-            }
-        };
+        @Override
+        public void run() {
+            nativeOnMainActivitySuspended();
+        }
+    };
 
     public static void createForTests(Context context) {
         // Applications will create this once the JNI side has been fully wired up both sides. For
@@ -71,8 +71,8 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
         }
         int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         // If we're not plugged, assume we're running on battery power.
-        sInstance.mIsBatteryPower = chargePlug != BatteryManager.BATTERY_PLUGGED_USB &&
-                                    chargePlug != BatteryManager.BATTERY_PLUGGED_AC;
+        sInstance.mIsBatteryPower = chargePlug != BatteryManager.BATTERY_PLUGGED_USB
+                && chargePlug != BatteryManager.BATTERY_PLUGGED_AC;
         nativeOnBatteryChargingChanged();
     }
 

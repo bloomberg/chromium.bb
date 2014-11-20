@@ -73,8 +73,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         Intent chooser = new Intent(Intent.ACTION_CHOOSER);
         Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Context context = window.getApplicationContext();
-        camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        camera.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 mCameraOutputUri = ContentUriUtils.getContentUriFromFile(
@@ -171,8 +171,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         } else {
             File externalDataDir = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DCIM);
-            path = new File(externalDataDir.getAbsolutePath() +
-                    File.separator + CAPTURE_IMAGE_DIRECTORY);
+            path = new File(externalDataDir.getAbsolutePath()
+                    + File.separator + CAPTURE_IMAGE_DIRECTORY);
             if (!path.exists() && !path.mkdirs()) {
                 path = externalDataDir;
             }
@@ -205,8 +205,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
             // If the uri is a file, we need to convert it to the absolute path or otherwise
             // android cannot handle it correctly on some earlier versions.
             // http://crbug.com/423338.
-            String path = ContentResolver.SCHEME_FILE.equals(mCameraOutputUri.getScheme()) ?
-                    mCameraOutputUri.getPath() : mCameraOutputUri.toString();
+            String path = ContentResolver.SCHEME_FILE.equals(mCameraOutputUri.getScheme())
+                    ? mCameraOutputUri.getPath() : mCameraOutputUri.toString();
             nativeOnFileSelected(mNativeSelectFileDialog, path,
                     mCameraOutputUri.getLastPathSegment());
             // Broadcast to the media scanner that there's a new photo on the device so it will
@@ -220,9 +220,8 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         // Path for when EXTRA_ALLOW_MULTIPLE Intent extra has been defined. Each of the selected
         // files will be shared as an entry on the Intent's ClipData. This functionality is only
         // available in Android JellyBean MR2 and higher.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 &&
-                results.getData() == null &&
-                results.getClipData() != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                && results.getData() == null && results.getClipData() != null) {
             ClipData clipData = results.getClipData();
 
             int itemCount = clipData.getItemCount();

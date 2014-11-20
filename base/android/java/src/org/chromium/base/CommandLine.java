@@ -86,7 +86,7 @@ public abstract class CommandLine {
     }
 
     private static final AtomicReference<CommandLine> sCommandLine =
-        new AtomicReference<CommandLine>();
+            new AtomicReference<CommandLine>();
 
     /**
      * @returns true if the command line has already been initialized.
@@ -149,8 +149,8 @@ public abstract class CommandLine {
         char currentQuote = noQuote;
         for (char c : buffer) {
             // Detect start or end of quote block.
-            if ((currentQuote == noQuote && (c == singleQuote || c == doubleQuote)) ||
-                c == currentQuote) {
+            if ((currentQuote == noQuote && (c == singleQuote || c == doubleQuote))
+                    || c == currentQuote) {
                 if (arg != null && arg.length() > 0 && arg.charAt(arg.length() - 1) == '\\') {
                     // Last char was a backslash; pop it, and treat c as a literal.
                     arg.setCharAt(arg.length() - 1, c);

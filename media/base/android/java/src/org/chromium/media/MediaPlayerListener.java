@@ -103,8 +103,8 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
-                focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
+                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
             nativeOnMediaInterrupted(mNativeMediaPlayerListener);
         }
     }

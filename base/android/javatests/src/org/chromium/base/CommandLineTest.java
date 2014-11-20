@@ -113,8 +113,8 @@ public class CommandLineTest extends InstrumentationTestCase {
         toParse = " \t\n";
         checkTokenizer(expected, toParse);
 
-        toParse = " \"a'b\" 'c\"d' \"e\\\"f\" 'g\\'h' \"i\\'j\" 'k\\\"l'" +
-                  " m\"n\\'o\"p q'r\\\"s't";
+        toParse = " \"a'b\" 'c\"d' \"e\\\"f\" 'g\\'h' \"i\\'j\" 'k\\\"l'"
+                + " m\"n\\'o\"p q'r\\\"s't";
         expected = new String[] { "a'b",
                                   "c\"d",
                                   "e\"f",

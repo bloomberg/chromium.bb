@@ -372,8 +372,8 @@ public class X509Util {
 
             // If the subject and public key match, this is a system root.
             X509Certificate anchorX509 = (X509Certificate) anchor;
-            if (root.getSubjectX500Principal().equals(anchorX509.getSubjectX500Principal()) &&
-                    root.getPublicKey().equals(anchorX509.getPublicKey())) {
+            if (root.getSubjectX500Principal().equals(anchorX509.getSubjectX500Principal())
+                    && root.getPublicKey().equals(anchorX509.getPublicKey())) {
                 sSystemTrustAnchorCache.add(key);
                 return true;
             }
@@ -405,10 +405,10 @@ public class X509Util {
         if (ekuOids == null) return true;
 
         for (String ekuOid : ekuOids) {
-            if (ekuOid.equals(OID_TLS_SERVER_AUTH) ||
-                    ekuOid.equals(OID_ANY_EKU) ||
-                    ekuOid.equals(OID_SERVER_GATED_NETSCAPE) ||
-                    ekuOid.equals(OID_SERVER_GATED_MICROSOFT)) {
+            if (ekuOid.equals(OID_TLS_SERVER_AUTH)
+                    || ekuOid.equals(OID_ANY_EKU)
+                    || ekuOid.equals(OID_SERVER_GATED_NETSCAPE)
+                    || ekuOid.equals(OID_SERVER_GATED_MICROSOFT)) {
                 return true;
             }
         }
@@ -421,8 +421,8 @@ public class X509Util {
                                                                    String host)
             throws KeyStoreException, NoSuchAlgorithmException {
         if (certChain == null || certChain.length == 0 || certChain[0] == null) {
-            throw new IllegalArgumentException("Expected non-null and non-empty certificate " +
-                    "chain passed as |certChain|. |certChain|=" + Arrays.deepToString(certChain));
+            throw new IllegalArgumentException("Expected non-null and non-empty certificate "
+                    + "chain passed as |certChain|. |certChain|=" + Arrays.deepToString(certChain));
         }
 
 
@@ -475,8 +475,8 @@ public class X509Util {
                 } catch (CertificateException eTestManager) {
                     // Neither of the trust managers confirms the validity of the certificate chain,
                     // log the error message returned by the system trust manager.
-                    Log.i(TAG, "Failed to validate the certificate chain, error: " +
-                              eDefaultManager.getMessage());
+                    Log.i(TAG, "Failed to validate the certificate chain, error: "
+                            + eDefaultManager.getMessage());
                     return new AndroidCertVerifyResult(
                             CertVerifyStatusAndroid.NO_TRUSTED_ROOT);
                 }

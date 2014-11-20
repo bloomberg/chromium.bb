@@ -190,10 +190,10 @@ class AudioRecordInput {
 
             if (DEBUG) {
                 Descriptor descriptor = mAEC.getDescriptor();
-                Log.d(TAG, "AcousticEchoCanceler " +
-                        "name: " + descriptor.name + ", " +
-                        "implementor: " + descriptor.implementor + ", " +
-                        "uuid: " + descriptor.uuid);
+                Log.d(TAG, "AcousticEchoCanceler "
+                        + "name: " + descriptor.name + ", "
+                        + "implementor: " + descriptor.implementor + ", "
+                        + "uuid: " + descriptor.uuid);
             }
         }
         return true;

@@ -27,8 +27,8 @@ import java.util.concurrent.Callable;
  */
 public class ClipboardTest extends ContentShellTestBase {
     private static final String TEST_PAGE_DATA_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><body>Hello, <a href=\"http://www.example.com/\">world</a>, how <b> " +
-            "Chromium</b> doing today?</body></html>");
+            "<html><body>Hello, <a href=\"http://www.example.com/\">world</a>, how <b> "
+                    + "Chromium</b> doing today?</body></html>");
 
     private static final String EXPECTED_TEXT_RESULT = "Hello, world, how Chromium doing today?";
 

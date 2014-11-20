@@ -42,11 +42,11 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
 
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        info.setMovementGranularities(AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER |
-                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD |
-                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE |
-                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PARAGRAPH |
-                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PAGE);
+        info.setMovementGranularities(AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PARAGRAPH
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_PAGE);
         info.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
         info.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
         info.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
@@ -57,11 +57,11 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
 
     @Override
     public boolean supportsAccessibilityAction(int action) {
-        if (action == AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY ||
-                action == AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY ||
-                action == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT ||
-                action == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT ||
-                action == AccessibilityNodeInfo.ACTION_CLICK) {
+        if (action == AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
+                || action == AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY
+                || action == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT
+                || action == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT
+                || action == AccessibilityNodeInfo.ACTION_CLICK) {
             return true;
         }
 
@@ -70,8 +70,8 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
 
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
-        if (!accessibilityIsAvailable() || !mContentViewCore.isAlive() ||
-                !mInjectedScriptEnabled || !mScriptInjected) {
+        if (!accessibilityIsAvailable() || !mContentViewCore.isAlive()
+                || !mInjectedScriptEnabled || !mScriptInjected) {
             return false;
         }
 
@@ -126,13 +126,13 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
         try {
             mAccessibilityJSONObject.accumulate("action", action);
             if (arguments != null) {
-                if (action == AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY ||
-                        action == AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY) {
+                if (action == AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY || action
+                        == AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY) {
                     final int granularity = arguments.getInt(
                             AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT);
                     mAccessibilityJSONObject.accumulate("granularity", granularity);
-                } else if (action == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT ||
-                        action == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT) {
+                } else if (action == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT
+                        || action == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT) {
                     final String element = arguments.getString(
                             AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                     mAccessibilityJSONObject.accumulate("element", element);
@@ -149,16 +149,15 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
     }
 
     private static class CallbackHandler {
-        private static final String JAVASCRIPT_ACTION_TEMPLATE =
-                "(function() {" +
-                "  retVal = false;" +
-                "  try {" +
-                "    retVal = %s;" +
-                "  } catch (e) {" +
-                "    retVal = false;" +
-                "  }" +
-                "  %s.onResult(%d, retVal);" +
-                "})()";
+        private static final String JAVASCRIPT_ACTION_TEMPLATE = "(function() {"
+                + "  retVal = false;"
+                + "  try {"
+                + "    retVal = %s;"
+                + "  } catch (e) {"
+                + "    retVal = false;"
+                + "  }"
+                + "  %s.onResult(%d, retVal);"
+                + "})()";
 
         // Time in milliseconds to wait for a result before failing.
         private static final long RESULT_TIMEOUT = 5000;

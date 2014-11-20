@@ -195,7 +195,7 @@ public class MediaPlayerBridge {
         return true;
     }
 
-    private class LoadDataUriTask extends AsyncTask <Void, Void, Boolean> {
+    private class LoadDataUriTask extends AsyncTask<Void, Void, Boolean> {
         private final String mData;
         private final Context mContext;
         private File mTempFile;

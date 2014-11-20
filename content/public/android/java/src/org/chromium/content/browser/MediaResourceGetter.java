@@ -272,9 +272,8 @@ class MediaResourceGetter {
      */
     @VisibleForTesting
     boolean isNetworkReliable(Context context) {
-        if (context.checkCallingOrSelfPermission(
-                android.Manifest.permission.ACCESS_NETWORK_STATE) !=
-                PackageManager.PERMISSION_GRANTED) {
+        if (context.checkCallingOrSelfPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "permission denied to access network state");
             return false;
         }
@@ -342,8 +341,8 @@ class MediaResourceGetter {
      */
     @VisibleForTesting
     static boolean androidDeviceOk(final String model, final int sdkVersion) {
-        return !("GT-I9100".contentEquals(model) &&
-                 sdkVersion < android.os.Build.VERSION_CODES.JELLY_BEAN);
+        return !("GT-I9100".contentEquals(model)
+                && sdkVersion < android.os.Build.VERSION_CODES.JELLY_BEAN);
     }
 
     // The methods below can be used by unit tests to fake functionality.

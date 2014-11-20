@@ -26,14 +26,13 @@ import java.util.concurrent.TimeUnit;
 */
 public class GestureDetectorResetTest extends ContentShellTestBase {
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
-    private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><body>" +
-            "<button id=\"button\" " +
-            "  onclick=\"document.getElementById('test').textContent = 'clicked';\">" +
-            "Button" +
-            "</button><br/>" +
-            "<div id=\"test\">not clicked</div><br/>" +
-            "</body></html>");
+    private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri("<html><body>"
+            + "<button id=\"button\" "
+            + "  onclick=\"document.getElementById('test').textContent = 'clicked';\">"
+            + "Button"
+            + "</button><br/>"
+            + "<div id=\"test\">not clicked</div><br/>"
+            + "</body></html>");
 
     private static class NodeContentsIsEqualToCriteria implements Criteria {
         private final ContentViewCore mViewCore;

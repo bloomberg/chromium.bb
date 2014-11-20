@@ -153,8 +153,8 @@ public class LocationProviderFactory {
                 mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                         ThreadUtils.getUiThreadLooper());
             } catch (SecurityException e) {
-                Log.e(TAG, "Caught security exception registering for location updates from " +
-                        "system. This should only happen in DumpRenderTree.");
+                Log.e(TAG, "Caught security exception registering for location updates from "
+                        + "system. This should only happen in DumpRenderTree.");
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "Caught IllegalArgumentException registering for location updates.");
             }

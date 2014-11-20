@@ -204,8 +204,8 @@ public class ObserverList<E> implements Iterable<E> {
         @Override
         public boolean hasNext() {
             int lookupIndex = mIndex;
-            while (lookupIndex < mListEndMarker &&
-                    ObserverList.this.getObserverAt(lookupIndex) == null) {
+            while (lookupIndex < mListEndMarker
+                    && ObserverList.this.getObserverAt(lookupIndex) == null) {
                 lookupIndex++;
             }
             if (lookupIndex < mListEndMarker) return true;

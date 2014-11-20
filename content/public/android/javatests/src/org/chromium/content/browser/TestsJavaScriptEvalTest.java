@@ -16,11 +16,10 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
  * Integration tests for JavaScript execution.
  */
 public class TestsJavaScriptEvalTest extends ContentShellTestBase {
-    private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><head><script>" +
-            "  function foobar() { return 'foobar'; }" +
-            "</script></head>" +
-            "<body><button id=\"test\">Test button</button></body></html>");
+    private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri("<html><head><script>"
+            + "  function foobar() { return 'foobar'; }"
+            + "</script></head>"
+            + "<body><button id=\"test\">Test button</button></body></html>");
 
     public TestsJavaScriptEvalTest() {
     }

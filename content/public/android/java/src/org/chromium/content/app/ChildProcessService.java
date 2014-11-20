@@ -167,8 +167,8 @@ public class ChildProcessService extends Service {
                         isLoaded = true;
                     } catch (ProcessInitException e) {
                         if (requestedSharedRelro) {
-                            Log.w(TAG, "Failed to load native library with shared RELRO, " +
-                                    "retrying without");
+                            Log.w(TAG, "Failed to load native library with shared RELRO, "
+                                    + "retrying without");
                             loadAtFixedAddressFailed = true;
                         } else {
                             Log.e(TAG, "Failed to load native library", e);

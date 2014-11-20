@@ -40,8 +40,8 @@ class VideoCaptureFactory {
 
         private static boolean isSpecialDevice() {
             for (String[] device : SPECIAL_DEVICE_LIST) {
-                if (device[0].contentEquals(android.os.Build.MODEL) &&
-                        device[1].contentEquals(android.os.Build.DEVICE)) {
+                if (device[0].contentEquals(android.os.Build.MODEL)
+                        && device[1].contentEquals(android.os.Build.DEVICE)) {
                     return true;
                 }
             }
@@ -64,8 +64,8 @@ class VideoCaptureFactory {
             // to use a camera, but "load page" requires it. So, output a warning log
             // and carry on pretending the system has no camera(s).
             if (sNumberOfSystemCameras == -1) {
-                if (PackageManager.PERMISSION_GRANTED ==
-                        appContext.getPackageManager().checkPermission(
+                if (PackageManager.PERMISSION_GRANTED
+                        == appContext.getPackageManager().checkPermission(
                                 "android.permission.CAMERA", appContext.getPackageName())) {
                     sNumberOfSystemCameras = VideoCaptureAndroid.getNumberOfCameras();
                 } else {
@@ -102,17 +102,17 @@ class VideoCaptureFactory {
 
     @CalledByNative
     static String getDeviceName(int id) {
-        return (ChromiumCameraInfo.isSpecialCamera(id)) ?
-                VideoCaptureTango.getName(ChromiumCameraInfo.toSpecialCameraId(id)) :
-                VideoCaptureAndroid.getName(id);
+        return (ChromiumCameraInfo.isSpecialCamera(id))
+                ? VideoCaptureTango.getName(ChromiumCameraInfo.toSpecialCameraId(id))
+                : VideoCaptureAndroid.getName(id);
     }
 
     @CalledByNative
     static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(int id) {
-        return ChromiumCameraInfo.isSpecialCamera(id) ?
-                VideoCaptureTango.getDeviceSupportedFormats(
-                        ChromiumCameraInfo.toSpecialCameraId(id)) :
-                VideoCaptureAndroid.getDeviceSupportedFormats(id);
+        return ChromiumCameraInfo.isSpecialCamera(id)
+                ? VideoCaptureTango.getDeviceSupportedFormats(
+                        ChromiumCameraInfo.toSpecialCameraId(id))
+                : VideoCaptureAndroid.getDeviceSupportedFormats(id);
     }
 
     @CalledByNative

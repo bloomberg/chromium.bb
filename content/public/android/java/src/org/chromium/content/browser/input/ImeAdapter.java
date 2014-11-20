@@ -366,8 +366,8 @@ public class ImeAdapter {
         }
 
         for (int i = 0; i < events.length; ++i) {
-            if (events[i].getAction() == KeyEvent.ACTION_DOWN &&
-                    !KeyEvent.isModifierKey(events[i].getKeyCode())) {
+            if (events[i].getAction() == KeyEvent.ACTION_DOWN
+                    && !KeyEvent.isModifierKey(events[i].getKeyCode())) {
                 return events[i];
             }
         }
@@ -446,9 +446,9 @@ public class ImeAdapter {
             // composition below.
             if (keyCode > 0 && isCommit && mLastComposeText == null) {
                 mLastSyntheticKeyCode = keyCode;
-                return translateAndSendNativeEvents(keyEvent) &&
-                       translateAndSendNativeEvents(KeyEvent.changeAction(
-                               keyEvent, KeyEvent.ACTION_UP));
+                return translateAndSendNativeEvents(keyEvent)
+                        && translateAndSendNativeEvents(
+                                KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP));
             }
 
             // When typing, there is no issue sending KeyDown and KeyUp events around the

@@ -289,9 +289,8 @@ public class TracingControllerAndroid {
                     categories = categories.replaceFirst(
                             DEFAULT_CHROME_CATEGORIES_PLACE_HOLDER, nativeGetDefaultCategories());
                 }
-                String traceOptions =
-                        intent.getStringExtra(RECORD_CONTINUOUSLY_EXTRA) == null ?
-                        "record-until-full" : "record-continuously";
+                String traceOptions = intent.getStringExtra(RECORD_CONTINUOUSLY_EXTRA) == null
+                        ? "record-until-full" : "record-continuously";
                 String filename = intent.getStringExtra(FILE_EXTRA);
                 if (filename != null) {
                     startTracing(filename, true, categories, traceOptions);

@@ -31,8 +31,8 @@ class VibrationProvider {
 
     @CalledByNative
     private void vibrate(long milliseconds) {
-        if (mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
-                mHasVibratePermission) {
+        if (mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT
+                && mHasVibratePermission) {
             mVibrator.vibrate(milliseconds);
         }
     }

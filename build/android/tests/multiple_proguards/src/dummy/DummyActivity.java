@@ -22,5 +22,5 @@ public class DummyActivity extends Activity {
 
     private static void doBadThings2() {
         sun.reflect.Reflection.getCallerClass(2);
-  }
+    }
 }

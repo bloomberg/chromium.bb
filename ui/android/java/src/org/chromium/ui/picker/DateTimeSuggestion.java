@@ -43,9 +43,8 @@ public class DateTimeSuggestion {
             return false;
         }
         final DateTimeSuggestion other = (DateTimeSuggestion) object;
-        return mValue == other.mValue &&
-               mLocalizedValue == other.mLocalizedValue &&
-               mLabel == other.mLabel;
+        return mValue == other.mValue && mLocalizedValue == other.mLocalizedValue
+                && mLabel == other.mLabel;
     }
 
     @Override

@@ -430,8 +430,8 @@ class PopupZoomer extends View {
 
         canvas.save();
         // Calculate the elapsed fraction of animation.
-        float time = (SystemClock.uptimeMillis() - mAnimationStartTime + mTimeLeft) /
-                ((float) ANIMATION_DURATION);
+        float time = (SystemClock.uptimeMillis() - mAnimationStartTime + mTimeLeft)
+                / ((float) ANIMATION_DURATION);
         time = constrain(time, 0, 1);
         if (time >= 1) {
             mAnimating = false;

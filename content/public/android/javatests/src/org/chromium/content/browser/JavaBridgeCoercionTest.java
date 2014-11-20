@@ -170,12 +170,12 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private void assertRaisesException(String script) throws Throwable {
-        executeJavaScript("try {" +
-                          script + ";" +
-                          "  testController.setBooleanValue(false);" +
-                          "} catch (exception) {" +
-                          "  testController.setBooleanValue(true);" +
-                          "}");
+        executeJavaScript("try {"
+                + script + ";"
+                + "  testController.setBooleanValue(false);"
+                + "} catch (exception) {"
+                + "  testController.setBooleanValue(true);"
+                + "}");
         assertTrue(mTestController.waitForBooleanValue());
     }
 

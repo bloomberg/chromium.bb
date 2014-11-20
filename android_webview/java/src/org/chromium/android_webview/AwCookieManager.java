@@ -190,7 +190,7 @@ public final class AwCookieManager {
             mHandler = handler;
         }
 
-        public static<T> CookieCallback<T> convert(ValueCallback<T> callback) throws
+        public static <T> CookieCallback<T> convert(ValueCallback<T> callback) throws
                 IllegalStateException {
             if (callback == null) return null;
             if (Looper.myLooper() == null) {

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public final class ApplicationData {
 
     private static final long MAX_CLEAR_APP_DATA_TIMEOUT_MS =
-        scaleTimeout(TimeUnit.SECONDS.toMillis(3));
+            scaleTimeout(TimeUnit.SECONDS.toMillis(3));
     private static final long CLEAR_APP_DATA_POLL_INTERVAL_MS = MAX_CLEAR_APP_DATA_TIMEOUT_MS / 10;
 
     private ApplicationData() {}

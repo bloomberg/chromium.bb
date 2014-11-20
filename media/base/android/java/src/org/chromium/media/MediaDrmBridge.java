@@ -304,8 +304,8 @@ public class MediaDrmBridge {
         if (Build.VERSION.RELEASE.equals("4.4")) {
             singleSessionMode = true;
         }
-        Log.d(TAG, "MediaDrmBridge uses " +
-                (singleSessionMode ? "single" : "multiple") + "-session mode.");
+        Log.d(TAG, "MediaDrmBridge uses "
+                + (singleSessionMode ? "single" : "multiple") + "-session mode.");
 
         MediaDrmBridge mediaDrmBridge = null;
         try {
@@ -451,8 +451,8 @@ public class MediaDrmBridge {
         // Check mMediaDrm != null because error may happen in createSession().
         // Check !mProvisioningPending because NotProvisionedException may be
         // thrown in createSession().
-        while (mMediaDrm != null && !mProvisioningPending &&
-                !mPendingCreateSessionDataQueue.isEmpty()) {
+        while (mMediaDrm != null && !mProvisioningPending
+                && !mPendingCreateSessionDataQueue.isEmpty()) {
             PendingCreateSessionData pendingData = mPendingCreateSessionDataQueue.poll();
             int sessionId = pendingData.sessionId();
             byte[] initData = pendingData.initData();
@@ -509,8 +509,8 @@ public class MediaDrmBridge {
 
             if (mSingleSessionMode) {
                 session = mMediaCryptoSession;
-                if (mSessionMimeTypes.get(session) != null &&
-                        !mSessionMimeTypes.get(session).equals(mime)) {
+                if (mSessionMimeTypes.get(session) != null
+                        && !mSessionMimeTypes.get(session).equals(mime)) {
                     Log.e(TAG, "Only one mime type is supported in single session mode.");
                     onSessionError(sessionId);
                     return;
@@ -539,8 +539,8 @@ public class MediaDrmBridge {
             onSessionCreated(sessionId, getWebSessionId(session));
             onSessionMessage(sessionId, request);
             if (newSessionOpened) {
-                Log.d(TAG, "createSession(): Session " + getWebSessionId(session) +
-                        " (" + sessionId + ") created.");
+                Log.d(TAG, "createSession(): Session " + getWebSessionId(session)
+                        + " (" + sessionId + ") created.");
             }
 
             mSessionIds.put(session, sessionId);

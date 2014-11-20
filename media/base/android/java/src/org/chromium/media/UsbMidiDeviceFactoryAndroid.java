@@ -94,8 +94,8 @@ class UsbMidiDeviceFactoryAndroid {
             boolean found = false;
             for (int i = 0; i < device.getInterfaceCount() && !found; ++i) {
                 UsbInterface iface = device.getInterface(i);
-                if (iface.getInterfaceClass() == UsbConstants.USB_CLASS_AUDIO &&
-                        iface.getInterfaceSubclass() == UsbMidiDeviceAndroid.MIDI_SUBCLASS) {
+                if (iface.getInterfaceClass() == UsbConstants.USB_CLASS_AUDIO
+                        && iface.getInterfaceSubclass() == UsbMidiDeviceAndroid.MIDI_SUBCLASS) {
                     found = true;
                 }
             }

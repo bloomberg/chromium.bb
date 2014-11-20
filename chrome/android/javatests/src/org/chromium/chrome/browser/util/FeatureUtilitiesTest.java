@@ -64,8 +64,8 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
         }
 
         @Override
-        public List<ResolveInfo>queryIntentActivities(Intent intent, int flags) {
-            List<ResolveInfo>resolveInfoList = new ArrayList<ResolveInfo>();
+        public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
+            List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
 
             if (intent.getAction().equals(mAction)) {
                 // Add an entry to the returned list as the action

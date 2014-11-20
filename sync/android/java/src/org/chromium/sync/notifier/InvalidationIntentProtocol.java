@@ -115,8 +115,8 @@ public class InvalidationIntentProtocol {
 
     /** Returns whether {@code intent} is a registered types change intent. */
     public static boolean isRegisteredTypesChange(Intent intent) {
-        return intent.hasExtra(EXTRA_REGISTERED_TYPES) ||
-                intent.hasExtra(EXTRA_REGISTERED_OBJECT_SOURCES);
+        return intent.hasExtra(EXTRA_REGISTERED_TYPES)
+                || intent.hasExtra(EXTRA_REGISTERED_OBJECT_SOURCES);
     }
 
     /** Returns the object ids for which to register contained in the intent. */
@@ -125,8 +125,8 @@ public class InvalidationIntentProtocol {
                 intent.getIntegerArrayListExtra(EXTRA_REGISTERED_OBJECT_SOURCES);
         ArrayList<String> objectNames =
                 intent.getStringArrayListExtra(EXTRA_REGISTERED_OBJECT_NAMES);
-        if (objectSources == null || objectNames == null ||
-                objectSources.size() != objectNames.size()) {
+        if (objectSources == null || objectNames == null
+                || objectSources.size() != objectNames.size()) {
             return null;
         }
         Set<ObjectId> objectIds = new HashSet<ObjectId>(objectSources.size());

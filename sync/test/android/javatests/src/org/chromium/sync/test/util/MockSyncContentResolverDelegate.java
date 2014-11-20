@@ -94,9 +94,9 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
         String key = createKey(account, authority);
         synchronized (mSyncableMapLock) {
             if (!mIsSyncableMap.containsKey(key) || !mIsSyncableMap.get(key)) {
-                throw new IllegalArgumentException("Account " + account +
-                        " is not syncable for authority " + authority +
-                        ". Can not set sync state to " + sync);
+                throw new IllegalArgumentException("Account " + account
+                        + " is not syncable for authority " + authority
+                        + ". Can not set sync state to " + sync);
             }
             if (sync) {
                 mSyncAutomaticallySet.add(key);
@@ -129,8 +129,8 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Unable to understand syncable argument: " +
-                            syncable);
+                    throw new IllegalArgumentException("Unable to understand syncable argument: "
+                            + syncable);
             }
         }
         notifyObservers();

@@ -138,6 +138,17 @@
       <property name="allowLineBreaks" value="true"/>
       <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
     </module>
+    <module name="GenericWhitespace">
+      <property name="severity" value="error"/>
+      <message key="ws.followed"
+       value="GenericWhitespace ''{0}'' is followed by whitespace."/>
+       <message key="ws.preceded"
+       value="GenericWhitespace ''{0}'' is preceded with whitespace."/>
+       <message key="ws.illegalFollow"
+       value="GenericWhitespace ''{0}'' should followed by whitespace."/>
+       <message key="ws.notPreceded"
+       value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
+    </module>
     <module name="EmptyStatement">
       <property name="severity" value="error"/>
     </module>
@@ -166,22 +177,22 @@
     </module>
     <!-- TODO(aurimas): make OperatorWrap into an error once all the warnings are fixed. -->
     <module name="OperatorWrap">
-      <property name="severity" value="warning"/>
+      <property name="severity" value="error"/>
       <property name="option" value="NL" />
       <property name="tokens" value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR " />
     </module>
     <module name="OperatorWrap">
-     <property name="severity" value="warning"/>
+     <property name="severity" value="error"/>
      <property name="option" value="eol"/>
      <property name="tokens" value="ASSIGN"/>
     </module>
     <module name="SeparatorWrap">
-      <property name="severity" value="warning"/>
+      <property name="severity" value="error"/>
       <property name="tokens" value="DOT"/>
       <property name="option" value="nl"/>
     </module>
     <module name="SeparatorWrap">
-      <property name="severity" value="warning"/>
+      <property name="severity" value="error"/>
       <property name="tokens" value="COMMA"/>
       <property name="option" value="EOL"/>
     </module>

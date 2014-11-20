@@ -246,11 +246,11 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
         // want to send it as KeyEvent.
         int unicode = keyCode != KeyEvent.KEYCODE_ENTER ? event.getUnicodeChar() : 0;
 
-        boolean no_modifiers = !event.isAltPressed() &&
-                               !event.isCtrlPressed() && !event.isMetaPressed();
+        boolean no_modifiers = !event.isAltPressed()
+                && !event.isCtrlPressed() && !event.isMetaPressed();
 
-        if (event.getDeviceId() == KeyCharacterMap.VIRTUAL_KEYBOARD &&
-                pressed && unicode != 0 && no_modifiers) {
+        if (event.getDeviceId() == KeyCharacterMap.VIRTUAL_KEYBOARD
+                && pressed && unicode != 0 && no_modifiers) {
             mPressedTextKeys.add(keyCode);
             int[] codePoints = { unicode };
             JniInterface.sendTextEvent(new String(codePoints, 0, 1));

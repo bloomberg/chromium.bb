@@ -32,9 +32,9 @@ public class ThreadUtils {
     public static void setUiThread(Looper looper) {
         synchronized (sLock) {
             if (sUiThreadHandler != null && sUiThreadHandler.getLooper() != looper) {
-                throw new RuntimeException("UI thread looper is already set to " +
-                        sUiThreadHandler.getLooper() + " (Main thread looper is " +
-                        Looper.getMainLooper() + "), cannot set to new looper " + looper);
+                throw new RuntimeException("UI thread looper is already set to "
+                        + sUiThreadHandler.getLooper() + " (Main thread looper is "
+                        + Looper.getMainLooper() + "), cannot set to new looper " + looper);
             } else {
                 sUiThreadHandler = new Handler(looper);
             }

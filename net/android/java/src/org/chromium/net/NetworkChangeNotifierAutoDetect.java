@@ -161,8 +161,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     public int getCurrentConnectionType() {
         // Track exactly what type of connection we have.
-        if (!mConnectivityManagerDelegate.activeNetworkExists() ||
-                !mConnectivityManagerDelegate.isConnected()) {
+        if (!mConnectivityManagerDelegate.activeNetworkExists()
+                || !mConnectivityManagerDelegate.isConnected()) {
             return NetworkChangeNotifier.CONNECTION_NONE;
         }
 

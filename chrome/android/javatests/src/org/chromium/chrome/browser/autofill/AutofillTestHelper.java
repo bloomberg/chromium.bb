@@ -34,7 +34,7 @@ public class AutofillTestHelper {
     }
 
     List<AutofillProfile> getProfiles() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile> >() {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile>>() {
             @Override
             public List<AutofillProfile> call() {
                 return PersonalDataManager.getInstance().getProfiles();

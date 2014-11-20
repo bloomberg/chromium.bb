@@ -155,10 +155,10 @@ class WebAudioMediaCodecBridge {
                     // catch any changes in format. But be sure to
                     // initialize it BEFORE we send any decoded audio,
                     // and only initialize once.
-                    Log.d(LOG_TAG, "Final:  Rate: " + sampleRate +
-                            " Channels: " + inputChannelCount +
-                            " Mime: " + mime +
-                            " Duration: " + durationMicroseconds + " microsec");
+                    Log.d(LOG_TAG, "Final:  Rate: " + sampleRate
+                            + " Channels: " + inputChannelCount
+                            + " Mime: " + mime
+                            + " Duration: " + durationMicroseconds + " microsec");
 
                     nativeInitializeDestination(nativeMediaCodecBridge,
                                                 inputChannelCount,

@@ -49,6 +49,6 @@ public class CastApplication extends ContentApplication {
     }
 
     private static boolean allowCommandLineImport() {
-      return !Build.TYPE.equals("user");
+        return !Build.TYPE.equals("user");
     }
 }

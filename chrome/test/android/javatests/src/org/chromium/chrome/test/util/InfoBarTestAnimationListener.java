@@ -53,7 +53,7 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
                 }
             }
         }
-     }
+    }
 
     private ConditionalWait mAddAnimationFinished;
     private ConditionalWait mSwapAnimationFinished;
@@ -79,8 +79,8 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
                 mRemoveAnimationFinished.set(true);
                 break;
             default:
-               throw new UnsupportedOperationException(
-                       "Animation finished for unknown type " + animationType);
+                throw new UnsupportedOperationException(
+                        "Animation finished for unknown type " + animationType);
         }
     }
 

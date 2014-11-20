@@ -112,8 +112,8 @@ public class InputDialogContainer {
                     cal.get(Calendar.HOUR_OF_DAY),
                     cal.get(Calendar.MINUTE),
                     0, 0, 0, min, max, step);
-        } else if (dialogType == sTextInputTypeDateTime ||
-                dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == sTextInputTypeDateTime
+                || dialogType == sTextInputTypeDateTimeLocal) {
             showPickerDialog(dialogType,
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
@@ -159,8 +159,8 @@ public class InputDialogContainer {
         int dialogTitleId = R.string.date_picker_dialog_title;
         if (dialogType == sTextInputTypeTime) {
             dialogTitleId = R.string.time_picker_dialog_title;
-        } else if (dialogType == sTextInputTypeDateTime ||
-                dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == sTextInputTypeDateTime
+                || dialogType == sTextInputTypeDateTimeLocal) {
             dialogTitleId = R.string.date_time_picker_dialog_title;
         } else if (dialogType == sTextInputTypeMonth) {
             dialogTitleId = R.string.month_picker_dialog_title;
@@ -232,8 +232,8 @@ public class InputDialogContainer {
                 (int) min, (int) max, stepTime,
                 DateFormat.is24HourFormat(mContext),
                 new FullTimeListener(dialogType));
-        } else if (dialogType == sTextInputTypeDateTime ||
-                dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == sTextInputTypeDateTime
+                || dialogType == sTextInputTypeDateTimeLocal) {
             mDialog = new DateTimePickerDialog(mContext,
                     new DateTimeListener(dialogType),
                     year, month, monthDay,
@@ -363,10 +363,10 @@ public class InputDialogContainer {
             mInputActionDelegate.replaceDateTime(
                     WeekPicker.createDateFromWeek(year, week).getTimeInMillis());
         } else if (dialogType == sTextInputTypeTime) {
-            mInputActionDelegate.replaceDateTime(TimeUnit.HOURS.toMillis(hourOfDay) +
-                                                 TimeUnit.MINUTES.toMillis(minute) +
-                                                 TimeUnit.SECONDS.toMillis(second) +
-                                                 millis);
+            mInputActionDelegate.replaceDateTime(TimeUnit.HOURS.toMillis(hourOfDay)
+                    + TimeUnit.MINUTES.toMillis(minute)
+                    + TimeUnit.SECONDS.toMillis(second)
+                    + millis);
         } else {
             Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             cal.clear();

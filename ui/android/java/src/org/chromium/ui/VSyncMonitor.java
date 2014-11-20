@@ -101,8 +101,8 @@ public class VSyncMonitor {
                         // after that it asymptotically approaches the real value.
                         long lastRefreshDurationNano = frameTimeNanos - mGoodStartingPointNano;
                         float lastRefreshDurationWeight = 0.1f;
-                        mRefreshPeriodNano += (long) (lastRefreshDurationWeight *
-                                (lastRefreshDurationNano - mRefreshPeriodNano));
+                        mRefreshPeriodNano += (long) (lastRefreshDurationWeight
+                                * (lastRefreshDurationNano - mRefreshPeriodNano));
                     }
                     mGoodStartingPointNano = frameTimeNanos;
                     onVSyncCallback(frameTimeNanos, getCurrentNanoTime());
@@ -219,8 +219,9 @@ public class VSyncMonitor {
     }
 
     private long estimateLastVSyncTime(long currentTime) {
-        final long lastRefreshTime = mGoodStartingPointNano +
-                ((currentTime - mGoodStartingPointNano) / mRefreshPeriodNano) * mRefreshPeriodNano;
+        final long lastRefreshTime = mGoodStartingPointNano
+                + ((currentTime - mGoodStartingPointNano) / mRefreshPeriodNano)
+                * mRefreshPeriodNano;
         return lastRefreshTime;
     }
 

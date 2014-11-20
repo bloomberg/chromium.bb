@@ -59,12 +59,12 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         testUrl.append("<html><body>");
         for (int i = 0; i < totalUrls; i++) {
             boolean isTargeted = i == targetIdAt;
-            testUrl.append("<a href=\"data:text/html;utf-8,<html><head><script>" +
-                    "function doesItWork() { return 'yes'; }</script></head></html>\"" +
-                    (isTargeted ? (" id=\"" + targetId + "\"") : "") + ">" +
-                    "<small><sup>" +
-                    (isTargeted ? "<b>" : "") + i + (isTargeted ? "</b>" : "") +
-                    "</sup></small></a>");
+            testUrl.append("<a href=\"data:text/html;utf-8,<html><head><script>"
+                    + "function doesItWork() { return 'yes'; }</script></head></html>\""
+                    + (isTargeted ? (" id=\"" + targetId + "\"") : "") + ">"
+                    + "<small><sup>"
+                    + (isTargeted ? "<b>" : "") + i + (isTargeted ? "</b>" : "")
+                    + "</sup></small></a>");
         }
         testUrl.append("</small></div></body></html>");
         return UrlUtils.encodeHtmlDataUri(testUrl.toString());

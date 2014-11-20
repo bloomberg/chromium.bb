@@ -67,8 +67,8 @@ public class ChromiumLinkerParams {
     @Override
     public String toString() {
         return String.format(
-                "LinkerParams(baseLoadAddress:0x%x, waitForSharedRelro:%s, " +
-                        "testRunnerClassName:%s",
+                "LinkerParams(baseLoadAddress:0x%x, waitForSharedRelro:%s, "
+                        + "testRunnerClassName:%s",
                 mBaseLoadAddress,
                 mWaitForSharedRelro ? "true" : "false",
                 mTestRunnerClassName);

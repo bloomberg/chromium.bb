@@ -28,8 +28,8 @@ import java.util.Map;
 public class MediaResourceGetterTest extends InstrumentationTestCase {
     private static final String TEST_HTTP_URL = "http://example.com";
     private static final String TEST_USER_AGENT = // Anything, really
-            "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 " +
-            "(KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36";
+            "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 "
+            + "(KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36";
     private static final String TEST_FILE_PATH = "/mnt/sdcard/test";
     private static final String TEST_FILE_URL = "file://" + TEST_FILE_PATH;
     private static final String TEST_COOKIES = "yum yum yum!";

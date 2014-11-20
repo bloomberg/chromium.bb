@@ -75,8 +75,8 @@ public abstract class PathUtils {
     @CalledByNative
     private static String getNativeLibraryDirectory(Context appContext) {
         ApplicationInfo ai = appContext.getApplicationInfo();
-        if ((ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 ||
-            (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+        if ((ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                || (ai.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
             return ai.nativeLibraryDir;
         }
 

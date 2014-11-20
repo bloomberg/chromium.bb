@@ -91,9 +91,9 @@ public class ThirdPartyTokenFetcher {
         // redirect URI as it is possible for the other applications to intercept the redirect URI.
         // Instead, we use the intent scheme URI, which can restrict a specific package to handle
         // the intent.  See https://developer.chrome.com/multidevice/android/intents.
-        this.mRedirectUri = "intent://" + REDIRECT_URI_PATH + "#Intent;" +
-            "package=" + mRedirectUriScheme + ";" +
-            "scheme=" + mRedirectUriScheme + ";end;";
+        this.mRedirectUri = "intent://" + REDIRECT_URI_PATH + "#Intent;"
+                + "package=" + mRedirectUriScheme + ";"
+                + "scheme=" + mRedirectUriScheme + ";end;";
     }
 
     /**
@@ -103,10 +103,9 @@ public class ThirdPartyTokenFetcher {
      */
     public void fetchToken(String tokenUrl, String clientId, String scope) {
         if (!isValidTokenUrl(tokenUrl)) {
-            failFetchToken(
-                    "Token URL does not match the domain\'s allowed URL patterns." +
-                    " URL: " + tokenUrl +
-                    ", patterns: " + TextUtils.join(",", this.mTokenUrlPatterns));
+            failFetchToken("Token URL does not match the domain\'s allowed URL patterns."
+                    + " URL: " + tokenUrl
+                    + ", patterns: " + TextUtils.join(",", this.mTokenUrlPatterns));
             return;
         }
 
@@ -150,9 +149,9 @@ public class ThirdPartyTokenFetcher {
 
         Uri data = intent.getData();
         if (data != null) {
-            return Intent.ACTION_VIEW.equals(action) &&
-                   this.mRedirectUriScheme.equals(data.getScheme()) &&
-                   REDIRECT_URI_PATH.equals(data.getPath());
+            return Intent.ACTION_VIEW.equals(action)
+                    && this.mRedirectUriScheme.equals(data.getScheme())
+                    && REDIRECT_URI_PATH.equals(data.getPath());
         }
         return false;
     }

@@ -47,9 +47,9 @@ public class LocaleUtils {
     @CalledByNative
     private static String getDefaultCountryCode() {
         CommandLine commandLine = CommandLine.getInstance();
-        return commandLine.hasSwitch(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL) ?
-                commandLine.getSwitchValue(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL) :
-                Locale.getDefault().getCountry();
+        return commandLine.hasSwitch(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL)
+                ? commandLine.getSwitchValue(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL)
+                : Locale.getDefault().getCountry();
     }
 
 }

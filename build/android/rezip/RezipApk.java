@@ -39,8 +39,8 @@ class RezipApk {
     // Files matching this pattern are not copied to the output when adding alignment.
     // When reordering and verifying the APK they are copied to the end of the file.
     private static Pattern sMetaFilePattern =
-            Pattern.compile("^(META-INF/((.*)[.](SF|RSA|DSA)|com/android/otacert))|(" +
-                            Pattern.quote(JarFile.MANIFEST_NAME) + ")$");
+            Pattern.compile("^(META-INF/((.*)[.](SF|RSA|DSA)|com/android/otacert))|("
+                    + Pattern.quote(JarFile.MANIFEST_NAME) + ")$");
 
     // Pattern for matching a shared library in the APK
     private static Pattern sLibraryPattern = Pattern.compile("^lib/[^/]*/lib.*[.]so$");
@@ -48,12 +48,11 @@ class RezipApk {
     private static Pattern sCrazyLinkerPattern =
             Pattern.compile("^lib/[^/]*/libchromium_android_linker.so$");
     // Pattern for matching a crazy loaded shared library in the APK
-    private static Pattern sCrazyLibraryPattern =
-            Pattern.compile("^lib/[^/]*/crazy.lib.*[.]so$");
+    private static Pattern sCrazyLibraryPattern = Pattern.compile("^lib/[^/]*/crazy.lib.*[.]so$");
 
     private static boolean isLibraryFilename(String filename) {
-        return sLibraryPattern.matcher(filename).matches() &&
-                !sCrazyLinkerPattern.matcher(filename).matches();
+        return sLibraryPattern.matcher(filename).matches()
+                && !sCrazyLinkerPattern.matcher(filename).matches();
     }
 
     private static boolean isCrazyLibraryFilename(String filename) {
@@ -150,8 +149,7 @@ class RezipApk {
             if (entry.isDirectory()) {
                 continue;
             }
-            if (omitMetaFiles &&
-                sMetaFilePattern.matcher(entry.getName()).matches()) {
+            if (omitMetaFiles && sMetaFilePattern.matcher(entry.getName()).matches()) {
                 continue;
             }
             entries.add(entry);
@@ -394,16 +392,12 @@ class RezipApk {
     }
 
     private static void usage() {
-        System.err.println(
-                "Usage: prealignapk (addalignment|reorder) input.apk output.apk");
-        System.err.println(
-                "\"crazy\" libraries are always inflated in the output");
+        System.err.println("Usage: prealignapk (addalignment|reorder) input.apk output.apk");
+        System.err.println("\"crazy\" libraries are always inflated in the output");
         System.err.println(
                 "  renamealign  - rename libraries with \"crazy.\" prefix and add alignment file");
-        System.err.println(
-                "  align        - add alignment file");
-        System.err.println(
-                "  reorder      - re-creates canonical ordering and checks alignment");
+        System.err.println("  align        - add alignment file");
+        System.err.println("  reorder      - re-creates canonical ordering and checks alignment");
         System.exit(2);
     }
 

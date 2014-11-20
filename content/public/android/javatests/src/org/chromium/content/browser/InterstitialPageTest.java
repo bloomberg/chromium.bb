@@ -88,21 +88,20 @@ public class InterstitialPageTest extends ContentShellTestBase {
     @Feature({"Navigation"})
     public void testCloseInterstitial() throws InterruptedException, ExecutionException {
         final String proceedCommand = "PROCEED";
-        final String htmlContent =
-                "<html>" +
-                        "<head>" +
-                        "<script>" +
-                                "function sendCommand(command) {" +
-                                        "window.domAutomationController.setAutomationId(1);" +
-                                        "window.domAutomationController.send(command);" +
-                                "}" +
-                        "</script>" +
-                        "</head>" +
-                        "<body style='background-color:#FF0000' " +
-                                "onclick='sendCommand(\"" + proceedCommand + "\");'>" +
-                                "<h1>This is a scary interstitial page</h1>" +
-                        "</body>" +
-                "</html>";
+        final String htmlContent = "<html>"
+                + "<head>"
+                + "  <script>"
+                + "    function sendCommand(command) {"
+                + "      window.domAutomationController.setAutomationId(1);"
+                + "      window.domAutomationController.send(command);"
+                + "    }"
+                + "  </script>"
+                + "</head>"
+                + "<body style='background-color:#FF0000' "
+                + "  onclick='sendCommand(\"" + proceedCommand + "\");'>"
+                + "  <h1>This is a scary interstitial page</h1>"
+                + "</body>"
+                + "</html>";
         final InterstitialPageDelegateAndroid delegate =
                 new InterstitialPageDelegateAndroid(htmlContent) {
             @Override
