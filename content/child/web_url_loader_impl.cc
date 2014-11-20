@@ -629,12 +629,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   WebURLResponse response;
   response.initialize();
-  // Updates the request url if the response was fetched by a ServiceWorker,
-  // and it was not generated inside the ServiceWorker.
-  if (info.was_fetched_via_service_worker &&
-      !info.original_url_via_service_worker.is_empty()) {
-    request_.setURL(info.original_url_via_service_worker);
-  }
   PopulateURLResponse(request_.url(), info, &response);
 
   bool show_raw_listing = (GURL(request_.url()).query() == "raw");
@@ -1017,6 +1011,9 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->setServiceWorkerResponseType(info.response_type_via_service_worker);
+  response->setOriginalURLViaServiceWorker(
+      info.original_url_via_service_worker);
+
   WebURLResponseExtraDataImpl* extra_data =
       new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
   response->setExtraData(extra_data);
