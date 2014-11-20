@@ -491,42 +491,6 @@ Value ExecuteAnd(Scope* scope,
 
 // ----------------------------------------------------------------------------
 
-bool IsUnaryOperator(const Token& token) {
-  return token.type() == Token::BANG;
-}
-
-bool IsBinaryOperator(const Token& token) {
-  return token.type() == Token::EQUAL ||
-         token.type() == Token::PLUS ||
-         token.type() == Token::MINUS ||
-         token.type() == Token::PLUS_EQUALS ||
-         token.type() == Token::MINUS_EQUALS ||
-         token.type() == Token::EQUAL_EQUAL ||
-         token.type() == Token::NOT_EQUAL ||
-         token.type() == Token::LESS_EQUAL ||
-         token.type() == Token::GREATER_EQUAL ||
-         token.type() == Token::LESS_THAN ||
-         token.type() == Token::GREATER_THAN ||
-         token.type() == Token::BOOLEAN_AND ||
-         token.type() == Token::BOOLEAN_OR;
-}
-
-bool IsFunctionCallArgBeginScoper(const Token& token) {
-  return token.type() == Token::LEFT_PAREN;
-}
-
-bool IsFunctionCallArgEndScoper(const Token& token) {
-  return token.type() == Token::RIGHT_PAREN;
-}
-
-bool IsScopeBeginScoper(const Token& token) {
-  return token.type() == Token::LEFT_BRACE;
-}
-
-bool IsScopeEndScoper(const Token& token) {
-  return token.type() == Token::RIGHT_BRACE;
-}
-
 Value ExecuteUnaryOperator(Scope* scope,
                            const UnaryOpNode* op_node,
                            const Value& expr,

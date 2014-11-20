@@ -9,18 +9,8 @@ class BinaryOpNode;
 class Err;
 class ParseNode;
 class Scope;
-class Token;
 class UnaryOpNode;
 class Value;
-
-bool IsUnaryOperator(const Token& token);
-bool IsBinaryOperator(const Token& token);
-
-bool IsFunctionCallArgBeginScoper(const Token& token);  // "("
-bool IsFunctionCallArgEndScoper(const Token& token);  // ")"
-
-bool IsScopeBeginScoper(const Token& token);  // "{"
-bool IsScopeEndScoper(const Token& token);  // "}"
 
 Value ExecuteUnaryOperator(Scope* scope,
                            const UnaryOpNode* op_node,
