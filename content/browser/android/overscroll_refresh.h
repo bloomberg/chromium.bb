@@ -44,8 +44,12 @@ class CONTENT_EXPORT OverscrollRefreshClient {
 // and beyond a particular threshold when released.
 class CONTENT_EXPORT OverscrollRefresh {
  public:
+  // Both |resource_manager| and |client| must not be null.
+  // |target_drag_offset_pixels| is the threshold beyond which the effect
+  // will trigger a refresh action when released.
   OverscrollRefresh(ui::SystemUIResourceManager* resource_manager,
-                    OverscrollRefreshClient* client);
+                    OverscrollRefreshClient* client,
+                    float target_drag_offset_pixels);
   ~OverscrollRefresh();
 
   // Scroll event stream listening methods.

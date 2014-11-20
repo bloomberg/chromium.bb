@@ -8,7 +8,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/base/android/system_ui_resource_manager.h"
-#include "ui/gfx/screen.h"
 
 using std::abs;
 using std::max;
@@ -20,10 +19,6 @@ namespace {
 const ui::SystemUIResourceType kIdleResourceType = ui::OVERSCROLL_REFRESH_IDLE;
 const ui::SystemUIResourceType kActiveResourceType =
     ui::OVERSCROLL_REFRESH_ACTIVE;
-
-// Default offset in dips from the top of the view to where the progress spinner
-// should stop.
-const int kDefaultSpinnerTargetDips = 64;
 
 // Drag movement multiplier between user input and effect translation.
 const float kDragRate = .5f;
@@ -111,14 +106,11 @@ void UpdateLayer(cc::UIResourceLayer* layer,
 
 class OverscrollRefresh::Effect {
  public:
-  Effect(ui::SystemUIResourceManager* resource_manager)
+  Effect(ui::SystemUIResourceManager* resource_manager, float target_drag)
       : resource_manager_(resource_manager),
         idle_layer_(cc::UIResourceLayer::Create()),
         active_layer_(cc::UIResourceLayer::Create()),
-        target_drag_(kDefaultSpinnerTargetDips *
-                     gfx::Screen::GetNativeScreen()
-                         ->GetPrimaryDisplay()
-                         .device_scale_factor()),
+        target_drag_(target_drag),
         drag_(0),
         idle_alpha_(0),
         active_alpha_(0),
@@ -361,11 +353,12 @@ class OverscrollRefresh::Effect {
 
 OverscrollRefresh::OverscrollRefresh(
     ui::SystemUIResourceManager* resource_manager,
-    OverscrollRefreshClient* client)
+    OverscrollRefreshClient* client,
+    float target_drag_offset_pixels)
     : client_(client),
       scrolled_to_top_(true),
       scroll_consumption_state_(DISABLED),
-      effect_(new Effect(resource_manager)) {
+      effect_(new Effect(resource_manager, target_drag_offset_pixels)) {
   DCHECK(client);
 }
 

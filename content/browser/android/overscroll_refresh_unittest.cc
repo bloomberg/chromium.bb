@@ -9,6 +9,8 @@
 
 namespace content {
 
+const float kDragTargetPixels = 100;
+
 gfx::SizeF DefaultViewportSize() {
   return gfx::SizeF(512, 512);
 }
@@ -49,7 +51,7 @@ class OverscrollRefreshTest : public OverscrollRefreshClient,
 };
 
 TEST_F(OverscrollRefreshTest, Basic) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
 
   gfx::Vector2dF origin_scroll_offset;
   effect.UpdateDisplay(DefaultViewportSize(), origin_scroll_offset);
@@ -112,7 +114,7 @@ TEST_F(OverscrollRefreshTest, Basic) {
 }
 
 TEST_F(OverscrollRefreshTest, AnimationTerminatesEvenIfRefreshNeverTerminates) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
@@ -144,7 +146,7 @@ TEST_F(OverscrollRefreshTest, AnimationTerminatesEvenIfRefreshNeverTerminates) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfBelowThreshold) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
@@ -159,7 +161,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfBelowThreshold) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialYOffsetIsNotZero) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
 
   // A positive y scroll offset at the start of scroll will prevent activation,
   // even if the subsequent scroll overscrolls upward.
@@ -180,7 +182,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialYOffsetIsNotZero) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollDownward) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
 
@@ -199,7 +201,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollDownward) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollOrTouchConsumed) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
@@ -220,7 +222,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollOrTouchConsumed) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollsJanked) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
@@ -237,7 +239,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollsJanked) {
 }
 
 TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
-  OverscrollRefresh effect(this, this);
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));

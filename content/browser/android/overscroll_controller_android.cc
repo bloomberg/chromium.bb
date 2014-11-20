@@ -21,6 +21,10 @@ namespace {
 // Used for conditional creation of EdgeEffect types for the overscroll glow.
 const int kAndroidLSDKVersion = 21;
 
+// Default offset in dips from the top of the view beyond which the refresh
+// action will be activated.
+const int kDefaultRefreshDragTargetDips = 64;
+
 scoped_ptr<EdgeEffectBase> CreateGlowEdgeEffect(
     ui::SystemUIResourceManager* resource_manager,
     float dpi_scale) {
@@ -47,7 +51,9 @@ OverscrollControllerAndroid::OverscrollControllerAndroid(
       glow_effect_(base::Bind(&CreateGlowEdgeEffect,
                               &compositor->GetSystemUIResourceManager(),
                               dpi_scale_)),
-      refresh_effect_(&compositor->GetSystemUIResourceManager(), this),
+      refresh_effect_(&compositor->GetSystemUIResourceManager(),
+                      this,
+                      kDefaultRefreshDragTargetDips * dpi_scale),
       triggered_refresh_active_(false) {
   DCHECK(web_contents);
 }
