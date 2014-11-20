@@ -105,6 +105,7 @@
         '../base/base.gyp:base',
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:component_metrics_proto',
+        '../components/components.gyp:crash_component',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',
@@ -388,6 +389,29 @@
       ],  # end of targets
     }, {  # OS != "android"
       'targets': [
+        {
+          'target_name': 'cast_crash_client',
+          'type': '<(component)',
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad_client',
+            '../components/components.gyp:crash_component',
+          ],
+          'sources': [
+            'crash/cast_crash_reporter_client.cc',
+            'crash/cast_crash_reporter_client.h',
+          ],
+          'conditions': [
+            ['chromecast_branding=="Chrome"', {
+              'dependencies': [
+                '<(cast_internal_gyp):crash_internal',
+              ],
+            }, {
+              'sources': [
+                'crash/cast_crash_reporter_client_simple.cc',
+              ],
+            }],
+          ]
+        },  # end of target 'cast_crash_client'
         # This target contains all of the primary code of |cast_shell|, except
         # for |main|. This allows end-to-end tests using |cast_shell|.
         # This also includes all targets that cannot be built on Android.
@@ -395,6 +419,7 @@
           'target_name': 'cast_shell_core',
           'type': '<(component)',
           'dependencies': [
+            'cast_crash_client',
             'cast_net',
             'cast_shell_common',
             'media/media.gyp:cast_media',

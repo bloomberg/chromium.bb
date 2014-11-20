@@ -4,8 +4,11 @@
 
 #include "chromecast/app/cast_main_delegate.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
@@ -13,7 +16,9 @@
 #include "chromecast/common/cast_paths.h"
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/crash/cast_crash_reporter_client.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
+#include "components/crash/app/crash_reporter_client.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,6 +26,15 @@
 #if defined(OS_ANDROID)
 #include "chromecast/crash/android/crash_handler.h"
 #endif  // defined(OS_ANDROID)
+
+namespace {
+
+#if !defined(OS_ANDROID)
+base::LazyInstance<chromecast::CastCrashReporterClient>::Leaky
+    g_crash_reporter_client = LAZY_INSTANCE_INITIALIZER;
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
 
 namespace chromecast {
 namespace shell {
@@ -69,6 +83,12 @@ void CastMainDelegate::PreSandboxStartup() {
   base::FilePath log_file;
   PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
   chromecast::CrashHandler::Initialize(process_type, log_file);
+#else
+  crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
+
+  if (process_type != switches::kZygoteProcess) {
+    CastCrashReporterClient::InitCrashReporter(process_type);
+  }
 #endif  // defined(OS_ANDROID)
 
   InitializeResourceBundle();
@@ -92,6 +112,10 @@ int CastMainDelegate::RunProcess(
 
 #if !defined(OS_ANDROID)
 void CastMainDelegate::ZygoteForked() {
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  CastCrashReporterClient::InitCrashReporter(process_type);
 }
 #endif  // !defined(OS_ANDROID)
 
