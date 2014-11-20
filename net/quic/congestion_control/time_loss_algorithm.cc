@@ -46,8 +46,10 @@ SequenceNumberSet TimeLossAlgorithm::DetectLostPackets(
     if (!it->in_flight) {
       continue;
     }
-    LOG_IF(DFATAL, it->nack_count == 0)
-        << "All packets less than largest observed should have been nacked.";
+    LOG_IF(DFATAL, it->nack_count == 0 && it->sent_time.IsInitialized())
+        << "All packets less than largest observed should have been nacked."
+        << "sequence_number:" << sequence_number
+        << " largest_observed:" << largest_observed;
 
     // Packets are sent in order, so break when we haven't waited long enough
     // to lose any more packets and leave the loss_time_ set for the timeout.

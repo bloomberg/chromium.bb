@@ -292,7 +292,7 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
   explicit MockQuicCryptoServerStream(
       const QuicCryptoServerConfig& crypto_config, QuicSession* session)
       : QuicCryptoServerStream(crypto_config, session) {}
-  virtual ~MockQuicCryptoServerStream() {}
+  ~MockQuicCryptoServerStream() override {}
 
   MOCK_METHOD1(SendServerConfigUpdate,
                void(const CachedNetworkParameters* cached_network_parameters));
@@ -381,6 +381,46 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
               SendServerConfigUpdate(EqualsProto(expected_network_params)))
       .Times(1);
   session_->OnCongestionWindowChange(now);
+}
+
+TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
+  ValueRestore<bool> old_flag(
+      &FLAGS_quic_enable_bandwidth_resumption_experiment, true);
+
+  // Test that if a client provides a CachedNetworkParameters with the same
+  // serving region as the current server, that this data is passed down to the
+  // send algorithm.
+
+  // Client has sent kBWRE connection option to trigger bandwidth resumption.
+  QuicTagVector copt;
+  copt.push_back(kBWRE);
+  QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
+
+  const string kTestServingRegion = "a serving region";
+  session_->set_serving_region(kTestServingRegion);
+
+  QuicCryptoServerStream* crypto_stream =
+      static_cast<QuicCryptoServerStream*>(
+          QuicSessionPeer::GetCryptoStream(session_.get()));
+
+  // No effect if no CachedNetworkParameters provided.
+  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(0);
+  session_->OnConfigNegotiated();
+
+  // No effect if CachedNetworkParameters provided, but different serving
+  // regions.
+  CachedNetworkParameters cached_network_params;
+  cached_network_params.set_bandwidth_estimate_bytes_per_second(1);
+  cached_network_params.set_serving_region("different serving region");
+  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(0);
+  session_->OnConfigNegotiated();
+
+  // Same serving region results in CachedNetworkParameters being stored.
+  cached_network_params.set_serving_region(kTestServingRegion);
+  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_)).Times(1);
+  session_->OnConfigNegotiated();
 }
 
 }  // namespace

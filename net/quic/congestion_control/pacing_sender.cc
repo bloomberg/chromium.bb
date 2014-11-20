@@ -27,6 +27,11 @@ void PacingSender::SetFromConfig(const QuicConfig& config,
   sender_->SetFromConfig(config, is_server, using_pacing);
 }
 
+void PacingSender::ResumeConnectionState(
+    const CachedNetworkParameters& cached_network_params) {
+  sender_->ResumeConnectionState(cached_network_params);
+}
+
 void PacingSender::SetNumEmulatedConnections(int num_connections) {
   sender_->SetNumEmulatedConnections(num_connections);
 }

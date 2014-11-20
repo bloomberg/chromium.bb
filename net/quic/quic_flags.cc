@@ -54,3 +54,14 @@ bool FLAGS_quic_too_many_outstanding_packets = false;
 // If true, QUIC connections will delay moving to forward security until the
 // client starts sending foward secure encrypted packets.
 bool FLAGS_enable_quic_delay_forward_security = true;
+
+// Do not flip this flag.  jokulik plans more testing and additional monitoring
+// before the flag can go the auto-flip process.
+//
+// If true, record the timestamp for the last sent new packet before the call to
+// WritePacket, rather than after in QUIC.
+bool FLAGS_quic_record_send_time_before_write = false;
+
+// If true, enables the QUIC bandwidth resumption experiment (triggered by
+// Chrome/Finch).
+bool FLAGS_quic_enable_bandwidth_resumption_experiment = false;

@@ -67,7 +67,7 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
   }
 
   bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* congestion_feedback) {
+      QuicCongestionFeedbackFrame* congestion_feedback) override {
     if (feedback_ == nullptr) {
       return false;
     }
@@ -95,6 +95,7 @@ class TaggingEncrypter : public QuicEncrypter {
 
   // QuicEncrypter interface.
   bool SetKey(StringPiece key) override { return true; }
+
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
   bool Encrypt(StringPiece nonce,
@@ -149,6 +150,7 @@ class TaggingDecrypter : public QuicDecrypter {
 
   // QuicDecrypter interface
   bool SetKey(StringPiece key) override { return true; }
+
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
   bool Decrypt(StringPiece nonce,
@@ -258,7 +260,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
 class TestPacketWriter : public QuicPacketWriter {
  public:
-  explicit TestPacketWriter(QuicVersion version)
+  TestPacketWriter(QuicVersion version, MockClock *clock)
       : version_(version),
         framer_(SupportedVersions(version_)),
         last_packet_size_(0),
@@ -268,7 +270,9 @@ class TestPacketWriter : public QuicPacketWriter {
         final_bytes_of_last_packet_(0),
         final_bytes_of_previous_packet_(0),
         use_tagging_decrypter_(false),
-        packets_write_attempts_(0) {
+        packets_write_attempts_(0),
+        clock_(clock),
+        write_pause_time_delta_(QuicTime::Delta::Zero()) {
   }
 
   // QuicPacketWriter interface
@@ -297,6 +301,10 @@ class TestPacketWriter : public QuicPacketWriter {
       return WriteResult(WRITE_STATUS_BLOCKED, -1);
     }
     last_packet_size_ = packet.length();
+
+    if (!write_pause_time_delta_.IsZero()) {
+      clock_->AdvanceTime(write_pause_time_delta_);
+    }
     return WriteResult(WRITE_STATUS_OK, last_packet_size_);
   }
 
@@ -309,6 +317,11 @@ class TestPacketWriter : public QuicPacketWriter {
   void SetWritable() override { write_blocked_ = false; }
 
   void BlockOnNextWrite() { block_on_next_write_ = true; }
+
+  // Sets the amount of time that the writer should before the actual write.
+  void SetWritePauseTimeDelta(QuicTime::Delta delta) {
+    write_pause_time_delta_ = delta;
+  }
 
   const QuicPacketHeader& header() { return framer_.header(); }
 
@@ -390,6 +403,10 @@ class TestPacketWriter : public QuicPacketWriter {
   uint32 final_bytes_of_previous_packet_;
   bool use_tagging_decrypter_;
   uint32 packets_write_attempts_;
+  MockClock *clock_;
+  // If non-zero, the clock will pause during WritePacket for this amount of
+  // time.
+  QuicTime::Delta write_pause_time_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketWriter);
 };
@@ -597,7 +614,7 @@ class MockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
   MockPacketWriterFactory(QuicPacketWriter* writer) {
     ON_CALL(*this, Create(_)).WillByDefault(Return(writer));
   }
-  virtual ~MockPacketWriterFactory() {}
+  ~MockPacketWriterFactory() override {}
 
   MOCK_CONST_METHOD1(Create, QuicPacketWriter*(QuicConnection* connection));
 };
@@ -611,7 +628,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
-        writer_(new TestPacketWriter(version())),
+        writer_(new TestPacketWriter(version(), &clock_)),
         factory_(writer_.get()),
         connection_(connection_id_, IPEndPoint(), helper_.get(),
                     factory_, false, version()),
@@ -972,6 +989,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   void BlockOnNextWrite() {
     writer_->BlockOnNextWrite();
     EXPECT_CALL(visitor_, OnWriteBlocked()).Times(AtLeast(1));
+  }
+
+  void SetWritePauseTimeDelta(QuicTime::Delta delta) {
+    writer_->SetWritePauseTimeDelta(delta);
   }
 
   void CongestionBlockWrites() {
@@ -1548,6 +1569,74 @@ TEST_P(QuicConnectionTest, BasicSending) {
   EXPECT_EQ(7u, least_unacked());
 }
 
+// If FLAGS_quic_record_send_time_before_write is disabled, QuicConnection
+// should record the packet sen-tdime after the packet is sent.
+TEST_P(QuicConnectionTest, RecordSentTimeAfterPacketSent) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_record_send_time_before_write, false);
+  // We're using a MockClock for the tests, so we have complete control over the
+  // time.
+  // Our recorded timestamp for the last packet sent time will be passed in to
+  // the send_algorithm.  Make sure that it is set to the correct value.
+  QuicTime actual_recorded_send_time = QuicTime::Zero();
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
+
+  // First send without any pause and check the result.
+  QuicTime expected_recorded_send_time = clock_.Now();
+  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, nullptr);
+  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
+      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
+      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
+
+  // Now pause during the write, and check the results.
+  actual_recorded_send_time = QuicTime::Zero();
+  const QuicTime::Delta kWritePauseTimeDelta =
+      QuicTime::Delta::FromMilliseconds(5000);
+  SetWritePauseTimeDelta(kWritePauseTimeDelta);
+  expected_recorded_send_time = clock_.Now().Add(kWritePauseTimeDelta);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
+  connection_.SendStreamDataWithString(2, "baz", 0, !kFin, nullptr);
+  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
+      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
+      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
+}
+
+// If FLAGS_quic_record_send_time_before_write is enabled, QuicConnection should
+// record the the packet sent-time prior to sending the packet.
+TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_record_send_time_before_write, true);
+  // We're using a MockClock for the tests, so we have complete control over the
+  // time.
+  // Our recorded timestamp for the last packet sent time will be passed in to
+  // the send_algorithm.  Make sure that it is set to the correct value.
+  QuicTime actual_recorded_send_time = QuicTime::Zero();
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
+
+  // First send without any pause and check the result.
+  QuicTime expected_recorded_send_time = clock_.Now();
+  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, nullptr);
+  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
+      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
+      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
+
+  // Now pause during the write, and check the results.
+  actual_recorded_send_time = QuicTime::Zero();
+  const QuicTime::Delta kWritePauseTimeDelta =
+      QuicTime::Delta::FromMilliseconds(5000);
+  SetWritePauseTimeDelta(kWritePauseTimeDelta);
+  expected_recorded_send_time = clock_.Now();
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&actual_recorded_send_time), Return(true)));
+  connection_.SendStreamDataWithString(2, "baz", 0, !kFin, nullptr);
+  EXPECT_EQ(expected_recorded_send_time, actual_recorded_send_time)
+      << "Expected time = " << expected_recorded_send_time.ToDebuggingValue()
+      << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
+}
+
 TEST_P(QuicConnectionTest, FECSending) {
   // All packets carry version info till version is negotiated.
   QuicPacketCreator* creator =
@@ -1565,7 +1654,8 @@ TEST_P(QuicConnectionTest, FECSending) {
   creator->set_max_packet_length(length);
 
   // Send 4 protected data packets, which should also trigger 1 FEC packet.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(5);
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(5);
   // The first stream frame will have 2 fewer overhead bytes than the other 3.
   const string payload(payload_length * 4 + 2, 'a');
   connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, nullptr);
@@ -1601,7 +1691,8 @@ TEST_P(QuicConnectionTest, AbandonFECFromCongestionWindow) {
       &connection_)->IsFecEnabled());
 
   // 1 Data and 1 FEC packet.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(2);
   connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
 
   const QuicTime::Delta retransmission_time =
@@ -1620,8 +1711,9 @@ TEST_P(QuicConnectionTest, DontAbandonAckedFEC) {
   EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
       &connection_)->IsFecEnabled());
 
-  // 1 Data and 1 FEC packet.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
+  // 3 Data and 3 FEC packets.
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(6);
   connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
   // Send some more data afterwards to ensure early retransmit doesn't trigger.
   connection_.SendStreamDataWithStringWithFec(3, "foo", 3, !kFin, nullptr);
@@ -1648,8 +1740,9 @@ TEST_P(QuicConnectionTest, AbandonAllFEC) {
   EXPECT_TRUE(QuicConnectionPeer::GetPacketCreator(
       &connection_)->IsFecEnabled());
 
-  // 1 Data and 1 FEC packet.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
+  // 3 Data and 3 FEC packet.
+  EXPECT_CALL(*send_algorithm_,
+              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA)).Times(6);
   connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
   // Send some more data afterwards to ensure early retransmit doesn't trigger.
   connection_.SendStreamDataWithStringWithFec(3, "foo", 3, !kFin, nullptr);
@@ -3070,22 +3163,25 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
-TEST_P(QuicConnectionTest, SendEarlyDelayedAckForCrypto) {
-  QuicTime ack_time = clock_.ApproximateNow();
+TEST_P(QuicConnectionTest, SendDelayedAckOnHandshakeConfirmed) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-  // Process a packet from the crypto stream, which is frame1_'s default.
   ProcessPacket(1);
-  // Check if delayed ack timer is running for the expected interval.
+  // Check that ack is sent and that delayed ack alarm is set.
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  QuicTime ack_time = clock_.ApproximateNow().Add(DefaultDelayedAckTime());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // Completing the handshake as the server does nothing.
+  QuicConnectionPeer::SetIsServer(&connection_, true);
+  connection_.OnHandshakeComplete();
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
   EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
-  // Simulate delayed ack alarm firing.
-  connection_.GetAckAlarm()->Fire();
-  // Check that ack is sent and that delayed ack alarm is reset.
-  EXPECT_EQ(2u, writer_->frame_count());
-  EXPECT_FALSE(writer_->stop_waiting_frames().empty());
-  EXPECT_FALSE(writer_->ack_frames().empty());
-  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+
+  // Complete the handshake as the client decreases the delayed ack time to 0ms.
+  QuicConnectionPeer::SetIsServer(&connection_, false);
+  connection_.OnHandshakeComplete();
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow(), connection_.GetAckAlarm()->deadline());
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckOnSecondPacket) {

@@ -258,6 +258,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets connection parameters from the supplied |config|.
   void SetFromConfig(const QuicConfig& config);
 
+  // Called by the Session when the client has provided CachedNetworkParameters.
+  // Virtual for tests.
+  virtual void ResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params);
+
   // Sets the number of active streams on the connection for congestion control.
   void SetNumOpenStreams(size_t num_streams);
 
@@ -783,8 +788,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
-  // The last time a new (non-retransmitted) packet was sent for this
-  // connection.
+  // The last time this connection began sending a new (non-retransmitted)
+  // packet.
   QuicTime time_of_last_sent_new_packet_;
 
   // Sequence number of the last sent packet.  Packets are guaranteed to be sent

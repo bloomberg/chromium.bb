@@ -64,9 +64,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
   }
 
-  virtual ~QuicSentPacketManagerTest() override {
-    STLDeleteElements(&packets_);
-  }
+  ~QuicSentPacketManagerTest() override { STLDeleteElements(&packets_); }
 
   QuicByteCount BytesInFlight() {
     return QuicSentPacketManagerPeer::GetBytesInFlight(&manager_);
@@ -216,7 +214,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   void SendFecPacket(QuicPacketSequenceNumber sequence_number) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), sequence_number,
-                             kDefaultLength, NO_RETRANSMITTABLE_DATA))
+                             kDefaultLength, HAS_RETRANSMITTABLE_DATA))
                     .Times(1).WillOnce(Return(true));
     SerializedPacket packet(CreateFecPacket(sequence_number));
     manager_.OnPacketSent(&packet, 0, clock_.Now(),

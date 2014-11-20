@@ -1099,6 +1099,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   bool in_flight;
   // True if the packet can never be acked, so it can be removed.
   bool is_unackable;
+  // True if the packet is an FEC packet.
+  bool is_fec_packet;
 };
 
 }  // namespace net

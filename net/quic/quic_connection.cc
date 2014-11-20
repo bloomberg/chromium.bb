@@ -282,6 +282,11 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 }
 
+void QuicConnection::ResumeConnectionState(
+    const CachedNetworkParameters& cached_network_params) {
+  sent_packet_manager_.ResumeConnectionState(cached_network_params);
+}
+
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {
   sent_packet_manager_.SetNumOpenStreams(num_streams);
 }
@@ -911,10 +916,6 @@ void QuicConnection::MaybeQueueAck() {
     } else {
       // Send an ack much more quickly for crypto handshake packets.
       QuicTime::Delta delayed_ack_time = sent_packet_manager_.DelayedAckTime();
-      if (last_stream_frames_.size() == 1 &&
-          last_stream_frames_[0].stream_id == kCryptoStreamId) {
-        delayed_ack_time = QuicTime::Delta::Zero();
-      }
       ack_alarm_->Set(clock_->ApproximateNow().Add(delayed_ack_time));
       DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
     }
@@ -1449,6 +1450,13 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
            << QuicUtils::StringToHexASCIIDump(
                packet->serialized_packet.packet->AsStringPiece());
 
+  QuicTime packet_send_time = QuicTime::Zero();
+  if (FLAGS_quic_record_send_time_before_write) {
+    // Measure the RTT from before the write begins to avoid underestimating the
+    // min_rtt_, especially in cases where the thread blocks or gets swapped out
+    // during the WritePacket below.
+    packet_send_time = clock_->Now();
+  }
   WriteResult result = writer_->WritePacket(encrypted->data(),
                                             encrypted->length(),
                                             self_address().address(),
@@ -1467,7 +1475,16 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       return false;
     }
   }
-  QuicTime now = clock_->Now();
+  if (!FLAGS_quic_record_send_time_before_write) {
+    packet_send_time = clock_->Now();
+  }
+  if (!packet_send_time.IsInitialized()) {
+    // TODO(jokulik): This is only needed because of the two code paths for
+    // initializing packet_send_time.  Once "quic_record_send_time_before_write"
+    // is deprecated, this check can be removed.
+    LOG(DFATAL) << "The packet send time should never be zero. "
+                << "This is a programming bug, please report it.";
+  }
   if (result.status != WRITE_STATUS_ERROR && debug_visitor_.get() != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(packet->serialized_packet,
@@ -1475,14 +1492,17 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
                                  packet->encryption_level,
                                  packet->transmission_type,
                                  *encrypted,
-                                 now);
+                                 packet_send_time);
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
-    time_of_last_sent_new_packet_ = now;
+    time_of_last_sent_new_packet_ = packet_send_time;
   }
   SetPingAlarm();
-  DVLOG(1) << ENDPOINT << "time of last sent packet: "
-           << now.ToDebuggingValue();
+  DVLOG(1) << ENDPOINT << "time "
+           << (FLAGS_quic_record_send_time_before_write ?
+               "we began writing " : "we finished writing ")
+           << "last sent packet: "
+           << packet_send_time.ToDebuggingValue();
 
   // TODO(ianswett): Change the sequence number length and other packet creator
   // options by a more explicit API than setting a struct value directly,
@@ -1494,7 +1514,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
       &packet->serialized_packet,
       packet->original_sequence_number,
-      now,
+      packet_send_time,
       encrypted->length(),
       packet->transmission_type,
       IsRetransmittable(*packet));
@@ -1585,6 +1605,12 @@ void QuicConnection::OnCongestionWindowChange() {
 
 void QuicConnection::OnHandshakeComplete() {
   sent_packet_manager_.SetHandshakeConfirmed();
+  // The client should immediately ack the SHLO to confirm the handshake is
+  // complete with the server.
+  if (!is_server_ && !ack_queued_) {
+    ack_alarm_->Cancel();
+    ack_alarm_->Set(clock_->ApproximateNow());
+  }
 }
 
 void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
@@ -1598,8 +1624,6 @@ void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
   sent_entropy_manager_.RecordPacketEntropyHash(
       packet.serialized_packet.sequence_number,
       packet.serialized_packet.entropy_hash);
-  LOG_IF(DFATAL, !queued_packets_.empty() && !writer_->IsWriteBlocked())
-      << "Packets should only be left queued if we're write blocked.";
   if (!WritePacket(&packet)) {
     queued_packets_.push_back(packet);
   }

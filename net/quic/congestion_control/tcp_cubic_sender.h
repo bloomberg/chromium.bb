@@ -15,6 +15,7 @@
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/prr_sender.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
@@ -43,6 +44,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   void SetFromConfig(const QuicConfig& config,
                      bool is_server,
                      bool using_pacing) override;
+  void ResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params) override;
   void SetNumEmulatedConnections(int num_connections) override;
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount bytes_in_flight,
@@ -129,6 +132,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Maximum number of outstanding packets for tcp.
   QuicPacketCount max_tcp_congestion_window_;
+
+  const QuicClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
 };

@@ -150,7 +150,7 @@ class SimpleRandom {
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();
-  virtual ~MockFramerVisitor();
+  ~MockFramerVisitor() override;
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   // The constructor sets this up to return false by default.
@@ -225,7 +225,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
 class MockConnectionVisitor : public QuicConnectionVisitorInterface {
  public:
   MockConnectionVisitor();
-  virtual ~MockConnectionVisitor();
+  ~MockConnectionVisitor() override;
 
   MOCK_METHOD1(OnStreamFrames, void(const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnWindowUpdateFrames,
@@ -293,7 +293,7 @@ class MockConnection : public QuicConnection {
   // Uses a Mock helper, ConnectionId of 42, and 127.0.0.1:123.
   MockConnection(bool is_server, const QuicVersionVector& supported_versions);
 
-  virtual ~MockConnection();
+  ~MockConnection() override;
 
   // If the constructor that uses a MockHelper has been used then this method
   // will advance the time of the MockClock.
@@ -324,7 +324,7 @@ class MockConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) override {
+  bool OnProtocolVersionMismatch(QuicVersion version) override {
     return false;
   }
 
@@ -355,7 +355,7 @@ class PacketSavingConnection : public MockConnection {
 class MockSession : public QuicSession {
  public:
   explicit MockSession(QuicConnection* connection);
-  virtual ~MockSession();
+  ~MockSession() override;
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
@@ -388,14 +388,14 @@ class MockSession : public QuicSession {
 class TestSession : public QuicSession {
  public:
   TestSession(QuicConnection* connection, const QuicConfig& config);
-  virtual ~TestSession();
+  ~TestSession() override;
 
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() override;
+  QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
@@ -406,7 +406,7 @@ class TestSession : public QuicSession {
 class TestClientSession : public QuicClientSessionBase {
  public:
   TestClientSession(QuicConnection* connection, const QuicConfig& config);
-  virtual ~TestClientSession();
+  ~TestClientSession() override;
 
   // QuicClientSessionBase
   MOCK_METHOD1(OnProofValid,
@@ -420,7 +420,7 @@ class TestClientSession : public QuicClientSessionBase {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() override;
+  QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
@@ -431,7 +431,7 @@ class TestClientSession : public QuicClientSessionBase {
 class MockPacketWriter : public QuicPacketWriter {
  public:
   MockPacketWriter();
-  virtual ~MockPacketWriter();
+  ~MockPacketWriter() override;
 
   MOCK_METHOD4(WritePacket,
                WriteResult(const char* buffer,
@@ -449,7 +449,7 @@ class MockPacketWriter : public QuicPacketWriter {
 class MockSendAlgorithm : public SendAlgorithmInterface {
  public:
   MockSendAlgorithm();
-  virtual ~MockSendAlgorithm();
+  ~MockSendAlgorithm() override;
 
   MOCK_METHOD3(SetFromConfig, void(const QuicConfig& config,
                                    bool is_server,
@@ -482,6 +482,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(InRecovery, bool());
   MOCK_CONST_METHOD0(GetSlowStartThreshold, QuicByteCount());
   MOCK_CONST_METHOD0(GetCongestionControlType, CongestionControlType());
+  MOCK_METHOD1(ResumeConnectionState, void(const CachedNetworkParameters&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);
@@ -490,7 +491,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
 class MockLossAlgorithm : public LossDetectionInterface {
  public:
   MockLossAlgorithm();
-  virtual ~MockLossAlgorithm();
+  ~MockLossAlgorithm() override;
 
   MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
   MOCK_METHOD4(DetectLostPackets,
@@ -520,7 +521,7 @@ class TestEntropyCalculator :
 class MockEntropyCalculator : public TestEntropyCalculator {
  public:
   MockEntropyCalculator();
-  virtual ~MockEntropyCalculator();
+  ~MockEntropyCalculator() override;
 
   MOCK_CONST_METHOD1(
       EntropyHash,
@@ -542,7 +543,7 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
 
  protected:
   // Object is ref counted.
-  virtual ~MockAckNotifierDelegate();
+  ~MockAckNotifierDelegate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAckNotifierDelegate);
@@ -552,7 +553,7 @@ class MockNetworkChangeVisitor :
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
   MockNetworkChangeVisitor();
-  virtual ~MockNetworkChangeVisitor();
+  ~MockNetworkChangeVisitor() override;
 
   MOCK_METHOD0(OnCongestionWindowChange, void());
 

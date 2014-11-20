@@ -40,7 +40,7 @@ SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
       continue;
     }
 
-    LOG_IF(DFATAL, it->nack_count == 0)
+    LOG_IF(DFATAL, it->nack_count == 0 && it->sent_time.IsInitialized())
         << "All packets less than largest observed should have been nacked."
         << "sequence_number:" << sequence_number
         << " largest_observed:" << largest_observed;

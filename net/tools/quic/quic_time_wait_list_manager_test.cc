@@ -95,9 +95,9 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
         client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
-  virtual ~QuicTimeWaitListManagerTest() override {}
+  ~QuicTimeWaitListManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(writer_, IsWriteBlocked())
         .WillRepeatedly(ReturnPointee(&writer_is_blocked_));
     EXPECT_CALL(writer_, IsWriteBlockedDataBuffered())

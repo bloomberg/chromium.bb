@@ -701,5 +701,32 @@ TEST_F(TcpCubicSenderTest, 1ConnectionCongestionAvoidanceAtEndOfRecovery) {
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
 }
 
+TEST_F(TcpCubicSenderTest, BandwidthResumption) {
+  // Test that when provided with CachedNetworkParameters and opted in to the
+  // bandwidth resumption experiment, that the TcpCubicSender sets initial CWND
+  // appropriately.
+
+  // Set some common values.
+  CachedNetworkParameters cached_network_params;
+  const QuicPacketCount kNumberOfPackets = 123;
+  const int kBandwidthEstimateBytesPerSecond =
+      kNumberOfPackets * kMaxPacketSize;
+  cached_network_params.set_bandwidth_estimate_bytes_per_second(
+      kBandwidthEstimateBytesPerSecond);
+  cached_network_params.set_min_rtt_ms(1000);
+
+  // Ensure that an old estimate is not used for bandwidth resumption.
+  cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
+                                      (kNumSecondsPerHour + 1));
+  sender_->ResumeConnectionState(cached_network_params);
+  EXPECT_EQ(10u, sender_->congestion_window());
+
+  // If the estimate is new enough, make sure it is used.
+  cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
+                                      (kNumSecondsPerHour - 1));
+  sender_->ResumeConnectionState(cached_network_params);
+  EXPECT_EQ(kNumberOfPackets, sender_->congestion_window());
+}
+
 }  // namespace test
 }  // namespace net

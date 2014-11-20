@@ -53,6 +53,9 @@ void QuicUnackedPacketMap::AddSentPacket(
                         packet.sequence_number_length,
                         transmission_type,
                         sent_time);
+  DCHECK(packet.packet != nullptr);
+  info.is_fec_packet = packet.packet->is_fec_packet();
+
   if (old_sequence_number == 0) {
     if (packet.retransmittable_frames != nullptr &&
         packet.retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {

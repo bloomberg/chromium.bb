@@ -245,8 +245,8 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {
 }
 
-CachedNetworkParameters*
-QuicCryptoServerStream::get_previous_cached_network_params() {
+const CachedNetworkParameters*
+QuicCryptoServerStream::previous_cached_network_params() const {
   return previous_cached_network_params_.get();
 }
 

@@ -16,6 +16,7 @@
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sustained_bandwidth_recorder.h"
@@ -99,6 +100,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   virtual void SetFromConfig(const QuicConfig& config);
 
+  // Pass the CachedNetworkParameters to the send algorithm.
+  void ResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params);
+
   void SetNumOpenStreams(size_t num_streams);
 
   void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
@@ -111,6 +116,13 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
 
   // Requests retransmission of all unacked packets of |retransmission_type|.
+  // The behavior of this method depends on the value of |retransmission_type|:
+  // ALL_UNACKED_RETRANSMISSION - All unacked packets will be retransmitted.
+  // This can happen, for example, after a version negotiation packet has been
+  // received and all packets needs to be retransmitted with the new version.
+  // ALL_INITIAL_RETRANSMISSION - Only initially encrypted packets will be
+  // retransmitted. This can happen, for example, when a CHLO has been rejected
+  // and the previously encrypted data needs to be encrypted with a new key.
   void RetransmitUnackedPackets(TransmissionType retransmission_type);
 
   // Retransmits the oldest pending packet there is still a tail loss probe

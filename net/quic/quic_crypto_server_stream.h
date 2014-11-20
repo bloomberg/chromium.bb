@@ -82,6 +82,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   void set_previous_cached_network_params(
       CachedNetworkParameters cached_network_params);
 
+  const CachedNetworkParameters* previous_cached_network_params() const;
+
  protected:
   virtual QuicErrorCode ProcessClientHello(
       const CryptoHandshakeMessage& message,
@@ -92,8 +94,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // Hook that allows the server to set QuicConfig defaults just
   // before going through the parameter negotiation step.
   virtual void OverrideQuicConfigDefaults(QuicConfig* config);
-
-  CachedNetworkParameters* get_previous_cached_network_params();
 
  private:
   friend class test::CryptoTestUtils;

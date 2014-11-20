@@ -71,6 +71,9 @@ const QuicTag kTCID = TAG('T', 'C', 'I', 'D');   // Connection ID truncation.
 // FEC options
 const QuicTag kFHDR = TAG('F', 'H', 'D', 'R');   // FEC protect headers
 
+// Enable bandwidth resumption experiment.
+const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
+
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.

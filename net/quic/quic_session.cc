@@ -48,8 +48,8 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
-  void OnWindowUpdateFrames(const vector<QuicWindowUpdateFrame>& frames)
-      override {
+  void OnWindowUpdateFrames(
+      const vector<QuicWindowUpdateFrame>& frames) override {
     session_->OnWindowUpdateFrames(frames);
     session_->PostProcessAfterData();
   }

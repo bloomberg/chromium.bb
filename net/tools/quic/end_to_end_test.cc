@@ -221,7 +221,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                "HTTP/1.1", "200", "OK", kBarResponseBody);
   }
 
-  virtual ~EndToEndTest() {
+  ~EndToEndTest() override {
     // TODO(rtenneti): port RecycleUnusedPort if needed.
     // RecycleUnusedPort(server_address_.port());
     QuicInMemoryCachePeer::ResetForTests();

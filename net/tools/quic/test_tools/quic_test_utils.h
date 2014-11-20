@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_session.h"
@@ -93,6 +94,8 @@ class MockConnection : public QuicConnection {
                                       QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_CONST_METHOD0(HasPendingWrites, bool());
+
+  MOCK_METHOD1(ResumeConnectionState, void(const CachedNetworkParameters&));
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,

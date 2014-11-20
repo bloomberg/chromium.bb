@@ -22,7 +22,7 @@ class MockQuicDispatcher : public QuicDispatcher {
                      PacketWriterFactory* packet_writer_factory,
                      QuicConnectionHelperInterface* helper);
 
-  virtual ~MockQuicDispatcher();
+  ~MockQuicDispatcher() override;
 
   MOCK_METHOD3(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,

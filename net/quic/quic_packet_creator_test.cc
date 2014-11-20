@@ -87,8 +87,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     server_framer_.set_visitor(&framer_visitor_);
   }
 
-  virtual ~QuicPacketCreatorTest() override {
-  }
+  ~QuicPacketCreatorTest() override {}
 
   void ProcessPacket(QuicPacket* packet) {
     scoped_ptr<QuicEncryptedPacket> encrypted(

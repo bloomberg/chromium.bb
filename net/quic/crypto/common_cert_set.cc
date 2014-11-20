@@ -153,7 +153,7 @@ class CommonCertSetsQUIC : public CommonCertSets {
 
  private:
   CommonCertSetsQUIC() {}
-  virtual ~CommonCertSetsQUIC() {}
+  ~CommonCertSetsQUIC() override {}
 
   friend struct DefaultSingletonTraits<CommonCertSetsQUIC>;
   DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);

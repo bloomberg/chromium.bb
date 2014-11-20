@@ -27,13 +27,12 @@ const float kRenoBeta = 0.7f;  // Reno backoff factor.
 const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
 }  // namespace
 
-TcpCubicSender::TcpCubicSender(
-    const QuicClock* clock,
-    const RttStats* rtt_stats,
-    bool reno,
-    QuicPacketCount initial_tcp_congestion_window,
-    QuicPacketCount max_tcp_congestion_window,
-    QuicConnectionStats* stats)
+TcpCubicSender::TcpCubicSender(const QuicClock* clock,
+                               const RttStats* rtt_stats,
+                               bool reno,
+                               QuicPacketCount initial_tcp_congestion_window,
+                               QuicPacketCount max_tcp_congestion_window,
+                               QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
       cubic_(clock, stats),
       rtt_stats_(rtt_stats),
@@ -49,8 +48,8 @@ TcpCubicSender::TcpCubicSender(
       slowstart_threshold_(max_tcp_congestion_window),
       previous_slowstart_threshold_(0),
       last_cutback_exited_slowstart_(false),
-      max_tcp_congestion_window_(max_tcp_congestion_window) {
-}
+      max_tcp_congestion_window_(max_tcp_congestion_window),
+      clock_(clock) {}
 
 TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
@@ -71,6 +70,26 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config,
       hybrid_slow_start_.set_ack_train_detection(false);
     }
   }
+}
+
+void TcpCubicSender::ResumeConnectionState(
+    const CachedNetworkParameters& cached_network_params) {
+  // If the previous bandwidth estimate is less than an hour old, store in
+  // preparation for doing bandwidth resumption.
+  int64 seconds_since_estimate =
+      clock_->WallNow().ToUNIXSeconds() - cached_network_params.timestamp();
+  if (seconds_since_estimate > kNumSecondsPerHour) {
+    return;
+  }
+
+  QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
+      cached_network_params.bandwidth_estimate_bytes_per_second());
+  QuicTime::Delta rtt_ms =
+      QuicTime::Delta::FromMilliseconds(cached_network_params.min_rtt_ms());
+  congestion_window_ = bandwidth.ToBytesPerPeriod(rtt_ms) / kMaxPacketSize;
+
+  // TODO(rjshade): Set appropriate CWND when previous connection was in slow
+  // start at time of estimate.
 }
 
 void TcpCubicSender::SetNumEmulatedConnections(int num_connections) {

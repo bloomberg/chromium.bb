@@ -704,7 +704,8 @@ TransmissionInfo::TransmissionInfo()
       transmission_type(NOT_RETRANSMISSION),
       all_transmissions(nullptr),
       in_flight(false),
-      is_unackable(false) {}
+      is_unackable(false),
+      is_fec_packet(false) {}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
@@ -719,6 +720,7 @@ TransmissionInfo::TransmissionInfo(
       transmission_type(transmission_type),
       all_transmissions(nullptr),
       in_flight(false),
-      is_unackable(false) {}
+      is_unackable(false),
+      is_fec_packet(false) {}
 
 }  // namespace net

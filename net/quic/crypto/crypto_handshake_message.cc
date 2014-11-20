@@ -302,8 +302,9 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
                             static_cast<int>(it->second.size()));
         done = true;
         break;
+      case kSNI:
       case kUAID:
-        ret += it->second;
+        ret += "\"" + it->second + "\"";
         done = true;
         break;
     }

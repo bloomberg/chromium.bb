@@ -52,6 +52,8 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                                             /*is_secure=*/false,
                                             PRIVACY_MODE_DISABLED),
         &crypto_config_, nullptr);
+    // Advance the time, because timers do not like uninitialized times.
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   void TearDown() override { session_.CloseSessionOnError(ERR_ABORTED); }

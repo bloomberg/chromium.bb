@@ -54,8 +54,7 @@ class TestCryptoStream : public QuicCryptoStream {
       : QuicCryptoStream(session) {
   }
 
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override {
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     encryption_established_ = true;
     handshake_confirmed_ = true;
     CryptoHandshakeMessage msg;
@@ -94,7 +93,7 @@ class TestStream : public QuicDataStream {
 
   using ReliableQuicStream::CloseWriteSide;
 
-  virtual uint32 ProcessData(const char* data, uint32 data_len) override {
+  uint32 ProcessData(const char* data, uint32 data_len) override {
     return data_len;
   }
 
@@ -131,17 +130,15 @@ class TestSession : public QuicSession {
     InitializeSession();
   }
 
-  virtual TestCryptoStream* GetCryptoStream() override {
-    return &crypto_stream_;
-  }
+  TestCryptoStream* GetCryptoStream() override { return &crypto_stream_; }
 
-  virtual TestStream* CreateOutgoingDataStream() override {
+  TestStream* CreateOutgoingDataStream() override {
     TestStream* stream = new TestStream(GetNextStreamId(), this);
     ActivateStream(stream);
     return stream;
   }
 
-  virtual TestStream* CreateIncomingDataStream(QuicStreamId id) override {
+  TestStream* CreateIncomingDataStream(QuicStreamId id) override {
     return new TestStream(id, this);
   }
 
@@ -153,7 +150,7 @@ class TestSession : public QuicSession {
     return QuicSession::GetIncomingDataStream(stream_id);
   }
 
-  virtual QuicConsumedData WritevData(
+  QuicConsumedData WritevData(
       QuicStreamId id,
       const IOVector& data,
       QuicStreamOffset offset,
@@ -223,6 +220,7 @@ class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
         "Fas6LMcVC6Q8QLlHYbXBpdNFuGbuZGUnav5C-2I_-46lL0NGg3GewxGKGHvHEfoyn"
         "EFFlEYHsBQ98rXImL8ySDycdLEFvBPdtctPmWCfTxwmoSMLHU2SCVDhbqMWU5b0yr"
         "JBCScs_ejbKaqBDoB7ZGxTvqlrB__2ZmnHHjCr8RgMRtKNtIeuZAo ";
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   void CheckClosedStreams() {

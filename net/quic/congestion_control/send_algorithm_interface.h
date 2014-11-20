@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"
@@ -113,6 +114,10 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual QuicByteCount GetSlowStartThreshold() const = 0;
 
   virtual CongestionControlType GetCongestionControlType() const = 0;
+
+  // Called by the Session when we get a bandwidth estimate from the client.
+  virtual void ResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params) = 0;
 };
 
 }  // namespace net

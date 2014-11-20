@@ -33,7 +33,7 @@ namespace {
 class MockDelegate : public QuicPacketGenerator::DelegateInterface {
  public:
   MockDelegate() {}
-  virtual ~MockDelegate() override {}
+  ~MockDelegate() override {}
 
   MOCK_METHOD3(ShouldGeneratePacket,
                bool(TransmissionType transmission_type,
@@ -116,7 +116,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
         packet6_(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr),
         packet7_(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr) {}
 
-  virtual ~QuicPacketGeneratorTest() override {
+  ~QuicPacketGeneratorTest() override {
     delete packet_.packet;
     delete packet_.retransmittable_frames;
     delete packet2_.packet;
