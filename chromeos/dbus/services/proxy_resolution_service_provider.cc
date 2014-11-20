@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
+#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "dbus/bus.h"
-#include "dbus/message.h"
 #include "dbus/exported_object.h"
+#include "dbus/message.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_service.h"
@@ -51,8 +50,10 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  ProxyResolverImpl() : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
-                        weak_ptr_factory_(this) {
+  explicit ProxyResolverImpl(scoped_ptr<ProxyResolverDelegate> delegate)
+      : delegate_(delegate.Pass()),
+        origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+        weak_ptr_factory_(this) {
   }
 
   virtual ~ProxyResolverImpl() {
@@ -85,11 +86,9 @@ class ProxyResolverImpl : public ProxyResolverInterface {
         request);
     all_requests_.insert(request);
 
-    // GetPrimaryUserProfile() and GetRequestContext() must be called on UI
-    // thread.
-    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+    // GetRequestContext() must be called on UI thread.
     scoped_refptr<net::URLRequestContextGetter> getter =
-        profile->GetRequestContext();
+        delegate_->GetRequestContext();
 
     getter->GetNetworkTaskRunner()->PostTask(
         FROM_HERE,
@@ -174,6 +173,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     return origin_thread_->BelongsToCurrentThread();
   }
 
+  scoped_ptr<ProxyResolverDelegate> delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
   std::set<Request*> all_requests_;
   base::WeakPtrFactory<ProxyResolverImpl> weak_ptr_factory_;
@@ -264,8 +264,10 @@ void ProxyResolutionServiceProvider::CallResolveProxyHandler(
   provider_weak_ptr->ResolveProxyHandler(method_call, response_sender);
 }
 
-ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create() {
-  return new ProxyResolutionServiceProvider(new ProxyResolverImpl);
+ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create(
+    scoped_ptr<ProxyResolverDelegate> delegate) {
+  return new ProxyResolutionServiceProvider(
+      new ProxyResolverImpl(delegate.Pass()));
 }
 
 ProxyResolutionServiceProvider*

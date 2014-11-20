@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
 
 #include <string>
 
@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -22,8 +23,13 @@ namespace dbus {
 class MethodCall;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace chromeos {
 
+class ProxyResolverDelegate;
 class ProxyResolverInterface;
 
 // This class provides proxy resolution service for CrosDBusService.
@@ -75,7 +81,7 @@ class ProxyResolverInterface;
 //   string ""
 //
 
-class ProxyResolutionServiceProvider
+class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   virtual ~ProxyResolutionServiceProvider();
@@ -85,7 +91,8 @@ class ProxyResolutionServiceProvider
       scoped_refptr<dbus::ExportedObject> exported_object) override;
 
   // Creates the instance.
-  static ProxyResolutionServiceProvider* Create();
+  static ProxyResolutionServiceProvider* Create(
+      scoped_ptr<ProxyResolverDelegate> delgate);
 
  private:
   explicit ProxyResolutionServiceProvider(ProxyResolverInterface *resovler);
@@ -125,9 +132,19 @@ class ProxyResolutionServiceProvider
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);
 };
 
+// The delegate which provides necessary objects to the proxy resolver.
+class CHROMEOS_EXPORT ProxyResolverDelegate {
+ public:
+  virtual ~ProxyResolverDelegate() {}
+
+  // Returns the request context used to perform proxy resolution.
+  // Always called on UI thread.
+  virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
+};
+
 // The interface is defined so we can mock out the proxy resolver
 // implementation.
-class ProxyResolverInterface {
+class CHROMEOS_EXPORT ProxyResolverInterface {
  public:
   // Resolves the proxy for the given URL. Returns the result as a
   // signal sent to |signal_interface| and
@@ -148,4 +165,4 @@ class ProxyResolverInterface {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_

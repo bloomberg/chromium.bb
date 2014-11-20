@@ -80,7 +80,6 @@
       'browser/chromeos/attestation/platform_verification_flow_unittest.cc',
       'browser/chromeos/customization_document_unittest.cc',
       'browser/chromeos/dbus/printer_service_provider_unittest.cc',
-      'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
       'browser/chromeos/display/display_preferences_unittest.cc',
       'browser/chromeos/drive/change_list_loader_unittest.cc',
       'browser/chromeos/drive/change_list_processor_unittest.cc',

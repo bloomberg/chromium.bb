@@ -12,7 +12,7 @@
 // - ProxyResolutionServiceProvider will return the result as a signal.
 // - Confirm that we receive the signal and check the contents of the signal.
 
-#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
+#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
 #include "base/bind.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
