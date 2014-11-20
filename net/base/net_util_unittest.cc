@@ -831,8 +831,8 @@ TEST(NetUtilTest, GetNetworkList) {
       }
     }
     EXPECT_FALSE(all_zeroes);
-    EXPECT_GT(it->network_prefix, 1u);
-    EXPECT_LE(it->network_prefix, it->address.size() * 8);
+    EXPECT_GT(it->prefix_length, 1u);
+    EXPECT_LE(it->prefix_length, it->address.size() * 8);
 
 #if defined(OS_WIN)
     // On Windows |name| is NET_LUID.
@@ -975,7 +975,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
                                         GetInterfaceNameVM));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_vm);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   results.clear();
 
@@ -1017,7 +1017,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
                                         GetInterfaceName));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
   results.clear();
@@ -1035,7 +1035,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
                                         GetInterfaceName));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
   results.clear();
@@ -1079,7 +1079,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       &ip_attributes_getter));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_vm);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   results.clear();
 
@@ -1113,7 +1113,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       &ip_attributes_getter));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
   results.clear();
@@ -1128,7 +1128,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       &ip_attributes_getter));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
   results.clear();
@@ -1237,7 +1237,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_vm);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_NONE);
   results.clear();
@@ -1279,7 +1279,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
       &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
   results.clear();
@@ -1298,7 +1298,7 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].friendly_name, "FriendlyInterfaceName");
   EXPECT_EQ(results[0].name, ifname_em1);
-  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].prefix_length, 1ul);
   EXPECT_EQ(results[0].address, ipv6_address);
   EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
   results.clear();

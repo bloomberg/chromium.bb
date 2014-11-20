@@ -32,7 +32,7 @@ void GetNetworkListOnFileThread(
     net::AddressFamily address_family =
         net::GetAddressFamily(networks[i].address);
     if (address_family == net::ADDRESS_FAMILY_IPV4 &&
-        networks[i].network_prefix >= 24) {
+        networks[i].prefix_length >= 24) {
       ip4_networks.push_back(networks[i]);
     }
   }
@@ -141,7 +141,7 @@ int PrivetTrafficDetector::Bind() {
 bool PrivetTrafficDetector::IsSourceAcceptable() const {
   for (size_t i = 0; i < networks_.size(); ++i) {
     if (net::IPNumberMatchesPrefix(recv_addr_.address(), networks_[i].address,
-                                   networks_[i].network_prefix)) {
+                                   networks_[i].prefix_length)) {
       return true;
     }
   }

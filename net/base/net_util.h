@@ -468,7 +468,7 @@ struct NET_EXPORT NetworkInterface {
                    uint32 interface_index,
                    NetworkChangeNotifier::ConnectionType type,
                    const IPAddressNumber& address,
-                   uint32 network_prefix,
+                   uint32 prefix_length,
                    int ip_address_attributes);
   ~NetworkInterface();
 
@@ -477,7 +477,7 @@ struct NET_EXPORT NetworkInterface {
   uint32 interface_index;  // Always 0 on Android.
   NetworkChangeNotifier::ConnectionType type;
   IPAddressNumber address;
-  uint32 network_prefix;
+  uint32 prefix_length;
   int ip_address_attributes;  // Combination of |IPAddressAttributes|.
 };
 

@@ -720,7 +720,7 @@ void SocketGetNetworkListFunction::SendResponseOnUIThread(
         make_linked_ptr(new core_api::socket::NetworkInterface);
     info->name = i->name;
     info->address = net::IPAddressToString(i->address);
-    info->prefix_length = i->network_prefix;
+    info->prefix_length = i->prefix_length;
     create_arg.push_back(info);
   }
 

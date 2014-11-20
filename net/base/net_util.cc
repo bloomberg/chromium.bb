@@ -1015,8 +1015,7 @@ bool IsLocalhost(const std::string& host) {
 }
 
 NetworkInterface::NetworkInterface()
-    : type(NetworkChangeNotifier::CONNECTION_UNKNOWN),
-      network_prefix(0) {
+    : type(NetworkChangeNotifier::CONNECTION_UNKNOWN), prefix_length(0) {
 }
 
 NetworkInterface::NetworkInterface(const std::string& name,
@@ -1024,14 +1023,14 @@ NetworkInterface::NetworkInterface(const std::string& name,
                                    uint32 interface_index,
                                    NetworkChangeNotifier::ConnectionType type,
                                    const IPAddressNumber& address,
-                                   uint32 network_prefix,
+                                   uint32 prefix_length,
                                    int ip_address_attributes)
     : name(name),
       friendly_name(friendly_name),
       interface_index(interface_index),
       type(type),
       address(address),
-      network_prefix(network_prefix),
+      prefix_length(prefix_length),
       ip_address_attributes(ip_address_attributes) {
 }
 

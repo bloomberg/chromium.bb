@@ -117,7 +117,7 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
         if (endpoint.FromSockAddr(address->Address.lpSockaddr,
                                   address->Address.iSockaddrLength)) {
           // XP has no OnLinkPrefixLength field.
-          size_t net_prefix = is_xp ? 0 : address->OnLinkPrefixLength;
+          size_t prefix_length = is_xp ? 0 : address->OnLinkPrefixLength;
           if (is_xp) {
             // Prior to Windows Vista the FirstPrefix pointed to the list with
             // single prefix for each IP address assigned to the adapter.
@@ -133,7 +133,8 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
                   IPNumberMatchesPrefix(endpoint.address(),
                                         network_endpoint.address(),
                                         prefix->PrefixLength)) {
-                net_prefix = std::max<size_t>(net_prefix, prefix->PrefixLength);
+                prefix_length =
+                    std::max<size_t>(prefix_length, prefix->PrefixLength);
               }
             }
           }
@@ -165,7 +166,7 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
               adapter->AdapterName,
               base::SysWideToNativeMB(adapter->FriendlyName), index,
               GetNetworkInterfaceType(adapter->IfType), endpoint.address(),
-              net_prefix, ip_address_attributes));
+              prefix_length, ip_address_attributes));
         }
       }
     }
