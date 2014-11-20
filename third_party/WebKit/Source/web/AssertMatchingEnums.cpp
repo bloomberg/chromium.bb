@@ -329,6 +329,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedUndefined, ExpandedUndefined);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedCollapsed, ExpandedCollapsed);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedExpanded, ExpandedExpanded);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebAXOptionalBoolUndefined, OptionalBoolUndefined);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXOptionalBoolTrue, OptionalBoolTrue);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXOptionalBoolFalse, OptionalBoolFalse);
+
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Checking, ApplicationCacheHost::CHECKING);

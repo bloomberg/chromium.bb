@@ -213,6 +213,14 @@ bool WebAXObject::isAnchor() const
     return m_private->isAnchor();
 }
 
+WebAXOptionalBool WebAXObject::isAriaGrabbed() const
+{
+    if (isDetached())
+        return WebAXOptionalBoolUndefined;
+
+    return static_cast<WebAXOptionalBool>(m_private->isAriaGrabbed());
+}
+
 bool WebAXObject::isAriaReadOnly() const
 {
     if (isDetached())

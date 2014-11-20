@@ -86,6 +86,7 @@ public:
     BLINK_EXPORT WebAXObject parentObject() const;
 
     BLINK_EXPORT bool isAnchor() const;
+    BLINK_EXPORT WebAXOptionalBool isAriaGrabbed() const;
     BLINK_EXPORT bool isAriaReadOnly() const;
     BLINK_EXPORT bool isButtonStateMixed() const;
     BLINK_EXPORT bool isChecked() const;

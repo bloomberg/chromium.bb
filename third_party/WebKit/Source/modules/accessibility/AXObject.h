@@ -261,6 +261,12 @@ enum AccessibilityExpanded {
     ExpandedExpanded,
 };
 
+enum AccessibilityOptionalBool {
+    OptionalBoolUndefined = 0,
+    OptionalBoolTrue,
+    OptionalBoolFalse
+};
+
 class AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject> > AccessibilityChildrenVector;
@@ -448,7 +454,7 @@ public:
     bool ariaPressedIsPresent() const;
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
     virtual bool ariaRoleHasPresentationalChildren() const { return false; }
-    virtual bool isARIAGrabbed() { return false; }
+    virtual AccessibilityOptionalBool isAriaGrabbed() const { return OptionalBoolUndefined; }
     virtual bool isPresentationalChildOfAriaRole() const { return false; }
     virtual bool shouldFocusActiveDescendant() const { return false; }
     bool supportsARIAAttributes() const;

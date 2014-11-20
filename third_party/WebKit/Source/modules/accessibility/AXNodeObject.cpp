@@ -1137,6 +1137,17 @@ AccessibilityRole AXNodeObject::ariaRoleAttribute() const
     return m_ariaRole;
 }
 
+AccessibilityOptionalBool AXNodeObject::isAriaGrabbed() const
+{
+    const AtomicString& grabbed = getAttribute(aria_grabbedAttr);
+    if (equalIgnoringCase(grabbed, "true"))
+        return OptionalBoolTrue;
+    if (equalIgnoringCase(grabbed, "false"))
+        return OptionalBoolFalse;
+
+    return OptionalBoolUndefined;
+}
+
 // When building the textUnderElement for an object, determine whether or not
 // we should include the inner text of this given descendant object or skip it.
 static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)

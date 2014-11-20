@@ -240,6 +240,15 @@ enum WebAXExpanded {
     WebAXExpandedExpanded
 };
 
+// Attribute definition values.
+// These values must match blink::AccessibilityOptionalBool values.
+// Enforced in AssertMatchingEnums.cpp.
+enum WebAXOptionalBool {
+    WebAXOptionalBoolUndefined = 0,
+    WebAXOptionalBoolTrue,
+    WebAXOptionalBoolFalse
+};
+
 } // namespace blink
 
 #endif
