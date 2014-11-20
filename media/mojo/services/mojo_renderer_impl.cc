@@ -19,20 +19,19 @@ namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    mojo::ServiceProvider* audio_renderer_provider)
+    mojo::ServiceProvider* media_renderer_provider)
     : task_runner_(task_runner),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
-  // For now we only support audio and there must be a provider.
-  DCHECK(audio_renderer_provider);
-  mojo::ConnectToService(audio_renderer_provider, &remote_audio_renderer_);
-  remote_audio_renderer_.set_client(this);
+  DCHECK(media_renderer_provider);
+  mojo::ConnectToService(media_renderer_provider, &remote_media_renderer_);
+  remote_media_renderer_.set_client(this);
 }
 
 MojoRendererImpl::~MojoRendererImpl() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // Connection to |remote_audio_renderer_| will error-out here.
+  // Connection to |remote_media_renderer_| will error-out here.
 }
 
 // TODO(xhwang): Support |paint_cb| if needed.
@@ -74,7 +73,7 @@ void MojoRendererImpl::Initialize(
         ->DidConnect();
   }
 
-  remote_audio_renderer_->Initialize(
+  remote_media_renderer_->Initialize(
       audio_stream.Pass(),
       video_stream.Pass(),
       BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,
@@ -84,7 +83,7 @@ void MojoRendererImpl::Initialize(
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  remote_audio_renderer_->Flush(flush_cb);
+  remote_media_renderer_->Flush(flush_cb);
 }
 
 void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
@@ -96,19 +95,19 @@ void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
     time_ = time;
   }
 
-  remote_audio_renderer_->StartPlayingFrom(time.InMicroseconds());
+  remote_media_renderer_->StartPlayingFrom(time.InMicroseconds());
 }
 
 void MojoRendererImpl::SetPlaybackRate(float playback_rate) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  remote_audio_renderer_->SetPlaybackRate(playback_rate);
+  remote_media_renderer_->SetPlaybackRate(playback_rate);
 }
 
 void MojoRendererImpl::SetVolume(float volume) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  remote_audio_renderer_->SetVolume(volume);
+  remote_media_renderer_->SetVolume(volume);
 }
 
 base::TimeDelta MojoRendererImpl::GetMediaTime() {
@@ -120,7 +119,7 @@ base::TimeDelta MojoRendererImpl::GetMediaTime() {
 bool MojoRendererImpl::HasAudio() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(remote_audio_renderer_.get());  // We always bind the renderer.
+  DCHECK(remote_media_renderer_.get());  // We always bind the renderer.
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
 }
 

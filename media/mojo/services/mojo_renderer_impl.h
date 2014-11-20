@@ -27,16 +27,14 @@ class DemuxerStreamProvider;
 //
 // MojoRendererImpl implements media::Renderer for use as either an audio
 // or video renderer.
-//
-// TODO(tim): Only audio is currently supported. http://crbug.com/410451.
 class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
  public:
   // |task_runner| is the TaskRunner on which all methods are invoked.
-  // |audio_renderer_provider| is a ServiceProvider from a connected
+  // |media_renderer_provider| is a ServiceProvider from a connected
   //     Application that is hosting a mojo::MediaRenderer.
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      mojo::ServiceProvider* audio_renderer_provider);
+      mojo::ServiceProvider* media_renderer_provider);
   ~MojoRendererImpl() override;
 
   // Renderer implementation.
@@ -63,17 +61,17 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   void OnError() override;
 
  private:
-  // Called when |remote_audio_renderer_| has finished initializing.
+  // Called when |remote_media_renderer_| has finished initializing.
   void OnInitialized();
 
   // Task runner used to execute pipeline tasks.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DemuxerStreamProvider* demuxer_stream_provider_;
-  mojo::MediaRendererPtr remote_audio_renderer_;
+  mojo::MediaRendererPtr remote_media_renderer_;
 
   // Callbacks passed to Initialize() that we forward messages from
-  // |remote_audio_renderer_| through.
+  // |remote_media_renderer_| through.
   base::Closure init_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
