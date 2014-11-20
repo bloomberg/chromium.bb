@@ -14,6 +14,7 @@ import sys
 from pylib import cmd_helper
 from pylib import constants
 from pylib.device import device_utils
+from pylib.utils import md5sum
 from pylib.utils import proguard
 
 sys.path.insert(0,
@@ -55,16 +56,6 @@ class TestJar(object):
     if not self._GetCachedProguardData():
       self._GetProguardData()
 
-  @staticmethod
-  def _CalculateMd5(path):
-    # TODO(jbudorick): Move MD5sum calculations out of here and
-    # AndroidCommands to their own module.
-    out = cmd_helper.GetCmdOutput(
-        [os.path.join(constants.GetOutDirectory(),
-                      'md5sum_bin_host'),
-        path])
-    return out
-
   def _GetCachedProguardData(self):
     if (os.path.exists(self._pickled_proguard_name) and
         (os.path.getmtime(self._pickled_proguard_name) >
@@ -74,7 +65,7 @@ class TestJar(object):
       try:
         with open(self._pickled_proguard_name, 'r') as r:
           d = pickle.loads(r.read())
-        jar_md5 = self._CalculateMd5(self._jar_path)
+        jar_md5 = md5sum.CalculateHostMd5Sums(self._jar_path)[0].hash
         if (d['JAR_MD5SUM'] == jar_md5 and
             d['VERSION'] == PICKLE_FORMAT_VERSION):
           self._test_methods = d['TEST_METHODS']
@@ -114,7 +105,7 @@ class TestJar(object):
     logging.info('Storing proguard output to %s', self._pickled_proguard_name)
     d = {'VERSION': PICKLE_FORMAT_VERSION,
          'TEST_METHODS': self._test_methods,
-         'JAR_MD5SUM': self._CalculateMd5(self._jar_path)}
+         'JAR_MD5SUM': md5sum.CalculateHostMd5Sums(self._jar_path)[0].hash}
     with open(self._pickled_proguard_name, 'w') as f:
       f.write(pickle.dumps(d))
 

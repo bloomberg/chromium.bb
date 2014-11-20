@@ -26,6 +26,7 @@ from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
 from pylib.utils import device_temp_file
 from pylib.utils import host_utils
+from pylib.utils import md5sum
 from pylib.utils import parallelizer
 from pylib.utils import timeout_retry
 
@@ -701,12 +702,13 @@ class DeviceUtils(object):
     if not real_device_path:
       return [(host_path, device_path)]
 
-    # TODO(jbudorick): Move the md5 logic up into DeviceUtils or base
-    # this function on mtime.
-    # pylint: disable=protected-access
-    host_hash_tuples, device_hash_tuples = self.old_interface._RunMd5Sum(
-        real_host_path, real_device_path)
-    # pylint: enable=protected-access
+    host_hash_tuples = md5sum.CalculateHostMd5Sums([real_host_path])
+    device_paths_to_md5 = (
+        real_device_path if os.path.isfile(real_host_path)
+        else ('%s/%s' % (real_device_path, os.path.relpath(p, real_host_path))
+              for _, p in host_hash_tuples))
+    device_hash_tuples = md5sum.CalculateDeviceMd5Sums(
+        device_paths_to_md5, self)
 
     if os.path.isfile(host_path):
       if (not device_hash_tuples
