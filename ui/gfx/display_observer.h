@@ -23,6 +23,7 @@ class GFX_EXPORT DisplayObserver {
     DISPLAY_METRIC_WORK_AREA = 1 << 1,
     DISPLAY_METRIC_DEVICE_SCALE_FACTOR = 1 << 2,
     DISPLAY_METRIC_ROTATION = 1 << 3,
+    DISPLAY_METRIC_PRIMARY = 1 << 4,
   };
 
   // Called when |new_display| has been added.

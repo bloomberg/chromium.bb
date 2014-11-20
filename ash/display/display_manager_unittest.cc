@@ -1381,6 +1381,48 @@ TEST_F(DisplayManagerTest, InvertLayout) {
             DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
 }
 
+TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("500x500,500x500");
+  ash::Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+  reset();
+  UpdateDisplay("500x500");
+  EXPECT_FALSE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_FALSE(changed_metrics() &
+               gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
+
+  UpdateDisplay("500x500,500x500");
+  ash::Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+  reset();
+  UpdateDisplay("500x400");
+  EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
+}
+
+TEST_F(DisplayManagerTest, NotifyPrimaryChangeUndock) {
+  if (!SupportsMultipleDisplays())
+    return;
+  // Assume the default display is an external display, and
+  // emulates undocking by switching to another display.
+  DisplayInfo another_display_info =
+      CreateDisplayInfo(1, gfx::Rect(0, 0, 1280, 800));
+  std::vector<DisplayInfo> info_list;
+  info_list.push_back(another_display_info);
+  reset();
+  display_manager()->OnNativeDisplaysChanged(info_list);
+  EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_TRUE(changed_metrics() &
+              gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
+}
+
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.

@@ -345,7 +345,7 @@ void DisplayManager::SetLayoutForCurrentDisplays(
     screen_ash_->NotifyMetricsChanged(
         ScreenUtil::GetSecondaryDisplay(),
         gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-            gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+        gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
     if (delegate_)
       delegate_->PostDisplayConfigurationChange();
   }
@@ -838,6 +838,9 @@ void DisplayManager::UpdateDisplays(
       ++new_info_iter;
     }
   }
+  gfx::Display old_primary;
+  if (delegate_)
+    old_primary = screen_ash_->GetPrimaryDisplay();
 
   // Clear focus if the display has been removed, but don't clear focus if
   // the destkop has been moved from one display to another
@@ -903,11 +906,40 @@ void DisplayManager::UpdateDisplays(
     screen_ash_->NotifyDisplayAdded(displays_[*iter]);
   }
 
+  bool notify_primary_change =
+      delegate_ ? old_primary.id() != screen_->GetPrimaryDisplay().id() : false;
+
   for (std::map<size_t, uint32_t>::iterator iter = display_changes.begin();
        iter != display_changes.end();
        ++iter) {
-    screen_ash_->NotifyMetricsChanged(displays_[iter->first], iter->second);
+    uint32_t metrics = iter->second;
+    const gfx::Display& updated_display = displays_[iter->first];
+
+    if (notify_primary_change &&
+        updated_display.id() == screen_->GetPrimaryDisplay().id()) {
+      metrics |= gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+      notify_primary_change = false;
+    }
+    screen_ash_->NotifyMetricsChanged(updated_display, metrics);
   }
+
+  if (notify_primary_change) {
+    // This happens when a primary display has moved to anther display without
+    // bounds change.
+    const gfx::Display& primary = screen_->GetPrimaryDisplay();
+    if (primary.id() != old_primary.id()) {
+      uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+      if (primary.size() != old_primary.size()) {
+        metrics |= (gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                    gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+      }
+      if (primary.device_scale_factor() != old_primary.device_scale_factor())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+
+      screen_ash_->NotifyMetricsChanged(primary, metrics);
+    }
+  }
+
   if (delegate_)
     delegate_->PostDisplayConfigurationChange();
 

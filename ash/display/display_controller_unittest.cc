@@ -69,6 +69,7 @@ class TestObserver : public DisplayController::Observer,
         bounds_changed_count_(0),
         rotation_changed_count_(0),
         workarea_changed_count_(0),
+        primary_changed_count_(0),
         changed_display_id_(0),
         focus_changed_count_(0),
         activation_changed_count_(0) {
@@ -103,6 +104,8 @@ class TestObserver : public DisplayController::Observer,
       ++rotation_changed_count_;
     if (metrics & DISPLAY_METRIC_WORK_AREA)
       ++workarea_changed_count_;
+    if (metrics & DISPLAY_METRIC_PRIMARY)
+      ++primary_changed_count_;
   }
   void OnDisplayAdded(const gfx::Display& new_display) override {}
   void OnDisplayRemoved(const gfx::Display& old_display) override {}
@@ -139,6 +142,10 @@ class TestObserver : public DisplayController::Observer,
     return Resetter<int>(&workarea_changed_count_).value();
   }
 
+  int64 GetPrimaryChangedCountAndReset() {
+    return Resetter<int>(&primary_changed_count_).value();
+  }
+
   int64 GetChangedDisplayIdAndReset() {
     return Resetter<int64>(&changed_display_id_).value();
   }
@@ -158,6 +165,7 @@ class TestObserver : public DisplayController::Observer,
   int bounds_changed_count_;
   int rotation_changed_count_;
   int workarea_changed_count_;
+  int primary_changed_count_;
   int64 changed_display_id_;
 
   int focus_changed_count_;
@@ -581,9 +589,11 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_EQ(1U, display_manager->num_connected_displays());
-  EXPECT_EQ(0, observer.GetChangedDisplayIdAndReset());
-  EXPECT_EQ(0, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetWorkareaChangedCountAndReset());
+  // Observers are called due to primary change.
+  EXPECT_EQ(2, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
+  EXPECT_EQ(1, observer.GetPrimaryChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
