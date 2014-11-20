@@ -16,7 +16,8 @@
     "https://dl.google.com/",
     "https://clients4.google.com/",
     "accessibilityFeatures.read",
-    "audioCapture"
+    "audioCapture",
+    "tabs"
   ],
   "background": {
     "page": "background.html",
