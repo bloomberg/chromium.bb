@@ -599,21 +599,24 @@ class CC_EXPORT ResourceProvider {
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };
 
-
 // TODO(epenner): Move these format conversions to resource_format.h
 // once that builds on mac (npapi.h currently #includes OpenGL.h).
 inline unsigned BitsPerPixel(ResourceFormat format) {
-  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
-  static const unsigned format_bits_per_pixel[RESOURCE_FORMAT_MAX + 1] = {
-    32,  // RGBA_8888
-    16,  // RGBA_4444
-    32,  // BGRA_8888
-    8,   // ALPHA_8
-    8,   // LUMINANCE_8
-    16,  // RGB_565,
-    4    // ETC1
-  };
-  return format_bits_per_pixel[format];
+  switch (format) {
+    case BGRA_8888:
+    case RGBA_8888:
+      return 32;
+    case RGBA_4444:
+    case RGB_565:
+      return 16;
+    case ALPHA_8:
+    case LUMINANCE_8:
+      return 8;
+    case ETC1:
+      return 4;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 inline GLenum GLDataType(ResourceFormat format) {
