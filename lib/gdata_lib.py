@@ -239,6 +239,9 @@ class Issue(object):
 
   def InitFromTracker(self, t_issue, project_name):
     """Initialize |self| from tracker issue |t_issue|"""
+    # The __slots__ logic above confuses pylint.
+    # https://bitbucket.org/logilab/pylint/issue/380/
+    # pylint: disable=assigning-non-slot
 
     self.id = int(t_issue.id.text.split('/')[-1])
     self.labels = [label.text for label in t_issue.label]

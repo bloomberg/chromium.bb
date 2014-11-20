@@ -445,6 +445,10 @@ class RunAttributesTest(_BuilderRunTestCase):
     ra = self._NewRunAttributes()
     value = 'foobar'
 
+    # The __slots__ logic above confuses pylint.
+    # https://bitbucket.org/logilab/pylint/issue/380/
+    # pylint: disable=assigning-non-slot
+
     # Set/Get a regular run attribute using direct access.
     ra.release_tag = value
     self.assertEqual(value, ra.release_tag)

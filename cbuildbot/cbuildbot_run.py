@@ -191,6 +191,10 @@ class RunAttributes(object):
   )
 
   def __init__(self, multiprocess_manager):
+    # The __slots__ logic above confuses pylint.
+    # https://bitbucket.org/logilab/pylint/issue/380/
+    # pylint: disable=assigning-non-slot
+
     # Create queues for all non-board-specific parallel attributes now.
     # Parallel board attributes must wait for the board to be registered.
     self._manager = multiprocess_manager
@@ -609,6 +613,10 @@ class _BuilderRunBase(object):
     self.debug = self.options.debug
     if self.options.remote_trybot:
       self.debug = self.options.debug_forced
+
+    # The __slots__ logic above confuses pylint.
+    # https://bitbucket.org/logilab/pylint/issue/380/
+    # pylint: disable=assigning-non-slot
 
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
