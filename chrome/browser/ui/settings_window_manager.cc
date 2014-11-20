@@ -35,8 +35,11 @@ void SettingsWindowManager::RemoveObserver(
 
 void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
                                                      const GURL& gurl) {
-  // Use the original (non off-the-record) profile for settings.
-  profile = profile->GetOriginalProfile();
+  // Use the original (non off-the-record) profile for settings unless
+  // this is a guest session.
+  if (!profile->IsGuestSession() && profile->IsOffTheRecord())
+    profile = profile->GetOriginalProfile();
+
   // Look for an existing browser window.
   Browser* browser = FindBrowserForProfile(profile);
   if (browser) {
