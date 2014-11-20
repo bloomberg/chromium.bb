@@ -173,8 +173,9 @@ class ChunkDemuxerTest : public ::testing::Test {
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
     Demuxer::NeedKeyCB need_key_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerNeedKey, base::Unretained(this));
-    demuxer_.reset(
-        new ChunkDemuxer(open_cb, need_key_cb, base::Bind(&LogFunc), true));
+    demuxer_.reset(new ChunkDemuxer(open_cb, need_key_cb, base::Bind(&LogFunc),
+                                    scoped_refptr<MediaLog>(new MediaLog()),
+                                    true));
   }
 
   virtual ~ChunkDemuxerTest() {

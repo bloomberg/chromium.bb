@@ -167,6 +167,7 @@ void MediaSourceDelegate::InitializeMediaSource(
       media::BindToCurrentLoop(
           base::Bind(&MediaSourceDelegate::OnNeedKey, main_weak_this_)),
       base::Bind(&LogMediaSourceError, media_log_),
+      media_log_,
       false));
 
   // |this| will be retained until StopDemuxer() is posted, so Unretained() is

@@ -108,7 +108,7 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
 
 std::string AudioDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
-  s << "codec: " << codec()
+  s << "codec: " << GetHumanReadableCodecName()
     << " bytes_per_channel: " << bytes_per_channel()
     << " channel_layout: " << channel_layout()
     << " samples_per_second: " << samples_per_second()
@@ -119,6 +119,40 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
     << " has extra data? " << (extra_data() ? "true" : "false")
     << " encrypted? " << (is_encrypted() ? "true" : "false");
   return s.str();
+}
+
+// These names come from src/third_party/ffmpeg/libavcodec/codec_desc.c
+std::string AudioDecoderConfig::GetHumanReadableCodecName() const {
+  switch (codec()) {
+    case kUnknownAudioCodec:
+      return "unknown";
+    case kCodecAAC:
+      return "aac";
+    case kCodecMP3:
+      return "mp3";
+    case kCodecPCM:
+    case kCodecPCM_S16BE:
+    case kCodecPCM_S24BE:
+      return "pcm";
+    case kCodecVorbis:
+      return "vorbis";
+    case kCodecFLAC:
+      return "flac";
+    case kCodecAMR_NB:
+      return "amr_nb";
+    case kCodecAMR_WB:
+      return "amr_wb";
+    case kCodecGSM_MS:
+      return "gsm_ms";
+    case kCodecPCM_ALAW:
+      return "pcm_alaw";
+    case kCodecPCM_MULAW:
+      return "pcm_mulaw";
+    case kCodecOpus:
+      return "opus";
+  }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace media

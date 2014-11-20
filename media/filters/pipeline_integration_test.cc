@@ -398,6 +398,7 @@ class MockMediaSource {
             base::Bind(&MockMediaSource::DemuxerNeedKey,
                        base::Unretained(this)),
             LogCB(),
+            scoped_refptr<MediaLog>(new MediaLog()),
             true)),
         owned_chunk_demuxer_(chunk_demuxer_) {
 

@@ -98,7 +98,8 @@ class SourceState {
   SourceState(
       scoped_ptr<StreamParser> stream_parser,
       scoped_ptr<FrameProcessor> frame_processor, const LogCB& log_cb,
-      const CreateDemuxerStreamCB& create_demuxer_stream_cb);
+      const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+      const scoped_refptr<MediaLog>& media_log);
 
   ~SourceState();
 
@@ -235,6 +236,7 @@ class SourceState {
 
   scoped_ptr<FrameProcessor> frame_processor_;
   LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
   StreamParser::InitCB init_cb_;
 
   // During Append(), OnNewConfigs() will trigger the initialization segment
@@ -256,7 +258,8 @@ class SourceState {
 SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
                          scoped_ptr<FrameProcessor> frame_processor,
                          const LogCB& log_cb,
-                         const CreateDemuxerStreamCB& create_demuxer_stream_cb)
+                         const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+                         const scoped_refptr<MediaLog>& media_log)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       timestamp_offset_during_append_(NULL),
       new_media_segment_(false),
@@ -266,6 +269,7 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
       video_(NULL),
       frame_processor_(frame_processor.release()),
       log_cb_(log_cb),
+      media_log_(media_log),
       auto_update_timestamp_offset_(false) {
   DCHECK(!create_demuxer_stream_cb_.is_null());
   DCHECK(frame_processor_);
@@ -592,6 +596,15 @@ bool SourceState::OnNewConfigs(
   bool success = true;
   if (audio_config.IsValidConfig()) {
     if (!audio_) {
+      media_log_->SetBooleanProperty("found_audio_stream", true);
+    }
+    if (!audio_ ||
+        audio_->audio_decoder_config().codec() != audio_config.codec()) {
+      media_log_->SetStringProperty("audio_codec_name",
+                                    audio_config.GetHumanReadableCodecName());
+    }
+
+    if (!audio_) {
       audio_ = create_demuxer_stream_cb_.Run(DemuxerStream::AUDIO);
 
       if (!audio_) {
@@ -610,6 +623,15 @@ bool SourceState::OnNewConfigs(
   }
 
   if (video_config.IsValidConfig()) {
+    if (!video_) {
+      media_log_->SetBooleanProperty("found_video_stream", true);
+    }
+    if (!video_ ||
+        video_->video_decoder_config().codec() != video_config.codec()) {
+      media_log_->SetStringProperty("video_codec_name",
+                                    video_config.GetHumanReadableCodecName());
+    }
+
     if (!video_) {
       video_ = create_demuxer_stream_cb_.Run(DemuxerStream::VIDEO);
 
@@ -1065,6 +1087,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
                            const NeedKeyCB& need_key_cb,
                            const LogCB& log_cb,
+                           const scoped_refptr<MediaLog>& media_log,
                            bool splice_frames_enabled)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
@@ -1073,6 +1096,7 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       need_key_cb_(need_key_cb),
       enable_text_(false),
       log_cb_(log_cb),
+      media_log_(media_log),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
@@ -1231,7 +1255,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
       new SourceState(stream_parser.Pass(),
                       frame_processor.Pass(), log_cb_,
                       base::Bind(&ChunkDemuxer::CreateDemuxerStream,
-                                 base::Unretained(this))));
+                                 base::Unretained(this)),
+                      media_log_));
 
   SourceState::NewTextTrackCB new_text_track_cb;
 

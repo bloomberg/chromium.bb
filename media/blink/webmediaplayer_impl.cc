@@ -913,6 +913,7 @@ void WebMediaPlayerImpl::StartPipeline() {
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
         need_key_cb,
         mse_log_cb,
+        media_log_,
         true);
     demuxer_.reset(chunk_demuxer_);
   }

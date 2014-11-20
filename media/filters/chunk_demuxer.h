@@ -157,6 +157,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   ChunkDemuxer(const base::Closure& open_cb,
                const NeedKeyCB& need_key_cb,
                const LogCB& log_cb,
+               const scoped_refptr<MediaLog>& media_log,
                bool splice_frames_enabled);
   ~ChunkDemuxer() override;
 
@@ -361,6 +362,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   PipelineStatusCB init_cb_;
   // Callback to execute upon seek completion.

@@ -83,6 +83,8 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // output only.
   std::string AsHumanReadableString() const;
 
+  std::string GetHumanReadableCodecName() const;
+
   AudioCodec codec() const { return codec_; }
   int bits_per_channel() const { return bytes_per_channel_ * 8; }
   int bytes_per_channel() const { return bytes_per_channel_; }
