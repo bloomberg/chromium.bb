@@ -79,6 +79,9 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
   scoped_refptr<FrameReceiver> frame_receiver_;
   std::string stream_url_;
   scoped_refptr<media::VideoFrame> last_frame_;
+  // An internal frame buffer to avoid reallocations. It is only allocated if
+  // scaling is needed.
+  scoped_refptr<media::VideoFrame> scaled_frame_;
   bool get_frame_pending_;
   // We use only one ImageData resource in order to avoid allocating
   // shared memory repeatedly. We send the same one each time the plugin

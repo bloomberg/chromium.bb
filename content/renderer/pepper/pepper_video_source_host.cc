@@ -19,6 +19,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using ppapi::host::HostMessageContext;
@@ -115,19 +116,15 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   get_frame_pending_ = false;
 
   DCHECK(last_frame_.get());
-  scoped_refptr<media::VideoFrame> frame(last_frame_);
-  last_frame_ = NULL;
-
-  const int dst_width = frame->visible_rect().width();
-  const int dst_height = frame->visible_rect().height();
+  const gfx::Size dst_size = last_frame_->natural_size();
 
   // Note: We try to reuse the shared memory for the previous frame here. This
   // means that the previous frame may be overwritten and is no longer valid
   // after calling this function again.
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
-  if (shared_image_.get() && dst_width == shared_image_->width() &&
-      dst_height == shared_image_->height()) {
+  if (shared_image_.get() && dst_size.width() == shared_image_->width() &&
+      dst_size.height() == shared_image_->height()) {
     // We have already allocated the correct size in shared memory. We need to
     // duplicate the handle for IPC however, which will close down the
     // duplicated handle when it's done.
@@ -162,7 +159,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
             pp_instance(),
             ppapi::PPB_ImageData_Shared::SIMPLE,
             PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-            PP_MakeSize(dst_width, dst_height),
+            PP_MakeSize(dst_size.width(), dst_size.height()),
             false /* init_to_zero */,
             &shared_image_desc_,
             &image_handle,
@@ -206,23 +203,49 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     return;
   }
 
-  // Calculate that portion of the |frame| that should be copied into
-  // |bitmap|. If |frame| has been cropped,
-  // frame->coded_size() != frame->visible_rect().
-  const int src_width = frame->coded_size().width();
-  const int src_height = frame->coded_size().height();
-  DCHECK(src_width >= dst_width && src_height >= dst_height);
-
-  const int horiz_crop = frame->visible_rect().x();
-  const int vert_crop = frame->visible_rect().y();
-
-  const uint8* src_y = frame->data(media::VideoFrame::kYPlane) +
-                       (src_width * vert_crop + horiz_crop);
-  const int center = (src_width + 1) / 2;
-  const uint8* src_u = frame->data(media::VideoFrame::kUPlane) +
-                       (center * vert_crop + horiz_crop) / 2;
-  const uint8* src_v = frame->data(media::VideoFrame::kVPlane) +
-                       (center * vert_crop + horiz_crop) / 2;
+  // Calculate the portion of the |last_frame_| that should be copied into
+  // |bitmap|. If |last_frame_| is lazily scaled, then
+  // last_frame_->visible_rect()._size() != last_frame_.natural_size().
+  scoped_refptr<media::VideoFrame> frame;
+  if (dst_size == last_frame_->visible_rect().size()) {
+    // No scaling is needed, convert directly from last_frame_.
+    frame = last_frame_;
+    // Frame resolution doesn't change frequently, so don't keep any unnecessary
+    // buffers around.
+    scaled_frame_ = NULL;
+  } else {
+    // We need to create an intermediate scaled frame. Make sure we have
+    // allocated one of correct size.
+    if (!scaled_frame_.get() || scaled_frame_->coded_size() != dst_size) {
+      scaled_frame_ = media::VideoFrame::CreateFrame(
+          media::VideoFrame::I420, dst_size, gfx::Rect(dst_size), dst_size,
+          last_frame_->timestamp());
+      if (!scaled_frame_.get()) {
+        LOG(ERROR) << "Failed to allocate a media::VideoFrame";
+        SendGetFrameErrorReply(PP_ERROR_FAILED);
+        return;
+      }
+    }
+    libyuv::I420Scale(last_frame_->visible_data(media::VideoFrame::kYPlane),
+                      last_frame_->stride(media::VideoFrame::kYPlane),
+                      last_frame_->visible_data(media::VideoFrame::kUPlane),
+                      last_frame_->stride(media::VideoFrame::kUPlane),
+                      last_frame_->visible_data(media::VideoFrame::kVPlane),
+                      last_frame_->stride(media::VideoFrame::kVPlane),
+                      last_frame_->visible_rect().width(),
+                      last_frame_->visible_rect().height(),
+                      scaled_frame_->data(media::VideoFrame::kYPlane),
+                      scaled_frame_->stride(media::VideoFrame::kYPlane),
+                      scaled_frame_->data(media::VideoFrame::kUPlane),
+                      scaled_frame_->stride(media::VideoFrame::kUPlane),
+                      scaled_frame_->data(media::VideoFrame::kVPlane),
+                      scaled_frame_->stride(media::VideoFrame::kVPlane),
+                      dst_size.width(),
+                      dst_size.height(),
+                      libyuv::kFilterBilinear);
+    frame = scaled_frame_;
+  }
+  last_frame_ = NULL;
 
   // TODO(magjed): Chrome OS is not ready for switching from BGRA to ARGB.
   // Remove this once http://crbug/434007 is fixed. We have a corresponding
@@ -232,16 +255,16 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 #else
   auto libyuv_i420_to_xxxx = &libyuv::I420ToARGB;
 #endif
-  libyuv_i420_to_xxxx(src_y,
+  libyuv_i420_to_xxxx(frame->visible_data(media::VideoFrame::kYPlane),
                       frame->stride(media::VideoFrame::kYPlane),
-                      src_u,
+                      frame->visible_data(media::VideoFrame::kUPlane),
                       frame->stride(media::VideoFrame::kUPlane),
-                      src_v,
+                      frame->visible_data(media::VideoFrame::kVPlane),
                       frame->stride(media::VideoFrame::kVPlane),
                       bitmap_pixels,
                       bitmap->rowBytes(),
-                      dst_width,
-                      dst_height);
+                      dst_size.width(),
+                      dst_size.height());
 
   ppapi::HostResource host_resource;
   host_resource.SetHostResource(pp_instance(), shared_image_->GetReference());
