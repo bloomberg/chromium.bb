@@ -766,6 +766,37 @@ cr.define('options', function() {
     },
 
     /**
+     * Creates a div element representing the specified display.
+     * @param {Object} display The display object.
+     * @param {boolean} focused True if it's focused.
+     * @private
+     */
+    createDisplayRectangle_: function(display, focused) {
+      var div = document.createElement('div');
+      display.div = div;
+      div.className = 'displays-display';
+      if (focused)
+        div.classList.add('displays-focused');
+
+      // div needs to be added to the DOM tree first, otherwise offsetHeight for
+      // nameContainer below cannot be computed.
+      this.displaysView_.appendChild(div);
+
+      var nameContainer = document.createElement('div');
+      nameContainer.textContent = display.name;
+      div.appendChild(nameContainer);
+      div.style.width = Math.floor(display.width * this.visualScale_) + 'px';
+      var newHeight = Math.floor(display.height * this.visualScale_);
+      div.style.height = newHeight + 'px';
+      nameContainer.style.marginTop =
+          (newHeight - nameContainer.offsetHeight) / 2 + 'px';
+
+      div.onmousedown = this.onMouseDown_.bind(this);
+      div.ontouchstart = this.onTouchStart_.bind(this);
+      return div;
+    },
+
+    /**
      * Layouts the display rectangles according to the current layout_.
      * @private
      */
@@ -773,8 +804,18 @@ cr.define('options', function() {
       var maxWidth = 0;
       var maxHeight = 0;
       var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
+      this.primaryDisplay_ = null;
+      this.secondaryDisplay_ = null;
+      var focusedDisplay = null;
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
+        if (display.isPrimary)
+          this.primaryDisplay_ = display;
+        else
+          this.secondaryDisplay_ = display;
+        if (i == this.focusedIndex_)
+          focusedDisplay = display;
+
         boundingBox.left = Math.min(boundingBox.left, display.x);
         boundingBox.right = Math.max(
             boundingBox.right, display.x + display.width);
@@ -784,6 +825,8 @@ cr.define('options', function() {
         maxWidth = Math.max(maxWidth, display.width);
         maxHeight = Math.max(maxHeight, display.height);
       }
+      if (!this.primaryDisplay_)
+        return;
 
       // Make the margin around the bounding box.
       var areaWidth = boundingBox.right - boundingBox.left + maxWidth;
@@ -798,13 +841,6 @@ cr.define('options', function() {
       this.displaysView_.style.height =
           Math.ceil(areaHeight * this.visualScale_) + 'px';
 
-      var boundingCenter = {
-        x: Math.floor((boundingBox.right + boundingBox.left) *
-            this.visualScale_ / 2),
-        y: Math.floor((boundingBox.bottom + boundingBox.top) *
-            this.visualScale_ / 2)
-      };
-
       // Centering the bounding box of the display rectangles.
       var offset = {
         x: Math.floor(this.displaysView_.offsetWidth / 2 -
@@ -813,46 +849,57 @@ cr.define('options', function() {
             (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
       };
 
-      for (var i = 0; i < this.displays_.length; i++) {
-        var display = this.displays_[i];
-        var div = document.createElement('div');
-        display.div = div;
+      // Layouting the display rectangles. First layout the primaryDisplay and
+      // then layout the secondary which is attaching to the primary.
+      var primaryDiv = this.createDisplayRectangle_(
+          this.primaryDisplay_, this.primaryDisplay_ == focusedDisplay);
+      primaryDiv.style.left =
+          Math.floor(this.primaryDisplay_.x * this.visualScale_) +
+              offset.x + 'px';
+      primaryDiv.style.top =
+          Math.floor(this.primaryDisplay_.y * this.visualScale_) +
+              offset.y + 'px';
+      this.primaryDisplay_.originalPosition = {
+        x: primaryDiv.offsetLeft, y: primaryDiv.offsetTop};
 
-        div.className = 'displays-display';
-        if (i == this.focusedIndex_)
-          div.classList.add('displays-focused');
-
-        if (display.isPrimary) {
-          this.primaryDisplay_ = display;
-        } else {
-          this.secondaryDisplay_ = display;
+      if (this.secondaryDisplay_) {
+        var secondaryDiv = this.createDisplayRectangle_(
+            this.secondaryDisplay_, this.secondaryDisplay_ == focusedDisplay);
+        // Don't trust the secondary display's x or y, because it may cause a
+        // 1px gap due to rounding, which will create a fake update on end
+        // dragging. See crbug.com/386401
+        switch (this.layout_) {
+        case options.SecondaryDisplayLayout.TOP:
+          secondaryDiv.style.left =
+              Math.floor(this.secondaryDisplay_.x * this.visualScale_) +
+              offset.x + 'px';
+          secondaryDiv.style.top =
+              primaryDiv.offsetTop - secondaryDiv.offsetHeight + 'px';
+          break;
+        case options.SecondaryDisplayLayout.RIGHT:
+          secondaryDiv.style.left =
+              primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
+          secondaryDiv.style.top =
+              Math.floor(this.secondaryDisplay_.y * this.visualScale_) +
+              offset.y + 'px';
+          break;
+        case options.SecondaryDisplayLayout.BOTTOM:
+          secondaryDiv.style.left =
+              Math.floor(this.secondaryDisplay_.x * this.visualScale_) +
+              offset.x + 'px';
+          secondaryDiv.style.top =
+              primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
+          break;
+        case options.SecondaryDisplayLayout.LEFT:
+          secondaryDiv.style.left =
+              primaryDiv.offsetLeft - secondaryDiv.offsetWidth + 'px';
+          secondaryDiv.style.top =
+              Math.floor(this.secondaryDisplay_.y * this.visualScale_) +
+              offset.y + 'px';
+          break;
         }
-        var displayNameContainer = document.createElement('div');
-        displayNameContainer.textContent = display.name;
-        div.appendChild(displayNameContainer);
-        display.nameContainer = displayNameContainer;
-        display.div.style.width =
-            Math.floor(display.width * this.visualScale_) + 'px';
-        var newHeight = Math.floor(display.height * this.visualScale_);
-        display.div.style.height = newHeight + 'px';
-        div.style.left =
-            Math.floor(display.x * this.visualScale_) + offset.x + 'px';
-        div.style.top =
-            Math.floor(display.y * this.visualScale_) + offset.y + 'px';
-        display.nameContainer.style.marginTop =
-            (newHeight - display.nameContainer.offsetHeight) / 2 + 'px';
-
-        div.onmousedown = this.onMouseDown_.bind(this);
-        div.ontouchstart = this.onTouchStart_.bind(this);
-
-        this.displaysView_.appendChild(div);
-
-        // Set the margin top to place the display name at the middle of the
-        // rectangle.  Note that this has to be done after it's added into the
-        // |displaysView_|.  Otherwise its offsetHeight is yet 0.
-        displayNameContainer.style.marginTop =
-            (div.offsetHeight - displayNameContainer.offsetHeight) / 2 + 'px';
-        display.originalPosition = {x: div.offsetLeft, y: div.offsetTop};
+        this.secondaryDisplay_.originalPosition = {
+          x: secondaryDiv.offsetLeft, y: secondaryDiv.offsetTop};
       }
     },
 
