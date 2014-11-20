@@ -9,6 +9,9 @@
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
   },
+  'includes': [
+    'chromecast_tests.gypi',
+  ],
   'target_defaults': {
     'include_dirs': [
       '..',  # Root of Chromium checkout
@@ -247,24 +250,6 @@
         },
       ],
     },
-    {
-      'target_name': 'cast_metrics_test_support',
-      'type': '<(component)',
-      'dependencies': [
-        'cast_base',
-      ],
-      'sources': [
-        'base/metrics/cast_metrics_test_helper.cc',
-        'base/metrics/cast_metrics_test_helper.h',
-      ],
-    },  # end of target 'cast_metrics_test_support'
-    {
-      'target_name': 'cast_tests',
-      'type': 'none',
-      'dependencies': [
-        'media/media.gyp:cast_media_unittests',
-      ],
-    },
   ],  # end of targets
 
   # Targets for Android receiver.
@@ -445,37 +430,6 @@
           ],
           'sources': [
             'app/cast_main.cc',
-          ],
-        },
-        {
-          'target_name': 'cast_shell_browser_test',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            'cast_shell_test_support',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'defines': [
-            'HAS_OUT_OF_PROC_TEST_RUNNER',
-          ],
-          'sources': [
-            'browser/test/chromecast_shell_browser_test.cc',
-          ],
-        },
-        {
-          'target_name': 'cast_shell_test_support',
-          'type': '<(component)',
-          'defines': [
-            'HAS_OUT_OF_PROC_TEST_RUNNER',
-          ],
-          'dependencies': [
-            'cast_shell_core',
-            '../content/content_shell_and_tests.gyp:content_browser_test_support',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'sources': [
-            'browser/test/chromecast_browser_test.cc',
-            'browser/test/chromecast_browser_test.h',
-            'browser/test/chromecast_browser_test_runner.cc',
           ],
         },
       ],  # end of targets
