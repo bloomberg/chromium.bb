@@ -35,12 +35,15 @@ class _SessionRestoreTest(benchmark.Benchmark):
             small_profile_creator.SmallProfileCreator, profile_type, new_args)
       args.browser_options.profile_dir = profile_dir
 
+  def CreatePageTest(self, options):
+    is_cold = (self.tag == 'cold')
+    return self.test(cold=is_cold)
 
 # crbug.com/325479, crbug.com/381990
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreColdTypical25(_SessionRestoreTest):
   tag = 'cold'
-  test = session_restore.SessionRestore(cold=True)
+  test = session_restore.SessionRestore
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 5}
 
@@ -49,7 +52,7 @@ class SessionRestoreColdTypical25(_SessionRestoreTest):
 @benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreWarmTypical25(_SessionRestoreTest):
   tag = 'warm'
-  test = session_restore.SessionRestore(cold=False)
+  test = session_restore.SessionRestore
   page_set = page_sets.Typical25PageSet
   options = {'pageset_repeat': 20}
 
@@ -59,7 +62,7 @@ class SessionRestoreWarmTypical25(_SessionRestoreTest):
 class SessionRestoreWithUrlCold(_SessionRestoreTest):
   """Measure Chrome cold session restore with startup URLs."""
   tag = 'cold'
-  test = session_restore_with_url.SessionRestoreWithUrl(cold=True)
+  test = session_restore_with_url.SessionRestoreWithUrl
   page_set = page_sets.StartupPagesPageSet
   options = {'pageset_repeat': 5}
 
@@ -69,6 +72,6 @@ class SessionRestoreWithUrlCold(_SessionRestoreTest):
 class SessionRestoreWithUrlWarm(_SessionRestoreTest):
   """Measure Chrome warm session restore with startup URLs."""
   tag = 'warm'
-  test = session_restore_with_url.SessionRestoreWithUrl(cold=False)
+  test = session_restore_with_url.SessionRestoreWithUrl
   page_set = page_sets.StartupPagesPageSet
   options = {'pageset_repeat': 10}
