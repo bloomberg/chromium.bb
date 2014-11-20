@@ -64,7 +64,7 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
 
     // Perform SVG text layout phase four
     // Position & resize all SVGInlineText/FlowBoxes in the inline box tree, resize the root box as well as the RenderSVGText parent block.
-    FloatRect childRect;
+    FloatRectWillBeLayoutRect childRect;
     layoutChildBoxes(this, &childRect);
     layoutRootBox(childRect);
 }
@@ -100,10 +100,10 @@ void SVGRootInlineBox::layoutCharactersInTextBoxes(InlineFlowBox* start, SVGText
     }
 }
 
-void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRect* childRect)
+void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRectWillBeLayoutRect* childRect)
 {
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
-        FloatRect boxRect;
+        FloatRectWillBeLayoutRect boxRect;
         if (child->isSVGInlineTextBox()) {
             ASSERT(child->renderer().isSVGInlineText());
 
@@ -132,7 +132,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRect* childRe
     }
 }
 
-void SVGRootInlineBox::layoutRootBox(const FloatRect& childRect)
+void SVGRootInlineBox::layoutRootBox(const FloatRectWillBeLayoutRect& childRect)
 {
     RenderBlockFlow& parentBlock = block();
 

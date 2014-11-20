@@ -32,6 +32,7 @@
 #define AbstractInlineTextBox_h
 
 #include "core/dom/Range.h"
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/HashMap.h"
@@ -77,7 +78,7 @@ public:
     LayoutRect bounds() const;
     unsigned len() const;
     Direction direction() const;
-    void characterWidths(Vector<float>&) const;
+    void characterWidths(Vector<FloatWillBeLayoutUnit>&) const;
     void wordBoundaries(Vector<WordBoundaries>&) const;
     String text() const;
 

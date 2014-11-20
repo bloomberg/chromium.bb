@@ -26,6 +26,7 @@
 #ifndef TrailingFloatsRootInlineBox_h
 #define TrailingFloatsRootInlineBox_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/RootInlineBox.h"
 
 namespace blink {
@@ -39,7 +40,7 @@ public:
     }
 
 private:
-    virtual float virtualLogicalHeight() const override { return 0; }
+    virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return 0; }
 };
 
 } // namespace blink

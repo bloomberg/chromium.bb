@@ -23,6 +23,7 @@
 #ifndef SVGRootInlineBox_h
 #define SVGRootInlineBox_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
@@ -39,8 +40,8 @@ public:
 
     virtual bool isSVGRootInlineBox() const override { return true; }
 
-    virtual float virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(float height) { m_logicalHeight = height; }
+    virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+    void setLogicalHeight(FloatWillBeLayoutUnit height) { m_logicalHeight = height; }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
@@ -53,11 +54,11 @@ public:
 private:
     void reorderValueLists(Vector<SVGTextLayoutAttributes*>&);
     void layoutCharactersInTextBoxes(InlineFlowBox*, SVGTextLayoutEngine&);
-    void layoutChildBoxes(InlineFlowBox*, FloatRect* = 0);
-    void layoutRootBox(const FloatRect&);
+    void layoutChildBoxes(InlineFlowBox*, FloatRectWillBeLayoutRect* = 0);
+    void layoutRootBox(const FloatRectWillBeLayoutRect&);
 
 private:
-    float m_logicalHeight;
+    FloatWillBeLayoutUnit m_logicalHeight;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGRootInlineBox);

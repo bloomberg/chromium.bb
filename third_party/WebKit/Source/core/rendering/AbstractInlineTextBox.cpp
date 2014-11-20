@@ -108,7 +108,7 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::direction() const
     return (m_inlineTextBox->direction() == RTL ? BottomToTop : TopToBottom);
 }
 
-void AbstractInlineTextBox::characterWidths(Vector<float>& widths) const
+void AbstractInlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
 {
     if (!m_inlineTextBox)
         return;

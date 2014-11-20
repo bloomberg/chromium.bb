@@ -21,6 +21,7 @@
 #ifndef SVGInlineFlowBox_h
 #define SVGInlineFlowBox_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/InlineFlowBox.h"
 
 namespace blink {
@@ -34,16 +35,16 @@ public:
     }
 
     virtual bool isSVGInlineFlowBox() const override { return true; }
-    virtual float virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(float h) { m_logicalHeight = h; }
+    virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+    void setLogicalHeight(FloatWillBeLayoutUnit h) { m_logicalHeight = h; }
 
     void paintSelectionBackground(const PaintInfo&);
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
-    virtual FloatRect calculateBoundaries() const override;
+    virtual FloatRectWillBeLayoutRect calculateBoundaries() const override;
 
 private:
-    float m_logicalHeight;
+    FloatWillBeLayoutUnit m_logicalHeight;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineFlowBox);
