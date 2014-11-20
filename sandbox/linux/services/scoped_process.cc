@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
 
 namespace sandbox {
@@ -112,7 +113,7 @@ bool ScopedProcess::WaitForClosureToRun() {
 // This method allows to assert it is not happening.
 bool ScopedProcess::IsOriginalProcess() {
   // Make a direct syscall to bypass glibc caching of PIDs.
-  int pid = syscall(__NR_getpid);
+  pid_t pid = sys_getpid();
   return pid == process_id_;
 }
 

@@ -17,6 +17,7 @@
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,13 +83,11 @@ TEST(BPFTest, BPFTesterCompatibilityDelegateLeakTest) {
 
 class EnosysPtracePolicy : public bpf_dsl::Policy {
  public:
-  EnosysPtracePolicy() {
-    my_pid_ = syscall(__NR_getpid);
-  }
+  EnosysPtracePolicy() { my_pid_ = sys_getpid(); }
   virtual ~EnosysPtracePolicy() {
     // Policies should be able to bind with the process on which they are
     // created. They should never be created in a parent process.
-    BPF_ASSERT_EQ(my_pid_, syscall(__NR_getpid));
+    BPF_ASSERT_EQ(my_pid_, sys_getpid());
   }
 
   virtual ResultExpr EvaluateSyscall(int system_call_number) const override {
@@ -96,7 +95,7 @@ class EnosysPtracePolicy : public bpf_dsl::Policy {
     if (system_call_number == __NR_ptrace) {
       // The EvaluateSyscall function should run in the process that created
       // the current object.
-      BPF_ASSERT_EQ(my_pid_, syscall(__NR_getpid));
+      BPF_ASSERT_EQ(my_pid_, sys_getpid());
       return Error(ENOSYS);
     } else {
       return Allow();

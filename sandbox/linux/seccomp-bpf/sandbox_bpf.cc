@@ -41,6 +41,7 @@
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Error;
@@ -92,8 +93,8 @@ class ProbePolicy : public bpf_dsl::Policy {
 };
 
 void ProbeProcess(void) {
-  if (syscall(__NR_getpid) < 0 && errno == EPERM) {
-    syscall(__NR_exit_group, static_cast<intptr_t>(kExpectedExitCode));
+  if (sys_getpid() < 0 && errno == EPERM) {
+    sys_exit_group(kExpectedExitCode);
   }
 }
 
@@ -117,7 +118,7 @@ void TryVsyscallProcess(void) {
   // vsyscall=emulate and some versions of the seccomp BPF patch
   // we may get SIGKILL-ed. Detect this!
   if (time(&current_time) != static_cast<time_t>(-1)) {
-    syscall(__NR_exit_group, static_cast<intptr_t>(kExpectedExitCode));
+    sys_exit_group(kExpectedExitCode);
   }
 }
 

@@ -32,6 +32,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/android_futex.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -113,7 +114,7 @@ BPF_TEST_C(BaselinePolicy, ForkErrno, BaselinePolicy) {
 }
 
 pid_t ForkX86Glibc() {
-  return syscall(__NR_clone, CLONE_PARENT_SETTID | SIGCHLD);
+  return sys_clone(CLONE_PARENT_SETTID | SIGCHLD, 0, 0, 0, 0);
 }
 
 BPF_TEST_C(BaselinePolicy, ForkX86Eperm, BaselinePolicy) {
@@ -127,8 +128,8 @@ BPF_TEST_C(BaselinePolicy, ForkX86Eperm, BaselinePolicy) {
 }
 
 pid_t ForkARMGlibc() {
-  return syscall(__NR_clone,
-                 CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD);
+  return sys_clone(CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD, 0, 0, 0,
+                   0);
 }
 
 BPF_TEST_C(BaselinePolicy, ForkArmEperm, BaselinePolicy) {
@@ -150,7 +151,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DisallowedCloneFlagCrashes,
                  DEATH_SEGV_MESSAGE(GetCloneErrorMessageContentForTests()),
                  BaselinePolicy) {
-  pid_t pid = syscall(__NR_clone, CLONE_THREAD | SIGCHLD);
+  pid_t pid = sys_clone(CLONE_THREAD | SIGCHLD, 0, 0, 0, 0);
   HandlePostForkReturn(pid);
 }
 

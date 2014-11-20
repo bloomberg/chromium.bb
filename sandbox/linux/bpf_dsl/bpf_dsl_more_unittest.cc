@@ -41,6 +41,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -203,7 +204,7 @@ class WhitelistGetpidPolicy : public Policy {
 BPF_TEST_C(SandboxBPF, ApplyBasicWhitelistPolicy, WhitelistGetpidPolicy) {
   // getpid() should be allowed
   errno = 0;
-  BPF_ASSERT(syscall(__NR_getpid) > 0);
+  BPF_ASSERT(sys_getpid() > 0);
   BPF_ASSERT(errno == 0);
 
   // getpgid() should be denied
@@ -246,7 +247,7 @@ BPF_TEST(SandboxBPF,
          int /* (*BPF_AUX) */) {
   // getpid() should work properly
   errno = 0;
-  BPF_ASSERT(syscall(__NR_getpid) > 0);
+  BPF_ASSERT(sys_getpid() > 0);
   BPF_ASSERT(errno == 0);
 
   // Our Auxiliary Data, should be reset by the signal handler
@@ -512,7 +513,7 @@ intptr_t CountSyscalls(const struct arch_seccomp_data& args, void* aux) {
 
   // Verify that within the callback function all filtering is temporarily
   // disabled.
-  BPF_ASSERT(syscall(__NR_getpid) > 1);
+  BPF_ASSERT(sys_getpid() > 1);
 
   // Verify that we can now call the underlying system call without causing
   // infinite recursion.
@@ -549,7 +550,7 @@ class GreyListedPolicy : public Policy {
 };
 
 BPF_TEST(SandboxBPF, GreyListedPolicy, GreyListedPolicy, int /* (*BPF_AUX) */) {
-  BPF_ASSERT(syscall(__NR_getpid) == -1);
+  BPF_ASSERT(sys_getpid() == -1);
   BPF_ASSERT(errno == EPERM);
   BPF_ASSERT(*BPF_AUX == 0);
   BPF_ASSERT(syscall(__NR_geteuid) == syscall(__NR_getuid));
@@ -2098,7 +2099,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
     // getpid is allowed.
-    BPF_ASSERT_EQ(my_pid, syscall(__NR_getpid));
+    BPF_ASSERT_EQ(my_pid, sys_getpid());
 
     // write to stdout is skipped and returns a fake value.
     BPF_ASSERT_EQ(kExpectedReturnValue,

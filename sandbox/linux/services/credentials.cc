@@ -24,6 +24,7 @@
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "base/threading/thread.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 
 namespace {
 
@@ -286,7 +287,7 @@ bool Credentials::SupportsNewUserNS() {
   }
 
   // This is roughly a fork().
-  const pid_t pid = syscall(__NR_clone, CLONE_NEWUSER | SIGCHLD, 0, 0, 0);
+  const pid_t pid = sys_clone(CLONE_NEWUSER | SIGCHLD, 0, 0, 0, 0);
 
   if (pid == -1) {
     CheckCloneNewUserErrno(errno);

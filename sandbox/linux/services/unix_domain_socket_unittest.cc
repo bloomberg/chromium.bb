@@ -18,6 +18,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/process_handle.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 // Additional tests for base's UnixDomainSocket to make sure it behaves
@@ -144,14 +145,14 @@ SANDBOX_TEST(UnixDomainSocketTest, Namespace) {
 
   CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
-  const pid_t pid = syscall(__NR_clone, CLONE_NEWPID | SIGCHLD, 0, 0, 0);
+  const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);
   if (pid == 0) {
     // Child process.
     recv_sock.reset();
 
     // Check that we think we're pid 1 in our new namespace.
-    CHECK_EQ(1, syscall(__NR_getpid));
+    CHECK_EQ(1, sys_getpid());
 
     SendHello(send_sock.get());
     _exit(0);
@@ -178,13 +179,13 @@ SANDBOX_TEST(UnixDomainSocketTest, DoubleNamespace) {
 
   CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
-  const pid_t pid = syscall(__NR_clone, CLONE_NEWPID | SIGCHLD, 0, 0, 0);
+  const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);
   if (pid == 0) {
     // Child process.
     recv_sock.reset();
 
-    const pid_t pid2 = syscall(__NR_clone, CLONE_NEWPID | SIGCHLD, 0, 0, 0);
+    const pid_t pid2 = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
     CHECK_NE(-1, pid2);
 
     if (pid2 != 0) {
@@ -195,7 +196,7 @@ SANDBOX_TEST(UnixDomainSocketTest, DoubleNamespace) {
     }
 
     // Check that we think we're pid 1.
-    CHECK_EQ(1, syscall(__NR_getpid));
+    CHECK_EQ(1, sys_getpid());
 
     SendHello(send_sock.get());
     _exit(0);
@@ -244,7 +245,7 @@ SANDBOX_TEST(UnixDomainSocketTest, ImpossiblePid) {
 
   CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
-  const pid_t pid = syscall(__NR_clone, CLONE_NEWPID | SIGCHLD, 0, 0, 0);
+  const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);
   if (pid == 0) {
     // Child process.

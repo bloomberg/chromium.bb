@@ -8,6 +8,7 @@
   'dependencies': [
     'sandbox',
     'sandbox_linux_test_utils',
+    'sandbox_services',
     '../base/base.gyp:base',
     '../base/base.gyp:test_support_base',
     '../testing/gtest.gyp:gtest',

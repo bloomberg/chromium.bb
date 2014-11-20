@@ -150,6 +150,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'sandbox_services',
         'sandbox_services_headers',
       ],
       'defines': [
@@ -179,6 +180,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'sandbox_services',
         'seccomp_bpf',
       ],
       'defines': [
@@ -221,6 +223,8 @@
         'services/init_process_reaper.h',
         'services/scoped_process.cc',
         'services/scoped_process.h',
+        'services/syscall_wrappers.cc',
+        'services/syscall_wrappers.h',
         'services/thread_helpers.cc',
         'services/thread_helpers.h',
         'services/yama.cc',

@@ -19,6 +19,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 
 // Changing this implementation will have an effect on *all* policies.
 // Currently this means: Renderer/Worker, GPU, Flash and NaCl.
@@ -237,12 +238,13 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 BaselinePolicy::BaselinePolicy() : BaselinePolicy(EPERM) {}
 
 BaselinePolicy::BaselinePolicy(int fs_denied_errno)
-    : fs_denied_errno_(fs_denied_errno), policy_pid_(syscall(__NR_getpid)) {}
+    : fs_denied_errno_(fs_denied_errno), policy_pid_(sys_getpid()) {
+}
 
 BaselinePolicy::~BaselinePolicy() {
   // Make sure that this policy is created, used and destroyed by a single
   // process.
-  DCHECK_EQ(syscall(__NR_getpid), policy_pid_);
+  DCHECK_EQ(sys_getpid(), policy_pid_);
 }
 
 ResultExpr BaselinePolicy::EvaluateSyscall(int sysno) const {
@@ -250,7 +252,7 @@ ResultExpr BaselinePolicy::EvaluateSyscall(int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   // Make sure that this policy is used in the creating process.
   if (1 == sysno) {
-    DCHECK_EQ(syscall(__NR_getpid), policy_pid_);
+    DCHECK_EQ(sys_getpid(), policy_pid_);
   }
   return EvaluateSyscallImpl(fs_denied_errno_, policy_pid_, sysno);
 }

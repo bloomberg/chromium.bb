@@ -23,6 +23,7 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 #if !defined(OS_ANDROID)
@@ -163,7 +164,7 @@ void CheckSchedGetParam(pid_t pid, struct sched_param* param) {
 
 void SchedGetParamThread(base::WaitableEvent* thread_run) {
   const pid_t pid = getpid();
-  const pid_t tid = syscall(__NR_gettid);
+  const pid_t tid = sys_gettid();
   BPF_ASSERT_NE(pid, tid);
 
   struct sched_param current_pid_param;
