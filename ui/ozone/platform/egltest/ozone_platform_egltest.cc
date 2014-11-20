@@ -11,6 +11,8 @@
 #include "base/path_service.h"
 #include "library_loaders/libeglplatform_shim.h"
 #include "third_party/khronos/EGL/egl.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
@@ -43,6 +45,27 @@ std::string GetShimLibraryName() {
   if (env->GetVar(kEglplatformShim, &library))
     return library;
   return kEglplatformShimDefault;
+}
+
+// Touch events are reported in device coordinates. This scales the event to the
+// window's coordinate space.
+void ScaleTouchEvent(TouchEvent* event, const gfx::SizeF& size) {
+  for (const auto& device :
+       DeviceDataManager::GetInstance()->touchscreen_devices()) {
+    if (device.id == static_cast<unsigned int>(event->source_device_id())) {
+      gfx::SizeF touchscreen_size = device.size;
+      gfx::PointF location = event->location_f();
+
+      location.Scale(size.width() / touchscreen_size.width(),
+                     size.height() / touchscreen_size.height());
+      double ratio = std::sqrt(size.GetArea() / touchscreen_size.GetArea());
+
+      event->set_location(location);
+      event->set_radius_x(event->radius_x() * ratio);
+      event->set_radius_y(event->radius_y() * ratio);
+      return;
+    }
+  }
 }
 
 class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
@@ -150,6 +173,11 @@ bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
 }
 
 uint32_t EgltestWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
+  DCHECK(native_event);
+  Event* event = static_cast<Event*>(native_event);
+  if (event->IsTouchEvent())
+    ScaleTouchEvent(static_cast<TouchEvent*>(event), bounds_.size());
+
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
                                base::Unretained(delegate_)));
