@@ -281,13 +281,10 @@ class FontCacheWriter {
   // Function to create static font cache file.
   bool Create(const wchar_t* file_name) {
     static_cache_.reset(new base::File(base::FilePath(file_name),
-        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE));
+        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
+        base::File::FLAG_EXCLUSIVE_WRITE));
     if (!static_cache_->IsValid()) {
       static_cache_.reset();
-      // TODO(shrikant): Convert this CHECK to DCHECK post canary.
-      // We have all fallbacks built in, so if we are not able to create
-      // static cache, browser can still run with old way of loading all fonts.
-      CHECK(FALSE);
       return false;
     }
     CacheFileHeader header;
@@ -911,8 +908,8 @@ bool FontCollectionLoader::LoadCacheFile() {
 
 void FontCollectionLoader::EnterStaticCacheMode(const WCHAR* file_name) {
   cache_writer_.reset(new FontCacheWriter());
-  cache_writer_->Create(file_name);
-  create_static_cache_ = true;
+  if (cache_writer_->Create(file_name))
+    create_static_cache_ = true;
 }
 
 void FontCollectionLoader::LeaveStaticCacheMode() {
@@ -956,7 +953,9 @@ bool FontCollectionLoader::ValidateAndLoadCacheMap() {
       table_entry = iter->second;
     }
     table_entry->file_size = entry->file_size;
-    for (DWORD idx = 0; current_ptr < mem_file_end && idx < entry->entry_count;
+    for (DWORD idx = 0;
+         (current_ptr + sizeof(CacheFileOffsetEntry)) < mem_file_end &&
+         idx < entry->entry_count;
          idx++) {
       CacheFileOffsetEntry* offset_entry =
           reinterpret_cast<CacheFileOffsetEntry*>(current_ptr);
