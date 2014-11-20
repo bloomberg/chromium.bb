@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/application/connect.h"
@@ -95,12 +96,13 @@ HTMLDocumentView::HTMLDocumentView(
       root_(NULL),
       view_manager_client_factory_(shell_.get(), this),
       compositor_thread_(compositor_thread),
-      web_media_player_factory_(web_media_player_factory),
-      weak_factory_(this) {
+      web_media_player_factory_(web_media_player_factory) {
   shell_.set_client(this);
 }
 
 HTMLDocumentView::~HTMLDocumentView() {
+  STLDeleteElements(&ax_provider_impls_);
+
   if (web_view_)
     web_view_->close();
   if (root_)
@@ -109,6 +111,7 @@ HTMLDocumentView::~HTMLDocumentView() {
 
 void HTMLDocumentView::AcceptConnection(const String& requestor_url,
                                         ServiceProviderPtr provider) {
+  exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
   WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
   Load(response_.Pass());
@@ -131,6 +134,14 @@ void HTMLDocumentView::OnEmbed(
   web_layer_tree_view_impl_->setViewportSize(root_size);
   web_layer_tree_view_impl_->set_view(root_);
   root_->AddObserver(this);
+}
+
+void HTMLDocumentView::Create(ApplicationConnection* connection,
+                              InterfaceRequest<AxProvider> request) {
+  if (!web_view_)
+    return;
+  ax_provider_impls_.insert(
+      WeakBindToRequest(new AxProviderImpl(web_view_), &request));
 }
 
 void HTMLDocumentView::OnViewManagerDisconnected(ViewManager* view_manager) {

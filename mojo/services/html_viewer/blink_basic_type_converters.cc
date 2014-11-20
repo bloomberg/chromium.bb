@@ -5,8 +5,10 @@
 #include "mojo/services/html_viewer/blink_basic_type_converters.h"
 
 #include "mojo/public/cpp/bindings/string.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
+using blink::WebRect;
 using blink::WebString;
 
 namespace mojo {
@@ -20,6 +22,16 @@ String TypeConverter<String, WebString>::Convert(const WebString& str) {
 WebString TypeConverter<WebString, String>::Convert(const String& str) {
   return WebString::fromUTF8(str.get());
 }
+
+// static
+RectPtr TypeConverter<RectPtr, WebRect>::Convert(const WebRect& input) {
+  RectPtr result(Rect::New());
+  result->x = input.x;
+  result->y = input.y;
+  result->width = input.width;
+  result->height = input.height;
+  return result.Pass();
+};
 
 // static
 Array<uint8_t> TypeConverter<Array<uint8_t>, blink::WebString>::Convert(

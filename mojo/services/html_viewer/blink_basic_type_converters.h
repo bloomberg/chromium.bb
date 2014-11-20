@@ -8,9 +8,11 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
+struct WebRect;
 class WebString;
 }
 
@@ -28,6 +30,11 @@ struct TypeConverter<blink::WebString, String> {
 template <>
 struct TypeConverter<Array<uint8_t>, blink::WebString> {
   static Array<uint8_t> Convert(const blink::WebString& input);
+};
+
+template <>
+struct TypeConverter<RectPtr, blink::WebRect> {
+  static RectPtr Convert(const blink::WebRect& input);
 };
 
 template<typename T, typename U>

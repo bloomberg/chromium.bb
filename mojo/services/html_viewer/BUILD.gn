@@ -5,9 +5,10 @@
 import("//mojo/public/mojo.gni")
 import("//mojo/public/mojo_application.gni")
 
-# GYP version: mojo/mojo_services.gypi:html_viewer
-mojo_native_application("html_viewer") {
+source_set("lib") {
   sources = [
+    "ax_provider_impl.cc",
+    "ax_provider_impl.h",
     "blink_basic_type_converters.cc",
     "blink_basic_type_converters.h",
     "blink_input_events_type_converters.cc",
@@ -16,9 +17,10 @@ mojo_native_application("html_viewer") {
     "blink_platform_impl.h",
     "blink_url_request_type_converters.cc",
     "blink_url_request_type_converters.h",
-    "html_viewer.cc",
     "html_document_view.cc",
     "html_document_view.h",
+    "mojo_blink_platform_impl.cc",
+    "mojo_blink_platform_impl.h",
     "webclipboard_impl.cc",
     "webclipboard_impl.h",
     "webcookiejar_impl.cc",
@@ -62,6 +64,7 @@ mojo_native_application("html_viewer") {
     "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/network",
     "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/accessibility",
     "//mojo/services/public/interfaces/clipboard",
     "//mojo/services/public/interfaces/content_handler",
     "//mojo/services/public/interfaces/gpu",
@@ -71,8 +74,32 @@ mojo_native_application("html_viewer") {
     "//mojo/services/public/interfaces/surfaces",
     "//net",
     "//skia",
-    "//third_party/WebKit/public:blink",
     "//ui/native_theme",
     "//url",
+  ]
+
+  public_deps = [
+    "//third_party/WebKit/public:blink",
+  ]
+}
+
+# GYP version: mojo/mojo_services.gypi:html_viewer
+shared_library("html_viewer") {
+  sources = [
+    "html_viewer.cc",
+  ]
+  deps = [
+    ":lib",
+  ]
+}
+
+test("tests") {
+  output_name = "html_viewer_unittests"
+  sources = [
+    "ax_provider_impl_unittest.cc",
+  ]
+  deps = [
+    ":lib",
+    "//base/test:run_all_unittests",
   ]
 }

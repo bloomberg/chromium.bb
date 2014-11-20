@@ -5,12 +5,15 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
 #define MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
 
+#include <set>
+
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
+#include "mojo/services/html_viewer/ax_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
@@ -26,6 +29,7 @@ class MessageLoopProxy;
 
 namespace mojo {
 
+class AxProviderImpl;
 class WebMediaPlayerFactory;
 class ViewManager;
 class View;
@@ -36,7 +40,8 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
                          public blink::WebViewClient,
                          public blink::WebFrameClient,
                          public ViewManagerDelegate,
-                         public ViewObserver {
+                         public ViewObserver,
+                         public InterfaceFactory<AxProvider> {
  public:
   // Load a new HTMLDocument with |response|.
   //
@@ -107,6 +112,10 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   void OnViewDestroyed(View* view) override;
   void OnViewInputEvent(View* view, const EventPtr& event) override;
 
+  // InterfaceFactory<AxProvider>
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<AxProvider> request) override;
+
   void Load(URLResponsePtr response);
 
   URLResponsePtr response_;
@@ -121,7 +130,9 @@ class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
 
-  base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
+  // HTMLDocumentView owns these pointers.
+  std::set<AxProviderImpl*> ax_provider_impls_;
+
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);
 };
 

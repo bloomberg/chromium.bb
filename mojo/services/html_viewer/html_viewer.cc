@@ -11,8 +11,8 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
+#include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -68,8 +68,8 @@ class HTMLViewer : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {
-    blink_platform_impl_.reset(new BlinkPlatformImpl(app));
-    blink::initialize(blink_platform_impl_.get());
+    blink_platform_.reset(new MojoBlinkPlatformImpl(app));
+    blink::initialize(blink_platform_.get());
 #if !defined(COMPONENT_BUILD)
     base::i18n::InitializeICU();
 
@@ -107,7 +107,7 @@ class HTMLViewer : public ApplicationDelegate,
         &request);
   }
 
-  scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
+  scoped_ptr<MojoBlinkPlatformImpl> blink_platform_;
   base::Thread compositor_thread_;
   scoped_ptr<WebMediaPlayerFactory> web_media_player_factory_;
 
