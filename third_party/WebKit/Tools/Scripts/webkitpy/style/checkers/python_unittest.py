@@ -59,6 +59,5 @@ class PythonCheckerTest(unittest.TestCase):
 
         self.assertEqual(errors, [
             (4, "pep8/W291", 5, "trailing whitespace"),
-            (4, "pylint/E0602(undefined-variable)", 5,
-             "[] Undefined variable 'error'"),
+            (4, "pylint/E0602", 5, "Undefined variable 'error'"),
             ])
