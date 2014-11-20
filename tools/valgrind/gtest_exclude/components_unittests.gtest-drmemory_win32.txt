@@ -1,0 +1,3 @@
+# http://crbug.com/435320
+MetricsServiceTest.InitialStabilityLogAfterCrash
+MetricsServiceTest.InitialStabilityLogAtProviderRequest
