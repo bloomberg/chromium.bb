@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
@@ -824,6 +825,9 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
+
+  TranslateBubbleView::CloseBubble();
+  ZoomBubbleView::CloseBubble();
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
