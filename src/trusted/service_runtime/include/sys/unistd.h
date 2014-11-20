@@ -131,7 +131,8 @@ int     _EXFUN(pause, (void ));
 #ifdef __CYGWIN__
 int _EXFUN(pthread_atfork, (void (*)(void), void (*)(void), void (*)(void)));
 #endif
-int     _EXFUN(pipe, (int __fildes[2] ));
+int     _EXFUN(pipe, (int __fildes[2]));
+int     _EXFUN(pipe2, (int __fildes[2], int __flags));
 ssize_t _EXFUN(pread, (int __fd, void *__buf, size_t __nbytes, off_t __offset));
 ssize_t _EXFUN(pwrite, (int __fd, const void *__buf, size_t __nbytes, off_t __offset));
 _READ_WRITE_RETURN_TYPE _EXFUN(read, (int __fd, void *__buf, size_t __nbyte ));

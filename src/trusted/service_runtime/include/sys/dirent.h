@@ -63,5 +63,6 @@ extern void                   nacl_abi_rewinddir(nacl_abi_DIR *direntry);
 extern int                    nacl_abi_readdir_r(nacl_abi_DIR *direntry,
                                                  struct nacl_abi_dirent *entry,
                                                  struct nacl_abi_dirent **res);
+extern nacl_abi_DIR           *nacl_abi_fdopendir(int fd);
 
 #endif

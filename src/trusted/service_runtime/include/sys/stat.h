@@ -56,6 +56,8 @@ struct nacl_abi_stat {  /* must be renamed when ABI is exported */
 extern int stat(char const *path, struct nacl_abi_stat *stbuf);
 extern int fstat(int d, struct nacl_abi_stat *stbuf);
 extern int lstat(const char *path, struct nacl_abi_stat *stbuf);
+extern int fstatat(int dirfd, const char *pathname,
+                   struct nacl_abi_stat *stbuf, int flags);
 extern int mkdir(const char *path, nacl_abi_mode_t mode);
 #endif
 
