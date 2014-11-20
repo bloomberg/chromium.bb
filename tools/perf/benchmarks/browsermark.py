@@ -54,6 +54,6 @@ class Browsermark(benchmark.Benchmark):
     ps = page_set.PageSet(
       file_path=os.path.abspath(__file__),
       archive_data_file='../page_sets/data/browsermark.json',
-      make_javascript_deterministic=False)
+      make_javascript_deterministic=False, bucket=page_set.INTERNAL_BUCKET)
     ps.AddPageWithDefaultRunNavigate('http://browsermark.rightware.com/tests/')
     return ps
