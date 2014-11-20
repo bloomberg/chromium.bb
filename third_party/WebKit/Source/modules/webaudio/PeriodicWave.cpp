@@ -45,7 +45,7 @@ namespace blink {
 
 using namespace VectorMath;
 
-PeriodicWave* PeriodicWave::create(float sampleRate, Float32Array* real, Float32Array* imag)
+PeriodicWave* PeriodicWave::create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag)
 {
     bool isGood = real && imag && real->length() == imag->length();
     ASSERT(isGood);

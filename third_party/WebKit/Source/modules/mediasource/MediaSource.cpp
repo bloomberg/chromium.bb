@@ -47,7 +47,6 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebSourceBuffer.h"
-#include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
 
 using blink::WebMediaSource;

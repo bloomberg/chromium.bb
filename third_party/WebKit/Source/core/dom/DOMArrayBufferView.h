@@ -44,6 +44,7 @@ public:
     void* baseAddress() const { return view()->baseAddress(); }
     unsigned byteOffset() const { return view()->byteOffset(); }
     unsigned byteLength() const { return view()->byteLength(); }
+    void setNeuterable(bool flag) { return view()->setNeuterable(flag); }
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override
     {

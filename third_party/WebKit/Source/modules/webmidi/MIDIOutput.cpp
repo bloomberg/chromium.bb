@@ -51,13 +51,13 @@ double now(ExecutionContext* context)
 
 class MessageValidator {
 public:
-    static bool validate(Uint8Array* array, ExceptionState& exceptionState, bool sysexEnabled)
+    static bool validate(DOMUint8Array* array, ExceptionState& exceptionState, bool sysexEnabled)
     {
         MessageValidator validator(array);
         return validator.process(exceptionState, sysexEnabled);
     }
 private:
-    MessageValidator(Uint8Array* array)
+    MessageValidator(DOMUint8Array* array)
         : m_data(array->data())
         , m_length(array->length())
         , m_offset(0) { }
@@ -191,14 +191,6 @@ MIDIOutput::~MIDIOutput()
 
 void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& exceptionState)
 {
-    if (!array)
-        return;
-
-    send(array->view(), timestamp, exceptionState);
-}
-
-void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& exceptionState)
-{
     if (timestamp == 0.0)
         timestamp = now(executionContext());
 
@@ -214,15 +206,17 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
     if (timestamp == 0.0)
         timestamp = now(executionContext());
 
-    RefPtr<Uint8Array> array = Uint8Array::create(unsignedData.size());
+    RefPtr<DOMUint8Array> array = DOMUint8Array::create(unsignedData.size());
+    DOMUint8Array::ValueType* const arrayData = array->data();
+    const uint32_t arrayLength = array->length();
 
     for (size_t i = 0; i < unsignedData.size(); ++i) {
         if (unsignedData[i] > 0xff) {
             exceptionState.throwTypeError("The value at index " + String::number(i) + " (" + String::number(unsignedData[i]) + ") is greater than 0xFF.");
             return;
         }
-        unsigned char value = unsignedData[i] & 0xff;
-        array->set(i, value);
+        if (i < arrayLength)
+            arrayData[i] = unsignedData[i] & 0xff;
     }
 
     send(array.get(), timestamp, exceptionState);

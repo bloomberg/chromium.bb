@@ -132,7 +132,7 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
     insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, nullptr));
 }
 
-void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, double time, double duration, ExceptionState& exceptionState)
+void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -379,7 +379,7 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
 
             case ParamEvent::SetValueCurve:
                 {
-                    Float32Array* curve = event.curve();
+                    DOMFloat32Array* curve = event.curve();
                     float* curveData = curve ? curve->data() : 0;
                     unsigned numberOfCurvePoints = curve ? curve->length() : 0;
 

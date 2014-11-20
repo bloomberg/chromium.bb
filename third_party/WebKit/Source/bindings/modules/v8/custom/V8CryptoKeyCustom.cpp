@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
-#include "wtf/Uint8Array.h"
 
 namespace blink {
 

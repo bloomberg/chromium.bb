@@ -29,8 +29,8 @@
 #ifndef AudioParamTimeline_h
 #define AudioParamTimeline_h
 
+#include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioContext.h"
-#include "wtf/Float32Array.h"
 #include "wtf/Forward.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -47,7 +47,7 @@ public:
     void linearRampToValueAtTime(float value, double time, ExceptionState&);
     void exponentialRampToValueAtTime(float value, double time, ExceptionState&);
     void setTargetAtTime(float target, double time, double timeConstant, ExceptionState&);
-    void setValueCurveAtTime(Float32Array* curve, double time, double duration, ExceptionState&);
+    void setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState&);
     void cancelScheduledValues(double startTime, ExceptionState&);
 
     // hasValue is set to true if a valid timeline value is returned.
@@ -75,7 +75,7 @@ private:
             LastType
         };
 
-        ParamEvent(Type type, float value, double time, double timeConstant, double duration, PassRefPtr<Float32Array> curve)
+        ParamEvent(Type type, float value, double time, double timeConstant, double duration, PassRefPtr<DOMFloat32Array> curve)
             : m_type(type)
             , m_value(value)
             , m_time(time)
@@ -90,7 +90,7 @@ private:
         double time() const { return m_time; }
         double timeConstant() const { return m_timeConstant; }
         double duration() const { return m_duration; }
-        Float32Array* curve() { return m_curve.get(); }
+        DOMFloat32Array* curve() { return m_curve.get(); }
 
     private:
         unsigned m_type;
@@ -98,7 +98,7 @@ private:
         double m_time;
         double m_timeConstant;
         double m_duration;
-        RefPtr<Float32Array> m_curve;
+        RefPtr<DOMFloat32Array> m_curve;
     };
 
     void insertEvent(const ParamEvent&);

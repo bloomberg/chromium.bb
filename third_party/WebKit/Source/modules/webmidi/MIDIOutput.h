@@ -46,7 +46,6 @@ public:
     virtual ~MIDIOutput();
 
     void send(DOMUint8Array*, double timestamp, ExceptionState&);
-    void send(Uint8Array*, double timestamp, ExceptionState&);
     void send(Vector<unsigned>, double timestamp, ExceptionState&);
 
     // send() without optional |timestamp|.

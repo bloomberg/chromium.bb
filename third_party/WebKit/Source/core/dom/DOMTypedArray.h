@@ -61,6 +61,14 @@ public:
 
     ValueType* data() const { return view()->data(); }
     unsigned length() const { return view()->length(); }
+    bool setRange(const ValueType* data, size_t dataLength, unsigned offset)
+    {
+        return view()->setRange(data, dataLength, offset);
+    }
+    bool zeroRange(unsigned offset, size_t length)
+    {
+        return view()->zeroRange(offset, length);
+    }
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;

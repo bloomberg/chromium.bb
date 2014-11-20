@@ -62,10 +62,10 @@ public:
     void setSmoothingTimeConstant(double k, ExceptionState&);
     double smoothingTimeConstant() const { return m_analyser.smoothingTimeConstant(); }
 
-    void getFloatFrequencyData(DOMFloat32Array* array) { m_analyser.getFloatFrequencyData(array->view()); }
-    void getByteFrequencyData(DOMUint8Array* array) { m_analyser.getByteFrequencyData(array->view()); }
-    void getFloatTimeDomainData(DOMFloat32Array* array) { m_analyser.getFloatTimeDomainData(array->view()); }
-    void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array->view()); }
+    void getFloatFrequencyData(DOMFloat32Array* array) { m_analyser.getFloatFrequencyData(array); }
+    void getByteFrequencyData(DOMUint8Array* array) { m_analyser.getByteFrequencyData(array); }
+    void getFloatTimeDomainData(DOMFloat32Array* array) { m_analyser.getFloatTimeDomainData(array); }
+    void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array); }
 private:
     virtual double tailTime() const override { return 0; }
     virtual double latencyTime() const override { return 0; }

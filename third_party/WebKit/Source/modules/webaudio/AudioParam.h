@@ -97,7 +97,7 @@ public:
     }
     void setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
     {
-        m_timeline.setValueCurveAtTime(curve->view(), time, duration, exceptionState);
+        m_timeline.setValueCurveAtTime(curve, time, duration, exceptionState);
     }
     void cancelScheduledValues(double startTime, ExceptionState& exceptionState)
     {

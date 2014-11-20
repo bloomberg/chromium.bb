@@ -76,7 +76,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"
-#include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
 #include <limits>
 

@@ -30,8 +30,8 @@
 #define PeriodicWave_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Float32Array.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -46,7 +46,7 @@ public:
     static PeriodicWave* createTriangle(float sampleRate);
 
     // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
-    static PeriodicWave* create(float sampleRate, Float32Array* real, Float32Array* imag);
+    static PeriodicWave* create(float sampleRate, DOMFloat32Array* real, DOMFloat32Array* imag);
 
     // Returns pointers to the lower and higher wave data for the pitch range containing
     // the given fundamental frequency. These two tables are in adjacent "pitch" ranges

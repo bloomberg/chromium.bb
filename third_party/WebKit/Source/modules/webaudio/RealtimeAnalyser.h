@@ -25,9 +25,9 @@
 #ifndef RealtimeAnalyser_h
 #define RealtimeAnalyser_h
 
+#include "core/dom/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
-#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
@@ -54,10 +54,10 @@ public:
     void setSmoothingTimeConstant(double k) { m_smoothingTimeConstant = k; }
     double smoothingTimeConstant() const { return m_smoothingTimeConstant; }
 
-    void getFloatFrequencyData(Float32Array*);
-    void getByteFrequencyData(Uint8Array*);
-    void getFloatTimeDomainData(Float32Array*);
-    void getByteTimeDomainData(Uint8Array*);
+    void getFloatFrequencyData(DOMFloat32Array*);
+    void getByteFrequencyData(DOMUint8Array*);
+    void getFloatTimeDomainData(DOMFloat32Array*);
+    void getByteTimeDomainData(DOMUint8Array*);
 
     // The audio thread writes input data here.
     void writeInput(AudioBus*, size_t framesToProcess);

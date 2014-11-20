@@ -6,6 +6,7 @@
 #define DOMArrayBuffer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMArrayBufferDeallocationObserver.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/RefCounted.h"
 
@@ -55,6 +56,10 @@ public:
     }
     bool transfer(WTF::ArrayBufferContents& result) { return buffer()->transfer(result); }
     bool isNeutered() { return buffer()->isNeutered(); }
+    void setDeallocationObserver(DOMArrayBufferDeallocationObserver* observer)
+    {
+        buffer()->setDeallocationObserver(observer);
+    }
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;

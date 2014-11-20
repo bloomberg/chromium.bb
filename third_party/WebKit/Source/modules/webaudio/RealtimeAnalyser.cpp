@@ -31,14 +31,11 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
-
-#include <algorithm>
-#include <limits.h>
 #include "wtf/Complex.h"
-#include "wtf/Float32Array.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Uint8Array.h"
+#include <algorithm>
+#include <limits.h>
 
 namespace blink {
 
@@ -192,7 +189,7 @@ void RealtimeAnalyser::doFFTAnalysis()
     }
 }
 
-void RealtimeAnalyser::getFloatFrequencyData(Float32Array* destinationArray)
+void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray)
 {
     ASSERT(isMainThread());
 
@@ -217,7 +214,7 @@ void RealtimeAnalyser::getFloatFrequencyData(Float32Array* destinationArray)
     }
 }
 
-void RealtimeAnalyser::getByteFrequencyData(Uint8Array* destinationArray)
+void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray)
 {
     ASSERT(isMainThread());
 
@@ -254,7 +251,7 @@ void RealtimeAnalyser::getByteFrequencyData(Uint8Array* destinationArray)
     }
 }
 
-void RealtimeAnalyser::getFloatTimeDomainData(Float32Array* destinationArray)
+void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)
 {
     ASSERT(isMainThread());
 
@@ -283,7 +280,7 @@ void RealtimeAnalyser::getFloatTimeDomainData(Float32Array* destinationArray)
     }
 }
 
-void RealtimeAnalyser::getByteTimeDomainData(Uint8Array* destinationArray)
+void RealtimeAnalyser::getByteTimeDomainData(DOMUint8Array* destinationArray)
 {
     ASSERT(isMainThread());
 

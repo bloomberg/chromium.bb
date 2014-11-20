@@ -142,7 +142,7 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
     m_channels.reserveCapacity(numberOfChannels);
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
-        RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        RefPtr<DOMFloat32Array> channelDataArray = DOMFloat32Array::create(m_length);
         // If the channel data array could not be created, just return. The caller will need to
         // check that the desired number of channels were created.
         if (!channelDataArray) {
@@ -162,7 +162,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     unsigned numberOfChannels = bus->numberOfChannels();
     m_channels.reserveCapacity(numberOfChannels);
     for (unsigned i = 0; i < numberOfChannels; ++i) {
-        RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        RefPtr<DOMFloat32Array> channelDataArray = DOMFloat32Array::create(m_length);
         // If the channel data array could not be created, just return. The caller will need to
         // check that the desired number of channels were created.
         if (!channelDataArray)
@@ -181,11 +181,11 @@ PassRefPtr<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channelIndex, E
         return nullptr;
     }
 
-    Float32Array* channelData = m_channels[channelIndex].get();
+    DOMFloat32Array* channelData = m_channels[channelIndex].get();
     return DOMFloat32Array::create(channelData->buffer(), channelData->byteOffset(), channelData->length());
 }
 
-Float32Array* AudioBuffer::getChannelData(unsigned channelIndex)
+DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex)
 {
     if (channelIndex >= m_channels.size())
         return 0;

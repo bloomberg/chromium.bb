@@ -47,7 +47,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
 
 namespace blink {
