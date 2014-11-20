@@ -988,11 +988,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
 void UserSessionManager::ActivateWizard(const std::string& screen_name) {
   LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
-  DCHECK(host);
-  if (host) {
-    scoped_ptr<base::DictionaryValue> params;
-    host->StartWizard(screen_name, params.Pass());
-  }
+  CHECK(host);
+  scoped_ptr<base::DictionaryValue> params;
+  host->StartWizard(screen_name, params.Pass());
 }
 
 void UserSessionManager::InitializeStartUrls() const {
