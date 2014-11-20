@@ -374,6 +374,7 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassRefPtr<Med
     , m_inStyle(false)
     , m_inPicture(false)
     , m_isAppCacheEnabled(false)
+    , m_isCSPEnabled(false)
     , m_templateCount(0)
     , m_mediaValues(mediaValues)
 {
@@ -386,7 +387,7 @@ TokenPreloadScanner::~TokenPreloadScanner()
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint()
 {
     TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_isAppCacheEnabled, m_templateCount));
+    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_isAppCacheEnabled, m_isCSPEnabled, m_templateCount));
     return checkpoint;
 }
 
@@ -397,6 +398,7 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
     m_inStyle = checkpoint.inStyle;
     m_isAppCacheEnabled = checkpoint.isAppCacheEnabled;
+    m_isCSPEnabled = checkpoint.isCSPEnabled;
     m_templateCount = checkpoint.templateCount;
     m_cssScanner.reset();
     m_checkpoints.clear();
@@ -417,6 +419,10 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
 {
     // Disable preload for documents with AppCache.
     if (m_isAppCacheEnabled)
+        return;
+
+    // http://crbug.com/434230 Disable preload for documents with CSP <meta> tags
+    if (m_isCSPEnabled)
         return;
 
     switch (token.type()) {
@@ -465,6 +471,13 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         if (match(tagImpl, htmlTag) && token.getAttributeItem(manifestAttr)) {
             m_isAppCacheEnabled = true;
             return;
+        }
+        if (match(tagImpl, metaTag)) {
+            const typename Token::Attribute* equivAttribute = token.getAttributeItem(http_equivAttr);
+            if (equivAttribute && equalIgnoringCase(String(equivAttribute->value), "content-security-policy")) {
+                m_isCSPEnabled = true;
+                return;
+            }
         }
 
         if (RuntimeEnabledFeatures::pictureEnabled() && (match(tagImpl, pictureTag))) {
