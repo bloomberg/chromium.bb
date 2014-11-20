@@ -24,6 +24,7 @@ namespace cast {
 
 class CastTransportSender;
 class VideoEncoder;
+class VideoFrameFactory;
 
 typedef base::Callback<void(base::TimeDelta)> PlayoutDelayChangeCB;
 
@@ -55,6 +56,11 @@ class VideoSender : public FrameSender,
   // anything but STATUS_VIDEO_INITIALIZED.
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& reference_time);
+
+  // Creates a |VideoFrameFactory| object to vend |VideoFrame| object with
+  // encoder affinity (defined as offering some sort of performance benefit). If
+  // the encoder does not have any such capability, returns null.
+  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
 
  protected:
   int GetNumberOfFramesInEncoder() const override;

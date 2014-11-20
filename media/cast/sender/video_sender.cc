@@ -15,6 +15,7 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/external_video_encoder.h"
 #include "media/cast/sender/video_encoder_impl.h"
+#include "media/cast/sender/video_frame_factory.h"
 
 namespace media {
 namespace cast {
@@ -191,6 +192,12 @@ void VideoSender::InsertRawVideoFrame(
   } else {
     VLOG(1) << "Encoder rejected a frame.  Skipping...";
   }
+}
+
+scoped_ptr<VideoFrameFactory> VideoSender::CreateVideoFrameFactory() {
+  DCHECK(cast_initialization_status_ == STATUS_VIDEO_INITIALIZED);
+  DCHECK(video_encoder_.get()) << "Invalid state";
+  return video_encoder_->CreateVideoFrameFactory();
 }
 
 int VideoSender::GetNumberOfFramesInEncoder() const {

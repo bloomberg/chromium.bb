@@ -15,6 +15,7 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/sender/video_sender.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/fake_video_encode_accelerator.h"
@@ -534,6 +535,11 @@ TEST_F(VideoSenderTest, AcksCancelRetransmits) {
   transport_.SetPause(false);
   RunTasks(33);
   EXPECT_EQ(0, transport_.number_of_rtp_packets());
+}
+
+TEST_F(VideoSenderTest, CheckVideoFrameFactoryIsNull) {
+  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, InitEncoder(false, true));
+  EXPECT_EQ(nullptr, video_sender_->CreateVideoFrameFactory().get());
 }
 
 }  // namespace cast

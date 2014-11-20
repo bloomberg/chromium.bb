@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
+#include "media/cast/sender/video_frame_factory.h"
 
 namespace media {
 namespace cast {
@@ -18,8 +19,11 @@ namespace cast {
 class LocalVideoFrameInput : public VideoFrameInput {
  public:
   LocalVideoFrameInput(scoped_refptr<CastEnvironment> cast_environment,
-                       base::WeakPtr<VideoSender> video_sender)
-      : cast_environment_(cast_environment), video_sender_(video_sender) {}
+                       base::WeakPtr<VideoSender> video_sender,
+                       scoped_ptr<VideoFrameFactory> video_frame_factory)
+      : cast_environment_(cast_environment),
+        video_sender_(video_sender),
+        video_frame_factory_(video_frame_factory.Pass()) {}
 
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& capture_time) override {
@@ -31,6 +35,16 @@ class LocalVideoFrameInput : public VideoFrameInput {
                                            capture_time));
   }
 
+  scoped_refptr<VideoFrame> CreateOptimizedFrame(
+      base::TimeDelta timestamp) override {
+    DCHECK(video_frame_factory_.get());
+    return video_frame_factory_->CreateFrame(timestamp);
+  }
+
+  bool SupportsCreateOptimizedFrame() const override {
+    return video_frame_factory_.get() != nullptr;
+  }
+
  protected:
   ~LocalVideoFrameInput() override {}
 
@@ -39,6 +53,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
 
   scoped_refptr<CastEnvironment> cast_environment_;
   base::WeakPtr<VideoSender> video_sender_;
+  scoped_ptr<VideoFrameFactory> video_frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoFrameInput);
 };
@@ -169,8 +184,11 @@ void CastSenderImpl::OnVideoInitialized(
     const CastInitializationCallback& initialization_cb,
     media::cast::CastInitializationStatus result) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  video_frame_input_ =
-      new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
+  if (result == STATUS_VIDEO_INITIALIZED) {
+    video_frame_input_ =
+        new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr(),
+                                 video_sender_->CreateVideoFrameFactory());
+  }
   initialization_cb.Run(result);
 }
 

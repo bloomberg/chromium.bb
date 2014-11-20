@@ -17,6 +17,8 @@
 namespace media {
 namespace cast {
 
+class VideoFrameFactory;
+
 // All these functions are called from the main cast thread.
 class VideoEncoder {
  public:
@@ -41,6 +43,11 @@ class VideoEncoder {
 
   // Inform the encoder to only reference frames older or equal to frame_id;
   virtual void LatestFrameIdToReference(uint32 frame_id) = 0;
+
+  // Creates a |VideoFrameFactory| object to vend |VideoFrame| object with
+  // encoder affinity (defined as offering some sort of performance benefit).
+  // This is an optional capability and by default returns null.
+  virtual scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
 };
 
 }  // namespace cast

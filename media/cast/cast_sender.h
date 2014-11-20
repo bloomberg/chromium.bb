@@ -36,6 +36,19 @@ class VideoFrameInput : public base::RefCountedThreadSafe<VideoFrameInput> {
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time) = 0;
 
+  // Creates a |VideoFrame| optimized for the encoder. When available, these
+  // frames offer performance benefits, such as memory copy elimination. The
+  // format is guaranteed to be I420 or NV12.
+  //
+  // Not every encoder supports this method. Use |ShouldCreateOptimizedFrame|
+  // to determine if you can and should use this method. Calling
+  // this method when |ShouldCreateOptimizedFrame| is false will CHECK.
+  virtual scoped_refptr<VideoFrame> CreateOptimizedFrame(
+      base::TimeDelta timestamp) = 0;
+
+  // Returns true if the encoder supports creating optimized frames.
+  virtual bool SupportsCreateOptimizedFrame() const = 0;
+
  protected:
   virtual ~VideoFrameInput() {}
 
