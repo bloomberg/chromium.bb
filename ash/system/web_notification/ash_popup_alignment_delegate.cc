@@ -170,6 +170,7 @@ void AshPopupAlignmentDelegate::OnDisplayRemoved(
 void AshPopupAlignmentDelegate::OnDisplayMetricsChanged(
     const gfx::Display& display,
     uint32_t metrics) {
+  UpdateShelf();
   if (display.id() == display_id_ && shelf_)
     OnAutoHideStateChanged(shelf_->auto_hide_state());
 }
