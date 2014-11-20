@@ -413,9 +413,14 @@ void RenderView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConst
         return;
 
     if (m_frameView) {
-        // Paint invalidation happens after scroll updates, so there should be no pending scroll delta.
-        ASSERT(m_frameView->pendingScrollDelta().isZero());
         rect.move(m_frameView->scrollOffsetForFixedPosition());
+
+        // FIXME: Paint invalidation should happen after scroll updates, so there should be no pending scroll delta.
+        // However, we still have paint invalidation during layout, so we can't ASSERT for now. crbug.com/434950.
+        // ASSERT(m_frameView->pendingScrollDelta().isZero());
+        // If we have a pending scroll, invalidate the previous scroll position.
+        if (!m_frameView->pendingScrollDelta().isZero())
+            rect.move(-LayoutSize(m_frameView->pendingScrollDelta()));
     }
 }
 
