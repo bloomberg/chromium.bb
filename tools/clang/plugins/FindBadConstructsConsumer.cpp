@@ -724,27 +724,36 @@ void FindBadConstructsConsumer::CheckWeakPtrFactoryMembers(
       the_end(record->field_end());
   SourceLocation weak_ptr_factory_location;  // Invalid initially.
   for (; iter != the_end; ++iter) {
-    // If we enter the loop but have already seen a matching WeakPtrFactory,
-    // it means there is at least one member after the factory.
-    if (weak_ptr_factory_location.isValid()) {
-      diagnostic().Report(weak_ptr_factory_location,
-                          diag_weak_ptr_factory_order_);
-    }
     const TemplateSpecializationType* template_spec_type =
         iter->getType().getTypePtr()->getAs<TemplateSpecializationType>();
+    bool param_is_weak_ptr_factory_to_self = false;
     if (template_spec_type) {
       const TemplateDecl* template_decl =
           template_spec_type->getTemplateName().getAsTemplateDecl();
-      if (template_decl && template_spec_type->getNumArgs() >= 1) {
+      if (template_decl && template_spec_type->getNumArgs() == 1) {
         if (template_decl->getNameAsString().compare("WeakPtrFactory") == 0 &&
             GetNamespace(template_decl) == "base") {
+          // Only consider WeakPtrFactory members which are specialized for the
+          // owning class.
           const TemplateArgument& arg = template_spec_type->getArg(0);
           if (arg.getAsType().getTypePtr()->getAsCXXRecordDecl() ==
               record->getTypeForDecl()->getAsCXXRecordDecl()) {
-            weak_ptr_factory_location = iter->getLocation();
+            if (!weak_ptr_factory_location.isValid()) {
+              // Save the first matching WeakPtrFactory member for the
+              // diagnostic.
+              weak_ptr_factory_location = iter->getLocation();
+            }
+            param_is_weak_ptr_factory_to_self = true;
           }
         }
       }
+    }
+    // If we've already seen a WeakPtrFactory<OwningType> and this param is not
+    // one of those, it means there is at least one member after a factory.
+    if (weak_ptr_factory_location.isValid() &&
+        !param_is_weak_ptr_factory_to_self) {
+      diagnostic().Report(weak_ptr_factory_location,
+                          diag_weak_ptr_factory_order_);
     }
   }
 }
