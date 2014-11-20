@@ -230,7 +230,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           CreateOverlayCandidateValidator(compositor->widget())));
     }
     scoped_ptr<OnscreenDisplayClient> display_client(new OnscreenDisplayClient(
-        display_surface.Pass(), manager, compositor->task_runner()));
+        display_surface.Pass(), manager, compositor->GetRendererSettings(),
+        compositor->task_runner()));
 
     scoped_ptr<SurfaceDisplayOutputSurface> output_surface(
         new SurfaceDisplayOutputSurface(

@@ -11,6 +11,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/output/software_renderer.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/surfaces/display_client.h"
@@ -24,11 +25,13 @@ namespace cc {
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
                  SharedBitmapManager* bitmap_manager,
-                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                 const RendererSettings& settings)
     : client_(client),
       manager_(manager),
       bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      settings_(settings),
       device_scale_factor_(1.f),
       blocking_main_thread_task_runner_(
           BlockingTaskRunner::Create(base::MessageLoopProxy::current())),
@@ -59,28 +62,18 @@ void Display::InitializeRenderer() {
   if (resource_provider_)
     return;
 
-  int highp_threshold_min = 0;
-  bool use_rgba_4444_texture_format = false;
-  size_t id_allocation_chunk_size = 1;
-  scoped_ptr<ResourceProvider> resource_provider =
-      ResourceProvider::Create(output_surface_.get(),
-                               bitmap_manager_,
-                               gpu_memory_buffer_manager_,
-                               blocking_main_thread_task_runner_.get(),
-                               highp_threshold_min,
-                               use_rgba_4444_texture_format,
-                               id_allocation_chunk_size);
+  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+      output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
+      blocking_main_thread_task_runner_.get(), settings_.highp_threshold_min,
+      settings_.use_rgba_4444_textures,
+      settings_.texture_id_allocation_chunk_size);
   if (!resource_provider)
     return;
 
   if (output_surface_->context_provider()) {
-    scoped_ptr<GLRenderer> renderer =
-        GLRenderer::Create(this,
-                           &settings_,
-                           output_surface_.get(),
-                           resource_provider.get(),
-                           texture_mailbox_deleter_.get(),
-                           highp_threshold_min);
+    scoped_ptr<GLRenderer> renderer = GLRenderer::Create(
+        this, &settings_, output_surface_.get(), resource_provider.get(),
+        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = renderer.Pass();

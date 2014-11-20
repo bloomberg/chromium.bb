@@ -86,7 +86,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   }
 
  protected:
-  LayerTreeSettings settings_;
+  RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;

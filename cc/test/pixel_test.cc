@@ -144,12 +144,9 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   texture_mailbox_deleter_ = make_scoped_ptr(
       new TextureMailboxDeleter(base::MessageLoopProxy::current()));
 
-  renderer_ = GLRenderer::Create(this,
-                                 &settings_,
-                                 output_surface_.get(),
-                                 resource_provider_.get(),
-                                 texture_mailbox_deleter_.get(),
-                                 0);
+  renderer_ = GLRenderer::Create(
+      this, &settings_.renderer_settings, output_surface_.get(),
+      resource_provider_.get(), texture_mailbox_deleter_.get(), 0);
 }
 
 void PixelTest::ForceExpandedViewport(const gfx::Size& surface_expansion) {
@@ -188,8 +185,9 @@ void PixelTest::SetUpSoftwareRenderer() {
                                0,
                                false,
                                1);
-  renderer_ = SoftwareRenderer::Create(
-      this, &settings_, output_surface_.get(), resource_provider_.get());
+  renderer_ =
+      SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                               output_surface_.get(), resource_provider_.get());
 }
 
 }  // namespace cc

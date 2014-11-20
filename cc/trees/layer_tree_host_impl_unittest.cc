@@ -101,7 +101,7 @@ class LayerTreeHostImplTest : public testing::Test,
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.impl_side_painting = true;
-    settings.texture_id_allocation_chunk_size = 1;
+    settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.report_overscroll_only_for_scrollable_axes = true;
     settings.use_pinch_virtual_viewport = true;
     return settings;
@@ -4800,7 +4800,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
   LayerTreeSettings settings;
-  settings.partial_swap_enabled = true;
+  settings.renderer_settings.partial_swap_enabled = true;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
@@ -5016,7 +5016,7 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
 
   // Run test case
   LayerTreeSettings settings = DefaultSettings();
-  settings.partial_swap_enabled = false;
+  settings.renderer_settings.partial_swap_enabled = false;
   CreateHostImpl(settings,
                  FakeOutputSurface::Create3d(mock_context_owned.Pass()));
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
@@ -5052,7 +5052,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
   MockContextHarness harness(mock_context);
 
   LayerTreeSettings settings = DefaultSettings();
-  settings.partial_swap_enabled = true;
+  settings.renderer_settings.partial_swap_enabled = true;
   CreateHostImpl(settings, FakeOutputSurface::Create3d(context_owned.Pass()));
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
 
@@ -5096,7 +5096,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   provider->TestContext3d()->set_have_post_sub_buffer(true);
 
   LayerTreeSettings settings;
-  settings.partial_swap_enabled = partial_swap;
+  settings.renderer_settings.partial_swap_enabled = partial_swap;
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
       settings, client, proxy, stats_instrumentation, manager, NULL, 0);
   my_host_impl->InitializeRenderer(output_surface.Pass());
@@ -5281,7 +5281,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
 
   // Run test case
   LayerTreeSettings settings = DefaultSettings();
-  settings.partial_swap_enabled = false;
+  settings.renderer_settings.partial_swap_enabled = false;
   CreateHostImpl(settings,
                  FakeOutputSurface::Create3d(mock_context_owned.Pass()));
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));

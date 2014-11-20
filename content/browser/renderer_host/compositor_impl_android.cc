@@ -411,12 +411,12 @@ void CompositorImpl::SetVisible(bool visible) {
     needs_composite_ = false;
     pending_swapbuffers_ = 0;
     cc::LayerTreeSettings settings;
-    settings.refresh_rate = 60.0;
+    settings.renderer_settings.refresh_rate = 60.0;
+    settings.renderer_settings.allow_antialiasing = false;
+    settings.renderer_settings.highp_threshold_min = 2048;
     settings.impl_side_painting = false;
-    settings.allow_antialiasing = false;
     settings.calculate_top_controls_position = false;
     settings.top_controls_height = 0.f;
-    settings.highp_threshold_min = 2048;
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     settings.initial_debug_state.SetRecordRenderingStats(
@@ -563,6 +563,7 @@ void CompositorImpl::CreateOutputSurface(bool fallback) {
   if (manager) {
     display_client_.reset(
         new OnscreenDisplayClient(real_output_surface.Pass(), manager,
+                                  host_->settings().renderer_settings,
                                   base::MessageLoopProxy::current()));
     scoped_ptr<SurfaceDisplayOutputSurface> surface_output_surface(
         new SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),

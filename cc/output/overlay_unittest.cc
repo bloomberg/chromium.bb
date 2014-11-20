@@ -524,7 +524,7 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
 class OverlayInfoRendererGL : public GLRenderer {
  public:
   OverlayInfoRendererGL(RendererClient* client,
-                        const LayerTreeSettings* settings,
+                        const RendererSettings* settings,
                         OutputSurface* output_surface,
                         ResourceProvider* resource_provider)
       : GLRenderer(client,
@@ -601,7 +601,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
-  LayerTreeSettings settings_;
+  RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<OverlayOutputSurface> output_surface_;
   FakeRendererClient renderer_client_;

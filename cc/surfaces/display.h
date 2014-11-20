@@ -24,6 +24,7 @@ class BlockingTaskRunner;
 class DirectRenderer;
 class DisplayClient;
 class OutputSurface;
+class RendererSettings;
 class ResourceProvider;
 class SharedBitmapManager;
 class Surface;
@@ -42,7 +43,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   Display(DisplayClient* client,
           SurfaceManager* manager,
           SharedBitmapManager* bitmap_manager,
-          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+          const RendererSettings& settings);
   ~Display() override;
 
   bool Initialize(scoped_ptr<OutputSurface> output_surface);
@@ -90,10 +92,10 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   SurfaceManager* manager_;
   SharedBitmapManager* bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  RendererSettings settings_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_;
-  LayerTreeSettings settings_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SurfaceAggregator> aggregator_;

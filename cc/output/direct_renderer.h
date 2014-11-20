@@ -59,7 +59,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
  protected:
   DirectRenderer(RendererClient* client,
-                 const LayerTreeSettings* settings,
+                 const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider);
 

@@ -22,7 +22,7 @@ namespace cc {
 
 scoped_ptr<DelegatingRenderer> DelegatingRenderer::Create(
     RendererClient* client,
-    const LayerTreeSettings* settings,
+    const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return make_scoped_ptr(new DelegatingRenderer(
@@ -30,7 +30,7 @@ scoped_ptr<DelegatingRenderer> DelegatingRenderer::Create(
 }
 
 DelegatingRenderer::DelegatingRenderer(RendererClient* client,
-                                       const LayerTreeSettings* settings,
+                                       const RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
     : Renderer(client, settings),

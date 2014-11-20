@@ -27,6 +27,7 @@ class OnscreenDisplayClient : cc::DisplayClient {
   OnscreenDisplayClient(
       scoped_ptr<cc::OutputSurface> output_surface,
       cc::SurfaceManager* manager,
+      const cc::RendererSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~OnscreenDisplayClient() override;
 

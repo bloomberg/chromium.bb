@@ -125,7 +125,7 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
 }
 
 DirectRenderer::DirectRenderer(RendererClient* client,
-                               const LayerTreeSettings* settings,
+                               const RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider)
     : Renderer(client, settings),

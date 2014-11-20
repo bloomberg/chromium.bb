@@ -301,6 +301,8 @@
         'output/render_surface_filters.h',
         'output/renderer.cc',
         'output/renderer.h',
+        'output/renderer_settings.cc',
+        'output/renderer_settings.h',
         'output/shader.cc',
         'output/shader.h',
         'output/software_frame_data.cc',

@@ -17,12 +17,14 @@ namespace content {
 OnscreenDisplayClient::OnscreenDisplayClient(
     scoped_ptr<cc::OutputSurface> output_surface,
     cc::SurfaceManager* manager,
+    const cc::RendererSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : output_surface_(output_surface.Pass()),
       display_(new cc::Display(this,
                                manager,
                                HostSharedBitmapManager::current(),
-                               BrowserGpuMemoryBufferManager::current())),
+                               BrowserGpuMemoryBufferManager::current(),
+                               settings)),
       task_runner_(task_runner),
       scheduled_draw_(false),
       output_surface_lost_(false),

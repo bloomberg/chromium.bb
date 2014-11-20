@@ -50,14 +50,14 @@ class MockContextProvider : public TestContextProvider {
 
 template <class T>
 scoped_ptr<Renderer> CreateRenderer(RendererClient* client,
-                                    const LayerTreeSettings* settings,
+                                    const RendererSettings* settings,
                                     OutputSurface* output_surface,
                                     ResourceProvider* resource_provider);
 
 template <>
 scoped_ptr<Renderer> CreateRenderer<DelegatingRenderer>(
     RendererClient* client,
-    const LayerTreeSettings* settings,
+    const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return DelegatingRenderer::Create(
@@ -67,7 +67,7 @@ scoped_ptr<Renderer> CreateRenderer<DelegatingRenderer>(
 template <>
 scoped_ptr<Renderer> CreateRenderer<GLRenderer>(
     RendererClient* client,
-    const LayerTreeSettings* settings,
+    const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return GLRenderer::Create(
@@ -91,7 +91,7 @@ class RendererTest : public ::testing::Test {
   }
 
   FakeRendererClient renderer_client_;
-  LayerTreeSettings tree_settings_;
+  RendererSettings tree_settings_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_refptr<MockContextProvider> context_provider_;
   scoped_ptr<OutputSurface> output_surface_;

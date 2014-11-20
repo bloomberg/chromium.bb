@@ -94,15 +94,14 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   // can have LCD text, to match the previous behaviour with ContentLayers,
   // where LCD-not-allowed notifications were ignored.
   settings.layers_always_allowed_lcd_text = true;
-  settings.refresh_rate =
-      context_factory_->DoesCreateTestContexts()
-      ? kTestRefreshRate
-      : kDefaultRefreshRate;
+  settings.renderer_settings.refresh_rate =
+      context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
+                                                 : kDefaultRefreshRate;
   settings.main_frame_before_activation_enabled = false;
   settings.throttle_frame_production =
       !command_line->HasSwitch(switches::kDisableGpuVsync);
 #if !defined(OS_MACOSX)
-  settings.partial_swap_enabled =
+  settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
 #endif
 #if defined(OS_CHROMEOS)
@@ -419,6 +418,10 @@ const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
 void Compositor::SetLayerTreeDebugState(
     const cc::LayerTreeDebugState& debug_state) {
   host_->SetDebugState(debug_state);
+}
+
+const cc::RendererSettings& Compositor::GetRendererSettings() const {
+  return host_->settings().renderer_settings;
 }
 
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {

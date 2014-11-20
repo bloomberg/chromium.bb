@@ -49,7 +49,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   static scoped_ptr<GLRenderer> Create(
       RendererClient* client,
-      const LayerTreeSettings* settings,
+      const RendererSettings* settings,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider,
       TextureMailboxDeleter* texture_mailbox_deleter,
@@ -74,7 +74,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
  protected:
   GLRenderer(RendererClient* client,
-             const LayerTreeSettings* settings,
+             const RendererSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
              TextureMailboxDeleter* texture_mailbox_deleter,

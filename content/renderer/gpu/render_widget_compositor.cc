@@ -275,7 +275,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.use_pinch_virtual_viewport =
       cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
-  settings.allow_antialiasing &=
+  settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   settings.single_thread_proxy_scheduler =
       !cmd->HasSwitch(switches::kDisableSingleThreadProxyScheduler);
@@ -363,7 +363,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.scrollbar_fade_duration_ms = 300;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
-  settings.highp_threshold_min = 2048;
+  settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
       synchronous_compositor_factory;
@@ -373,7 +373,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       base::SysInfo::IsLowEndDevice() && !synchronous_compositor_factory;
   // RGBA_4444 textures are only enabled for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
-  settings.use_rgba_4444_textures = is_low_end_device;
+  settings.renderer_settings.use_rgba_4444_textures = is_low_end_device;
   if (is_low_end_device) {
     // On low-end we want to be very carefull about killing other
     // apps. So initially we use 50% more memory to avoid flickering
@@ -386,7 +386,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.max_memory_for_prepaint_percentage = 50;
   }
   // Webview does not own the surface so should not clear it.
-  settings.should_clear_root_render_pass =
+  settings.renderer_settings.should_clear_root_render_pass =
       !synchronous_compositor_factory;
 
   // TODO(danakj): Only do this on low end devices.

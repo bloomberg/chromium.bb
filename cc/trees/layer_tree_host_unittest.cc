@@ -1310,7 +1310,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->texture_id_allocation_chunk_size = 1;
+    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
     // Make sure partial texture updates are turned off.
     settings->max_partial_texture_updates = 0;
     // Linear fade animator prevents scrollbars from drawing immediately.
@@ -1487,7 +1487,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->texture_id_allocation_chunk_size = 1;
+    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
     // Allow one partial texture update.
     settings->max_partial_texture_updates = 1;
     // No partial updates when impl side painting is enabled.
@@ -2982,7 +2982,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   LayerTreeHostTestUIResource() : num_ui_resources_(0) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->texture_id_allocation_chunk_size = 1;
+    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -5164,7 +5164,7 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
             base::Unretained(this)));
     // Wait 50x longer than expected.
     double milliseconds_per_frame =
-        1000.0 / layer_tree_host()->settings().refresh_rate;
+        1000.0 / layer_tree_host()->settings().renderer_settings.refresh_rate;
     MainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(

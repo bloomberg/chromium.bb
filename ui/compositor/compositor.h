@@ -37,6 +37,7 @@ class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
+class RendererSettings;
 class SharedBitmapManager;
 class SurfaceIdAllocator;
 }
@@ -270,6 +271,7 @@ class COMPOSITOR_EXPORT Compositor
 
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
+  const cc::RendererSettings& GetRendererSettings() const;
 
   LayerAnimatorCollection* layer_animator_collection() {
     return &layer_animator_collection_;

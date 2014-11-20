@@ -19,7 +19,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
  public:
   static scoped_ptr<DelegatingRenderer> Create(
       RendererClient* client,
-      const LayerTreeSettings* settings,
+      const RendererSettings* settings,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
   ~DelegatingRenderer() override;
@@ -39,7 +39,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
  private:
   DelegatingRenderer(RendererClient* client,
-                     const LayerTreeSettings* settings,
+                     const RendererSettings* settings,
                      OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
 

@@ -62,8 +62,9 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->force_antialiasing = force_antialiasing_;
-    settings->force_blending_with_shaders = force_blending_with_shaders_;
+    settings->renderer_settings.force_antialiasing = force_antialiasing_;
+    settings->renderer_settings.force_blending_with_shaders =
+        force_blending_with_shaders_;
   }
 
  protected:

@@ -101,7 +101,7 @@ class RendererPixelTest : public PixelTest {
 class GLRendererWithExpandedViewport : public GLRenderer {
  public:
   GLRendererWithExpandedViewport(RendererClient* client,
-                                 const LayerTreeSettings* settings,
+                                 const RendererSettings* settings,
                                  OutputSurface* output_surface,
                                  ResourceProvider* resource_provider,
                                  TextureMailboxDeleter* texture_mailbox_deleter,
@@ -117,7 +117,7 @@ class GLRendererWithExpandedViewport : public GLRenderer {
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
  public:
   SoftwareRendererWithExpandedViewport(RendererClient* client,
-                                       const LayerTreeSettings* settings,
+                                       const RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
       : SoftwareRenderer(client, settings, output_surface, resource_provider) {}
@@ -126,7 +126,7 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
 class GLRendererWithFlippedSurface : public GLRenderer {
  public:
   GLRendererWithFlippedSurface(RendererClient* client,
-                               const LayerTreeSettings* settings,
+                               const RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider,
                                TextureMailboxDeleter* texture_mailbox_deleter,

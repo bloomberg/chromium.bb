@@ -1514,7 +1514,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         IsActivelyScrolling() || needs_animate_layers();
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
-        SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
+        SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                                 output_surface_.get(), NULL);
     temp_software_renderer->DrawFrame(&frame->render_passes,
                                       device_scale_factor_,
                                       DeviceViewport(),
@@ -1896,18 +1897,18 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(resource_provider_);
 
   if (output_surface_->capabilities().delegated_rendering) {
-    renderer_ = DelegatingRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider_.get());
+    renderer_ = DelegatingRenderer::Create(this, &settings_.renderer_settings,
+                                           output_surface_.get(),
+                                           resource_provider_.get());
   } else if (output_surface_->context_provider()) {
-    renderer_ = GLRenderer::Create(this,
-                                   &settings_,
-                                   output_surface_.get(),
-                                   resource_provider_.get(),
-                                   texture_mailbox_deleter_.get(),
-                                   settings_.highp_threshold_min);
+    renderer_ = GLRenderer::Create(
+        this, &settings_.renderer_settings, output_surface_.get(),
+        resource_provider_.get(), texture_mailbox_deleter_.get(),
+        settings_.renderer_settings.highp_threshold_min);
   } else if (output_surface_->software_device()) {
-    renderer_ = SoftwareRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider_.get());
+    renderer_ = SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                                         output_surface_.get(),
+                                         resource_provider_.get());
   }
   DCHECK(renderer_);
 
@@ -2026,12 +2027,11 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
         resource_provider_->memory_efficient_texture_format());
 
     *raster_worker_pool = PixelBufferRasterWorkerPool::Create(
-        task_runner,
-        RasterWorkerPool::GetTaskGraphRunner(),
-        context_provider,
+        task_runner, RasterWorkerPool::GetTaskGraphRunner(), context_provider,
         resource_provider_.get(),
-        GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
-                                       settings_.refresh_rate));
+        GetMaxTransferBufferUsageBytes(
+            context_provider->ContextCapabilities(),
+            settings_.renderer_settings.refresh_rate));
   }
 }
 
@@ -2084,14 +2084,12 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   output_surface_ = output_surface.Pass();
-  resource_provider_ =
-      ResourceProvider::Create(output_surface_.get(),
-                               shared_bitmap_manager_,
-                               gpu_memory_buffer_manager_,
-                               proxy_->blocking_main_thread_task_runner(),
-                               settings_.highp_threshold_min,
-                               settings_.use_rgba_4444_textures,
-                               settings_.texture_id_allocation_chunk_size);
+  resource_provider_ = ResourceProvider::Create(
+      output_surface_.get(), shared_bitmap_manager_, gpu_memory_buffer_manager_,
+      proxy_->blocking_main_thread_task_runner(),
+      settings_.renderer_settings.highp_threshold_min,
+      settings_.renderer_settings.use_rgba_4444_textures,
+      settings_.renderer_settings.texture_id_allocation_chunk_size);
 
   if (output_surface_->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);
@@ -2103,8 +2101,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   // Initialize vsync parameters to sane values.
   const base::TimeDelta display_refresh_interval =
-      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                        settings_.refresh_rate);
+      base::TimeDelta::FromMicroseconds(
+          base::Time::kMicrosecondsPerSecond /
+          settings_.renderer_settings.refresh_rate);
   CommitVSyncParameters(base::TimeTicks(), display_refresh_interval);
 
   // TODO(brianderson): Don't use a hard-coded parent draw time.

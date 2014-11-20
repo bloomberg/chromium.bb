@@ -63,7 +63,7 @@ static SkShader::TileMode WrapModeToTileMode(GLint wrap_mode) {
 
 scoped_ptr<SoftwareRenderer> SoftwareRenderer::Create(
     RendererClient* client,
-    const LayerTreeSettings* settings,
+    const RendererSettings* settings,
     OutputSurface* output_surface,
     ResourceProvider* resource_provider) {
   return make_scoped_ptr(new SoftwareRenderer(
@@ -71,7 +71,7 @@ scoped_ptr<SoftwareRenderer> SoftwareRenderer::Create(
 }
 
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
-                                   const LayerTreeSettings* settings,
+                                   const RendererSettings* settings,
                                    OutputSurface* output_surface,
                                    ResourceProvider* resource_provider)
     : DirectRenderer(client, settings, output_surface, resource_provider),

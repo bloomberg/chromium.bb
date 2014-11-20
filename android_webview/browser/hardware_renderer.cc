@@ -92,11 +92,11 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
   cc::LayerTreeSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
-  settings.allow_antialiasing = false;
-  settings.highp_threshold_min = 2048;
+  settings.renderer_settings.allow_antialiasing = false;
+  settings.renderer_settings.highp_threshold_min = 2048;
 
   // Webview does not own the surface so should not clear it.
-  settings.should_clear_root_render_pass = false;
+  settings.renderer_settings.should_clear_root_render_pass = false;
 
   // TODO(enne): Update this this compositor to use a synchronous scheduler.
   settings.single_thread_proxy_scheduler = false;

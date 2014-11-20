@@ -607,8 +607,8 @@ void LayerTreeTest::DoBeginTest() {
   scoped_ptr<ExternalBeginFrameSourceForTest> external_begin_frame_source;
   if (settings_.use_external_begin_frame_source &&
       settings_.throttle_frame_production) {
-    external_begin_frame_source.reset(
-        new ExternalBeginFrameSourceForTest(settings_.refresh_rate));
+    external_begin_frame_source.reset(new ExternalBeginFrameSourceForTest(
+        settings_.renderer_settings.refresh_rate));
     external_begin_frame_source_ = external_begin_frame_source.get();
   }
 
@@ -741,7 +741,7 @@ void LayerTreeTest::RunTest(bool threaded,
 
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
-  settings_.refresh_rate = 200.0;
+  settings_.renderer_settings.refresh_rate = 200.0;
   settings_.background_animation_rate = 200.0;
   settings_.impl_side_painting = impl_side_painting;
   InitializeSettings(&settings_);

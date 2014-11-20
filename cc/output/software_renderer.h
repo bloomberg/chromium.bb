@@ -29,7 +29,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   static scoped_ptr<SoftwareRenderer> Create(
       RendererClient* client,
-      const LayerTreeSettings* settings,
+      const RendererSettings* settings,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
 
@@ -63,7 +63,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       scoped_ptr<CopyOutputRequest> request) override;
 
   SoftwareRenderer(RendererClient* client,
-                   const LayerTreeSettings* settings,
+                   const RendererSettings* settings,
                    OutputSurface* output_surface,
                    ResourceProvider* resource_provider);
 
