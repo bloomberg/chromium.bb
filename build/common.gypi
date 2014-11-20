@@ -41,7 +41,7 @@
 
             'conditions': [
               # Compute the architecture that we're building on.
-              ['OS=="win" or OS=="mac" or OS=="ios"', {
+              ['OS=="win" or OS=="ios"', {
                 'host_arch%': 'ia32',
               }, {
                 'host_arch%': '<!pymod_do_main(detect_host_arch)',
