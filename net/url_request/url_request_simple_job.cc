@@ -47,6 +47,11 @@ URLRequestSimpleJob::~URLRequestSimpleJob() {}
 
 bool URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size,
                                       int* bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 URLRequestSimpleJob::ReadRawData"));
+
   DCHECK(bytes_read);
   int remaining = byte_range_.last_byte_position() - data_offset_ + 1;
   if (buf_size > remaining)
