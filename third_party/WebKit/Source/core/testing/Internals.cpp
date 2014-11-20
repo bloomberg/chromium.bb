@@ -484,7 +484,7 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
 Node* Internals::nextSiblingByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(node);
+    ComposedTreeWalker walker(*node);
     walker.nextSibling();
     return walker.get();
 }
@@ -492,7 +492,7 @@ Node* Internals::nextSiblingByWalker(Node* node)
 Node* Internals::firstChildByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(node);
+    ComposedTreeWalker walker(*node);
     walker.firstChild();
     return walker.get();
 }
@@ -500,7 +500,7 @@ Node* Internals::firstChildByWalker(Node* node)
 Node* Internals::lastChildByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(node);
+    ComposedTreeWalker walker(*node);
     walker.lastChild();
     return walker.get();
 }
@@ -508,7 +508,7 @@ Node* Internals::lastChildByWalker(Node* node)
 Node* Internals::nextNodeByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(node);
+    ComposedTreeWalker walker(*node);
     walker.next();
     return walker.get();
 }
@@ -516,7 +516,7 @@ Node* Internals::nextNodeByWalker(Node* node)
 Node* Internals::previousNodeByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(node);
+    ComposedTreeWalker walker(*node);
     walker.previous();
     return walker.get();
 }

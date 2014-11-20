@@ -47,7 +47,7 @@ public:
         CannotStartFromShadowBoundary
     };
 
-    ComposedTreeWalker(const Node*, StartPolicy = CannotStartFromShadowBoundary);
+    ComposedTreeWalker(const Node&, StartPolicy = CannotStartFromShadowBoundary);
 
     Node* get() const { return const_cast<Node*>(m_node.get()); }
 
@@ -112,11 +112,11 @@ private:
     RawPtrWillBeMember<const Node> m_node;
 };
 
-inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, StartPolicy startPolicy)
-    : m_node(node)
+inline ComposedTreeWalker::ComposedTreeWalker(const Node& node, StartPolicy startPolicy)
+    : m_node(&node)
 {
 #if ENABLE(ASSERT)
-    if (m_node && startPolicy == CannotStartFromShadowBoundary)
+    if (startPolicy == CannotStartFromShadowBoundary)
         assertPrecondition();
 #endif
 }
