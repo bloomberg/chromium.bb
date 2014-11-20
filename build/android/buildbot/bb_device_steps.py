@@ -190,11 +190,14 @@ def RunChromeProxyTests(options):
   RunCmd(['tools/chrome_proxy/run_tests'] + args)
 
 
-def RunTelemetryPerfUnitTests(options):
-  """Runs the telemetry perf unit tests.
+def RunTelemetryTests(options, run_tests_path):
+  """Runs either telemetry_perf_unittests or telemetry_unittests.
 
   Args:
     options: options object.
+    run_tests_path: path to run_tests script (tools/perf/run_tests for
+                    perf_unittests and tools/telemetry/run_tests for
+                    telemetry_unittests)
   """
   InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
   args = ['--browser', 'android-chrome-shell']
@@ -202,7 +205,7 @@ def RunTelemetryPerfUnitTests(options):
   if devices:
     args = args + ['--device', devices[0]]
   bb_annotations.PrintNamedStep('telemetry_perf_unittests')
-  RunCmd(['tools/perf/run_tests'] + args)
+  RunCmd([run_tests_path] + args)
 
 
 def InstallApk(options, test, print_step=False):
@@ -473,9 +476,11 @@ def RunUnitTests(options):
 
 
 def RunTelemetryUnitTests(options):
-  suites = gtest_config.TELEMETRY_EXPERIMENTAL_TEST_SUITES
-  RunTestSuites(options, suites)
+  RunTelemetryTests(options, 'tools/telemetry/run_tests')
 
+
+def RunTelemetryPerfUnitTests(options):
+  RunTelemetryTests(options, 'tools/perf/run_tests')
 
 def RunInstrumentationTests(options):
   for test in INSTRUMENTATION_TESTS.itervalues():
