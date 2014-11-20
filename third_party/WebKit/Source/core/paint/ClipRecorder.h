@@ -36,7 +36,6 @@ class EndClipDisplayItem : public DisplayItem {
 public:
     EndClipDisplayItem(const RenderLayerModelObject* renderer) : DisplayItem(renderer, EndClip) { }
 
-private:
     virtual void replay(GraphicsContext*) override;
 };
 

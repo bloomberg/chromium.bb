@@ -5,9 +5,13 @@
 #include "config.h"
 #include "core/paint/BoxClipper.h"
 
+#include "core/paint/ClipRecorder.h"
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -52,13 +56,60 @@ BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& 
         m_paintInfo.phase = PaintPhaseChildOutlines;
     } else if (m_paintInfo.phase == PaintPhaseChildBlockBackground) {
         m_paintInfo.phase = PaintPhaseBlockBackground;
+        // FIXME: refactor to not call paintObject from within a clipping helper.
         m_box.paintObject(m_paintInfo, m_accumulatedOffset);
         m_paintInfo.phase = PaintPhaseChildBlockBackgrounds;
     }
-    m_paintInfo.context->save();
+
+    DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        switch (m_paintInfo.phase) {
+        case PaintPhaseChildBlockBackground:
+            clipType = DisplayItem::ClipBoxChildBlockBackground;
+            break;
+        case PaintPhaseChildBlockBackgrounds:
+            clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
+            break;
+        case PaintPhaseFloat:
+            clipType = DisplayItem::ClipBoxFloat;
+            break;
+        case PaintPhaseForeground:
+            clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
+            break;
+        case PaintPhaseOutline:
+            clipType = DisplayItem::ClipBoxOutline;
+            break;
+        case PaintPhaseChildOutlines:
+            clipType = DisplayItem::ClipBoxChildOutlines;
+            break;
+        case PaintPhaseSelection:
+            clipType = DisplayItem::ClipBoxSelection;
+            break;
+        case PaintPhaseCollapsedTableBorders:
+            clipType = DisplayItem::ClipBoxCollapsedTableBorders;
+            break;
+        case PaintPhaseTextClip:
+            clipType = DisplayItem::ClipBoxTextClip;
+            break;
+        case PaintPhaseClippingMask:
+            clipType = DisplayItem::ClipBoxClippingMask;
+            break;
+        case PaintPhaseBlockBackground:
+        case PaintPhaseSelfOutline:
+        case PaintPhaseMask:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(&m_box, clipType, pixelSnappedIntRect(clipRect)));
     if (hasBorderRadius)
-        m_paintInfo.context->clipRoundedRect(clipRoundedRect);
-    m_paintInfo.context->clip(pixelSnappedIntRect(clipRect));
+        clipDisplayItem->roundedRectClips().append(clipRoundedRect);
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        m_box.view()->viewDisplayList().add(clipDisplayItem.release());
+    else
+        clipDisplayItem->replay(paintInfo.context);
+
     m_pushedClip = true;
 }
 
@@ -69,7 +120,15 @@ BoxClipper::~BoxClipper()
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
 
-    m_paintInfo.context->restore();
+    OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_box));
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        m_box.view()->viewDisplayList().add(endClipDisplayItem.release());
+    } else {
+        endClipDisplayItem->replay(m_paintInfo.context);
+    }
+
+    // FIXME: refactor to not call paintObject from within a clipping helper.
     if (m_originalPhase == PaintPhaseOutline) {
         m_paintInfo.phase = PaintPhaseSelfOutline;
         m_box.paintObject(m_paintInfo, m_accumulatedOffset);

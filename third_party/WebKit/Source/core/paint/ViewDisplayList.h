@@ -50,7 +50,17 @@ public:
         BeginFilter = 28,
         EndFilter = 29,
         BeginTransparency = 30,
-        EndTransparency = 31
+        EndTransparency = 31,
+        ClipBoxChildBlockBackground = 32,
+        ClipBoxChildBlockBackgrounds = 33,
+        ClipBoxFloat = 34,
+        ClipBoxForeground = 35,
+        ClipBoxOutline = 36,
+        ClipBoxChildOutlines = 37,
+        ClipBoxSelection = 38,
+        ClipBoxCollapsedTableBorders = 39,
+        ClipBoxTextClip = 40,
+        ClipBoxClippingMask = 41
     };
 
     virtual ~DisplayItem() { }

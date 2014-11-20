@@ -85,11 +85,10 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     }
 
     OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer, DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         renderLayer.renderer()->view()->viewDisplayList().add(filterDisplayItem.release());
-    } else {
+    else
         filterDisplayItem->replay(context);
-    }
 
     m_filterInProgress = true;
 }

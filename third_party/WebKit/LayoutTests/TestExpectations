@@ -1,5 +1,5 @@
-# Failing because overflow:hidden on TD elements doesn't work in these cases.
-crbug.com/434560 virtual/slimmingpaint/fast/table/overflowHidden.html  [ ImageOnlyFailure ]
+crbug.com/434560 compositing/overflow/nested-border-radius-clipping.html [ NeedsRebaseline ]
+crbug.com/434560 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ NeedsRebaseline ]
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
@@ -16,13 +16,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/basic/013.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/float/float-in-float-painting.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-font.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs-replaced.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/font-replaced.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/font.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/positioning/window-height-change.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 crbug.com/437743 [ Mac ] virtual/slimmingpaint/fast/block/float/float-avoidance.html [ ImageOnlyFailure ]
