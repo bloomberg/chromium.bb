@@ -328,6 +328,7 @@ ThreadState::ThreadState()
     , m_atSafePoint(false)
     , m_interruptors()
     , m_gcRequested(false)
+    , m_didV8GCAfterLastGC(false)
     , m_forcePreciseGCForTesting(false)
     , m_sweepRequested(0)
     , m_sweepInProgress(false)
@@ -753,13 +754,19 @@ bool ThreadState::shouldForceConservativeGC()
     if (m_sweepInProgress)
         return false;
 
-    // Trigger conservative garbage collection on a 100% increase in size,
-    // but not for less than 4Mbytes. If the system currently has a low
-    // collection rate, then require a 300% increase in size.
-    if (Heap::allocatedObjectSize() < 1 << 22)
-        return false;
-    size_t limit = (m_lowCollectionRate ? 4 : 2) * Heap::markedObjectSize();
-    return Heap::allocatedObjectSize() > limit;
+    size_t newSize = Heap::allocatedObjectSize();
+    if (m_didV8GCAfterLastGC && !m_lowCollectionRate) {
+        // If we had a V8 GC after the last Oilpan GC and the last collection
+        // rate is high, trigger a conservative GC on a 100% increase in size,
+        // but not for less than 4MB.
+        return newSize >= 4 * 1024 * 1024 && newSize > 2 * Heap::markedObjectSize();
+    }
+    // Otherwise, trigger a conservative GC on a 300% increase in size, but not
+    // for less than 32MB.  We set the higher limits in this case because Oilpan
+    // GC might waste time to trace a lot of unused DOM wrappers or to find
+    // small amount of garbage.
+    // FIXME: Is 32MB reasonable?
+    return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
 bool ThreadState::sweepRequested()
@@ -799,6 +806,12 @@ void ThreadState::clearGCRequested()
 {
     checkThread();
     m_gcRequested = false;
+}
+
+void ThreadState::didV8GC()
+{
+    checkThread();
+    m_didV8GCAfterLastGC = true;
 }
 
 void ThreadState::performPendingGC(StackState stackState)
@@ -1096,6 +1109,7 @@ void ThreadState::performPendingSweep()
     }
 
     clearGCRequested();
+    m_didV8GCAfterLastGC = false;
     clearSweepRequested();
 
     // If we collected less than 50% of objects, record that the collection rate

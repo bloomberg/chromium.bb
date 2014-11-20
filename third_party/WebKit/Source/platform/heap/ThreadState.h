@@ -404,6 +404,7 @@ public:
     bool gcRequested();
     void setGCRequested();
     void clearGCRequested();
+    void didV8GC();
 
     // shouldGC and shouldForceConservativeGC implement the heuristics
     // that are used to determine when to collect garbage. If
@@ -770,6 +771,7 @@ private:
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
     bool m_gcRequested;
+    bool m_didV8GCAfterLastGC;
     bool m_forcePreciseGCForTesting;
     volatile int m_sweepRequested;
     bool m_sweepInProgress;
