@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/frame/RemoteFrame.h"
 
+#include "core/dom/RemoteSecurityContext.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -14,6 +15,7 @@ namespace blink {
 
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
+    , m_securityContext(RemoteSecurityContext::create())
 {
 }
 
@@ -48,6 +50,11 @@ void RemoteFrame::detach()
     if (!client())
         return;
     Frame::detach();
+}
+
+RemoteSecurityContext* RemoteFrame::securityContext() const
+{
+    return m_securityContext.get();
 }
 
 void RemoteFrame::forwardInputEvent(Event* event)

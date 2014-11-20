@@ -2170,6 +2170,8 @@
             'dom/QualifiedName.cpp',
             'dom/Range.cpp',
             'dom/RawDataDocumentParser.h',
+            'dom/RemoteSecurityContext.cpp',
+            'dom/RemoteSecurityContext.h',
             'dom/RenderTreeBuilder.cpp',
             'dom/RenderTreeBuilder.h',
             'dom/RequestAnimationFrameCallback.h',

@@ -98,6 +98,11 @@ void WebFrame::detach()
     toCoreFrame(this)->detach();
 }
 
+WebSecurityOrigin WebFrame::securityOrigin() const
+{
+    return WebSecurityOrigin(toCoreFrame(this)->securityContext()->securityOrigin());
+}
+
 WebFrame* WebFrame::opener() const
 {
     return m_opener;

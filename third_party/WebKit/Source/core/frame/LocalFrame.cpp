@@ -281,6 +281,11 @@ void LocalFrame::detach()
 #endif
 }
 
+SecurityContext* LocalFrame::securityContext() const
+{
+    return document();
+}
+
 void LocalFrame::disconnectOwnerElement()
 {
     if (owner()) {

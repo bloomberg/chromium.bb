@@ -843,4 +843,10 @@ void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
         localFrameImpl->frame()->view()->visibleContentScaleFactor());
 }
 
+void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) const
+{
+    ASSERT(frame());
+    frame()->securityContext()->setReplicatedOrigin(origin);
+}
+
 } // namespace blink

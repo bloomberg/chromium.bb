@@ -198,6 +198,8 @@ public:
 
     virtual void initializeFromFrame(WebLocalFrame*) const override;
 
+    virtual void setReplicatedOrigin(const WebSecurityOrigin&) const override;
+
 #if ENABLE(OILPAN)
     void trace(Visitor*);
 #endif

@@ -155,6 +155,9 @@ public:
     virtual void setPermissionClient(WebPermissionClient*) = 0;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
+    // The security origin of this frame.
+    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+
     // Geometry -----------------------------------------------------------
 
     // NOTE: These routines do not force page layout so their results may

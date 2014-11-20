@@ -45,6 +45,7 @@ class DOMWindow;
 class KURL;
 class Page;
 class RenderPart;
+class SecurityContext;
 class Settings;
 class WebLayer;
 
@@ -82,6 +83,8 @@ public:
 
     FrameTree& tree() const;
     ChromeClient& chromeClient() const;
+
+    virtual SecurityContext* securityContext() const = 0;
 
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 

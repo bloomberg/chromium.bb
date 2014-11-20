@@ -84,6 +84,7 @@ namespace blink {
         virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
         virtual void detach() override;
         virtual void disconnectOwnerElement() override;
+        virtual SecurityContext* securityContext() const override;
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);

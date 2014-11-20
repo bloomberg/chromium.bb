@@ -19,6 +19,9 @@ public:
 
     // Transfer initial drawing parameters from a local frame.
     virtual void initializeFromFrame(WebLocalFrame*) const = 0;
+
+    // Set security origin replicated from another process
+    virtual void setReplicatedOrigin(const WebSecurityOrigin&) const = 0;
 };
 
 } // namespace blink

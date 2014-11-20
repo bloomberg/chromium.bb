@@ -5,6 +5,7 @@
 #ifndef RemoteFrame_h
 #define RemoteFrame_h
 
+#include "core/dom/RemoteSecurityContext.h"
 #include "core/frame/Frame.h"
 
 namespace blink {
@@ -25,6 +26,7 @@ public:
     virtual DOMWindow* domWindow() const override { return 0; }
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
+    virtual RemoteSecurityContext* securityContext() const override;
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
@@ -42,6 +44,7 @@ private:
     RemoteFrameClient* remoteFrameClient() const;
 
     RefPtrWillBeMember<RemoteFrameView> m_view;
+    RefPtr<RemoteSecurityContext> m_securityContext;
 };
 
 inline RemoteFrameView* RemoteFrame::view() const
