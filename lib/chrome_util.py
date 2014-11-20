@@ -380,7 +380,7 @@ _COPY_PATHS_CHROME = (
 
 _COPY_PATHS_ENVOY = (
   Path('envoy_shell', exe=True),
-  Path('extensions_shell_and_test.pak'),
+  Path('envoy_shell.pak'),
 ) + _COPY_PATHS_COMMON
 
 _COPY_PATHS_MAP = {
