@@ -1,0 +1,27 @@
+Tests that evaluation in console that throws works fine when script is paused.
+
+Set timer for test function.
+Dumping console messages:
+
+injectedFunction()
+Uncaught Error: injectedObj.func
+    message: "injectedObj.func"
+    stack: (...)
+    get stack: function () { [native code] }
+    set stack: function () { [native code] }
+    __proto__: d
+localObj.func()
+debugger-eval-while-paused-throws.html:20 Uncaught Error: localObj.func
+    message: "localObj.func"
+    stack: (...)
+    get stack: function () { [native code] }
+    set stack: function () { [native code] }
+    __proto__: d
+globalObj.func()
+debugger-eval-while-paused-throws.html:11 Uncaught Error: globalObj.func
+    message: "globalObj.func"
+    stack: (...)
+    get stack: function () { [native code] }
+    set stack: function () { [native code] }
+    __proto__: d
+
