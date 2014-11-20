@@ -1547,7 +1547,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_StoragePersistence) {
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
+// Times out regularly on Windows. See http://crbug.com/248873.
+#if defined(OS_WIN)
+#define MAYBE_DOMStorageIsolation DISABLED_DOMStorageIsolation
+#else
+#define MAYBE_DOMStorageIsolation DOMStorageIsolation
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
