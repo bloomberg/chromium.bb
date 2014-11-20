@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DBUS_DISPLAY_POWER_SERVICE_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_DBUS_DISPLAY_POWER_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_SERVICES_DISPLAY_POWER_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_SERVICES_DISPLAY_POWER_SERVICE_PROVIDER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace dbus {
 class MethodCall;
-class Response;
 }
 
 namespace chromeos {
@@ -24,10 +26,21 @@ namespace chromeos {
 // This class exports "SetDisplayPower" and "SetDisplaySoftwareDimming"
 // D-Bus methods that the power manager calls to instruct Chrome to turn
 // various displays on or off or dim them.
-class DisplayPowerServiceProvider
+class CHROMEOS_EXPORT DisplayPowerServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  DisplayPowerServiceProvider();
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Sets the display power state.
+    virtual void SetDisplayPower(DisplayPowerState power_state) = 0;
+
+    // Dims or undims the screen.
+    virtual void SetDimming(bool dimmed) = 0;
+  };
+
+  explicit DisplayPowerServiceProvider(scoped_ptr<Delegate> delegate);
   virtual ~DisplayPowerServiceProvider();
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -48,6 +61,8 @@ class DisplayPowerServiceProvider
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
 
+  scoped_ptr<Delegate> delegate_;
+
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
   base::WeakPtrFactory<DisplayPowerServiceProvider> weak_ptr_factory_;
@@ -57,4 +72,4 @@ class DisplayPowerServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DBUS_DISPLAY_POWER_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_SERVICES_DISPLAY_POWER_SERVICE_PROVIDER_H_

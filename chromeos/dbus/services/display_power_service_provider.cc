@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
+#include "chromeos/dbus/services/display_power_service_provider.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
-#include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/chromeos/display_configurator.h"
-#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 
-DisplayPowerServiceProvider::DisplayPowerServiceProvider()
-    : weak_ptr_factory_(this) {
+DisplayPowerServiceProvider::DisplayPowerServiceProvider(
+    scoped_ptr<Delegate> delegate)
+    : delegate_(delegate.Pass()),
+      weak_ptr_factory_(this) {
 }
 
 DisplayPowerServiceProvider::~DisplayPowerServiceProvider() {}
@@ -53,15 +51,8 @@ void DisplayPowerServiceProvider::SetDisplayPower(
   dbus::MessageReader reader(method_call);
   int int_state = 0;
   if (reader.PopInt32(&int_state)) {
-    // Turning displays off when the device becomes idle or on just before
-    // we suspend may trigger a mouse move, which would then be incorrectly
-    // reported as user activity.  Let the UserActivityDetector
-    // know so that it can ignore such events.
-    wm::UserActivityDetector::Get()->OnDisplayPowerChanging();
-
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
-    ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(
-        state, ui::DisplayConfigurator::kSetDisplayPowerNoFlags);
+    delegate_->SetDisplayPower(state);
   } else {
     LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
   }
@@ -75,7 +66,7 @@ void DisplayPowerServiceProvider::SetDisplaySoftwareDimming(
   dbus::MessageReader reader(method_call);
   bool dimmed = false;
   if (reader.PopBool(&dimmed)) {
-    ash::Shell::GetInstance()->SetDimming(dimmed);
+    delegate_->SetDimming(dimmed);
   } else {
     LOG(ERROR) << "Unable to parse " << kSetDisplaySoftwareDimming
                << " request";

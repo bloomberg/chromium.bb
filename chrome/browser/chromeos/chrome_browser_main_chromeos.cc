@@ -30,8 +30,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
+#include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
-#include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
@@ -98,6 +98,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
+#include "chromeos/dbus/services/display_power_service_provider.h"
 #include "chromeos/dbus/services/liveness_service_provider.h"
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -179,7 +180,8 @@ class DBusServices {
         make_scoped_ptr(new ChromeProxyResolverDelegate())));
 #if !defined(USE_ATHENA)
     // crbug.com/413897
-    service_providers.push_back(new DisplayPowerServiceProvider);
+    service_providers.push_back(new DisplayPowerServiceProvider(
+        make_scoped_ptr(new ChromeDisplayPowerServiceProviderDelegate)));
     // crbug.com/401285
     service_providers.push_back(new PrinterServiceProvider);
 #endif

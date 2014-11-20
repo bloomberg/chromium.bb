@@ -220,6 +220,8 @@
       'dbus/services/console_service_provider.h',
       'dbus/services/cros_dbus_service.cc',
       'dbus/services/cros_dbus_service.h',
+      'dbus/services/display_power_service_provider.cc',
+      'dbus/services/display_power_service_provider.h',
       'dbus/services/liveness_service_provider.cc',
       'dbus/services/liveness_service_provider.h',
       'dbus/services/proxy_resolution_service_provider.cc',
