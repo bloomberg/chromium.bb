@@ -520,8 +520,6 @@ crbug.com/268832 [ SnowLeopard Debug ] virtual/regionbasedmulticol/fast/multicol
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
-crbug.com/408392 virtual/display_list_2d_canvas/fast/canvas/image-pattern-rotate.html [ NeedsRebaseline ]
-
 crbug.com/278497 [ Mac Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
