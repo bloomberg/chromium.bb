@@ -33,6 +33,7 @@
 #include <sys/time.h>
 #include <cairo.h>
 #include <sys/epoll.h>
+#include <stdbool.h>
 
 #include <wayland-client.h>
 #include <wayland-cursor.h>
@@ -42,6 +43,12 @@
 
 struct dnd_drag;
 
+struct pointer {
+	struct input *input;
+	bool dragging;
+	struct wl_list link;
+};
+
 struct dnd {
 	struct window *window;
 	struct widget *widget;
@@ -50,6 +57,7 @@ struct dnd {
 	struct item *items[16];
 	int self_only;
 	struct dnd_drag *current_drag;
+	struct wl_list pointers;
 };
 
 struct dnd_drag {
@@ -454,6 +462,40 @@ create_drag_source(struct dnd *dnd,
 		return -1;
 }
 
+static int
+lookup_cursor(struct dnd *dnd, int x, int y)
+{
+	struct item *item;
+
+	item = dnd_get_item(dnd, x, y);
+	if (item)
+		return CURSOR_HAND1;
+	else
+		return CURSOR_LEFT_PTR;
+}
+
+/* Update all the mouse pointers in the window appropriately.
+ * Optionally, skip one (which will be the current pointer just
+ * about to start a drag).  This is done here to save a scan
+ * through the pointer list.
+ */
+static void
+update_pointer_images_except(struct dnd *dnd, struct input *except)
+{
+	struct pointer *pointer;
+	int32_t x, y;
+
+	wl_list_for_each(pointer, &dnd->pointers, link) {
+		if (pointer->input == except) {
+			pointer->dragging = true;
+			continue;
+		}
+		input_get_position(pointer->input, &x, &y);
+		input_set_pointer_image(pointer->input,
+					lookup_cursor(dnd, x, y));
+	}
+}
+
 static void
 dnd_button_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
@@ -466,8 +508,10 @@ dnd_button_handler(struct widget *widget,
 	input_get_position(input, &x, &y);
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		input_ungrab(input);
-		if (create_drag_source(dnd, input, time, x, y) == 0)
+		if (create_drag_source(dnd, input, time, x, y) == 0) {
 			input_set_pointer_image(input, CURSOR_DRAGGING);
+			update_pointer_images_except(dnd, input);
+		}
 	}
 }
 
@@ -490,26 +534,35 @@ dnd_touch_down_handler(struct widget *widget,
 }
 
 static int
-lookup_cursor(struct dnd *dnd, int x, int y)
-{
-	struct item *item;
-
-	item = dnd_get_item(dnd, x, y);
-	if (item)
-		return CURSOR_HAND1;
-	else
-		return CURSOR_LEFT_PTR;
-}
-
-static int
 dnd_enter_handler(struct widget *widget,
 		  struct input *input, float x, float y, void *data)
 {
 	struct dnd *dnd = data;
+	struct pointer *new_pointer = malloc(sizeof *new_pointer);
 
 	dnd->current_drag = NULL;
 
+	if (new_pointer) {
+		new_pointer->input = input;
+		new_pointer->dragging = false;
+		wl_list_insert(dnd->pointers.prev, &new_pointer->link);
+	}
+
 	return lookup_cursor(dnd, x, y);
+}
+
+static void
+dnd_leave_handler(struct widget *widget,
+		  struct input *input, void *data)
+{
+	struct dnd *dnd = data;
+	struct pointer *pointer, *tmp;
+
+	wl_list_for_each_safe(pointer, tmp, &dnd->pointers, link)
+		if (pointer->input == input) {
+			wl_list_remove(&pointer->link);
+			free(pointer);
+		}
 }
 
 static int
@@ -517,6 +570,16 @@ dnd_motion_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
 		   float x, float y, void *data)
 {
+	struct dnd *dnd = data;
+	struct pointer *pointer;
+
+	wl_list_for_each(pointer, &dnd->pointers, link)
+		if (pointer->input == input) {
+			if (pointer->dragging)
+				return CURSOR_DRAGGING;
+			break;
+		}
+
 	return lookup_cursor(data, x, y);
 }
 
@@ -564,6 +627,7 @@ dnd_receive_func(void *data, size_t len, int32_t x, int32_t y, void *user_data)
 			   message->seed);
 
 	dnd_add_item(dnd, item);
+	update_pointer_images_except(dnd, NULL);
 	window_schedule_redraw(dnd->window);
 }
 
@@ -610,6 +674,8 @@ dnd_create(struct display *display)
 	dnd->display = display;
 	dnd->key = 100;
 
+	wl_list_init(&dnd->pointers);
+
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		x = (i % 4) * (item_width + item_padding) + item_padding;
 		y = (i / 4) * (item_height + item_padding) + item_padding;
@@ -627,6 +693,7 @@ dnd_create(struct display *display)
 
 	widget_set_redraw_handler(dnd->widget, dnd_redraw_handler);
 	widget_set_enter_handler(dnd->widget, dnd_enter_handler);
+	widget_set_leave_handler(dnd->widget, dnd_leave_handler);
 	widget_set_motion_handler(dnd->widget, dnd_motion_handler);
 	widget_set_button_handler(dnd->widget, dnd_button_handler);
 	widget_set_touch_down_handler(dnd->widget, dnd_touch_down_handler);
