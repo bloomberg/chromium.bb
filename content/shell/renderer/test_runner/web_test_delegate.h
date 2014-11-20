@@ -11,7 +11,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
 #define WEBTESTRUNNER_NEW_HISTORY_CAPTURE
 
@@ -135,9 +134,7 @@ class WebTestDelegate {
   virtual void ClearAllDatabases() = 0;
   virtual void SetDatabaseQuota(int quota) = 0;
 
-  // Controls Web Notification permissions.
-  virtual blink::WebNotificationPresenter::Permission
-      CheckWebNotificationPermission(const GURL& origin) = 0;
+  // Controls Web Notifications.
   virtual void GrantWebNotificationPermission(const GURL& origin,
                                               bool permission_granted) = 0;
   virtual void ClearWebNotificationPermissions() = 0;

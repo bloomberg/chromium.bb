@@ -412,16 +412,6 @@ void WebKitTestRunner::SetDatabaseQuota(int quota) {
   Send(new LayoutTestHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
-blink::WebNotificationPresenter::Permission
-WebKitTestRunner::CheckWebNotificationPermission(const GURL& origin) {
-  int permission = blink::WebNotificationPresenter::PermissionNotAllowed;
-  Send(new LayoutTestHostMsg_CheckWebNotificationPermission(
-          routing_id(),
-          origin,
-          &permission));
-  return static_cast<blink::WebNotificationPresenter::Permission>(permission);
-}
-
 void WebKitTestRunner::GrantWebNotificationPermission(const GURL& origin,
                                                       bool permission_granted) {
   Send(new LayoutTestHostMsg_GrantWebNotificationPermission(

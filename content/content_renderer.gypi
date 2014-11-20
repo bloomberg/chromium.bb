@@ -80,8 +80,6 @@
       'renderer/accessibility/blink_ax_tree_source.h',
       'renderer/accessibility/renderer_accessibility.cc',
       'renderer/accessibility/renderer_accessibility.h',
-      'renderer/active_notification_tracker.cc',
-      'renderer/active_notification_tracker.h',
       'renderer/android/address_detector.cc',
       'renderer/android/address_detector.h',
       'renderer/android/content_detector.cc',
@@ -300,12 +298,8 @@
       'renderer/mouse_lock_dispatcher.h',
       'renderer/net_info_helper.cc',
       'renderer/net_info_helper.h',
-      'renderer/notification_icon_loader.cc',
-      'renderer/notification_icon_loader.h',
       'renderer/notification_permission_dispatcher.cc',
       'renderer/notification_permission_dispatcher.h',
-      'renderer/notification_provider.cc',
-      'renderer/notification_provider.h',
       'renderer/push_messaging_dispatcher.cc',
       'renderer/push_messaging_dispatcher.h',
       'renderer/render_font_warmup_win.cc',
@@ -706,12 +700,6 @@
     '<@(private_renderer_sources)',
   ],
   'conditions': [
-    ['notifications==0', {
-      'sources!': [
-        'renderer/notification_provider.cc',
-        'renderer/active_notification_tracker.cc',
-      ],
-    }],
     ['OS=="mac"', {
       'sources!': [
         'common/process_watcher_posix.cc',

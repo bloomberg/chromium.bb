@@ -13,7 +13,6 @@
 #include "content/shell/renderer/test_runner/mock_credential_manager_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
-#include "content/shell/renderer/test_runner/notification_presenter.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_permissions.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
@@ -1547,7 +1546,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       web_view_(nullptr),
       page_overlay_(nullptr),
       web_permissions_(new WebPermissions()),
-      notification_presenter_(new NotificationPresenter()),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -1559,7 +1557,6 @@ void TestRunner::Install(WebFrame* frame) {
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
   web_permissions_->SetDelegate(delegate);
-  notification_presenter_->set_delegate(delegate);
 }
 
 void TestRunner::SetWebView(WebView* webView, WebTestProxyBase* proxy) {
@@ -1659,7 +1656,6 @@ void TestRunner::Reset() {
 
   web_permissions_->Reset();
 
-  notification_presenter_->Reset();
   use_mock_theme_ = true;
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -1877,10 +1873,6 @@ bool TestRunner::shouldInterceptPostMessage() const {
 
 bool TestRunner::shouldDumpResourcePriorities() const {
   return should_dump_resource_priorities_;
-}
-
-WebNotificationPresenter* TestRunner::notification_presenter() const {
-  return notification_presenter_.get();
 }
 
 bool TestRunner::RequestPointerLock() {
@@ -2776,10 +2768,6 @@ void TestRunner::ClearWebNotificationPermissions() {
 
 void TestRunner::SimulateWebNotificationClick(const std::string& title) {
   delegate_->SimulateWebNotificationClick(title);
-
-  // TODO(peter): Remove this call once Web Notifications switch away from the
-  // WebFrame-based code path.
-  notification_presenter_->SimulateClick(title);
 }
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,

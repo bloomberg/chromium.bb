@@ -22,9 +22,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_RegisterIsolatedFileSystem,
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ClearAllDatabases)
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota,
                     int /* quota */)
-IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_CheckWebNotificationPermission,
-                           GURL /* origin */,
-                           int /* result */)
 IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_GrantWebNotificationPermission,
                     GURL /* origin */,
                     bool /* permission_granted */)

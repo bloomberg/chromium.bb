@@ -88,8 +88,6 @@ class WebKitTestRunner : public RenderViewObserver,
   void EvaluateInWebInspector(long call_id, const std::string& script) override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int quota) override;
-  blink::WebNotificationPresenter::Permission CheckWebNotificationPermission(
-      const GURL& origin) override;
   void GrantWebNotificationPermission(const GURL& origin,
                                       bool permission_granted) override;
   void ClearWebNotificationPermissions() override;

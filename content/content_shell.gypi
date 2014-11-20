@@ -249,8 +249,6 @@
         'shell/renderer/test_runner/mock_webrtc_dtmf_sender_handler.h',
         'shell/renderer/test_runner/mock_webrtc_peer_connection_handler.cc',
         'shell/renderer/test_runner/mock_webrtc_peer_connection_handler.h',
-        'shell/renderer/test_runner/notification_presenter.cc',
-        'shell/renderer/test_runner/notification_presenter.h',
         'shell/renderer/test_runner/spell_check_client.cc',
         'shell/renderer/test_runner/spell_check_client.h',
         'shell/renderer/test_runner/test_common.cc',

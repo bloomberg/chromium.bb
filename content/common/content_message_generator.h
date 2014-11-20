@@ -12,7 +12,6 @@
 #include "content/common/cc_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
-#include "content/common/desktop_notification_messages.h"
 #include "content/common/device_sensors/device_light_messages.h"
 #include "content/common/device_sensors/device_motion_messages.h"
 #include "content/common/device_sensors/device_orientation_messages.h"

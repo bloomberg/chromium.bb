@@ -15,6 +15,15 @@
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebNotificationPermission,
                           blink::WebNotificationPermissionLast)
 
+IPC_STRUCT_TRAITS_BEGIN(content::ShowDesktopNotificationHostMsgParams)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
+  IPC_STRUCT_TRAITS_MEMBER(icon)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(body)
+  IPC_STRUCT_TRAITS_MEMBER(direction)
+  IPC_STRUCT_TRAITS_MEMBER(replace_id)
+IPC_STRUCT_TRAITS_END()
+
 // Messages sent from the browser to the renderer.
 
 // Informs the renderer that the permission request for |request_id| is done,

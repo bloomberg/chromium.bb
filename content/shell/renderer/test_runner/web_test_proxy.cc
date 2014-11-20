@@ -885,10 +885,6 @@ void WebTestProxyBase::PrintPage(blink::WebLocalFrame* frame) {
   frame->printEnd();
 }
 
-blink::WebNotificationPresenter* WebTestProxyBase::GetNotificationPresenter() {
-  return test_interfaces_->GetTestRunner()->notification_presenter();
-}
-
 blink::WebMIDIClient* WebTestProxyBase::GetWebMIDIClient() {
   return GetMIDIClientMock();
 }

@@ -212,8 +212,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                      const Referrer& referrer,
                      const base::string16& suggested_name);
   void OnSaveImageFromDataURL(int render_view_id, const std::string& url_str);
-  void OnCheckNotificationPermission(const GURL& source_origin,
-                                     int* permission_level);
 
   void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
                                 media::AudioParameters* output_params);

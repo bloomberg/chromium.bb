@@ -20,7 +20,6 @@ class SkBitmap;
 
 namespace blink {
 class WebFrame;
-class WebNotificationPresenter;
 class WebPermissionClient;
 class WebString;
 class WebView;
@@ -35,7 +34,6 @@ class Arguments;
 namespace content {
 
 class InvokeCallbackTask;
-class NotificationPresenter;
 class TestInterfaces;
 class TestPageOverlay;
 class WebPermissions;
@@ -117,7 +115,6 @@ class TestRunner : public WebTestRunner,
   bool policyDelegateShouldNotifyDone() const;
   bool shouldInterceptPostMessage() const;
   bool shouldDumpResourcePriorities() const;
-  blink::WebNotificationPresenter* notification_presenter() const;
   bool RequestPointerLock();
   void RequestPointerUnlock();
   bool isPointerLocked();
@@ -528,7 +525,7 @@ class TestRunner : public WebTestRunner,
   // Clears all previously granted Web Notification permissions.
   void ClearWebNotificationPermissions();
 
-  // Simulates a click on a desktop notification.
+  // Simulates a click on a Web Notification.
   void SimulateWebNotificationClick(const std::string& title);
 
   // Speech recognition related functions.
@@ -769,8 +766,6 @@ class TestRunner : public WebTestRunner,
 
   // WebPermissionClient mock object.
   scoped_ptr<WebPermissions> web_permissions_;
-
-  scoped_ptr<NotificationPresenter> notification_presenter_;
 
   bool pointer_locked_;
   enum {

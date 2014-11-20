@@ -51,7 +51,6 @@ class WebMIDIAccessorClient;
 class WebMIDIClient;
 class WebMIDIClientMock;
 class WebNode;
-class WebNotificationPresenter;
 class WebPlugin;
 class WebPushClient;
 class WebRange;
@@ -173,7 +172,6 @@ class WebTestProxyBase {
                        const blink::WebContextMenuData& data);
   blink::WebUserMediaClient* GetUserMediaClient();
   void PrintPage(blink::WebLocalFrame* frame);
-  blink::WebNotificationPresenter* GetNotificationPresenter();
   blink::WebMIDIClient* GetWebMIDIClient();
   blink::WebSpeechRecognizer* GetSpeechRecognizer();
   bool RequestPointerLock();

@@ -720,7 +720,6 @@
         'common/sandbox_mac_unittest_helper.mm',
         'common/shareable_file_reference_unittest.cc',
         'common/webplugininfo_unittest.cc',
-        'renderer/active_notification_tracker_unittest.cc',
         'renderer/android/email_detector_unittest.cc',
         'renderer/android/phone_number_detector_unittest.cc',
         'renderer/bmp_image_decoder_unittest.cc',
@@ -899,11 +898,6 @@
           'sources/': [
             ['exclude', '^browser/speech/'],
           ]
-        }],
-        ['notifications==0', {
-           'sources!': [
-             'renderer/active_notification_tracker_unittest.cc',
-           ],
         }],
         ['OS=="linux"', {
           'dependencies': [

@@ -46,7 +46,6 @@ class WebGeolocationClient;
 class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
-class WebNotificationPresenter;
 class WebPushClient;
 class WebSecurityOrigin;
 struct WebCompositionUnderline;
@@ -71,7 +70,6 @@ class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MidiDispatcher;
 class NotificationPermissionDispatcher;
-class NotificationProvider;
 class PageState;
 class PepperPluginInstanceImpl;
 class PluginPowerSaverHelper;
@@ -388,7 +386,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,
       blink::WebNotificationPermissionCallback* callback);
-  virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual void didChangeSelection(bool is_empty_selection);
   virtual blink::WebColorChooser* createColorChooser(
       blink::WebColorChooserClient* client,
@@ -752,10 +749,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Dispatches permission requests for Web Notifications.
   NotificationPermissionDispatcher* notification_permission_dispatcher_;
-
-  // Holds a reference to the service which provides desktop notifications.
-  // TODO(peter) Remove this once Web Notifications are routed through Platform.
-  NotificationProvider* notification_provider_;
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;

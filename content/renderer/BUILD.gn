@@ -62,13 +62,6 @@ source_set("renderer") {
     "//webkit/common/gpu",
   ]
 
-  if (!enable_notifications) {
-    sources -= [
-      "notification_provider.cc",
-      "active_notification_tracker.cc",
-    ]
-  }
-
   if (is_mac) {
     sources -= [
       "webscrollbarbehavior_impl_gtkoraura.cc",

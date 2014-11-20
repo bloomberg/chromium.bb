@@ -37,7 +37,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/transition_request_manager.h"
 #include "content/common/accessibility_messages.h"
-#include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -82,54 +81,6 @@ typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
-
-class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
- public:
-  DesktopNotificationDelegateImpl(RenderFrameHost* render_frame_host,
-                                  int notification_id)
-      : render_process_id_(render_frame_host->GetProcess()->GetID()),
-        render_frame_id_(render_frame_host->GetRoutingID()),
-        notification_id_(notification_id) {}
-
-  ~DesktopNotificationDelegateImpl() override {}
-
-  void NotificationDisplayed() override {
-    RenderFrameHost* rfh =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!rfh)
-      return;
-
-    rfh->Send(new DesktopNotificationMsg_PostDisplay(
-        rfh->GetRoutingID(), notification_id_));
-  }
-
-  void NotificationClosed(bool by_user) override {
-    RenderFrameHost* rfh =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!rfh)
-      return;
-
-    rfh->Send(new DesktopNotificationMsg_PostClose(
-        rfh->GetRoutingID(), notification_id_, by_user));
-    static_cast<RenderFrameHostImpl*>(rfh)->NotificationClosed(
-        notification_id_);
-  }
-
-  void NotificationClick() override {
-    RenderFrameHost* rfh =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!rfh)
-      return;
-
-    rfh->Send(new DesktopNotificationMsg_PostClick(
-        rfh->GetRoutingID(), notification_id_));
-  }
-
- private:
-  int render_process_id_;
-  int render_frame_id_;
-  int notification_id_;
-};
 
 // Translate a WebKit text direction into a base::i18n one.
 base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
@@ -384,10 +335,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnBeginNavigation)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_RequestPermission,
                         OnRequestPlatformNotificationPermission)
-    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
-                        OnShowDesktopNotification)
-    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
-                        OnCancelDesktopNotification)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
@@ -1017,31 +964,6 @@ void RenderFrameHostImpl::OnRequestPlatformNotificationPermission(
       done_callback);
 }
 
-void RenderFrameHostImpl::OnShowDesktopNotification(
-    int notification_id,
-    const ShowDesktopNotificationHostMsgParams& params) {
-  scoped_ptr<DesktopNotificationDelegateImpl> delegate(
-      new DesktopNotificationDelegateImpl(this, notification_id));
-
-  base::Closure cancel_callback;
-  GetContentClient()->browser()->ShowDesktopNotification(
-      params,
-      GetSiteInstance()->GetBrowserContext(),
-      GetProcess()->GetID(),
-      delegate.Pass(),
-      &cancel_callback);
-
-  cancel_notification_callbacks_[notification_id] = cancel_callback;
-}
-
-void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
-  if (!cancel_notification_callbacks_.count(notification_id))
-    return;
-
-  cancel_notification_callbacks_[notification_id].Run();
-  cancel_notification_callbacks_.erase(notification_id);
-}
-
 void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
     const base::string16& content,
     size_t start_offset,
@@ -1451,10 +1373,6 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // correctly while waiting for a response.
   if (is_waiting && dialog_was_suppressed)
     render_view_host_->delegate_->RendererUnresponsive(render_view_host_);
-}
-
-void RenderFrameHostImpl::NotificationClosed(int notification_id) {
-  cancel_notification_callbacks_.erase(notification_id);
 }
 
 // PlzNavigate

@@ -202,7 +202,6 @@
       'common/cursors/webcursor_ozone.cc',
       'common/database_messages.h',
       'common/date_time_suggestion.h',
-      'common/desktop_notification_messages.h',
       'common/device_sensors/device_light_data.h',
       'common/device_sensors/device_light_hardware_buffer.h',
       'common/device_sensors/device_light_messages.h',

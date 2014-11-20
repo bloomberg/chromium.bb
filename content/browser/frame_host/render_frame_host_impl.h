@@ -322,9 +322,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const base::string16& user_input,
                               bool dialog_was_suppressed);
 
-  // Called when an HTML5 notification is closed.
-  void NotificationClosed(int notification_id);
-
   // Clears any outstanding transition request. This is called when we hear the
   // response or commit.
   void ClearPendingTransitionRequestData();
@@ -538,9 +535,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The mapping of pending JavaScript calls created by
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
-
-  // Map from notification_id to a callback to cancel them.
-  std::map<int, base::Closure> cancel_notification_callbacks_;
 
   int routing_id_;
 

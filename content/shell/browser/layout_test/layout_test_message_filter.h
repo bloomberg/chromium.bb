@@ -50,7 +50,6 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
       std::string* filesystem_id);
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
-  void OnCheckWebNotificationPermission(const GURL& origin, int* result);
   void OnGrantWebNotificationPermission(const GURL& origin,
                                         bool permission_granted);
   void OnClearWebNotificationPermissions();

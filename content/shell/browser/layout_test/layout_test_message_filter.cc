@@ -55,8 +55,6 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearAllDatabases,
                         OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_CheckWebNotificationPermission,
-                        OnCheckWebNotificationPermission)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_GrantWebNotificationPermission,
                         OnGrantWebNotificationPermission)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearWebNotificationPermissions,
@@ -103,16 +101,6 @@ void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
   quota_manager_->SetTemporaryGlobalOverrideQuota(
       quota * storage::QuotaManager::kPerHostTemporaryPortion,
       storage::QuotaCallback());
-}
-
-void LayoutTestMessageFilter::OnCheckWebNotificationPermission(
-    const GURL& origin, int* result) {
-  LayoutTestNotificationManager* manager =
-      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  if (manager)
-    *result = manager->CheckPermission(origin);
-  else
-    *result = blink::WebNotificationPermissionAllowed;
 }
 
 void LayoutTestMessageFilter::OnGrantWebNotificationPermission(
