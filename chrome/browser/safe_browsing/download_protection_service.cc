@@ -644,6 +644,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void GetTabRedirects() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!service_)
+      return;
+
     if (!tab_url_.is_valid()) {
       SendRequest();
       return;
@@ -669,6 +672,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
                          const history::RedirectList* redirect_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(url, tab_url_);
+    if (!service_)
+      return;
 
     if (!redirect_list->empty()) {
       tab_redirects_.insert(
