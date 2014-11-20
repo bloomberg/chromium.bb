@@ -179,15 +179,11 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
     return false;
 
   DCHECK(memory_);
-  glTexImage2D(target,
-               0,  // mip level
-               TextureFormat(format_),
-               size_.width(),
-               size_.height(),
-               0,  // border
-               DataFormat(format_),
-               DataType(format_),
-               memory_);
+  glTexSubImage2D(target, 0,  // level
+                  0,          // x
+                  0,          // y
+                  size_.width(), size_.height(), DataFormat(format_),
+                  DataType(format_), memory_);
 
   return true;
 }

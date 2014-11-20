@@ -3416,6 +3416,10 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
       .WillOnce(Return(kDestTextureId))
       .RetiresOnSaturation();
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kDestTextureId))
+      .Times(2)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA,
+                                   GL_UNSIGNED_BYTE, nullptr))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*context, NextTextureId())

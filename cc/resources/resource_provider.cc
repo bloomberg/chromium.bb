@@ -2077,7 +2077,7 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   DCHECK(dest_resource->origin == Resource::Internal);
   DCHECK_EQ(dest_resource->exported_count, 0);
   DCHECK_EQ(GLTexture, dest_resource->type);
-  LazyCreate(dest_resource);
+  LazyAllocate(dest_resource);
 
   DCHECK_EQ(source_resource->type, dest_resource->type);
   DCHECK_EQ(source_resource->format, dest_resource->format);
