@@ -188,12 +188,6 @@ class SafeBrowsingDatabaseManager
                             const std::vector<SBFullHashResult>& full_hashes,
                             const base::TimeDelta& cache_lifetime);
 
-  // Log the user perceived delay caused by SafeBrowsing. This delay is the time
-  // delta starting from when we would have started reading data from the
-  // network, and ending when the SafeBrowsing check completes indicating that
-  // the current page is 'safe'.
-  void LogPauseDelay(base::TimeDelta time);
-
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the DatabaseManager. Should be
   // called on IO thread.

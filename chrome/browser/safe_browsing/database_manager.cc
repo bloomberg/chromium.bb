@@ -630,10 +630,6 @@ void SafeBrowsingDatabaseManager::ResetDatabase() {
       &SafeBrowsingDatabaseManager::OnResetDatabase, this));
 }
 
-void SafeBrowsingDatabaseManager::LogPauseDelay(base::TimeDelta time) {
-  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
-}
-
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (enabled_)
