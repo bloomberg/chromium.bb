@@ -193,6 +193,8 @@ Native Client employs a **double sandbox** design.
 
 .. _portability:
 
+.. _link_for_pnacl_translator:
+
 Portability
 -----------
 

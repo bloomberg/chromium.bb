@@ -138,27 +138,29 @@ architecture-specific **.nexe** (e.g., for debugging purposes).
 
 Some of the useful tools include:
 
-pnacl-abicheck
+``pnacl-abicheck``
   Checks that the **pexe** follows the PNaCl ABI rules.
-pnacl-ar
+``pnacl-ar``
   Creates archives (i.e., static libraries)
-pnacl-clang
+``pnacl-bcdis``
+  Object dumper for PNaCl bitcode files.
+``pnacl-clang``
   C compiler and compiler driver
-pnacl-clang++
+``pnacl-clang++``
   C++ compiler and compiler driver
-pnacl-compress
+``pnacl-compress``
   Compresses a finalized **pexe** file for deployment.
-pnacl-dis
+``pnacl-dis``
   Disassembler for both **pexe** files and **nexe** files
-pnacl-finalize
+``pnacl-finalize``
   Finalizes **pexe** files for deployment
-pnacl-ld
+``pnacl-ld``
   Bitcode linker
-pnacl-nm
+``pnacl-nm``
   Lists symbols in bitcode files, native code, and libraries
-pnacl-ranlib
+``pnacl-ranlib``
   Generates a symbol table for archives (i.e., static libraries)
-pnacl-translate
+``pnacl-translate``
   Translates a **pexe** to a native architecture, outside of the browser
 
 For the full list of tools, see the
@@ -365,6 +367,24 @@ configured for HTTP compression: both compressions are complementary. You'll
 want to configure your web server to gzip **pexe** files: the gzipped version of
 a compressed **pexe** file is smaller than the corresponding uncompressed
 **pexe** file by 7.5% to 10%.
+
+.. _pnacl-bcdis:
+
+Object dumping of PNaCl bitcode files
+=====================================
+
+Sometimes you may be interesting in the contents of a PNaCl bitcode file.  The
+tool ``pnacl-bcdis`` object dumps the contents of a PNaCl bitcode file.  For a
+description of the output produced by this tool, see
+:doc:`/reference/pnacl-bitcode-manual`.
+
+.. naclcode::
+ :prettyprint: 0
+
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-bcdis \
+    hello_world.final.pexe
+
+The output is the corresponding contents of the given **pexe**.
 
 The GNU-based toolchains
 ========================

@@ -24,20 +24,21 @@
 <li><a class="reference internal" href="#compressing-the-pexe-for-deployment" id="id16">Compressing the <strong>pexe</strong> for deployment</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#the-gnu-based-toolchains" id="id17">The GNU-based toolchains</a></p>
+<li><a class="reference internal" href="#object-dumping-of-pnacl-bitcode-files" id="id17">Object dumping of PNaCl bitcode files</a></li>
+<li><p class="first"><a class="reference internal" href="#the-gnu-based-toolchains" id="id18">The GNU-based toolchains</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#compiling" id="id18">Compiling</a></li>
-<li><a class="reference internal" href="#creating-libraries-and-linking" id="id19">Creating libraries and Linking</a></li>
-<li><a class="reference internal" href="#finalizing-a-nexe-for-deployment" id="id20">Finalizing a <strong>nexe</strong> for deployment</a></li>
+<li><a class="reference internal" href="#compiling" id="id19">Compiling</a></li>
+<li><a class="reference internal" href="#creating-libraries-and-linking" id="id20">Creating libraries and Linking</a></li>
+<li><a class="reference internal" href="#finalizing-a-nexe-for-deployment" id="id21">Finalizing a <strong>nexe</strong> for deployment</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-make" id="id21">Using make</a></li>
-<li><a class="reference internal" href="#libraries-and-header-files-provided-with-the-sdk" id="id22">Libraries and header files provided with the SDK</a></li>
-<li><p class="first"><a class="reference internal" href="#troubleshooting" id="id23">Troubleshooting</a></p>
+<li><a class="reference internal" href="#using-make" id="id22">Using make</a></li>
+<li><a class="reference internal" href="#libraries-and-header-files-provided-with-the-sdk" id="id23">Libraries and header files provided with the SDK</a></li>
+<li><p class="first"><a class="reference internal" href="#troubleshooting" id="id24">Troubleshooting</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#undefined-reference-error" id="id24">&#8220;Undefined reference&#8221; error</a></li>
-<li><a class="reference internal" href="#can-t-find-libraries-containing-necessary-symbols" id="id25">Can&#8217;t find libraries containing necessary symbols</a></li>
-<li><a class="reference internal" href="#pnacl-abi-verification-errors" id="id26">PNaCl ABI Verification errors</a></li>
+<li><a class="reference internal" href="#undefined-reference-error" id="id25">&#8220;Undefined reference&#8221; error</a></li>
+<li><a class="reference internal" href="#can-t-find-libraries-containing-necessary-symbols" id="id26">Can&#8217;t find libraries containing necessary symbols</a></li>
+<li><a class="reference internal" href="#pnacl-abi-verification-errors" id="id27">PNaCl ABI Verification errors</a></li>
 </ul>
 </li>
 </ul>
@@ -131,27 +132,29 @@ also contains a tool to translate a <strong>pexe</strong> file into a
 architecture-specific <strong>.nexe</strong> (e.g., for debugging purposes).</p>
 <p>Some of the useful tools include:</p>
 <dl class="docutils">
-<dt>pnacl-abicheck</dt>
+<dt><code>pnacl-abicheck</code></dt>
 <dd>Checks that the <strong>pexe</strong> follows the PNaCl ABI rules.</dd>
-<dt>pnacl-ar</dt>
+<dt><code>pnacl-ar</code></dt>
 <dd>Creates archives (i.e., static libraries)</dd>
-<dt>pnacl-clang</dt>
+<dt><code>pnacl-bcdis</code></dt>
+<dd>Object dumper for PNaCl bitcode files.</dd>
+<dt><code>pnacl-clang</code></dt>
 <dd>C compiler and compiler driver</dd>
-<dt>pnacl-clang++</dt>
+<dt><code>pnacl-clang++</code></dt>
 <dd>C++ compiler and compiler driver</dd>
-<dt>pnacl-compress</dt>
+<dt><code>pnacl-compress</code></dt>
 <dd>Compresses a finalized <strong>pexe</strong> file for deployment.</dd>
-<dt>pnacl-dis</dt>
+<dt><code>pnacl-dis</code></dt>
 <dd>Disassembler for both <strong>pexe</strong> files and <strong>nexe</strong> files</dd>
-<dt>pnacl-finalize</dt>
+<dt><code>pnacl-finalize</code></dt>
 <dd>Finalizes <strong>pexe</strong> files for deployment</dd>
-<dt>pnacl-ld</dt>
+<dt><code>pnacl-ld</code></dt>
 <dd>Bitcode linker</dd>
-<dt>pnacl-nm</dt>
+<dt><code>pnacl-nm</code></dt>
 <dd>Lists symbols in bitcode files, native code, and libraries</dd>
-<dt>pnacl-ranlib</dt>
+<dt><code>pnacl-ranlib</code></dt>
 <dd>Generates a symbol table for archives (i.e., static libraries)</dd>
-<dt>pnacl-translate</dt>
+<dt><code>pnacl-translate</code></dt>
 <dd>Translates a <strong>pexe</strong> to a native architecture, outside of the browser</dd>
 </dl>
 <p>For the full list of tools, see the
@@ -305,6 +308,16 @@ configured for HTTP compression: both compressions are complementary. You&#8217;
 want to configure your web server to gzip <strong>pexe</strong> files: the gzipped version of
 a compressed <strong>pexe</strong> file is smaller than the corresponding uncompressed
 <strong>pexe</strong> file by 7.5% to 10%.</p>
+<h2 id="object-dumping-of-pnacl-bitcode-files"><span id="pnacl-bcdis"></span>Object dumping of PNaCl bitcode files</h2>
+<p>Sometimes you may be interesting in the contents of a PNaCl bitcode file.  The
+tool <code>pnacl-bcdis</code> object dumps the contents of a PNaCl bitcode file.  For a
+description of the output produced by this tool, see
+<a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html"><em>Contents Of PNaCl Bitcode Files</em></a>.</p>
+<pre>
+ nacl_sdk/pepper_&lt;version&gt;/toolchain/win_pnacl/bin/pnacl-bcdis \
+   hello_world.final.pexe
+</pre>
+<p>The output is the corresponding contents of the given <strong>pexe</strong>.</p>
 <h2 id="the-gnu-based-toolchains">The GNU-based toolchains</h2>
 <p>Besides the PNaCl toolchain, the Native Client SDK also includes modified
 versions of the tools in the standard GNU toolchain, including the GCC

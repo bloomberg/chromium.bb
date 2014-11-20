@@ -391,6 +391,8 @@ Undefined Behavior
 The C and C++ languages expose some undefined behavior which is
 discussed in :ref:`PNaCl Undefined Behavior <undefined_behavior>`.
 
+.. _c_cpp_floating_point:
+
 Floating-Point
 ==============
 

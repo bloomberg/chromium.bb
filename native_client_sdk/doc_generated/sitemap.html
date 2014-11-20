@@ -90,6 +90,7 @@
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#the-pnacl-toolchain">The PNaCl toolchain</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#using-the-pnacl-tools-to-compile-link-debug-and-deploy">Using the PNaCl tools to compile, link, debug, and deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#object-dumping-of-pnacl-bitcode-files">Object dumping of PNaCl bitcode files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#the-gnu-based-toolchains">The GNU-based toolchains</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#using-make">Using make</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/devguide/devcycle/building.html#libraries-and-header-files-provided-with-the-sdk">Libraries and header files provided with the SDK</a></li>
@@ -367,6 +368,38 @@
 <li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-abi.html#errno-and-errors-in-arithmetic-instructions">Errno and errors in arithmetic instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-abi.html#instruction-reference">Instruction Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-abi.html#intrinsic-functions">Intrinsic Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html">Contents Of PNaCl Bitcode Files</a><ul class="small-gap">
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#data-model">Data Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#pnacl-blocks">PNaCl Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#pnacl-records">PNaCl Records</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#default-abbreviations">Default Abbreviations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#pnacl-identifiers">PNaCl Identifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#conventions-for-describing-records">Conventions For Describing Records</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#factorial-example">Factorial Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#road-map">Road Map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#global-state">Global State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#global-records">Global Records</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#types-block">Types Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#globals-block">Globals Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#valuesymtab-block">Valuesymtab Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#module-block">Module Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#constants-blocks">Constants Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#function-blocks">Function Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#terminator-instructions">Terminator Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#integer-binary-instructions">Integer Binary Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#floating-point-binary-instructions">Floating Point Binary Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#memory-creation-and-access-instructions">Memory Creation and Access Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#conversion-instructions">Conversion Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#comparison-instructions">Comparison Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#vector-instructions">Vector Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#other-instructions">Other Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#memory-blocks-and-alignment">Memory Blocks and Alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#intrinsic-functions">Intrinsic Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#support-functions">Support Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="/native-client/reference/pnacl-bitcode-manual.html#abbreviations">Abbreviations</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html">PNaCl C/C++ Language Support</a><ul class="small-gap">

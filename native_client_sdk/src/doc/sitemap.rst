@@ -55,6 +55,7 @@ Contents:
    cpp-api-dev.rst
    reference/index.rst
    reference/pnacl-bitcode-abi.rst
+   reference/pnacl-bitcode-manual.rst
    reference/pnacl-c-cpp-language-support.rst
    reference/pnacl-undefined-behavior.rst
    reference/nacl-manifest-format.rst

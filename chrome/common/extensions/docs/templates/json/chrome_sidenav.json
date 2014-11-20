@@ -841,6 +841,10 @@
                 "href": "/native-client/reference/nacl-manifest-format"
               },
               {
+                "title": "Contents of PNaCl Bitcode Files",
+                "href": "/native-client/reference/pnacl-bitcode-manual"
+              },
+              {
                 "title": "PNaCl Bitcode Reference Manual",
                 "href": "/native-client/reference/pnacl-bitcode-abi"
               },

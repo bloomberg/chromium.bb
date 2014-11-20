@@ -71,6 +71,8 @@ toc:
   - include: /native-client/dev/_reference_toc.yaml
   - title: "Native Client Manifest (nmf) Format"
     path: /native-client/dev/reference/nacl-manifest-format
+  - title: "Contents of PNaCl Bitcode Files"
+    path: /native-client/dev/reference/pnacl-bitcode-manual
   - title: "PNaCl Bitcode Reference Manual"
     path: /native-client/dev/reference/pnacl-bitcode-abi
   - title: "PNaCl C/C++ Language Support"
