@@ -419,7 +419,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 - (void)addViewForAction:(ToolbarActionViewController*)action
                withIndex:(NSUInteger)index {
-  NSRect buttonFrame = NSMakeRect(0.0,
+  NSRect buttonFrame = NSMakeRect(NSMaxX([containerView_ bounds]),
                                   kBrowserActionOriginYOffset,
                                   ToolbarActionsBar::IconWidth(false),
                                   ToolbarActionsBar::IconHeight());
