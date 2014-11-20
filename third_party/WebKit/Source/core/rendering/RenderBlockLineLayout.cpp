@@ -799,6 +799,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     LineBreaker lineBreaker(this);
 
     while (!endOfLine.atEnd()) {
+        bool logicalWidthIsAvailable = false;
+
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
         if (checkForEndLineMatch) {
             layoutState.setEndLineMatched(matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
@@ -881,43 +883,45 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                             // We have to delete this line, remove all floats that got added, and let line layout re-run.
                             lineBox->deleteLine();
                             endOfLine = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, previousEndofLine);
-                            continue;
+                            logicalWidthIsAvailable = true;
+                        } else {
+                            setLogicalHeight(lineBox->lineBottomWithLeading());
                         }
-
-                        setLogicalHeight(lineBox->lineBottomWithLeading());
                     }
                 }
             }
         }
 
-        for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-            setStaticPositions(this, lineBreaker.positionedObjects()[i]);
+        if (!logicalWidthIsAvailable) {
+            for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
+                setStaticPositions(this, lineBreaker.positionedObjects()[i]);
 
-        if (!layoutState.lineInfo().isEmpty()) {
-            layoutState.lineInfo().setFirstLine(false);
-            clearFloats(lineBreaker.clear());
-        }
+            if (!layoutState.lineInfo().isEmpty()) {
+                layoutState.lineInfo().setFirstLine(false);
+                clearFloats(lineBreaker.clear());
+            }
 
-        if (m_floatingObjects && lastRootBox()) {
-            const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-            FloatingObjectSetIterator it = floatingObjectSet.begin();
-            FloatingObjectSetIterator end = floatingObjectSet.end();
-            if (layoutState.lastFloat()) {
-                FloatingObjectSetIterator lastFloatIterator = floatingObjectSet.find(layoutState.lastFloat());
-                ASSERT(lastFloatIterator != end);
-                ++lastFloatIterator;
-                it = lastFloatIterator;
+            if (m_floatingObjects && lastRootBox()) {
+                const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
+                FloatingObjectSetIterator it = floatingObjectSet.begin();
+                FloatingObjectSetIterator end = floatingObjectSet.end();
+                if (layoutState.lastFloat()) {
+                    FloatingObjectSetIterator lastFloatIterator = floatingObjectSet.find(layoutState.lastFloat());
+                    ASSERT(lastFloatIterator != end);
+                    ++lastFloatIterator;
+                    it = lastFloatIterator;
+                }
+                for (; it != end; ++it) {
+                    FloatingObject* f = it->get();
+                    appendFloatingObjectToLastLine(f);
+                    ASSERT(f->renderer() == layoutState.floats()[layoutState.floatIndex()].object);
+                    // If a float's geometry has changed, give up on syncing with clean lines.
+                    if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
+                        checkForEndLineMatch = false;
+                    layoutState.setFloatIndex(layoutState.floatIndex() + 1);
+                }
+                layoutState.setLastFloat(!floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
             }
-            for (; it != end; ++it) {
-                FloatingObject* f = it->get();
-                appendFloatingObjectToLastLine(f);
-                ASSERT(f->renderer() == layoutState.floats()[layoutState.floatIndex()].object);
-                // If a float's geometry has changed, give up on syncing with clean lines.
-                if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
-                    checkForEndLineMatch = false;
-                layoutState.setFloatIndex(layoutState.floatIndex() + 1);
-            }
-            layoutState.setLastFloat(!floatingObjectSet.isEmpty() ? floatingObjectSet.last().get() : 0);
         }
 
         lineMidpointState.reset();
