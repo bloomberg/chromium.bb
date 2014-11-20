@@ -2217,10 +2217,6 @@ def MakeBaseTrustedEnv(platform=None):
   base_env.Append(
     IS_BUILD_ENV = False,
     BUILD_SUBTYPE = '',
-    CPPDEFINES = [
-      ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-      ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-      ],
     CPPPATH = [
       '${SOURCE_ROOT}',
     ],
@@ -3486,8 +3482,6 @@ def RawSyscallObjects(env, sources):
       ['USE_RAW_SYSCALLS', '1'],
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-      ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-      ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
       ],
   )
   objects = []

@@ -369,7 +369,7 @@ static uint64_t NaClLoadMem(uintptr_t addr,
     return (uint ## bits ## _t) NaClLoadMem(addr, sizeof(uint ## bits ## _t)); \
   }
 
-#if NACL_TARGET_SUBARCH == 32
+#if NACL_BUILD_SUBARCH == 32
 GENERIC_LOAD(32)
 #endif
 GENERIC_LOAD(64)
@@ -460,7 +460,7 @@ void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
    * explicitly modding all relative addresses by 2^32, but that seems like an
    * expensive way to save a few bytes per reloc.
    */
-#if NACL_TARGET_SUBARCH == 32
+#if NACL_BUILD_SUBARCH == 32
   for (i = 0; i < patch->num_rel32; ++i) {
     offset = patch->rel32[i] - patch->src;
     target_addr = patch->dst + offset;

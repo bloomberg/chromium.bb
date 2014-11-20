@@ -312,9 +312,7 @@ class Builder(CommandRunner):
     # This really should be better.
     # See: http://code.google.com/p/nativeclient/issues/detail?id=2936
     define_list = [define for define in define_list
-                   if not (define.startswith('NACL_TARGET_ARCH=') or
-                           define.startswith('NACL_TARGET_SUBARCH=') or
-                           define.startswith('NACL_WINDOWS=') or
+                   if not (define.startswith('NACL_WINDOWS=') or
                            define.startswith('NACL_OSX=') or
                            define.startswith('NACL_LINUX=') or
                            define.startswith('NACL_ANDROID=') or

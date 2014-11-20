@@ -359,7 +359,7 @@ struct NaClElfImage *NaClElfImageNew(struct NaClDesc *ndp,
   struct NaClElfImage image;
   union {
     Elf32_Ehdr ehdr32;
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
     Elf64_Ehdr ehdr64;
 #endif
   } ehdr;
@@ -379,7 +379,7 @@ struct NaClElfImage *NaClElfImageNew(struct NaClDesc *ndp,
     return 0;
   }
 
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
   if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {
     /*
      * Convert ELFCLASS64 format to ELFCLASS32 format.
@@ -432,7 +432,7 @@ struct NaClElfImage *NaClElfImageNew(struct NaClDesc *ndp,
     return 0;
   }
 
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
   if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {
     /*
      * We'll load the 64-bit phdrs and convert them to 32-bit format.

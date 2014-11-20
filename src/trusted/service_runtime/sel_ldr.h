@@ -774,7 +774,7 @@ struct NaClPatchInfo {
   struct NaClPatch    *abs64;
   size_t              num_abs64;
 
-#if NACL_TARGET_SUBARCH == 32
+#if NACL_BUILD_SUBARCH == 32
   uintptr_t           *rel32;
   size_t              num_rel32;
 #endif

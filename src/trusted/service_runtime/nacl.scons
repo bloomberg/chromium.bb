@@ -69,8 +69,6 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   asm_env.Append(CPPDEFINES = [
                      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
                      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-                     ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-                     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
                  ])
 
   asm_env.Append(CPPDEFINES=defines)

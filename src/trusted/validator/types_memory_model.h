@@ -18,7 +18,7 @@
  *            (both positive and negative).
  * NaClMemorySize - The number of bytes in memory.
  */
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
 typedef uint64_t NaClPcAddress;
 #define NACL_PRIxNaClPcAddress    NACL_PRIx64
 #define NACL_PRIxNaClPcAddressAll "016" NACL_PRIx64

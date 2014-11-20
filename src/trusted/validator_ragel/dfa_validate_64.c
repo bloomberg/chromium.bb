@@ -19,7 +19,7 @@
  *             I don't foresee any use in cross-environment, but it should work
  *             and may be useful in some case so why not?
  */
-#if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86 || NACL_TARGET_SUBARCH != 64
+#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_x86 || NACL_BUILD_SUBARCH != 64
 # error "Can't compile, target is for x86-64"
 #endif
 

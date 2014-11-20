@@ -25,7 +25,7 @@ int main(void) {
   NaClGetCurrentCPUFeaturesX86((NaClCPUFeatures *) &fv);
   if (NaClArchSupportedX86(&fv)) {
     printf("This is a native client %d-bit %s compatible computer\n",
-           NACL_TARGET_SUBARCH, GetCPUIDString(&cpu_data));
+           NACL_BUILD_SUBARCH, GetCPUIDString(&cpu_data));
   } else {
     if (!NaClGetCPUFeatureX86(&fv, NaClCPUFeatureX86_CPUIDSupported)) {
       printf("Computer doesn't support CPUID\n");

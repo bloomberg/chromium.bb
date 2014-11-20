@@ -177,8 +177,8 @@ const struct NaClValidatorInterface *NaClValidatorCreateMips(void);
  *    cpu_features - The CPU features to support while validating.
  */
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
-                                       NACL_TARGET_ARCH,
-                                       NACL_TARGET_SUBARCH)(
+                                       NACL_BUILD_ARCH,
+                                       NACL_BUILD_SUBARCH)(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,

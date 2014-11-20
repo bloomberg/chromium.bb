@@ -16,10 +16,6 @@ if env.Bit('host_mac'):
 if env.Bit('tests_use_irt'):
   nexe_command_line += ['-i']
 
-env.Append(CPPDEFINES = [['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}'],
-                         ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}'],
-                         ])
-
 if not env.AllowNonStableBitcode():
   Return()
 if env.Bit('bitcode'):
