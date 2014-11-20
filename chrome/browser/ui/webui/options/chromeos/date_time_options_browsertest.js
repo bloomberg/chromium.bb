@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['chrome/browser/ui/webui/options/options_browsertest_base.js']);
-
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
@@ -14,7 +12,7 @@ GEN('#if defined(OS_CHROMEOS)');
 function DateTimeOptionsWebUITest() {}
 
 DateTimeOptionsWebUITest.prototype = {
-  __proto__: OptionsBrowsertestBase.prototype,
+  __proto__: testing.Test.prototype,
 
   /**
    * Browse to date/time options.

@@ -717,7 +717,6 @@
       'browser/ui/webui/options/manage_profile_browsertest.js',
       'browser/ui/webui/options/options_browsertest.cc',
       'browser/ui/webui/options/options_browsertest.js',
-      'browser/ui/webui/options/options_browsertest_base.js',
       'browser/ui/webui/options/options_ui_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.h',
       'browser/ui/webui/options/password_manager_browsertest.js',

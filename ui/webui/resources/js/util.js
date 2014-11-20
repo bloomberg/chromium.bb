@@ -383,7 +383,7 @@ function ensureTransitionEndEvent(el, timeOut) {
   });
   window.setTimeout(function() {
     if (!fired)
-      cr.dispatchSimpleEvent(el, 'webkitTransitionEnd', true);
+      cr.dispatchSimpleEvent(el, 'webkitTransitionEnd');
   }, timeOut);
 }
 

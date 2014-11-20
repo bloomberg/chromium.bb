@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['options_browsertest_base.js']);
-
 /**
  * Returns the HTML element for the |field|.
  * @param {string} field The field name for the element.
@@ -32,11 +30,10 @@ function getListSize(list) {
 function AutofillOptionsWebUITest() {}
 
 AutofillOptionsWebUITest.prototype = {
-  __proto__: OptionsBrowsertestBase.prototype,
+  __proto__: testing.Test.prototype,
 
   /**
    * Browse to autofill options.
-   * @override
    */
   browsePreload: 'chrome://settings-frame/autofill',
 };
@@ -54,7 +51,7 @@ TEST_F('AutofillOptionsWebUITest', 'testOpenAutofillOptions', function() {
 function AutofillEditAddressWebUITest() {}
 
 AutofillEditAddressWebUITest.prototype = {
-  __proto__: OptionsBrowsertestBase.prototype,
+  __proto__: testing.Test.prototype,
 
   /** @override  */
   browsePreload: 'chrome://settings-frame/autofillEditAddress',
@@ -73,10 +70,6 @@ TEST_F('AutofillEditAddressWebUITest', 'testInitialFormLayout', function() {
 });
 
 TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
-  // Disable a11y audit on Chrome OS and Mac OSX crbug.com/434502
-  if (cr.isChromeOS || cr.isMac)
-    this.disableAccessibilityChecks();
-
   assertEquals(this.browsePreload, document.location.href);
 
   var testAddress = {
