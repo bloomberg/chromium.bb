@@ -24,7 +24,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <linux/input.h>
+
 #include "weston-test-client-helper.h"
 #include "text-client-protocol.h"
 

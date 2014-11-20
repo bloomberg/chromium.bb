@@ -22,10 +22,10 @@
 
 #include "config.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "weston-test-client-helper.h"
-#include <stdio.h>
 
 #define NUM_SUBSURFACES 3
 

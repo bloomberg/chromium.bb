@@ -23,15 +23,12 @@
 #include "config.h"
 
 #include <string.h>
-
-#include "weston-test-client-helper.h"
 #include <stdio.h>
-#include <poll.h>
-#include <time.h>
-
 #include <EGL/egl.h>
 #include <wayland-egl.h>
 #include <GLES2/gl2.h>
+
+#include "weston-test-client-helper.h"
 
 #define fail(msg) { fprintf(stderr, "%s failed\n", msg); return -1; }
 

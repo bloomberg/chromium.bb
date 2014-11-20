@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <linux/input.h>
+
 #include "weston-test-client-helper.h"
 
 TEST(simple_button_test)

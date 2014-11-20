@@ -24,9 +24,6 @@
 #include "config.h"
 
 #include <unistd.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <signal.h>
 
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"

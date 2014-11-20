@@ -23,10 +23,10 @@
 #include "config.h"
 
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <signal.h>
 #include <unistd.h>
+
 #include "../src/compositor.h"
 #include "wayland-test-server-protocol.h"
 
