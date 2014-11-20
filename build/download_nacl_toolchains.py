@@ -50,6 +50,7 @@ def Main(args):
   if 'target_arch=arm' not in os.environ.get('GYP_DEFINES', ''):
       args.extend(['--exclude', 'nacl_arm_newlib'])
 
+  args.extend(['--mode', 'nacl_core_sdk'])
   args.append('sync')
   package_version.main(args)
 

@@ -146,7 +146,7 @@ def GetPNaClTranslatorLib(tcpath, arch):
 
 def BuildStepDownloadToolchains(toolchains):
   buildbot_common.BuildStep('Running package_version.py')
-  args = [sys.executable, PKGVER, '--exclude', 'arm_trusted']
+  args = [sys.executable, PKGVER, '--mode', 'nacl_core_sdk']
   if 'bionic' in toolchains:
     build_platform = '%s_x86' % getos.GetPlatform()
     args.extend(['--append', os.path.join(build_platform, 'nacl_arm_bionic')])
@@ -866,7 +866,7 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
                     'zlib-1.2.3/README')
   src_root = os.path.join(NACLPORTS_DIR, 'out', 'build')
   output_license = os.path.join(out_dir, 'ports', 'LICENSE')
-  GenerateNotice(src_root , output_license, extra_licenses)
+  GenerateNotice(src_root, output_license, extra_licenses)
   readme = os.path.join(out_dir, 'ports', 'README')
   oshelpers.Copy(['-v', os.path.join(SDK_SRC_DIR, 'README.naclports'), readme])
 

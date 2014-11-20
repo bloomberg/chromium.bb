@@ -545,8 +545,8 @@ hooks = [
     'name': 'nacltools',
     'pattern': '.',
     'action': [
-        'python', 'src/build/download_nacl_toolchains.py',
-        '--exclude', 'arm_trusted',
+        'python',
+        'src/build/download_nacl_toolchains.py',
     ],
   },
   {
