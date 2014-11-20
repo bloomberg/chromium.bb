@@ -472,7 +472,7 @@ private:
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 bool HeapObjectHeader::isMarked() const
 {
     checkHeader();
@@ -484,28 +484,28 @@ bool HeapObjectHeader::isMarked() const
 #endif
 }
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::unmark()
 {
     checkHeader();
     m_size &= ~markBitMask;
 }
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 bool HeapObjectHeader::hasDeadMark() const
 {
     checkHeader();
     return m_size & deadBitMask;
 }
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::clearDeadMark()
 {
     checkHeader();
     m_size &= ~deadBitMask;
 }
 
-NO_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::setDeadMark()
 {
     ASSERT(!isMarked());
