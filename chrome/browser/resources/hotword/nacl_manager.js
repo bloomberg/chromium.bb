@@ -172,6 +172,14 @@ NaClManager.prototype.startRecognizer = function() {
  * Stops the hotword recognizer.
  */
 NaClManager.prototype.stopRecognizer = function() {
+  if (this.recognizerState_ == ManagerState_.STARTING) {
+    // If the recognizer is stopped before it finishes starting, it causes an
+    // assertion to be raised in waitForMessage_() since we're waiting for the
+    // READY_FOR_AUDIO message. Clear the current timeout and expecting message
+    // since we no longer expect it and may never receive it.
+    this.clearTimeout_();
+    this.expectingMessage_ = null;
+  }
   this.sendDataToPlugin_(hotword.constants.NaClPlugin.STOP);
   this.recognizerState_ = ManagerState_.STOPPING;
   this.waitForMessage_(hotword.constants.TimeoutMs.NORMAL,
