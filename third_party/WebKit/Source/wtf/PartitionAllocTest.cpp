@@ -93,7 +93,9 @@ static bool SetAddressSpaceLimit()
 #if !CPU(64BIT)
     // 32 bits => address space is limited already.
     return true;
-#elif OS(POSIX)
+#elif OS(POSIX) && !OS(MACOSX)
+    // Mac will accept RLIMIT_AS changes but it is not enforced.
+    // See https://crbug.com/435269 and rdar://17576114.
     const size_t kAddressSpaceLimit = static_cast<size_t>(4096) * 1024 * 1024;
     struct rlimit limit;
     if (getrlimit(RLIMIT_AS, &limit) != 0)
@@ -1144,7 +1146,12 @@ TEST(PartitionAllocTest, LostFreePagesBug)
 // crash, and still returns null. The test tries to allocate 6 GB of memory in
 // 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
 // using setrlimit() first.
-TEST(PartitionAllocTest, RepeatedReturnNull)
+#if OS(MACOSX)
+#define MAYBE_RepeatedReturnNull DISABLED_RepeatedReturnNull
+#else
+#define MAYBE_RepeatedReturnNull RepeatedReturnNull
+#endif
+TEST(PartitionAllocTest, MAYBE_RepeatedReturnNull)
 {
     TestSetup();
 
