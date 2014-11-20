@@ -19,7 +19,6 @@ from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
-from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
@@ -501,16 +500,6 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
-
-  def _HandleStageException(self, exc_info):
-    """Decide whether an exception should be treated as fatal."""
-    exc_type = exc_info[0]
-    if isinstance(
-        exc_type, validation_pool.FailedToSubmitAllChangesNonFatalException):
-      return self._HandleExceptionAsWarning(exc_info)
-    else:
-      return super(CommitQueueCompletionStage, self)._HandleStageException(
-          exc_info)
 
   def _AbortCQHWTests(self):
     """Abort any HWTests started by the CQ."""

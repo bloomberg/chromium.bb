@@ -90,15 +90,13 @@ class TreeIsClosedException(Exception):
 class FailedToSubmitAllChangesException(failures_lib.StepFailure):
   """Raised if we fail to submit any change."""
 
-  def __init__(self, changes):
+  def __init__(self, changes, num_submitted):
     super(FailedToSubmitAllChangesException, self).__init__(
         'FAILED TO SUBMIT ALL CHANGES:  Could not verify that changes %s were '
-        'submitted' % ' '.join(str(c) for c in changes))
+        'submitted.'
+        '\nSubmitted %d changes successfully.' %
+        (' '.join(str(c) for c in changes), num_submitted))
 
-
-class FailedToSubmitAllChangesNonFatalException(
-    FailedToSubmitAllChangesException):
-  """Raised if we fail to submit any change due to non-fatal errors."""
 
 
 class InternalCQError(cros_patch.PatchException):
@@ -1764,7 +1762,9 @@ class ValidationPool(object):
       throttled_ok: if |check_tree_open|, treat a throttled tree as open
 
     Returns:
-      A list of the changes that failed to submit.
+      (submitted, errors) where submitted is a set of changes that were
+      submitted, and errors is a map {change: reason} containing changes that
+      failed to submit.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -1813,7 +1813,8 @@ class ValidationPool(object):
         logging.error('Could not submit %s', patch)
         self._HandleCouldNotSubmit(patch, error)
 
-      return dict(p_errors)
+      submitted_changes = set(changes) - set(p_errors.keys())
+      return (submitted_changes, dict(p_errors))
 
   def RecordPatchesInMetadataAndDatabase(self):
     """Mark all patches as having been picked up in metadata.json and cidb.
@@ -1994,8 +1995,6 @@ class ValidationPool(object):
     Raises:
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
-      FailedToSubmitAllChangesNonFatalException: if we can't submit a change
-        due to non-fatal errors.
     """
     # Note that SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
@@ -2003,22 +2002,11 @@ class ValidationPool(object):
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    errors = self.SubmitChanges(self.changes, check_tree_open=check_tree_open,
-                                throttled_ok=throttled_ok)
+    submitted, errors = self.SubmitChanges(self.changes,
+                                           check_tree_open=check_tree_open,
+                                           throttled_ok=throttled_ok)
     if errors:
-      # We don't throw a fatal error for the whitelisted
-      # exceptions. These exceptions are mostly caused by human
-      # intervention during the current run and have limited impact on
-      # other patches.
-      whitelisted_exceptions = (PatchConflict,
-                                PatchModified,
-                                PatchNotCommitReady,
-                                cros_patch.DependencyError,)
-
-      if all(isinstance(e, whitelisted_exceptions) for e in errors.values()):
-        raise FailedToSubmitAllChangesNonFatalException(errors)
-      else:
-        raise FailedToSubmitAllChangesException(errors)
+      raise FailedToSubmitAllChangesException(errors, len(submitted))
 
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
