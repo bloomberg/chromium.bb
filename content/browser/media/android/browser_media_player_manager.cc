@@ -135,39 +135,6 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   // |players_| will be destroyed here because |player_| is a ScopedVector.
 }
 
-void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player) {
-    if (fullscreen_player_is_released_) {
-      video_view_->OpenVideo();
-      fullscreen_player_is_released_ = false;
-    }
-    player->Start();
-    Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(),
-                                               fullscreen_player_id_));
-  }
-}
-
-void BrowserMediaPlayerManager::FullscreenPlayerPause() {
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player) {
-    player->Pause(true);
-    Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(),
-                                                fullscreen_player_id_));
-  }
-}
-
-void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player) {
-    // TODO(kbalazs): if |fullscreen_player_is_released_| is true
-    // at this point, player->GetCurrentTime() will be wrong until
-    // FullscreenPlayerPlay (http://crbug.com/322798).
-    OnSeekRequest(fullscreen_player_id_,
-                  base::TimeDelta::FromMilliseconds(msec));
-  }
-}
-
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
   if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
     delegate->ToggleFullscreenModeForTab(web_contents_, false);

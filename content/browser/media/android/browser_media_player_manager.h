@@ -57,9 +57,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual ~BrowserMediaPlayerManager();
 
   // Fullscreen video playback controls.
-  virtual void FullscreenPlayerPlay();
-  virtual void FullscreenPlayerPause();
-  virtual void FullscreenPlayerSeek(int msec);
   virtual void ExitFullscreen(bool release_media_player);
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface);
 

@@ -41,10 +41,6 @@ class ContentVideoView {
   static ContentVideoView* GetInstance();
 
   // Getter method called by the Java class to get the media information.
-  int GetVideoWidth(JNIEnv*, jobject obj) const;
-  int GetVideoHeight(JNIEnv*, jobject obj) const;
-  int GetDurationInMilliSeconds(JNIEnv*, jobject obj) const;
-  int GetCurrentPosition(JNIEnv*, jobject obj) const;
   bool IsPlaying(JNIEnv*, jobject obj);
   void RequestMediaMetadata(JNIEnv*, jobject obj);
 
@@ -52,11 +48,6 @@ class ContentVideoView {
   // |release_media_player| is true, |manager_| needs to release the player
   // as we are quitting the app.
   void ExitFullscreen(JNIEnv*, jobject, jboolean release_media_player);
-
-  // Media control method called by the Java class.
-  void SeekTo(JNIEnv*, jobject obj, jint msec);
-  void Play(JNIEnv*, jobject obj);
-  void Pause(JNIEnv*, jobject obj);
 
   // Called by the Java class to pass the surface object to the player.
   void SetSurface(JNIEnv*, jobject obj, jobject surface);
