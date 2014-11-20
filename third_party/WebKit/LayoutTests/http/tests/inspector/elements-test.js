@@ -220,7 +220,7 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
         var sections = styleSections[pseudoId].slice();
         for (var i = 0; i < sections.length; ++i) {
             var section = sections[i];
-            if (section.rule && excludeMatched)
+            if (section.rule() && excludeMatched)
                 continue;
             if (section.element && section.element.classList.contains("user-rule") && !WebInspector.settings.showUserAgentStyles.get())
                 continue;
