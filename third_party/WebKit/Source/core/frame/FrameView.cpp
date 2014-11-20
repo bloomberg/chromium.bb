@@ -1077,7 +1077,7 @@ void FrameView::invalidateTreeIfNeeded()
     resetScrollbarDamage();
 
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     renderView()->assertSubtreeClearedPaintInvalidationState();
 #endif
 
