@@ -175,8 +175,15 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 bool ChannelMojo::ShouldBeUsed() {
-  // TODO(morrita): Turn this on for a set of platforms.
+  // Being conservative, this is currently enabled only on Mac and
+  // Linux even though this should work on all platforms.
+  // TODO(morrita): Turn this on all platform and kill
+  // --enable-renderer-mojo-channel
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  return true;
+#else
   return false;
+#endif
 }
 
 // static
