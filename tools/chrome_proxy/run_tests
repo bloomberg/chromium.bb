@@ -15,7 +15,6 @@ import sys
 
 if __name__ == '__main__':
   proxy_dir = os.path.dirname(os.path.realpath(__file__))
-  perf_dir = os.path.realpath(os.path.join(proxy_dir, '..', 'perf'))
   telemetry_dir = os.path.realpath(os.path.join(proxy_dir, '..', 'telemetry'))
 
   env = os.environ.copy()
@@ -26,5 +25,5 @@ if __name__ == '__main__':
 
   path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'unittest_util',
                                    'run_tests.py')
-  argv = ['--top-level-dir', proxy_dir, '--path', perf_dir] + sys.argv[1:]
+  argv = ['--top-level-dir', proxy_dir] + sys.argv[1:]
   sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
