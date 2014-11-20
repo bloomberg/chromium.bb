@@ -7,17 +7,22 @@
 import math
 
 
-def TruncatedMean(data_set, truncate_percent):
+def TruncatedMean(data_set, truncate_proportion):
   """Calculates the truncated mean of a set of values.
 
   Note that this isn't just the mean of the set of values with the highest
   and lowest values discarded; the non-discarded values are also weighted
   differently depending how many values are discarded.
 
+  NOTE: If there's not much benefit from this keeping and weighting
+  partial values, it might be better to use a simplified truncated mean
+  function without weighting.
+
   Args:
     data_set: Non-empty list of values.
-    truncate_percent: How much of the upper and lower portions of the data set
-        to discard, expressed as a value in [0, 1].
+    truncate_proportion: How much of the upper and lower portions of the data
+        set to discard, expressed as a value in the range [0, 1].
+        Note: a value of 0.5 or greater would be meaningless
 
   Returns:
     The truncated mean as a float.
@@ -28,9 +33,9 @@ def TruncatedMean(data_set, truncate_percent):
   if len(data_set) > 2:
     data_set = sorted(data_set)
 
-    discard_num_float = len(data_set) * truncate_percent
+    discard_num_float = len(data_set) * truncate_proportion
     discard_num_int = int(math.floor(discard_num_float))
-    kept_weight = len(data_set) - discard_num_float * 2
+    kept_weight = len(data_set) - (discard_num_float * 2)
 
     data_set = data_set[discard_num_int:len(data_set)-discard_num_int]
 
@@ -46,9 +51,8 @@ def TruncatedMean(data_set, truncate_percent):
   else:
     kept_weight = len(data_set)
 
-  truncated_mean = reduce(lambda x, y: float(x) + float(y),
-                          data_set) / kept_weight
-
+  data_sum = reduce(lambda x, y: float(x) + float(y), data_set)
+  truncated_mean = data_sum / kept_weight
   return truncated_mean
 
 
@@ -126,7 +130,10 @@ def PooledStandardError(work_sets):
 # pylint: disable=W0622
 def StandardError(values):
   """Calculates the standard error of a list of values."""
+  # NOTE: This behavior of returning 0.0 in the case of an empty list is
+  # inconsistent with Variance and StandardDeviation above.
   if len(values) <= 1:
     return 0.0
   std_dev = StandardDeviation(values)
   return std_dev / math.sqrt(len(values))
+
