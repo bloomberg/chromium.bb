@@ -50,6 +50,7 @@ if (window.eventSender) {
     // parts of the document are under the mouse.
     testEvents(0, "Unscaled", "click(10, 10)");
 
+    window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
     window.eventSender.setPageScaleFactor(0.5, 0, 0);
     testEvents(0, "setPageScale(0.5)", "click(20, 20)");
 }

@@ -14,6 +14,7 @@
             // Scale the page and resize the frames to verify hit testing on the frameset
             var leftPanelWidth = window.innerWidth / 8;
             var panelHeight = window.innerHeight / 2;
+            eventSender.setPageScaleFactorLimits(0.5, 0.5);
             eventSender.setPageScaleFactor(0.5, 0, 0);
             eventSender.mouseMoveTo(panelHeight / 2, leftPanelWidth);
             eventSender.mouseDown();

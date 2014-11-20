@@ -11,8 +11,10 @@
     {
         if (window.testRunner)
             window.testRunner.dumpAsTextWithPixelResults();
-        if (window.eventSender)
+        if (window.eventSender) {
+            window.eventSender.setPageScaleFactorLimits(0.25, 0.25);
             window.eventSender.setPageScaleFactor(0.25, 0, 0);
+        }
     }
 </script>
 </head>
