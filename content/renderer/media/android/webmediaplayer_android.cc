@@ -851,10 +851,10 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     needs_external_surface_ = true;
     if (!paused() && !is_fullscreen_)
       player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-  } else if (stream_texture_proxy_ && !stream_id_) {
+  } else if (!stream_texture_proxy_) {
     // Do deferred stream texture creation finally.
-    DoCreateStreamTexture();
     SetNeedsEstablishPeer(true);
+    TryCreateStreamTextureProxyIfNeeded();
   }
 #endif  // defined(VIDEO_HOLE)
   natural_size_.width = width;
