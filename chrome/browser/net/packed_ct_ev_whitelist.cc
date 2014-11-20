@@ -107,14 +107,11 @@ bool PackedEVCertsWhitelist::UncompressEVWhitelist(
 }
 
 PackedEVCertsWhitelist::PackedEVCertsWhitelist(
-    const std::string& compressed_whitelist)
-    : is_whitelist_valid_(false) {
+    const std::string& compressed_whitelist) {
   if (!UncompressEVWhitelist(compressed_whitelist, &whitelist_)) {
     whitelist_.clear();
     return;
   }
-
-  is_whitelist_valid_ = true;
 }
 
 PackedEVCertsWhitelist::~PackedEVCertsWhitelist() {
@@ -134,5 +131,5 @@ bool PackedEVCertsWhitelist::ContainsCertificateHash(
 }
 
 bool PackedEVCertsWhitelist::IsValid() const {
-  return is_whitelist_valid_;
+  return whitelist_.size() > 0;
 }

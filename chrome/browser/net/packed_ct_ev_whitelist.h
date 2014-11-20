@@ -60,8 +60,6 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
   static bool UncompressEVWhitelist(const std::string& compressed_whitelist,
                                     std::vector<uint64_t>* uncompressed_list);
 
-  bool is_whitelist_valid_;
-
   // The whitelist is an array containing certificate hashes (truncated
   // to a fixed size of 8 bytes), sorted.
   // Binary search is used to locate hashes in the the array.
