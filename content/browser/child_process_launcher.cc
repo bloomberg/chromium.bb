@@ -78,20 +78,28 @@ class ChildProcessLauncher::Context
   // Resets the client (the client is going away).
   void ResetClient();
 
+  bool starting() const { return starting_; }
+
+  const base::Process& process() const { return process_; }
+
+  int exit_code() const { return exit_code_; }
+
+  base::TerminationStatus termination_status() const {
+    return termination_status_;
+  }
+
   void set_terminate_child_on_shutdown(bool terminate_on_shutdown) {
     terminate_child_on_shutdown_ = terminate_on_shutdown;
   }
 
-  void GetTerminationStatus() {
-    termination_status_ =
-        base::GetTerminationStatus(process_.Handle(), &exit_code_);
-  }
+  void UpdateTerminationStatus(bool known_dead);
+
+  void Close() { process_.Close(); }
 
   void SetProcessBackgrounded(bool background);
 
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncher::Context>;
-  friend class ChildProcessLauncher;
 
   ~Context() {
     Terminate();
@@ -216,6 +224,32 @@ void ChildProcessLauncher::Context::ResetClient() {
   // client_ would be used.
   CHECK(BrowserThread::CurrentlyOn(client_thread_id_));
   client_ = NULL;
+}
+
+void ChildProcessLauncher::Context::UpdateTerminationStatus(bool known_dead) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  if (zygote_) {
+    termination_status_ = ZygoteHostImpl::GetInstance()->
+        GetTerminationStatus(process_.Handle(), known_dead, &exit_code_);
+  } else if (known_dead) {
+    termination_status_ =
+        base::GetKnownDeadTerminationStatus(process_.Handle(), &exit_code_);
+  } else {
+#elif defined(OS_MACOSX)
+  if (known_dead) {
+    termination_status_ =
+        base::GetKnownDeadTerminationStatus(process_.Handle(), &exit_code_);
+  } else {
+#elif defined(OS_ANDROID)
+  if (IsChildProcessOomProtected(process_.Handle())) {
+    termination_status_ = base::TERMINATION_STATUS_OOM_PROTECTED;
+  } else {
+#else
+  {
+#endif
+    termination_status_ =
+      base::GetTerminationStatus(process_.Handle(), &exit_code_);
+  }
 }
 
 void ChildProcessLauncher::Context::SetProcessBackgrounded(bool background) {
@@ -521,51 +555,27 @@ ChildProcessLauncher::~ChildProcessLauncher() {
 }
 
 bool ChildProcessLauncher::IsStarting() {
-  return context_->starting_;
+  return context_->starting();
 }
 
 const base::Process& ChildProcessLauncher::GetProcess() const {
-  DCHECK(!context_->starting_);
-  return context_->process_;
+  DCHECK(!context_->starting());
+  return context_->process();
 }
 
 base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     bool known_dead,
     int* exit_code) {
-  if (!context_->process_.IsValid()) {
+  if (!context_->process().IsValid()) {
     // Process is already gone, so return the cached termination status.
     if (exit_code)
-      *exit_code = context_->exit_code_;
-    return context_->termination_status_;
-  }
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  if (context_->zygote_) {
-    context_->termination_status_ = ZygoteHostImpl::GetInstance()->
-        GetTerminationStatus(context_->process_.Handle(), known_dead,
-                             &context_->exit_code_);
-  } else if (known_dead) {
-    context_->termination_status_ =
-        base::GetKnownDeadTerminationStatus(context_->process_.Handle(),
-                                            &context_->exit_code_);
-  } else {
-#elif defined(OS_MACOSX)
-  if (known_dead) {
-    context_->termination_status_ =
-        base::GetKnownDeadTerminationStatus(context_->process_.Handle(),
-                                            &context_->exit_code_);
-  } else {
-#elif defined(OS_ANDROID)
-  if (IsChildProcessOomProtected(context_->process_.Handle())) {
-    context_->termination_status_ = base::TERMINATION_STATUS_OOM_PROTECTED;
-  } else {
-#else
-  {
-#endif
-    context_->GetTerminationStatus();
+      *exit_code = context_->exit_code();
+    return context_->termination_status();
   }
 
+  context_->UpdateTerminationStatus(known_dead);
   if (exit_code)
-    *exit_code = context_->exit_code_;
+    *exit_code = context_->exit_code();
 
   // POSIX: If the process crashed, then the kernel closed the socket
   // for it and so the child has already died by the time we get
@@ -573,10 +583,10 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   // it'll reap the process.  However, if GetTerminationStatus didn't
   // reap the child (because it was still running), we'll need to
   // Terminate via ProcessWatcher. So we can't close the handle here.
-  if (context_->termination_status_ != base::TERMINATION_STATUS_STILL_RUNNING)
-    context_->process_.Close();
+  if (context_->termination_status() != base::TERMINATION_STATUS_STILL_RUNNING)
+    context_->Close();
 
-  return context_->termination_status_;
+  return context_->termination_status();
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
