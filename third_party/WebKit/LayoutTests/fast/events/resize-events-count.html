@@ -17,6 +17,7 @@
         var resizeEventCount = 0;
         window.onresize = function() {
             resizeEventCount++;
+            setTimeout(finish, 0);
         }
 
         if (window.testRunner) {
@@ -26,7 +27,6 @@
         }
         function resizeWindow() {
             window.resizeBy(10, 10);
-            setTimeout(finish, 20);
         }
         function finish() {
             // one resize event must be emitted.
