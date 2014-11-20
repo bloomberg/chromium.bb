@@ -10,6 +10,7 @@
 
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/net_export.h"
 #include "net/url_request/url_request.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -24,7 +25,7 @@ namespace net {
 //   URLRequest is designed to have all consumers on a single thread, and
 //   so no attempt is made to support Interceptor instances being
 //   registered/unregistered or in any way poked on multiple threads.
-class URLRequestJobManager {
+class NET_EXPORT URLRequestJobManager {
  public:
   // Returns the singleton instance.
   static URLRequestJobManager* GetInstance();

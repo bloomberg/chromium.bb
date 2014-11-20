@@ -12,7 +12,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_http_job.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_manager.h"
 #include "url/url_constants.h"
 
 namespace data_reduction_proxy {
@@ -48,8 +48,8 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
   // Returning non-NULL has the effect of restarting the request with the
   // supplied job.
   DCHECK(request->url().SchemeIs(url::kHttpScheme));
-  return request->context()->job_factory()->MaybeCreateJobWithProtocolHandler(
-      url::kHttpScheme, request, network_delegate);
+  return net::URLRequestJobManager::GetInstance()->CreateJob(
+      request, network_delegate);
 }
 
 }  // namespace data_reduction_proxy
