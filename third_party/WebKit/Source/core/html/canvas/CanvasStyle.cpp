@@ -148,6 +148,7 @@ PassRefPtrWillBeRawPtr<CanvasStyle> CanvasStyle::createFromStringWithOverrideAlp
     ColorParseResult parseResult = parseColor(rgba, color);
     switch (parseResult) {
     case ParsedRGBA:
+    case ParsedSystemColor:
         return adoptRefWillBeNoop(new CanvasStyle(colorWithOverrideAlpha(rgba, alpha)));
     case ParsedCurrentColor:
         return adoptRefWillBeNoop(new CanvasStyle(CurrentColorWithOverrideAlpha, alpha));
