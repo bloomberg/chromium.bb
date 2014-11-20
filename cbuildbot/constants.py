@@ -453,11 +453,12 @@ DEFAULT_CQ_SHOULD_REJECT_FIELDS = {
 }
 
 # Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
+# "NOT is:draft" in this query doesn't work, it finds any non-draft revision.
+# We want to match drafts anyway, so we can comment on them.
 _BASIC_QUERY = ('status:open AND '
                 'label:Code-Review=+2 AND '
                 'label:Verified=+1 AND '
-                '( NOT ( label:CodeReview=-2 OR label:Verified=-1 OR '
-                'is:draft ) )')
+                '( NOT ( label:CodeReview=-2 OR label:Verified=-1 ) )')
 
 #
 # Please note that requiring the +2 code review for all CQ and PreCQ

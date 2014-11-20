@@ -1347,7 +1347,8 @@ class ValidationPool(object):
         pool.non_manifest_changes.extend(non_manifest_changes)
 
       for change in draft_changes:
-        pool.HandleDraftChange(change)
+        if change.HasApproval('COMR', ('1', '2')):
+          pool.HandleDraftChange(change)
 
       # Filter out unwanted changes.
       pool.changes, pool.non_manifest_changes = change_filter(
