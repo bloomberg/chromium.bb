@@ -640,6 +640,7 @@
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
+        "important": true,
         "manifest_version": true,
         "name": "arm-generic-paladin",
         "paladin_builder_name": "arm-generic paladin",

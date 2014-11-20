@@ -1950,6 +1950,7 @@ _paladin_boards = _all_boards
 # List of paladin boards where the regular paladin config is important.
 _paladin_important_boards = frozenset([
   'amd64-generic',
+  'arm-generic',
   'auron',
   'beaglebone',
   'butterfly',
