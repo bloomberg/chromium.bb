@@ -36,6 +36,19 @@
       ],
     },
     {
+      'target_name': 'media_cdm',
+      'type': '<(component)',
+      'dependencies': [
+        'media_base',
+        '../../base/base.gyp:base',
+        '../../media/media.gyp:media',
+      ],
+      'sources': [
+        'cdm/browser_cdm_cast.cc',
+        'cdm/browser_cdm_cast.h',
+      ],
+    },
+    {
       'target_name': 'cma_base',
       'type': '<(component)',
       'dependencies': [
@@ -166,6 +179,7 @@
         'cma_filters',
         'cma_ipc',
         'cma_ipc_streamer',
+        'media_cdm',
       ],
     },
     {
