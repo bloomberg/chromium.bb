@@ -240,6 +240,27 @@ bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {
 }
 #endif
 
+bool IsAboutUI(const GURL& url) {
+  return (url.host() == chrome::kChromeUIChromeURLsHost ||
+          url.host() == chrome::kChromeUICreditsHost ||
+          url.host() == chrome::kChromeUIDNSHost ||
+          url.host() == chrome::kChromeUIMemoryHost ||
+          url.host() == chrome::kChromeUIMemoryRedirectHost ||
+          url.host() == chrome::kChromeUIStatsHost
+#if !defined(OS_ANDROID)
+          || url.host() == chrome::kChromeUITermsHost
+#endif
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+          || url.host() == chrome::kChromeUILinuxProxyConfigHost
+          || url.host() == chrome::kChromeUISandboxHost
+#endif
+#if defined(OS_CHROMEOS)
+          || url.host() == chrome::kChromeUIDiscardsHost
+          || url.host() == chrome::kChromeUIOSCreditsHost
+#endif
+         );  // NOLINT
+}
+
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
 // with it.
@@ -277,11 +298,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
-#if defined(ENABLE_SERVICE_DISCOVERY)
-  if (url.host() == chrome::kChromeUIDevicesHost) {
-    return &NewWebUI<LocalDiscoveryUI>;
-  }
-#endif
   if (url.host() == chrome::kChromeUIDomainReliabilityInternalsHost)
     return &NewWebUI<DomainReliabilityInternalsUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
@@ -298,20 +314,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUIMemoryInternalsHost)
     return &NewWebUI<MemoryInternalsUI>;
-#if !defined(DISABLE_NACL)
-  if (url.host() == chrome::kChromeUINaClHost)
-    return &NewWebUI<NaClUI>;
-#endif
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  if (url.host() == chrome::kChromeUINetExportHost)
-    return &NewWebUI<NetExportUI>;
-#endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
-#if !defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUINewTabHost)
-    return &NewWebUI<NewTabUI>;
-#endif
   if (url.host() == chrome::kChromeUIOmniboxHost)
     return &NewWebUI<OmniboxUI>;
   if (url.host() == chrome::kChromeUIPasswordManagerInternalsHost)
@@ -332,18 +336,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UserActionsUI>;
   if (url.host() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
-#if defined(ENABLE_EXTENSIONS)
-  if (url.host() == chrome::kChromeUIVoiceSearchHost)
-    return &NewWebUI<VoiceSearchUI>;
-#endif
-#if defined(ENABLE_WEBRTC)
-  if (url.host() == chrome::kChromeUIWebRtcLogsHost)
-    return &NewWebUI<WebRtcLogsUI>;
-#endif
-#if defined(ENABLE_APP_LIST)
-  if (url.host() == chrome::kChromeUIAppListStartPageHost)
-    return &NewWebUI<app_list::StartPageUI>;
-#endif
 
   /****************************************************************************
    * OS Specific #defines
@@ -372,6 +364,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Identity API is not available on Android.
   if (url.host() == chrome::kChromeUIIdentityInternalsHost)
     return &NewWebUI<IdentityInternalsUI>;
+  if (url.host() == chrome::kChromeUINewTabHost)
+    return &NewWebUI<NewTabUI>;
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
@@ -397,20 +391,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Uber page is not used on Android.
   if (url.host() == chrome::kChromeUIUberHost)
     return &NewWebUI<UberUI>;
-#endif
+#endif  // !defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
   if (url.host() == chrome::kChromeUIMetroFlowHost)
     return &NewWebUI<SetAsDefaultBrowserUI>;
-#endif
-#if (defined(USE_NSS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
-  if (url.host() == chrome::kChromeUICertificateViewerHost)
-    return &NewWebUI<CertificateViewerUI>;
-#if defined(OS_CHROMEOS)
-  if (url.host() == chrome::kChromeUICertificateViewerDialogHost)
-    return &NewWebUI<CertificateViewerModalDialogUI>;
-#endif
 #endif
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIBluetoothPairingHost)
@@ -458,7 +444,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPowerHost)
     return &NewWebUI<chromeos::PowerUI>;
 #endif  // defined(OS_CHROMEOS)
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  if (url.host() == chrome::kChromeUINetExportHost)
+    return &NewWebUI<NetExportUI>;
+#else
   if (url.host() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
@@ -469,32 +458,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
 #endif
-
-  /****************************************************************************
-   * Other #defines and special logics.
-   ***************************************************************************/
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  if (url.host() == chrome::kChromeUIPolicyHost)
-    return &NewWebUI<PolicyUI>;
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
-    return &NewWebUI<ProfileSigninConfirmationUI>;
-#endif
-
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
-#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-  if (url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
-    return &NewWebUI<ConstrainedWebDialogUI>;
-  }
-#endif
-
-#if defined(USE_AURA)
-  if (url.host() == chrome::kChromeUIGestureConfigHost)
-    return &NewWebUI<GestureConfigUI>;
-#endif
-
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   if (url.host() == chrome::kChromeUIUserManagerHost &&
       switches::IsNewAvatarMenu()) {
@@ -502,30 +465,49 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
 
-  if (url.host() == chrome::kChromeUIChromeURLsHost ||
-      url.host() == chrome::kChromeUICreditsHost ||
-      url.host() == chrome::kChromeUIDNSHost ||
-      url.host() == chrome::kChromeUIMemoryHost ||
-      url.host() == chrome::kChromeUIMemoryRedirectHost ||
-      url.host() == chrome::kChromeUIStatsHost
-#if !defined(OS_ANDROID)
-      || url.host() == chrome::kChromeUITermsHost
+  /****************************************************************************
+   * Other #defines and special logics.
+   ***************************************************************************/
+#if !defined(DISABLE_NACL)
+  if (url.host() == chrome::kChromeUINaClHost)
+    return &NewWebUI<NaClUI>;
 #endif
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-      || url.host() == chrome::kChromeUILinuxProxyConfigHost
-      || url.host() == chrome::kChromeUISandboxHost
-#endif
-#if defined(OS_CHROMEOS)
-      || url.host() == chrome::kChromeUIDiscardsHost
-      || url.host() == chrome::kChromeUIOSCreditsHost
-#endif
-      ) {
-    return &NewWebUI<AboutUI>;
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
+  if (url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
+    return &NewWebUI<ConstrainedWebDialogUI>;
   }
+#endif
+#if defined(USE_AURA)
+  if (url.host() == chrome::kChromeUIGestureConfigHost)
+    return &NewWebUI<GestureConfigUI>;
+#endif
+#if (defined(USE_NSS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
+  if (url.host() == chrome::kChromeUICertificateViewerHost)
+    return &NewWebUI<CertificateViewerUI>;
+#if defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUICertificateViewerDialogHost)
+    return &NewWebUI<CertificateViewerModalDialogUI>;
+#endif
+#endif  // (defined(USE_NSS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (url.host() == chrome::kChromeUIPolicyHost)
+    return &NewWebUI<PolicyUI>;
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
+    return &NewWebUI<ProfileSigninConfirmationUI>;
+#endif
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_APP_LIST)
+  if (url.host() == chrome::kChromeUIAppListStartPageHost)
+    return &NewWebUI<app_list::StartPageUI>;
+#endif
 #if defined(ENABLE_EXTENSIONS)
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<extensions::ExtensionsUI>;
+  if (url.host() == chrome::kChromeUIVoiceSearchHost)
+    return &NewWebUI<VoiceSearchUI>;
 #endif
 #if defined(ENABLE_PRINT_PREVIEW)
   if (url.host() == chrome::kChromeUIPrintHost &&
@@ -533,6 +515,18 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PrintPreviewUI>;
   }
 #endif
+#if defined(ENABLE_SERVICE_DISCOVERY)
+  if (url.host() == chrome::kChromeUIDevicesHost) {
+    return &NewWebUI<LocalDiscoveryUI>;
+  }
+#endif
+#if defined(ENABLE_WEBRTC)
+  if (url.host() == chrome::kChromeUIWebRtcLogsHost)
+    return &NewWebUI<WebRtcLogsUI>;
+#endif
+
+  if (IsAboutUI(url))
+    return &NewWebUI<AboutUI>;
 
   if (IsEnableDomDistillerSet() &&
       url.host() == dom_distiller::kChromeUIDomDistillerHost) {
