@@ -5,8 +5,7 @@
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/devtools/devtools_protocol.h"
-#include "content/browser/devtools/devtools_protocol_constants.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
@@ -176,10 +175,12 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerDestroyed() {
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
     // Client host is debugging this worker agent host.
-    std::string notification =
-        DevToolsProtocol::CreateNotification(
-            devtools::Worker::disconnectedFromWorker::kName, NULL)->Serialize();
-    SendMessageToClient(notification);
+    base::Callback<void(const std::string&)> raw_message_callback(
+        base::Bind(&EmbeddedWorkerDevToolsAgentHost::SendMessageToClient,
+                base::Unretained(this)));
+    devtools::worker::Client worker(raw_message_callback);
+    worker.DisconnectedFromWorker(
+        devtools::worker::DisconnectedFromWorkerParams::Create());
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;
