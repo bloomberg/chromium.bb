@@ -97,9 +97,6 @@ class SystemTrayDelegateChromeOS
   void ShowSupervisedUserInfo() override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
-  bool ShowSpringChargerReplacementDialog() override;
-  bool IsSpringChargerReplacementDialogVisible() override;
-  bool HasUserConfirmedSafeSpringCharger() override;
   void ShutDown() override;
   void SignOut() override;
   void RequestLockScreen() override;

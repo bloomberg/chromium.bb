@@ -157,18 +157,6 @@ void DefaultSystemTrayDelegate::ShowSupervisedUserInfo() {
 void DefaultSystemTrayDelegate::ShowUserLogin() {
 }
 
-bool DefaultSystemTrayDelegate::ShowSpringChargerReplacementDialog() {
-  return false;
-}
-
-bool DefaultSystemTrayDelegate::IsSpringChargerReplacementDialogVisible() {
-  return false;
-}
-
-bool DefaultSystemTrayDelegate::HasUserConfirmedSafeSpringCharger() {
-  return false;
-}
-
 void DefaultSystemTrayDelegate::ShutDown() {
 }
 

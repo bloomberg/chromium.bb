@@ -193,11 +193,6 @@ bool PowerStatus::IsUsbChargerConnected() const {
       power_manager::PowerSupplyProperties_ExternalPower_USB;
 }
 
-bool PowerStatus::IsOriginalSpringChargerConnected() const {
-  return proto_.external_power() == power_manager::
-      PowerSupplyProperties_ExternalPower_ORIGINAL_SPRING_CHARGER;
-}
-
 gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
   gfx::Image all;
   if (IsUsbChargerConnected()) {

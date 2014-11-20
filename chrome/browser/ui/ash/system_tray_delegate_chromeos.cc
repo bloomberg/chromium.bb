@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
-#include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -80,7 +79,6 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chromeos/charger_replacement_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -591,25 +589,6 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
       UserAddingScreen::Get()->Start();
     }
   }
-}
-
-bool SystemTrayDelegateChromeOS::ShowSpringChargerReplacementDialog() {
-  if (!ChargerReplacementDialog::ShouldShowDialog())
-    return false;
-
-  ChargerReplacementDialog* dialog =
-      new ChargerReplacementDialog(GetNativeWindow());
-  dialog->Show();
-  return true;
-}
-
-bool SystemTrayDelegateChromeOS::IsSpringChargerReplacementDialogVisible() {
-  return ChargerReplacementDialog::IsDialogVisible();
-}
-
-bool SystemTrayDelegateChromeOS::HasUserConfirmedSafeSpringCharger() {
-  return ChargerReplacementHandler::GetChargerStatusPref() ==
-         ChargerReplacementHandler::CONFIRM_SAFE_CHARGER;
 }
 
 void SystemTrayDelegateChromeOS::ShutDown() {

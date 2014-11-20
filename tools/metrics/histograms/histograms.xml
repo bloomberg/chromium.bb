@@ -25626,6 +25626,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Power.ChargerType" enum="PowerChargerType">
+  <obsolete>
+    Deprecated 11/2014 in issue 427057.
+  </obsolete>
   <owner>derat@chromium.org</owner>
   <summary>
     External power supply type such as MAINS_CHARGER, USB_CHARGER,

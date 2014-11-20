@@ -39,19 +39,11 @@ using message_center::Notification;
 
 namespace ash {
 namespace tray {
-namespace {
-
-const int kMaxSpringChargerAccessibilityNotifyCount = 3;
-const int kSpringChargerAccessibilityTimerFirstTimeNotifyInSeconds = 30;
-const int kSpringChargerAccessibilityTimerRepeatInMinutes = 5;
-
-}
 
 // This view is used only for the tray.
 class PowerTrayView : public views::ImageView {
  public:
-  PowerTrayView()
-      : spring_charger_spoken_notification_count_(0) {
+  PowerTrayView() {
     UpdateImage();
   }
 
@@ -74,57 +66,12 @@ class PowerTrayView : public views::ImageView {
     }
   }
 
-  void SetupNotifyBadCharger() {
-    // Poll with a shorter duration timer to notify the charger issue
-    // for the first time after the charger dialog is displayed.
-    spring_charger_accessibility_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(
-            kSpringChargerAccessibilityTimerFirstTimeNotifyInSeconds),
-        this, &PowerTrayView::NotifyChargerIssue);
-  }
-
  private:
   void UpdateImage() {
     SetImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_LIGHT));
   }
 
-  void NotifyChargerIssue() {
-    if (!Shell::GetInstance()->accessibility_delegate()->
-            IsSpokenFeedbackEnabled())
-      return;
-
-    if (!Shell::GetInstance()->system_tray_delegate()->
-            IsSpringChargerReplacementDialogVisible()) {
-      spring_charger_accessibility_timer_.Stop();
-      return;
-    }
-
-    accessible_name_ = ui::ResourceBundle::GetSharedInstance().
-        GetLocalizedString(IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION);
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
-    ++spring_charger_spoken_notification_count_;
-
-    if (spring_charger_spoken_notification_count_ == 1) {
-      // After notify the charger issue for the first time, repeat the
-      // notification with a longer duration timer.
-      spring_charger_accessibility_timer_.Stop();
-      spring_charger_accessibility_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMinutes(
-              kSpringChargerAccessibilityTimerRepeatInMinutes),
-          this, &PowerTrayView::NotifyChargerIssue);
-    } else if (spring_charger_spoken_notification_count_ >=
-        kMaxSpringChargerAccessibilityNotifyCount) {
-      spring_charger_accessibility_timer_.Stop();
-    }
-  }
-
   base::string16 accessible_name_;
-
-  // Tracks how many times the original spring charger accessibility
-  // notification has been spoken.
-  int spring_charger_spoken_notification_count_;
-
-  base::RepeatingTimer<PowerTrayView> spring_charger_accessibility_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };
@@ -220,15 +167,6 @@ void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayPower::OnPowerStatusChanged() {
-  RecordChargerType();
-
-  if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
-    if (ash::Shell::GetInstance()->system_tray_delegate()->
-            ShowSpringChargerReplacementDialog()) {
-      power_tray_->SetupNotifyBadCharger();
-    }
-  }
-
   bool battery_alert = UpdateNotificationState();
   if (power_tray_)
     power_tray_->UpdateStatus(battery_alert);
@@ -288,8 +226,7 @@ bool TrayPower::UpdateNotificationState() {
   const PowerStatus& status = *PowerStatus::Get();
   if (!status.IsBatteryPresent() ||
       status.IsBatteryTimeBeingCalculated() ||
-      status.IsMainsChargerConnected() ||
-      status.IsOriginalSpringChargerConnected()) {
+      status.IsMainsChargerConnected()) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
@@ -369,30 +306,6 @@ bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
   }
   NOTREACHED();
   return false;
-}
-
-void TrayPower::RecordChargerType() {
-  if (!PowerStatus::Get()->IsLinePowerConnected() ||
-      line_power_was_connected_)
-    return;
-
-  ChargerType current_charger = UNKNOWN_CHARGER;
-  if (PowerStatus::Get()->IsMainsChargerConnected()) {
-    current_charger = MAINS_CHARGER;
-  } else if (PowerStatus::Get()->IsUsbChargerConnected()) {
-    current_charger = USB_CHARGER;
-  } else if (PowerStatus::Get()->IsOriginalSpringChargerConnected()) {
-    current_charger =
-        ash::Shell::GetInstance()->system_tray_delegate()->
-            HasUserConfirmedSafeSpringCharger() ?
-        SAFE_SPRING_CHARGER : UNCONFIRMED_SPRING_CHARGER;
-  }
-
-  if (current_charger != UNKNOWN_CHARGER) {
-    UMA_HISTOGRAM_ENUMERATION("Power.ChargerType",
-                              current_charger,
-                              CHARGER_TYPE_COUNT);
-  }
 }
 
 }  // namespace ash

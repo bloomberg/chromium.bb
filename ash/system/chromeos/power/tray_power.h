@@ -91,9 +91,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   bool UpdateNotificationStateForRemainingTime();
   bool UpdateNotificationStateForRemainingPercentage();
 
-  // Records the charger type in UMA.
-  void RecordChargerType();
-
   message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
   tray::PowerNotificationView* notification_view_;

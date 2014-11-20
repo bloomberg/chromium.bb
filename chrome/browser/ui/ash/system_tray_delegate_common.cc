@@ -152,18 +152,6 @@ void SystemTrayDelegateCommon::ShowEnterpriseInfo() {
 void SystemTrayDelegateCommon::ShowUserLogin() {
 }
 
-bool SystemTrayDelegateCommon::ShowSpringChargerReplacementDialog() {
-  return false;
-}
-
-bool SystemTrayDelegateCommon::IsSpringChargerReplacementDialogVisible() {
-  return false;
-}
-
-bool SystemTrayDelegateCommon::HasUserConfirmedSafeSpringCharger() {
-  return false;
-}
-
 void SystemTrayDelegateCommon::ShutDown() {
 }
 
