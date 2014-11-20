@@ -230,6 +230,11 @@ void AboutSigninInternals::NotifyObservers() {
 
   scoped_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(client_->GetProductVersion());
+
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::NotifyObservers1"));
+
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
                     signin_observers_,
                     OnSigninStateChanged(signin_status_value.get()));
