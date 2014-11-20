@@ -15,6 +15,7 @@
 
 namespace leveldb {
 class DB;
+struct Options;
 }  // namespace leveldb
 
 namespace leveldb_proto {
@@ -27,6 +28,8 @@ class LevelDB {
   LevelDB();
   virtual ~LevelDB();
 
+  virtual bool InitWithOptions(const base::FilePath& database_dir,
+                               const leveldb::Options& options);
   virtual bool Init(const base::FilePath& database_dir);
   virtual bool Save(const base::StringPairs& pairs_to_save,
                     const std::vector<std::string>& keys_to_remove);

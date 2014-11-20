@@ -15,6 +15,7 @@
 #include "components/leveldb_proto/testing/proto/test.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
 
 using base::MessageLoop;
 using base::ScopedTempDir;
@@ -392,6 +393,23 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoad) {
 
 TEST(ProtoDatabaseImplLevelDBTest, TestDBCloseAndReopen) {
   TestLevelDBSaveAndLoad(true);
+}
+
+TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  leveldb::Options options;
+  options.create_if_missing = false;
+  scoped_ptr<LevelDB> db(new LevelDB());
+
+  KeyValueVector save_entries;
+  std::vector<std::string> load_entries;
+  KeyVector remove_keys;
+
+  EXPECT_FALSE(db->InitWithOptions(temp_dir.path(), options));
+  EXPECT_FALSE(db->Load(&load_entries));
+  EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }
 
 }  // namespace leveldb_proto
