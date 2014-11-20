@@ -17,6 +17,7 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -114,24 +115,90 @@ public class BookmarksBridgeTest extends ChromeShellTestBase {
         List<BookmarkId> folderList = new ArrayList<BookmarkId>();
         List<Integer> depthList = new ArrayList<Integer>();
         mBookmarksBridge.getAllFoldersWithDepths(folderList, depthList);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+    }
 
-        assertEquals("Returned folder list has different size (" + folderList.size()
-                + ") from depth list (" + depthList.size() + ").",
-                folderList.size(), depthList.size());
-        assertEquals("Returned lists have different sizes (" + folderList.size()
-                + ") from expected size (" + idToDepth.size() + ").",
-                folderList.size(), idToDepth.size());
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Bookmark"})
+    public void testGetMoveDestinations() {
+        BookmarkId folderA = mBookmarksBridge.addFolder(mMobileNode, 0, "a");
+        BookmarkId folderB = mBookmarksBridge.addFolder(mDesktopNode, 0, "b");
+        BookmarkId folderC = mBookmarksBridge.addFolder(mOtherNode, 0, "c");
+        BookmarkId folderAA = mBookmarksBridge.addFolder(folderA, 0, "aa");
+        BookmarkId folderBA = mBookmarksBridge.addFolder(folderB, 0, "ba");
+        BookmarkId folderAAA = mBookmarksBridge.addFolder(folderAA, 0, "aaa");
 
+        mBookmarksBridge.addBookmark(mMobileNode, 0, "ua", "http://www.google.com");
+        mBookmarksBridge.addBookmark(mDesktopNode, 0, "ua", "http://www.google.com");
+        mBookmarksBridge.addBookmark(mOtherNode, 0, "ua", "http://www.google.com");
+        mBookmarksBridge.addBookmark(folderA, 0, "ua", "http://www.medium.com");
+
+        // Map folders to depths as expected results
+        HashMap<BookmarkId, Integer> idToDepth = new HashMap<BookmarkId, Integer>();
+
+        List<BookmarkId> folderList = new ArrayList<BookmarkId>();
+        List<Integer> depthList = new ArrayList<Integer>();
+
+        mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderA));
+        idToDepth.put(mDesktopNode, 0);
+        idToDepth.put(folderB, 1);
+        idToDepth.put(folderBA, 2);
+        idToDepth.put(folderC, 0);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+
+        mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderB));
+        idToDepth.put(folderA, 0);
+        idToDepth.put(folderAA, 1);
+        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mDesktopNode, 0);
+        idToDepth.put(folderC, 0);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+
+        mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderC));
+        idToDepth.put(folderA, 0);
+        idToDepth.put(folderAA, 1);
+        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mDesktopNode, 0);
+        idToDepth.put(folderB, 1);
+        idToDepth.put(folderBA, 2);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+
+        mBookmarksBridge.getMoveDestinations(folderList, depthList, Arrays.asList(folderBA));
+        idToDepth.put(folderA, 0);
+        idToDepth.put(folderAA, 1);
+        idToDepth.put(folderAAA, 2);
+        idToDepth.put(mDesktopNode, 0);
+        idToDepth.put(folderB, 1);
+        idToDepth.put(folderC, 0);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+
+        mBookmarksBridge.getMoveDestinations(folderList, depthList,
+                Arrays.asList(folderAA, folderC));
+        idToDepth.put(folderA, 0);
+        idToDepth.put(mDesktopNode, 0);
+        idToDepth.put(folderB, 1);
+        idToDepth.put(folderBA, 2);
+        verifyFolderDepths(folderList, depthList, idToDepth);
+    }
+
+    private void verifyFolderDepths(List<BookmarkId> folderList, List<Integer> depthList,
+            HashMap<BookmarkId, Integer> idToDepth) {
+        assertEquals(folderList.size(), depthList.size());
+        assertEquals(folderList.size(), idToDepth.size());
         for (int i = 0; i < folderList.size(); i++) {
-            assertNotNull(folderList.get(i));
+            BookmarkId folder = folderList.get(i);
+            Integer depth = depthList.get(i);
+            assertNotNull(folder);
             assertNotNull(depthList.get(i));
-            assertTrue("Returned list contained unexpected key: " + folderList.get(i),
-                    idToDepth.containsKey(folderList.get(i)));
-            assertEquals(depthList.get(i), idToDepth.get(folderList.get(i)));
-            idToDepth.remove(folderList.get(i));
+            assertTrue("Folder list contains non-folder elements: ",
+                    mBookmarksBridge.getBookmarkById(folder).isFolder());
+            assertTrue("Returned list contained unexpected key: ", idToDepth.containsKey(folder));
+            assertEquals(idToDepth.get(folder), depth);
+            idToDepth.remove(folder);
         }
-
-        assertEquals("Expected list contains elements that are not in returned list",
-                idToDepth.size(), 0);
+        assertEquals(idToDepth.size(), 0);
+        folderList.clear();
+        depthList.clear();
     }
 }
