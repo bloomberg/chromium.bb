@@ -206,7 +206,7 @@ void ChromeClassTester::BuildBannedLists() {
   // Enum type with _LAST members where _LAST doesn't mean last enum value.
   ignored_record_names_.insert("ServerFieldType");
 
-  // Used heavily in ui_unittests and once in views_unittests. Fixing this
+  // Used heavily in ui_base_unittests and once in views_unittests. Fixing this
   // isn't worth the overhead of an additional library.
   ignored_record_names_.insert("TestAnimationDelegate");
 
