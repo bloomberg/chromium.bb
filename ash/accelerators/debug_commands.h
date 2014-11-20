@@ -5,6 +5,7 @@
 #ifndef ASH_ACCELERATORS_DEBUG_COMMANDS_H_
 #define ASH_ACCELERATORS_DEBUG_COMMANDS_H_
 
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_export.h"
 
 // This file contains implementations of commands that are used only
@@ -21,7 +22,7 @@ ASH_EXPORT bool DebugAcceleratorsEnabled();
 
 // Performs |action| and returns true if |action| belongs to a
 // debug-only accelerator and debug accelerators are enabled.
-ASH_EXPORT bool PerformDebugAction(int action);
+ASH_EXPORT bool PerformDebugAction(AcceleratorAction action);
 
 }  // namespace debug
 }  // namespace ash

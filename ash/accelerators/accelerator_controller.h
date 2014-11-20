@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/exit_warning_handler.h"
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -88,14 +89,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   // Performs the specified action if it is enabled. Returns whether the action
   // was performed successfully.
-  bool PerformActionIfEnabled(int action);
+  bool PerformActionIfEnabled(AcceleratorAction action);
 
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
-
-  // Overridden from ui::AcceleratorTarget:
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  bool CanHandleAccelerators() const override;
 
   void SetBrightnessControlDelegate(
       scoped_ptr<BrightnessControlDelegate> brightness_control_delegate);
@@ -119,6 +116,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return previous_accelerator_;
   }
 
+  // Overridden from ui::AcceleratorTarget:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest,
@@ -134,7 +135,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Performs the specified action. The |accelerator| may provide additional
   // data the action needs. Returns whether an action was performed
   // successfully.
-  bool PerformAction(int action,
+  bool PerformAction(AcceleratorAction action,
                      const ui::Accelerator& accelerator);
 
   // Get the accelerator restriction for the given action. Supply an |action|
@@ -166,7 +167,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
-  std::map<ui::Accelerator, int> accelerators_;
+  std::map<ui::Accelerator, AcceleratorAction> accelerators_;
 
   // Actions allowed when the user is not signed in.
   std::set<int> actions_allowed_at_login_screen_;

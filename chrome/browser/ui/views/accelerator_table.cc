@@ -205,7 +205,9 @@ const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
   { IDC_NEW_WINDOW,           ash::NEW_WINDOW },
   { IDC_RESTORE_TAB,          ash::RESTORE_TAB },
   { IDC_TASK_MANAGER,         ash::SHOW_TASK_MANAGER },
+#if defined(OS_CHROMEOS)
   { IDC_TOUCH_HUD_PROJECTION_TOGGLE, ash::TOUCH_HUD_PROJECTION_TOGGLE },
+#endif
 };
 const size_t kChromeCmdId2AshActionIdLength =
     arraysize(kChromeCmdId2AshActionId);
