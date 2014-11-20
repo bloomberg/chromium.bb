@@ -650,12 +650,10 @@ class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
 // Base class for all asynchronous blocking tasks that use the favicon service.
 class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
  public:
-  FaviconServiceTask(base::CancelableTaskTracker* cancelable_tracker,
+  FaviconServiceTask(FaviconService* service,
+                     base::CancelableTaskTracker* cancelable_tracker,
                      Profile* profile)
-      : AsyncServiceRequest<FaviconService>(
-            FaviconServiceFactory::GetForProfile(profile,
-                                                 Profile::EXPLICIT_ACCESS),
-            cancelable_tracker),
+      : AsyncServiceRequest<FaviconService>(service, cancelable_tracker),
         profile_(profile) {}
 
   Profile* profile() const { return profile_; }
@@ -669,18 +667,15 @@ class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
 // Retrieves the favicon or touch icon for a URL from the FaviconService.
 class BookmarkIconFetchTask : public FaviconServiceTask {
  public:
-  BookmarkIconFetchTask(base::CancelableTaskTracker* cancelable_tracker,
+  BookmarkIconFetchTask(FaviconService* favicon_service,
+                        base::CancelableTaskTracker* cancelable_tracker,
                         Profile* profile)
-      : FaviconServiceTask(cancelable_tracker, profile) {}
+      : FaviconServiceTask(favicon_service, cancelable_tracker, profile) {}
 
   favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
     float max_scale = ui::GetScaleForScaleFactor(
         ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
     int desired_size_in_pixel = std::ceil(gfx::kFaviconSize * max_scale);
-
-    if (service() == NULL)
-      return favicon_base::FaviconRawBitmapResult();
-
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&FaviconService::GetRawFaviconForPageURL,
                    base::Unretained(service()),
@@ -1167,6 +1162,8 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   top_sites_ = profile_->GetTopSites();
   service_.reset(new AndroidHistoryProviderService(profile_));
+  favicon_service_.reset(FaviconServiceFactory::GetForProfile(profile_,
+      Profile::EXPLICIT_ACCESS));
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
@@ -1553,7 +1550,8 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
     return ScopedJavaLocalRef<jbyteArray>();
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
-  BookmarkIconFetchTask favicon_task(&cancelable_task_tracker_, profile_);
+  BookmarkIconFetchTask favicon_task(
+      favicon_service_.get(), &cancelable_task_tracker_, profile_);
   favicon_base::FaviconRawBitmapResult bitmap_result = favicon_task.Run(url);
 
   if (!bitmap_result.is_valid() || !bitmap_result.bitmap_data.get())

@@ -209,6 +209,7 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
   history::TopSites* top_sites_;
 
   scoped_ptr<AndroidHistoryProviderService> service_;
+  scoped_ptr<FaviconService> favicon_service_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
