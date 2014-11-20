@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from metrics import cpu
+from metrics import media
 from metrics import memory
 from metrics import power
 from metrics import webrtc_stats
@@ -15,6 +16,7 @@ class WebRTC(page_test.PageTest):
   def __init__(self):
     super(WebRTC, self).__init__('RunPageInteractions')
     self._cpu_metric = None
+    self._media_metric = None
     self._memory_metric = None
     self._power_metric = None
     self._webrtc_stats_metric = None
@@ -29,6 +31,8 @@ class WebRTC(page_test.PageTest):
 
   def DidNavigateToPage(self, page, tab):
     self._cpu_metric.Start(page, tab)
+    self._media_metric = media.MediaMetric(tab)
+    self._media_metric.Start(page, tab)
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
     self._webrtc_stats_metric.Start(page, tab)
@@ -41,11 +45,17 @@ class WebRTC(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     """Measure the page's performance."""
-    self._memory_metric.Stop(page, tab)
-    self._memory_metric.AddResults(tab, results)
-
     self._cpu_metric.Stop(page, tab)
     self._cpu_metric.AddResults(tab, results)
+
+    # Add all media metrics except bytes (those aren't hooked up for WebRTC
+    # video tags).
+    exclude_metrics = ['decoded_video_bytes', 'decoded_audio_bytes']
+    self._media_metric.Stop(page, tab)
+    self._media_metric.AddResults(tab, results, exclude_metrics=exclude_metrics)
+
+    self._memory_metric.Stop(page, tab)
+    self._memory_metric.AddResults(tab, results)
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)

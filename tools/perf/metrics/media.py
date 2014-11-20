@@ -34,15 +34,19 @@ class MediaMetric(Metric):
   def Stop(self, page, tab):
     self._results = tab.EvaluateJavaScript('window.__getAllMetrics()')
 
-  def AddResults(self, tab, results):
+  # Optional |exclude_metrics| args are not in base class Metric.
+  # pylint: disable=W0221
+  def AddResults(self, tab, results, exclude_metrics=None):
     """Reports all recorded metrics as Telemetry perf results."""
+    exclude_metrics = exclude_metrics or []
     trace_names = []
     for media_metric in self._results:
-      trace_names.append(self._AddResultsForMediaElement(media_metric, results))
+      trace_names.append(self._AddResultsForMediaElement(media_metric, results,
+                                                         exclude_metrics))
 
     return '_'.join(trace_names) or tab.url
 
-  def _AddResultsForMediaElement(self, media_metric, results):
+  def _AddResultsForMediaElement(self, media_metric, results, exclude_metrics):
     """Reports metrics for one media element.
 
     Media metrics contain an ID identifying the media element and values:
@@ -56,6 +60,9 @@ class MediaMetric(Metric):
     }
     """
     def AddOneResult(metric, unit):
+      if metric in exclude_metrics:
+        return
+
       metrics = media_metric['metrics']
       for m in metrics:
         if m.startswith(metric):
