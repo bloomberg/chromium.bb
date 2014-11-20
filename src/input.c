@@ -1404,12 +1404,6 @@ notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
 					      WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
 
-	/* Run key bindings after we've updated the state. */
-	wl_array_for_each(k, &keyboard->keys) {
-		weston_compositor_run_key_binding(compositor, seat, 0, *k,
-						  WL_KEYBOARD_KEY_STATE_PRESSED);
-	}
-
 	surface = seat->saved_kbd_focus;
 
 	if (surface) {
