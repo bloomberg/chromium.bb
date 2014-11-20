@@ -844,6 +844,25 @@ def AFDORecordTest(**kwargs):
   return HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
 
+_delete_key_sentinel = object()
+def delete_key():
+  """Used to remove the given key from inherited config.
+
+  Usage:
+    new_config = base_config.derive(foo=delete_key())
+  """
+  return _delete_key_sentinel
+
+
+def delete_keys(keys):
+  """Used to remove a set of keys from inherited config.
+
+  Usage:
+    new_config = base_config.derive(delete_keys(set_of_keys))
+  """
+  return {k: delete_key() for k in keys}
+
+
 # TODO(mtennant): Rename this BuildConfig?
 class _config(dict):
   """Dictionary of explicit configuration settings for a cbuildbot config
@@ -890,6 +909,12 @@ class _config(dict):
 
     new_config.update(overrides)
 
+    keys_to_delete = [k for k in new_config if
+                      new_config[k] is _delete_key_sentinel]
+
+    for k in keys_to_delete:
+      new_config.pop(k, None)
+
     return copy.deepcopy(new_config)
 
   def add_config(self, name, *args, **kwargs):
@@ -913,7 +938,7 @@ class _config(dict):
     # to ensure any far flung consumers of the config dictionary
     # aren't affected by recent refactorings.
 
-    config_dict = default.derive(self, *inherits, **overrides)
+    config_dict = default.derive(self, new_config)
 
     # TODO(mtennant): This is just confusing.  Some random _config object
     # (self) can add a new _config object to the global config dict.  Even if
