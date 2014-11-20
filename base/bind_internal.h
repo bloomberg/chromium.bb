@@ -51,18 +51,15 @@ namespace internal {
 // Types:
 //  RunnableAdapter<> -- Wraps the various "function" pointer types into an
 //                       object that adheres to the Runnable interface.
-//                       There are |3*ARITY| RunnableAdapter types.
 //  FunctionTraits<> -- Type traits that unwrap a function signature into a
 //                      a set of easier to use typedefs.  Used mainly for
 //                      compile time asserts.
 //                      There are |ARITY| FunctionTraits types.
 //  ForceVoidReturn<> -- Helper class for translating function signatures to
 //                       equivalent forms with a "void" return type.
-//                    There are |ARITY| ForceVoidReturn types.
 //  FunctorTraits<> -- Type traits used determine the correct RunType and
 //                     RunnableType for a Functor.  This is where function
 //                     signature adapters are applied.
-//                    There are |ARITY| ForceVoidReturn types.
 //  MakeRunnable<> -- Takes a Functor and returns an object in the Runnable
 //                    type class that represents the underlying Functor.
 //                    There are |O(1)| MakeRunnable types.
@@ -71,7 +68,6 @@ namespace internal {
 //                    and for ignoring return values.  This is separate from
 //                    Invoker to avoid creating multiple version of Invoker<>
 //                    which grows at O(n^2) with the arity.
-//                    There are |k*ARITY| InvokeHelper types.
 //  Invoker<> -- Unwraps the curried parameters and executes the Runnable.
 //               There are |(ARITY^2 + ARITY)/2| Invoketypes.
 //  BindState<> -- Stores the curried parameters, and is the main entry point
@@ -101,550 +97,64 @@ namespace internal {
 template <typename Functor>
 class RunnableAdapter;
 
-// Function: Arity 0.
-template <typename R>
-class RunnableAdapter<R(*)()> {
+// Function.
+template <typename R, typename... Args>
+class RunnableAdapter<R(*)(Args...)> {
  public:
-  typedef R (RunType)();
+  typedef R (RunType)(Args...);
 
-  explicit RunnableAdapter(R(*function)())
+  explicit RunnableAdapter(R(*function)(Args...))
       : function_(function) {
   }
 
-  R Run() {
-    return function_();
+  R Run(typename CallbackParamTraits<Args>::ForwardType... args) {
+    return function_(CallbackForward(args)...);
   }
 
  private:
-  R (*function_)();
+  R (*function_)(Args...);
 };
 
-// Method: Arity 0.
-template <typename R, typename T>
-class RunnableAdapter<R(T::*)()> {
+// Method.
+template <typename R, typename T, typename... Args>
+class RunnableAdapter<R(T::*)(Args...)> {
  public:
-  typedef R (RunType)(T*);
+  typedef R (RunType)(T*, Args...);
   typedef true_type IsMethod;
 
-  explicit RunnableAdapter(R(T::*method)())
+  explicit RunnableAdapter(R(T::*method)(Args...))
       : method_(method) {
   }
 
-  R Run(T* object) {
-    return (object->*method_)();
+  R Run(T* object, typename CallbackParamTraits<Args>::ForwardType... args) {
+    return (object->*method_)(CallbackForward(args)...);
   }
 
  private:
-  R (T::*method_)();
+  R (T::*method_)(Args...);
 };
 
-// Const Method: Arity 0.
-template <typename R, typename T>
-class RunnableAdapter<R(T::*)() const> {
+// Const Method.
+template <typename R, typename T, typename... Args>
+class RunnableAdapter<R(T::*)(Args...) const> {
  public:
-  typedef R (RunType)(const T*);
+  typedef R (RunType)(const T*, Args...);
   typedef true_type IsMethod;
 
-  explicit RunnableAdapter(R(T::*method)() const)
+  explicit RunnableAdapter(R(T::*method)(Args...) const)
       : method_(method) {
   }
 
-  R Run(const T* object) {
-    return (object->*method_)();
+  R Run(const T* object,
+        typename CallbackParamTraits<Args>::ForwardType... args) {
+    return (object->*method_)(CallbackForward(args)...);
   }
 
  private:
-  R (T::*method_)() const;
+  R (T::*method_)(Args...) const;
 };
 
-// Function: Arity 1.
-template <typename R, typename A1>
-class RunnableAdapter<R(*)(A1)> {
- public:
-  typedef R (RunType)(A1);
-
-  explicit RunnableAdapter(R(*function)(A1))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1) {
-    return function_(CallbackForward(a1));
-  }
-
- private:
-  R (*function_)(A1);
-};
-
-// Method: Arity 1.
-template <typename R, typename T, typename A1>
-class RunnableAdapter<R(T::*)(A1)> {
- public:
-  typedef R (RunType)(T*, A1);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1) {
-    return (object->*method_)(CallbackForward(a1));
-  }
-
- private:
-  R (T::*method_)(A1);
-};
-
-// Const Method: Arity 1.
-template <typename R, typename T, typename A1>
-class RunnableAdapter<R(T::*)(A1) const> {
- public:
-  typedef R (RunType)(const T*, A1);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1) {
-    return (object->*method_)(CallbackForward(a1));
-  }
-
- private:
-  R (T::*method_)(A1) const;
-};
-
-// Function: Arity 2.
-template <typename R, typename A1, typename A2>
-class RunnableAdapter<R(*)(A1, A2)> {
- public:
-  typedef R (RunType)(A1, A2);
-
-  explicit RunnableAdapter(R(*function)(A1, A2))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2) {
-    return function_(CallbackForward(a1), CallbackForward(a2));
-  }
-
- private:
-  R (*function_)(A1, A2);
-};
-
-// Method: Arity 2.
-template <typename R, typename T, typename A1, typename A2>
-class RunnableAdapter<R(T::*)(A1, A2)> {
- public:
-  typedef R (RunType)(T*, A1, A2);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2));
-  }
-
- private:
-  R (T::*method_)(A1, A2);
-};
-
-// Const Method: Arity 2.
-template <typename R, typename T, typename A1, typename A2>
-class RunnableAdapter<R(T::*)(A1, A2) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2));
-  }
-
- private:
-  R (T::*method_)(A1, A2) const;
-};
-
-// Function: Arity 3.
-template <typename R, typename A1, typename A2, typename A3>
-class RunnableAdapter<R(*)(A1, A2, A3)> {
- public:
-  typedef R (RunType)(A1, A2, A3);
-
-  explicit RunnableAdapter(R(*function)(A1, A2, A3))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3) {
-    return function_(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3));
-  }
-
- private:
-  R (*function_)(A1, A2, A3);
-};
-
-// Method: Arity 3.
-template <typename R, typename T, typename A1, typename A2, typename A3>
-class RunnableAdapter<R(T::*)(A1, A2, A3)> {
- public:
-  typedef R (RunType)(T*, A1, A2, A3);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3);
-};
-
-// Const Method: Arity 3.
-template <typename R, typename T, typename A1, typename A2, typename A3>
-class RunnableAdapter<R(T::*)(A1, A2, A3) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2, A3);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3) const;
-};
-
-// Function: Arity 4.
-template <typename R, typename A1, typename A2, typename A3, typename A4>
-class RunnableAdapter<R(*)(A1, A2, A3, A4)> {
- public:
-  typedef R (RunType)(A1, A2, A3, A4);
-
-  explicit RunnableAdapter(R(*function)(A1, A2, A3, A4))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4) {
-    return function_(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4));
-  }
-
- private:
-  R (*function_)(A1, A2, A3, A4);
-};
-
-// Method: Arity 4.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4)> {
- public:
-  typedef R (RunType)(T*, A1, A2, A3, A4);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4);
-};
-
-// Const Method: Arity 4.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2, A3, A4);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4) const;
-};
-
-// Function: Arity 5.
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5>
-class RunnableAdapter<R(*)(A1, A2, A3, A4, A5)> {
- public:
-  typedef R (RunType)(A1, A2, A3, A4, A5);
-
-  explicit RunnableAdapter(R(*function)(A1, A2, A3, A4, A5))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5) {
-    return function_(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5));
-  }
-
- private:
-  R (*function_)(A1, A2, A3, A4, A5);
-};
-
-// Method: Arity 5.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5)> {
- public:
-  typedef R (RunType)(T*, A1, A2, A3, A4, A5);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5);
-};
-
-// Const Method: Arity 5.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2, A3, A4, A5);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5) const;
-};
-
-// Function: Arity 6.
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6>
-class RunnableAdapter<R(*)(A1, A2, A3, A4, A5, A6)> {
- public:
-  typedef R (RunType)(A1, A2, A3, A4, A5, A6);
-
-  explicit RunnableAdapter(R(*function)(A1, A2, A3, A4, A5, A6))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6) {
-    return function_(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6));
-  }
-
- private:
-  R (*function_)(A1, A2, A3, A4, A5, A6);
-};
-
-// Method: Arity 6.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5, typename A6>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5, A6)> {
- public:
-  typedef R (RunType)(T*, A1, A2, A3, A4, A5, A6);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5, A6))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5, A6);
-};
-
-// Const Method: Arity 6.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5, typename A6>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5, A6) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2, A3, A4, A5, A6);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5, A6) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5, A6) const;
-};
-
-// Function: Arity 7.
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7>
-class RunnableAdapter<R(*)(A1, A2, A3, A4, A5, A6, A7)> {
- public:
-  typedef R (RunType)(A1, A2, A3, A4, A5, A6, A7);
-
-  explicit RunnableAdapter(R(*function)(A1, A2, A3, A4, A5, A6, A7))
-      : function_(function) {
-  }
-
-  R Run(typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6,
-      typename CallbackParamTraits<A7>::ForwardType a7) {
-    return function_(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6), CallbackForward(a7));
-  }
-
- private:
-  R (*function_)(A1, A2, A3, A4, A5, A6, A7);
-};
-
-// Method: Arity 7.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5, typename A6, typename A7>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5, A6, A7)> {
- public:
-  typedef R (RunType)(T*, A1, A2, A3, A4, A5, A6, A7);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5, A6, A7))
-      : method_(method) {
-  }
-
-  R Run(T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6,
-      typename CallbackParamTraits<A7>::ForwardType a7) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6), CallbackForward(a7));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5, A6, A7);
-};
-
-// Const Method: Arity 7.
-template <typename R, typename T, typename A1, typename A2, typename A3,
-    typename A4, typename A5, typename A6, typename A7>
-class RunnableAdapter<R(T::*)(A1, A2, A3, A4, A5, A6, A7) const> {
- public:
-  typedef R (RunType)(const T*, A1, A2, A3, A4, A5, A6, A7);
-  typedef true_type IsMethod;
-
-  explicit RunnableAdapter(R(T::*method)(A1, A2, A3, A4, A5, A6, A7) const)
-      : method_(method) {
-  }
-
-  R Run(const T* object, typename CallbackParamTraits<A1>::ForwardType a1,
-      typename CallbackParamTraits<A2>::ForwardType a2,
-      typename CallbackParamTraits<A3>::ForwardType a3,
-      typename CallbackParamTraits<A4>::ForwardType a4,
-      typename CallbackParamTraits<A5>::ForwardType a5,
-      typename CallbackParamTraits<A6>::ForwardType a6,
-      typename CallbackParamTraits<A7>::ForwardType a7) {
-    return (object->*method_)(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6), CallbackForward(a7));
-  }
-
- private:
-  R (T::*method_)(A1, A2, A3, A4, A5, A6, A7) const;
-};
-
-
+// TODO(tzik): Remove FunctionTraits after we finish removing bind.pump.
 // FunctionTraits<>
 //
 // Breaks a function signature apart into typedefs for easier introspection.
@@ -729,47 +239,9 @@ struct FunctionTraits<R(A1, A2, A3, A4, A5, A6, A7)> {
 template <typename Sig>
 struct ForceVoidReturn;
 
-template <typename R>
-struct ForceVoidReturn<R()> {
-  typedef void(RunType)();
-};
-
-template <typename R, typename A1>
-struct ForceVoidReturn<R(A1)> {
-  typedef void(RunType)(A1);
-};
-
-template <typename R, typename A1, typename A2>
-struct ForceVoidReturn<R(A1, A2)> {
-  typedef void(RunType)(A1, A2);
-};
-
-template <typename R, typename A1, typename A2, typename A3>
-struct ForceVoidReturn<R(A1, A2, A3)> {
-  typedef void(RunType)(A1, A2, A3);
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4>
-struct ForceVoidReturn<R(A1, A2, A3, A4)> {
-  typedef void(RunType)(A1, A2, A3, A4);
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5>
-struct ForceVoidReturn<R(A1, A2, A3, A4, A5)> {
-  typedef void(RunType)(A1, A2, A3, A4, A5);
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6>
-struct ForceVoidReturn<R(A1, A2, A3, A4, A5, A6)> {
-  typedef void(RunType)(A1, A2, A3, A4, A5, A6);
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7>
-struct ForceVoidReturn<R(A1, A2, A3, A4, A5, A6, A7)> {
-  typedef void(RunType)(A1, A2, A3, A4, A5, A6, A7);
+template <typename R, typename... Args>
+struct ForceVoidReturn<R(Args...)> {
+  typedef void(RunType)(Args...);
 };
 
 
@@ -840,246 +312,28 @@ template <bool IsWeakCall, typename ReturnType, typename Runnable,
           typename ArgsType>
 struct InvokeHelper;
 
-template <typename ReturnType, typename Runnable>
+template <typename ReturnType, typename Runnable, typename... Args>
 struct InvokeHelper<false, ReturnType, Runnable,
-    void()>  {
-  static ReturnType MakeItSo(Runnable runnable) {
-    return runnable.Run();
+    void(Args...)>  {
+  static ReturnType MakeItSo(Runnable runnable, Args... args) {
+    return runnable.Run(CallbackForward(args)...);
   }
 };
 
-template <typename Runnable>
-struct InvokeHelper<false, void, Runnable,
-    void()>  {
-  static void MakeItSo(Runnable runnable) {
-    runnable.Run();
+template <typename Runnable, typename... Args>
+struct InvokeHelper<false, void, Runnable, void(Args...)>  {
+  static void MakeItSo(Runnable runnable, Args... args) {
+    runnable.Run(CallbackForward(args)...);
   }
 };
 
-template <typename ReturnType, typename Runnable,typename A1>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1) {
-    return runnable.Run(CallbackForward(a1));
-  }
-};
-
-template <typename Runnable,typename A1>
-struct InvokeHelper<false, void, Runnable,
-    void(A1)>  {
-  static void MakeItSo(Runnable runnable, A1 a1) {
-    runnable.Run(CallbackForward(a1));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr) {
+template <typename Runnable, typename BoundWeakPtr, typename... Args>
+struct InvokeHelper<true, void, Runnable, void(BoundWeakPtr, Args...)>  {
+  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, Args... args) {
     if (!weak_ptr.get()) {
       return;
     }
-    runnable.Run(weak_ptr.get());
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2));
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2,
-    typename A3>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2, A3)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2, typename A3>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2, A3)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2), CallbackForward(a3));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2, typename A3>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2, A3)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2, A3 a3) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2), CallbackForward(a3));
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2,
-    typename A3, typename A4>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2, A3, A4)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2, typename A3, typename A4>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2, A3, A4)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2, typename A3,
-    typename A4>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2, A3, A4)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2, A3 a3,
-      A4 a4) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4));
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2,
-    typename A3, typename A4, typename A5>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2, A3, A4, A5)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4,
-      A5 a5) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2, typename A3, typename A4,
-    typename A5>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2, A3, A4, A5)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2, typename A3,
-    typename A4, typename A5>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2, A3, A4, A5)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2, A3 a3,
-      A4 a4, A5 a5) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5));
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2,
-    typename A3, typename A4, typename A5, typename A6>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2, A3, A4, A5, A6)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4,
-      A5 a5, A6 a6) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2, A3, A4, A5, A6)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
-      A6 a6) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5), CallbackForward(a6));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2, typename A3,
-    typename A4, typename A5, typename A6>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2, A3, A4, A5, A6)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2, A3 a3,
-      A4 a4, A5 a5, A6 a6) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5), CallbackForward(a6));
-  }
-};
-
-template <typename ReturnType, typename Runnable,typename A1, typename A2,
-    typename A3, typename A4, typename A5, typename A6, typename A7>
-struct InvokeHelper<false, ReturnType, Runnable,
-    void(A1, A2, A3, A4, A5, A6, A7)>  {
-  static ReturnType MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4,
-      A5 a5, A6 a6, A7 a7) {
-    return runnable.Run(CallbackForward(a1), CallbackForward(a2),
-        CallbackForward(a3), CallbackForward(a4), CallbackForward(a5),
-        CallbackForward(a6), CallbackForward(a7));
-  }
-};
-
-template <typename Runnable,typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7>
-struct InvokeHelper<false, void, Runnable,
-    void(A1, A2, A3, A4, A5, A6, A7)>  {
-  static void MakeItSo(Runnable runnable, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
-      A6 a6, A7 a7) {
-    runnable.Run(CallbackForward(a1), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5), CallbackForward(a6),
-        CallbackForward(a7));
-  }
-};
-
-template <typename Runnable, typename BoundWeakPtr, typename A2, typename A3,
-    typename A4, typename A5, typename A6, typename A7>
-struct InvokeHelper<true, void, Runnable,
-    void(BoundWeakPtr, A2, A3, A4, A5, A6, A7)>  {
-  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr, A2 a2, A3 a3,
-      A4 a4, A5 a5, A6 a6, A7 a7) {
-    if (!weak_ptr.get()) {
-      return;
-    }
-    runnable.Run(weak_ptr.get(), CallbackForward(a2), CallbackForward(a3),
-        CallbackForward(a4), CallbackForward(a5), CallbackForward(a6),
-        CallbackForward(a7));
+    runnable.Run(weak_ptr.get(), CallbackForward(args)...);
   }
 };
 
