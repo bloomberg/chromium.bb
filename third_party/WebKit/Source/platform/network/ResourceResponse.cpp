@@ -125,6 +125,7 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
     response->m_wasFallbackRequiredByServiceWorker = data->m_wasFallbackRequiredByServiceWorker;
     response->m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
+    response->m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
     response->m_responseTime = data->m_responseTime;
     response->m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
     response->m_remotePort = data->m_remotePort;
@@ -163,6 +164,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_wasFetchedViaServiceWorker = m_wasFetchedViaServiceWorker;
     data->m_wasFallbackRequiredByServiceWorker = m_wasFallbackRequiredByServiceWorker;
     data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
+    data->m_originalURLViaServiceWorker = m_originalURLViaServiceWorker;
     data->m_responseTime = m_responseTime;
     data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
     data->m_remotePort = m_remotePort;

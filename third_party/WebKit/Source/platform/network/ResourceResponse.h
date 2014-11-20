@@ -169,6 +169,9 @@ public:
     WebServiceWorkerResponseType serviceWorkerResponseType() const { return m_serviceWorkerResponseType; }
     void setServiceWorkerResponseType(WebServiceWorkerResponseType value) { m_serviceWorkerResponseType = value; }
 
+    const KURL& originalURLViaServiceWorker() const { return m_originalURLViaServiceWorker; }
+    void setOriginalURLViaServiceWorker(const KURL& url) { m_originalURLViaServiceWorker = url; };
+
     bool isMultipartPayload() const { return m_isMultipartPayload; }
     void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }
 
@@ -271,6 +274,10 @@ private:
     // The type of the response which was fetched by the ServiceWorker.
     WebServiceWorkerResponseType m_serviceWorkerResponseType;
 
+    // The original URL of the response which was fetched by the ServiceWorker.
+    // This may be empty if the response was created inside the ServiceWorker.
+    KURL m_originalURLViaServiceWorker;
+
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.
     double m_responseTime;
@@ -321,6 +328,7 @@ public:
     bool m_wasFetchedViaServiceWorker;
     bool m_wasFallbackRequiredByServiceWorker;
     WebServiceWorkerResponseType m_serviceWorkerResponseType;
+    KURL m_originalURLViaServiceWorker;
     double m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;

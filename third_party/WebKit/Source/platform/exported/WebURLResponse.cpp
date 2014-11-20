@@ -406,6 +406,16 @@ void WebURLResponse::setServiceWorkerResponseType(WebServiceWorkerResponseType v
     m_private->m_resourceResponse->setServiceWorkerResponseType(value);
 }
 
+WebURL WebURLResponse::originalURLViaServiceWorker() const
+{
+    return m_private->m_resourceResponse->originalURLViaServiceWorker();
+}
+
+void WebURLResponse::setOriginalURLViaServiceWorker(const WebURL& url)
+{
+    m_private->m_resourceResponse->setOriginalURLViaServiceWorker(url);
+}
+
 bool WebURLResponse::isMultipartPayload() const
 {
     return m_private->m_resourceResponse->isMultipartPayload();

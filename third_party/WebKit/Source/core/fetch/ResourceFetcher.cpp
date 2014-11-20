@@ -1351,10 +1351,14 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
 
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
     if (response.wasFetchedViaServiceWorker()) {
-        if (!canRequest(resource->type(), resource->resourceRequest(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
+        KURL originalURL = response.url();
+        // FIXME: Use response.originalURLViaServiceWorker() after the chromium side patch will land.
+        if (!response.originalURLViaServiceWorker().isEmpty())
+            originalURL = response.originalURLViaServiceWorker();
+        if (!canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Unsafe attempt to load URL " + response.url().elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
+            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
             return;
         }
     }
