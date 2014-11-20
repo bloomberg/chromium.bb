@@ -11,10 +11,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
-#endif
-
 REGISTER_TEST_CASE(PDF);
 
 TestPDF::TestPDF(TestingInstance* instance)
@@ -55,18 +51,15 @@ std::string TestPDF::TestGetV8ExternalSnapshotData() {
   const char* snapshot_data;
   int natives_size;
   int snapshot_size;
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  bool loaded_ok = gin::IsolateHolder::LoadV8Snapshot();
-  ASSERT_TRUE(loaded_ok);
+
   pp::PDF::GetV8ExternalSnapshotData(instance_, &natives_data, &natives_size,
       &snapshot_data, &snapshot_size);
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
   ASSERT_NE(natives_data, (char*) (NULL));
   ASSERT_NE(natives_size, 0);
   ASSERT_NE(snapshot_data, (char*) (NULL));
   ASSERT_NE(snapshot_size, 0);
 #else
-  pp::PDF::GetV8ExternalSnapshotData(instance_, &natives_data, &natives_size,
-      &snapshot_data, &snapshot_size);
   ASSERT_EQ(natives_data, (char*) (NULL));
   ASSERT_EQ(natives_size, 0);
   ASSERT_EQ(snapshot_data, (char*) (NULL));
