@@ -75,8 +75,4 @@ mojo_native_application("html_viewer") {
     "//ui/native_theme",
     "//url",
   ]
-
-  if (use_prebuilt_mojo_shell) {
-    datadeps = [ "//mojo/public/tools:copy_mojo_shell" ]
-  }
 }
