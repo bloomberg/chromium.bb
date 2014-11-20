@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
@@ -46,6 +46,14 @@ class TabCaptureApiTest : public ExtensionApiTest {
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kExtensionId);
+  }
+
+ protected:
+  void SimulateMouseClickInCurrentTab() {
+    content::SimulateMouseClick(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        0,
+        blink::WebMouseEvent::ButtonLeft);
   }
 };
 
@@ -197,42 +205,34 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
 // http://crbug.com/177163
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
-#elif defined(USE_AURA) || defined(OS_MACOSX)
-// These don't always fire fullscreen events when run in tests. Tested manually.
-#define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
-#elif defined(OS_LINUX)
-// Flaky to get out of fullscreen in tests. Tested manually.
-#define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
 #else
 #define MAYBE_FullscreenEvents FullscreenEvents
 #endif
+// Tests that fullscreen transitions during a tab capture session dispatch
+// events to the onStatusChange listener.  The test loads a page that toggles
+// fullscreen mode, using the Fullscreen Javascript API, in response to mouse
+// clicks.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   AddExtensionToCommandLineWhitelist();
 
-  content::OpenURLParams params(GURL("chrome://version"),
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                ui::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents = browser()->OpenURL(params);
-
-  ExtensionTestMessageListener listeners_setup("ready1", true);
-  ExtensionTestMessageListener fullscreen_entered("ready2", true);
+  ExtensionTestMessageListener tab_capture_started("tab_capture_started", true);
+  ExtensionTestMessageListener entered_fullscreen("entered_fullscreen", true);
 
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "fullscreen_test.html"))
       << message_;
-  EXPECT_TRUE(listeners_setup.WaitUntilSatisfied());
+  EXPECT_TRUE(tab_capture_started.WaitUntilSatisfied());
+  tab_capture_started.Reply("");
 
-  // Toggle fullscreen after setting up listeners.
-  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(web_contents,
-                                                                 true);
-  listeners_setup.Reply("");
+  // Click on the page to trigger the Javascript that will toggle the tab into
+  // fullscreen mode.
+  SimulateMouseClickInCurrentTab();
+  EXPECT_TRUE(entered_fullscreen.WaitUntilSatisfied());
+  entered_fullscreen.Reply("");
 
-  // Toggle again after JS should have the event.
-  EXPECT_TRUE(fullscreen_entered.WaitUntilSatisfied());
-  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(web_contents,
-                                                                 false);
-  fullscreen_entered.Reply("");
+  // Click again to exit fullscreen mode.
+  SimulateMouseClickInCurrentTab();
 
+  // Wait until the page examines its results and calls chrome.test.succeed().
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

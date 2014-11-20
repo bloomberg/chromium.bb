@@ -2,6 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+window.addEventListener('load', function() {
+  document.body.onclick = function toggleBodyFullscreen() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen)
+        document.exitFullscreen();
+      else if (document.webkitExitFullscreen)
+        document.webkitExitFullscreen();
+      else
+        chrome.test.assertTrue(!"HTML5 Fullscreen API missing");
+    } else {
+      if (document.body.requestFullscreen)
+        document.body.requestFullscreen();
+      else if (document.body.webkitRequestFullscreen)
+        document.body.webkitRequestFullscreen();
+      else
+        chrome.test.assertTrue(!"HTML5 Fullscreen API missing");
+    }
+  };
+});
+
 var mediaStream = null;
 var events = [];
 
@@ -15,15 +35,15 @@ chrome.tabCapture.onStatusChanged.addListener(function(info) {
       mediaStream.stop();
       chrome.test.succeed();
     }
+
+    if (info.fullscreen)
+      chrome.test.sendMessage('entered_fullscreen', function() {});
   }
 });
 
 chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
   chrome.test.assertTrue(!!stream);
   mediaStream = stream;
-
   chrome.test.notifyPass();
-  chrome.test.sendMessage('ready1', function() {
-    chrome.test.sendMessage('ready2', function() {});
-  });
+  chrome.test.sendMessage('tab_capture_started', function() {});
 });
