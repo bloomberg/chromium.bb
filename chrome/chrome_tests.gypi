@@ -1235,6 +1235,14 @@
       'browser/sync/test/integration/multiple_client_preferences_sync_test.cc',
       'browser/sync/test/integration/multiple_client_sessions_sync_test.cc',
       'browser/sync/test/integration/multiple_client_typed_urls_sync_test.cc',
+      'browser/sync/test/integration/passwords_helper.cc',
+      'browser/sync/test/integration/passwords_helper.h',
+      'browser/sync/test/integration/preferences_helper.cc',
+      'browser/sync/test/integration/preferences_helper.h',
+      'browser/sync/test/integration/search_engines_helper.cc',
+      'browser/sync/test/integration/search_engines_helper.h',
+      'browser/sync/test/integration/sessions_helper.cc',
+      'browser/sync/test/integration/sessions_helper.h',
       'browser/sync/test/integration/single_client_app_list_sync_test.cc',
       'browser/sync/test/integration/single_client_apps_sync_test.cc',
       'browser/sync/test/integration/single_client_backup_rollback_test.cc',
@@ -2587,11 +2595,11 @@
       ],  # conditions
     },  # target performance_browser_tests
     {
-      # GN version: //chrome/test:sync_integration_test_support
       'target_name': 'test_support_sync_integration',
       'type': 'static_library',
       'dependencies': [
         'browser',
+        'chrome',
         'test_support_common',
         '../base/base.gyp:base',
         '../components/components.gyp:invalidation',
@@ -2624,7 +2632,6 @@
       'conditions': [
         ['OS=="mac"', {
           # Dictionary sync is disabled on Mac.
-          # Note: this list is duplicated in the GN build.
           'sources!': [
             'browser/sync/test/integration/dictionary_helper.cc',
             'browser/sync/test/integration/dictionary_helper.h',
@@ -2633,7 +2640,6 @@
           ],
         }],
         ['enable_app_list==0', {
-          # Note: this list is duplicated in the GN build.
           'sources!': [
             'browser/sync/test/integration/sync_app_list_helper.cc',
             'browser/sync/test/integration/sync_app_list_helper.h',
@@ -2642,7 +2648,6 @@
       ]
     },
     {
-      # GN version: //chrome/test:sync_integration_tests
       'target_name': 'sync_integration_tests',
       'type': 'executable',
       'dependencies': [
@@ -2693,7 +2698,6 @@
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
           # Dictionary sync is disabled on Mac.
-          # Note: list duplicated in GN build.
           'sources!': [
             'browser/sync/test/integration/multiple_client_dictionary_sync_test.cc',
             'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
@@ -2758,7 +2762,6 @@
       ],
     },
     {
-      # GN version: //chrome/test:sync_performance_tests
       'target_name': 'sync_performance_tests',
       'type': 'executable',
       'dependencies': [
