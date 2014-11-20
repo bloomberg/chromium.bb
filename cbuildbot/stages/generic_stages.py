@@ -234,7 +234,8 @@ class BuilderStage(object):
     Raises:
       See cbuildbot_config.GetSlavesForMaster for details.
     """
-    return cbuildbot_config.GetSlavesForMaster(self._run.config)
+    return cbuildbot_config.GetSlavesForMaster(self._run.config,
+                                               self._run.options)
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""

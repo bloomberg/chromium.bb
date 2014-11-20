@@ -264,6 +264,15 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
 
+  def testGetSlavesOnTrybot(self):
+    """Make sure every master has a sane list of slaves"""
+    mock_options = mock.Mock()
+    mock_options.remote_trybot = True
+    for _, config in cbuildbot_config.config.iteritems():
+      if config['master']:
+        configs = cbuildbot_config.GetSlavesForMaster(config, mock_options)
+        self.assertEqual([], configs)
+
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""
     tracking_branch = git.GetChromiteTrackingBranch()

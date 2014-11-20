@@ -216,7 +216,7 @@ def FindCanonicalConfigForBoard(board):
   return both[0]
 
 
-def GetSlavesForMaster(master_config):
+def GetSlavesForMaster(master_config, options=None):
   """Gets the important slave builds corresponding to this master.
 
   A slave config is one that matches the master config in build_type,
@@ -227,6 +227,8 @@ def GetSlavesForMaster(master_config):
 
   Args:
     master_config: A build config for a master builder.
+    options: The options passed on the commandline. This argument is optional,
+             and only makes sense when called from cbuildbot.
 
   Returns:
     A list of build configs corresponding to the slaves for the master
@@ -243,6 +245,9 @@ def GetSlavesForMaster(master_config):
   assert master_config['master']
 
   slave_configs = []
+  if options is not None and options.remote_trybot:
+    return slave_configs
+
   for build_config in all_configs.itervalues():
     if (build_config['important'] and
         build_config['manifest_version'] and
