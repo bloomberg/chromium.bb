@@ -188,7 +188,7 @@ class LRUDictTest(unittest.TestCase):
       handle, tmp_name = tempfile.mkstemp(prefix='lru_test')
       os.close(handle)
       try:
-        with open(tmp_name, 'wt') as f:
+        with open(tmp_name, 'w') as f:
           f.write(state_text)
         return lru.LRUDict.load(tmp_name)
       finally:

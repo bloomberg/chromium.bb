@@ -958,8 +958,8 @@ def CMDbots(parser, args):
       print bot['id']
       if not options.bare:
         print '  %s' % json.dumps(dimensions, sort_keys=True)
-        if bot['task']:
-          print '  task: %s' % bot['task']
+        if bot.get('task_id'):
+          print '  task: %s' % bot['task_id']
   return 0
 
 
