@@ -30,8 +30,6 @@ class SuggestionsServiceFactory : public BrowserContextKeyedServiceFactory {
   ~SuggestionsServiceFactory() override;
 
   // Overrides from BrowserContextKeyedServiceFactory:
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
   void RegisterProfilePrefs(
