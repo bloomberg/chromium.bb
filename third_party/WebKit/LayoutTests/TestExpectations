@@ -206,6 +206,8 @@ crbug.com/435286 [ Mac ] virtual/textblob/fast/text/stroking.html [ NeedsRebasel
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
+crbug.com/435286 [ Mac ] fast/forms/minWidthPercent.html [ NeedsRebaseline ]
+
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
