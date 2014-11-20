@@ -8,10 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
-#include "third_party/leveldatabase/env_chromium_stdio.h"
-#if defined(OS_WIN)
-#include "third_party/leveldatabase/env_chromium_win.h"
-#endif
+#include "third_party/leveldatabase/env_chromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -27,10 +24,7 @@ using leveldb::Slice;
 using leveldb::Status;
 using leveldb::WritableFile;
 using leveldb::WriteOptions;
-using leveldb_env::ChromiumEnvStdio;
-#if defined(OS_WIN)
-using leveldb_env::ChromiumEnvWin;
-#endif
+using leveldb_env::ChromiumEnv;
 using leveldb_env::MethodID;
 
 TEST(ErrorEncoding, OnlyAMethod) {
@@ -55,34 +49,6 @@ TEST(ErrorEncoding, FileError) {
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(fe, error);
 }
-
-TEST(ErrorEncoding, Errno) {
-  const MethodID in_method = leveldb_env::kWritableFileFlush;
-  const int some_errno = ENOENT;
-  const Status s =
-      MakeIOError("Somefile.txt", "message", in_method, some_errno);
-  MethodID method;
-  int error;
-  EXPECT_EQ(leveldb_env::METHOD_AND_ERRNO,
-            ParseMethodAndError(s.ToString().c_str(), &method, &error));
-  EXPECT_EQ(in_method, method);
-  EXPECT_EQ(some_errno, error);
-}
-
-#if defined(OS_WIN)
-TEST(ErrorEncoding, ErrnoWin32) {
-  const MethodID in_method = leveldb_env::kWritableFileFlush;
-  const DWORD some_errno = ERROR_FILE_NOT_FOUND;
-  const Status s =
-      MakeIOErrorWin("Somefile.txt", "message", in_method, some_errno);
-  MethodID method;
-  int error;
-  EXPECT_EQ(leveldb_env::METHOD_AND_ERRNO,
-            ParseMethodAndError(s.ToString().c_str(), &method, &error));
-  EXPECT_EQ(in_method, method);
-  EXPECT_EQ(some_errno, error);
-}
-#endif
 
 TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
@@ -115,12 +81,7 @@ class ChromiumEnvMultiPlatformTests : public ::testing::Test {
  public:
 };
 
-#if defined(OS_WIN)
-typedef ::testing::Types<ChromiumEnvStdio, ChromiumEnvWin>
-    ChromiumEnvMultiPlatformTestsTypes;
-#else
-typedef ::testing::Types<ChromiumEnvStdio> ChromiumEnvMultiPlatformTestsTypes;
-#endif
+typedef ::testing::Types<ChromiumEnv> ChromiumEnvMultiPlatformTestsTypes;
 TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests,
                 ChromiumEnvMultiPlatformTestsTypes);
 

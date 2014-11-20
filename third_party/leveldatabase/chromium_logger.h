@@ -5,10 +5,7 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 #define THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 
-#include <stdio.h>
-
-#include <algorithm>
-
+#include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -18,10 +15,8 @@ namespace leveldb {
 
 class ChromiumLogger : public Logger {
  public:
-  explicit ChromiumLogger(FILE* f) : file_(f) {}
-  virtual ~ChromiumLogger() {
-    fclose(file_);
-  }
+  explicit ChromiumLogger(base::File* f) : file_(f) {}
+  virtual ~ChromiumLogger() {}
   virtual void Logv(const char* format, va_list ap) {
     const base::PlatformThreadId thread_id =
         ::base::PlatformThread::CurrentId();
@@ -79,8 +74,7 @@ class ChromiumLogger : public Logger {
       }
 
       assert(p <= limit);
-      fwrite(base, 1, p - base, file_);
-      fflush(file_);
+      file_->WriteAtCurrentPos(base, p - base);
       if (base != buffer) {
         delete[] base;
       }
@@ -89,7 +83,7 @@ class ChromiumLogger : public Logger {
   }
 
  private:
-  FILE* file_;
+  scoped_ptr<base::File> file_;
 };
 
 }  // namespace leveldb

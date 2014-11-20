@@ -142,8 +142,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   EXPECT_CALL(mock_leveldb_factory, OpenLevelDB(_, _, _, _)).Times(Exactly(4));
   EXPECT_CALL(mock_leveldb_factory, DestroyLevelDB(_)).Times(Exactly(0));
 
-  busted_factory.SetOpenError(MakeIOError(
-      "some filename", "some message", leveldb_env::kNewLogger, ENOSPC));
+  busted_factory.SetOpenError(MakeIOError("some filename", "some message",
+                                          leveldb_env::kNewLogger,
+                                          base::File::FILE_ERROR_NO_SPACE));
   scoped_refptr<IndexedDBBackingStore> backing_store =
       IndexedDBBackingStore::Open(factory,
                                   origin,
@@ -176,8 +177,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &s);
   ASSERT_TRUE(s.IsIOError());
 
-  busted_factory.SetOpenError(MakeIOError(
-      "some filename", "some message", leveldb_env::kNewLogger, EIO));
+  busted_factory.SetOpenError(MakeIOError("some filename", "some message",
+                                          leveldb_env::kNewLogger,
+                                          base::File::FILE_ERROR_IO));
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
       IndexedDBBackingStore::Open(factory,
                                   origin,

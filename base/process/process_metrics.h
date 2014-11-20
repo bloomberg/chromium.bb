@@ -234,7 +234,7 @@ BASE_EXPORT size_t GetSystemCommitCharge();
 #if defined(OS_POSIX)
 // Returns the maximum number of file descriptors that can be open by a process
 // at once. If the number is unavailable, a conservative best guess is returned.
-size_t GetMaxFds();
+BASE_EXPORT size_t GetMaxFds();
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
 // limit, whichever is lower.

@@ -47,15 +47,11 @@ enum MethodID {
 const char* MethodIDToString(MethodID method);
 
 leveldb::Status MakeIOError(leveldb::Slice filename,
-                            const char* message,
-                            MethodID method,
-                            int saved_errno);
-leveldb::Status MakeIOError(leveldb::Slice filename,
-                            const char* message,
+                            const std::string& message,
                             MethodID method,
                             base::File::Error error);
 leveldb::Status MakeIOError(leveldb::Slice filename,
-                            const char* message,
+                            const std::string& message,
                             MethodID method);
 
 enum ErrorParsingResult {
@@ -78,7 +74,6 @@ std::string FilePathToString(const base::FilePath& file_path);
 class UMALogger {
  public:
   virtual void RecordErrorAt(MethodID method) const = 0;
-  virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const = 0;
   virtual void RecordBackupResult(bool success) const = 0;
@@ -104,6 +99,8 @@ class ChromiumEnv : public leveldb::Env,
                     public RetrierProvider,
                     public WriteTracker {
  public:
+  ChromiumEnv();
+
   typedef void(ScheduleFunc)(void*);
 
   static bool MakeBackup(const std::string& fname);
@@ -129,27 +126,32 @@ class ChromiumEnv : public leveldb::Env,
   virtual leveldb::Status GetTestDirectory(std::string* path);
   virtual uint64_t NowMicros();
   virtual void SleepForMicroseconds(int micros);
+  virtual leveldb::Status NewSequentialFile(const std::string& fname,
+                                            leveldb::SequentialFile** result);
+  virtual leveldb::Status NewRandomAccessFile(
+      const std::string& fname,
+      leveldb::RandomAccessFile** result);
+  virtual leveldb::Status NewWritableFile(const std::string& fname,
+                                          leveldb::WritableFile** result);
+  virtual leveldb::Status NewLogger(const std::string& fname,
+                                    leveldb::Logger** result);
 
  protected:
-  ChromiumEnv();
-
-  virtual void DidCreateNewFile(const std::string& fname);
-  virtual bool DoesDirNeedSync(const std::string& fname);
   virtual void DidSyncDir(const std::string& fname);
-  virtual base::File::Error GetDirectoryEntries(
-      const base::FilePath& dir_param,
-      std::vector<base::FilePath>* result) const = 0;
-  virtual void RecordErrorAt(MethodID method) const;
-  virtual void RecordOSError(MethodID method, int saved_errno) const;
-  virtual void RecordOSError(MethodID method,
-                             base::File::Error error) const;
-  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
-  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
 
   std::string name_;
   bool make_backup_;
 
  private:
+  virtual void DidCreateNewFile(const std::string& fname);
+  virtual bool DoesDirNeedSync(const std::string& fname);
+  virtual void RecordErrorAt(MethodID method) const;
+  virtual void RecordOSError(MethodID method,
+                             base::File::Error error) const;
+  void RecordOpenFilesLimit(const std::string& type);
+  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
+  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
+
   // File locks may not be exclusive within a process (e.g. on POSIX). Track
   // locks held by the ChromiumEnv to prevent access within the process.
   class LockTable {
