@@ -18,9 +18,5 @@ void MockPolicyCallback::OnPolicyUpdate(
   OnPolicyUpdatePtr(policies.get());
 }
 
-void MockPolicyCallback::OnPolicyError() {
-  OnPolicyErrorPtr();
-}
-
 }  // namespace policy_hack
 }  // namespace remoting

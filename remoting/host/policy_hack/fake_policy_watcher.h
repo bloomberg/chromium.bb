@@ -18,8 +18,6 @@ class FakePolicyWatcher : public PolicyWatcher {
 
   void SetPolicies(const base::DictionaryValue* policies);
 
-  void SignalTransientErrorForTest();
-
  protected:
   void StartWatchingInternal() override;
   void StopWatchingInternal() override;

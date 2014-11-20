@@ -118,7 +118,6 @@ const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
 PolicyWatcher::PolicyWatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
-      transient_policy_error_retry_counter_(0),
       old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
       weak_factory_(this) {
@@ -152,20 +151,16 @@ PolicyWatcher::PolicyWatcher(
 PolicyWatcher::~PolicyWatcher() {
 }
 
-void PolicyWatcher::StartWatching(
-    const PolicyUpdatedCallback& policy_updated_callback,
-    const PolicyErrorCallback& policy_error_callback) {
+void PolicyWatcher::StartWatching(const PolicyCallback& policy_callback) {
   if (!OnPolicyWatcherThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&PolicyWatcher::StartWatching,
                                       base::Unretained(this),
-                                      policy_updated_callback,
-                                      policy_error_callback));
+                                      policy_callback));
     return;
   }
 
-  policy_updated_callback_ = policy_updated_callback;
-  policy_error_callback_ = policy_error_callback;
+  policy_callback_ = policy_callback;
   StartWatchingInternal();
 }
 
@@ -179,8 +174,7 @@ void PolicyWatcher::StopWatching(const base::Closure& stopped_callback) {
 void PolicyWatcher::StopWatchingOnPolicyWatcherThread() {
   StopWatchingInternal();
   weak_factory_.InvalidateWeakPtrs();
-  policy_updated_callback_.Reset();
-  policy_error_callback_.Reset();
+  policy_callback_.Reset();
 }
 
 void PolicyWatcher::ScheduleFallbackReloadTask() {
@@ -209,8 +203,6 @@ void PolicyWatcher::UpdatePolicies(
     const base::DictionaryValue* new_policies_raw) {
   DCHECK(OnPolicyWatcherThread());
 
-  transient_policy_error_retry_counter_ = 0;
-
   // Use default values for any missing policies.
   scoped_ptr<base::DictionaryValue> new_policies =
       CopyGoodValuesAndAddDefaults(
@@ -234,20 +226,7 @@ void PolicyWatcher::UpdatePolicies(
 
   // Notify our client of the changed policies.
   if (!changed_policies->empty()) {
-    policy_updated_callback_.Run(changed_policies.Pass());
-  }
-}
-
-void PolicyWatcher::SignalPolicyError() {
-  transient_policy_error_retry_counter_ = 0;
-  policy_error_callback_.Run();
-}
-
-void PolicyWatcher::SignalTransientPolicyError() {
-  const int kMaxRetryCount = 5;
-  transient_policy_error_retry_counter_ += 1;
-  if (transient_policy_error_retry_counter_ >= kMaxRetryCount) {
-    SignalPolicyError();
+    policy_callback_.Run(changed_policies.Pass());
   }
 }
 

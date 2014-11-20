@@ -67,9 +67,7 @@ void It2MeHost::Connect() {
       host_context_->ui_task_runner()));
 
   // Start monitoring configured policies.
-  policy_watcher_->StartWatching(
-      base::Bind(&It2MeHost::OnPolicyUpdate, this),
-      base::Bind(&It2MeHost::OnPolicyError, this));
+  policy_watcher_->StartWatching(base::Bind(&It2MeHost::OnPolicyUpdate, this));
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -339,11 +337,6 @@ void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
     pending_connect_.Run();
     pending_connect_.Reset();
   }
-}
-
-void It2MeHost::OnPolicyError() {
-  // TODO(lukasza): Report the policy error to the user.  crbug.com/433009
-  NOTIMPLEMENTED();
 }
 
 void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {

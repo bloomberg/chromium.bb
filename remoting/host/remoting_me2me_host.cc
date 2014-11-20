@@ -233,7 +233,6 @@ class HostProcess
 
   // Handles policy updates, by calling On*PolicyUpdate methods.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
-  void OnPolicyError();
   void ApplyHostDomainPolicy();
   void ApplyUsernamePolicy();
   bool OnHostDomainPolicyUpdate(base::DictionaryValue* policies);
@@ -529,8 +528,7 @@ void HostProcess::OnConfigUpdated(
     policy_watcher_ = policy_hack::PolicyWatcher::Create(
         nullptr, context_->network_task_runner());
     policy_watcher_->StartWatching(
-        base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
-        base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));
+        base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
   } else {
     // Reapply policies that could be affected by a new config.
     ApplyHostDomainPolicy();
@@ -933,15 +931,6 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   } else if (state_ == HOST_STARTED && restart_required) {
     RestartHost();
   }
-}
-
-void HostProcess::OnPolicyError() {
-  context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &HostProcess::ShutdownHost,
-          this,
-          kInvalidHostConfigurationExitCode));
 }
 
 void HostProcess::ApplyHostDomainPolicy() {

@@ -21,9 +21,6 @@ class MockPolicyCallback {
   MOCK_METHOD1(OnPolicyUpdatePtr, void(const base::DictionaryValue* policies));
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
 
-  MOCK_METHOD0(OnPolicyErrorPtr, void());
-  void OnPolicyError();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPolicyCallback);
 };
