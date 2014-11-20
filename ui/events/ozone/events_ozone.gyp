@@ -78,6 +78,8 @@
       'evdev/events_ozone_evdev_export.h',
       'evdev/keyboard_evdev.cc',
       'evdev/keyboard_evdev.h',
+      'evdev/tablet_event_converter_evdev.cc',
+      'evdev/tablet_event_converter_evdev.h',
       'evdev/touch_event_converter_evdev.cc',
       'evdev/touch_event_converter_evdev.h',
     ],

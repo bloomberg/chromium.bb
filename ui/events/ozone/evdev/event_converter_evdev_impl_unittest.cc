@@ -51,10 +51,17 @@ class MockCursorEvdev : public CursorDelegateEvdev {
                     const gfx::PointF& location) override {
     cursor_location_ = location;
   }
+  void MoveCursorTo(const gfx::PointF& location) override {
+    cursor_location_ = location;
+  }
   void MoveCursor(const gfx::Vector2dF& delta) override {
     cursor_location_ = gfx::PointF(delta.x(), delta.y());
   }
   bool IsCursorVisible() override { return 1; }
+  gfx::Rect GetCursorDisplayBounds() override {
+    NOTIMPLEMENTED();
+    return gfx::Rect();
+  }
   gfx::PointF location() override { return cursor_location_; }
 
  private:

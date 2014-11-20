@@ -13,6 +13,7 @@
 namespace gfx {
 class PointF;
 class Vector2dF;
+class Rect;
 }
 
 namespace ui {
@@ -39,9 +40,11 @@ class DriCursor : public CursorDelegateEvdev {
   // CursorDelegateEvdev:
   void MoveCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location) override;
+  void MoveCursorTo(const gfx::PointF& location) override;
   void MoveCursor(const gfx::Vector2dF& delta) override;
   bool IsCursorVisible() override;
   gfx::PointF location() override;
+  gfx::Rect GetCursorDisplayBounds() override;
 
  private:
   // The location of the bitmap (the cursor location is the hotspot location).

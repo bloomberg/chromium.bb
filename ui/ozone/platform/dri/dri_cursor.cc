@@ -72,8 +72,20 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
     hardware_->MoveHardwareCursor(cursor_window_, bitmap_location());
 }
 
+void DriCursor::MoveCursorTo(const gfx::PointF& location) {
+  MoveCursorTo(cursor_window_, location);
+}
+
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
   MoveCursorTo(cursor_window_, cursor_location_ + delta);
+}
+
+gfx::Rect DriCursor::GetCursorDisplayBounds() {
+  if (cursor_window_ == gfx::kNullAcceleratedWidget)
+    return gfx::Rect();
+
+  DriWindow* window = window_manager_->GetWindow(cursor_window_);
+  return window->GetBounds();
 }
 
 gfx::AcceleratedWidget DriCursor::GetCursorWindow() {

@@ -18,6 +18,7 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
 #if defined(USE_EVDEV_GESTURES)
@@ -96,6 +97,12 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
     converter->Initialize(devinfo);
     return converter.Pass();
   }
+
+  // Graphics tablet
+  if (devinfo.HasAbsXY())
+    return make_scoped_ptr<EventConverterEvdev>(new TabletEventConverterEvdev(
+        fd, params.path, params.id, params.modifiers, params.cursor, devinfo,
+        params.dispatch_callback));
 
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(

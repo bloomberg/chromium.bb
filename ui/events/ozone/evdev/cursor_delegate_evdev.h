@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Vector2dF;
+class Rect;
 }
 
 namespace ui {
@@ -23,12 +24,16 @@ class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
   virtual void MoveCursor(const gfx::Vector2dF& delta) = 0;
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) = 0;
+  virtual void MoveCursorTo(const gfx::PointF& location) = 0;
 
   // Location in window.
   virtual gfx::PointF location() = 0;
 
   // Cursor visibility.
   virtual bool IsCursorVisible() = 0;
+
+  // The bounds of the display that the cursor is currently on
+  virtual gfx::Rect GetCursorDisplayBounds() = 0;
 };
 
 }  // namespace ui
