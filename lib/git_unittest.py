@@ -322,6 +322,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
             rc_mock.CmdResult(128, '', error),
             rc_mock.CmdResult(0, 'success', ''),
         ]
+        # pylint: disable=cell-var-from-loop
         side_effect = lambda *_args, **_kwargs: results.pop(0)
         rc_mock.AddCmdResult(partial_mock.In('push'), side_effect=side_effect)
         self._RunGitPush()

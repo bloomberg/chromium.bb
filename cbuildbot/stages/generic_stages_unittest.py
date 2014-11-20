@@ -247,7 +247,7 @@ def patches(*args):
   """Context manager for a list of patch objects."""
   with cros_build_lib.ContextManagerStack() as stack:
     for arg in args:
-      stack.Add(lambda: arg)
+      stack.Add(lambda ret=arg: ret)
     yield
 
 
