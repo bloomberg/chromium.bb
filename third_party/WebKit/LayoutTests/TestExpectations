@@ -182,8 +182,6 @@ crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/wide-zero-width-space
 crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/word-break-run-rounding.html [ NeedsRebaseline ]
 crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/zero-font-size.html [ NeedsRebaseline ]
 
-crbug.com/435286 [ Mac ] fast/forms/minWidthPercent.html [ NeedsRebaseline ]
-
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
