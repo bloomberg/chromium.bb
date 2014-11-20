@@ -565,7 +565,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_multisamplingAllowed(false)
     , m_multisamplingObserverRegistered(false)
     , m_onePlusMaxNonDefaultTextureUnit(0)
-    , m_savingImage(false)
 {
     ASSERT(context);
 
@@ -888,24 +887,10 @@ void WebGLRenderingContextBase::setIsHidden(bool hidden)
         drawingBuffer()->setIsHidden(hidden);
 }
 
-void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
+void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceBuffer source)
 {
-    if (isContextLost()) {
-        canvas()->clearPresentationCopy();
+    if (isContextLost())
         return;
-    }
-
-    if (canvas()->document().printing())
-        canvas()->clearPresentationCopy();
-
-    // Until the canvas is written to by the application, the clear that
-    // happened after it was composited should be ignored by the compositor.
-    if (drawingBuffer()->layerComposited() && !m_requestedAttributes->preserveDrawingBuffer()) {
-        drawingBuffer()->paintCompositedResultsToCanvas(canvas()->buffer());
-
-        canvas()->makePresentationCopy();
-    } else
-        canvas()->clearPresentationCopy();
 
     clearIfComposited();
 
@@ -918,7 +903,7 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
     ScopedTexture2DRestorer restorer(this);
 
     drawingBuffer()->commit();
-    if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), m_savingImage)) {
+    if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), source == Front)) {
         canvas()->ensureUnacceleratedImageBuffer();
         if (canvas()->hasImageBuffer())
             drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
@@ -3565,7 +3550,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
             WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
             ScopedTexture2DRestorer restorer(gl);
             if (gl && gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
-                level, m_unpackPremultiplyAlpha, !m_unpackFlipY)) {
+                level, m_unpackPremultiplyAlpha, !m_unpackFlipY, DrawingBuffer::Back)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
             }

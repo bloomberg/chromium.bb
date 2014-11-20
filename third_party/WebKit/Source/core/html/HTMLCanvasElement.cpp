@@ -333,18 +333,12 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
     if (m_context) {
         if (!paintsIntoCanvasBuffer() && !document().printing())
             return;
-        m_context->paintRenderingResultsToCanvas();
+        m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Front);
     }
 
     if (hasImageBuffer()) {
-        ImageBuffer* imageBuffer = buffer();
-        if (imageBuffer) {
-            CompositeOperator compositeOperator = !m_context || m_context->hasAlpha() ? CompositeSourceOver : CompositeCopy;
-            if (m_presentedImage)
-                context->drawImage(m_presentedImage.get(), pixelSnappedIntRect(r), compositeOperator, DoNotRespectImageOrientation);
-            else
-                context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), 0, compositeOperator);
-        }
+        CompositeOperator compositeOperator = !m_context || m_context->hasAlpha() ? CompositeSourceOver : CompositeCopy;
+        context->drawImageBuffer(buffer(), pixelSnappedIntRect(r), 0, compositeOperator);
     } else {
         // When alpha is false, we should draw to opaque black.
         if (m_context && !m_context->hasAlpha())
@@ -358,21 +352,6 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
 bool HTMLCanvasElement::is3D() const
 {
     return m_context && m_context->is3d();
-}
-
-void HTMLCanvasElement::makePresentationCopy()
-{
-    if (!m_presentedImage) {
-        // The buffer contains the last presented data, so save a copy of it.
-        m_presentedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
-        updateExternallyAllocatedMemory();
-    }
-}
-
-void HTMLCanvasElement::clearPresentationCopy()
-{
-    m_presentedImage.clear();
-    updateExternallyAllocatedMemory();
 }
 
 void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
@@ -419,9 +398,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
         return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
 
     if (m_context && m_context->is3d()) {
-        toWebGLRenderingContext(m_context.get())->setSavingImage(isSaving);
-        m_context->paintRenderingResultsToCanvas();
-        toWebGLRenderingContext(m_context.get())->setSavingImage(false);
+        m_context->paintRenderingResultsToCanvas(isSaving ? CanvasRenderingContext::Front : CanvasRenderingContext::Back);
     }
 
     return buffer()->toDataURL(encodingMimeType, quality);
@@ -646,8 +623,6 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
         bufferCount += 2;
     if (m_copiedImage)
         bufferCount++;
-    if (m_presentedImage)
-        bufferCount++;
 
     Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
     checkedExternallyAllocatedMemory *= width();
@@ -695,9 +670,7 @@ Image* HTMLCanvasElement::copiedImage() const
 {
     if (!m_copiedImage && buffer()) {
         if (m_context && m_context->is3d()) {
-            toWebGLRenderingContext(m_context.get())->setSavingImage(true);
-            m_context->paintRenderingResultsToCanvas();
-            toWebGLRenderingContext(m_context.get())->setSavingImage(false);
+            m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Front);
         }
         m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
         updateExternallyAllocatedMemory();
@@ -781,7 +754,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
     }
 
     if (m_context && m_context->is3d()) {
-        m_context->paintRenderingResultsToCanvas();
+        m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Back);
         *status = ExternalSourceImageStatus;
 
         // can't create SkImage from WebGLImageBufferSurface (contains only SkBitmap)

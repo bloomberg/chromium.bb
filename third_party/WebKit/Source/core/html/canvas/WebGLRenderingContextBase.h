@@ -359,8 +359,6 @@ public:
     virtual bool hasPendingActivity() const override;
     virtual void stop() override;
 
-    void setSavingImage(bool isSaving) { m_savingImage = isSaving; }
-
     virtual void trace(Visitor*) override;
 
     class TextureUnitState {
@@ -400,7 +398,7 @@ protected:
     virtual bool is3d() const override { return true; }
     virtual bool isAccelerated() const override { return true; }
     virtual void setIsHidden(bool) override;
-    virtual void paintRenderingResultsToCanvas() override;
+    virtual void paintRenderingResultsToCanvas(SourceBuffer) override;
     virtual blink::WebLayer* platformLayer() const override;
 
     void addSharedObject(WebGLSharedObject*);
@@ -570,8 +568,6 @@ protected:
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
-
-    bool m_savingImage;
 
     enum ExtensionFlags {
         ApprovedExtension               = 0x00,

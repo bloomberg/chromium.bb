@@ -144,7 +144,6 @@ public:
     void setIsHidden(bool);
 
     WebLayer* platformLayer();
-    void paintCompositedResultsToCanvas(ImageBuffer*);
 
     WebGraphicsContext3D* context();
 
@@ -156,9 +155,10 @@ public:
     virtual bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) override;
     virtual void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
 
+    enum SourceBuffer { Front, Back };
     // Destroys the TEXTURE_2D binding for the owned context
     bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
-        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer = false);
+        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceBuffer);
 
     void setPackAlignment(GLint param);
 

@@ -249,7 +249,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 
     m_surface->invalidateCachedBitmap();
     bool result = drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
-        GL_UNSIGNED_BYTE, 0, true, false, fromFrontBuffer);
+        GL_UNSIGNED_BYTE, 0, true, false, fromFrontBuffer ? DrawingBuffer::Front : DrawingBuffer::Back);
 
     if (result) {
         m_surface->didModifyBackingTexture();

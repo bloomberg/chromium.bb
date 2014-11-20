@@ -458,7 +458,8 @@ bool DrawingBuffer::initialize(const IntSize& size)
     return true;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
+bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat,
+    GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceBuffer source)
 {
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
@@ -477,7 +478,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     WebExternalTextureMailbox mailbox;
     GLint textureId = 0;
-    if (fromFrontBuffer && m_frontColorBuffer.texInfo.textureId) {
+    if (source == Front && m_frontColorBuffer.texInfo.textureId) {
         textureId = m_frontColorBuffer.texInfo.textureId;
         mailbox = m_frontColorBuffer.mailbox;
     } else {
@@ -531,45 +532,6 @@ WebLayer* DrawingBuffer::platformLayer()
     }
 
     return m_layer->layer();
-}
-
-void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
-{
-    if (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
-        return;
-
-    if (!imageBuffer || !m_frontColorBuffer.texInfo.textureId)
-        return;
-    Platform3DObject tex = imageBuffer->getBackingTexture();
-    if (tex) {
-        OwnPtr<WebGraphicsContext3DProvider> provider =
-            adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-        if (!provider)
-            return;
-        WebGraphicsContext3D* context = provider->context3d();
-        if (!context)
-            return;
-
-        context->waitSyncPoint(m_frontColorBuffer.mailbox.syncPoint);
-        Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer.mailbox.name);
-        context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture,
-            tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-        context->deleteTexture(sourceTexture);
-        context->flush();
-        m_context->waitSyncPoint(context->insertSyncPoint());
-        imageBuffer->didModifyBackingTexture();
-        return;
-    }
-
-    Platform3DObject framebuffer = m_context->createFramebuffer();
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    // We don't need to bind a copy of m_frontColorBuffer since the texture parameters are untouched.
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.texInfo.textureId, 0);
-
-    paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
-    m_context->deleteFramebuffer(framebuffer);
-    // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
-    restoreFramebufferBinding();
 }
 
 void DrawingBuffer::clearPlatformLayer()

@@ -82,7 +82,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     CanvasRenderingContext* sourceContext = canvas->renderingContext();
     if (sourceContext && sourceContext->is3d())
-        sourceContext->paintRenderingResultsToCanvas();
+        sourceContext->paintRenderingResultsToCanvas(CanvasRenderingContext::Back);
 
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvas->size()));
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());

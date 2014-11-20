@@ -8,7 +8,7 @@
 function initGL(canvas)
 {
   try {
-    gl = canvas.getContext("webgl");
+    gl = canvas.getContext("webgl", {'preserveDrawingBuffer': true});
   } catch (e) { }
   return gl;
 }

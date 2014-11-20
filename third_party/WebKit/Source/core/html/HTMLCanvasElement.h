@@ -123,8 +123,6 @@ public:
     Image* copiedImage() const;
     void clearCopiedImage();
     PassRefPtrWillBeRawPtr<ImageData> getImageData() const;
-    void makePresentationCopy();
-    void clearPresentationCopy();
 
     SecurityOrigin* securityOrigin() const;
     bool originClean() const { return m_originClean; }
@@ -213,7 +211,6 @@ private:
     OwnPtr<ImageBuffer> m_imageBuffer;
     mutable OwnPtr<GraphicsContextStateSaver> m_contextStateSaver;
 
-    mutable RefPtr<Image> m_presentedImage;
     mutable RefPtr<Image> m_copiedImage; // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
 };
 
