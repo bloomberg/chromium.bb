@@ -46987,8 +46987,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="HotwordPrefState" type="int">
   <int value="0" label="Preference not set"/>
-  <int value="1" label="Hotwording enabled"/>
+  <int value="1" label="'Classic' hotwording enabled"/>
   <int value="2" label="Hotwording disabled"/>
+  <int value="3" label="Always-on hotwording enabled"/>
 </enum>
 
 <enum name="HotwordTriggerSource" type="int">

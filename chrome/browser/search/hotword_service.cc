@@ -56,9 +56,10 @@ static const char* kSupportedLocales[] = {
 // This is used for UMA stats -- do not reorder or delete items; only add to
 // the end.
 enum HotwordEnabled {
-  UNSET = 0,  // The hotword preference has not been set.
-  ENABLED,    // The hotword preference is enabled.
-  DISABLED,   // The hotword preference is disabled.
+  UNSET = 0,  // No hotword preference has been set.
+  ENABLED,    // The (classic) hotword preference is enabled.
+  DISABLED,   // All hotwording is disabled.
+  ALWAYS_ON_ENABLED,  // Always-on hotwording is enabled.
   NUM_HOTWORD_ENABLED_METRICS
 };
 
@@ -137,6 +138,22 @@ void RecordErrorMetrics(int error_message) {
                             NUM_HOTWORD_ERROR_METRICS);
 }
 
+void RecordHotwordEnabledMetric(HotwordService *service, Profile* profile) {
+  HotwordEnabled enabled_state = DISABLED;
+  auto prefs = profile->GetPrefs();
+  if (!prefs->HasPrefPath(prefs::kHotwordSearchEnabled) &&
+      !prefs->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled)) {
+    enabled_state = UNSET;
+  } else if (service->IsExperimentalHotwordingEnabled() &&
+             service->IsAlwaysOnEnabled()) {
+    enabled_state = ALWAYS_ON_ENABLED;
+  } else if (prefs->GetBoolean(prefs::kHotwordSearchEnabled)) {
+    enabled_state = ENABLED;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
+                            NUM_HOTWORD_ENABLED_METRICS);
+}
+
 ExtensionService* GetExtensionService(Profile* profile) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -205,28 +222,21 @@ HotwordService::HotwordService(Profile* profile)
       training_(false),
       weak_factory_(this) {
   extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
-  // This will be called during profile initialization which is a good time
-  // to check the user's hotword state.
-  HotwordEnabled enabled_state = UNSET;
   if (IsExperimentalHotwordingEnabled()) {
     // Disable the old extension so it doesn't interfere with the new stuff.
     DisableHotwordExtension(GetExtensionService(profile_));
   } else {
-    if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled)) {
-      if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
-        enabled_state = ENABLED;
-      else
-        enabled_state = DISABLED;
-    } else {
+    if (!profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
+        IsHotwordAllowed()) {
       // If the preference has not been set the hotword extension should
       // not be running. However, this should only be done if auto-install
       // is enabled which is gated through the IsHotwordAllowed check.
-      if (IsHotwordAllowed())
-        DisableHotwordExtension(GetExtensionService(profile_));
+      DisableHotwordExtension(GetExtensionService(profile_));
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
-                            NUM_HOTWORD_ENABLED_METRICS);
+  // This will be called during profile initialization which is a good time
+  // to check the user's hotword state.
+  RecordHotwordEnabledMetric(this, profile_);
 
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(
