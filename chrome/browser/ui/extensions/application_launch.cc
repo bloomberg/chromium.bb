@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -220,11 +221,10 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
 
 WebContents* OpenAppShortcutWindow(Profile* profile,
                                    const GURL& url) {
-  AppLaunchParams launch_params(
-      profile,
-      NULL,  // this is a URL app.  No extension.
-      extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_WINDOW);
+  AppLaunchParams launch_params(profile,
+                                NULL,  // this is a URL app.  No extension.
+                                extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW,
+                                extensions::SOURCE_COMMAND_LINE);
   launch_params.override_url = url;
 
   WebContents* tab = OpenWebAppWindow(launch_params, url);

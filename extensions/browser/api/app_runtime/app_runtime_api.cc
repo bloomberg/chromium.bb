@@ -83,13 +83,24 @@ app_runtime::LaunchSource getLaunchSourceEnum(
       return app_runtime::LAUNCH_SOURCE_FILE_HANDLER;
     case extensions::SOURCE_URL_HANDLER:
       return app_runtime::LAUNCH_SOURCE_URL_HANDLER;
-
     case extensions::SOURCE_SYSTEM_TRAY:
       return app_runtime::LAUNCH_SOURCE_SYSTEM_TRAY;
     case extensions::SOURCE_ABOUT_PAGE:
       return app_runtime::LAUNCH_SOURCE_ABOUT_PAGE;
     case extensions::SOURCE_KEYBOARD:
       return app_runtime::LAUNCH_SOURCE_KEYBOARD;
+    case extensions::SOURCE_EXTENSIONS_PAGE:
+      return app_runtime::LAUNCH_SOURCE_EXTENSIONS_PAGE;
+    case extensions::SOURCE_MANAGEMENT_API:
+      return app_runtime::LAUNCH_SOURCE_MANAGEMENT_API;
+    case extensions::SOURCE_EPHEMERAL_APP:
+      return app_runtime::LAUNCH_SOURCE_EPHEMERAL_APP;
+    case extensions::SOURCE_BACKGROUND:
+      return app_runtime::LAUNCH_SOURCE_BACKGROUND;
+    case extensions::SOURCE_KIOSK:
+      return app_runtime::LAUNCH_SOURCE_KIOSK;
+    case extensions::SOURCE_CHROME_INTERNAL:
+      return app_runtime::LAUNCH_SOURCE_CHROME_INTERNAL;
 
     default:
       return app_runtime::LAUNCH_SOURCE_NONE;

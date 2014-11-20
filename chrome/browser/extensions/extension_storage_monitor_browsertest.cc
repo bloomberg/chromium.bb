@@ -9,12 +9,14 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_storage_monitor.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -179,8 +181,8 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     NotificationObserver notification_observer(
         GetNotificationId(extension->id()));
 
-    OpenApplication(AppLaunchParams(
-        profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
+    OpenApplication(AppLaunchParams(profile(), extension, LAUNCH_CONTAINER_NONE,
+                                    NEW_WINDOW, extensions::SOURCE_UNTRACKED));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     // Instruct the app to write |num_bytes| of data.

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
@@ -34,6 +35,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/views/win/hwnd_util.h"
 
@@ -242,10 +244,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
       LoadExtension(test_data_dir_.AppendASCII("app/"));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extensions::LAUNCH_CONTAINER_WINDOW,
-                                  NEW_FOREGROUND_TAB));
+  OpenApplication(AppLaunchParams(
+      browser()->profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      NEW_FOREGROUND_TAB, extensions::SOURCE_UNTRACKED));
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.

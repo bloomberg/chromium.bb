@@ -8,9 +8,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -30,9 +32,9 @@ void OpenWallpaperManager() {
   if (!extension)
     return;
 
-  OpenApplication(AppLaunchParams(profile, extension,
-                                  extensions::LAUNCH_CONTAINER_WINDOW,
-                                  NEW_WINDOW));
+  OpenApplication(
+      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 }  // namespace wallpaper_manager_util

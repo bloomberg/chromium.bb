@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -520,12 +521,11 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       disposition == NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
     AppLaunchParams params(profile, extension,
-                           disposition == NEW_WINDOW ?
-                               extensions::LAUNCH_CONTAINER_WINDOW :
-                               extensions::LAUNCH_CONTAINER_TAB,
-                           disposition);
+                           disposition == NEW_WINDOW
+                               ? extensions::LAUNCH_CONTAINER_WINDOW
+                               : extensions::LAUNCH_CONTAINER_TAB,
+                           disposition, extensions::SOURCE_NEW_TAB_PAGE);
     params.override_url = GURL(url);
-    params.source = extensions::SOURCE_NEW_TAB_PAGE;
     OpenApplication(params);
   } else {
     // To give a more "launchy" experience when using the NTP launcher, we close
@@ -537,9 +537,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
     AppLaunchParams params(profile, extension,
-                           old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
+                           old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB,
+                           extensions::SOURCE_NEW_TAB_PAGE);
     params.override_url = GURL(url);
-    params.source = extensions::SOURCE_NEW_TAB_PAGE;
     WebContents* new_contents = OpenApplication(params);
 
     // This will also destroy the handler, so do not perform any actions after.

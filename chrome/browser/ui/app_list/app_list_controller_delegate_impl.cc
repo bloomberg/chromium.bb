@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_system.h"
@@ -111,7 +112,8 @@ void AppListControllerDelegateImpl::LaunchApp(
     int event_flags) {
   AppListServiceImpl::RecordAppListAppLaunch();
 
-  AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
+  AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB,
+                         extensions::SOURCE_APP_LAUNCHER);
 
   if (source != LAUNCH_FROM_UNKNOWN &&
       extension->id() == extensions::kWebStoreAppId) {
@@ -122,7 +124,6 @@ void AppListControllerDelegateImpl::LaunchApp(
         extension_urls::kWebstoreSourceField,
         AppListSourceToString(source));
   }
-  params.source = extensions::SOURCE_APP_LAUNCHER;
 
   FillLaunchParams(&params);
   OpenApplication(params);

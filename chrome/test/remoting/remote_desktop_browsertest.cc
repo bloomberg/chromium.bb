@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/remoting/key_code_conv.h"
@@ -174,12 +175,12 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   // till the chromoting main page is loaded.
   PageLoadNotificationObserver observer(chromoting_main);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(),
-      extension_,
-      is_platform_app() ? extensions::LAUNCH_CONTAINER_NONE :
-          extensions::LAUNCH_CONTAINER_TAB,
-      is_platform_app() ? NEW_WINDOW : CURRENT_TAB));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension_,
+                                  is_platform_app()
+                                      ? extensions::LAUNCH_CONTAINER_NONE
+                                      : extensions::LAUNCH_CONTAINER_TAB,
+                                  is_platform_app() ? NEW_WINDOW : CURRENT_TAB,
+                                  extensions::SOURCE_UNTRACKED));
 
   observer.Wait();
 
