@@ -26,7 +26,9 @@ class CC_EXPORT UIResourceLayer : public Layer {
 
   void SetBitmap(const SkBitmap& skbitmap);
 
-  // An alternative way of setting the resource to allow for sharing.
+  // An alternative way of setting the resource to allow for sharing. If you use
+  // this method, you are responsible for updating the ID if the layer moves
+  // between compositors.
   void SetUIResourceId(UIResourceId resource_id);
 
   // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
@@ -61,8 +63,6 @@ class CC_EXPORT UIResourceLayer : public Layer {
  private:
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void RecreateUIResourceHolder();
-
-
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceLayer);
 };
