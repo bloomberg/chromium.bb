@@ -19,7 +19,7 @@ if env.Bit('nonsfi_nacl'):
   # Specifying the target arch is necessary for using inline assembly
   # in non-SFI code.
   if env.Bit('target_x86_32'):
-    env.Append(CCFLAGS=['--target=i686-nacl'])
+    env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
   elif env.Bit('target_arm'):
     env.Append(CCFLAGS=['--target=armv7-unknown-nacl-gnueabihf',
                         '-mfloat-abi=hard'])
