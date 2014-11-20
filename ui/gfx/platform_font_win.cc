@@ -9,6 +9,7 @@
 #include <math.h>
 #include <windows.h>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -92,7 +93,7 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
   hr = font_collection->FindFamilyName(face_name, &index, &exists);
   // If we fail to find a match then fallback to the default font on the
   // system. This is what skia does as well.
-  if (FAILED(hr)) {
+  if (FAILED(hr) || (index == UINT_MAX) || !exists) {
     NONCLIENTMETRICS metrics = {0};
     metrics.cbSize = sizeof(metrics);
     if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS,
@@ -107,7 +108,7 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
                                          &exists);
   }
 
-  if (FAILED(hr)) {
+  if (FAILED(hr) || (index == UINT_MAX) || !exists) {
     CHECK(false);
     return hr;
   }
@@ -125,10 +126,36 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
   DWRITE_FONT_STYLE italic = (font_style & SkTypeface::kItalic)
                             ? DWRITE_FONT_STYLE_ITALIC
                             : DWRITE_FONT_STYLE_NORMAL;
+
+  // The IDWriteFontFamily::GetFirstMatchingFont call fails on certain machines
+  // for fonts like MS UI Gothic, Segoe UI, etc. It is not clear why these
+  // fonts could be accessible to GDI and not to DirectWrite.
+  // The code below adds some debug fields to help track down these failures.
+  // 1. We get the matching font list for the font attributes passed in.
+  // 2. We get the font count in the family with a debug alias variable.
+  // 3. If we fail to get the font via the GetFirstMatchingFont call then we
+  //    try to get the first matching font in the IDWriteFontList.
+  // 4. If GetFirstMatchingFont and IDWriteFontList both fail then we CHECK as
+  //    before.
+  // Next step would be to remove the CHECKs in this function and fallback to
+  // GDI.
+  // http://crbug.com/434425
+  base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
+  hr = font_family->GetMatchingFonts(weight, stretch, italic,
+                                     matching_font_list.Receive());
+  uint32 matching_font_count = 0;
+  if (SUCCEEDED(hr))
+    matching_font_count = matching_font_list->GetFontCount();
+
   hr = font_family->GetFirstMatchingFont(weight, stretch, italic,
                                          dwrite_font);
-  if (FAILED(hr))
+  if (FAILED(hr) && matching_font_list)
+    hr = matching_font_list->GetFont(0, dwrite_font);
+
+  if (FAILED(hr)) {
+    base::debug::Alias(&matching_font_count);
     CHECK(false);
+  }
   return hr;
 }
 
