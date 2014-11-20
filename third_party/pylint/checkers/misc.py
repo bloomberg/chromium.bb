@@ -10,14 +10,14 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """ Copyright (c) 2000-2010 LOGILAB S.A. (Paris, FRANCE).
  http://www.logilab.fr/ -- mailto:contact@logilab.fr
 
 Check source code is ascii only or has an encoding declaration (PEP 263)
 """
 
-import re, sys
+import re
 
 from pylint.interfaces import IRawChecker
 from pylint.checkers import BaseChecker
@@ -25,13 +25,21 @@ from pylint.checkers import BaseChecker
 
 MSGS = {
     'W0511': ('%s',
+              'fixme',
               'Used when a warning note as FIXME or XXX is detected.'),
-    }
+    'W0512': ('Cannot decode using encoding "%s", unexpected byte at position %d',
+              'invalid-encoded-data',
+              'Used when a source line cannot be decoded using the specified '
+              'source file encoding.',
+              {'maxversion': (3, 0)}),
+}
+
 
 class EncodingChecker(BaseChecker):
+
     """checks for:
     * warning notes in the code like FIXME, XXX
-    * PEP 263: source code with non ascii character but no encoding declaration
+    * encoding issues.
     """
     __implements__ = IRawChecker
 
@@ -40,36 +48,55 @@ class EncodingChecker(BaseChecker):
     msgs = MSGS
 
     options = (('notes',
-                {'type' : 'csv', 'metavar' : '<comma separated values>',
-                 'default' : ('FIXME', 'XXX', 'TODO'),
-                 'help' : 'List of note tags to take in consideration, \
-separated by a comma.'
-                 }),
-               )
+                {'type': 'csv', 'metavar': '<comma separated values>',
+                 'default': ('FIXME', 'XXX', 'TODO'),
+                 'help': ('List of note tags to take in consideration, '
+                          'separated by a comma.')}),)
 
-    def __init__(self, linter=None):
-        BaseChecker.__init__(self, linter)
+    def _check_note(self, notes, lineno, line):
+        # First, simply check if the notes are in the line at all. This is an
+        # optimisation to prevent using the regular expression on every line,
+        # but rather only on lines which may actually contain one of the notes.
+        # This prevents a pathological problem with lines that are hundreds
+        # of thousands of characters long.
+        for note in self.config.notes:
+            if note in line:
+                break
+        else:
+            return
 
-    def process_module(self, node):
-        """inspect the source file to found encoding problem or fixmes like
+        match = notes.search(line)
+        if not match:
+            return
+        self.add_message('fixme', args=line[match.start(1):-1], line=lineno)
+
+    def _check_encoding(self, lineno, line, file_encoding):
+        try:
+            return unicode(line, file_encoding)
+        except UnicodeDecodeError, ex:
+            self.add_message('invalid-encoded-data', line=lineno,
+                             args=(file_encoding, ex.args[2]))
+
+    def process_module(self, module):
+        """inspect the source file to find encoding problem or fixmes like
         notes
         """
-        stream = node.file_stream
-        stream.seek(0) # XXX may be removed with astng > 0.23
-        # warning notes in the code
-        notes = []
-        for note in self.config.notes:
-            notes.append(re.compile(note))
-        linenum = 1
-        for line in stream.readlines():
-            for note in notes:
-                match = note.search(line)
-                if match:
-                    self.add_message('W0511', args=line[match.start():-1],
-                                     line=linenum)
-                    break
-            linenum += 1
+        stream = module.file_stream
+        stream.seek(0)  # XXX may be removed with astroid > 0.23
+        if self.config.notes:
+            notes = re.compile(
+                r'.*?#\s*(%s)(:*\s*.+)' % "|".join(self.config.notes))
+        else:
+            notes = None
+        if module.file_encoding:
+            encoding = module.file_encoding
+        else:
+            encoding = 'ascii'
 
+        for lineno, line in enumerate(stream):
+            line = self._check_encoding(lineno + 1, line, encoding)
+            if line is not None and notes:
+                self._check_note(notes, lineno + 1, line)
 
 
 def register(linter):

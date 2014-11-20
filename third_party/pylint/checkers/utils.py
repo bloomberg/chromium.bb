@@ -1,6 +1,6 @@
 # pylint: disable=W0611
 #
-# Copyright (c) 2003-2010 LOGILAB S.A. (Paris, FRANCE).
+# Copyright (c) 2003-2013 LOGILAB S.A. (Paris, FRANCE).
 # http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -14,20 +14,43 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """some functions that may be useful for various checkers
 """
 
+import re
+import sys
 import string
-from logilab import astng
-from logilab.common.compat import builtins
-BUILTINS_NAME = builtins.__name__
 
-COMP_NODE_TYPES = astng.ListComp, astng.SetComp, astng.DictComp, astng.GenExpr
+import astroid
+from astroid import scoped_nodes
+from logilab.common.compat import builtins
+
+BUILTINS_NAME = builtins.__name__
+COMP_NODE_TYPES = astroid.ListComp, astroid.SetComp, astroid.DictComp, astroid.GenExpr
+PY3K = sys.version_info[0] == 3
+
+
+class NoSuchArgumentError(Exception):
+    pass
 
 def is_inside_except(node):
-    """Returns true if node is directly inside an exception handler"""
-    return isinstance(node.parent, astng.ExceptHandler)
+    """Returns true if node is inside the name of an except handler."""
+    current = node
+    while current and not isinstance(current.parent, astroid.ExceptHandler):
+        current = current.parent
+
+    return current and current is current.parent.name
+
+
+def get_all_elements(node):
+    """Recursively returns all atoms in nested lists and tuples."""
+    if isinstance(node, (astroid.Tuple, astroid.List)):
+        for child in node.elts:
+            for e in get_all_elements(child):
+                yield e
+    else:
+        yield node
 
 
 def clobber_in_except(node):
@@ -37,18 +60,18 @@ def clobber_in_except(node):
     Returns (True, args for W0623) if assignment clobbers an existing variable,
     (False, None) otherwise.
     """
-    if isinstance(node, astng.AssAttr):
-        return (True, (node.attrname, 'object %r' % (node.expr.name,)))
-    elif node is not None:
+    if isinstance(node, astroid.AssAttr):
+        return (True, (node.attrname, 'object %r' % (node.expr.as_string(),)))
+    elif isinstance(node, astroid.AssName):
         name = node.name
         if is_builtin(name):
             return (True, (name, 'builtins'))
         else:
-            scope, stmts = node.lookup(name)
-            if (stmts and 
-                not isinstance(stmts[0].ass_type(), 
-                               (astng.Assign, astng.AugAssign, astng.ExceptHandler))):
-                return (True, (name, 'outer scope (line %i)' % (stmts[0].lineno,)))
+            stmts = node.lookup(name)[1]
+            if (stmts and not isinstance(stmts[0].ass_type(),
+                                         (astroid.Assign, astroid.AugAssign,
+                                          astroid.ExceptHandler))):
+                return (True, (name, 'outer scope (line %s)' % stmts[0].fromlineno))
     return (False, None)
 
 
@@ -60,11 +83,13 @@ def safe_infer(node):
     try:
         inferit = node.infer()
         value = inferit.next()
-    except astng.InferenceError:
+    except astroid.InferenceError:
         return
     try:
         inferit.next()
         return # None if there is ambiguity on the inferred node
+    except astroid.InferenceError:
+        return # there is some kind of ambiguity
     except StopIteration:
         return value
 
@@ -79,23 +104,27 @@ def is_super(node):
 def is_error(node):
     """return true if the function does nothing but raising an exception"""
     for child_node in node.get_children():
-        if isinstance(child_node, astng.Raise):
+        if isinstance(child_node, astroid.Raise):
             return True
         return False
 
 def is_raising(body):
     """return true if the given statement node raise an exception"""
     for node in body:
-        if isinstance(node, astng.Raise):
+        if isinstance(node, astroid.Raise):
             return True
     return False
 
 def is_empty(body):
     """return true if the given node does nothing but 'pass'"""
-    return len(body) == 1 and isinstance(body[0], astng.Pass)
+    return len(body) == 1 and isinstance(body[0], astroid.Pass)
 
-builtins =  __builtins__.copy()
+builtins = builtins.__dict__.copy()
 SPECIAL_BUILTINS = ('__builtins__',) # '__path__', '__file__')
+
+def is_builtin_object(node):
+    """Returns True if the given node is an object from the __builtin__ module."""
+    return node and node.root().name == BUILTINS_NAME
 
 def is_builtin(name): # was is_native_builtin
     """return true if <name> could be considered as a builtin defined by python
@@ -115,35 +144,42 @@ def is_defined_before(var_node):
     _node = var_node.parent
     while _node:
         if isinstance(_node, COMP_NODE_TYPES):
-            for ass_node in _node.nodes_of_class(astng.AssName):
+            for ass_node in _node.nodes_of_class(astroid.AssName):
                 if ass_node.name == varname:
                     return True
-        elif isinstance(_node, astng.For):
-            for ass_node in _node.target.nodes_of_class(astng.AssName):
+        elif isinstance(_node, astroid.For):
+            for ass_node in _node.target.nodes_of_class(astroid.AssName):
                 if ass_node.name == varname:
                     return True
-        elif isinstance(_node, astng.With):
-            if _node.vars is None:
-                # quickfix : case in which 'with' is used without 'as'
-                return False
-            if _node.vars.name == varname:
-                return True
-        elif isinstance(_node, (astng.Lambda, astng.Function)):
+        elif isinstance(_node, astroid.With):
+            for expr, vars in _node.items:
+                if expr.parent_of(var_node):
+                    break
+                if (vars and
+                        isinstance(vars, astroid.AssName) and
+                        vars.name == varname):
+                    return True
+        elif isinstance(_node, (astroid.Lambda, astroid.Function)):
             if _node.args.is_argument(varname):
                 return True
             if getattr(_node, 'name', None) == varname:
                 return True
             break
+        elif isinstance(_node, astroid.ExceptHandler):
+            if isinstance(_node.name, astroid.AssName):
+                ass_node = _node.name
+                if ass_node.name == varname:
+                    return True
         _node = _node.parent
     # possibly multiple statements on the same line using semi colon separator
     stmt = var_node.statement()
     _node = stmt.previous_sibling()
     lineno = stmt.fromlineno
     while _node and _node.fromlineno == lineno:
-        for ass_node in _node.nodes_of_class(astng.AssName):
+        for ass_node in _node.nodes_of_class(astroid.AssName):
             if ass_node.name == varname:
                 return True
-        for imp_node in _node.nodes_of_class( (astng.From, astng.Import)):
+        for imp_node in _node.nodes_of_class((astroid.From, astroid.Import)):
             if varname in [name[1] or name[0] for name in imp_node.names]:
                 return True
         _node = _node.previous_sibling()
@@ -154,9 +190,9 @@ def is_func_default(node):
     value
     """
     parent = node.scope()
-    if isinstance(parent, astng.Function):
+    if isinstance(parent, astroid.Function):
         for default_node in parent.args.defaults:
-            for default_name_node in default_node.nodes_of_class(astng.Name):
+            for default_name_node in default_node.nodes_of_class(astroid.Name):
                 if default_name_node is node:
                     return True
     return False
@@ -165,15 +201,18 @@ def is_func_decorator(node):
     """return true if the name is used in function decorator"""
     parent = node.parent
     while parent is not None:
-        if isinstance(parent, astng.Decorators):
+        if isinstance(parent, astroid.Decorators):
             return True
-        if parent.is_statement or isinstance(parent, astng.Lambda):
+        if (parent.is_statement or
+                isinstance(parent, astroid.Lambda) or
+                isinstance(parent, (scoped_nodes.ComprehensionScope,
+                                    scoped_nodes.ListComp))):
             break
         parent = parent.parent
     return False
 
 def is_ancestor_name(frame, node):
-    """return True if `frame` is a astng.Class node with `node` in the
+    """return True if `frame` is a astroid.Class node with `node` in the
     subtree of its bases attribute
     """
     try:
@@ -181,23 +220,23 @@ def is_ancestor_name(frame, node):
     except AttributeError:
         return False
     for base in bases:
-        if node in base.nodes_of_class(astng.Name):
+        if node in base.nodes_of_class(astroid.Name):
             return True
     return False
 
 def assign_parent(node):
     """return the higher parent which is not an AssName, Tuple or List node
     """
-    while node and isinstance(node, (astng.AssName,
-                                     astng.Tuple,
-                                     astng.List)):
+    while node and isinstance(node, (astroid.AssName,
+                                     astroid.Tuple,
+                                     astroid.List)):
         node = node.parent
     return node
 
 def overrides_an_abstract_method(class_node, name):
     """return True if pnode is a parent of node"""
     for ancestor in class_node.ancestors():
-        if name in ancestor and isinstance(ancestor[name], astng.Function) and \
+        if name in ancestor and isinstance(ancestor[name], astroid.Function) and \
                ancestor[name].is_abstract(pass_is_abstract=False):
             return True
     return False
@@ -205,7 +244,7 @@ def overrides_an_abstract_method(class_node, name):
 def overrides_a_method(class_node, name):
     """return True if <name> is a method overridden from an ancestor"""
     for ancestor in class_node.ancestors():
-        if name in ancestor and isinstance(ancestor[name], astng.Function):
+        if name in ancestor and isinstance(ancestor[name], astroid.Function):
             return True
     return False
 
@@ -229,7 +268,7 @@ PYMETHODS = set(('__new__', '__init__', '__del__', '__hash__',
                  '__or__', '__ior__', '__ror__',
                  '__xor__', '__ixor__', '__rxor__',
                  # XXX To be continued
-                 ))
+                ))
 
 def check_messages(*messages):
     """decorator to store messages that are handled by a checker method"""
@@ -265,52 +304,118 @@ def parse_format_string(format_string):
         return (i, format_string[i])
     i = 0
     while i < len(format_string):
-        c = format_string[i]
-        if c == '%':
-            i, c = next_char(i)
+        char = format_string[i]
+        if char == '%':
+            i, char = next_char(i)
             # Parse the mapping key (optional).
             key = None
-            if c == '(':
+            if char == '(':
                 depth = 1
-                i, c = next_char(i)
+                i, char = next_char(i)
                 key_start = i
                 while depth != 0:
-                    if c == '(':
+                    if char == '(':
                         depth += 1
-                    elif c == ')':
+                    elif char == ')':
                         depth -= 1
-                    i, c = next_char(i)
+                    i, char = next_char(i)
                 key_end = i - 1
                 key = format_string[key_start:key_end]
 
             # Parse the conversion flags (optional).
-            while c in '#0- +':
-                i, c = next_char(i)
+            while char in '#0- +':
+                i, char = next_char(i)
             # Parse the minimum field width (optional).
-            if c == '*':
+            if char == '*':
                 num_args += 1
-                i, c = next_char(i)
+                i, char = next_char(i)
             else:
-                while c in string.digits:
-                    i, c = next_char(i)
+                while char in string.digits:
+                    i, char = next_char(i)
             # Parse the precision (optional).
-            if c == '.':
-                i, c = next_char(i)
-                if c == '*':
+            if char == '.':
+                i, char = next_char(i)
+                if char == '*':
                     num_args += 1
-                    i, c = next_char(i)
+                    i, char = next_char(i)
                 else:
-                    while c in string.digits:
-                        i, c = next_char(i)
+                    while char in string.digits:
+                        i, char = next_char(i)
             # Parse the length modifier (optional).
-            if c in 'hlL':
-                i, c = next_char(i)
+            if char in 'hlL':
+                i, char = next_char(i)
             # Parse the conversion type (mandatory).
-            if c not in 'diouxXeEfFgGcrs%':
+            if PY3K:
+                flags = 'diouxXeEfFgGcrs%a'
+            else:
+                flags = 'diouxXeEfFgGcrs%'
+            if char not in flags:
                 raise UnsupportedFormatCharacter(i)
             if key:
                 keys.add(key)
-            elif c != '%':
+            elif char != '%':
                 num_args += 1
         i += 1
     return keys, num_args
+
+
+def is_attr_protected(attrname):
+    """return True if attribute name is protected (start with _ and some other
+    details), False otherwise.
+    """
+    return attrname[0] == '_' and not attrname == '_' and not (
+        attrname.startswith('__') and attrname.endswith('__'))
+
+def node_frame_class(node):
+    """return klass node for a method node (or a staticmethod or a
+    classmethod), return null otherwise
+    """
+    klass = node.frame()
+
+    while klass is not None and not isinstance(klass, astroid.Class):
+        if klass.parent is None:
+            klass = None
+        else:
+            klass = klass.parent.frame()
+
+    return klass
+
+def is_super_call(expr):
+    """return True if expression node is a function call and if function name
+    is super. Check before that you're in a method.
+    """
+    return (isinstance(expr, astroid.CallFunc) and
+            isinstance(expr.func, astroid.Name) and
+            expr.func.name == 'super')
+
+def is_attr_private(attrname):
+    """Check that attribute name is private (at least two leading underscores,
+    at most one trailing underscore)
+    """
+    regex = re.compile('^_{2,}.*[^_]+_?$')
+    return regex.match(attrname)
+
+def get_argument_from_call(callfunc_node, position=None, keyword=None):
+    """Returns the specified argument from a function call.
+
+    :param callfunc_node: Node representing a function call to check.
+    :param int position: position of the argument.
+    :param str keyword: the keyword of the argument.
+
+    :returns: The node representing the argument, None if the argument is not found.
+    :raises ValueError: if both position and keyword are None.
+    :raises NoSuchArgumentError: if no argument at the provided position or with
+    the provided keyword.
+    """
+    if position is None and keyword is None:
+        raise ValueError('Must specify at least one of: position or keyword.')
+    try:
+        if position is not None and not isinstance(callfunc_node.args[position], astroid.Keyword):
+            return callfunc_node.args[position]
+    except IndexError, error:
+        raise NoSuchArgumentError(error)
+    if keyword:
+        for arg in callfunc_node.args:
+            if isinstance(arg, astroid.Keyword) and arg.arg == keyword:
+                return arg.value
+    raise NoSuchArgumentError

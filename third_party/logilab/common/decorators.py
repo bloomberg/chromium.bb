@@ -1,4 +1,4 @@
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -16,26 +16,28 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with logilab-common.  If not, see <http://www.gnu.org/licenses/>.
 """ A few useful function/method decorators. """
+
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 
 import sys
+import types
 from time import clock, time
+from inspect import isgeneratorfunction, getargspec
 
-from logilab.common.compat import callable, method_type
+from logilab.common.compat import method_type
 
 # XXX rewrite so we can use the decorator syntax when keyarg has to be specified
-
-def _is_generator_function(callableobj):
-    return callableobj.func_code.co_flags & 0x20
 
 class cached_decorator(object):
     def __init__(self, cacheattr=None, keyarg=None):
         self.cacheattr = cacheattr
         self.keyarg = keyarg
     def __call__(self, callableobj=None):
-        assert not _is_generator_function(callableobj), \
+        assert not isgeneratorfunction(callableobj), \
                'cannot cache generator function: %s' % callableobj
-        if callableobj.func_code.co_argcount == 1 or self.keyarg == 0:
+        if len(getargspec(callableobj).args) == 1 or self.keyarg == 0:
             cache = _SingleValueCache(callableobj, self.cacheattr)
         elif self.keyarg:
             cache = _MultiValuesKeyArgCache(callableobj, self.keyarg, self.cacheattr)
@@ -67,7 +69,6 @@ class _SingleValueCache(object):
         try:
             wrapped.__doc__ = self.callable.__doc__
             wrapped.__name__ = self.callable.__name__
-            wrapped.func_name = self.callable.func_name
         except:
             pass
         return wrapped
@@ -226,8 +227,8 @@ def timed(f):
         t = time()
         c = clock()
         res = f(*args, **kwargs)
-        print '%s clock: %.9f / time: %.9f' % (f.__name__,
-                                               clock() - c, time() - t)
+        print('%s clock: %.9f / time: %.9f' % (f.__name__,
+                                               clock() - c, time() - t))
         return res
     return wrap
 
@@ -249,7 +250,9 @@ def locked(acquire, release):
 
 
 def monkeypatch(klass, methodname=None):
-    """Decorator extending class with the decorated callable
+    """Decorator extending class with the decorated callable. This is basically
+    a syntactic sugar vs class assignment.
+
     >>> class A:
     ...     pass
     >>> @monkeypatch(A)
@@ -273,11 +276,6 @@ def monkeypatch(klass, methodname=None):
             raise AttributeError('%s has no __name__ attribute: '
                                  'you should provide an explicit `methodname`'
                                  % func)
-        if callable(func) and sys.version_info < (3, 0):
-            setattr(klass, name, method_type(func, None, klass))
-        else:
-            # likely a property
-            # this is quite borderline but usage already in the wild ...
-            setattr(klass, name, func)
+        setattr(klass, name, func)
         return func
     return decorator

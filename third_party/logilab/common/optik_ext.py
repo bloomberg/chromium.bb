@@ -46,6 +46,8 @@ It also defines three new types for optik/optparse command line parser :
     argument of this type will be converted to a float value in bytes
     according to byte units (b, kb, mb, gb, tb)
 """
+from __future__ import print_function
+
 __docformat__ = "restructuredtext en"
 
 import re
@@ -65,10 +67,9 @@ try:
 except ImportError:
     HAS_MX_DATETIME = False
 
+from logilab.common.textutils import splitstrip, TIME_UNITS, BYTE_UNITS, \
+    apply_units
 
-OPTPARSE_FORMAT_DEFAULT = sys.version_info >= (2, 4)
-
-from logilab.common.textutils import splitstrip
 
 def check_regexp(option, opt, value):
     """check a regexp value by trying to compile it
@@ -168,18 +169,15 @@ def check_color(option, opt, value):
     raise OptionValueError(msg % (opt, value))
 
 def check_time(option, opt, value):
-    from logilab.common.textutils import TIME_UNITS, apply_units
     if isinstance(value, (int, long, float)):
         return value
     return apply_units(value, TIME_UNITS)
 
 def check_bytes(option, opt, value):
-    from logilab.common.textutils import BYTE_UNITS, apply_units
     if hasattr(value, '__int__'):
         return value
     return apply_units(value, BYTE_UNITS)
 
-import types
 
 class Option(BaseOption):
     """override optik.Option to add some new option types
@@ -214,7 +212,7 @@ class Option(BaseOption):
             if self.choices is None:
                 raise OptionError(
                     "must supply a list of choices for type 'choice'", self)
-            elif type(self.choices) not in (types.TupleType, types.ListType):
+            elif not isinstance(self.choices, (tuple, list)):
                 raise OptionError(
                     "choices must be a list of strings ('%s' supplied)"
                     % str(type(self.choices)).split("'")[1], self)
@@ -227,10 +225,7 @@ class Option(BaseOption):
     def process(self, opt, value, values, parser):
         # First, convert the value(s) to the right type.  Howl if any
         # value(s) are bogus.
-        try:
-            value = self.convert_value(opt, value)
-        except AttributeError: # py < 2.4
-            value = self.check_value(opt, value)
+        value = self.convert_value(opt, value)
         if self.type == 'named':
             existant = getattr(values, self.dest)
             if existant:
@@ -388,9 +383,9 @@ def generate_manpage(optparser, pkginfo, section=1, stream=sys.stdout, level=0):
     formatter = ManHelpFormatter()
     formatter.output_level = level
     formatter.parser = optparser
-    print >> stream, formatter.format_head(optparser, pkginfo, section)
-    print >> stream, optparser.format_option_help(formatter)
-    print >> stream, formatter.format_tail(pkginfo)
+    print(formatter.format_head(optparser, pkginfo, section), file=stream)
+    print(optparser.format_option_help(formatter), file=stream)
+    print(formatter.format_tail(pkginfo), file=stream)
 
 
 __all__ = ('OptionParser', 'Option', 'OptionGroup', 'OptionValueError',

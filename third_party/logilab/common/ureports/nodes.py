@@ -23,6 +23,8 @@ __docformat__ = "restructuredtext en"
 
 from logilab.common.tree import VNode
 
+from six import string_types
+
 class BaseComponent(VNode):
     """base report component
 
@@ -79,7 +81,7 @@ class Text(BaseComponent):
         super(Text, self).__init__(**kwargs)
         #if isinstance(data, unicode):
         #    data = data.encode('ascii')
-        assert isinstance(data, (str, unicode)), data.__class__
+        assert isinstance(data, string_types), data.__class__
         self.escaped = escaped
         self.data = data
 

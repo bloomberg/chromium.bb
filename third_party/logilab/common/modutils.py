@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -27,6 +27,7 @@
 :type BUILTIN_MODULES: dict
 :var BUILTIN_MODULES: dictionary with builtin module names has key
 """
+
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -34,6 +35,9 @@ import os
 from os.path import splitext, join, abspath, isdir, dirname, exists, basename
 from imp import find_module, load_module, C_BUILTIN, PY_COMPILED, PKG_DIRECTORY
 from distutils.sysconfig import get_config_var, get_python_lib, get_python_version
+from distutils.errors import DistutilsPlatformError
+
+from six.moves import range
 
 try:
     import zipimport
@@ -53,12 +57,18 @@ from logilab.common import STD_BLACKLIST, _handle_blacklist
 if sys.platform.startswith('win'):
     PY_SOURCE_EXTS = ('py', 'pyw')
     PY_COMPILED_EXTS = ('dll', 'pyd')
-    STD_LIB_DIR = get_python_lib(standard_lib=1)
 else:
     PY_SOURCE_EXTS = ('py',)
     PY_COMPILED_EXTS = ('so',)
-    # extend lib dir with some arch-dependant paths
-    STD_LIB_DIR = join(get_config_var("LIBDIR"), "python%s" % get_python_version())
+
+try:
+    STD_LIB_DIR = get_python_lib(standard_lib=1)
+# get_python_lib(standard_lib=1) is not available on pypy, set STD_LIB_DIR to
+# non-valid path, see https://bugs.pypy.org/issue1164
+except DistutilsPlatformError:
+    STD_LIB_DIR = '//'
+
+EXT_LIB_DIR = get_python_lib()
 
 BUILTIN_MODULES = dict(zip(sys.builtin_module_names,
                            [1]*len(sys.builtin_module_names)))
@@ -84,7 +94,7 @@ class LazyObject(object):
     def __getattribute__(self, attr):
         try:
             return super(LazyObject, self).__getattribute__(attr)
-        except AttributeError, ex:
+        except AttributeError as ex:
             return getattr(self._getobj(), attr)
 
     def __call__(self, *args, **kwargs):
@@ -92,7 +102,7 @@ class LazyObject(object):
 
 
 def load_module_from_name(dotted_name, path=None, use_sys=1):
-    """Load a Python module from it's name.
+    """Load a Python module from its name.
 
     :type dotted_name: str
     :param dotted_name: python name of a module or package
@@ -117,7 +127,7 @@ def load_module_from_name(dotted_name, path=None, use_sys=1):
 
 
 def load_module_from_modpath(parts, path=None, use_sys=1):
-    """Load a python module from it's splitted name.
+    """Load a python module from its splitted name.
 
     :type parts: list(str) or tuple(str)
     :param parts:
@@ -150,6 +160,9 @@ def load_module_from_modpath(parts, path=None, use_sys=1):
         module = None
         if len(modpath) != len(parts):
             # even with use_sys=False, should try to get outer packages from sys.modules
+            module = sys.modules.get(curname)
+        elif use_sys:
+            # because it may have been indirectly loaded through a parent
             module = sys.modules.get(curname)
         if module is None:
             mp_file, mp_filename, mp_desc = find_module(part, path)
@@ -230,10 +243,7 @@ def modpath_from_file(filename, extrapath=None):
                     return extrapath[path_].split('.') + submodpath
     for path in sys.path:
         path = abspath(path)
-        if path and base[:len(path)] == path:
-            if filename.find('site-packages') != -1 and \
-                   path.find('site-packages') == -1:
-                continue
+        if path and base.startswith(path):
             modpath = [pkg for pkg in base[len(path):].split(os.sep) if pkg]
             if _check_init(path, modpath[:-1]):
                 return modpath
@@ -446,13 +456,16 @@ def get_source_file(filename, include_no_ext=False):
 
 def cleanup_sys_modules(directories):
     """remove submodules of `directories` from `sys.modules`"""
-    for modname, module in sys.modules.items():
+    cleaned = []
+    for modname, module in list(sys.modules.items()):
         modfile = getattr(module, '__file__', None)
         if modfile:
             for directory in directories:
                 if modfile.startswith(directory):
+                    cleaned.append(modname)
                     del sys.modules[modname]
                     break
+    return cleaned
 
 
 def is_python_source(filename):
@@ -484,7 +497,7 @@ def is_standard_module(modname, std_path=(STD_LIB_DIR,)):
     modname = modname.split('.')[0]
     try:
         filename = file_from_modpath([modname])
-    except ImportError, ex:
+    except ImportError as ex:
         # import failed, i'm probably not so wrong by supposing it's
         # not standard...
         return 0
@@ -493,13 +506,11 @@ def is_standard_module(modname, std_path=(STD_LIB_DIR,)):
     if filename is None:
         return 1
     filename = abspath(filename)
+    if filename.startswith(EXT_LIB_DIR):
+        return 0
     for path in std_path:
-        path = abspath(path)
-        if filename.startswith(path):
-            pfx_len = len(path)
-            if filename[pfx_len+1:pfx_len+14] != 'site-packages':
-                return 1
-            return 0
+        if filename.startswith(abspath(path)):
+            return 1
     return False
 
 
@@ -565,9 +576,14 @@ def _search_zip(modpath, pic):
             if importer.find_module(modpath[0]):
                 if not importer.find_module('/'.join(modpath)):
                     raise ImportError('No module named %s in %s/%s' % (
-                        '.'.join(modpath[1:]), file, modpath))
+                        '.'.join(modpath[1:]), filepath, modpath))
                 return ZIPFILE, abspath(filepath) + '/' + '/'.join(modpath), filepath
     raise ImportError('No module named %s' % '.'.join(modpath))
+
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None
 
 def _module_file(modpath, path=None):
     """get a module type / file path
@@ -599,16 +615,35 @@ def _module_file(modpath, path=None):
         checkeggs = True
     except AttributeError:
         checkeggs = False
+    # pkg_resources support (aka setuptools namespace packages)
+    if (pkg_resources is not None
+            and modpath[0] in pkg_resources._namespace_packages
+            and modpath[0] in sys.modules
+            and len(modpath) > 1):
+        # setuptools has added into sys.modules a module object with proper
+        # __path__, get back information from there
+        module = sys.modules[modpath.pop(0)]
+        path = module.__path__
     imported = []
     while modpath:
+        modname = modpath[0]
+        # take care to changes in find_module implementation wrt builtin modules
+        #
+        # Python 2.6.6 (r266:84292, Sep 11 2012, 08:34:23)
+        # >>> imp.find_module('posix')
+        # (None, 'posix', ('', '', 6))
+        #
+        # Python 3.3.1 (default, Apr 26 2013, 12:08:46)
+        # >>> imp.find_module('posix')
+        # (None, None, ('', '', 6))
         try:
-            _, mp_filename, mp_desc = find_module(modpath[0], path)
+            _, mp_filename, mp_desc = find_module(modname, path)
         except ImportError:
             if checkeggs:
                 return _search_zip(modpath, pic)[:2]
             raise
         else:
-            if checkeggs:
+            if checkeggs and mp_filename:
                 fullabspath = [abspath(x) for x in _path]
                 try:
                     pathindex = fullabspath.index(dirname(abspath(mp_filename)))
@@ -628,7 +663,21 @@ def _module_file(modpath, path=None):
             if mtype != PKG_DIRECTORY:
                 raise ImportError('No module %s in %s' % ('.'.join(modpath),
                                                           '.'.join(imported)))
-            path = [mp_filename]
+            # XXX guess if package is using pkgutil.extend_path by looking for
+            # those keywords in the first four Kbytes
+            try:
+                with open(join(mp_filename, '__init__.py')) as stream:
+                    data = stream.read(4096)
+            except IOError:
+                path = [mp_filename]
+            else:
+                if 'pkgutil' in data and 'extend_path' in data:
+                    # extend_path is called, search sys.path for module/packages
+                    # of this name see pkgutil.extend_path documentation
+                    path = [join(p, *imported) for p in sys.path
+                            if isdir(join(p, *imported))]
+                else:
+                    path = [mp_filename]
     return mtype, mp_filename
 
 def _is_python_file(filename):

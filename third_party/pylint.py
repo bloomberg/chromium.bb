@@ -16,7 +16,13 @@ http://www.logilab.fr/ -- mailto:contact@logilab.fr
 
 Copyright (c) 2012 The Chromium Authors. All rights reserved.
 """
+import os
 import sys
+
+# Add local modules to the search path.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(
+    __file__)), 'logilab'))
+
 from pylint import lint
 
 args = sys.argv[1:]

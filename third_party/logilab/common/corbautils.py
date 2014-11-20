@@ -72,7 +72,7 @@ def register_object_name(object, namepath):
         name = [CosNaming.NameComponent(id, kind)]
         try:
             context = context.bind_new_context(name)
-        except CosNaming.NamingContext.AlreadyBound, ex:
+        except CosNaming.NamingContext.AlreadyBound as ex:
             context = context.resolve(name)._narrow(CosNaming.NamingContext)
             assert context is not None, \
                    'test context exists but is not a NamingContext'
@@ -81,7 +81,7 @@ def register_object_name(object, namepath):
     name = [CosNaming.NameComponent(id, kind)]
     try:
         context.bind(name, object._this())
-    except CosNaming.NamingContext.AlreadyBound, ex:
+    except CosNaming.NamingContext.AlreadyBound as ex:
         context.rebind(name, object._this())
 
 def activate_POA():

@@ -1,22 +1,20 @@
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
-# copyright 2003-2010 Sylvain Thenault, all rights reserved.
-# contact mailto:thenault@gmail.com
 #
-# This file is part of logilab-astng.
+# This file is part of astroid.
 #
-# logilab-astng is free software: you can redistribute it and/or modify it
+# astroid is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# logilab-astng is distributed in the hope that it will be useful, but
+# astroid is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
+# with astroid. If not, see <http://www.gnu.org/licenses/>.
 """This module contains the classes for "scoped" node, i.e. which are opening a
 new local scope in the language definition : Module, Class, Function (and
 Lambda, GenExpr, DictComp and SetComp to some extent).
@@ -27,22 +25,28 @@ __doctype__ = "restructuredtext en"
 
 import sys
 from itertools import chain
+try:
+    from io import BytesIO
+except ImportError:
+    from cStringIO import StringIO as BytesIO
 
 from logilab.common.compat import builtins
-from logilab.common.decorators import cached
+from logilab.common.decorators import cached, cachedproperty
 
-from logilab.astng import BUILTINS_MODULE
-from logilab.astng.exceptions import NotFoundError, NoDefault, \
-     ASTNGBuildingException, InferenceError
-from logilab.astng.node_classes import Const, DelName, DelAttr, \
-     Dict, From, List, Name, Pass, Raise, Return, Tuple, Yield, \
-     are_exclusive, LookupMixIn, const_factory as cf, unpack_infer
-from logilab.astng.bases import NodeNG, InferenceContext, Instance,\
+from astroid.exceptions import NotFoundError, \
+     AstroidBuildingException, InferenceError
+from astroid.node_classes import Const, DelName, DelAttr, \
+     Dict, From, List, Pass, Raise, Return, Tuple, Yield, YieldFrom, \
+     LookupMixIn, const_factory as cf, unpack_infer, Name, CallFunc
+from astroid.bases import NodeNG, InferenceContext, Instance,\
      YES, Generator, UnboundMethod, BoundMethod, _infer_stmts, copy_context, \
-     BUILTINS_NAME
-from logilab.astng.mixins import FilterStmtsMixin
-from logilab.astng.bases import Statement
-from logilab.astng.manager import ASTNGManager
+     BUILTINS
+from astroid.mixins import FilterStmtsMixin
+from astroid.bases import Statement
+from astroid.manager import AstroidManager
+
+ITER_METHODS = ('__iter__', '__getitem__')
+PY3K = sys.version_info >= (3, 0)
 
 
 def remove_nodes(func, cls):
@@ -75,20 +79,20 @@ def std_special_attributes(self, name, add_locals=True):
         return [Dict()] + locals.get(name, [])
     raise NotFoundError(name)
 
-MANAGER = ASTNGManager()
+MANAGER = AstroidManager()
 def builtin_lookup(name):
     """lookup a name into the builtin module
-    return the list of matching statements and the astng for the builtin
+    return the list of matching statements and the astroid for the builtin
     module
     """
-    builtin_astng = MANAGER.astng_from_module(builtins)
+    builtin_astroid = MANAGER.ast_from_module(builtins)
     if name == '__dict__':
-        return builtin_astng, ()
+        return builtin_astroid, ()
     try:
-        stmts = builtin_astng.locals[name]
+        stmts = builtin_astroid.locals[name]
     except KeyError:
         stmts = ()
-    return builtin_astng, stmts
+    return builtin_astroid, stmts
 
 
 # TODO move this Mixin to mixins.py; problem: 'Function' in _scope_lookup
@@ -210,25 +214,33 @@ class LocalsDictNodeNG(LookupMixIn, NodeNG):
 # Module  #####################################################################
 
 class Module(LocalsDictNodeNG):
-    _astng_fields = ('body',)
+    _astroid_fields = ('body',)
 
     fromlineno = 0
     lineno = 0
 
     # attributes below are set by the builder module or by raw factories
 
-    # the file from which as been extracted the astng representation. It may
+    # the file from which as been extracted the astroid representation. It may
     # be None if the representation has been built from a built-in module
     file = None
+    # Alternatively, if built from a string/bytes, this can be set
+    file_bytes = None
+    # encoding of python source file, so we can get unicode out of it (python2
+    # only)
+    file_encoding = None
     # the module name
     name = None
-    # boolean for astng built from source (i.e. ast)
+    # boolean for astroid built from source (i.e. ast)
     pure_python = None
     # boolean for package module
     package = None
     # dictionary of globals with name as key and node defining the global
     # as value
     globals = None
+
+    # Future imports
+    future_imports = None
 
     # names of python special attributes (handled by getattr impl.)
     special_attributes = set(('__name__', '__doc__', '__file__', '__path__',
@@ -242,11 +254,14 @@ class Module(LocalsDictNodeNG):
         self.pure_python = pure_python
         self.locals = self.globals = {}
         self.body = []
+        self.future_imports = set()
 
     @property
     def file_stream(self):
+        if self.file_bytes is not None:
+            return BytesIO(self.file_bytes)
         if self.file is not None:
-            return file(self.file)
+            return open(self.file, 'rb')
         return None
 
     def block_range(self, lineno):
@@ -265,7 +280,7 @@ class Module(LocalsDictNodeNG):
         return self._scope_lookup(node, name, offset)
 
     def pytype(self):
-        return '%s.module' % BUILTINS_MODULE
+        return '%s.module' % BUILTINS
 
     def display_type(self):
         return 'Module'
@@ -282,7 +297,9 @@ class Module(LocalsDictNodeNG):
         if self.package:
             try:
                 return [self.import_module(name, relative_only=True)]
-            except ASTNGBuildingException:
+            except AstroidBuildingException:
+                raise NotFoundError(name)
+            except SyntaxError:
                 raise NotFoundError(name)
             except Exception:# XXX pylint tests never pass here; do we need it?
                 import traceback
@@ -336,13 +353,13 @@ class Module(LocalsDictNodeNG):
             level = 0
         absmodname = self.relative_to_absolute_name(modname, level)
         try:
-            return MANAGER.astng_from_module_name(absmodname)
-        except ASTNGBuildingException:
+            return MANAGER.ast_from_module_name(absmodname)
+        except AstroidBuildingException:
             # we only want to import a sub module or package of this module,
             # skip here
             if relative_only:
                 raise
-        return MANAGER.astng_from_module_name(modname)
+        return MANAGER.ast_from_module_name(modname)
 
     def relative_to_absolute_name(self, modname, level):
         """return the absolute module name for a relative import.
@@ -350,7 +367,7 @@ class Module(LocalsDictNodeNG):
         The relative import can be implicit or explicit.
         """
         # XXX this returns non sens when called on an absolute import
-        # like 'pylint.checkers.logilab.astng.utils'
+        # like 'pylint.checkers.astroid.utils'
         # XXX doesn't return absolute name if self.name isn't absolute name
         if self.absolute_import_activated() and level is None:
             return modname
@@ -387,7 +404,7 @@ class Module(LocalsDictNodeNG):
             except AttributeError:
                 return [name for name in living.__dict__.keys()
                         if not name.startswith('_')]
-        # else lookup the astng
+        # else lookup the astroid
         #
         # We separate the different steps of lookup in try/excepts
         # to avoid catching too many Exceptions
@@ -419,7 +436,7 @@ class ComprehensionScope(LocalsDictNodeNG):
 
 
 class GenExpr(ComprehensionScope):
-    _astng_fields = ('elt', 'generators')
+    _astroid_fields = ('elt', 'generators')
 
     def __init__(self):
         self.locals = {}
@@ -428,7 +445,7 @@ class GenExpr(ComprehensionScope):
 
 
 class DictComp(ComprehensionScope):
-    _astng_fields = ('key', 'value', 'generators')
+    _astroid_fields = ('key', 'value', 'generators')
 
     def __init__(self):
         self.locals = {}
@@ -438,7 +455,7 @@ class DictComp(ComprehensionScope):
 
 
 class SetComp(ComprehensionScope):
-    _astng_fields = ('elt', 'generators')
+    _astroid_fields = ('elt', 'generators')
 
     def __init__(self):
         self.locals = {}
@@ -448,7 +465,7 @@ class SetComp(ComprehensionScope):
 
 class _ListComp(NodeNG):
     """class representing a ListComp node"""
-    _astng_fields = ('elt', 'generators')
+    _astroid_fields = ('elt', 'generators')
     elt = None
     generators = None
 
@@ -463,9 +480,85 @@ else:
 
 # Function  ###################################################################
 
+def _infer_decorator_callchain(node):
+    """ Detect decorator call chaining and see if the
+    end result is a static or a classmethod.
+    """
+    current = node
+    while True:
+        if isinstance(current, CallFunc):
+            try:
+                current = current.func.infer().next()
+            except InferenceError:
+                return
+        elif isinstance(current, Function):
+            if not current.parent:
+                return
+            try:
+                # TODO: We don't handle multiple inference results right now,
+                #       because there's no flow to reason when the return
+                #       is what we are looking for, a static or a class method.
+                result = current.infer_call_result(current.parent).next()
+            except (StopIteration, InferenceError):
+                return
+            if isinstance(result, (Function, CallFunc)):
+                current = result
+            else:
+                if isinstance(result, Instance):
+                    result = result._proxied
+                if isinstance(result, Class):
+                    if (result.name == 'classmethod' and
+                            result.root().name == BUILTINS):
+                        return 'classmethod'
+                    elif (result.name == 'staticmethod' and
+                          result.root().name == BUILTINS):
+                        return 'staticmethod'
+                    else:
+                        return
+                else:
+                    # We aren't interested in anything else returned,
+                    # so go back to the function type inference.
+                    return
+        else:
+            return
+
+def _function_type(self):
+    """
+    Function type, possible values are:
+    method, function, staticmethod, classmethod.
+    """
+    # Can't infer that this node is decorated
+    # with a subclass of `classmethod` where `type` is first set,
+    # so do it here.
+    if self.decorators:
+        for node in self.decorators.nodes:
+            if isinstance(node, CallFunc):
+                _type = _infer_decorator_callchain(node)
+                if _type is None:
+                    continue
+                else:
+                    return _type
+            if not isinstance(node, Name):
+                continue
+            try:
+                for infered in node.infer():
+                    if not isinstance(infered, Class):
+                        continue
+                    for ancestor in infered.ancestors():
+                        if isinstance(ancestor, Class):
+                            if (ancestor.name == 'classmethod' and
+                                    ancestor.root().name == BUILTINS):
+                                return 'classmethod'
+                            elif (ancestor.name == 'staticmethod' and
+                                  ancestor.root().name == BUILTINS):
+                                return 'staticmethod'
+            except InferenceError:
+                pass
+    return self._type
+
 
 class Lambda(LocalsDictNodeNG, FilterStmtsMixin):
-    _astng_fields = ('args', 'body',)
+    _astroid_fields = ('args', 'body',)
     name = '<lambda>'
 
     # function's type, 'function' | 'method' | 'staticmethod' | 'classmethod'
@@ -478,8 +571,8 @@ class Lambda(LocalsDictNodeNG, FilterStmtsMixin):
 
     def pytype(self):
         if 'method' in self.type:
-            return '%s.instancemethod' % BUILTINS_MODULE
-        return '%s.function' % BUILTINS_MODULE
+            return '%s.instancemethod' % BUILTINS
+        return '%s.function' % BUILTINS
 
     def display_type(self):
         if 'method' in self.type:
@@ -506,7 +599,7 @@ class Lambda(LocalsDictNodeNG, FilterStmtsMixin):
         return self.body.infer(context)
 
     def scope_lookup(self, node, name, offset=0):
-        if node in self.args.defaults:
+        if node in self.args.defaults or node in self.args.kw_defaults:
             frame = self.parent.frame()
             # line offset to avoid that def func(f=func) resolve the default
             # value to the defined function
@@ -518,13 +611,19 @@ class Lambda(LocalsDictNodeNG, FilterStmtsMixin):
 
 
 class Function(Statement, Lambda):
-    _astng_fields = ('decorators', 'args', 'body')
+    if PY3K:
+        _astroid_fields = ('decorators', 'args', 'body', 'returns')
+        returns = None
+    else:
+        _astroid_fields = ('decorators', 'args', 'body')
 
     special_attributes = set(('__name__', '__doc__', '__dict__'))
     is_function = True
     # attributes below are set by the builder module or by raw factories
     blockstart_tolineno = None
     decorators = None
+    _type = "function"
+    type = cachedproperty(_function_type)
 
     def __init__(self, name, doc):
         self.locals = {}
@@ -540,7 +639,10 @@ class Function(Statement, Lambda):
         self.fromlineno = self.lineno
         # lineno is the line number of the first decorator, we want the def statement lineno
         if self.decorators is not None:
-            self.fromlineno += len(self.decorators.nodes)
+            self.fromlineno += sum(node.tolineno - node.lineno + 1
+                                   for node in self.decorators.nodes)
+        if self.args.fromlineno < self.fromlineno:
+            self.args.fromlineno = self.fromlineno
         self.tolineno = lastchild.tolineno
         self.blockstart_tolineno = self.args.tolineno
 
@@ -585,10 +687,23 @@ class Function(Statement, Lambda):
         return self.type == 'classmethod'
 
     def is_abstract(self, pass_is_abstract=True):
-        """return true if the method is abstract
-        It's considered as abstract if the only statement is a raise of
-        NotImplementError, or, if pass_is_abstract, a pass statement
+        """Returns True if the method is abstract.
+
+        A method is considered abstract if
+         - the only statement is 'raise NotImplementedError', or
+         - the only statement is 'pass' and pass_is_abstract is True, or
+         - the method is annotated with abc.astractproperty/abc.abstractmethod
         """
+        if self.decorators:
+            for node in self.decorators.nodes:
+                try:
+                    infered = node.infer().next()
+                except InferenceError:
+                    continue
+                if infered and infered.qname() in ('abc.abstractproperty',
+                                                   'abc.abstractmethod'):
+                    return True
+
         for child_node in self.body:
             if isinstance(child_node, Raise):
                 if child_node.raises_not_implemented():
@@ -604,14 +719,15 @@ class Function(Statement, Lambda):
         """return true if this is a generator function"""
         # XXX should be flagged, not computed
         try:
-            return self.nodes_of_class(Yield, skip_klass=Function).next()
+            return self.nodes_of_class((Yield, YieldFrom),
+                                       skip_klass=(Function, Lambda)).next()
         except StopIteration:
             return False
 
     def infer_call_result(self, caller, context=None):
         """infer what a function is returning when called"""
         if self.is_generator():
-            yield Generator(self)
+            yield Generator()
             return
         returns = self.nodes_of_class(Return, skip_klass=Function)
         for returnnode in returns:
@@ -639,6 +755,40 @@ def _rec_get_names(args, names=None):
 
 # Class ######################################################################
 
+
+def _is_metaclass(klass, seen=None):
+    """ Return if the given class can be
+    used as a metaclass.
+    """
+    if klass.name == 'type':
+        return True
+    if seen is None:
+        seen = set()
+    for base in klass.bases:
+        try:
+            for baseobj in base.infer():
+                if baseobj in seen:
+                    continue
+                else:
+                    seen.add(baseobj)
+                if isinstance(baseobj, Instance):
+                    # not abstract
+                    return False
+                if baseobj is YES:
+                    continue
+                if baseobj is klass:
+                    continue
+                if not isinstance(baseobj, Class):
+                    continue
+                if baseobj._type == 'metaclass':
+                    return True
+                if _is_metaclass(baseobj, seen):
+                    return True
+        except InferenceError:
+            continue
+    return False
+
+
 def _class_type(klass, ancestors=None):
     """return a Class node type to differ metaclass, interface and exception
     from 'regular' classes
@@ -646,7 +796,7 @@ def _class_type(klass, ancestors=None):
     # XXX we have to store ancestors in case we have a ancestor loop
     if klass._type is not None:
         return klass._type
-    if klass.name == 'type':
+    if _is_metaclass(klass):
         klass._type = 'metaclass'
     elif klass.name.endswith('Interface'):
         klass._type = 'interface'
@@ -662,7 +812,12 @@ def _class_type(klass, ancestors=None):
         ancestors.add(klass)
         # print >> sys.stderr, '_class_type', repr(klass)
         for base in klass.ancestors(recurs=False):
-            if _class_type(base, ancestors) != 'class':
+            name = _class_type(base, ancestors)
+            if name != 'class':
+                if name == 'metaclass' and not _is_metaclass(klass):
+                    # don't propagate it if the current class
+                    # can't be a metaclass
+                    continue
                 klass._type = base.type
                 break
     if klass._type is None:
@@ -682,7 +837,7 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
     # by a raw factories
 
     # a dictionary of class instances attributes
-    _astng_fields = ('decorators', 'bases', 'body') # name
+    _astroid_fields = ('decorators', 'bases', 'body') # name
 
     decorators = None
     special_attributes = set(('__name__', '__doc__', '__dict__', '__module__',
@@ -711,6 +866,11 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
             if base._newstyle_impl(context):
                 self._newstyle = True
                 break
+        klass = self._explicit_metaclass()
+        # could be any callable, we'd need to infer the result of klass(name,
+        # bases, dict).  punt if it's not a class node.
+        if klass is not None and isinstance(klass, Class):
+            self._newstyle = klass._newstyle_impl(context)
         if self._newstyle is None:
             self._newstyle = False
         return self._newstyle
@@ -736,8 +896,8 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
 
     def pytype(self):
         if self.newstyle:
-            return '%s.type' % BUILTINS_MODULE
-        return '%s.classobj' % BUILTINS_MODULE
+            return '%s.type' % BUILTINS
+        return '%s.classobj' % BUILTINS
 
     def display_type(self):
         return 'Class'
@@ -745,9 +905,36 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
     def callable(self):
         return True
 
+    def _is_subtype_of(self, type_name):
+        if self.qname() == type_name:
+            return True
+        for anc in self.ancestors():
+            if anc.qname() == type_name:
+                return True
+
     def infer_call_result(self, caller, context=None):
         """infer what a class is returning when called"""
-        yield Instance(self)
+        if self._is_subtype_of('%s.type' % (BUILTINS,)) and len(caller.args) == 3:
+            name_node = caller.args[0].infer().next()
+            if isinstance(name_node, Const) and isinstance(name_node.value, basestring):
+                name = name_node.value
+            else:
+                yield YES
+                return
+            result = Class(name, None)
+            bases = caller.args[1].infer().next()
+            if isinstance(bases, (Tuple, List)):
+                result.bases = bases.itered()
+            else:
+                # There is currently no AST node that can represent an 'unknown'
+                # node (YES is not an AST node), therefore we simply return YES here
+                # although we know at least the name of the class.
+                yield YES
+                return
+            result.parent = caller.parent
+            yield result
+        else:
+            yield Instance(self)
 
     def scope_lookup(self, node, name, offset=0):
         if node in self.bases:
@@ -784,8 +971,11 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
                 try:
                     for baseobj in stmt.infer(context):
                         if not isinstance(baseobj, Class):
-                            # duh ?
-                            continue
+                            if isinstance(baseobj, Instance):
+                                baseobj = baseobj._proxied
+                            else:
+                                # duh ?
+                                continue
                         if baseobj in yielded:
                             continue # cf xxx above
                         yielded.add(baseobj)
@@ -801,20 +991,20 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
                     continue
 
     def local_attr_ancestors(self, name, context=None):
-        """return an iterator on astng representation of parent classes
+        """return an iterator on astroid representation of parent classes
         which have <name> defined in their locals
         """
-        for astng in self.ancestors(context=context):
-            if name in astng:
-                yield astng
+        for astroid in self.ancestors(context=context):
+            if name in astroid:
+                yield astroid
 
     def instance_attr_ancestors(self, name, context=None):
-        """return an iterator on astng representation of parent classes
+        """return an iterator on astroid representation of parent classes
         which have <name> defined in their instance attribute dictionary
         """
-        for astng in self.ancestors(context=context):
-            if name in astng.instance_attrs:
-                yield astng
+        for astroid in self.ancestors(context=context):
+            if name in astroid.instance_attrs:
+                yield astroid
 
     def has_base(self, node):
         return node in self.bases
@@ -837,14 +1027,16 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
     local_attr = remove_nodes(local_attr, DelAttr)
 
     def instance_attr(self, name, context=None):
-        """return the astng nodes associated to name in this class instance
+        """return the astroid nodes associated to name in this class instance
         attributes dictionary and in its parents
 
         :raises `NotFoundError`:
           if no attribute with this name has been find in this class or
           its parent classes
         """
-        values = self.instance_attrs.get(name, [])
+        # Return a copy, so we don't modify self.instance_attrs,
+        # which could lead to infinite loop.
+        values = list(self.instance_attrs.get(name, []))
         # get all values from parents
         for class_node in self.instance_attr_ancestors(name, context):
             values += class_node.instance_attrs[name]
@@ -868,15 +1060,14 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
         if name in self.special_attributes:
             if name == '__module__':
                 return [cf(self.root().qname())] + values
-            # FIXME : what is expected by passing the list of ancestors to cf:
-            # you can just do [cf(tuple())] + values without breaking any test
+            # FIXME: do we really need the actual list of ancestors?
+            # returning [Tuple()] + values don't break any test
             # this is ticket http://www.logilab.org/ticket/52785
-            if name == '__bases__':
-                return [cf(tuple(self.ancestors(recurs=False, context=context)))] + values
             # XXX need proper meta class handling + MRO implementation
-            if name == '__mro__' and self.newstyle:
-                # XXX mro is read-only but that's not our job to detect that
-                return [cf(tuple(self.ancestors(recurs=True, context=context)))] + values
+            if name == '__bases__' or (name == '__mro__' and self.newstyle):
+                node = Tuple()
+                node.items = self.ancestors(recurs=True, context=context)
+                return [node] + values
             return std_special_attributes(self, name)
         # don't modify the list in self.locals!
         values = list(values)
@@ -928,7 +1119,7 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
             #if self.newstyle: XXX cause an infinite recursion error
             try:
                 getattribute = self.getattr('__getattribute__', context)[0]
-                if getattribute.root().name != BUILTINS_NAME:
+                if getattribute.root().name != BUILTINS:
                     # class has a custom __getattribute__ defined
                     return True
             except NotFoundError:
@@ -940,8 +1131,8 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
         its ancestors
         """
         done = {}
-        for astng in chain(iter((self,)), self.ancestors()):
-            for meth in astng.mymethods():
+        for astroid in chain(iter((self,)), self.ancestors()):
+            for meth in astroid.mymethods():
                 if meth.name in done:
                     continue
                 done[meth.name] = None
@@ -975,3 +1166,112 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
                 yield iface
         if missing:
             raise InferenceError()
+
+    _metaclass = None
+    def _explicit_metaclass(self):
+        """ Return the explicit defined metaclass
+        for the current class.
+
+        An explicit defined metaclass is defined
+        either by passing the ``metaclass`` keyword argument
+        in the class definition line (Python 3) or (Python 2) by
+        having a ``__metaclass__`` class attribute, or if there are
+        no explicit bases but there is a global ``__metaclass__`` variable.
+        """
+        if self._metaclass:
+            # Expects this from Py3k TreeRebuilder
+            try:
+                return next(node for node in self._metaclass.infer()
+                            if node is not YES)
+            except (InferenceError, StopIteration):
+                return None
+        if sys.version_info >= (3, ):
+            return None
+
+        if '__metaclass__' in self.locals:
+            assignment = self.locals['__metaclass__'][-1]
+        elif self.bases:
+            return None
+        elif '__metaclass__' in self.root().locals:
+            assignments = [ass for ass in self.root().locals['__metaclass__']
+                           if ass.lineno < self.lineno]
+            if not assignments:
+                return None
+            assignment = assignments[-1]
+        else:
+            return None
+
+        try:
+            infered = assignment.infer().next()
+        except InferenceError:
+            return
+        if infered is YES: # don't expose this
+            return None
+        return infered
+
+    def metaclass(self):
+        """ Return the metaclass of this class.
+
+        If this class does not define explicitly a metaclass,
+        then the first defined metaclass in ancestors will be used
+        instead.
+        """
+        klass = self._explicit_metaclass()
+        if klass is None:
+            for parent in self.ancestors():
+                klass = parent.metaclass()
+                if klass is not None:
+                    break
+        return klass
+
+    def _islots(self):
+        """ Return an iterator with the inferred slots. """
+        if '__slots__' not in self.locals:
+            return
+        for slots in self.igetattr('__slots__'):
+            # check if __slots__ is a valid type
+            for meth in ITER_METHODS:
+                try:
+                    slots.getattr(meth)
+                    break
+                except NotFoundError:
+                    continue
+            else:
+                continue
+
+            if isinstance(slots, Const):
+                # a string. Ignore the following checks,
+                # but yield the node, only if it has a value
+                if slots.value:
+                    yield slots
+                continue
+            if not hasattr(slots, 'itered'):
+                # we can't obtain the values, maybe a .deque?
+                continue
+
+            if isinstance(slots, Dict):
+                values = [item[0] for item in slots.items]
+            else:
+                values = slots.itered()
+            if values is YES:
+                continue
+
+            for elt in values:
+                try:
+                    for infered in elt.infer():
+                        if infered is YES:
+                            continue
+                        if (not isinstance(infered, Const) or
+                                not isinstance(infered.value, str)):
+                            continue
+                        if not infered.value:
+                            continue
+                        yield infered
+                except InferenceError:
+                    continue
+
+    # Cached, because inferring them all the time is expensive
+    @cached
+    def slots(self):
+        """ Return all the slots for this node. """
+        return list(self._islots())

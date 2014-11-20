@@ -1,35 +1,21 @@
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the Free Software
-# Foundation; either version 2 of the License, or (at your option) any later
-# version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# copyright 2003-2010 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
-# copyright 2003-2010 Sylvain Thenault, all rights reserved.
-# contact mailto:thenault@gmail.com
 #
-# This file is part of logilab-astng.
+# This file is part of astroid.
 #
-# logilab-astng is free software: you can redistribute it and/or modify it
+# astroid is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# logilab-astng is distributed in the hope that it will be useful, but
+# astroid is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
-"""visitor doing some postprocessing on the astng tree.
+# with astroid. If not, see <http://www.gnu.org/licenses/>.
+"""visitor doing some postprocessing on the astroid tree.
 Try to resolve definitions (namespace) dictionary, relationship...
 
 This module has been imported from pyreverse
@@ -39,25 +25,23 @@ __docformat__ = "restructuredtext en"
 
 from os.path import dirname
 
-from logilab.common.modutils import get_module_part, is_relative, \
-     is_standard_module
+import astroid
+from astroid.exceptions import InferenceError
+from astroid.utils import LocalsVisitor
+from astroid.modutils import get_module_part, is_relative, is_standard_module
 
-from logilab import astng
-from logilab.astng.exceptions import InferenceError
-from logilab.astng.utils import LocalsVisitor
-
-class IdGeneratorMixIn:
+class IdGeneratorMixIn(object):
     """
     Mixin adding the ability to generate integer uid
     """
     def __init__(self, start_value=0):
         self.id_count = start_value
-    
+
     def init_counter(self, start_value=0):
         """init the id counter
         """
         self.id_count = start_value
-        
+
     def generate_id(self):
         """generate a new identifier
         """
@@ -68,26 +52,26 @@ class IdGeneratorMixIn:
 class Linker(IdGeneratorMixIn, LocalsVisitor):
     """
     walk on the project tree and resolve relationships.
-    
+
     According to options the following attributes may be added to visited nodes:
-    
+
     * uid,
-      a unique identifier for the node (on astng.Project, astng.Module,
-      astng.Class and astng.locals_type). Only if the linker has been instantiated
+      a unique identifier for the node (on astroid.Project, astroid.Module,
+      astroid.Class and astroid.locals_type). Only if the linker has been instantiated
       with tag=True parameter (False by default).
-            
+
     * Function
       a mapping from locals names to their bounded value, which may be a
-      constant like a string or an integer, or an astng node (on astng.Module,
-      astng.Class and astng.Function).
+      constant like a string or an integer, or an astroid node (on astroid.Module,
+      astroid.Class and astroid.Function).
 
     * instance_attrs_type
-      as locals_type but for klass member attributes (only on astng.Class)
-      
+      as locals_type but for klass member attributes (only on astroid.Class)
+
     * implements,
-      list of implemented interface _objects_ (only on astng.Class nodes)
+      list of implemented interface _objects_ (only on astroid.Class nodes)
     """
-    
+
     def __init__(self, project, inherited_interfaces=0, tag=False):
         IdGeneratorMixIn.__init__(self)
         LocalsVisitor.__init__(self)
@@ -98,30 +82,30 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
         # visited project
         self.project = project
 
-        
+
     def visit_project(self, node):
-        """visit an astng.Project node
-        
+        """visit an astroid.Project node
+
          * optionally tag the node with a unique id
         """
         if self.tag:
             node.uid = self.generate_id()
         for module in node.modules:
             self.visit(module)
-            
+
     def visit_package(self, node):
-        """visit an astng.Package node
-        
+        """visit an astroid.Package node
+
          * optionally tag the node with a unique id
         """
         if self.tag:
             node.uid = self.generate_id()
         for subelmt in node.values():
             self.visit(subelmt)
-            
+
     def visit_module(self, node):
-        """visit an astng.Module node
-        
+        """visit an astroid.Module node
+
          * set the locals_type mapping
          * set the depends mapping
          * optionally tag the node with a unique id
@@ -132,10 +116,10 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
         node.depends = []
         if self.tag:
             node.uid = self.generate_id()
-    
+
     def visit_class(self, node):
-        """visit an astng.Class node
-        
+        """visit an astroid.Class node
+
          * set the locals_type and instance_attrs_type mappings
          * set the implements list and build it
          * optionally tag the node with a unique id
@@ -162,8 +146,8 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
             node.implements = ()
 
     def visit_function(self, node):
-        """visit an astng.Function node
-        
+        """visit an astroid.Function node
+
          * set the locals_type mapping
          * optionally tag the node with a unique id
         """
@@ -172,14 +156,14 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
         node.locals_type = {}
         if self.tag:
             node.uid = self.generate_id()
-            
+
     link_project = visit_project
     link_module = visit_module
     link_class = visit_class
     link_function = visit_function
-        
+
     def visit_assname(self, node):
-        """visit an astng.AssName node
+        """visit an astroid.AssName node
 
         handle locals_type
         """
@@ -192,7 +176,7 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
             frame = node.frame()
         else:
             # the name has been defined as 'global' in the frame and belongs
-            # there. Btw the frame is not yet visited as the name is in the 
+            # there. Btw the frame is not yet visited as the name is in the
             # root locals; the frame hence has no locals_type attribute
             frame = node.root()
         try:
@@ -204,11 +188,11 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
                         already_infered.append(valnode)
             except KeyError:
                 frame.locals_type[node.name] = values
-        except astng.InferenceError:
+        except astroid.InferenceError:
             pass
 
     def handle_assattr_type(self, node, parent):
-        """handle an astng.AssAttr node
+        """handle an astroid.AssAttr node
 
         handle instance_attrs_type
         """
@@ -221,23 +205,23 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
                         already_infered.append(valnode)
             except KeyError:
                 parent.instance_attrs_type[node.attrname] = values
-        except astng.InferenceError:
+        except astroid.InferenceError:
             pass
-            
+
     def visit_import(self, node):
-        """visit an astng.Import node
-        
+        """visit an astroid.Import node
+
         resolve module dependencies
         """
         context_file = node.root().file
         for name in node.names:
             relative = is_relative(name[0], context_file)
             self._imported_module(node, name[0], relative)
-        
+
 
     def visit_from(self, node):
-        """visit an astng.From node
-        
+        """visit an astroid.From node
+
         resolve module dependencies
         """
         basename = node.modname
@@ -254,13 +238,13 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
             if fullname.find('.') > -1:
                 try:
                     # XXX: don't use get_module_part, missing package precedence
-                    fullname = get_module_part(fullname)
+                    fullname = get_module_part(fullname, context_file)
                 except ImportError:
                     continue
             if fullname != basename:
                 self._imported_module(node, fullname, relative)
 
-        
+
     def compute_module(self, context_name, mod_path):
         """return true if the module should be added to dependencies"""
         package_dir = dirname(self.project.path)
@@ -269,7 +253,7 @@ class Linker(IdGeneratorMixIn, LocalsVisitor):
         elif is_standard_module(mod_path, (package_dir,)):
             return 1
         return 0
-    
+
     # protected methods ########################################################
 
     def _imported_module(self, node, mod_path, relative):

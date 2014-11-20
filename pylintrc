@@ -90,7 +90,7 @@ load-plugins=
 # unpacking-non-sequence
 # unused-import
 # useless-else-on-loop
-disable=C0103,C0111,C0302,I0010,I0011,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,R0921,R0922,W0122,W0141,W0142,W0402,W0404,W0511,W0603,W0703,W1201
+disable=C0103,C0111,C0302,I0010,I0011,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,R0921,R0922,W0122,W0141,W0142,W0402,W0404,W0511,W0603,W0703,W1201,bad-continuation,anomalous-backslash-in-string,bad-context-manager,bad-indentation,bad-str-strip-call,bad-whitespace,cell-var-from-loop,deprecated-lambda,eval-used,function-redefined,import-error,locally-enabled,missing-final-newline,no-init,no-name-in-module,no-self-use,not-callable,old-style-class,protected-access,superfluous-parens,super-on-old-class,too-many-function-args,trailing-whitespace,unnecessary-semicolon,unpacking-non-sequence,unused-import,useless-else-on-loop
 
 
 [REPORTS]
@@ -98,9 +98,6 @@ disable=C0103,C0111,C0302,I0010,I0011,R0801,R0901,R0902,R0903,R0904,R0911,R0912,
 # Set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html
 output-format=text
-
-# Include message's id in output
-include-ids=yes
 
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be
