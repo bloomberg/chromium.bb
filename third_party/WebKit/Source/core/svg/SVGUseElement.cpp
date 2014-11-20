@@ -297,7 +297,7 @@ void SVGUseElement::clearResourceReferences()
 
     // FIXME: We should try to optimize this, to at least allow partial reclones.
     if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
-        shadowTreeRootElement->removeChildren();
+        shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
 
     m_needsShadowTreeRecreation = false;
     document().unscheduleUseShadowTreeUpdate(*this);

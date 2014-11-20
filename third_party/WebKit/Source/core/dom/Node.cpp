@@ -1401,11 +1401,14 @@ void Node::setTextContent(const String& text)
                 return;
 
             ChildListMutationScope mutation(*this);
-            container->removeChildren();
             // Note: This API will not insert empty text nodes:
             // http://dom.spec.whatwg.org/#dom-node-textcontent
-            if (!text.isEmpty())
+            if (text.isEmpty()) {
+                container->removeChildren(DispatchSubtreeModifiedEvent);
+            } else {
+                container->removeChildren(OmitSubtreeModifiedEvent);
                 container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
+            }
             return;
         }
         case DOCUMENT_NODE:

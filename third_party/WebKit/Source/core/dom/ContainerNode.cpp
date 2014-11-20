@@ -618,7 +618,7 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
 
 // This differs from other remove functions because it forcibly removes all the children,
 // regardless of read-only status or event exceptions, e.g.
-void ContainerNode::removeChildren()
+void ContainerNode::removeChildren(SubtreeModificationAction action)
 {
     if (!m_firstChild)
         return;
@@ -671,10 +671,7 @@ void ContainerNode::removeChildren()
         childrenChanged(change);
     }
 
-    // We don't fire the DOMSubtreeModified event for Attr Nodes. This matches the behavior
-    // of IE and Firefox. This event is fired synchronously and is a source of trouble for
-    // attributes as the JS callback could alter the attributes and leave us in a bad state.
-    if (!isAttributeNode())
+    if (action == DispatchSubtreeModifiedEvent)
         dispatchSubtreeModifiedEvent();
 }
 

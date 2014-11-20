@@ -85,7 +85,7 @@ void HTMLTitleElement::setText(const String &value)
 
     // Avoid calling Document::setTitleElement() during intermediate steps.
     m_ignoreTitleUpdatesWhenChildrenChange = !value.isEmpty();
-    removeChildren();
+    removeChildren(OmitSubtreeModifiedEvent);
     m_ignoreTitleUpdatesWhenChildrenChange = false;
 
     if (!value.isEmpty())

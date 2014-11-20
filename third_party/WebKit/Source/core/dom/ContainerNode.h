@@ -54,6 +54,11 @@ enum DynamicRestyleFlags {
     NumberOfDynamicRestyleFlags = 10,
 };
 
+enum SubtreeModificationAction {
+    DispatchSubtreeModifiedEvent,
+    OmitSubtreeModifiedEvent
+};
+
 // This constant controls how much buffer is initially allocated
 // for a Node Vector that is used to store child Nodes of a given Node.
 // FIXME: Optimize the value.
@@ -98,7 +103,7 @@ public:
     void parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& refChild);
     void parserTakeAllChildrenFrom(ContainerNode&);
 
-    void removeChildren();
+    void removeChildren(SubtreeModificationAction = DispatchSubtreeModifiedEvent);
 
     void cloneChildNodes(ContainerNode* clone);
 

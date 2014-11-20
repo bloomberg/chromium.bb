@@ -106,7 +106,10 @@ void Attr::setValue(const AtomicString& value)
 {
     EventQueueScope scope;
     m_ignoreChildrenChanged++;
-    removeChildren();
+    // We don't fire the DOMSubtreeModified event for Attr Nodes. This matches the behavior
+    // of IE and Firefox. This event is fired synchronously and is a source of trouble for
+    // attributes as the JS callback could alter the attributes and leave us in a bad state.
+    removeChildren(OmitSubtreeModifiedEvent);
     if (m_element)
         elementAttribute().setValue(value);
     else
