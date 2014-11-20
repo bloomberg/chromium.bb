@@ -165,14 +165,14 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   static void ProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
-    sb_interstitial->interstitial_page_->Proceed();
+    sb_interstitial->interstitial_page()->Proceed();
     // Proceed() posts a task to update the SafeBrowsingService::Client.
     base::RunLoop().RunUntilIdle();
   }
 
   static void DontProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
-    sb_interstitial->interstitial_page_->DontProceed();
+    sb_interstitial->interstitial_page()->DontProceed();
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
     base::RunLoop().RunUntilIdle();
   }
@@ -578,8 +578,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 
   // Simulate the user clicking "proceed" then "don't proceed" (before the
   // interstitial is shown).
-  sb_interstitial->interstitial_page_->Proceed();
-  sb_interstitial->interstitial_page_->DontProceed();
+  sb_interstitial->interstitial_page()->Proceed();
+  sb_interstitial->interstitial_page()->DontProceed();
   // Proceed() and DontProceed() post a task to update the
   // SafeBrowsingService::Client.
   base::RunLoop().RunUntilIdle();

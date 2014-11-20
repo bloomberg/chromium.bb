@@ -36,21 +36,15 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service.h"
+#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
 class MalwareDetails;
 class SafeBrowsingBlockingPageFactory;
 
 namespace base {
-class DictionaryValue;
 class MessageLoop;
-}
-
-namespace content {
-class InterstitialPage;
-class WebContents;
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -59,11 +53,14 @@ class ExperienceSamplingEvent;
 }
 #endif
 
-class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
+class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  public:
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
   typedef std::vector<UnsafeResource> UnsafeResourceList;
   typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
+
+  // Interstitial type, used in tests.
+  static const void* kTypeForTesting;
 
   ~SafeBrowsingBlockingPage() override;
 
@@ -89,19 +86,18 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   }
 
   // InterstitialPageDelegate method:
-  std::string GetHTMLContents() override;
   void OnProceed() override;
   void OnDontProceed() override;
   void CommandReceived(const std::string& command) override;
   void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
 
+  // SecurityInterstitialPage method:
+  const void* GetTypeForTesting() const override;
+
  protected:
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
-
-  void DontCreateViewForTesting();
-  void Show();
   void SetReportingPreference(bool report);
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
@@ -110,14 +106,16 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
                            content::WebContents* web_contents,
                            const UnsafeResourceList& unsafe_resources);
 
+  // SecurityInterstitialPage methods:
+  bool ShouldCreateNewNavigation() const override;
+  void PopulateInterstitialStrings(
+      base::DictionaryValue* load_time_data) override;
+
   // After a malware interstitial where the user opted-in to the
   // report but clicked "proceed anyway", we delay the call to
   // MalwareDetails::FinishCollection() by this much time (in
   // milliseconds), in order to get data from the blocked resource itself.
   int64 malware_details_proceed_delay_ms_;
-  content::InterstitialPage* interstitial_page() const {
-    return interstitial_page_;
-  }
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsTransitionDisabled);
@@ -204,13 +202,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   scoped_refptr<MalwareDetails> malware_details_;
 
   bool proceeded_;
-
-  content::WebContents* web_contents_;
-  GURL url_;
-  content::InterstitialPage* interstitial_page_;  // Owns us
-
-  // Whether the interstitial should create a view.
-  bool create_view_;
 
   // Which type of interstitial this is.
   enum {

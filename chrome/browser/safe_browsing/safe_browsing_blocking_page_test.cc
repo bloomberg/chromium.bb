@@ -408,6 +408,8 @@ class SafeBrowsingBlockingPageBrowserTest
             InterstitialPage::GetInterstitialPage(contents)->
                 GetDelegateForTesting());
     ASSERT_TRUE(interstitial_page);
+    ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+              interstitial_page->GetTypeForTesting());
     interstitial_page->CommandReceived(command);
   }
 
@@ -438,6 +440,8 @@ class SafeBrowsingBlockingPageBrowserTest
       TestSafeBrowsingBlockingPage* page =
           static_cast<TestSafeBrowsingBlockingPage*>(
               contents->GetInterstitialPage()->GetDelegateForTesting());
+      ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+                page->GetTypeForTesting());
       page->WaitForDelete();
     }
 

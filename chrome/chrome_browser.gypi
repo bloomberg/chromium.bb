@@ -417,6 +417,8 @@
       'browser/install_verification/win/module_verification_common.h',
       'browser/internal_auth.cc',
       'browser/internal_auth.h',
+      'browser/interstitials/security_interstitial_page.cc',
+      'browser/interstitials/security_interstitial_page.h',
       'browser/intranet_redirect_detector.cc',
       'browser/intranet_redirect_detector.h',
       'browser/invalidation/invalidation_service_factory_android.cc',
