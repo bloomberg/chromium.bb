@@ -344,14 +344,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
 
   ResultCatcher catcher;
   GURL url(base::StringPrintf(
-      "http://www.a.com:%d/"
+      "http://www.a.com:%u/"
       "extensions/api_test/webnavigation/serverRedirectSingleProcess/a.html",
       embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
   url = GURL(base::StringPrintf(
-      "http://www.b.com:%d/server-redirect?http://www.b.com:%d/",
+      "http://www.b.com:%u/server-redirect?http://www.b.com:%u/",
       embedded_test_server()->port(),
       embedded_test_server()->port()));
 
@@ -559,14 +559,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
       test_navigation_listener(),
       embedded_test_server()->GetURL("/test3"),
       "updateFragment()",
-      base::StringPrintf("f.html?%d#foo", embedded_test_server()->port()));
+      base::StringPrintf("f.html?%u#foo", embedded_test_server()->port()));
 
   // See crossProcessFragment/g.html.
   DelayLoadStartAndExecuteJavascript call_script4(
       test_navigation_listener(),
       embedded_test_server()->GetURL("/test4"),
       "updateFragment()",
-      base::StringPrintf("g.html?%d#foo", embedded_test_server()->port()));
+      base::StringPrintf("g.html?%u#foo", embedded_test_server()->port()));
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessFragment"))
       << message_;
@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
   ResultCatcher catcher;
 
   GURL url(base::StringPrintf(
-      "http://www.a.com:%d/"
+      "http://www.a.com:%u/"
           "extensions/api_test/webnavigation/crash/a.html",
       embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 
   url = GURL(base::StringPrintf(
-      "http://www.a.com:%d/"
+      "http://www.a.com:%u/"
           "extensions/api_test/webnavigation/crash/b.html",
       embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);

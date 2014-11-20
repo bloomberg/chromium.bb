@@ -16,7 +16,7 @@ namespace {
 class TCPServerSocketFactory
     : public content::DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, int port, int backlog)
+  TCPServerSocketFactory(const std::string& address, uint16 port, int backlog)
       : content::DevToolsHttpHandler::ServerSocketFactory(
             address, port, backlog) {}
 
@@ -35,7 +35,7 @@ class TCPServerSocketFactory
 RemoteDebuggingServer::RemoteDebuggingServer(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
-    int port) {
+    uint16 port) {
   base::FilePath output_dir;
   if (!port) {
     // The client requested an ephemeral port. Must write the selected

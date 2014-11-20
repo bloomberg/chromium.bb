@@ -119,7 +119,7 @@ class UDPSocketTest : public PlatformTest {
 };
 
 // Creates and address from an ip/port and returns it in |address|.
-void CreateUDPAddress(std::string ip_str, int port, IPEndPoint* address) {
+void CreateUDPAddress(std::string ip_str, uint16 port, IPEndPoint* address) {
   IPAddressNumber ip_number;
   bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
   if (!rv)
@@ -128,7 +128,7 @@ void CreateUDPAddress(std::string ip_str, int port, IPEndPoint* address) {
 }
 
 TEST_F(UDPSocketTest, Connect) {
-  const int kPort = 9999;
+  const uint16 kPort = 9999;
   std::string simple_message("hello world!");
 
   // Setup the server to listen.
@@ -216,7 +216,7 @@ TEST_F(UDPSocketTest, DISABLED_Broadcast) {
 #else
 TEST_F(UDPSocketTest, Broadcast) {
 #endif
-  const int kPort = 9999;
+  const uint16 kPort = 9999;
   std::string first_message("first message"), second_message("second message");
 
   IPEndPoint broadcast_address;
@@ -369,8 +369,8 @@ TEST_F(UDPSocketTest, ConnectFail) {
 // not bind the client's reads to only be from that endpoint, and that we need
 // to always use recvfrom() to disambiguate.
 TEST_F(UDPSocketTest, VerifyConnectBindsAddr) {
-  const int kPort1 = 9999;
-  const int kPort2 = 10000;
+  const uint16 kPort1 = 9999;
+  const uint16 kPort2 = 10000;
   std::string simple_message("hello world!");
   std::string foreign_message("BAD MESSAGE TO GET!!");
 
@@ -538,7 +538,7 @@ TEST_F(UDPSocketTest, CloseWithPendingRead) {
 #endif  // defined(OS_ANDROID)
 
 TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
-  const int kPort = 9999;
+  const uint16 kPort = 9999;
   const char* const kGroup = "237.132.100.17";
 
   IPEndPoint bind_address;
@@ -562,7 +562,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 }
 
 TEST_F(UDPSocketTest, MulticastOptions) {
-  const int kPort = 9999;
+  const uint16 kPort = 9999;
   IPEndPoint bind_address;
   CreateUDPAddress("0.0.0.0", kPort, &bind_address);
 

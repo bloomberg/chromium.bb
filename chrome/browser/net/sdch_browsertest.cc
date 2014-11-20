@@ -321,7 +321,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
                        bool* sdch_encoding_used) {
     FetchUrlDetailed(
         GURL(base::StringPrintf(
-            "http://%s:%d%s", kTestHost, test_server_port(), kDataURLPath)),
+            "http://%s:%u%s", kTestHost, test_server_port(), kDataURLPath)),
         getter);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, FetcherStatus().status())
         << "Error code is " << FetcherStatus().error();
@@ -455,7 +455,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
     run_loop.Run();
   }
 
-  int test_server_port() { return test_server_.port(); }
+  uint16 test_server_port() { return test_server_.port(); }
 
   void SetSdchCacheability(bool cache_sdch_response) {
     base::RunLoop run_loop;

@@ -52,7 +52,7 @@ class HttpServer : public net::HttpServer::Delegate {
 
   virtual ~HttpServer() {}
 
-  bool Start(int port, bool allow_remote) {
+  bool Start(uint16 port, bool allow_remote) {
     std::string binding_ip = kLocalHostAddress;
     if (allow_remote)
       binding_ip = "0.0.0.0";
@@ -154,7 +154,7 @@ void StopServerOnIOThread() {
   delete server;
 }
 
-void StartServerOnIOThread(int port,
+void StartServerOnIOThread(uint16 port,
                            bool allow_remote,
                            const HttpRequestHandlerFunc& handle_request_func) {
   scoped_ptr<HttpServer> temp_server(new HttpServer(handle_request_func));
@@ -165,7 +165,7 @@ void StartServerOnIOThread(int port,
   lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
-void RunServer(int port,
+void RunServer(uint16 port,
                bool allow_remote,
                const std::vector<std::string>& whitelisted_ips,
                const std::string& url_base,
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Parse command line flags.
-  int port = 9515;
+  uint16 port = 9515;
   int adb_port = 5037;
   bool allow_remote = false;
   std::vector<std::string> whitelisted_ips;
@@ -253,10 +253,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
   if (cmd_line->HasSwitch("port")) {
-    if (!base::StringToInt(cmd_line->GetSwitchValueASCII("port"), &port)) {
+    int cmd_line_port;
+    if (!base::StringToInt(cmd_line->GetSwitchValueASCII("port"),
+                           &cmd_line_port) ||
+        cmd_line_port < 0 || cmd_line_port > 65535) {
       printf("Invalid port. Exiting...\n");
       return 1;
     }
+    port = static_cast<uint16>(cmd_line_port);
   }
   if (cmd_line->HasSwitch("adb-port")) {
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("adb-port"),
@@ -293,7 +297,7 @@ int main(int argc, char *argv[]) {
     base::SplitString(whitelist, ',', &whitelisted_ips);
   }
   if (!cmd_line->HasSwitch("silent")) {
-    printf("Starting ChromeDriver %s on port %d\n", kChromeDriverVersion, port);
+    printf("Starting ChromeDriver %s on port %u\n", kChromeDriverVersion, port);
     if (!allow_remote) {
       printf("Only local connections are allowed.\n");
     } else if (!whitelisted_ips.empty()) {

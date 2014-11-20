@@ -78,7 +78,7 @@ TCPSocket* TCPSocket::CreateServerSocketForTesting(
 TCPSocket::~TCPSocket() { Disconnect(); }
 
 void TCPSocket::Connect(const std::string& address,
-                        int port,
+                        uint16 port,
                         const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -124,7 +124,7 @@ void TCPSocket::Disconnect() {
   accept_socket_.reset(NULL);
 }
 
-int TCPSocket::Bind(const std::string& address, int port) {
+int TCPSocket::Bind(const std::string& address, uint16 port) {
   return net::ERR_FAILED;
 }
 
@@ -171,7 +171,7 @@ void TCPSocket::RecvFrom(int count,
 void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
                        const std::string& address,
-                       int port,
+                       uint16 port,
                        const CompletionCallback& callback) {
   callback.Run(net::ERR_FAILED);
 }
@@ -189,7 +189,7 @@ bool TCPSocket::SetNoDelay(bool no_delay) {
 }
 
 int TCPSocket::Listen(const std::string& address,
-                      int port,
+                      uint16 port,
                       int backlog,
                       std::string* error_msg) {
   if (socket_mode_ == CLIENT) {

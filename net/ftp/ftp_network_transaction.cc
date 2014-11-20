@@ -965,14 +965,16 @@ int FtpNetworkTransaction::ProcessResponseEPSV(
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
       return Stop(ERR_INVALID_RESPONSE);
-    case ERROR_CLASS_OK:
-      if (!ExtractPortFromEPSVResponse( response, &data_connection_port_))
+    case ERROR_CLASS_OK: {
+      int port;
+      if (!ExtractPortFromEPSVResponse(response, &port))
         return Stop(ERR_INVALID_RESPONSE);
-      if (data_connection_port_ < 1024 ||
-          !IsPortAllowedByFtp(data_connection_port_))
+      if (port < 1024 || !IsPortAllowedByFtp(port))
         return Stop(ERR_UNSAFE_PORT);
+      data_connection_port_ = static_cast<uint16>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;
+    }
     case ERROR_CLASS_INFO_NEEDED:
       return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_TRANSIENT_ERROR:
@@ -999,14 +1001,16 @@ int FtpNetworkTransaction::ProcessResponsePASV(
   switch (GetErrorClass(response.status_code)) {
     case ERROR_CLASS_INITIATED:
       return Stop(ERR_INVALID_RESPONSE);
-    case ERROR_CLASS_OK:
-      if (!ExtractPortFromPASVResponse(response, &data_connection_port_))
+    case ERROR_CLASS_OK: {
+      int port;
+      if (!ExtractPortFromPASVResponse(response, &port))
         return Stop(ERR_INVALID_RESPONSE);
-      if (data_connection_port_ < 1024 ||
-          !IsPortAllowedByFtp(data_connection_port_))
+      if (port < 1024 || !IsPortAllowedByFtp(port))
         return Stop(ERR_UNSAFE_PORT);
+      data_connection_port_ = static_cast<uint16>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;
+    }
     case ERROR_CLASS_INFO_NEEDED:
       return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_TRANSIENT_ERROR:

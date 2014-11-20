@@ -155,7 +155,7 @@ void InitializationResult(media::cast::CastInitializationStatus result) {
   CHECK(end_result) << "Cast sender uninitialized";
 }
 
-net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
+net::IPEndPoint CreateUDPAddress(std::string ip_str, uint16 port) {
   net::IPAddressNumber ip_number;
   CHECK(net::ParseIPLiteralToNumber(ip_str, &ip_number));
   return net::IPEndPoint(ip_number, port);
@@ -275,8 +275,8 @@ int main(int argc, char** argv) {
   if (remote_ip_address.empty())
     remote_ip_address = "127.0.0.1";
   int remote_port = 0;
-  if (!base::StringToInt(cmd->GetSwitchValueASCII(kSwitchPort),
-                         &remote_port)) {
+  if (!base::StringToInt(cmd->GetSwitchValueASCII(kSwitchPort), &remote_port) ||
+      remote_port < 0 || remote_port > 65535) {
     remote_port = 2344;
   }
   LOG(INFO) << "Sending to " << remote_ip_address << ":" << remote_port
@@ -288,7 +288,7 @@ int main(int argc, char** argv) {
   // Running transport on the main thread.
   // Setting up transport config.
   net::IPEndPoint remote_endpoint =
-      CreateUDPAddress(remote_ip_address, remote_port);
+      CreateUDPAddress(remote_ip_address, static_cast<uint16>(remote_port));
 
   // Enable raw event and stats logging.
   // Running transport on the main thread.

@@ -55,7 +55,7 @@ struct AdapterInfo {
   IF_OPER_STATUS oper_status;
   const WCHAR* dns_suffix;
   std::string dns_server_addresses[4];  // Empty string indicates end.
-  int ports[4];
+  uint16 ports[4];
 };
 
 scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
@@ -102,7 +102,7 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> CreateAdapterAddresses(
       }
       IPAddressNumber ip;
       CHECK(ParseIPLiteralToNumber(info.dns_server_addresses[j], &ip));
-      IPEndPoint ipe(ip, info.ports[j]);
+      IPEndPoint ipe = IPEndPoint(ip, info.ports[j]);
       address->Address.lpSockaddr =
           reinterpret_cast<LPSOCKADDR>(storage + num_addresses);
       socklen_t length = sizeof(struct sockaddr_storage);
@@ -120,7 +120,7 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     AdapterInfo input_adapters[4];        // |if_type| == 0 indicates end.
     std::string expected_nameservers[4];  // Empty string indicates end.
     std::string expected_suffix;
-    int expected_ports[4];
+    uint16 expected_ports[4];
   } cases[] = {
     {  // Ignore loopback and inactive adapters.
       {
@@ -181,7 +181,7 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     for (size_t j = 0; !t.expected_nameservers[j].empty(); ++j) {
       IPAddressNumber ip;
       ASSERT_TRUE(ParseIPLiteralToNumber(t.expected_nameservers[j], &ip));
-      int port = t.expected_ports[j];
+      uint16 port = t.expected_ports[j];
       if (!port)
         port = dns_protocol::kDefaultPort;
       expected_nameservers.push_back(IPEndPoint(ip, port));

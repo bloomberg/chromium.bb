@@ -107,7 +107,7 @@ void PepperTCPSocket::ConnectWithNetAddress(
   }
 
   net::IPAddressNumber address;
-  int port;
+  uint16 port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(
           net_addr, &address, &port)) {
     SendConnectACKError(PP_ERROR_ADDRESS_INVALID);

@@ -31,7 +31,7 @@ namespace {
 
 const char kFrontEndURL[] =
     "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
-const int kDefaultRemoteDebuggingPort = 9222;
+const uint16 kDefaultRemoteDebuggingPort = 9222;
 
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory
@@ -55,7 +55,7 @@ class UnixDomainServerSocketFactory
 class TCPServerSocketFactory
     : public content::DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, int port, int backlog)
+  TCPServerSocketFactory(const std::string& address, uint16 port, int backlog)
       : content::DevToolsHttpHandler::ServerSocketFactory(
             address, port, backlog) {}
 
@@ -71,7 +71,7 @@ class TCPServerSocketFactory
 #endif
 
 scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>
-CreateSocketFactory(int port) {
+CreateSocketFactory(uint16 port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string socket_name = "cast_shell_devtools_remote";
@@ -113,10 +113,7 @@ RemoteDebuggingServer::~RemoteDebuggingServer() {
 }
 
 void RemoteDebuggingServer::OnPortChanged() {
-  int new_port = *pref_port_;
-  if (new_port < 0) {
-    new_port = 0;
-  }
+  uint16 new_port = static_cast<uint16>(std::max(*pref_port_, 0));
   VLOG(1) << "OnPortChanged called: old_port=" << port_
           << ", new_port=" << new_port;
 

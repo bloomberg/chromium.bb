@@ -449,9 +449,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
         continue;
       }
 
-      net::AlternateProtocolInfo port_alternate_protocol(port,
-                                                         protocol,
-                                                         probability);
+      net::AlternateProtocolInfo port_alternate_protocol(
+          static_cast<uint16>(port), protocol, probability);
       alternate_protocol_map->Put(server, port_alternate_protocol);
       ++count;
     } while (false);

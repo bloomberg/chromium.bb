@@ -67,7 +67,7 @@ int UnixDomainServerSocket::Listen(const IPEndPoint& address, int backlog) {
 
 int UnixDomainServerSocket::ListenWithAddressAndPort(
     const std::string& unix_domain_path,
-    int port_unused,
+    uint16 port_unused,
     int backlog) {
   DCHECK(!listen_socket_);
 

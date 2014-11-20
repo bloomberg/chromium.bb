@@ -24,11 +24,11 @@ class NET_EXPORT IPEndPoint {
  public:
   IPEndPoint();
   ~IPEndPoint();
-  IPEndPoint(const IPAddressNumber& address, int port);
+  IPEndPoint(const IPAddressNumber& address, uint16 port);
   IPEndPoint(const IPEndPoint& endpoint);
 
   const IPAddressNumber& address() const { return address_; }
-  int port() const { return port_; }
+  uint16 port() const { return port_; }
 
   // Returns AddressFamily of the address.
   AddressFamily GetFamily() const;
@@ -66,7 +66,7 @@ class NET_EXPORT IPEndPoint {
 
  private:
   IPAddressNumber address_;
-  int port_;
+  uint16 port_;
 };
 
 }  // namespace net

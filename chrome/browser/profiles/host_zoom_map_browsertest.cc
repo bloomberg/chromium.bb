@@ -214,8 +214,8 @@ class HostZoomMapSanitizationBrowserTest
 IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ToggleDefaultZoomLevel) {
   const double default_zoom_level = content::ZoomFactorToZoomLevel(1.5);
 
-  const char kTestURLTemplate1[] = "http://host1:%d/";
-  const char kTestURLTemplate2[] = "http://host2:%d/";
+  const char kTestURLTemplate1[] = "http://host1:%u/";
+  const char kTestURLTemplate2[] = "http://host2:%u/";
 
   ZoomLevelChangeObserver observer(browser()->profile());
 
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapMigrationBrowserTest,
   // First, we need a host at the default zoom level to respond when the
   // default zoom level changes.
   const double kNewDefaultZoomLevel = 1.5;
-  GURL test_url = ConstructTestServerURL("http://host4:%d/");
+  GURL test_url = ConstructTestServerURL("http://host4:%u/");
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(content::ZoomValuesEqual(kOriginalDefaultZoomLevel,
                                        GetZoomLevel(test_url)));

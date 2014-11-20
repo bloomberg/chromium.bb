@@ -153,7 +153,7 @@ char kSampleWebViewPages[] = "[ {\n"
     "}]";
 
 static const int kBufferSize = 16*1024;
-static const int kAdbPort = 5037;
+static const uint16 kAdbPort = 5037;
 
 static const int kAdbMessageHeaderSize = 4;
 

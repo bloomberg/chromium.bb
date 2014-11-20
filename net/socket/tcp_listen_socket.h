@@ -21,14 +21,16 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
   static scoped_ptr<TCPListenSocket> CreateAndListen(
-      const std::string& ip, int port, StreamListenSocket::Delegate* del);
+      const std::string& ip,
+      uint16 port,
+      StreamListenSocket::Delegate* del);
 
   // Get raw TCP socket descriptor bound to ip:port.
-  static SocketDescriptor CreateAndBind(const std::string& ip, int port);
+  static SocketDescriptor CreateAndBind(const std::string& ip, uint16 port);
 
   // Get raw TCP socket descriptor bound to ip and return port it is bound to.
   static SocketDescriptor CreateAndBindAnyPort(const std::string& ip,
-                                               int* port);
+                                               uint16* port);
 
  protected:
   TCPListenSocket(SocketDescriptor s, StreamListenSocket::Delegate* del);
@@ -38,23 +40,6 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPListenSocket);
-};
-
-// Factory that can be used to instantiate TCPListenSocket.
-class NET_EXPORT TCPListenSocketFactory : public StreamListenSocketFactory {
- public:
-  TCPListenSocketFactory(const std::string& ip, int port);
-  ~TCPListenSocketFactory() override;
-
-  // StreamListenSocketFactory overrides.
-  scoped_ptr<StreamListenSocket> CreateAndListen(
-      StreamListenSocket::Delegate* delegate) const override;
-
- private:
-  const std::string ip_;
-  const int port_;
-
-  DISALLOW_COPY_AND_ASSIGN(TCPListenSocketFactory);
 };
 
 }  // namespace net

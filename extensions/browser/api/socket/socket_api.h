@@ -203,7 +203,7 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
 
   int socket_id_;
   std::string hostname_;
-  int port_;
+  uint16 port_;
 };
 
 class SocketDisconnectFunction : public SocketAsyncApiFunction {
@@ -235,7 +235,7 @@ class SocketBindFunction : public SocketAsyncApiFunction {
  private:
   int socket_id_;
   std::string address_;
-  int port_;
+  uint16 port_;
 };
 
 class SocketListenFunction : public SocketAsyncApiFunction {
@@ -327,7 +327,7 @@ class SocketRecvFromFunction : public SocketAsyncApiFunction {
   void OnCompleted(int result,
                    scoped_refptr<net::IOBuffer> io_buffer,
                    const std::string& address,
-                   int port);
+                   uint16 port);
 
  private:
   scoped_ptr<core_api::socket::RecvFrom::Params> params_;
@@ -357,7 +357,7 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
   std::string hostname_;
-  int port_;
+  uint16 port_;
 };
 
 class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {

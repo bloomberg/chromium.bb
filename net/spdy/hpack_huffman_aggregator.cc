@@ -49,10 +49,8 @@ void HpackHuffmanAggregator::AggregateTransactionCharacterCounts(
   if (IsCrossOrigin(request)) {
     return;
   }
-  HostPortPair endpoint = HostPortPair(request.url.HostNoBrackets(),
-                                       request.url.EffectiveIntPort());
-  HpackEncoder* encoder = ObtainEncoder(
-      SpdySessionKey(endpoint, proxy, request.privacy_mode));
+  HpackEncoder* encoder = ObtainEncoder(SpdySessionKey(
+      HostPortPair::FromURL(request.url), proxy, request.privacy_mode));
 
   // Convert and encode the request and response header sets.
   {
@@ -108,8 +106,6 @@ void HpackHuffmanAggregator::CreateSpdyHeadersFromHttpResponse(
 bool HpackHuffmanAggregator::IsCrossOrigin(const HttpRequestInfo& request) {
   // Require that the request is top-level, or that it shares
   // an origin with its referer.
-  HostPortPair endpoint = HostPortPair(request.url.HostNoBrackets(),
-                                       request.url.EffectiveIntPort());
   if ((request.load_flags & LOAD_MAIN_FRAME) == 0) {
     std::string referer_str;
     if (!request.extra_headers.GetHeader(HttpRequestHeaders::kReferer,
@@ -118,9 +114,8 @@ bool HpackHuffmanAggregator::IsCrossOrigin(const HttpRequestInfo& request) {
       return true;
     }
     GURL referer(referer_str);
-    HostPortPair referer_endpoint = HostPortPair(referer.HostNoBrackets(),
-                                                 referer.EffectiveIntPort());
-    if (!endpoint.Equals(referer_endpoint)) {
+    if (!HostPortPair::FromURL(request.url).Equals(
+        HostPortPair::FromURL(referer))) {
       // Cross-origin request.
       return true;
     }

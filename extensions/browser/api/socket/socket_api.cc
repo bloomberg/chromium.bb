@@ -49,7 +49,7 @@ const char kMulticastSocketTypeError[] = "Only UDP socket supports multicast.";
 const char kSecureSocketTypeError[] = "Only TCP sockets are supported for TLS.";
 const char kSocketNotConnectedError[] = "Socket not connected";
 const char kWildcardAddress[] = "*";
-const int kWildcardPort = 0;
+const uint16 kWildcardPort = 0;
 
 SocketAsyncApiFunction::SocketAsyncApiFunction() {}
 
@@ -192,7 +192,10 @@ SocketConnectFunction::~SocketConnectFunction() {}
 bool SocketConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &hostname_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
+  int port;
+  EXTENSION_FUNCTION_VALIDATE(
+      args_->GetInteger(2, &port) && port >= 0 && port <= 65535);
+  port_ = static_cast<uint16>(port);
   return true;
 }
 
@@ -278,7 +281,10 @@ void SocketDisconnectFunction::Work() {
 bool SocketBindFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
+  int port;
+  EXTENSION_FUNCTION_VALIDATE(
+      args_->GetInteger(2, &port) && port >= 0 && port <= 65535);
+  port_ = static_cast<uint16>(port);
   return true;
 }
 
@@ -480,7 +486,7 @@ void SocketRecvFromFunction::AsyncWorkStart() {
 void SocketRecvFromFunction::OnCompleted(int bytes_read,
                                          scoped_refptr<net::IOBuffer> io_buffer,
                                          const std::string& address,
-                                         int port) {
+                                         uint16 port) {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
@@ -508,7 +514,10 @@ bool SocketSendToFunction::Prepare() {
   base::BinaryValue* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port_));
+  int port;
+  EXTENSION_FUNCTION_VALIDATE(
+      args_->GetInteger(3, &port) && port >= 0 && port <= 65535);
+  port_ = static_cast<uint16>(port);
 
   io_buffer_size_ = data->GetSize();
   io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());

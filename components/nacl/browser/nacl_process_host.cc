@@ -757,7 +757,7 @@ void NaClProcessHost::SetDebugStubPort(int port) {
 
 #if defined(OS_POSIX)
 // TCP port we chose for NaCl debug stub. It can be any other number.
-static const int kInitialDebugStubPort = 4014;
+static const uint16_t kInitialDebugStubPort = 4014;
 
 net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   net::SocketDescriptor s = net::kInvalidSocket;
@@ -765,7 +765,7 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   // allocate any available port.
   // On success, if the test system has register a handler
   // (GdbDebugStubPortListener), we fire a notification.
-  int port = kInitialDebugStubPort;
+  uint16 port = kInitialDebugStubPort;
   s = net::TCPListenSocket::CreateAndBind("127.0.0.1", port);
   if (s == net::kInvalidSocket) {
     s = net::TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port);

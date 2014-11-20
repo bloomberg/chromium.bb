@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
@@ -694,7 +695,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
   // Used to store latest peer port to possibly migrate to later.
-  int migrating_peer_port_;
+  uint16 migrating_peer_port_;
 
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.

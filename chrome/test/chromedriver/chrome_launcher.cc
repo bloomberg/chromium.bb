@@ -85,7 +85,7 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
   return Status(kOk);
 }
 
-Status PrepareCommandLine(int port,
+Status PrepareCommandLine(uint16 port,
                           const Capabilities& capabilities,
                           CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
@@ -268,7 +268,7 @@ Status LaunchRemoteChromeSession(
 
 Status LaunchDesktopChrome(
     URLRequestContextGetter* context_getter,
-    int port,
+    uint16 port,
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
@@ -432,7 +432,7 @@ Status LaunchDesktopChrome(
 
 Status LaunchAndroidChrome(
     URLRequestContextGetter* context_getter,
-    int port,
+    uint16 port,
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
@@ -511,7 +511,7 @@ Status LaunchChrome(
         capabilities, devtools_event_listeners, chrome);
   }
 
-  int port = 0;
+  uint16 port = 0;
   scoped_ptr<PortReservation> port_reservation;
   Status port_status(kOk);
 

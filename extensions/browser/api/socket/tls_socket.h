@@ -46,7 +46,7 @@ class TLSSocket : public ResumableTCPSocket {
 
   // Fails.
   void Connect(const std::string& address,
-               int port,
+               uint16 port,
                const CompletionCallback& callback) override;
   // Forwards.
   void Disconnect() override;
@@ -66,7 +66,7 @@ class TLSSocket : public ResumableTCPSocket {
 
   // Fails. TLSSocket is only a client.
   int Listen(const std::string& address,
-             int port,
+             uint16 port,
              int backlog,
              std::string* error_msg) override;
 

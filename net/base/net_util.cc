@@ -306,7 +306,7 @@ bool IsPortAllowedByDefault(int port) {
       return false;
     }
   }
-  return true;
+  return IsPortValid(port);
 }
 
 bool IsPortAllowedByFtp(int port) {
@@ -573,7 +573,7 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
     *address = reinterpret_cast<const uint8*>(&addr->btAddr);
     *address_len = kBluetoothAddressSize;
     if (port)
-      *port = addr->port;
+      *port = static_cast<uint16>(addr->port);
     return true;
   }
 #endif

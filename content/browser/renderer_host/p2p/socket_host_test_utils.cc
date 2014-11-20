@@ -204,7 +204,7 @@ void CreateStunError(std::vector<char>* packet) {
   CreateStunPacket(packet, kStunBindingError);
 }
 
-net::IPEndPoint ParseAddress(const std::string ip_str, int port) {
+net::IPEndPoint ParseAddress(const std::string ip_str, uint16 port) {
   net::IPAddressNumber ip;
   EXPECT_TRUE(net::ParseIPLiteralToNumber(ip_str, &ip));
   return net::IPEndPoint(ip, port);

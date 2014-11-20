@@ -31,7 +31,7 @@ class BrowserListTabContentsProvider
 
  private:
   chrome::HostDesktopType host_desktop_type_;
-  int last_tethering_port_;
+  uint16 last_tethering_port_;
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };
 

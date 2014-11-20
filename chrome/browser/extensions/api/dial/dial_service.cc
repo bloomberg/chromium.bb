@@ -39,7 +39,6 @@ using net::HttpResponseHeaders;
 using net::HttpUtil;
 using net::IOBufferWithSize;
 using net::IPAddressNumber;
-using net::IPEndPoint;
 using net::NetworkInterface;
 using net::NetworkInterfaceList;
 using net::StringIOBuffer;
@@ -65,7 +64,7 @@ const int kDialResponseTimeoutSecs = 2;
 const char kDialRequestAddress[] = "239.255.255.250";
 
 // The UDP port number for discovery.
-const int kDialRequestPort = 1900;
+const uint16 kDialRequestPort = 1900;
 
 // The DIAL service type as part of the search request.
 const char kDialSearchType[] = "urn:dial-multiscreen-org:service:dial:1";
@@ -91,7 +90,7 @@ std::string BuildRequest() {
   chrome::VersionInfo version;
   std::string request(base::StringPrintf(
       "M-SEARCH * HTTP/1.1\r\n"
-      "HOST: %s:%i\r\n"
+      "HOST: %s:%u\r\n"
       "MAN: \"ssdp:discover\"\r\n"
       "MX: %d\r\n"
       "ST: %s\r\n"
@@ -176,7 +175,7 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
   socket_->AllowBroadcast();
 
   // 0 means bind a random port
-  IPEndPoint address(bind_ip_address, 0);
+  net::IPEndPoint address(bind_ip_address, 0);
 
   if (!CheckResult("Bind", socket_->Bind(address)))
     return false;
@@ -386,7 +385,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
   IPAddressNumber address;
   bool success = net::ParseIPLiteralToNumber(kDialRequestAddress, &address);
   DCHECK(success);
-  send_address_ = IPEndPoint(address, kDialRequestPort);
+  send_address_ = net::IPEndPoint(address, kDialRequestPort);
   send_buffer_ = new StringIOBuffer(BuildRequest());
   net_log_ = net_log;
   net_log_source_.type = net::NetLog::SOURCE_UDP_SOCKET;

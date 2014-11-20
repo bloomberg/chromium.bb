@@ -58,7 +58,7 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
 
     host_port->set_host(rule.replacement_hostname);
     if (rule.replacement_port != -1)
-      host_port->set_port(rule.replacement_port);
+      host_port->set_port(static_cast<uint16>(rule.replacement_port));
     return true;
   }
 

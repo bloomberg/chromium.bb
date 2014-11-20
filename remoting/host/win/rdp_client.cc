@@ -136,14 +136,16 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
   DWORD server_port;
   base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpPortKeyName, KEY_READ);
   if (!key.Valid() ||
-      (key.ReadValueDW(kRdpPortValueName, &server_port) != ERROR_SUCCESS)) {
+      (key.ReadValueDW(kRdpPortValueName, &server_port) != ERROR_SUCCESS) ||
+      server_port > 65535) {
     server_port = kDefaultRdpPort;
   }
 
   net::IPAddressNumber server_address(
       kRdpLoopbackAddress,
       kRdpLoopbackAddress + arraysize(kRdpLoopbackAddress));
-  net::IPEndPoint server_endpoint(server_address, server_port);
+  net::IPEndPoint server_endpoint(server_address,
+                                  static_cast<uint16>(server_port));
 
   // Create the ActiveX control window.
   rdp_client_window_.reset(new RdpClientWindow(server_endpoint, terminal_id,

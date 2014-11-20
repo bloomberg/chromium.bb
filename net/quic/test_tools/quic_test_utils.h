@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
@@ -31,7 +32,7 @@ namespace net {
 namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
-static const int kTestPort = 123;
+static const uint16 kTestPort = 123;
 static const uint32 kInitialStreamFlowControlWindowForTest =
     32 * 1024;  // 32 KB
 static const uint32 kInitialSessionFlowControlWindowForTest =

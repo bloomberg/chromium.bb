@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
       base::Bind(&HandleRedirectRequest, "/redirect?"));
 
   std::string set_cookie_url(base::StringPrintf(
-      "http://localhost:%d/set_cookie.html", embedded_test_server()->port()));
+      "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
   GURL url(embedded_test_server()->GetURL("/redirect?" + set_cookie_url));
 
   ShellContentBrowserClient::SetSwapProcessesForRedirect(true);

@@ -38,7 +38,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 
   static void Prerender_Arguments(
       const std::string& extension_id,
-      int port,
+      uint16 port,
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
     base::MessageLoop::current()->PostTask(
@@ -52,10 +52,10 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     ASSERT_EQ("[\"/google_cs.js\"]",
               ActivityLogPolicy::Util::Serialize(last->args()));
     ASSERT_EQ(
-        base::StringPrintf("http://www.google.com.bo:%d/test.html", port),
+        base::StringPrintf("http://www.google.com.bo:%u/test.html", port),
         last->SerializePageUrl());
     ASSERT_EQ(
-        base::StringPrintf("www.google.com.bo:%d/test.html", port),
+        base::StringPrintf("www.google.com.bo:%u/test.html", port),
         last->page_title());
     ASSERT_EQ("{\"prerender\":true}",
               ActivityLogPolicy::Util::Serialize(last->other()));
@@ -67,7 +67,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
-  int port = embedded_test_server()->port();
+  uint16 port = embedded_test_server()->port();
 
   // Get the extension (chrome/test/data/extensions/activity_log)
   const Extension* ext =
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
       content::NotificationService::AllSources());
 
   GURL url(base::StringPrintf(
-      "http://www.google.com.bo:%d/test.html",
+      "http://www.google.com.bo:%u/test.html",
       port));
 
   if (!prerender_manager->cookie_store_loaded()) {

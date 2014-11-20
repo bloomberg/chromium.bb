@@ -15,8 +15,8 @@ namespace protocol {
 
 // static
   bool NetworkSettings::ParsePortRange(const std::string& port_range,
-                                       int* out_min_port,
-                                       int* out_max_port) {
+                                       uint16* out_min_port,
+                                       uint16* out_max_port) {
   size_t separator_index = port_range.find('-');
   if (separator_index == std::string::npos)
     return false;
@@ -38,8 +38,8 @@ namespace protocol {
   if (min_port == 0 || min_port > max_port || max_port > USHRT_MAX)
     return false;
 
-  *out_min_port = static_cast<int>(min_port);
-  *out_max_port = static_cast<int>(max_port);
+  *out_min_port = static_cast<uint16>(min_port);
+  *out_max_port = static_cast<uint16>(max_port);
   return true;
 }
 

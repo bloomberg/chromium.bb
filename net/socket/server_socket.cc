@@ -17,7 +17,7 @@ ServerSocket::~ServerSocket() {
 }
 
 int ServerSocket::ListenWithAddressAndPort(const std::string& address_string,
-                                           int port,
+                                           uint16 port,
                                            int backlog) {
   IPAddressNumber address_number;
   if (!ParseIPLiteralToNumber(address_string, &address_number)) {

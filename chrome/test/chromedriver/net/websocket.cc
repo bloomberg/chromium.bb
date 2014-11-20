@@ -78,9 +78,8 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
       return;
     }
   }
-  int port = 80;
-  base::StringToInt(url_.port(), &port);
-  net::AddressList addresses(net::IPEndPoint(address, port));
+  net::AddressList addresses(
+      net::IPEndPoint(address, static_cast<uint16>(url_.EffectiveIntPort())));
   net::NetLog::Source source;
   socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
 

@@ -24,8 +24,8 @@ using content::SocketPermissionRequest;
 const char kColon = ':';
 const char kDot = '.';
 const char kWildcard[] = "*";
-const int kWildcardPortNumber = 0;
-const int kInvalidPort = -1;
+const uint16 kWildcardPortNumber = 0;
+const uint16 kInvalidPort = 65535;
 
 bool StartsOrEndsWithWhitespace(const std::string& str) {
   return !str.empty() &&
@@ -190,9 +190,10 @@ bool SocketPermissionEntry::ParseHostPattern(
   if (StartsOrEndsWithWhitespace(pattern_tokens[1]))
     return false;
 
-  if (!base::StringToInt(pattern_tokens[1], &result.pattern_.port) ||
-      result.pattern_.port < 1 || result.pattern_.port > 65535)
+  int port;
+  if (!base::StringToInt(pattern_tokens[1], &port) || port < 1 || port > 65535)
     return false;
+  result.pattern_.port = static_cast<uint16>(port);
 
   *entry = result;
   return true;

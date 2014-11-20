@@ -90,7 +90,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
-      int port) override;
+      uint16 port) override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;

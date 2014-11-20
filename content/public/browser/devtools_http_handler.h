@@ -32,7 +32,7 @@ class DevToolsHttpHandler {
   // and instantiating server socket.
   class CONTENT_EXPORT ServerSocketFactory {
    public:
-    ServerSocketFactory(const std::string& address, int port, int backlog);
+    ServerSocketFactory(const std::string& address, uint16 port, int backlog);
     virtual ~ServerSocketFactory();
 
     // Returns a new instance of ServerSocket or NULL if an error occurred.
@@ -46,7 +46,7 @@ class DevToolsHttpHandler {
     virtual scoped_ptr<net::ServerSocket> Create() const = 0;
 
     const std::string address_;
-    const int port_;
+    const uint16 port_;
     const int backlog_;
 
    private:

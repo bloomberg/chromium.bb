@@ -122,10 +122,10 @@ bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
     return false;
   }
 
-  for (uint16 port = min_port; port <= max_port; ++port) {
+  for (uint32 port = min_port; port <= max_port; ++port) {
     socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
     int result = socket_->Listen(
-        net::IPEndPoint(local_endpoint.address(), port));
+        net::IPEndPoint(local_endpoint.address(), static_cast<uint16>(port)));
     if (result == net::OK) {
       break;
     } else {

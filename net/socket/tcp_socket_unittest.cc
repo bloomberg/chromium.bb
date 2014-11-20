@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
@@ -56,7 +57,9 @@ class TCPSocketTest : public PlatformTest {
     *success = true;
   }
 
-  void ParseAddress(const std::string& ip_str, int port, IPEndPoint* address) {
+  void ParseAddress(const std::string& ip_str,
+                    uint16 port,
+                    IPEndPoint* address) {
     IPAddressNumber ip_number;
     bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
     if (!rv)

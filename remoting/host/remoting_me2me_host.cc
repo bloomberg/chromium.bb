@@ -306,8 +306,8 @@ class HostProcess
   bool host_username_match_required_;
   bool allow_nat_traversal_;
   bool allow_relay_;
-  int min_udp_port_;
-  int max_udp_port_;
+  uint16 min_udp_port_;
+  uint16 max_udp_port_;
   std::string talkgadget_prefix_;
   bool allow_pairing_;
 
@@ -1067,8 +1067,8 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
   }
 
   // Use default values if policy setting is empty or invalid.
-  int min_udp_port = 0;
-  int max_udp_port = 0;
+  uint16 min_udp_port = 0;
+  uint16 max_udp_port = 0;
   if (!udp_port_range.empty() &&
       !NetworkSettings::ParsePortRange(udp_port_range, &min_udp_port,
                                        &max_udp_port)) {

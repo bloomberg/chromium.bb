@@ -112,12 +112,12 @@ class EmbeddedTestServerTest: public testing::Test,
 };
 
 TEST_F(EmbeddedTestServerTest, GetBaseURL) {
-  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/", server_->port()),
+  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%u/", server_->port()),
                                server_->base_url().spec());
 }
 
 TEST_F(EmbeddedTestServerTest, GetURL) {
-  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/path?query=foo",
+  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%u/path?query=foo",
                                server_->port()),
             server_->GetURL("/path?query=foo").spec());
 }

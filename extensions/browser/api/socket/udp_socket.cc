@@ -36,7 +36,7 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
 UDPSocket::~UDPSocket() { Disconnect(); }
 
 void UDPSocket::Connect(const std::string& address,
-                        int port,
+                        uint16 port,
                         const CompletionCallback& callback) {
   int result = net::ERR_CONNECTION_FAILED;
   do {
@@ -56,7 +56,7 @@ void UDPSocket::Connect(const std::string& address,
   callback.Run(result);
 }
 
-int UDPSocket::Bind(const std::string& address, int port) {
+int UDPSocket::Bind(const std::string& address, uint16 port) {
   if (IsBound())
     return net::ERR_CONNECTION_FAILED;
 
@@ -163,7 +163,7 @@ void UDPSocket::RecvFrom(int count,
 void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
                        const std::string& address,
-                       int port,
+                       uint16 port,
                        const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -224,7 +224,7 @@ void UDPSocket::OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                    int result) {
   DCHECK(!recv_from_callback_.is_null());
   std::string ip;
-  int port = 0;
+  uint16 port = 0;
   if (result > 0 && address.get()) {
     IPEndPointToStringAndPort(address->data, &ip, &port);
   }

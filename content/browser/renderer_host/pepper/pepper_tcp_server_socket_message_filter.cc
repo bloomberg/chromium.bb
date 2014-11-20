@@ -163,7 +163,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::IPAddressNumber address;
-  int port;
+  uint16 port;
   if (state_ != STATE_BEFORE_LISTENING ||
       !NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendListenError(context, PP_ERROR_FAILED);

@@ -19,16 +19,16 @@ class UDPSocket : public Socket {
   ~UDPSocket() override;
 
   void Connect(const std::string& address,
-               int port,
+               uint16 port,
                const CompletionCallback& callback) override;
   void Disconnect() override;
-  int Bind(const std::string& address, int port) override;
+  int Bind(const std::string& address, uint16 port) override;
   void Read(int count, const ReadCompletionCallback& callback) override;
   void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
               int byte_count,
               const std::string& address,
-              int port,
+              uint16 port,
               const CompletionCallback& callback) override;
 
   bool IsConnected() override;

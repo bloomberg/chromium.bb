@@ -89,7 +89,7 @@ class TransportClientSocketTest
   }
 
  protected:
-  int listen_port_;
+  uint16 listen_port_;
   CapturingNetLog net_log_;
   ClientSocketFactory* const socket_factory_;
   scoped_ptr<StreamSocket> sock_;
@@ -105,10 +105,10 @@ void TransportClientSocketTest::SetUp() {
 
   // Find a free port to listen on
   scoped_ptr<TCPListenSocket> sock;
-  int port;
+  uint16 port;
   // Range of ports to listen on.  Shouldn't need to try many.
-  const int kMinPort = 10100;
-  const int kMaxPort = 10200;
+  const uint16 kMinPort = 10100;
+  const uint16 kMaxPort = 10200;
 #if defined(OS_WIN)
   EnsureWinsockInit();
 #endif

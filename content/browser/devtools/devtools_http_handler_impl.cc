@@ -503,7 +503,7 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
 
 DevToolsHttpHandler::ServerSocketFactory::ServerSocketFactory(
     const std::string& address,
-    int port,
+    uint16 port,
     int backlog)
     : address_(address),
       port_(port),

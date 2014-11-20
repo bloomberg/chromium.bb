@@ -881,13 +881,13 @@ class DeterministicMockUDPClientSocket
   void OnReadComplete(const MockRead& data) override;
   void OnConnectComplete(const MockConnect& data) override;
 
-  void set_source_port(int port) { source_port_ = port; }
+  void set_source_port(uint16 port) { source_port_ = port; }
 
  private:
   bool connected_;
   IPEndPoint peer_address_;
   DeterministicSocketHelper helper_;
-  int source_port_;  // Ephemeral source port.
+  uint16 source_port_;  // Ephemeral source port.
 
   DISALLOW_COPY_AND_ASSIGN(DeterministicMockUDPClientSocket);
 };
@@ -1051,7 +1051,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void OnReadComplete(const MockRead& data) override;
   void OnConnectComplete(const MockConnect& data) override;
 
-  void set_source_port(int port) { source_port_ = port;}
+  void set_source_port(uint16 port) { source_port_ = port;}
 
  private:
   int CompleteRead();
@@ -1064,7 +1064,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   int read_offset_;
   MockRead read_data_;
   bool need_read_data_;
-  int source_port_;  // Ephemeral source port.
+  uint16 source_port_;  // Ephemeral source port.
 
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;

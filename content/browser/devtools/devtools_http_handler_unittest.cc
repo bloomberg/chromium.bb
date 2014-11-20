@@ -20,7 +20,7 @@
 namespace content {
 namespace {
 
-const int kDummyPort = 4321;
+const uint16 kDummyPort = 4321;
 const base::FilePath::CharType kDevToolsActivePortFileName[] =
     FILE_PATH_LITERAL("DevToolsActivePort");
 
@@ -34,7 +34,7 @@ class DummyServerSocket : public net::ServerSocket {
   }
 
   int ListenWithAddressAndPort(const std::string& ip_address,
-                               int port,
+                               uint16 port,
                                int backlog) override {
     return net::OK;
   }
@@ -201,7 +201,7 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   EXPECT_TRUE(base::ReadFileToString(active_port_file, &file_contents));
   int port = 0;
   EXPECT_TRUE(base::StringToInt(file_contents, &port));
-  EXPECT_EQ(kDummyPort, port);
+  EXPECT_EQ(static_cast<int>(kDummyPort), port);
 }
 
 }  // namespace content

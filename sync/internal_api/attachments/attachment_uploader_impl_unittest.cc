@@ -282,7 +282,7 @@ void AttachmentUploaderImplTest::SetUp() {
       base::Bind(&RequestHandler::HandleRequest,
                  base::Unretained(request_handler_.get())));
 
-  GURL url(base::StringPrintf("http://localhost:%d/", server_.port()));
+  GURL url(base::StringPrintf("http://localhost:%u/", server_.port()));
 
   token_service_.reset(new MockOAuth2TokenService);
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>

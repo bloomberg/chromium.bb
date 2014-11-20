@@ -16,9 +16,9 @@
 
 const char kTestLocalIpAddress[] = "123.44.22.4";
 const char kTestIpAddress1[] = "123.44.22.31";
-const int kTestPort1 = 234;
+const uint16 kTestPort1 = 234;
 const char kTestIpAddress2[] = "133.11.22.33";
-const int kTestPort2 = 543;
+const uint16 kTestPort2 = 543;
 
 class MockIPCSender : public IPC::Sender {
  public:
@@ -91,7 +91,7 @@ void CreateStunRequest(std::vector<char>* packet);
 void CreateStunResponse(std::vector<char>* packet);
 void CreateStunError(std::vector<char>* packet);
 
-net::IPEndPoint ParseAddress(const std::string ip_str, int port);
+net::IPEndPoint ParseAddress(const std::string ip_str, uint16 port);
 
 MATCHER_P(MatchMessage, type, "") {
   return arg->type() == type;

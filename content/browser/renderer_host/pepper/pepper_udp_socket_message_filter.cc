@@ -257,7 +257,7 @@ void PepperUDPSocketMessageFilter::DoBind(
       new net::UDPServerSocket(NULL, net::NetLog::Source()));
 
   net::IPAddressNumber address;
-  int port;
+  uint16 port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendBindError(context, PP_ERROR_ADDRESS_INVALID);
     return;
@@ -353,7 +353,7 @@ void PepperUDPSocketMessageFilter::DoSendTo(
   memcpy(sendto_buffer_->data(), data.data(), num_bytes);
 
   net::IPAddressNumber address;
-  int port;
+  uint16 port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendSendToError(context, PP_ERROR_ADDRESS_INVALID);
     return;

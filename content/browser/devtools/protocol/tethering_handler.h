@@ -26,14 +26,14 @@ class TetheringHandler {
   void SetClient(scoped_ptr<Client> client);
 
   scoped_refptr<DevToolsProtocol::Response> Bind(
-      int port, scoped_refptr<DevToolsProtocol::Command> command);
+      uint16 port, scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> Unbind(
-      int port, scoped_refptr<DevToolsProtocol::Command> command);
+      uint16 port, scoped_refptr<DevToolsProtocol::Command> command);
 
  private:
   class TetheringImpl;
 
-  void Accepted(int port, const std::string& name);
+  void Accepted(uint16 port, const std::string& name);
   bool Activate();
 
   void SendBindSuccess(scoped_refptr<DevToolsProtocol::Command> command);

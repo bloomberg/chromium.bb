@@ -21,8 +21,8 @@
 
 namespace {
 
-const int kMinTetheringPort = 9333;
-const int kMaxTetheringPort = 9444;
+const uint16 kMinTetheringPort = 9333;
+const uint16 kMaxTetheringPort = 9444;
 
 const int kBackLog = 10;
 
@@ -85,7 +85,7 @@ BrowserListTabContentsProvider::CreateSocketForTethering(
 
   if (last_tethering_port_ == kMaxTetheringPort)
     last_tethering_port_ = kMinTetheringPort;
-  int port = ++last_tethering_port_;
+  uint16 port = ++last_tethering_port_;
   *name = base::IntToString(port);
   scoped_ptr<net::TCPServerSocket> socket(
       new net::TCPServerSocket(nullptr, net::NetLog::Source()));

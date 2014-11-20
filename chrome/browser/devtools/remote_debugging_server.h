@@ -19,7 +19,7 @@ class RemoteDebuggingServer {
  public:
   RemoteDebuggingServer(chrome::HostDesktopType host_desktop_type,
                         const std::string& ip,
-                        int port);
+                        uint16 port);
 
   virtual ~RemoteDebuggingServer();
 

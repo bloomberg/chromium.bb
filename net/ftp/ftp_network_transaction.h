@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -245,7 +246,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   // with any trailing slash removed.
   std::string current_remote_directory_;
 
-  int data_connection_port_;
+  uint16 data_connection_port_;
 
   ClientSocketFactory* socket_factory_;
 

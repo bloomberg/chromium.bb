@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+
 namespace content {
 
 // This module provides helper types for checking socket permission.
@@ -27,7 +29,7 @@ struct SocketPermissionRequest {
 
   SocketPermissionRequest(OperationType type,
                           const std::string& host,
-                          int port)
+                          uint16 port)
     : type(type),
       host(host),
       port(port) {
@@ -35,7 +37,7 @@ struct SocketPermissionRequest {
 
   OperationType type;
   std::string host;
-  int port;
+  uint16 port;
 };
 
 }  // namespace content

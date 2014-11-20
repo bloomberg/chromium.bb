@@ -132,13 +132,10 @@ void HttpStreamFactoryImpl::Job::Start(Request* request) {
 
 int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   DCHECK_GT(num_streams, 0);
-  HostPortPair origin_server =
-      HostPortPair(request_info_.url.HostNoBrackets(),
-                   request_info_.url.EffectiveIntPort());
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
-  if (http_server_properties &&
-      http_server_properties->SupportsSpdy(origin_server)) {
+  if (http_server_properties && http_server_properties->SupportsSpdy(
+      HostPortPair::FromURL(request_info_.url))) {
     num_streams_ = 1;
   } else {
     num_streams_ = num_streams;
@@ -617,8 +614,7 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  int port = request_info_.url.EffectiveIntPort();
-  origin_ = HostPortPair(request_info_.url.HostNoBrackets(), port);
+  origin_ = HostPortPair::FromURL(request_info_.url);
   origin_url_ = stream_factory_->ApplyHostMappingRules(
       request_info_.url, &origin_);
 
@@ -628,14 +624,14 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                                  priority_));
 
   // Don't connect to restricted ports.
-  bool is_port_allowed = IsPortAllowedByDefault(port);
+  bool is_port_allowed = IsPortAllowedByDefault(origin_.port());
   if (request_info_.url.SchemeIs("ftp")) {
     // Never share connection with other jobs for FTP requests.
     DCHECK(!waiting_job_);
 
-    is_port_allowed = IsPortAllowedByFtp(port);
+    is_port_allowed = IsPortAllowedByFtp(origin_.port());
   }
-  if (!is_port_allowed && !IsPortAllowedByOverride(port)) {
+  if (!is_port_allowed && !IsPortAllowedByOverride(origin_.port())) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;

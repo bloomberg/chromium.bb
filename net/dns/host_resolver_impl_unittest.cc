@@ -181,7 +181,7 @@ class MockHostResolverProc : public HostResolverProc {
 };
 
 bool AddressListContains(const AddressList& list, const std::string& address,
-                         int port) {
+                         uint16 port) {
   IPAddressNumber ip;
   bool rv = ParseIPLiteralToNumber(address, &ip);
   DCHECK(rv);
@@ -249,7 +249,7 @@ class Request {
   bool completed() const { return result_ != ERR_IO_PENDING; }
   bool pending() const { return handle_ != NULL; }
 
-  bool HasAddress(const std::string& address, int port) const {
+  bool HasAddress(const std::string& address, uint16 port) const {
     return AddressListContains(list_, address, port);
   }
 
@@ -258,7 +258,7 @@ class Request {
     return list_.size();
   }
 
-  bool HasOneAddress(const std::string& address, int port) const {
+  bool HasOneAddress(const std::string& address, uint16 port) const {
     return HasAddress(address, port) && (NumberOfAddresses() == 1u);
   }
 

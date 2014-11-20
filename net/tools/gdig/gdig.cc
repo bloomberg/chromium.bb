@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/at_exit.h"
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -53,7 +54,7 @@ bool StringToIPEndPoint(const std::string& ip_address_and_port,
   if (!net::ParseIPLiteralToNumber(ip, &ip_number))
     return false;
 
-  *ip_end_point = net::IPEndPoint(ip_number, port);
+  *ip_end_point = net::IPEndPoint(ip_number, static_cast<uint16>(port));
   return true;
 }
 
@@ -90,7 +91,7 @@ std::string DnsHostsToString(const DnsHosts& dns_hosts) {
        ++i) {
     const DnsHostsKey& key = i->first;
     std::string host_name = key.first;
-    output.append(IPEndPoint(i->second, -1).ToStringWithoutPort());
+    output.append(IPEndPoint(i->second, 0).ToStringWithoutPort());
     output.append(" ").append(host_name).append("\n");
   }
   return output;

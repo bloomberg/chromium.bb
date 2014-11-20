@@ -71,7 +71,7 @@ class UDPSocketEventDispatcher
                               int bytes_read,
                               scoped_refptr<net::IOBuffer> io_buffer,
                               const std::string& address,
-                              int port);
+                              uint16 port);
 
   // Post an extension event from IO to UI thread
   static void PostEvent(const ReceiveParams& params, scoped_ptr<Event> event);

@@ -1027,11 +1027,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  HostPortPair endpoint = HostPortPair(request_->url.HostNoBrackets(),
-                                       request_->url.EffectiveIntPort());
-  ProcessAlternateProtocol(session_,
-                           *response_.headers.get(),
-                           endpoint);
+  ProcessAlternateProtocol(session_, *response_.headers.get(),
+                           HostPortPair::FromURL(request_->url));
 
   int rv = HandleAuthChallenge();
   if (rv != OK)

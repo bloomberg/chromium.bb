@@ -19,7 +19,6 @@ using chrome_common_net::DnsProbeStatus;
 using net::DnsClient;
 using net::DnsConfig;
 using net::IPAddressNumber;
-using net::IPEndPoint;
 using net::ParseIPLiteralToNumber;
 using net::NetworkChangeNotifier;
 
@@ -37,11 +36,11 @@ const int kMaxResultAgeMs = 5000;
 const char kGooglePublicDns1[] = "8.8.8.8";
 const char kGooglePublicDns2[] = "8.8.4.4";
 
-IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
+net::IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   IPAddressNumber dns_ip_number;
   bool rv = ParseIPLiteralToNumber(dns_ip_literal, &dns_ip_number);
   DCHECK(rv);
-  return IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
+  return net::IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
 }
 
 DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,

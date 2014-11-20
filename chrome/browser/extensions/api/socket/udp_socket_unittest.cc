@@ -27,7 +27,7 @@ static void OnConnected(int result) {
 static void OnCompleted(int bytes_read,
                         scoped_refptr<net::IOBuffer> io_buffer,
                         const std::string& address,
-                        int port) {
+                        uint16 port) {
   // Do nothing; don't care.
 }
 

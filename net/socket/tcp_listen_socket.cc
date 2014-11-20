@@ -31,7 +31,9 @@ namespace net {
 
 // static
 scoped_ptr<TCPListenSocket> TCPListenSocket::CreateAndListen(
-    const string& ip, int port, StreamListenSocket::Delegate* del) {
+    const string& ip,
+    uint16 port,
+    StreamListenSocket::Delegate* del) {
   SocketDescriptor s = CreateAndBind(ip, port);
   if (s == kInvalidSocket)
     return scoped_ptr<TCPListenSocket>();
@@ -47,7 +49,7 @@ TCPListenSocket::TCPListenSocket(SocketDescriptor s,
 
 TCPListenSocket::~TCPListenSocket() {}
 
-SocketDescriptor TCPListenSocket::CreateAndBind(const string& ip, int port) {
+SocketDescriptor TCPListenSocket::CreateAndBind(const string& ip, uint16 port) {
   SocketDescriptor s = CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s != kInvalidSocket) {
 #if defined(OS_POSIX)
@@ -74,7 +76,7 @@ SocketDescriptor TCPListenSocket::CreateAndBind(const string& ip, int port) {
 }
 
 SocketDescriptor TCPListenSocket::CreateAndBindAnyPort(const string& ip,
-                                                       int* port) {
+                                                       uint16* port) {
   SocketDescriptor s = CreateAndBind(ip, 0);
   if (s == kInvalidSocket)
     return kInvalidSocket;
@@ -108,18 +110,6 @@ void TCPListenSocket::Accept() {
   sock->WatchSocket(WAITING_READ);
 #endif
   socket_delegate_->DidAccept(this, sock.Pass());
-}
-
-TCPListenSocketFactory::TCPListenSocketFactory(const string& ip, int port)
-    : ip_(ip),
-      port_(port) {
-}
-
-TCPListenSocketFactory::~TCPListenSocketFactory() {}
-
-scoped_ptr<StreamListenSocket> TCPListenSocketFactory::CreateAndListen(
-    StreamListenSocket::Delegate* delegate) const {
-  return TCPListenSocket::CreateAndListen(ip_, port_, delegate);
 }
 
 }  // namespace net

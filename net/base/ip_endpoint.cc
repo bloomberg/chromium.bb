@@ -25,7 +25,7 @@ IPEndPoint::IPEndPoint() : port_(0) {}
 
 IPEndPoint::~IPEndPoint() {}
 
-IPEndPoint::IPEndPoint(const IPAddressNumber& address, int port)
+IPEndPoint::IPEndPoint(const IPAddressNumber& address, uint16 port)
     : address_(address),
       port_(port) {}
 

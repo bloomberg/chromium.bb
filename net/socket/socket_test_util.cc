@@ -682,7 +682,7 @@ MockClientSocketFactory::CreateDatagramClientSocket(
       new MockUDPClientSocket(data_provider, net_log));
   data_provider->set_socket(socket.get());
   if (bind_type == DatagramSocket::RANDOM_BIND)
-    socket->set_source_port(rand_int_cb.Run(1025, 65535));
+    socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
   return socket.Pass();
 }
 
@@ -1917,7 +1917,7 @@ DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
   data_provider->set_delegate(socket->AsWeakPtr());
   udp_client_sockets().push_back(socket.get());
   if (bind_type == DatagramSocket::RANDOM_BIND)
-    socket->set_source_port(rand_int_cb.Run(1025, 65535));
+    socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
   return socket.Pass();
 }
 

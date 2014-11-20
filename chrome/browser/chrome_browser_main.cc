@@ -502,7 +502,7 @@ void LaunchDevToolsHandlerIfNeeded(const CommandLine& command_line) {
       g_browser_process->CreateDevToolsHttpProtocolHandler(
           chrome::HOST_DESKTOP_TYPE_NATIVE,
           "127.0.0.1",
-          port);
+          static_cast<uint16>(port));
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }

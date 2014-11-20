@@ -67,7 +67,7 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
   }
 
   // Attempt to find canonical servers.
-  int canonical_ports[] = { 80, 443 };
+  uint16 canonical_ports[] = { 80, 443 };
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
     for (size_t j = 0; j < arraysize(canonical_ports); ++j) {

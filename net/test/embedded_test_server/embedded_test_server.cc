@@ -115,7 +115,7 @@ void HttpListenSocket::DetachFromThread() {
 }
 
 EmbeddedTestServer::EmbeddedTestServer()
-    : port_(-1),
+    : port_(0),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }

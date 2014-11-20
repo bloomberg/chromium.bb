@@ -65,14 +65,14 @@ const char* kVideoWindowWidth = "1280";
 const char* kVideoWindowHeight = "720";
 #endif  // defined(USE_X11)
 
-void GetPorts(int* tx_port, int* rx_port) {
+void GetPorts(uint16* tx_port, uint16* rx_port) {
   test::InputBuilder tx_input(
-      "Enter send port.", DEFAULT_SEND_PORT, 1, INT_MAX);
-  *tx_port = tx_input.GetIntInput();
+      "Enter send port.", DEFAULT_SEND_PORT, 1, 65535);
+  *tx_port = static_cast<uint16>(tx_input.GetIntInput());
 
   test::InputBuilder rx_input(
-      "Enter receive port.", DEFAULT_RECEIVE_PORT, 1, INT_MAX);
-  *rx_port = rx_input.GetIntInput();
+      "Enter receive port.", DEFAULT_RECEIVE_PORT, 1, 65535);
+  *rx_port = static_cast<uint16>(rx_input.GetIntInput());
 }
 
 std::string GetIpAddress(const std::string display_text) {
@@ -558,7 +558,7 @@ int main(int argc, char** argv) {
       media::cast::GetVideoReceiverConfig();
 
   // Determine local and remote endpoints.
-  int remote_port, local_port;
+  uint16 remote_port, local_port;
   media::cast::GetPorts(&remote_port, &local_port);
   if (!local_port) {
     LOG(ERROR) << "Invalid local port.";

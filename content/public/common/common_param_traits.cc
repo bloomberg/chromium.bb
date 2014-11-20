@@ -102,7 +102,7 @@ void ParamTraits<net::IPEndPoint>::Write(Message* m, const param_type& p) {
 bool ParamTraits<net::IPEndPoint>::Read(const Message* m, PickleIterator* iter,
                                         param_type* p) {
   net::IPAddressNumber address;
-  int port;
+  uint16 port;
   if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
     return false;
   if (address.size() &&

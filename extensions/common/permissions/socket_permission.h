@@ -19,7 +19,7 @@ class SocketPermission
   struct CheckParam : APIPermission::CheckParam {
     CheckParam(content::SocketPermissionRequest::OperationType type,
                const std::string& host,
-               int port)
+               uint16 port)
         : request(type, host, port) {}
     content::SocketPermissionRequest request;
   };

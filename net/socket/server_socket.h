@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -30,7 +31,7 @@ class NET_EXPORT ServerSocket {
   // Subclasses may override this function if |address_string| is in a different
   // format, for example, unix domain socket path.
   virtual int ListenWithAddressAndPort(const std::string& address_string,
-                                       int port,
+                                       uint16 port,
                                        int backlog);
 
   // Gets current address the socket is bound to.

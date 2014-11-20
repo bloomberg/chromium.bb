@@ -50,7 +50,7 @@ class TCPServerSocketTest : public PlatformTest {
     *success = true;
   }
 
-  void ParseAddress(std::string ip_str, int port, IPEndPoint* address) {
+  void ParseAddress(std::string ip_str, uint16 port, IPEndPoint* address) {
     IPAddressNumber ip_number;
     bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
     if (!rv)

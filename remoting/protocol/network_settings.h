@@ -18,8 +18,8 @@ struct NetworkSettings {
   // When hosts are configured with NAT traversal disabled they will
   // typically also limit their P2P ports to this range, so that
   // sessions may be blocked or un-blocked via firewall rules.
-  static const int kDefaultMinPort = 12400;
-  static const int kDefaultMaxPort = 12409;
+  static const uint16 kDefaultMinPort = 12400;
+  static const uint16 kDefaultMaxPort = 12409;
 
   enum Flags {
     // Don't use STUN or relay servers. Accept incoming P2P connection
@@ -59,15 +59,15 @@ struct NetworkSettings {
   // Parse string in the form "<min_port>-<max_port>". E.g. "12400-12409".
   // Returns true if string was parsed successfuly.
   static bool ParsePortRange(const std::string& port_range,
-                             int* out_min_port,
-                             int* out_max_port);
+                             uint16* out_min_port,
+                             uint16* out_max_port);
 
   uint32 flags;
 
   // |min_port| and |max_port| specify range (inclusive) of ports used by
   // P2P sessions. Any port can be used when both values are set to 0.
-  int min_port;
-  int max_port;
+  uint16 min_port;
+  uint16 max_port;
 };
 
 }  // namespace protocol

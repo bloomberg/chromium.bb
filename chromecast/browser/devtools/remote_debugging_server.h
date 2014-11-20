@@ -31,7 +31,7 @@ class RemoteDebuggingServer {
   scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
 
   IntegerPrefMember pref_port_;
-  int port_;
+  uint16 port_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };

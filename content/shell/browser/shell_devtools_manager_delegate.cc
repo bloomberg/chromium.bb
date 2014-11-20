@@ -66,7 +66,7 @@ class UnixDomainServerSocketFactory
 class TCPServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, int port, int backlog)
+  TCPServerSocketFactory(const std::string& address, uint16 port, int backlog)
       : DevToolsHttpHandler::ServerSocketFactory(
             address, port, backlog) {}
 
@@ -95,14 +95,14 @@ CreateSocketFactory() {
 #else
   // See if the user specified a port on the command line (useful for
   // automation). If not, use an ephemeral port by specifying 0.
-  int port = 0;
+  uint16 port = 0;
   if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
     int temp_port;
     std::string port_str =
         command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
     if (base::StringToInt(port_str, &temp_port) &&
         temp_port > 0 && temp_port < 65535) {
-      port = temp_port;
+      port = static_cast<uint16>(temp_port);
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
     }

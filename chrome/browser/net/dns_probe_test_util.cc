@@ -11,7 +11,6 @@
 using net::DnsClient;
 using net::DnsConfig;
 using net::IPAddressNumber;
-using net::IPEndPoint;
 using net::MockDnsClientRule;
 using net::MockDnsClientRuleList;
 using net::ParseIPLiteralToNumber;
@@ -24,7 +23,7 @@ scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
   IPAddressNumber dns_ip;
   ParseIPLiteralToNumber("192.168.1.1", &dns_ip);
   const uint16 kDnsPort = net::dns_protocol::kDefaultPort;
-  config.nameservers.push_back(IPEndPoint(dns_ip, kDnsPort));
+  config.nameservers.push_back(net::IPEndPoint(dns_ip, kDnsPort));
 
   const uint16 kTypeA = net::dns_protocol::kTypeA;
   MockDnsClientRuleList rules;

@@ -86,9 +86,9 @@ IPC_MESSAGE_CONTROL2(ChromotingNetworkDaemonMsg_SetScreenResolution,
 IPC_STRUCT_BEGIN(SerializedTransportRoute)
   IPC_STRUCT_MEMBER(int, type)
   IPC_STRUCT_MEMBER(net::IPAddressNumber, remote_address)
-  IPC_STRUCT_MEMBER(int, remote_port)
+  IPC_STRUCT_MEMBER(uint16, remote_port)
   IPC_STRUCT_MEMBER(net::IPAddressNumber, local_address)
-  IPC_STRUCT_MEMBER(int, local_port)
+  IPC_STRUCT_MEMBER(uint16, local_port)
 IPC_STRUCT_END()
 
 // Hosts status notifications (see HostStatusObserver interface) sent by

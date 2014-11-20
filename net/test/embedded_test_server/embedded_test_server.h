@@ -136,7 +136,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
               const std::string& relative_url) const;
 
   // Returns the port number used by the server.
-  int port() const { return port_; }
+  uint16 port() const { return port_; }
 
   // Registers request handler which serves files from |directory|.
   // For instance, a request to "/foo.html" is served by "foo.html" under
@@ -188,7 +188,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   scoped_ptr<base::Thread> io_thread_;
 
   scoped_ptr<HttpListenSocket> listen_socket_;
-  int port_;
+  uint16 port_;
   GURL base_url_;
 
   // Owns the HttpConnection objects.

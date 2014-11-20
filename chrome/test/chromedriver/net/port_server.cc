@@ -23,7 +23,7 @@
 #include <sys/un.h>
 #endif
 
-PortReservation::PortReservation(const base::Closure& on_free_func, int port)
+PortReservation::PortReservation(const base::Closure& on_free_func, uint16 port)
     : on_free_func_(on_free_func), port_(port) {}
 
 PortReservation::~PortReservation() {
@@ -43,9 +43,9 @@ PortServer::PortServer(const std::string& path) : path_(path) {
 
 PortServer::~PortServer() {}
 
-Status PortServer::ReservePort(int* port,
+Status PortServer::ReservePort(uint16* port,
                                scoped_ptr<PortReservation>* reservation) {
-  int port_to_use = 0;
+  uint16 port_to_use = 0;
   {
     base::AutoLock lock(free_lock_);
     if (free_.size()) {
@@ -65,7 +65,7 @@ Status PortServer::ReservePort(int* port,
   return Status(kOk);
 }
 
-Status PortServer::RequestPort(int* port) {
+Status PortServer::RequestPort(uint16* port) {
   // The client sends its PID + \n, and the server responds with a port + \n,
   // which is valid for the lifetime of the referred process.
 #if defined(OS_LINUX)
@@ -120,54 +120,57 @@ Status PortServer::RequestPort(int* port) {
 
   int new_port = 0;
   if (*response.rbegin() != '\n' ||
-      !base::StringToInt(response.substr(0, response.length() - 1), &new_port))
+      !base::StringToInt(response.substr(0, response.length() - 1),
+                         &new_port) ||
+      new_port < 0 || new_port > 65535)
     return Status(kUnknownError, "failed to parse portserver response");
-  *port = new_port;
+  *port = static_cast<uint16>(new_port);
   return Status(kOk);
 #else
   return Status(kUnknownError, "not implemented for this platform");
 #endif
 }
 
-void PortServer::ReleasePort(int port) {
+void PortServer::ReleasePort(uint16 port) {
   base::AutoLock lock(free_lock_);
   free_.push_back(port);
 }
 
-PortManager::PortManager(int min_port, int max_port)
+PortManager::PortManager(uint16 min_port, uint16 max_port)
     : min_port_(min_port), max_port_(max_port) {
   CHECK_GE(max_port_, min_port_);
 }
 
 PortManager::~PortManager() {}
 
-int PortManager::FindAvailablePort() const {
-  int start = base::RandInt(min_port_, max_port_);
+uint16 PortManager::FindAvailablePort() const {
+  uint16 start = static_cast<uint16>(base::RandInt(min_port_, max_port_));
   bool wrapped = false;
-  for (int try_port = start; try_port != start || !wrapped; ++try_port) {
+  for (uint32 try_port = start; try_port != start || !wrapped; ++try_port) {
     if (try_port > max_port_) {
       wrapped = true;
       if (min_port_ == max_port_)
         break;
       try_port = min_port_;
     }
-    if (taken_.count(try_port))
+    uint16 try_port_uint16 = static_cast<uint16>(try_port);
+    if (taken_.count(try_port_uint16))
       continue;
 
     char parts[] = {127, 0, 0, 1};
     net::IPAddressNumber address(parts, parts + arraysize(parts));
     net::NetLog::Source source;
     net::TCPServerSocket sock(NULL, source);
-    if (sock.Listen(net::IPEndPoint(address, try_port), 1) == net::OK)
-      return try_port;
+    if (sock.Listen(net::IPEndPoint(address, try_port_uint16), 1) == net::OK)
+      return try_port_uint16;
   }
   return 0;
 }
 
-Status PortManager::ReservePort(int* port,
+Status PortManager::ReservePort(uint16* port,
                                 scoped_ptr<PortReservation>* reservation) {
   base::AutoLock lock(lock_);
-  int port_to_use = FindAvailablePort();
+  uint16 port_to_use = FindAvailablePort();
   if (!port_to_use)
     return Status(kUnknownError, "unable to find open port");
 
@@ -181,9 +184,10 @@ Status PortManager::ReservePort(int* port,
 }
 
 Status PortManager::ReservePortFromPool(
-    int* port, scoped_ptr<PortReservation>* reservation) {
+    uint16* port,
+    scoped_ptr<PortReservation>* reservation) {
   base::AutoLock lock(lock_);
-  int port_to_use = 0;
+  uint16 port_to_use = 0;
   if (unused_forwarded_port_.size()) {
     port_to_use = unused_forwarded_port_.front();
     unused_forwarded_port_.pop_front();
@@ -202,12 +206,12 @@ Status PortManager::ReservePortFromPool(
   return Status(kOk);
 }
 
-void PortManager::ReleasePort(int port) {
+void PortManager::ReleasePort(uint16 port) {
   base::AutoLock lock(lock_);
   taken_.erase(port);
 }
 
-void PortManager::ReleasePortToPool(int port) {
+void PortManager::ReleasePortToPool(uint16 port) {
   base::AutoLock lock(lock_);
   taken_.erase(port);
   unused_forwarded_port_.push_back(port);

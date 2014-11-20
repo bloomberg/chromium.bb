@@ -78,7 +78,7 @@ TLSSocket::~TLSSocket() {
 }
 
 void TLSSocket::Connect(const std::string& address,
-                        int port,
+                        uint16 port,
                         const CompletionCallback& callback) {
   callback.Run(net::ERR_CONNECTION_FAILED);
 }
@@ -148,7 +148,7 @@ bool TLSSocket::SetNoDelay(bool no_delay) {
 }
 
 int TLSSocket::Listen(const std::string& address,
-                      int port,
+                      uint16 port,
                       int backlog,
                       std::string* error_msg) {
   *error_msg = kTLSSocketTypeInvalidError;

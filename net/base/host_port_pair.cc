@@ -21,7 +21,8 @@ HostPortPair::HostPortPair(const std::string& in_host, uint16 in_port)
 
 // static
 HostPortPair HostPortPair::FromURL(const GURL& url) {
-  return HostPortPair(url.HostNoBrackets(), url.EffectiveIntPort());
+  return HostPortPair(url.HostNoBrackets(),
+                      static_cast<uint16>(url.EffectiveIntPort()));
 }
 
 // static
@@ -41,7 +42,7 @@ HostPortPair HostPortPair::FromString(const std::string& str) {
     return HostPortPair();
   HostPortPair host_port_pair;
   host_port_pair.set_host(key_port[0]);
-  host_port_pair.set_port(port);
+  host_port_pair.set_port(static_cast<uint16>(port));
   return host_port_pair;
 }
 

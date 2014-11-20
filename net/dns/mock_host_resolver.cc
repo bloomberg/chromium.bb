@@ -48,7 +48,7 @@ int ParseAddressList(const std::string& host_list,
       LOG(WARNING) << "Not a supported IP literal: " << addresses[index];
       return ERR_UNEXPECTED;
     }
-    addrlist->push_back(IPEndPoint(ip_number, -1));
+    addrlist->push_back(IPEndPoint(ip_number, 0));
   }
   return OK;
 }

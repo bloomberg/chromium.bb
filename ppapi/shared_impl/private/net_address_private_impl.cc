@@ -451,7 +451,7 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
 // static
 bool NetAddressPrivateImpl::IPEndPointToNetAddress(
     const std::vector<unsigned char>& address,
-    int port,
+    uint16 port,
     PP_NetAddress_Private* addr) {
   if (!addr)
     return false;
@@ -461,14 +461,14 @@ bool NetAddressPrivateImpl::IPEndPointToNetAddress(
     case kIPv4AddressSize: {
       net_addr->is_valid = true;
       net_addr->is_ipv6 = false;
-      net_addr->port = static_cast<uint16_t>(port);
+      net_addr->port = port;
       std::copy(address.begin(), address.end(), net_addr->address);
       break;
     }
     case kIPv6AddressSize: {
       net_addr->is_valid = true;
       net_addr->is_ipv6 = true;
-      net_addr->port = static_cast<uint16_t>(port);
+      net_addr->port = port;
       std::copy(address.begin(), address.end(), net_addr->address);
       break;
     }
@@ -484,7 +484,7 @@ bool NetAddressPrivateImpl::IPEndPointToNetAddress(
 bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
     const PP_NetAddress_Private& addr,
     std::vector<unsigned char>* address,
-    int* port) {
+    uint16* port) {
   if (!address || !port)
     return false;
 

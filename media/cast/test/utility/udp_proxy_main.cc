@@ -153,8 +153,15 @@ int main(int argc, char** argv) {
     // V1 proxy
     network_type = argv[2];
   }
-  net::IPEndPoint remote_endpoint(remote_ip_number, remote_port);
-  net::IPEndPoint local_endpoint(local_ip_number, local_port);
+  if (local_port < 0 || local_port > 65535 || remote_port < 0 ||
+      remote_port > 65535) {
+    fprintf(stderr, "Port numbers must be between 0 and 65535\n");
+    exit(1);
+  }
+  net::IPEndPoint remote_endpoint(remote_ip_number,
+                                  static_cast<uint16>(remote_port));
+  net::IPEndPoint local_endpoint(local_ip_number,
+                                 static_cast<uint16>(local_port));
   scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
   scoped_ptr<media::cast::test::InterruptedPoissonProcess> ipp(
       media::cast::test::DefaultInterruptedPoissonProcess());
