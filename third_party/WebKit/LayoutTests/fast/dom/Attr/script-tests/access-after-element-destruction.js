@@ -15,6 +15,7 @@ asyncGC(function() {
 
     shouldBe("attributes.item(0).name", "'a'");
     shouldBe("attributes.item(0).value", "'b'");
+    shouldBe("attributes.item(0).ownerElement.tagName", "'P'");
 
     attributes.item(0).value = 'c';
 
@@ -33,6 +34,7 @@ asyncGC(function() {
 
         shouldBe("attr.name", "'a'");
         shouldBe("attr.value", "'b'");
+        shouldBe("attr.ownerElement.tagName", "'P'");
 
         attr.value = 'c';
 
