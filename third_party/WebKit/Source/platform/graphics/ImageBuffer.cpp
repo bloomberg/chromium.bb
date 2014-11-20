@@ -138,6 +138,13 @@ void ImageBuffer::notifySurfaceInvalid()
         m_client->notifySurfaceInvalid();
 }
 
+void ImageBuffer::resetCanvas(SkCanvas* canvas)
+{
+    context()->resetCanvas(canvas);
+    if (m_client)
+        m_client->restoreCanvasMatrixClipStack();
+}
+
 PassRefPtr<SkImage> ImageBuffer::newImageSnapshot() const
 {
     return m_surface->newImageSnapshot();

@@ -1571,9 +1571,9 @@ void GraphicsContext::clipOut(const Path& pathToClip)
     path.toggleInverseFillType();
 }
 
-void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
+void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule, AntiAliasingMode antiAliasingMode)
 {
-    if (contextDisabled() || pathToClip.isEmpty())
+    if (contextDisabled())
         return;
 
     // Use const_cast and temporarily modify the fill type instead of copying the path.
@@ -1582,7 +1582,7 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
 
     SkPath::FillType temporaryFillType = WebCoreWindRuleToSkFillType(clipRule);
     path.setFillType(temporaryFillType);
-    clipPath(path, AntiAliased);
+    clipPath(path, antiAliasingMode);
 
     path.setFillType(previousFillType);
 }
@@ -1605,22 +1605,6 @@ void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)
         return;
 
     clipRoundedRect(rect, SkRegion::kDifference_Op);
-}
-
-void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule, AntiAliasingMode aa)
-{
-    if (contextDisabled())
-        return;
-
-    // Use const_cast and temporarily modify the fill type instead of copying the path.
-    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
-    SkPath::FillType previousFillType = path.getFillType();
-
-    SkPath::FillType temporaryFillType = WebCoreWindRuleToSkFillType(clipRule);
-    path.setFillType(temporaryFillType);
-    clipPath(path, aa);
-
-    path.setFillType(previousFillType);
 }
 
 void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion::Op op)

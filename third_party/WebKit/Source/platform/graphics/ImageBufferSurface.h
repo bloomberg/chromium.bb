@@ -66,6 +66,7 @@ public:
     virtual bool restore() { return false; };
     virtual WebLayer* layer() const { return 0; };
     virtual bool isAccelerated() const { return false; }
+    virtual bool needsClipTracking() const { return false; }
     virtual Platform3DObject getBackingTexture() const { return 0; }
     virtual void didModifyBackingTexture() { }
     virtual bool cachedBitmapEnabled() const { return false; }

@@ -77,6 +77,11 @@ enum ShadowMode {
     DrawShadowOnly,
 };
 
+enum AntiAliasingMode {
+    NotAntiAliased,
+    AntiAliased
+};
+
 enum GradientSpreadMethod {
     SpreadMethodPad,
     SpreadMethodReflect,

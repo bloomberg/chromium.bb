@@ -37,9 +37,9 @@ public:
     virtual ~FakeImageBufferClient() { }
 
     // ImageBufferClient implementation
-    virtual void notifySurfaceInvalid() { }
-    virtual bool isDirty() { return m_isDirty; };
-    virtual void didFinalizeFrame()
+    virtual void notifySurfaceInvalid() override { }
+    virtual bool isDirty() override { return m_isDirty; };
+    virtual void didFinalizeFrame() override
     {
         if (m_isDirty) {
             Platform::current()->currentThread()->removeTaskObserver(this);
@@ -57,6 +57,7 @@ public:
         m_imageBuffer->finalizeFrame(dirtyRect);
         ASSERT_FALSE(m_isDirty);
     }
+    virtual void restoreCanvasMatrixClipStack() override { };
 
     void fakeDraw()
     {

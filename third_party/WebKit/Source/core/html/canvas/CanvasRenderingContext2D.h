@@ -32,6 +32,7 @@
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/ClipList.h"
 #include "core/html/canvas/HitRegion.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "platform/fonts/Font.h"
@@ -244,6 +245,8 @@ public:
     void loseContext();
     void restoreContext();
 
+    void restoreCanvasMatrixClipStack();
+
     virtual void trace(Visitor*) override;
 
 private:
@@ -253,12 +256,17 @@ private:
         DirectionLTR
     };
 
+    enum ClipListCopyMode {
+        CopyClipList,
+        DontCopyClipList
+    };
+
     class State final : public CSSFontSelectorClient {
     public:
         State();
         virtual ~State();
 
-        State(const State&);
+        State(const State&, ClipListCopyMode = CopyClipList);
         State& operator=(const State&);
 
         // CSSFontSelectorClient implementation
@@ -298,6 +306,8 @@ private:
         bool m_realizedFont;
 
         bool m_hasClip;
+
+        ClipList m_clipList;
     };
 
     CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, Document&);
@@ -370,7 +380,7 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<State>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
     bool m_usesCSSCompatibilityParseMode;
-    GraphicsContext::AntiAliasingMode m_clipAntialiasing;
+    AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
     bool m_isContextLost;
     bool m_contextRestorable;

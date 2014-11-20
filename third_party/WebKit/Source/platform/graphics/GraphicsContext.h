@@ -61,10 +61,6 @@ class KURL;
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum AntiAliasingMode {
-        NotAntiAliased,
-        AntiAliased
-    };
     enum AccessMode {
         ReadOnly,
         ReadWrite
@@ -295,13 +291,10 @@ public:
     void clipOut(const IntRect& rect) { clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op); }
     void clipOut(const Path&);
     void clipOutRoundedRect(const RoundedRect&);
-    void clipPath(const Path&, WindRule = RULE_EVENODD);
+    void clipPath(const Path&, WindRule = RULE_EVENODD, AntiAliasingMode = AntiAliased);
+    void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipPolygon(size_t numPoints, const FloatPoint*, bool antialias);
     void clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
-    // This clip function is used only by <canvas> code. It allows
-    // implementations to handle clipping on the canvas differently since
-    // the discipline is different.
-    void canvasClip(const Path&, WindRule = RULE_EVENODD, AntiAliasingMode = NotAntiAliased);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
     void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);
@@ -435,7 +428,6 @@ private:
     void drawFocusRingRect(const SkRect&, const Color&, int width);
 
     // SkCanvas wrappers.
-    void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void concat(const SkMatrix&);
     void drawRRect(const SkRRect&, const SkPaint&);

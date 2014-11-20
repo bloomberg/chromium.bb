@@ -41,7 +41,8 @@ public:
     virtual void finalizeFrame(const FloatRect&) override;
     virtual void didClearCanvas() override;
     virtual void setImageBuffer(ImageBuffer*) override;
-    virtual PassRefPtr<SkImage> newImageSnapshot() const;
+    virtual PassRefPtr<SkImage> newImageSnapshot() const override;
+    virtual bool needsClipTracking() const override { return !m_fallbackSurface; }
 
     // Passthroughs to fallback surface
     virtual const SkBitmap& bitmap() override;
@@ -56,22 +57,10 @@ public:
     virtual void setIsHidden(bool) override;
 
 private:
-    struct StateRec {
-    public:
-        SkMatrix m_ctm;
-        // FIXME: handle transferring non-rectangular clip to the new frame, crbug.com/392614
-        SkIRect m_clip;
-    };
-    typedef LinkedStack<StateRec> StateStack;
     friend class ::RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
     bool initializeCurrentFrame();
     bool finalizeFrameInternal();
-
-    // saves current clip and transform matrix of canvas
-    bool saveState(SkCanvas*, StateStack*);
-    // we should make sure that we can transfer state in saveState
-    void setCurrentState(SkCanvas*, StateStack*);
 
     OwnPtr<SkPictureRecorder> m_currentFrame;
     RefPtr<SkPicture> m_previousFrame;

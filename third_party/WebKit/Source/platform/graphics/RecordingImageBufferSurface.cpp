@@ -19,7 +19,6 @@ namespace blink {
 RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
     , m_imageBuffer(0)
-    , m_initialSaveCount(0)
     , m_frameWasCleared(true)
     , m_fallbackFactory(fallbackFactory)
 {
@@ -31,25 +30,13 @@ RecordingImageBufferSurface::~RecordingImageBufferSurface()
 
 bool RecordingImageBufferSurface::initializeCurrentFrame()
 {
-    StateStack stateStack;
-    bool saved = false;
-    if (m_currentFrame) {
-        saved = saveState(m_currentFrame->getRecordingCanvas(), &stateStack);
-        if (!saved)
-            return false;
-    }
-
     static SkRTreeFactory rTreeFactory;
     m_currentFrame = adoptPtr(new SkPictureRecorder);
     m_currentFrame->beginRecording(size().width(), size().height(), &rTreeFactory);
-    m_initialSaveCount = m_currentFrame->getRecordingCanvas()->getSaveCount();
     if (m_imageBuffer) {
-        m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
+        m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
     }
-
-    if (saved)
-        setCurrentState(m_currentFrame->getRecordingCanvas(), &stateStack);
 
     return true;
 }
@@ -59,10 +46,11 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
     m_imageBuffer = imageBuffer;
     if (m_currentFrame && m_imageBuffer) {
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
-        m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
+        m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
     if (m_fallbackSurface) {
         m_fallbackSurface->setImageBuffer(imageBuffer);
+        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
     }
 }
 
@@ -90,21 +78,17 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     }
 
     if (m_currentFrame) {
-        bool savedState = false;
-        StateStack stateStack;
-        savedState = saveState(m_currentFrame->getRecordingCanvas(), &stateStack);
         RefPtr<SkPicture> currentPicture = adoptRef(m_currentFrame->endRecording());
         currentPicture->draw(m_fallbackSurface->canvas());
         m_currentFrame.clear();
-        if (savedState)
-            setCurrentState(m_fallbackSurface->canvas(), &stateStack);
     }
 
     if (m_imageBuffer) {
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
-        m_imageBuffer->context()->resetCanvas(m_fallbackSurface->canvas());
+        m_imageBuffer->resetCanvas(m_fallbackSurface->canvas());
         m_imageBuffer->context()->setAccelerated(m_fallbackSurface->isAccelerated());
     }
+
 }
 
 PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot() const
@@ -185,44 +169,6 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
 
     m_frameWasCleared = false;
     return true;
-}
-
-bool RecordingImageBufferSurface::saveState(SkCanvas* srcCanvas, StateStack* stateStack)
-{
-    StateRec state;
-
-    // we will remove all the saved state stack in endRecording anyway, so it makes no difference
-    while (srcCanvas->getSaveCount() > m_initialSaveCount) {
-        state.m_ctm = srcCanvas->getTotalMatrix();
-        // FIXME: don't mess up the state in case we will have to fallback, crbug.com/408392
-        if (!srcCanvas->getClipDeviceBounds(&state.m_clip))
-            return false;
-        stateStack->push(state);
-        srcCanvas->restore();
-    }
-
-    state.m_ctm = srcCanvas->getTotalMatrix();
-    // FIXME: don't mess up the state in case we will have to fallback, crbug.com/408392
-    if (!srcCanvas->getClipDeviceBounds(&state.m_clip))
-        return false;
-    stateStack->push(state);
-
-    return true;
-}
-
-void RecordingImageBufferSurface::setCurrentState(SkCanvas* dstCanvas, StateStack* stateStack)
-{
-    while (stateStack->size() > 1) {
-        dstCanvas->resetMatrix();
-        dstCanvas->clipRect(SkRect::MakeFromIRect(stateStack->peek().m_clip));
-        dstCanvas->setMatrix(stateStack->peek().m_ctm);
-        dstCanvas->save();
-        stateStack->pop();
-    }
-
-    dstCanvas->resetMatrix();
-    dstCanvas->clipRect(SkRect::MakeFromIRect(stateStack->peek().m_clip));
-    dstCanvas->setMatrix(stateStack->peek().m_ctm);
 }
 
 void RecordingImageBufferSurface::willDrawVideo()

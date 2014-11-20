@@ -39,6 +39,7 @@ public:
     virtual void notifySurfaceInvalid() = 0;
     virtual bool isDirty() = 0;
     virtual void didFinalizeFrame() = 0;
+    virtual void restoreCanvasMatrixClipStack() = 0;
 };
 
 } // namespace blink

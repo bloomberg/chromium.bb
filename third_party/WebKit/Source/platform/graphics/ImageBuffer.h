@@ -82,8 +82,12 @@ public:
     bool isAccelerated() const { return m_surface->isAccelerated(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
+    bool needsClipTracking() const { return m_surface->needsClipTracking(); }
 
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
+
+    // Called by subclasses of ImageBufferSurface to install a new canvas object
+    void resetCanvas(SkCanvas*);
 
     void willDrawVideo() { m_surface->willDrawVideo(); }
 

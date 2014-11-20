@@ -33,7 +33,6 @@
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
@@ -154,6 +153,7 @@ public:
     virtual void notifySurfaceInvalid() override;
     virtual bool isDirty() override { return !m_dirtyRect.isEmpty(); }
     virtual void didFinalizeFrame() override;
+    virtual void restoreCanvasMatrixClipStack() override;
 
     // Implementation of WebThread::TaskObserver methods
     virtual void willProcessTask() override;

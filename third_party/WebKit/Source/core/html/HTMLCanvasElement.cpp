@@ -223,6 +223,12 @@ void HTMLCanvasElement::didFinalizeFrame()
     m_dirtyRect = FloatRect();
 }
 
+void HTMLCanvasElement::restoreCanvasMatrixClipStack()
+{
+    if (m_context && m_context->is2d())
+        toCanvasRenderingContext2D(m_context.get())->restoreCanvasMatrixClipStack();
+}
+
 void HTMLCanvasElement::resetDirtyRect()
 {
     if (m_dirtyRect.isEmpty())

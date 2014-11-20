@@ -92,7 +92,7 @@ static bool contextLostRestoredEventsEnabled()
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, Document& document)
     : CanvasRenderingContext(canvas)
     , m_usesCSSCompatibilityParseMode(document.inQuirksMode())
-    , m_clipAntialiasing(GraphicsContext::NotAntiAliased)
+    , m_clipAntialiasing(NotAntiAliased)
     , m_hasAlpha(!attrs || attrs->alpha())
     , m_isContextLost(false)
     , m_contextRestorable(true)
@@ -103,7 +103,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
     , m_tryRestoreContextEventTimer(this, &CanvasRenderingContext2D::tryRestoreContextEvent)
 {
     if (document.settings() && document.settings()->antialiasedClips2dCanvasEnabled())
-        m_clipAntialiasing = GraphicsContext::AntiAliased;
+        m_clipAntialiasing = AntiAliased;
     m_stateStack.append(adoptPtrWillBeNoop(new State()));
 }
 
@@ -243,6 +243,24 @@ void CanvasRenderingContext2D::reset()
     validateStateStack();
 }
 
+void CanvasRenderingContext2D::restoreCanvasMatrixClipStack()
+{
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+    WillBeHeapVector<OwnPtrWillBeMember<State>>::iterator currState;
+    WillBeHeapVector<OwnPtrWillBeMember<State>>::iterator lastState = m_stateStack.end() - 1;
+    for (currState = m_stateStack.begin(); currState < m_stateStack.end(); currState++) {
+        c->setMatrix(SkMatrix::I());
+        currState->get()->m_clipList.playback(c);
+        c->setCTM(currState->get()->m_transform);
+        // We are only restoring state stored in the SkCanvas, and not
+        // state stored in the graphics context, so we call save() only on the canvas.
+        if (currState < lastState)
+            c->canvas()->save();
+    }
+}
+
 // Important: Several of these properties are also stored in GraphicsContext's
 // StrokeData. The default values that StrokeData uses may not the same values
 // that the canvas 2d spec specifies. Make sure to sync the initial state of the
@@ -272,7 +290,7 @@ CanvasRenderingContext2D::State::State()
 {
 }
 
-CanvasRenderingContext2D::State::State(const State& other)
+CanvasRenderingContext2D::State::State(const State& other, ClipListCopyMode mode)
     : CSSFontSelectorClient()
     , m_unrealizedSaveCount(other.m_unrealizedSaveCount)
     , m_unparsedStrokeColor(other.m_unparsedStrokeColor)
@@ -301,6 +319,9 @@ CanvasRenderingContext2D::State::State(const State& other)
     , m_realizedFont(other.m_realizedFont)
     , m_hasClip(other.m_hasClip)
 {
+    if (mode == CopyClipList) {
+        m_clipList = other.m_clipList;
+    }
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
 }
@@ -340,6 +361,7 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     m_font = other.m_font;
     m_realizedFont = other.m_realizedFont;
     m_hasClip = other.m_hasClip;
+    m_clipList = other.m_clipList;
 
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
@@ -378,7 +400,7 @@ void CanvasRenderingContext2D::realizeSaves(GraphicsContext* context)
         // Reduce the current state's unrealized count by one now,
         // to reflect the fact we are saving one state.
         m_stateStack.last()->m_unrealizedSaveCount--;
-        m_stateStack.append(adoptPtrWillBeNoop(new State(state())));
+        m_stateStack.append(adoptPtrWillBeNoop(new State(state(), DontCopyClipList)));
         // Set the new state's unrealized count to 0, because it has no outstanding saves.
         // We need to do this explicitly because the copy constructor and operator= used
         // by the Vector operations copy the unrealized count from the previous state (in
@@ -1125,7 +1147,13 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
     }
 
     realizeSaves(c);
-    c->canvasClip(path, parseWinding(windingRuleString), m_clipAntialiasing);
+
+    WindRule windRule = parseWinding(windingRuleString);
+    ImageBuffer* buffer = canvas()->buffer();
+    if (buffer && buffer->needsClipTracking()) {
+        modifiableState().m_clipList.clipPath(path, windRule, m_clipAntialiasing, state().m_transform);
+    }
+    c->clipPath(path, windRule, m_clipAntialiasing);
     modifiableState().m_hasClip = true;
 }
 

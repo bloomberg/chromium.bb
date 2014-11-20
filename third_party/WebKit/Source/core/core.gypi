@@ -2617,6 +2617,8 @@
             'html/canvas/CanvasRenderingContext2D.h',
             'html/canvas/CanvasStyle.cpp',
             'html/canvas/CanvasStyle.h',
+            'html/canvas/ClipList.cpp',
+            'html/canvas/ClipList.h',
             'html/canvas/DataView.cpp',
             'html/canvas/DataView.h',
             'html/canvas/EXTBlendMinMax.cpp',
