@@ -41,6 +41,8 @@ struct weston_test {
 	int must_fail;
 } __attribute__ ((aligned (32)));
 
+#define ARRAY_LENGTH(a) ((int) (sizeof (a) / sizeof (a)[0]))
+
 #define TEST_BEGIN(name, arg)					\
 	static void name(arg)
 
@@ -67,7 +69,7 @@ struct weston_test {
 #define ARG_TEST(name, ret, test_data)				\
 	TEST_COMMON(name, name, ret, test_data,			\
 		    sizeof(test_data[0]),			\
-		    sizeof(test_data) / sizeof (test_data[0]))	\
+		    ARRAY_LENGTH(test_data))			\
 	TEST_BEGIN(name, void *data)				\
 
 #define TEST(name) NO_ARG_TEST(name, 0)
