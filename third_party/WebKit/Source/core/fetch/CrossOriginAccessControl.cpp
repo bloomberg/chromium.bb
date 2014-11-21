@@ -79,6 +79,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     preflightRequest.setHTTPHeaderField("Access-Control-Request-Method", request.httpMethod());
     preflightRequest.setPriority(request.priority());
     preflightRequest.setRequestContext(request.requestContext());
+    preflightRequest.setSkipServiceWorker(true);
 
     const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 
