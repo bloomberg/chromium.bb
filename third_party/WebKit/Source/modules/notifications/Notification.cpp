@@ -139,8 +139,8 @@ void Notification::dispatchErrorEvent()
 
 void Notification::dispatchCloseEvent()
 {
-    dispatchEvent(Event::create(EventTypeNames::close));
     m_state = NotificationStateClosed;
+    dispatchEvent(Event::create(EventTypeNames::close));
 }
 
 TextDirection Notification::direction() const
