@@ -110,7 +110,7 @@ VideoSender::VideoSender(
 
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = video_config.ssrc;
-  transport_config.feedback_ssrc = video_config.incoming_feedback_ssrc;
+  transport_config.feedback_ssrc = video_config.receiver_ssrc;
   transport_config.rtp_payload_type = video_config.rtp_payload_type;
   transport_config.aes_key = video_config.aes_key;
   transport_config.aes_iv_mask = video_config.aes_iv_mask;

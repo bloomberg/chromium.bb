@@ -55,7 +55,7 @@ AudioSenderConfig GetDefaultAudioSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultAudioReceiverConfig();
   AudioSenderConfig config;
   config.ssrc = recv_config.incoming_ssrc;
-  config.incoming_feedback_ssrc = recv_config.feedback_ssrc;
+  config.receiver_ssrc = recv_config.feedback_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
   config.frequency = recv_config.frequency;
@@ -71,7 +71,7 @@ VideoSenderConfig GetDefaultVideoSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultVideoReceiverConfig();
   VideoSenderConfig config;
   config.ssrc = recv_config.incoming_ssrc;
-  config.incoming_feedback_ssrc = recv_config.feedback_ssrc;
+  config.receiver_ssrc = recv_config.feedback_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
   config.width = 1280;

@@ -107,7 +107,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   ExternalVideoEncoderTest()
       : test_video_encoder_callback_(new TestVideoEncoderCallback()) {
     video_config_.ssrc = 1;
-    video_config_.incoming_feedback_ssrc = 2;
+    video_config_.receiver_ssrc = 2;
     video_config_.rtp_payload_type = 127;
     video_config_.use_external_encoder = true;
     video_config_.width = 320;

@@ -218,7 +218,7 @@ class RunOneBenchmark {
                  int audio_sampling_frequency,
                  int max_number_of_video_buffers_used) {
     audio_sender_config_.ssrc = 1;
-    audio_sender_config_.incoming_feedback_ssrc = 2;
+    audio_sender_config_.receiver_ssrc = 2;
     audio_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     audio_sender_config_.rtp_payload_type = 96;
@@ -229,7 +229,7 @@ class RunOneBenchmark {
     audio_sender_config_.codec = audio_codec;
 
     audio_receiver_config_.feedback_ssrc =
-        audio_sender_config_.incoming_feedback_ssrc;
+        audio_sender_config_.receiver_ssrc;
     audio_receiver_config_.incoming_ssrc = audio_sender_config_.ssrc;
     audio_receiver_config_.rtp_payload_type =
         audio_sender_config_.rtp_payload_type;
@@ -240,7 +240,7 @@ class RunOneBenchmark {
     audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
 
     video_sender_config_.ssrc = 3;
-    video_sender_config_.incoming_feedback_ssrc = 4;
+    video_sender_config_.receiver_ssrc = 4;
     video_sender_config_.max_playout_delay =
         base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs);
     video_sender_config_.rtp_payload_type = 97;
@@ -264,7 +264,7 @@ class RunOneBenchmark {
     video_sender_config_.codec = video_codec;
 
     video_receiver_config_.feedback_ssrc =
-        video_sender_config_.incoming_feedback_ssrc;
+        video_sender_config_.receiver_ssrc;
     video_receiver_config_.incoming_ssrc = video_sender_config_.ssrc;
     video_receiver_config_.rtp_payload_type =
         video_sender_config_.rtp_payload_type;

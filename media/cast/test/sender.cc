@@ -71,7 +71,7 @@ media::cast::AudioSenderConfig GetAudioSenderConfig() {
   audio_config.bitrate = 0;  // Use Opus auto-VBR mode.
   audio_config.codec = media::cast::CODEC_AUDIO_OPUS;
   audio_config.ssrc = 1;
-  audio_config.incoming_feedback_ssrc = 2;
+  audio_config.receiver_ssrc = 2;
   audio_config.rtp_payload_type = 127;
   // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
   // should receiver.cc's config also be 100?
@@ -105,7 +105,7 @@ media::cast::VideoSenderConfig GetVideoSenderConfig() {
 
   // SSRCs and payload type. Don't change them.
   video_config.ssrc = 11;
-  video_config.incoming_feedback_ssrc = 12;
+  video_config.receiver_ssrc = 12;
   video_config.rtp_payload_type = 96;
   // TODO(miu): The default in cast_defines.h is 100.  Should this be 100, and
   // should receiver.cc's config also be 100?

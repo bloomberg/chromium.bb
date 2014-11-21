@@ -173,7 +173,7 @@ class VideoSenderTest : public ::testing::Test {
                                        bool expect_init_success) {
     VideoSenderConfig video_config;
     video_config.ssrc = 1;
-    video_config.incoming_feedback_ssrc = 2;
+    video_config.receiver_ssrc = 2;
     video_config.rtp_payload_type = 127;
     video_config.use_external_encoder = external;
     video_config.width = kWidth;

@@ -55,7 +55,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
 
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = audio_config.ssrc;
-  transport_config.feedback_ssrc = audio_config.incoming_feedback_ssrc;
+  transport_config.feedback_ssrc = audio_config.receiver_ssrc;
   transport_config.rtp_payload_type = audio_config.rtp_payload_type;
   transport_config.aes_key = audio_config.aes_key;
   transport_config.aes_iv_mask = audio_config.aes_iv_mask;

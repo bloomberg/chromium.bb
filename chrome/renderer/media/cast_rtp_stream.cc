@@ -171,8 +171,8 @@ std::vector<CastRtpParams> SupportedVideoParams() {
 bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
   config->ssrc = params.payload.ssrc;
-  config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->incoming_feedback_ssrc)
+  config->receiver_ssrc = params.payload.feedback_ssrc;
+  if (config->ssrc == config->receiver_ssrc)
     return false;
   config->min_playout_delay =
       base::TimeDelta::FromMilliseconds(
@@ -206,8 +206,8 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
 bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
   config->ssrc = params.payload.ssrc;
-  config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->incoming_feedback_ssrc)
+  config->receiver_ssrc = params.payload.feedback_ssrc;
+  if (config->ssrc == config->receiver_ssrc)
     return false;
   config->min_playout_delay =
       base::TimeDelta::FromMilliseconds(

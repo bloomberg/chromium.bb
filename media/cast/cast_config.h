@@ -33,7 +33,7 @@ struct AudioSenderConfig {
   uint32 ssrc;
 
   // The receiver's SSRC identifier.
-  uint32 incoming_feedback_ssrc;
+  uint32 receiver_ssrc;
 
   int rtcp_interval;
 
@@ -70,7 +70,7 @@ struct VideoSenderConfig {
   uint32 ssrc;
 
   // The receiver's SSRC identifier.
-  uint32 incoming_feedback_ssrc;  // TODO(miu): Rename to receiver_ssrc.
+  uint32 receiver_ssrc;
 
   int rtcp_interval;
 
