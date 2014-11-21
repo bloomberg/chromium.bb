@@ -537,6 +537,7 @@
         'browser/indexed_db/mock_indexed_db_factory.h',
         'browser/indexed_db/leveldb/leveldb_unittest.cc',
         'browser/indexed_db/list_set_unittest.cc',
+        'browser/loader/buffered_resource_handler_unittest.cc',
         'browser/loader/navigation_url_loader_unittest.cc',
         'browser/loader/resource_buffer_unittest.cc',
         'browser/loader/resource_dispatcher_host_unittest.cc',

@@ -95,6 +95,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
       -1,      // render_frame_id
       true,    // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
@@ -114,6 +115,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
       -1,      // render_frame_id
       false,   // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
@@ -162,6 +164,7 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
       -1,      // render_frame_id
       true,    // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }

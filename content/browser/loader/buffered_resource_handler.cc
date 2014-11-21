@@ -312,8 +312,26 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     return UseAlternateNextHandler(handler.Pass(), std::string());
   }
 
+  // Allow requests for object/embed tags to be intercepted as streams.
+  if (info->GetResourceType() == content::RESOURCE_TYPE_OBJECT) {
+    DCHECK(!info->allow_download());
+    std::string payload;
+    scoped_ptr<ResourceHandler> handler(
+        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
+    if (handler) {
+      DCHECK(!net::IsSupportedMimeType(mime_type));
+      return UseAlternateNextHandler(handler.Pass(), payload);
+    }
+  }
+
   if (!info->allow_download())
     return true;
+
+  // info->allow_download() == true implies
+  // info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME or
+  // info->GetResourceType() == RESOURCE_TYPE_SUB_FRAME.
+  DCHECK(info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME ||
+         info->GetResourceType() == RESOURCE_TYPE_SUB_FRAME);
 
   bool must_download = MustDownload();
   if (!must_download) {

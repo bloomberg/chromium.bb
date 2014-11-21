@@ -136,6 +136,7 @@ class ExtensionProtocolTest : public testing::Test {
         -1,      // render_frame_id
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
         false,   // parent_is_main_frame
+        true,    // allow_download
         false);  // is_async
     request->Start();
     base::MessageLoop::current()->Run();

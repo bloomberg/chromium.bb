@@ -31,6 +31,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
                                              int render_frame_id,
                                              bool is_main_frame,
                                              bool parent_is_main_frame,
+                                             bool allow_download,
                                              bool is_async) {
   // Make sure both |is_main_frame| and |parent_is_main_frame| aren't set at the
   // same time.
@@ -56,7 +57,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           false,                             // should_replace_current_entry
           false,                             // is_download
           false,                             // is_stream
-          true,                              // allow_download
+          allow_download,                    // allow_download
           false,                             // has_user_gesture
           false,                             // enable load timing
           false,                             // enable upload progress

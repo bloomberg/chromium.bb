@@ -226,8 +226,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.
   // |id| should be |content::DownloadItem::kInvalidId| to request automatic
-  // assignment.
-  scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
+  // assignment. This is marked virtual so it can be overriden in testing.
+  virtual scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download,
@@ -238,8 +238,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.  If |payload| is set to a non-empty value,
   // the value will be sent to the old resource handler instead of canceling
-  // it, except on HTTP errors.
-  scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
+  // it, except on HTTP errors. This is marked virtual so it can be overriden in
+  // testing.
+  virtual scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
       net::URLRequest* request,
       ResourceResponse* response,
       std::string* payload);

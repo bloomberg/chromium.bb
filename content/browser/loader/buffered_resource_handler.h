@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
 
 namespace net {
@@ -21,7 +22,7 @@ class ResourceDispatcherHostImpl;
 struct WebPluginInfo;
 
 // Used to buffer a request until enough data has been received.
-class BufferedResourceHandler
+class CONTENT_EXPORT BufferedResourceHandler
     : public LayeredResourceHandler,
       public ResourceController {
  public:

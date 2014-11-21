@@ -131,6 +131,7 @@ class TestIOThreadState {
           render_frame_id,
           true,    // is_main_frame
           false,   // parent_is_main_frame
+          true,    // allow_download
           false);  // is_async
     }
     throttle_.reset(new InterceptNavigationResourceThrottle(

@@ -235,6 +235,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
       MSG_ROUTING_NONE,
       false,  // is_main_frame
       false,  // parent_is_main_frame
+      true,   // allow_download
       true);  // is_async
 
   // Install a prerender throttle.
@@ -281,6 +282,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
       MSG_ROUTING_NONE,
       true,   // is_main_frame
       false,  // parent_is_main_frame
+      true,   // allow_download
       true);  // is_async
 
   // Install a prerender throttle.
@@ -325,6 +327,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       MSG_ROUTING_NONE,
       false,   // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
 
   // Install a prerender throttle.

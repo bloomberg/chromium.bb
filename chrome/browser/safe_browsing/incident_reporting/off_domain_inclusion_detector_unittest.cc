@@ -86,6 +86,7 @@ class OffDomainInclusionDetectorTest : public testing::Test {
         MSG_ROUTING_NONE,      // render_frame_id
         is_main_frame,         // is_main_frame
         parent_is_main_frame,  // parent_is_main_frame
+        true,                  // allow_download
         false);                // is_async
 
     return url_request.Pass();

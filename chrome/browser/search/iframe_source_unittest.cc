@@ -110,6 +110,7 @@ class IframeSourceTest : public testing::Test {
           MSG_ROUTING_NONE,
           false,   // is_main_frame
           false,   // parent_is_main_frame
+          true,    // allow_download
           false);  // is_async
     }
     return request.Pass();

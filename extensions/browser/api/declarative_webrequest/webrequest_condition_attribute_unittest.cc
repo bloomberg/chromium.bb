@@ -108,6 +108,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       -1,      // render_frame_id
       false,   // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(url_request_ok.get(),
                                                     ON_BEFORE_REQUEST)));
@@ -123,6 +124,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       -1,      // render_frame_id
       true,    // is_main_frame
       false,   // parent_is_main_frame
+      true,   // allow_download
       false);  // is_async
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(url_request_fail.get(),
                                                      ON_BEFORE_REQUEST)));

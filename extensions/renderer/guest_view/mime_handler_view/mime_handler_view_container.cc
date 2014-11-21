@@ -45,11 +45,11 @@ void MimeHandlerViewContainer::Ready() {
   options.crossOriginRequestPolicy =
       blink::WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
   DCHECK(!loader_);
-  loader_.reset(frame->createAssociatedURLLoader());
+  loader_.reset(frame->createAssociatedURLLoader(options));
 
-  // TODO(raymes): Currently this URL request won't be correctly intercepted as
-  // a stream.
-  loader_->loadAsynchronously(blink::WebURLRequest(original_url_), this);
+  blink::WebURLRequest request(original_url_);
+  request.setRequestContext(blink::WebURLRequest::RequestContextObject);
+  loader_->loadAsynchronously(request, this);
 }
 
 bool MimeHandlerViewContainer::HandlesMessage(const IPC::Message& message) {

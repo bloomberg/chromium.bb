@@ -138,6 +138,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             MSG_ROUTING_NONE,
                                             false,   // is_main_frame
                                             false,   // parent_is_main_frame
+                                            true,    // allow_download
                                             false);  // is_async
     extension_info_map_->RegisterExtensionProcess(
         extensions::kWebStoreAppId, process_id, site_instance_id);
@@ -158,6 +159,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             MSG_ROUTING_NONE,
                                             false,   // is_main_frame
                                             false,   // parent_is_main_frame
+                                            true,    // allow_download
                                             false);  // is_async
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
         extension_info_map_.get(), sensitive_request.get()));

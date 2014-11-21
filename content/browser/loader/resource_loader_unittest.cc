@@ -325,6 +325,7 @@ class ResourceLoaderTest : public testing::Test,
                                             MSG_ROUTING_NONE,
                                             true,    // is_main_frame
                                             false,   // parent_is_main_frame
+                                            true,    // allow_download
                                             false);  // is_async
     scoped_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
