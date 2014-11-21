@@ -242,23 +242,23 @@ class BookmarkModelTest : public testing::Test,
                            int before_change_count,
                            int before_reorder_count,
                            int before_remove_all_count) {
-    EXPECT_EQ(added_count_, added_count);
-    EXPECT_EQ(moved_count_, moved_count);
-    EXPECT_EQ(removed_count_, removed_count);
-    EXPECT_EQ(changed_count_, changed_count);
-    EXPECT_EQ(reordered_count_, reordered_count);
-    EXPECT_EQ(before_remove_count_, before_remove_count);
-    EXPECT_EQ(before_change_count_, before_change_count);
-    EXPECT_EQ(before_reorder_count_, before_reorder_count);
-    EXPECT_EQ(before_remove_all_count_, before_remove_all_count);
+    EXPECT_EQ(added_count, added_count_);
+    EXPECT_EQ(moved_count, moved_count_);
+    EXPECT_EQ(removed_count, removed_count_);
+    EXPECT_EQ(changed_count, changed_count_);
+    EXPECT_EQ(reordered_count, reordered_count_);
+    EXPECT_EQ(before_remove_count, before_remove_count_);
+    EXPECT_EQ(before_change_count, before_change_count_);
+    EXPECT_EQ(before_reorder_count, before_reorder_count_);
+    EXPECT_EQ(before_remove_all_count, before_remove_all_count_);
   }
 
   void AssertExtensiveChangesObserverCount(
       int extensive_changes_beginning_count,
       int extensive_changes_ended_count) {
-    EXPECT_EQ(extensive_changes_beginning_count_,
-              extensive_changes_beginning_count);
-    EXPECT_EQ(extensive_changes_ended_count_, extensive_changes_ended_count);
+    EXPECT_EQ(extensive_changes_beginning_count,
+              extensive_changes_beginning_count_);
+    EXPECT_EQ(extensive_changes_ended_count, extensive_changes_ended_count_);
   }
 
   int AllNodesRemovedObserverCount() const { return all_bookmarks_removed_; }
