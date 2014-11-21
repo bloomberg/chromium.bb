@@ -185,6 +185,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       will_composite_immediately_(false),
       composite_on_vsync_trigger_(DO_NOT_COMPOSITE),
       pending_swapbuffers_(0U),
+      defer_composite_for_gpu_channel_(false),
       weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
@@ -203,7 +204,7 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
   DCHECK(needs_composite_);
   DCHECK(trigger == COMPOSITE_IMMEDIATELY || trigger == COMPOSITE_EVENTUALLY);
 
-  if (will_composite_immediately_ ||
+  if (defer_composite_for_gpu_channel_ || will_composite_immediately_ ||
       (trigger == COMPOSITE_EVENTUALLY && WillComposite())) {
     // We will already composite soon enough.
     DCHECK(WillComposite());
@@ -259,15 +260,28 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
       FROM_HERE, current_composite_task_->callback(), delay);
 }
 
+void CompositorImpl::OnGpuChannelEstablished() {
+  defer_composite_for_gpu_channel_ = false;
+
+  if (host_)
+    PostComposite(COMPOSITE_IMMEDIATELY);
+}
+
 void CompositorImpl::Composite(CompositingTrigger trigger) {
+  if (trigger == COMPOSITE_IMMEDIATELY)
+    will_composite_immediately_ = false;
+
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-    factory->EstablishGpuChannel(cause,
-                                 base::Bind(&CompositorImpl::ScheduleComposite,
-                                            weak_factory_.GetWeakPtr()));
+    factory->EstablishGpuChannel(
+        cause, base::Bind(&CompositorImpl::OnGpuChannelEstablished,
+                          weak_factory_.GetWeakPtr()));
+    DCHECK(!defer_composite_for_gpu_channel_);
+    defer_composite_for_gpu_channel_ = true;
+    current_composite_task_.reset();
     return;
   }
 
@@ -275,9 +289,6 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   DCHECK(trigger == COMPOSITE_IMMEDIATELY || trigger == COMPOSITE_EVENTUALLY);
   DCHECK(needs_composite_);
   DCHECK(!DidCompositeThisFrame());
-
-  if (trigger == COMPOSITE_IMMEDIATELY)
-    will_composite_immediately_ = false;
 
   DCHECK_LE(pending_swapbuffers_, kMaxSwapBuffers);
   if (pending_swapbuffers_ == kMaxSwapBuffers) {
@@ -409,6 +420,7 @@ void CompositorImpl::SetVisible(bool visible) {
   } else if (!host_) {
     DCHECK(!WillComposite());
     needs_composite_ = false;
+    defer_composite_for_gpu_channel_ = false;
     pending_swapbuffers_ = 0;
     cc::LayerTreeSettings settings;
     settings.renderer_settings.refresh_rate = 60.0;

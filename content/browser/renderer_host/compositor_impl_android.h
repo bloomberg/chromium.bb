@@ -124,7 +124,8 @@ class CONTENT_EXPORT CompositorImpl
   }
   bool WillComposite() const {
     return WillCompositeThisFrame() ||
-           composite_on_vsync_trigger_ != DO_NOT_COMPOSITE;
+           composite_on_vsync_trigger_ != DO_NOT_COMPOSITE ||
+           defer_composite_for_gpu_channel_;
   }
   void CancelComposite() {
     DCHECK(WillComposite());
@@ -184,6 +185,11 @@ class CONTENT_EXPORT CompositorImpl
   // The number of SwapBuffer calls that have not returned and ACK'd from
   // the GPU thread.
   unsigned int pending_swapbuffers_;
+
+  // Whether we are currently deferring a requested Composite operation until
+  // the GPU channel is established (it was either lost or not yet fully
+  // established the first time we tried to composite).
+  bool defer_composite_for_gpu_channel_;
 
   base::TimeDelta vsync_period_;
   base::TimeTicks last_vsync_;
