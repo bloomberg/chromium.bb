@@ -46,9 +46,14 @@ E.g. window.open(someUrl). --></dd>
     <ul>
       <li>In Chrome Apps, fullscreen is entered without
         prompting the user or providing exit instructions.
-        Also, there is no default exit behavior. In normal webpages,
-        the browser intercepts the ESC key to exit fullscreen.
-        This behavior is not present in Chrome Apps.</li>
+        HTML5 fullscreen requires the <code>app.window.fullscreen</code>
+        permission in the manifest.
+        In normal webpages, the browser intercepts the ESC key to exit
+        pointer lock ensuring a consistent escape method for users.
+        That is also the behavior in Chrome Apps unless the
+        <code>app.window.fullscreen.overrideEsc</code>
+        permission is used to enable the app to call
+        <code>preventDefault</code> on keydown and keyup events.</li>
     </ul>
   </li>
 {{/is_apps}}
@@ -65,6 +70,8 @@ E.g. window.open(someUrl). --></dd>
       <li>In Chrome Apps, pointer lock is entered without
         requiring a user gesture,
         prompting the user, or providing exit instructions.
+        Pointer lock requires the <code>pointerlock</code>
+        permission in the manifest.
         Also, there is no default exit behavior. In normal webpages,
         the browser intercepts the ESC key to exit pointer lock.
         This behavior is not present in Chrome Apps.</li>
