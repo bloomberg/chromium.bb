@@ -20,7 +20,7 @@ SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 
 void SoftwareOutputDeviceMac::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
-  BrowserCompositorCALayerTreeMacGotSoftwareFrame(
+  AcceleratedWidgetMacGotSoftwareFrame(
       compositor_->widget(), frame_data, scale_factor_, canvas_.get());
 }
 

@@ -5,85 +5,48 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_MAC_H_
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_MAC_H_
 
-#include <vector>
-
-#include "cc/output/software_frame_data.h"
-#include "skia/ext/platform_canvas.h"
+#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
 #include "ui/compositor/compositor.h"
-#include "ui/events/latency_info.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
-class BrowserCompositorCALayerTreeMac;
-
-// The interface through which BrowserCompositorViewMac calls back into
-// RenderWidgetHostViewMac (or any other structure that wishes to draw a
-// NSView backed by a ui::Compositor).
-// TODO(ccameron): This interface should be in the ui namespace.
-class BrowserCompositorViewMacClient {
+// A ui::Compositor and a gfx::AcceleratedWidget (and helper) that it draws
+// into. This structure is used to efficiently recycle these structures across
+// tabs (because creating a new ui::Compositor for each tab would be expensive
+// in terms of time and resources).
+class BrowserCompositorMac {
  public:
-  // Drawing is usually throttled by the rate at which CoreAnimation draws
-  // frames to the screen. This can be used to disable throttling.
-  virtual bool BrowserCompositorViewShouldAckImmediately() const = 0;
+  // Create a compositor, or recycle a preexisting one.
+  static scoped_ptr<BrowserCompositorMac> Create();
 
-  // Called when a frame is drawn, and used to pass latency info back to the
-  // renderer (if any).
-  virtual void BrowserCompositorViewFrameSwapped(
-      const std::vector<ui::LatencyInfo>& latency_info) = 0;
-};
+  // Delete a compositor, or allow it to be recycled.
+  static void Recycle(scoped_ptr<BrowserCompositorMac> compositor);
 
-// The class to hold the ui::Compositor which is used to draw a NSView.
-// TODO(ccameron): This should implement an interface in the ui namespace.
-class BrowserCompositorViewMac {
- public:
-  // This will install the NSView which is drawn by the ui::Compositor into
-  // the NSView provided by the client. Note that |client|, |native_view|, and
-  // |ui_root_layer| outlive their BrowserCompositorViewMac object.
-  BrowserCompositorViewMac(
-      BrowserCompositorViewMacClient* client,
-      NSView* native_view,
-      ui::Layer* ui_root_layer);
-  ~BrowserCompositorViewMac();
-
-  BrowserCompositorViewMacClient* client() const { return client_; }
-  NSView* native_view() const { return native_view_; }
-  ui::Layer* ui_root_layer() const { return ui_root_layer_; }
-
-  // The ui::Compositor being used to render the NSView.
-  // TODO(ccameron): This should be in the ui namespace interface.
-  ui::Compositor* GetCompositor() const;
-
-  // Return true if the last frame swapped has a size in DIP of |dip_size|.
-  bool HasFrameOfSize(const gfx::Size& dip_size) const;
-
-  // Mark a bracket in which new frames are pumped in a restricted nested run
-  // loop because the the target window is resizing or because the view is being
-  // shown after previously being hidden.
-  void BeginPumpingFrames();
-  void EndPumpingFrames();
+  ui::Compositor* compositor() { return &compositor_; }
+  AcceleratedWidgetMac* accelerated_widget_mac() {
+    return &accelerated_widget_mac_;
+  }
 
  private:
-  BrowserCompositorViewMacClient* client_;
-  NSView* native_view_;
-  ui::Layer* ui_root_layer_;
+  BrowserCompositorMac();
 
-  // Because a ui::Compositor is expensive in terms of resources and
-  // re-allocating a ui::Compositor is expensive in terms of work, this class
-  // is largely used to manage recycled instances of
-  // BrowserCompositorCALayerTreeMac, which actually has a ui::Compositor
-  // instance and modifies the CALayers used to draw the NSView.
-  scoped_ptr<BrowserCompositorCALayerTreeMac> ca_layer_tree_;
+  AcceleratedWidgetMac accelerated_widget_mac_;
+  ui::Compositor compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMac);
 };
 
-// A class to keep around whenever a BrowserCompositorViewMac may be created.
+// A class to keep around whenever a BrowserCompositorMac may be created.
 // While at least one instance of this class exists, a spare
 // BrowserCompositorViewCocoa will be kept around to be recycled so that the
-// next BrowserCompositorViewMac to be created will be be created quickly.
-class BrowserCompositorViewPlaceholderMac {
+// next BrowserCompositorMac to be created will be be created quickly.
+class BrowserCompositorMacPlaceholder {
  public:
-  BrowserCompositorViewPlaceholderMac();
-  ~BrowserCompositorViewPlaceholderMac();
+  BrowserCompositorMacPlaceholder();
+  ~BrowserCompositorMacPlaceholder();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMacPlaceholder);
 };
 
 }  // namespace content

@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -38,6 +39,13 @@ namespace {
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
+#endif
+
+#if defined(OS_MACOSX)
+void OnSurfaceDisplayedCallback(int output_surface_id) {
+  content::ImageTransportFactory::GetInstance()->OnSurfaceDisplayed(
+      output_surface_id);
+}
 #endif
 
 base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id =
@@ -261,13 +269,13 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   DCHECK(IsDelegatedRendererEnabled());
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  BrowserCompositorCALayerTreeMacGotAcceleratedFrame(
+  AcceleratedWidgetMacGotAcceleratedFrame(
       native_widget,
       params.surface_handle,
-      params.surface_id,
       params.latency_info,
       params.size,
       params.scale_factor,
+      base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
       &ack_params.disable_throttling,
       &ack_params.renderer_id);
   Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));

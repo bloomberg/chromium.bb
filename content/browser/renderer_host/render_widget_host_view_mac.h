@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/compositor/io_surface_layer_mac.h"
@@ -34,7 +35,6 @@
 #include "ui/gfx/display_observer.h"
 
 namespace content {
-class BrowserCompositorviewMac;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
@@ -205,7 +205,7 @@ class RenderWidgetHostImpl;
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
-      public BrowserCompositorViewMacClient,
+      public AcceleratedWidgetMacNSView,
       public IPC::Sender,
       public gfx::DisplayObserver {
  public:
@@ -380,29 +380,29 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;
 
-  // The state of |delegated_frame_host_| and |browser_compositor_view_| to
+  // The state of |delegated_frame_host_| and |browser_compositor_| to
   // manage being visible, hidden, or occluded.
   enum BrowserCompositorViewState {
     // Effects:
-    // - |browser_compositor_view_| exists and |delegated_frame_host_| is
+    // - |browser_compositor_| exists and |delegated_frame_host_| is
     //    visible.
     // Happens when:
     // - |render_widet_host_| is in the visible state (this includes when
     //   the tab isn't visible, but tab capture is enabled).
     BrowserCompositorActive,
     // Effects:
-    // - |browser_compositor_view_| exists, but |delegated_frame_host_| has
+    // - |browser_compositor_| exists, but |delegated_frame_host_| has
     //   been hidden.
     // Happens when:
     // - The |render_widget_host_| is hidden, but |cocoa_view_| is still in the
     //   NSWindow hierarchy.
     // - This happens when |cocoa_view_| is hidden (minimized, on another
-    //   occluded by other windows, etc). The |browser_compositor_view_| and
+    //   occluded by other windows, etc). The |browser_compositor_| and
     //   its CALayers are kept around so that we will have content to show when
     //   we are un-occluded.
     BrowserCompositorSuspended,
     // Effects:
-    // - |browser_compositor_view_| has been destroyed and
+    // - |browser_compositor_| has been destroyed and
     //   |delegated_frame_host_| has been hidden.
     // Happens when:
     // - The |render_widget_host_| is hidden or dead, and |cocoa_view_| is not
@@ -416,14 +416,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
 
-  // Container for the CALayer tree drawn by the browser compositor.
-  scoped_ptr<BrowserCompositorViewMac> browser_compositor_view_;
+  // Container for ui::Compositor the CALayer tree drawn by it.
+  scoped_ptr<BrowserCompositorMac> browser_compositor_;
 
-  // Placeholder that is allocated while browser_compositor_view_ is NULL,
+  // Placeholder that is allocated while browser_compositor_ is NULL,
   // indicating that a BrowserCompositorViewMac may be allocated. This is to
   // help in recycling the internals of BrowserCompositorViewMac.
-  scoped_ptr<BrowserCompositorViewPlaceholderMac>
-      browser_compositor_view_placeholder_;
+  scoped_ptr<BrowserCompositorMacPlaceholder>
+      browser_compositor_placeholder_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
@@ -459,10 +459,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) override;
   DelegatedFrameHost* GetDelegatedFrameHost() const override;
 
-  // BrowserCompositorViewMacClient implementation.
-  bool BrowserCompositorViewShouldAckImmediately() const override;
-  void BrowserCompositorViewFrameSwapped(
+  // AcceleratedWidgetMacNSView implementation.
+  NSView* AcceleratedWidgetGetNSView() const override;
+  bool AcceleratedWidgetShouldIgnoreBackpressure() const override;
+  void AcceleratedWidgetSwapCompleted(
       const std::vector<ui::LatencyInfo>& latency_info) override;
+  void AcceleratedWidgetHitError() override;
 
   // Transition from being in the Suspended state to being in the Destroyed
   // state, if appropriate (see BrowserCompositorViewState for details).

@@ -10,12 +10,11 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
 
+#include "base/debug/trace_event.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/browser/compositor/io_surface_context_mac.h"
 #include "content/browser/compositor/io_surface_texture_mac.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_switching_manager.h"

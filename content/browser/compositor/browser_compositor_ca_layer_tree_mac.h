@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
+#define CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
 
 #include <IOSurface/IOSurfaceAPI.h>
+#include <vector>
 
-#include "content/browser/compositor/browser_compositor_view_mac.h"
+#include "skia/ext/platform_canvas.h"
+#include "ui/events/latency_info.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(__OBJC__)
 #include <Cocoa/Cocoa.h>
@@ -17,25 +21,41 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif  // __OBJC__
 
+namespace cc {
+class SoftwareFrameData;
+}
+
 namespace content {
+
+class AcceleratedWidgetMac;
+
+// A class through which an AcceleratedWidget may be bound to draw the contents
+// of an NSView. An AcceleratedWidget may be bound to multiple different views
+// throughout its lifetime (one at a time, though).
+class AcceleratedWidgetMacNSView {
+ public:
+  virtual NSView* AcceleratedWidgetGetNSView() const = 0;
+  virtual bool AcceleratedWidgetShouldIgnoreBackpressure() const = 0;
+  virtual void AcceleratedWidgetSwapCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
+  virtual void AcceleratedWidgetHitError() = 0;
+};
 
 #if defined(__OBJC__)
 
-// BrowserCompositorCALayerTreeMac owns tree of CALayer and a ui::Compositor
-// that is used to draw the layers. The CALayer tree can be attached to the
-// NSView of a BrowserCompositorViewMac
-class BrowserCompositorCALayerTreeMac
-    : public IOSurfaceLayerClient {
+// AcceleratedWidgetMac owns a tree of CALayers. The widget may be passed
+// to a ui::Compositor, which will cause, through its output surface, calls to
+// GotAcceleratedFrame and GotSoftwareFrame. The CALayers may be installed
+// in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
+class AcceleratedWidgetMac : public IOSurfaceLayerClient {
  public:
-  BrowserCompositorCALayerTreeMac();
-  virtual ~BrowserCompositorCALayerTreeMac();
-  static BrowserCompositorCALayerTreeMac* FromAcceleratedWidget(
-      gfx::AcceleratedWidget widget);
+  AcceleratedWidgetMac();
+  virtual ~AcceleratedWidgetMac();
 
-  void SetView(BrowserCompositorViewMac* view);
-  void ResetView();
+  gfx::AcceleratedWidget accelerated_widget() { return native_widget_; }
 
-  ui::Compositor* compositor() const { return compositor_.get(); }
+  void SetNSView(AcceleratedWidgetMacNSView* view);
+  void ResetNSView();
 
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
@@ -52,24 +72,28 @@ class BrowserCompositorCALayerTreeMac
   void EndPumpingFrames();
 
   void GotAcceleratedFrame(
-      uint64 surface_handle, int output_surface_id,
+      uint64 surface_handle,
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::Size pixel_size, float scale_factor);
+      gfx::Size pixel_size,
+      float scale_factor,
+      const base::Closure& drawn_callback);
 
   void GotSoftwareFrame(
       cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
 
 private:
   // IOSurfaceLayerClient implementation:
- bool IOSurfaceLayerShouldAckImmediately() const override;
- void IOSurfaceLayerDidDrawFrame() override;
- void IOSurfaceLayerHitError() override;
+  bool IOSurfaceLayerShouldAckImmediately() const override;
+  void IOSurfaceLayerDidDrawFrame() override;
+  void IOSurfaceLayerHitError() override;
 
   void GotAcceleratedCAContextFrame(
       CAContextID ca_context_id, gfx::Size pixel_size, float scale_factor);
 
   void GotAcceleratedIOSurfaceFrame(
       IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor);
+
+  void AcknowledgeAcceleratedFrame();
 
   // Remove a layer from the heirarchy and destroy it. Because the accelerated
   // layer types may be replaced by a layer of the same type, the layer to
@@ -81,14 +105,11 @@ private:
       base::scoped_nsobject<IOSurfaceLayer> io_surface_layer);
   void DestroySoftwareLayer();
 
-  // The BrowserCompositorViewMac that is using this as its internals.
-  BrowserCompositorViewMac* view_;
+  // The AcceleratedWidgetMacNSView that is using this as its internals.
+  AcceleratedWidgetMacNSView* view_;
 
   // A phony NSView handle used to identify this.
   gfx::AcceleratedWidget native_widget_;
-
-  // The compositor drawing the contents of this view.
-  scoped_ptr<ui::Compositor> compositor_;
 
   // A flipped layer, which acts as the parent of the compositing and software
   // layers. This layer is flipped so that the we don't need to recompute the
@@ -108,29 +129,31 @@ private:
   // The locally drawn software layer.
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
-  // The output surface and latency info of the last accelerated surface that
-  // was swapped. Sent back to the renderer when the accelerated surface is
-  // drawn.
-  int accelerated_output_surface_id_;
+  // If an accelerated frame has come in which has not yet been drawn and acked
+  // then this is the latency info and the callback to make when the frame is
+  // drawn. If there is no such frame then the callback is null.
   std::vector<ui::LatencyInfo> accelerated_latency_info_;
+  base::Closure accelerated_frame_drawn_callback_;
 
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
+
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedWidgetMac);
 };
 
 #endif  // __OBJC__
 
-void BrowserCompositorCALayerTreeMacGotAcceleratedFrame(
-    gfx::AcceleratedWidget widget,
-    uint64 surface_handle, int surface_id,
+void AcceleratedWidgetMacGotAcceleratedFrame(
+    gfx::AcceleratedWidget widget, uint64 surface_handle,
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::Size pixel_size, float scale_factor,
+    const base::Closure& drawn_callback,
     bool* disable_throttling, int* renderer_id);
 
-void BrowserCompositorCALayerTreeMacGotSoftwareFrame(
+void AcceleratedWidgetMacGotSoftwareFrame(
     gfx::AcceleratedWidget widget,
     cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_CA_LAYER_TREE_MAC_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
