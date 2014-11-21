@@ -38,13 +38,13 @@
 
 // Macros to send BeginFrameArgs on a FakeBeginFrameSink (and verify resulting
 // observer behaviour).
-#define SEND_BEGIN_FRAME(                                               \
-    args_equal_to, source, frame_time, deadline, interval)              \
+#define SEND_BEGIN_FRAME(args_equal_to, source, frame_time, deadline,   \
+                         interval)                                      \
   {                                                                     \
     BeginFrameArgs old_args = (source).TestLastUsedBeginFrameArgs();    \
     BeginFrameArgs new_args =                                           \
         CreateBeginFrameArgsForTesting(frame_time, deadline, interval); \
-    ASSERT_TRUE(!(old_args == new_args));                               \
+    ASSERT_FALSE(old_args == new_args);                                 \
     (source).TestOnBeginFrame(new_args);                                \
     EXPECT_EQ(args_equal_to, (source).TestLastUsedBeginFrameArgs());    \
   }
@@ -494,9 +494,8 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
 TEST_F(SyntheticBeginFrameSourceTest,
        SetNeedsBeginFramesCallsOnBeginFrameWithMissedTick) {
   now_src_->SetNowMicroseconds(10010);
-  EXPECT_CALL((*obs_),
-              OnBeginFrame(CreateTypedBeginFrameArgsForTesting(
-                  10000, 20000, 10000, BeginFrameArgs::MISSED)));
+  EXPECT_CALL((*obs_), OnBeginFrame(CreateBeginFrameArgsForTesting(
+                           10000, 20000, 10000, BeginFrameArgs::MISSED)));
   source_->SetNeedsBeginFrames(true);  // Should cause the last tick to be sent
   // No tasks should need to be run for this to occur.
 }

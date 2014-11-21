@@ -492,10 +492,9 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 
   {
-    BeginFrameArgs begin_frame_args(
-        BeginFrameArgs::Create(frame_begin_time,
-                               base::TimeTicks(),
-                               BeginFrameArgs::DefaultInterval()));
+    BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
+        frame_begin_time, base::TimeTicks(), BeginFrameArgs::DefaultInterval(),
+        BeginFrameArgs::SYNCHRONOUS));
     DoBeginMainFrame(begin_frame_args);
     DoCommit();
 

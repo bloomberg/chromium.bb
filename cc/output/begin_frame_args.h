@@ -26,6 +26,7 @@ struct CC_EXPORT BeginFrameArgs {
     SYNCHRONOUS,
     MISSED,
   };
+  static const char* TypeToString(BeginFrameArgsType type);
 
   // Creates an invalid set of values.
   BeginFrameArgs();
@@ -34,13 +35,8 @@ struct CC_EXPORT BeginFrameArgs {
   // created by searching for "BeginFrameArgs::Create".
   static BeginFrameArgs Create(base::TimeTicks frame_time,
                                base::TimeTicks deadline,
-                               base::TimeDelta interval);
-  static BeginFrameArgs CreateTyped(base::TimeTicks frame_time,
-                                    base::TimeTicks deadline,
-                                    base::TimeDelta interval,
-                                    BeginFrameArgsType type);
-  static BeginFrameArgs CreateForSynchronousCompositor(
-      base::TimeTicks now = base::TimeTicks());
+                               base::TimeDelta interval,
+                               BeginFrameArgsType type);
 
   // This is the default delta that will be used to adjust the deadline when
   // proper draw-time estimations are not yet available.

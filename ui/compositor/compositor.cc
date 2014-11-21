@@ -238,10 +238,9 @@ void Compositor::Draw() {
   if (!IsLocked()) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
-    cc::BeginFrameArgs args =
-        cc::BeginFrameArgs::Create(gfx::FrameTime::Now(),
-                                   base::TimeTicks(),
-                                   cc::BeginFrameArgs::DefaultInterval());
+    cc::BeginFrameArgs args = cc::BeginFrameArgs::Create(
+        gfx::FrameTime::Now(), base::TimeTicks(),
+        cc::BeginFrameArgs::DefaultInterval(), cc::BeginFrameArgs::SYNCHRONOUS);
     BeginMainFrame(args);
     host_->Composite(args.frame_time);
   }

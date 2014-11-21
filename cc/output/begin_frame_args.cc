@@ -9,6 +9,21 @@
 
 namespace cc {
 
+const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
+  switch (type) {
+    case BeginFrameArgs::INVALID:
+      return "INVALID";
+    case BeginFrameArgs::NORMAL:
+      return "NORMAL";
+    case BeginFrameArgs::SYNCHRONOUS:
+      return "SYNCHRONOUS";
+    case BeginFrameArgs::MISSED:
+      return "MISSED";
+  }
+  NOTREACHED();
+  return "???";
+}
+
 BeginFrameArgs::BeginFrameArgs()
     : frame_time(base::TimeTicks()),
       deadline(base::TimeTicks()),
@@ -26,19 +41,12 @@ BeginFrameArgs::BeginFrameArgs(base::TimeTicks frame_time,
       type(type) {
 }
 
-BeginFrameArgs BeginFrameArgs::CreateTyped(
-    base::TimeTicks frame_time,
-    base::TimeTicks deadline,
-    base::TimeDelta interval,
-    BeginFrameArgs::BeginFrameArgsType type) {
-  DCHECK_NE(type, BeginFrameArgs::INVALID);
-  return BeginFrameArgs(frame_time, deadline, interval, type);
-}
-
 BeginFrameArgs BeginFrameArgs::Create(base::TimeTicks frame_time,
                                       base::TimeTicks deadline,
-                                      base::TimeDelta interval) {
-  return CreateTyped(frame_time, deadline, interval, BeginFrameArgs::NORMAL);
+                                      base::TimeDelta interval,
+                                      BeginFrameArgs::BeginFrameArgsType type) {
+  DCHECK_NE(type, BeginFrameArgs::INVALID);
+  return BeginFrameArgs(frame_time, deadline, interval, type);
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat> BeginFrameArgs::AsValue()
@@ -51,33 +59,10 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> BeginFrameArgs::AsValue()
 
 void BeginFrameArgs::AsValueInto(base::debug::TracedValue* state) const {
   state->SetString("type", "BeginFrameArgs");
-  switch (type) {
-    case BeginFrameArgs::INVALID:
-      state->SetString("subtype", "INVALID");
-      break;
-    case BeginFrameArgs::NORMAL:
-      state->SetString("subtype", "NORMAL");
-      break;
-    case BeginFrameArgs::SYNCHRONOUS:
-      state->SetString("subtype", "SYNCHRONOUS");
-      break;
-    case BeginFrameArgs::MISSED:
-      state->SetString("subtype", "MISSED");
-      break;
-  }
+  state->SetString("subtype", TypeToString(type));
   state->SetDouble("frame_time_us", frame_time.ToInternalValue());
   state->SetDouble("deadline_us", deadline.ToInternalValue());
   state->SetDouble("interval_us", interval.InMicroseconds());
-}
-
-BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor(
-    base::TimeTicks now) {
-  // For WebView/SynchronousCompositor, we always want to draw immediately,
-  // so we set the deadline to 0 and guess that the interval is 16 milliseconds.
-  if (now.is_null())
-    now = gfx::FrameTime::Now();
-  return CreateTyped(
-      now, base::TimeTicks(), DefaultInterval(), BeginFrameArgs::SYNCHRONOUS);
 }
 
 // This is a hard-coded deadline adjustment that assumes 60Hz, to be used in

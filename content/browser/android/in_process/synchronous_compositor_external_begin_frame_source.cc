@@ -7,6 +7,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/frame_time.h"
 
 namespace content {
 
@@ -25,7 +26,10 @@ SynchronousCompositorExternalBeginFrameSource::
 
 void SynchronousCompositorExternalBeginFrameSource::BeginFrame() {
   DCHECK(CalledOnValidThread());
-  CallOnBeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+  CallOnBeginFrame(cc::BeginFrameArgs::Create(
+      gfx::FrameTime::Now(), base::TimeTicks(),
+      cc::BeginFrameArgs::DefaultInterval(),
+      cc::BeginFrameArgs::SYNCHRONOUS));
 }
 
 void SynchronousCompositorExternalBeginFrameSource::SetCompositor(

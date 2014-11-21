@@ -3208,9 +3208,9 @@ BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
   // task), fall back to physical time.  This should still be monotonic.
   if (current_begin_frame_args_.IsValid())
     return current_begin_frame_args_;
-  return BeginFrameArgs::Create(gfx::FrameTime::Now(),
-                                base::TimeTicks(),
-                                BeginFrameArgs::DefaultInterval());
+  return BeginFrameArgs::Create(gfx::FrameTime::Now(), base::TimeTicks(),
+                                BeginFrameArgs::DefaultInterval(),
+                                BeginFrameArgs::NORMAL);
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>

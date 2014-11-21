@@ -181,10 +181,9 @@ void BackToBackBeginFrameSource::BeginFrame() {
     return;
 
   base::TimeTicks now = Now();
-  BeginFrameArgs args =
-      BeginFrameArgs::Create(now,
-                             now + BeginFrameArgs::DefaultInterval(),
-                             BeginFrameArgs::DefaultInterval());
+  BeginFrameArgs args = BeginFrameArgs::Create(
+      now, now + BeginFrameArgs::DefaultInterval(),
+      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
   CallOnBeginFrame(args);
 }
 
@@ -243,8 +242,8 @@ BeginFrameArgs SyntheticBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time,
     BeginFrameArgs::BeginFrameArgsType type) {
   base::TimeTicks deadline = time_source_->NextTickTime();
-  return BeginFrameArgs::CreateTyped(
-      frame_time, deadline, time_source_->Interval(), type);
+  return BeginFrameArgs::Create(frame_time, deadline, time_source_->Interval(),
+                                type);
 }
 
 // TimeSourceClient support
