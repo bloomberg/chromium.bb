@@ -7,17 +7,14 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "ui/base/window_open_disposition.h"
 
 using extensions::ExtensionPrefs;
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
                                  extensions::LaunchContainer container,
-                                 WindowOpenDisposition disposition,
-                                 extensions::AppLaunchSource source)
+                                 WindowOpenDisposition disposition)
     : profile(profile),
       extension_id(extension ? extension->id() : std::string()),
       container(container),
@@ -26,13 +23,12 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       override_url(),
       override_bounds(),
       command_line(CommandLine::NO_PROGRAM),
-      source(source) {
+      source(extensions::SOURCE_UNTRACKED) {
 }
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
-                                 WindowOpenDisposition disposition,
-                                 extensions::AppLaunchSource source)
+                                 WindowOpenDisposition disposition)
     : profile(profile),
       extension_id(extension ? extension->id() : std::string()),
       container(extensions::LAUNCH_CONTAINER_NONE),
@@ -41,7 +37,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       override_url(),
       override_bounds(),
       command_line(CommandLine::NO_PROGRAM),
-      source(source) {
+      source(extensions::SOURCE_UNTRACKED) {
   // Look up the app preference to find out the right launch container. Default
   // is to launch as a regular tab.
   container =
@@ -50,24 +46,21 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
-                                 WindowOpenDisposition raw_disposition,
-                                 chrome::HostDesktopType desktop_type,
-                                 extensions::AppLaunchSource source)
+                                 int event_flags,
+                                 chrome::HostDesktopType desktop_type)
     : profile(profile),
       extension_id(extension ? extension->id() : std::string()),
       container(extensions::LAUNCH_CONTAINER_NONE),
+      disposition(ui::DispositionFromEventFlags(event_flags)),
       desktop_type(desktop_type),
       override_url(),
       override_bounds(),
       command_line(CommandLine::NO_PROGRAM),
-      source(source) {
-  if (raw_disposition == NEW_FOREGROUND_TAB ||
-      raw_disposition == NEW_BACKGROUND_TAB) {
+      source(extensions::SOURCE_UNTRACKED) {
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     container = extensions::LAUNCH_CONTAINER_TAB;
-    disposition = raw_disposition;
-  } else if (raw_disposition == NEW_WINDOW) {
+  } else if (disposition == NEW_WINDOW) {
     container = extensions::LAUNCH_CONTAINER_WINDOW;
-    disposition = raw_disposition;
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.

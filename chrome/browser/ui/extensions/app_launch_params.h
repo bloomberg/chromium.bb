@@ -26,15 +26,13 @@ struct AppLaunchParams {
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
                   extensions::LaunchContainer container,
-                  WindowOpenDisposition disposition,
-                  extensions::AppLaunchSource source);
+                  WindowOpenDisposition disposition);
 
   // Helper to create AppLaunchParams using extensions::GetLaunchContainer with
   // LAUNCH_TYPE_REGULAR to check for a user-configured container.
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
-                  WindowOpenDisposition disposition,
-                  extensions::AppLaunchSource source);
+                  WindowOpenDisposition disposition);
 
   // Helper to create AppLaunchParams using event flags that allows user to
   // override the user-configured container using modifier keys, falling back to
@@ -42,9 +40,8 @@ struct AppLaunchParams {
   // indicates the desktop upon which to launch (Ash or Native).
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
-                  WindowOpenDisposition disposition,
-                  chrome::HostDesktopType desktop_type,
-                  extensions::AppLaunchSource source);
+                  int event_flags,
+                  chrome::HostDesktopType desktop_type);
 
   ~AppLaunchParams();
 

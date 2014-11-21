@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -26,10 +25,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
-#include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
@@ -85,22 +82,18 @@ void ShowHelpImpl(Browser* browser,
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           genius_app::kGeniusAppId,
           extensions::ExtensionRegistry::EVERYTHING);
-  extensions::AppLaunchSource app_launch_source(extensions::SOURCE_UNTRACKED);
+  AppLaunchParams params(profile, extension, 0, host_desktop_type);
   switch (source) {
     case HELP_SOURCE_KEYBOARD:
-      app_launch_source = extensions::SOURCE_KEYBOARD;
+      params.source = extensions::SOURCE_KEYBOARD;
       break;
     case HELP_SOURCE_MENU:
-      app_launch_source = extensions::SOURCE_SYSTEM_TRAY;
+      params.source = extensions::SOURCE_SYSTEM_TRAY;
       break;
     case HELP_SOURCE_WEBUI:
-      app_launch_source = extensions::SOURCE_ABOUT_PAGE;
+      params.source = extensions::SOURCE_ABOUT_PAGE;
       break;
-    default:
-      NOTREACHED() << "Unhandled help source" << source;
   }
-  AppLaunchParams params(profile, extension, CURRENT_TAB, host_desktop_type,
-                         app_launch_source);
   OpenApplication(params);
 #else
   GURL url;

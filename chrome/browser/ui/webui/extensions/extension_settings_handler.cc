@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -1030,8 +1029,7 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
       extension_service_->GetExtensionById(extension_id, false);
   OpenApplication(AppLaunchParams(extension_service_->profile(), extension,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
-                                  NEW_WINDOW,
-                                  extensions::SOURCE_EXTENSIONS_PAGE));
+                                  NEW_WINDOW));
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(

@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -29,7 +28,6 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -220,9 +218,9 @@ void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
 
   const extensions::Extension* extension = extension_service->
       GetExtensionById(extension_id, true);
-  OpenApplication(
-      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+  OpenApplication(AppLaunchParams(profile, extension,
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
+                                  NEW_WINDOW));
   InitAppSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();
