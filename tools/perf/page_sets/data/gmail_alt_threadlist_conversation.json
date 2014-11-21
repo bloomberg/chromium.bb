@@ -1,8 +1,0 @@
-{
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
-    "archives": {
-        "gmail_alt_threadlist_conversation_000.wpr": [
-            "https://mail.google.com/mail/"
-        ]
-    }
-}
