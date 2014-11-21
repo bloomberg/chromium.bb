@@ -67,7 +67,7 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
   if (FAILED(hr))
     return;
 
-  EXPECT_TRUE(SUCCEEDED(hr = i_persist_file.QueryFrom(i_shell_link)));
+  EXPECT_TRUE(SUCCEEDED(hr = i_persist_file.QueryFrom(i_shell_link.get())));
   if (FAILED(hr))
     return;
 
@@ -112,7 +112,7 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
 
   if (GetVersion() >= VERSION_WIN7) {
     ScopedComPtr<IPropertyStore> property_store;
-    EXPECT_TRUE(SUCCEEDED(hr = property_store.QueryFrom(i_shell_link)));
+    EXPECT_TRUE(SUCCEEDED(hr = property_store.QueryFrom(i_shell_link.get())));
     if (FAILED(hr))
       return;
 

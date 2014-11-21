@@ -33,7 +33,7 @@ void InitializeShortcutInterfaces(
   i_persist_file->Release();
   if (FAILED(i_shell_link->CreateInstance(CLSID_ShellLink, NULL,
                                           CLSCTX_INPROC_SERVER)) ||
-      FAILED(i_persist_file->QueryFrom(*i_shell_link)) ||
+      FAILED(i_persist_file->QueryFrom(i_shell_link->get())) ||
       (shortcut && FAILED((*i_persist_file)->Load(shortcut, STGM_READWRITE)))) {
     i_shell_link->Release();
     i_persist_file->Release();
@@ -129,15 +129,17 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
   if ((has_app_id || has_dual_mode) &&
       GetVersion() >= VERSION_WIN7) {
     ScopedComPtr<IPropertyStore> property_store;
-    if (FAILED(property_store.QueryFrom(i_shell_link)) || !property_store.get())
+    if (FAILED(property_store.QueryFrom(i_shell_link.get())) ||
+        !property_store.get())
       return false;
 
     if (has_app_id &&
-        !SetAppIdForPropertyStore(property_store, properties.app_id.c_str())) {
+        !SetAppIdForPropertyStore(property_store.get(),
+                                  properties.app_id.c_str())) {
       return false;
     }
     if (has_dual_mode &&
-        !SetBooleanValueForPropertyStore(property_store,
+        !SetBooleanValueForPropertyStore(property_store.get(),
                                          PKEY_AppUserModel_IsDualMode,
                                          properties.dual_mode)) {
       return false;
@@ -192,7 +194,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
 
   ScopedComPtr<IPersistFile> persist;
   // Query IShellLink for the IPersistFile interface.
-  if (FAILED(persist.QueryFrom(i_shell_link)))
+  if (FAILED(persist.QueryFrom(i_shell_link.get())))
     return false;
 
   // Load the shell link.
@@ -239,7 +241,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
   if ((options & ShortcutProperties::PROPERTIES_WIN7) &&
       GetVersion() >= VERSION_WIN7) {
     ScopedComPtr<IPropertyStore> property_store;
-    if (FAILED(property_store.QueryFrom(i_shell_link)))
+    if (FAILED(property_store.QueryFrom(i_shell_link.get())))
       return false;
 
     if (options & ShortcutProperties::PROPERTIES_APP_ID) {
