@@ -32,7 +32,7 @@ var initialize_ExtensionsAuditsTest = function()
 
     InspectorTest.dumpAuditProgress = function()
     {
-        var progress = document.querySelector(".panel.audits progress");
+        var progress = document.querySelector(".panel.audits /deep/ progress");
         InspectorTest.addResult("Progress: " + Math.round(100 * progress.value / progress.max) + "%");
     }
 
