@@ -760,12 +760,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case NodeIteratorDetach:
         return "'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
 
-    case NodeIteratorExpandEntityReferences:
-        return "'NodeIterator.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";
-
-    case TreeWalkerExpandEntityReferences:
-        return "'TreeWalker.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";
-
     case RangeDetach:
         return "'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).";
 

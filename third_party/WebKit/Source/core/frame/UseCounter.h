@@ -332,8 +332,6 @@ public:
         EventGetReturnValueFalse = 351,
         EventSetReturnValueTrue = 352,
         EventSetReturnValueFalse = 353,
-        NodeIteratorExpandEntityReferences = 354,
-        TreeWalkerExpandEntityReferences = 355,
         WindowOffscreenBuffering = 356,
         WindowDefaultStatus = 357,
         WindowDefaultstatus = 358,

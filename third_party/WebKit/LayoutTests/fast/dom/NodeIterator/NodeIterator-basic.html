@@ -193,19 +193,6 @@ test(function ()
     testIteratorForwardAndBackward(iterator, expected);
 }, 'Test the behavior of NodeIterator when NodeFilter is specified.');
 
-test(function ()
-{
-    var filter = function (node) {
-        return NodeFilter.FILTER_ACCEPT;
-    };
-    [true, false].forEach(function (expandEntityReferences) {
-        var iterator = document.createNodeIterator(createSampleDOM(), NodeFilter.SHOW_ALL, filter, expandEntityReferences);
-        assert_true(iterator instanceof NodeIterator);
-        assert_false(iterator.expandEntityReferences);
-        testIteratorForwardAndBackward(iterator, expectedAll);
-    });
-}, 'Test that the fourth argument (expandEntityReferences) is ignored.');
-
 test(function() {
     var nodeIterator = document.createNodeIterator(document.body, 42, null);
     assert_equals(nodeIterator.root, document.body);
