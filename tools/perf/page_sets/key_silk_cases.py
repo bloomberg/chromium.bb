@@ -282,7 +282,7 @@ class Page16(KeySilkCasesPage):
         'SwipeAction', is_smooth=True)
     action_runner.SwipeElement(
         left_start_ratio=0.8, top_start_ratio=0.2,
-        direction='left', distance=200, speed_in_pixels_per_second=5000,
+        direction='left', distance=400, speed_in_pixels_per_second=5000,
         element_function='document.getElementsByClassName("message")[2]')
     interaction.End()
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
