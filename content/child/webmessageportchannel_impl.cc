@@ -165,6 +165,8 @@ void WebMessagePortChannelImpl::Init() {
     DCHECK(message_port_id_ == MSG_ROUTING_NONE);
     Send(new MessagePortHostMsg_CreateMessagePort(
         &route_id_, &message_port_id_));
+  } else if (message_port_id_ != MSG_ROUTING_NONE) {
+    Send(new MessagePortHostMsg_ReleaseMessages(message_port_id_));
   }
 
   ChildThread::current()->GetRouter()->AddRoute(route_id_, this);

@@ -42,6 +42,9 @@ bool MessagePortMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(MessagePortHostMsg_SendQueuedMessages,
                         MessagePortService::GetInstance(),
                         MessagePortService::SendQueuedMessages)
+    IPC_MESSAGE_FORWARD(MessagePortHostMsg_ReleaseMessages,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::ReleaseMessages)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

@@ -83,3 +83,9 @@ IPC_MESSAGE_CONTROL1(MessagePortHostMsg_QueueMessages,
 IPC_MESSAGE_CONTROL2(MessagePortHostMsg_SendQueuedMessages,
                      int /* message_port_id */,
                      std::vector<QueuedMessage> /* queued_messages */)
+
+// Tells the browser this message port is ready to receive messages. If the
+// browser was holding messages to this port because no destination for the
+// port was available yet this will cause the browser to release those messages.
+IPC_MESSAGE_CONTROL1(MessagePortHostMsg_ReleaseMessages,
+                     int /* message_port_id */)

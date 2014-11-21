@@ -37,6 +37,7 @@ class MessagePortService {
   void QueueMessages(int message_port_id);
   void SendQueuedMessages(int message_port_id,
                           const QueuedMessages& queued_messages);
+  void ReleaseMessages(int message_port_id);
 
   // Updates the information needed to reach a message port when it's sent to a
   // (possibly different) process.
@@ -44,6 +45,20 @@ class MessagePortService {
       int message_port_id,
       MessagePortMessageFilter* filter,
       int routing_id);
+
+  // The message port is being transferred to a new renderer process, but the
+  // code doing that isn't able to immediately update the message port with a
+  // new filter and routing_id. This queues up all messages sent to this port
+  // until later ReleaseMessages is called for this port (this will happen
+  // automatically as soon as a WebMessagePortChannelImpl instance is created
+  // for this port in the renderer. The browser side code is still responsible
+  // for updating the port with a new filter before that happens. If ultimately
+  // transfering the port to a new process fails, ClosePort should be called to
+  // clean up the port.
+  void HoldMessages(int message_port_id);
+
+  // Closes and cleans up the message port.
+  void ClosePort(int message_port_id);
 
   void OnMessagePortMessageFilterClosing(MessagePortMessageFilter* filter);
 

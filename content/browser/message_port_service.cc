@@ -27,7 +27,24 @@ struct MessagePortService::MessagePort {
   // system.
   // This flag should only be set to true in response to
   // MessagePortHostMsg_QueueMessages.
-  bool queue_messages;
+  bool queue_for_inflight_messages;
+  // If true, all messages to this message port are queued and not delivered.
+  // This is needed so that when a message port is sent to a new process all
+  // messages are held in the browser process until the destination process is
+  // ready to receive messages. This flag is set true when a message port is
+  // transferred to a different process but there isn't immediately a
+  // MessagePortMessageFilter available for that new process. Once the
+  // destination process is ready to receive messages it sends
+  // MessagePortHostMsg_ReleaseMessages to set this flag to false.
+  bool hold_messages_for_destination;
+  // Returns true if messages should be queued for either reason.
+  bool queue_messages() const {
+    return queue_for_inflight_messages || hold_messages_for_destination;
+  }
+  // If true, the message port should be destroyed but was currently still
+  // waiting for a SendQueuedMessages message from a renderer. As soon as that
+  // message is received the port will actually be destroyed.
+  bool should_be_destroyed;
   QueuedMessages queued_messages;
 };
 
@@ -79,7 +96,9 @@ void MessagePortService::Create(int route_id,
   port.route_id = route_id;
   port.message_port_id = *message_port_id;
   port.entangled_message_port_id = MSG_ROUTING_NONE;
-  port.queue_messages = false;
+  port.queue_for_inflight_messages = false;
+  port.hold_messages_for_destination = false;
+  port.should_be_destroyed = false;
   message_ports_[*message_port_id] = port;
 }
 
@@ -90,6 +109,7 @@ void MessagePortService::Destroy(int message_port_id) {
   }
 
   DCHECK(message_ports_[message_port_id].queued_messages.empty());
+
   Erase(message_port_id);
 }
 
@@ -150,7 +170,14 @@ void MessagePortService::PostMessageTo(
   for (size_t i = 0; i < sent_message_port_ids.size(); ++i)
     sent_ports[i] = &message_ports_[sent_message_port_ids[i]];
 
-  if (entangled_port.queue_messages) {
+  if (entangled_port.queue_messages()) {
+    // If the target port is currently holding messages because the destination
+    // renderer isn't available yet, all message ports being sent should also be
+    // put in this state.
+    if (entangled_port.hold_messages_for_destination) {
+      for (int sent_message_port_id : sent_message_port_ids)
+        HoldMessages(sent_message_port_id);
+    }
     entangled_port.queued_messages.push_back(
         std::make_pair(message, sent_message_port_ids));
     return;
@@ -188,7 +215,7 @@ void MessagePortService::QueueMessages(int message_port_id) {
   MessagePort& port = message_ports_[message_port_id];
   if (port.filter) {
     port.filter->Send(new MessagePortMsg_MessagesQueued(port.route_id));
-    port.queue_messages = true;
+    port.queue_for_inflight_messages = true;
     port.filter = NULL;
   }
 }
@@ -204,11 +231,24 @@ void MessagePortService::SendQueuedMessages(
   // Send the queued messages to the port again.  This time they'll reach the
   // new location.
   MessagePort& port = message_ports_[message_port_id];
-  port.queue_messages = false;
+  port.queue_for_inflight_messages = false;
+
+  // If the port is currently holding messages waiting for the target renderer,
+  // all ports in messages being sent to the port should also be put on hold.
+  if (port.hold_messages_for_destination) {
+    for (const auto& message : queued_messages)
+      for (int sent_message_port_id : message.second)
+        HoldMessages(sent_message_port_id);
+  }
+
   port.queued_messages.insert(port.queued_messages.begin(),
                               queued_messages.begin(),
                               queued_messages.end());
-  SendQueuedMessagesIfPossible(message_port_id);
+
+  if (port.should_be_destroyed)
+    ClosePort(message_port_id);
+  else
+    SendQueuedMessagesIfPossible(message_port_id);
 }
 
 void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
@@ -218,7 +258,7 @@ void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  if (port.queue_messages || !port.filter)
+  if (port.queue_messages() || !port.filter)
     return;
 
   for (QueuedMessages::iterator iter = port.queued_messages.begin();
@@ -226,6 +266,49 @@ void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
     PostMessageTo(message_port_id, iter->first, iter->second);
   }
   port.queued_messages.clear();
+}
+
+void MessagePortService::HoldMessages(int message_port_id) {
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Any ports in messages currently in the queue should also be put on hold.
+  for (const auto& message : message_ports_[message_port_id].queued_messages)
+    for (int sent_message_port_id : message.second)
+      HoldMessages(sent_message_port_id);
+
+  message_ports_[message_port_id].hold_messages_for_destination = true;
+}
+
+void MessagePortService::ClosePort(int message_port_id) {
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (message_ports_[message_port_id].queue_for_inflight_messages) {
+    message_ports_[message_port_id].should_be_destroyed = true;
+    return;
+  }
+
+  // First close any message ports in the queue for this message port.
+  for (const auto& message : message_ports_[message_port_id].queued_messages)
+    for (int sent_message_port_id : message.second)
+      ClosePort(sent_message_port_id);
+
+  Erase(message_port_id);
+}
+
+void MessagePortService::ReleaseMessages(int message_port_id) {
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  message_ports_[message_port_id].hold_messages_for_destination = false;
+  SendQueuedMessagesIfPossible(message_port_id);
 }
 
 void MessagePortService::Erase(int message_port_id) {

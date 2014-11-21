@@ -272,6 +272,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                             const StatusCallback& callback);
   void DispatchActivateEventAfterStartWorker(const StatusCallback& callback);
 
+  void DispatchMessageEventInternal(
+      const base::string16& message,
+      const std::vector<int>& sent_message_port_ids,
+      const StatusCallback& callback);
+
   // Message handlers.
   void OnGetClientDocuments(int request_id);
   void OnActivateEventFinished(int request_id,

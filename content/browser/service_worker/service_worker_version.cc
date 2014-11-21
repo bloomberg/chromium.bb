@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "content/browser/message_port_message_filter.h"
+#include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -86,6 +87,17 @@ void RunErrorFetchCallback(const ServiceWorkerVersion::FetchCallback& callback,
   callback.Run(status,
                SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
                ServiceWorkerResponse());
+}
+
+void RunErrorMessageCallback(
+    const std::vector<int>& sent_message_port_ids,
+    const ServiceWorkerVersion::StatusCallback& callback,
+    ServiceWorkerStatusCode status) {
+  // Transfering the message ports failed, so destroy the ports.
+  for (int message_port_id : sent_message_port_ids) {
+    MessagePortService::GetInstance()->ClosePort(message_port_id);
+  }
+  callback.Run(status);
 }
 
 }  // namespace
@@ -252,12 +264,25 @@ void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids,
     const StatusCallback& callback) {
+  for (int message_port_id : sent_message_port_ids) {
+    MessagePortService::GetInstance()->HoldMessages(message_port_id);
+  }
+
+  DispatchMessageEventInternal(message, sent_message_port_ids, callback);
+}
+
+void ServiceWorkerVersion::DispatchMessageEventInternal(
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const StatusCallback& callback) {
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(
-        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
-        base::Bind(&self::DispatchMessageEvent, weak_factory_.GetWeakPtr(),
-                   message, sent_message_port_ids, callback)));
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+        base::Bind(&RunErrorMessageCallback, sent_message_port_ids, callback),
+        base::Bind(&self::DispatchMessageEventInternal,
+                   weak_factory_.GetWeakPtr(), message, sent_message_port_ids,
+                   callback)));
     return;
   }
 
