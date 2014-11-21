@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
 }
 
 // http://crbug.com/435449
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopLoadTabs) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopLoadTabs) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "load_tabs.html"))
       << message_;
 }
