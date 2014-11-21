@@ -204,6 +204,9 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
         ASSERT(coordinator);
         coordinator->scrollableAreaScrollLayerDidChange(this);
 
+        Document* document = mainFrame()->document();
+        document->enqueueScrollEventForNode(document);
+
         valuesChanged = true;
     }
 

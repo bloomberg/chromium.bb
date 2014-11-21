@@ -1488,6 +1488,7 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
 
     bool pinchVirtualViewportEnabled = m_frame->settings()->pinchVirtualViewportEnabled();
 
+    // FIXME: This needs an isMainFrame() check as well. crbug.com/378776.
     if (pinchVirtualViewportEnabled) {
         PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 

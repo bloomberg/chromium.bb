@@ -65,6 +65,7 @@ fast/constructors/blob-sparse-array-assertion-failure.html
 fast/constructors/constructor-as-function-crash.html
 fast/doctypes/005-case-preserving.html
 fast/dom/HTMLLinkElement/cachedresource-types.html
+fast/dom/Window/window-scaled-viewport-properties.html
 fast/encoding/GBK/csgb231280.html
 fast/eventsource/eventsource-attribute-listeners.html
 fast/flexbox/assert-generated-new-flexbox.html

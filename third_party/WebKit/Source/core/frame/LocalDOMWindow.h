@@ -137,10 +137,14 @@ public:
     bool confirm(const String& message) override;
     String prompt(const String& message, const String& defaultValue) override;
     bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const override;
+
+    // FIXME: ScrollBehaviorSmooth is currently unsupported in PinchViewport.
+    // crbug.com/434497
     void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
     void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const override;
     void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
     void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const override;
+
     void moveBy(float x, float y) const override;
     void moveTo(float x, float y) const override;
     void resizeBy(float x, float y) const override;

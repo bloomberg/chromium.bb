@@ -1152,13 +1152,21 @@ int LocalDOMWindow::innerHeight() const
     if (!view)
         return 0;
 
+    FrameHost* host = frame()->host();
+    if (!host)
+        return 0;
+
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
     if (Frame* parent = frame()->tree().parent()) {
         if (parent && parent->isLocalFrame())
             toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
     }
 
-    return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).height(), frame()->pageZoomFactor());
+    FloatSize viewportSize = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+        ? host->pinchViewport().visibleRect().size()
+        : view->visibleContentRect(IncludeScrollbars).size();
+
+    return adjustForAbsoluteZoom(expandedIntSize(viewportSize).height(), frame()->pageZoomFactor());
 }
 
 int LocalDOMWindow::innerWidth() const
@@ -1170,13 +1178,21 @@ int LocalDOMWindow::innerWidth() const
     if (!view)
         return 0;
 
+    FrameHost* host = frame()->host();
+    if (!host)
+        return 0;
+
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
     if (Frame* parent = frame()->tree().parent()) {
         if (parent && parent->isLocalFrame())
             toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
     }
 
-    return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).width(), frame()->pageZoomFactor());
+    FloatSize viewportSize = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+        ? host->pinchViewport().visibleRect().size()
+        : view->visibleContentRect(IncludeScrollbars).size();
+
+    return adjustForAbsoluteZoom(expandedIntSize(viewportSize).width(), frame()->pageZoomFactor());
 }
 
 int LocalDOMWindow::screenX() const
@@ -1216,9 +1232,18 @@ double LocalDOMWindow::scrollX() const
     if (!view)
         return 0;
 
+    FrameHost* host = frame()->host();
+    if (!host)
+        return 0;
+
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustScrollForAbsoluteZoom(view->scrollX(), frame()->pageZoomFactor());
+    double viewportX = view->scrollX();
+
+    if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
+        viewportX += host->pinchViewport().location().x();
+
+    return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
 
 double LocalDOMWindow::scrollY() const
@@ -1230,9 +1255,18 @@ double LocalDOMWindow::scrollY() const
     if (!view)
         return 0;
 
+    FrameHost* host = frame()->host();
+    if (!host)
+        return 0;
+
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    return adjustScrollForAbsoluteZoom(view->scrollY(), frame()->pageZoomFactor());
+    double viewportY = view->scrollY();
+
+    if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
+        viewportY += host->pinchViewport().location().y();
+
+    return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
 bool LocalDOMWindow::closed() const
@@ -1397,6 +1431,26 @@ static bool scrollBehaviorFromScrollOptions(const ScrollOptions& scrollOptions, 
     return false;
 }
 
+// FIXME: This class shouldn't be explicitly moving the viewport around. crbug.com/371896
+static void scrollViewportTo(LocalFrame* frame, DoublePoint offset, ScrollBehavior scrollBehavior)
+{
+    FrameView* view = frame->view();
+    if (!view)
+        return;
+
+    FrameHost* host = frame->host();
+    if (!host)
+        return;
+
+    view->setScrollPosition(offset, scrollBehavior);
+
+    if (host->settings().pinchVirtualViewportEnabled() && frame->isMainFrame()) {
+        PinchViewport& pinchViewport = frame->host()->pinchViewport();
+        DoubleSize excessDelta = offset - DoublePoint(pinchViewport.visibleRectInDocument().location());
+        pinchViewport.move(FloatPoint(excessDelta.width(), excessDelta.height()));
+    }
+}
+
 void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1408,11 +1462,19 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
+    FrameHost* host = frame()->host();
+    if (!host)
+        return;
+
     if (std::isnan(x) || std::isnan(y))
         return;
 
+    DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+        ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
+        : view->scrollPositionDouble();
+
     DoubleSize scaledOffset(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    view->scrollBy(scaledOffset, scrollBehavior);
+    scrollViewportTo(frame(), currentOffset + scaledOffset, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollBy(double x, double y, const ScrollOptions& scrollOptions, ExceptionState &exceptionState) const
@@ -1430,15 +1492,11 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
 
     document()->updateLayoutIgnorePendingStylesheets();
 
-    RefPtrWillBeRawPtr<FrameView> view = frame()->view();
-    if (!view)
-        return;
-
     if (std::isnan(x) || std::isnan(y))
         return;
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    view->setScrollPosition(layoutPos, scrollBehavior);
+    scrollViewportTo(frame(), layoutPos, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollTo(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const
