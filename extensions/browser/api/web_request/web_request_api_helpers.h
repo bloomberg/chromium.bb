@@ -310,12 +310,11 @@ bool MergeOnAuthRequiredResponses(
 void ClearCacheOnNavigation();
 
 // Tells renderer processes that the web request or declarative web request
-// API has been used by |extension| in browser_context |browser_context_id| to
-// collect UMA statistics on Page Load Times. Needs to be called on the UI
-// thread.
-void NotifyWebRequestAPIUsed(
-    void* browser_context_id,
-    scoped_refptr<const extensions::Extension> extension);
+// API has been used by the extension with the given |extension_id| in the
+// given |browser_context_id| to collect UMA statistics on Page Load Times.
+// Needs to be called on the UI thread.
+void NotifyWebRequestAPIUsed(void* browser_context_id,
+                             const std::string& extension_id);
 
 // Send updates to |host| with information about what webRequest-related
 // extensions are installed.

@@ -13,13 +13,15 @@
 
 namespace extensions {
 
-class Extension;
 class ExtensionRegistry;
 
 // Contains per-extension data that can change during the life of the process,
 // but does not persist across restarts. Shared between incognito and regular
 // browser contexts. Lives on the UI thread. Must be destroyed before
 // ExtensionRegistry.
+// If we start putting to much into this, we should expose the generic
+// "[G|S]etRuntimeProperty(const std::string& extension_id, RuntimeFlag flag)"
+// instead of all these.
 class RuntimeData : public ExtensionRegistryObserver {
  public:
   // Observes |registry| to clean itself up when extensions change state.
@@ -31,20 +33,21 @@ class RuntimeData : public ExtensionRegistryObserver {
   // other components until then. If there is no background page, or if it is
   // non-persistent (lazy), we consider it to be ready.
   bool IsBackgroundPageReady(const Extension* extension) const;
-  void SetBackgroundPageReady(const Extension* extension, bool value);
+  void SetBackgroundPageReady(const std::string& extension_id, bool value);
 
   // Getter and setter for the flag that specifies whether the extension is
   // being upgraded.
-  bool IsBeingUpgraded(const Extension* extension) const;
-  void SetBeingUpgraded(const Extension* extension, bool value);
+  // For these purposes, a reload counts as an upgrade.
+  bool IsBeingUpgraded(const std::string& extension_id) const;
+  void SetBeingUpgraded(const std::string& extension_id, bool value);
 
   // Getter and setter for the flag that specifies if the extension has used
   // the webrequest API.
-  bool HasUsedWebRequest(const Extension* extension) const;
-  void SetHasUsedWebRequest(const Extension* extension, bool value);
+  bool HasUsedWebRequest(const std::string& extension_id) const;
+  void SetHasUsedWebRequest(const std::string& extension_id, bool value);
 
   // Returns true if the extension is being tracked. Used only for testing.
-  bool HasExtensionForTesting(const Extension* extension) const;
+  bool HasExtensionForTesting(const std::string& extension_id) const;
 
   // Erase runtime data for all extensions. Used only for testing. Cannot be
   // named ClearAllForTesting due to false-positive presubmit errors.
@@ -66,12 +69,16 @@ class RuntimeData : public ExtensionRegistryObserver {
     HAS_USED_WEBREQUEST   = 1 << 2,
   };
 
+  // The mask of any data that should persist across the extension being
+  // unloaded.
+  static const int kPersistAcrossUnloadMask = BEING_UPGRADED;
+
   // Returns the setting for the flag or false if the extension isn't found.
-  bool HasFlag(const Extension* extension, RuntimeFlag flag) const;
+  bool HasFlag(const std::string& extension_id, RuntimeFlag flag) const;
 
   // Sets |flag| for |extension| to |value|. Adds |extension| to the list of
   // extensions if it isn't present.
-  void SetFlag(const Extension* extension, RuntimeFlag flag, bool value);
+  void SetFlag(const std::string& extension_id, RuntimeFlag flag, bool value);
 
   // Map from extension ID to the RuntimeFlags bits.
   typedef std::map<std::string, int> ExtensionFlagsMap;

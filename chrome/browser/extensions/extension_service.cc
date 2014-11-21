@@ -608,7 +608,7 @@ void ExtensionService::ReloadExtensionImpl(
 
     path = transient_current_extension->path();
     // BeingUpgraded is set back to false when the extension is added.
-    system_->runtime_data()->SetBeingUpgraded(transient_current_extension,
+    system_->runtime_data()->SetBeingUpgraded(transient_current_extension->id(),
                                               true);
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     reloading_extensions_.insert(extension_id);
@@ -1342,16 +1342,18 @@ void ExtensionService::AddExtension(const Extension* extension) {
     if (!Manifest::IsUnpackedLocation(extension->location()))
       CHECK_GE(version_compare_result, 0);
   }
-  system_->runtime_data()->SetBeingUpgraded(extension, is_extension_upgrade);
+  // If the extension was disabled for a reload, then enable it.
+  bool reloading = reloading_extensions_.erase(extension->id()) > 0;
+
+  // Set the upgraded bit; we consider reloads upgrades.
+  system_->runtime_data()->SetBeingUpgraded(extension->id(),
+                                            is_extension_upgrade || reloading);
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
 
   // If a terminated extension is loaded, remove it from the terminated list.
   UntrackTerminatedExtension(extension->id());
-
-  // If the extension was disabled for a reload, then enable it.
-  bool reloading = reloading_extensions_.erase(extension->id()) > 0;
 
   // Check if the extension's privileges have changed and mark the
   // extension disabled if necessary.
@@ -1414,7 +1416,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
       extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);
     NotifyExtensionLoaded(extension);
   }
-  system_->runtime_data()->SetBeingUpgraded(extension, false);
+  system_->runtime_data()->SetBeingUpgraded(extension->id(), false);
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {

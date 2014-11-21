@@ -53,9 +53,9 @@ TEST_F(RuntimeDataTest, IsBackgroundPageReady) {
   EXPECT_FALSE(runtime_data_.IsBackgroundPageReady(with_background.get()));
 
   // The flag can be toggled.
-  runtime_data_.SetBackgroundPageReady(with_background.get(), true);
+  runtime_data_.SetBackgroundPageReady(with_background->id(), true);
   EXPECT_TRUE(runtime_data_.IsBackgroundPageReady(with_background.get()));
-  runtime_data_.SetBackgroundPageReady(with_background.get(), false);
+  runtime_data_.SetBackgroundPageReady(with_background->id(), false);
   EXPECT_FALSE(runtime_data_.IsBackgroundPageReady(with_background.get()));
 }
 
@@ -63,37 +63,41 @@ TEST_F(RuntimeDataTest, IsBeingUpgraded) {
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
 
   // An extension is not being upgraded until the flag is set.
-  EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension.get()));
+  EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension->id()));
 
   // The flag can be toggled.
-  runtime_data_.SetBeingUpgraded(extension.get(), true);
-  EXPECT_TRUE(runtime_data_.IsBeingUpgraded(extension.get()));
-  runtime_data_.SetBeingUpgraded(extension.get(), false);
-  EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension.get()));
+  runtime_data_.SetBeingUpgraded(extension->id(), true);
+  EXPECT_TRUE(runtime_data_.IsBeingUpgraded(extension->id()));
+  runtime_data_.SetBeingUpgraded(extension->id(), false);
+  EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension->id()));
 }
 
 TEST_F(RuntimeDataTest, HasUsedWebRequest) {
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
 
   // An extension has not used web request until the flag is set.
-  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension.get()));
+  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension->id()));
 
   // The flag can be toggled.
-  runtime_data_.SetHasUsedWebRequest(extension.get(), true);
-  EXPECT_TRUE(runtime_data_.HasUsedWebRequest(extension.get()));
-  runtime_data_.SetHasUsedWebRequest(extension.get(), false);
-  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension.get()));
+  runtime_data_.SetHasUsedWebRequest(extension->id(), true);
+  EXPECT_TRUE(runtime_data_.HasUsedWebRequest(extension->id()));
+  runtime_data_.SetHasUsedWebRequest(extension->id(), false);
+  EXPECT_FALSE(runtime_data_.HasUsedWebRequest(extension->id()));
 }
 
-// Unloading an extension stops tracking it.
+// Unloading an extension erases any data that shouldn't explicitly be kept
+// across loads.
 TEST_F(RuntimeDataTest, OnExtensionUnloaded) {
   scoped_refptr<Extension> extension = CreateExtensionWithBackgroundPage();
-  runtime_data_.SetBackgroundPageReady(extension.get(), true);
-  ASSERT_TRUE(runtime_data_.HasExtensionForTesting(extension.get()));
+  runtime_data_.SetBackgroundPageReady(extension->id(), true);
+  ASSERT_TRUE(runtime_data_.HasExtensionForTesting(extension->id()));
+  runtime_data_.SetBeingUpgraded(extension->id(), true);
 
   runtime_data_.OnExtensionUnloaded(
       NULL, extension.get(), UnloadedExtensionInfo::REASON_DISABLE);
-  EXPECT_FALSE(runtime_data_.HasExtensionForTesting(extension.get()));
+  EXPECT_TRUE(runtime_data_.HasExtensionForTesting(extension->id()));
+  EXPECT_FALSE(runtime_data_.IsBackgroundPageReady(extension.get()));
+  EXPECT_TRUE(runtime_data_.IsBeingUpgraded(extension->id()));
 }
 
 }  // namespace

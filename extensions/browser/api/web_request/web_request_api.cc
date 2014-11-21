@@ -2256,7 +2256,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
                           FROM_HERE,
                           base::Bind(&helpers::NotifyWebRequestAPIUsed,
                                      profile_id(),
-                                     make_scoped_refptr(extension)));
+                                     extension->id()));
 
   return true;
 }

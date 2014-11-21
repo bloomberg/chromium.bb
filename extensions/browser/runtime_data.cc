@@ -21,32 +21,35 @@ RuntimeData::~RuntimeData() {
 bool RuntimeData::IsBackgroundPageReady(const Extension* extension) const {
   if (!BackgroundInfo::HasPersistentBackgroundPage(extension))
     return true;
-  return HasFlag(extension, BACKGROUND_PAGE_READY);
+  return HasFlag(extension->id(), BACKGROUND_PAGE_READY);
 }
 
-void RuntimeData::SetBackgroundPageReady(const Extension* extension,
+void RuntimeData::SetBackgroundPageReady(const std::string& extension_id,
                                          bool value) {
-  SetFlag(extension, BACKGROUND_PAGE_READY, value);
+  SetFlag(extension_id, BACKGROUND_PAGE_READY, value);
 }
 
-bool RuntimeData::IsBeingUpgraded(const Extension* extension) const {
-  return HasFlag(extension, BEING_UPGRADED);
+bool RuntimeData::IsBeingUpgraded(const std::string& extension_id) const {
+  return HasFlag(extension_id, BEING_UPGRADED);
 }
 
-void RuntimeData::SetBeingUpgraded(const Extension* extension, bool value) {
-  SetFlag(extension, BEING_UPGRADED, value);
+void RuntimeData::SetBeingUpgraded(const std::string& extension_id,
+                                   bool value) {
+  SetFlag(extension_id, BEING_UPGRADED, value);
 }
 
-bool RuntimeData::HasUsedWebRequest(const Extension* extension) const {
-  return HasFlag(extension, HAS_USED_WEBREQUEST);
+bool RuntimeData::HasUsedWebRequest(const std::string& extension_id) const {
+  return HasFlag(extension_id, HAS_USED_WEBREQUEST);
 }
 
-void RuntimeData::SetHasUsedWebRequest(const Extension* extension, bool value) {
-  SetFlag(extension, HAS_USED_WEBREQUEST, value);
+void RuntimeData::SetHasUsedWebRequest(const std::string& extension_id,
+                                       bool value) {
+  SetFlag(extension_id, HAS_USED_WEBREQUEST, value);
 }
 
-bool RuntimeData::HasExtensionForTesting(const Extension* extension) const {
-  return extension_flags_.find(extension->id()) != extension_flags_.end();
+bool RuntimeData::HasExtensionForTesting(
+    const std::string& extension_id) const {
+  return extension_flags_.find(extension_id) != extension_flags_.end();
 }
 
 void RuntimeData::ClearAll() {
@@ -56,23 +59,26 @@ void RuntimeData::ClearAll() {
 void RuntimeData::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
-  extension_flags_.erase(extension->id());
+  ExtensionFlagsMap::iterator iter = extension_flags_.find(extension->id());
+  if (iter != extension_flags_.end())
+    iter->second = iter->second & kPersistAcrossUnloadMask;
 }
 
-bool RuntimeData::HasFlag(const Extension* extension, RuntimeFlag flag) const {
-  ExtensionFlagsMap::const_iterator it = extension_flags_.find(extension->id());
+bool RuntimeData::HasFlag(const std::string& extension_id,
+                          RuntimeFlag flag) const {
+  ExtensionFlagsMap::const_iterator it = extension_flags_.find(extension_id);
   if (it == extension_flags_.end())
     return false;
   return !!(it->second & flag);
 }
 
-void RuntimeData::SetFlag(const Extension* extension,
+void RuntimeData::SetFlag(const std::string& extension_id,
                           RuntimeFlag flag,
                           bool value) {
   if (value)
-    extension_flags_[extension->id()] |= flag;
+    extension_flags_[extension_id] |= flag;
   else
-    extension_flags_[extension->id()] &= ~flag;
+    extension_flags_[extension_id] &= ~flag;
 }
 
 }  // namespace extensions

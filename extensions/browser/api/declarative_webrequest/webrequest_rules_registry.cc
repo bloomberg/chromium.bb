@@ -233,7 +233,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
-                   browser_context_, make_scoped_refptr(extension)));
+                   browser_context_, extension->id()));
   }
 
   return std::string();

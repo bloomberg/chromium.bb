@@ -314,7 +314,7 @@ void ToolbarActionsBar::ToolbarExtensionAdded(
 
   // If this is just an upgrade, then don't worry about resizing.
   if (extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
-          IsBeingUpgraded(extension)) {
+          IsBeingUpgraded(extension->id())) {
     delegate_->Redraw(false);
   } else {
     // We may need to resize (e.g. to show the new icon, or the chevron).
@@ -340,7 +340,7 @@ void ToolbarActionsBar::ToolbarExtensionRemoved(
   // If the extension is being upgraded we don't want the bar to shrink
   // because the icon is just going to get re-added to the same location.
   if (!extensions::ExtensionSystem::Get(browser_->profile())->runtime_data()->
-            IsBeingUpgraded(extension)) {
+            IsBeingUpgraded(extension->id())) {
     if (toolbar_actions_.size() > model_->visible_icon_count()) {
       // If we have more icons than we can show, then we must not be changing
       // the container size (since we either removed an icon from the main
