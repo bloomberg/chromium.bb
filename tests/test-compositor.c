@@ -452,6 +452,7 @@ client_disconnect(struct client *c)
 
 	wl_proxy_destroy((struct wl_proxy *) c->tc);
 	wl_display_disconnect(c->wl_display);
+	free(c);
 }
 
 /* num is number of clients that requests to stop display.

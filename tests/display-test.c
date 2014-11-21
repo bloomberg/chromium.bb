@@ -155,6 +155,14 @@ bind_seat(struct wl_client *client, void *data,
 }
 
 static void
+client_disconnect_nocheck(struct client *c)
+{
+	wl_proxy_destroy((struct wl_proxy *) c->tc);
+	wl_display_disconnect(c->wl_display);
+	free(c);
+}
+
+static void
 post_error_main(void)
 {
 	struct client *c = client_connect();
@@ -170,8 +178,7 @@ post_error_main(void)
 	/* don't call client_disconnect(c), because then the test would be
 	 * aborted due to checks for error in this function */
 	wl_proxy_destroy((struct wl_proxy *) seat);
-	wl_proxy_destroy((struct wl_proxy *) c->tc);
-	wl_display_disconnect(c->wl_display);
+	client_disconnect_nocheck(c);
 }
 
 TEST(post_error_to_one_client)
@@ -224,8 +231,7 @@ post_error_main3(void)
 	/* don't call client_disconnect(c), because then the test would be
 	 * aborted due to checks for error in this function */
 	wl_proxy_destroy((struct wl_proxy *) seat);
-	wl_proxy_destroy((struct wl_proxy *) c->tc);
-	wl_display_disconnect(c->wl_display);
+	client_disconnect_nocheck(c);
 }
 
 /* all the testcases could be in one TEST, but splitting it
@@ -294,8 +300,7 @@ post_nomem_main(void)
 	assert(wl_display_get_error(c->wl_display) == ENOMEM);
 
 	wl_proxy_destroy((struct wl_proxy *) seat);
-	wl_proxy_destroy((struct wl_proxy *) c->tc);
-	wl_display_disconnect(c->wl_display);
+	client_disconnect_nocheck(c);
 }
 
 TEST(post_nomem_tst)
@@ -413,8 +418,7 @@ threading_post_err(void)
 	test_set_timeout(3);
 	pthread_join(thread, NULL);
 
-	wl_proxy_destroy((struct wl_proxy *) c->tc);
-	wl_display_disconnect(c->wl_display);
+	client_disconnect_nocheck(c);
 }
 
 TEST(threading_errors_tst)
@@ -565,8 +569,7 @@ threading_read_after_error(void)
 	test_set_timeout(3);
 	pthread_join(thread, NULL);
 
-	wl_proxy_destroy((struct wl_proxy *) c->tc);
-	wl_display_disconnect(c->wl_display);
+	client_disconnect_nocheck(c);
 }
 
 TEST(threading_read_after_error_tst)
