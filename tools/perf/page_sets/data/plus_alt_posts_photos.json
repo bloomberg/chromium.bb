@@ -1,8 +1,0 @@
-{
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
-    "archives": {
-        "plus_alt_posts_photos_000.wpr": [
-            "https://plus.google.com/+BarackObama/posts"
-        ]
-    }
-}

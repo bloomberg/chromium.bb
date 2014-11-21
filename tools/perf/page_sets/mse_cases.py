@@ -20,7 +20,7 @@ class MseCasesPageSet(page_set_module.PageSet):
   """ Media source extensions perf benchmark """
 
   def __init__(self):
-    super(MseCasesPageSet, self).__init__()
+    super(MseCasesPageSet, self).__init__(bucket=page_set_module.PUBLIC_BUCKET)
 
     urls_list = [
       'file://mse_cases/startup_test.html?testType=AV',

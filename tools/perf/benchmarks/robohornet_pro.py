@@ -50,7 +50,8 @@ class RobohornetPro(benchmark.Benchmark):
       archive_data_file='../page_sets/data/robohornet_pro.json',
       # Measurement require use of real Date.now() for measurement.
       make_javascript_deterministic=False,
-      file_path=os.path.abspath(__file__))
+      file_path=os.path.abspath(__file__),
+      bucket=page_set.PARTNER_BUCKET)
     ps.AddPageWithDefaultRunNavigate(
       'http://ie.microsoft.com/testdrive/performance/robohornetpro/')
     return ps

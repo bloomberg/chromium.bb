@@ -37,7 +37,8 @@ class ToughWebglCasesPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(ToughWebglCasesPageSet, self).__init__(
-      archive_data_file='data/tough_webgl_cases.json')
+      archive_data_file='data/tough_webgl_cases.json',
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     urls_list = [
       # pylint: disable=C0301

@@ -59,7 +59,8 @@ class ScirraBenchmark(benchmark.Benchmark):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/scirra.json',
         make_javascript_deterministic=False,
-        file_path=os.path.abspath(__file__))
+        file_path=os.path.abspath(__file__),
+        bucket=page_set.INTERNAL_BUCKET)
     for url in ('http://www.scirra.com/labs/renderperf3/',
                 'http://www.scirra.com/demos/c2/renderperfgl/',
                 'http://www.scirra.com/demos/c2/renderperf2d/'):

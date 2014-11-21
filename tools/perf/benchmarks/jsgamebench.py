@@ -41,6 +41,7 @@ class Jsgamebench(benchmark.Benchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/jsgamebench.json',
-      file_path=os.path.dirname(__file__))
+      file_path=os.path.dirname(__file__),
+      bucket=page_set.PARTNER_BUCKET)
     ps.AddPageWithDefaultRunNavigate('http://localhost/')
     return ps

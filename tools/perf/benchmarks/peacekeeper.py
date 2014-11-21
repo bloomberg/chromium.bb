@@ -83,7 +83,8 @@ class PeaceKeeperBenchmark(benchmark.Benchmark):
 
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/peacekeeper_%s.json' % self.tag,
-      make_javascript_deterministic=False)
+      make_javascript_deterministic=False,
+      bucket=page_set.INTERNAL_BUCKET)
     for test_name in self.test_param:
       ps.AddPageWithDefaultRunNavigate(
         ('http://peacekeeper.futuremark.com/run.action?debug=true&'

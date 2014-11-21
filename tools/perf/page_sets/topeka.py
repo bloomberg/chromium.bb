@@ -22,6 +22,7 @@ class TopekaPageSet(page_set_module.PageSet):
   def __init__(self):
     super(TopekaPageSet, self).__init__(
       user_agent_type='mobile',
-      archive_data_file='data/topeka.json')
+      archive_data_file='data/topeka.json',
+      bucket=page_set_module.INTERNAL_BUCKET)
 
     self.AddPage(TopekaPage(self))

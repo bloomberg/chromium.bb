@@ -131,6 +131,7 @@ class Sunspider(benchmark.Benchmark):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/sunspider.json',
       make_javascript_deterministic=False,
-      file_path=os.path.abspath(__file__))
+      file_path=os.path.abspath(__file__),
+      bucket=page_set.PARTNER_BUCKET)
     ps.AddPageWithDefaultRunNavigate(_URL)
     return ps

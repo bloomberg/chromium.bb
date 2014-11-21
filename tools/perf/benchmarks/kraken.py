@@ -117,7 +117,8 @@ class Kraken(benchmark.Benchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/kraken.json',
-      file_path=os.path.abspath(__file__))
+      file_path=os.path.abspath(__file__),
+      bucket=page_set.PARTNER_BUCKET)
     ps.AddPageWithDefaultRunNavigate(
       'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html')
     return ps

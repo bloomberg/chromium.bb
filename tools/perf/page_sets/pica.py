@@ -20,6 +20,7 @@ class PicaPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(PicaPageSet, self).__init__(
-      archive_data_file='data/pica.json')
+      archive_data_file='data/pica.json',
+      bucket=page_set_module.INTERNAL_BUCKET)
 
     self.AddPage(PicaPage(self))

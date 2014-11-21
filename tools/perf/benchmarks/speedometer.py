@@ -79,6 +79,7 @@ class Speedometer(benchmark.Benchmark):
     ps = page_set.PageSet(
         file_path=os.path.abspath(__file__),
         archive_data_file='../page_sets/data/speedometer.json',
-        make_javascript_deterministic=False)
+        make_javascript_deterministic=False,
+        bucket=page_set.PUBLIC_BUCKET)
     ps.AddPageWithDefaultRunNavigate('http://browserbench.org/Speedometer/')
     return ps
