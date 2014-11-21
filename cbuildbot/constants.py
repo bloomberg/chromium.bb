@@ -496,6 +496,7 @@ CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
 CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
 CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
 CL_ACTION_VERIFIED = 'verified'           # CL was verified by the builder
+CL_ACTION_FORGIVEN = 'forgiven'           # Build failed, but CL not kicked out
 
 # Actions the Pre-CQ Launcher can take on a CL
 # See cbuildbot/stages/sync_stages.py:PreCQLauncherStage for more info
@@ -553,7 +554,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_VALIDATION_PENDING_PRE_CQ,
               CL_ACTION_IRRELEVANT_TO_SLAVE,
               CL_ACTION_TRYBOT_LAUNCHING,
-              CL_ACTION_SPECULATIVE]
+              CL_ACTION_SPECULATIVE,
+              CL_ACTION_FORGIVEN]
 
 # Per-config status strings for a CL.
 CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'
