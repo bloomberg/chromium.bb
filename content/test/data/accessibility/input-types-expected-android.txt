@@ -9,7 +9,7 @@ android.webkit.WebView focusable focused scrollable
         android.widget.CheckBox checkable clickable focusable name='Checkbox: '
         android.view.View
             android.view.View clickable name='Color:'
-            android.view.View focusable
+            android.widget.Spinner clickable focusable name='#000000'
         android.view.View
             android.view.View clickable name='Email:'
             android.widget.EditText editable_text focusable input_type=209
@@ -28,7 +28,7 @@ android.webkit.WebView focusable focused scrollable
         android.widget.RadioButton checkable clickable focusable name='Radio: '
         android.view.View
             android.view.View clickable name='Range:'
-            android.widget.SeekBar focusable range item_index=50 item_count=100 range_max=100 range_current_value=50
+            android.widget.SeekBar clickable focusable range name='50' item_index=50 item_count=100 range_max=100 range_current_value=50
         android.view.View
             android.view.View clickable name='Reset:'
             android.widget.Button clickable focusable name='Reset'

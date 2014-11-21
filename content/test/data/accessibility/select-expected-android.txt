@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
     android.view.View
-        android.widget.Button clickable focusable name='Placeholder option'
-        android.widget.Button clickable focusable name='Option 2'
-        android.widget.Button clickable focusable name='Option 1'
+        android.widget.Spinner clickable focusable name='Placeholder option'
+        android.widget.Spinner clickable focusable name='Option 2'
+        android.widget.Spinner clickable focusable name='Option 1'
