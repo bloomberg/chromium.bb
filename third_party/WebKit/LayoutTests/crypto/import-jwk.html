@@ -19,9 +19,11 @@ var nonExtractable = false;
 var hmac256 = {name: "HMAC", hash: {name: "sha-256"}};
 
 Promise.resolve(null).then(function(result) {
+    // 'null' treated as a Dictionary with default values - an empty dictionary
     return crypto.subtle.importKey("jwk", null, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
+    // 'undefined' treated as a Dictionary with default values - an empty dictionary
     return crypto.subtle.importKey("jwk", undefined, {name: "aes-cbc"}, extractable, []);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);

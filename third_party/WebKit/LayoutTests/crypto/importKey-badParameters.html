@@ -27,7 +27,7 @@ Promise.resolve(null).then(function() {
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    // Invalid data
+    // 'null' treated as a Dictionary with default values - an empty dictionary
     return crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);

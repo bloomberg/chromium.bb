@@ -36,8 +36,10 @@ public:
     unsigned char* bytes() const;
     unsigned byteLength() const;
 
-private:
+protected:
     void initWithData(void* data, unsigned byteLength);
+
+private:
     void initNull();
 
     void* m_data;

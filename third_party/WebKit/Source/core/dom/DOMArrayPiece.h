@@ -18,6 +18,8 @@ public:
         : ArrayPiece(buffer->buffer()) { }
     DOMArrayPiece(DOMArrayBufferView* view)
         : ArrayPiece(view->view()) { }
+    template <class T>
+    DOMArrayPiece(const T&);
 };
 
 } // namespace blink

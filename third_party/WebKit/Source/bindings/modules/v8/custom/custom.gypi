@@ -15,7 +15,6 @@
             'V8SQLTransactionCustom.cpp',
             'V8ServiceWorkerClientCustom.cpp',
             'V8ServiceWorkerCustom.cpp',
-            'V8SubtleCryptoCustom.cpp',
         ],
     },
 }
