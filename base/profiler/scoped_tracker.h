@@ -10,6 +10,7 @@
 // found using profiler data.
 
 #include "base/base_export.h"
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/profiler/scoped_profile.h"
@@ -47,10 +48,24 @@ class BASE_EXPORT ScopedTracker {
   // many possible callbacks, but they come from a relatively small number of
   // places. We can instrument these few places and at least know which one
   // passes the janky callback.
-  static base::Closure TrackCallback(const Location& location,
-                                     const base::Closure& callback);
+  template <typename P1>
+  static base::Callback<void(P1)> TrackCallback(
+      const Location& location,
+      const base::Callback<void(P1)>& callback) {
+    return base::Bind(&ScopedTracker::ExecuteAndTrackCallback<P1>, location,
+                      callback);
+  }
 
  private:
+  // Executes |callback|, augmenting it with provided |location|.
+  template <typename P1>
+  static void ExecuteAndTrackCallback(const Location& location,
+                                      const base::Callback<void(P1)>& callback,
+                                      P1 p1) {
+    ScopedTracker tracking_profile(location);
+    callback.Run(p1);
+  }
+
   const ScopedProfile scoped_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTracker);

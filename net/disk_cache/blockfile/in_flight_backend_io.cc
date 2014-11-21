@@ -341,35 +341,57 @@ InFlightBackendIO::~InFlightBackendIO() {
 }
 
 void InFlightBackendIO::Init(const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  // TODO(vadimt): Remove wrapping the callback with
+  // ScopedTracker::TrackCallback() once crbug.com/422516 is fixed.
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_,
+      tracked_objects::ScopedTracker::TrackCallback(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 InFlightBackendIO::Init"),
+          callback)));
   operation->Init();
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::OpenEntry(const std::string& key, Entry** entry,
                                   const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::OpenEntry"),
+                          callback)));
   operation->OpenEntry(key, entry);
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::CreateEntry(const std::string& key, Entry** entry,
                                     const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::CreateEntry"),
+                          callback)));
   operation->CreateEntry(key, entry);
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::DoomEntry(const std::string& key,
                                   const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::DoomEntry"),
+                          callback)));
   operation->DoomEntry(key);
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::DoomAllEntries(
     const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::DoomAllEntries"),
+                          callback)));
   operation->DoomAllEntries();
   PostOperation(operation.get());
 }
@@ -377,14 +399,22 @@ void InFlightBackendIO::DoomAllEntries(
 void InFlightBackendIO::DoomEntriesBetween(const base::Time initial_time,
                         const base::Time end_time,
                         const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::DoomEntriesBetween"),
+                          callback)));
   operation->DoomEntriesBetween(initial_time, end_time);
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::DoomEntriesSince(
     const base::Time initial_time, const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::DoomEntriesSince"),
+                          callback)));
   operation->DoomEntriesSince(initial_time);
   PostOperation(operation.get());
 }
@@ -392,7 +422,11 @@ void InFlightBackendIO::DoomEntriesSince(
 void InFlightBackendIO::OpenNextEntry(Rankings::Iterator* iterator,
                                       Entry** next_entry,
                                       const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::OpenNextEntry"),
+                          callback)));
   operation->OpenNextEntry(iterator, next_entry);
   PostOperation(operation.get());
 }
@@ -427,14 +461,22 @@ void InFlightBackendIO::DoomEntryImpl(EntryImpl* entry) {
 }
 
 void InFlightBackendIO::FlushQueue(const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::FlushQueue"),
+                          callback)));
   operation->FlushQueue();
   PostOperation(operation.get());
 }
 
 void InFlightBackendIO::RunTask(
     const base::Closure& task, const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_,
+      tracked_objects::ScopedTracker::TrackCallback(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 InFlightBackendIO::RunTask"),
+          callback)));
   operation->RunTask(task);
   PostOperation(operation.get());
 }
@@ -442,7 +484,11 @@ void InFlightBackendIO::RunTask(
 void InFlightBackendIO::ReadData(EntryImpl* entry, int index, int offset,
                                  net::IOBuffer* buf, int buf_len,
                                  const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::ReadData"),
+                          callback)));
   operation->ReadData(entry, index, offset, buf, buf_len);
   PostOperation(operation.get());
 }
@@ -451,7 +497,11 @@ void InFlightBackendIO::WriteData(EntryImpl* entry, int index, int offset,
                                   net::IOBuffer* buf, int buf_len,
                                   bool truncate,
                                   const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::WriteData"),
+                          callback)));
   operation->WriteData(entry, index, offset, buf, buf_len, truncate);
   PostOperation(operation.get());
 }
@@ -459,7 +509,11 @@ void InFlightBackendIO::WriteData(EntryImpl* entry, int index, int offset,
 void InFlightBackendIO::ReadSparseData(
     EntryImpl* entry, int64 offset, net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::ReadSparseData"),
+                          callback)));
   operation->ReadSparseData(entry, offset, buf, buf_len);
   PostOperation(operation.get());
 }
@@ -467,7 +521,11 @@ void InFlightBackendIO::ReadSparseData(
 void InFlightBackendIO::WriteSparseData(
     EntryImpl* entry, int64 offset, net::IOBuffer* buf, int buf_len,
     const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::WriteSparseData"),
+                          callback)));
   operation->WriteSparseData(entry, offset, buf, buf_len);
   PostOperation(operation.get());
 }
@@ -475,7 +533,11 @@ void InFlightBackendIO::WriteSparseData(
 void InFlightBackendIO::GetAvailableRange(
     EntryImpl* entry, int64 offset, int len, int64* start,
     const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::GetAvailableRange"),
+                          callback)));
   operation->GetAvailableRange(entry, offset, len, start);
   PostOperation(operation.get());
 }
@@ -489,7 +551,11 @@ void InFlightBackendIO::CancelSparseIO(EntryImpl* entry) {
 
 void InFlightBackendIO::ReadyForSparseIO(
     EntryImpl* entry, const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
+  scoped_refptr<BackendIO> operation(new BackendIO(
+      this, backend_, tracked_objects::ScopedTracker::TrackCallback(
+                          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                              "422516 InFlightBackendIO::CancelSparseIO"),
+                          callback)));
   operation->ReadyForSparseIO(entry);
   PostOperation(operation.get());
 }

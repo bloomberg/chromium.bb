@@ -12,27 +12,11 @@ namespace {
 
 ScopedProfile::Mode g_scoped_profile_mode = ScopedProfile::DISABLED;
 
-// Executes |callback|, augmenting it with provided |location|.
-void ExecuteAndTrackCallback(const Location& location,
-                             const base::Closure& callback) {
-  ScopedProfile tracking_profile(location, ScopedProfile::ENABLED);
-  callback.Run();
-}
-
 }  // namespace
 
 // static
 void ScopedTracker::Enable() {
   g_scoped_profile_mode = ScopedProfile::ENABLED;
-}
-
-// static
-base::Closure ScopedTracker::TrackCallback(const Location& location,
-                                           const base::Closure& callback) {
-  if (g_scoped_profile_mode != ScopedProfile::ENABLED)
-    return callback;
-
-  return base::Bind(ExecuteAndTrackCallback, location, callback);
 }
 
 ScopedTracker::ScopedTracker(const Location& location)
