@@ -56,6 +56,28 @@
         ],
       },
     },
+    {
+      # Copy llvm-symbolizer to the product dir so that LKGR bots can package it.
+      'target_name': 'llvm-symbolizer',
+      'type': 'none',
+      'variables': {
+        # Path is relative to this GYP file.
+        'llvm_symbolizer_path':
+            '../../third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer',
+      },
+      'conditions': [
+        ['clang==1', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(llvm_symbolizer_path)',
+              ],
+            },
+          ],
+        }],
+      ],
+    },
   ],
 }
 
