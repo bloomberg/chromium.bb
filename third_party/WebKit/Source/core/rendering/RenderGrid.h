@@ -96,7 +96,7 @@ private:
     GridTrackSizingDirection autoPlacementMinorAxisDirection() const;
 
     void layoutGridItems();
-    void populateGridPositions(const GridSizingData&);
+    void populateGridPositions(const GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
 
     typedef LayoutUnit (RenderGrid::* SizingFunction)(RenderBox&, GridTrackSizingDirection, Vector<GridTrack>&);
     typedef LayoutUnit (GridTrack::* AccumulatorGetter)() const;
@@ -122,6 +122,7 @@ private:
     LayoutUnit endOfRowForChild(const RenderBox& child) const;
     LayoutUnit centeredRowPositionForChild(const RenderBox&) const;
     LayoutUnit rowPositionForChild(const RenderBox&) const;
+    LayoutUnit contentPositionAndDistributionOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, unsigned numberOfItems) const;
     LayoutPoint findChildLogicalPosition(const RenderBox&) const;
     GridCoordinate cachedGridCoordinate(const RenderBox&) const;
 

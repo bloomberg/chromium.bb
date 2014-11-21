@@ -510,7 +510,10 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
 
         tracks[trackIndex].m_usedBreadth = std::max<LayoutUnit>(tracks[trackIndex].m_usedBreadth, normalizedFractionBreadth * trackSize.maxTrackBreadth().flex());
+        availableLogicalSpace -= tracks[trackIndex].m_usedBreadth;
     }
+
+    // FIXME: Should ASSERT flexible tracks exhaust the availableLogicalSpace ? (see issue 739613002).
 }
 
 LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(GridTrackSizingDirection direction, const GridLength& gridLength) const
@@ -1091,13 +1094,15 @@ void RenderGrid::layoutGridItems()
 {
     placeItemsOnGrid();
 
+    LayoutUnit availableSpaceForColumns = availableLogicalWidth();
+    LayoutUnit availableSpaceForRows = availableLogicalHeight(IncludeMarginBorderPadding);
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
-    computeUsedBreadthOfGridTracks(ForColumns, sizingData);
+    computeUsedBreadthOfGridTracks(ForColumns, sizingData, availableSpaceForColumns);
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData.columnTracks));
-    computeUsedBreadthOfGridTracks(ForRows, sizingData);
+    computeUsedBreadthOfGridTracks(ForRows, sizingData, availableSpaceForRows);
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, sizingData.rowTracks));
 
-    populateGridPositions(sizingData);
+    populateGridPositions(sizingData, availableSpaceForColumns, availableSpaceForRows);
     m_gridItemsOverflowingGridArea.resize(0);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
@@ -1165,10 +1170,13 @@ LayoutUnit RenderGrid::gridAreaBreadthForChild(const RenderBox& child, GridTrack
     return gridAreaBreadth;
 }
 
-void RenderGrid::populateGridPositions(const GridSizingData& sizingData)
+void RenderGrid::populateGridPositions(const GridSizingData& sizingData, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows)
 {
-    m_columnPositions.resize(sizingData.columnTracks.size() + 1);
-    m_columnPositions[0] = borderAndPaddingStart();
+    unsigned numberOfColumnTracks = sizingData.columnTracks.size();
+    LayoutUnit columnOffset = contentPositionAndDistributionOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), numberOfColumnTracks);
+
+    m_columnPositions.resize(numberOfColumnTracks + 1);
+    m_columnPositions[0] = borderAndPaddingStart() + columnOffset;
     for (size_t i = 0; i < m_columnPositions.size() - 1; ++i)
         m_columnPositions[i + 1] = m_columnPositions[i] + sizingData.columnTracks[i].m_usedBreadth;
 
@@ -1493,6 +1501,81 @@ LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
         // FIXME: Implement the ItemPositionBaseline value. For now, we always start align the child.
         return startOfRowForChild(child);
     case ItemPositionAuto:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+ContentPosition static resolveContentDistributionFallback(ContentDistributionType distribution)
+{
+    switch (distribution) {
+    case ContentDistributionSpaceBetween:
+        return ContentPositionStart;
+    case ContentDistributionSpaceAround:
+        return ContentPositionCenter;
+    case ContentDistributionSpaceEvenly:
+        return ContentPositionCenter;
+    case ContentDistributionStretch:
+        return ContentPositionStart;
+    case ContentDistributionDefault:
+        return ContentPositionAuto;
+    }
+
+    ASSERT_NOT_REACHED();
+    return ContentPositionAuto;
+}
+
+static inline LayoutUnit offsetToStartEdge(bool isLeftToRight, LayoutUnit availableSpace)
+{
+    return isLeftToRight ? LayoutUnit(0) : availableSpace;
+}
+
+static inline LayoutUnit offsetToEndEdge(bool isLeftToRight, LayoutUnit availableSpace)
+{
+    return !isLeftToRight ? LayoutUnit(0) : availableSpace;
+}
+
+LayoutUnit RenderGrid::contentPositionAndDistributionOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, unsigned numberOfGridTracks) const
+{
+    if (availableFreeSpace <= 0)
+        return 0;
+
+    // FIXME: for the time being, spec states that it will always fallback for Grids, but
+    // discussion is ongoing.
+    if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
+        position = resolveContentDistributionFallback(distribution);
+
+    // FIXME: still pending of implementing support for the <overflow-position> keyword
+    // in justify-content and aling-content properties.
+    switch (position) {
+    case ContentPositionLeft:
+        // If the property's axis is not parallel with the inline axis, this is equivalent to ‘start’.
+        if (!isHorizontalWritingMode())
+            return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionRight:
+        // If the property's axis is not parallel with the inline axis, this is equivalent to ‘start’.
+        if (!isHorizontalWritingMode())
+            return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        return offsetToEndEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionCenter:
+        return availableFreeSpace / 2;
+    case ContentPositionFlexEnd:
+        // Only used in flex layout, for other layout, it's equivalent to 'End'.
+    case ContentPositionEnd:
+        return offsetToEndEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionFlexStart:
+        // Only used in flex layout, for other layout, it's equivalent to 'Start'.
+    case ContentPositionStart:
+        return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionBaseline:
+    case ContentPositionLastBaseline:
+        // FIXME: Implement the previous values. For now, we always start align.
+        // crbug.com/234191
+        return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+    case ContentPositionAuto:
         break;
     }
 
