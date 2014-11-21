@@ -436,6 +436,7 @@ class RemoteDeviceUpdater(object):
     # Used to store a symlink in devserver's static_dir.
     self.static_tempdir = None
 
+  # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
   def GetUpdateStatus(cls, device, keys=None):
     """Returns the status of the update engine on the |device|.

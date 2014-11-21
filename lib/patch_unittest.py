@@ -760,7 +760,7 @@ class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
     output_obj.output = output
     self.PatchObject(cros_patch.LocalPatch, 'Fetch', return_value=output_obj)
     self.PatchObject(git, 'RunGit', return_value=output_obj)
-    patch_info, = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
+    patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)[0]
     self.assertEquals(patch_info.project, self.project)
     self.assertEquals(patch_info.ref, self.branch)
     self.assertEquals(patch_info.tracking_branch, self.tracking_branch)
