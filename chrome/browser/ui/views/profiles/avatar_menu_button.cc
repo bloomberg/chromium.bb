@@ -95,10 +95,11 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 }
 
 // static
-void AvatarMenuButton::GetAvatarImages(Profile* profile,
+bool AvatarMenuButton::GetAvatarImages(Profile* profile,
+                                       bool should_show_avatar_menu,
                                        gfx::Image* avatar,
                                        gfx::Image* taskbar_badge_avatar,
-                                       bool *is_rectangle) {
+                                       bool* is_rectangle) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (profile->GetProfileType() == Profile::GUEST_PROFILE) {
     *avatar = rb.
@@ -113,12 +114,12 @@ void AvatarMenuButton::GetAvatarImages(Profile* profile,
     profiles::GetTransparentBackgroundProfileAvatar(
         profile->GetPath(), taskbar_badge_avatar, &is_badge_rectangle);
 #endif
-  } else if (AvatarMenu::ShouldShowAvatarMenu()) {
+  } else if (should_show_avatar_menu) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index == std::string::npos)
-      return;
+      return false;
 
     if (switches::IsNewAvatarMenu()) {
       *avatar = cache.GetAvatarIconOfProfileAtIndex(index);
@@ -137,6 +138,7 @@ void AvatarMenuButton::GetAvatarImages(Profile* profile,
           profile->GetPath(), avatar, is_rectangle);
     }
   }
+  return true;
 }
 
 // views::ViewTargeterDelegate:

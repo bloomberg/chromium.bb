@@ -54,11 +54,13 @@ class AvatarMenuButton : public views::MenuButton,
   // Get avatar images for the profile.  |avatar| is used in the browser window
   // whereas |taskbar_badge_avatar| is used for the OS taskbar.  If
   // |taskbar_badge_avatar| is empty then |avatar| should be used for the
-  // taskbar as well.
-  static void GetAvatarImages(Profile* profile,
+  // taskbar as well. Returns false if the cache doesn't have an entry for a
+  // Profile::REGULAR_PROFILE type |profile|, otherwise return true.
+  static bool GetAvatarImages(Profile* profile,
+                              bool should_show_avatar_menu,
                               gfx::Image* avatar,
                               gfx::Image* taskbar_badge_avatar,
-                              bool *is_rectangle);
+                              bool* is_rectangle);
 
  private:
   // views::ViewTargeterDelegate:

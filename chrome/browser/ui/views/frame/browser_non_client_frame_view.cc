@@ -126,9 +126,16 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
   bool is_rectangle = false;
-  AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
-                                    &avatar, &taskbar_badge_avatar,
-                                    &is_rectangle);
+
+  // Update the avatar button in the window frame and the taskbar overlay.
+  bool should_show_avatar_menu =
+      avatar_button_ || AvatarMenu::ShouldShowAvatarMenu();
+
+  if (!AvatarMenuButton::GetAvatarImages(
+          browser_view_->browser()->profile(), should_show_avatar_menu, &avatar,
+          &taskbar_badge_avatar, &is_rectangle)) {
+    return;
+  }
 
   // Disable the menu when we should not show the menu.
   if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
@@ -201,8 +208,9 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
   bool is_rectangle;
+  // Only need to update the taskbar overlay here.
   AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
-                                    &avatar, &taskbar_badge_avatar,
-                                    &is_rectangle);
+                                    AvatarMenu::ShouldShowAvatarMenu(), &avatar,
+                                    &taskbar_badge_avatar, &is_rectangle);
   DrawTaskbarDecoration(avatar, taskbar_badge_avatar);
 }
