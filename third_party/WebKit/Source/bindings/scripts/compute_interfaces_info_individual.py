@@ -153,6 +153,9 @@ def collect_union_types_from_definitions(definitions):
             this_union_types.add(callback_function.idl_type)
     for dictionary in definitions.dictionaries.itervalues():
         this_union_types.update(union_types_from(dictionary.members))
+    for idl_type in definitions.typedefs.itervalues():
+        if idl_type.is_union_type:
+            this_union_types.add(idl_type)
     return this_union_types
 
 
@@ -166,6 +169,7 @@ class InterfaceInfoCollector(object):
             'include_paths': [],
         })
         self.union_types = set()
+        self.typedefs = {}
 
     def add_paths_to_partials_dict(self, partial_interface_name, full_path,
                                    include_paths):
@@ -203,6 +207,8 @@ class InterfaceInfoCollector(object):
 
         this_union_types = collect_union_types_from_definitions(definitions)
         self.union_types.update(this_union_types)
+
+        self.typedefs.update(definitions.typedefs)
 
         extended_attributes = definition.extended_attributes
         implemented_as = extended_attributes.get('ImplementedAs')
@@ -256,6 +262,7 @@ class InterfaceInfoCollector(object):
     def get_component_info_as_dict(self):
         """Returns component wide information as a dict."""
         return {
+            'typedefs': self.typedefs,
             'union_types': self.union_types,
         }
 

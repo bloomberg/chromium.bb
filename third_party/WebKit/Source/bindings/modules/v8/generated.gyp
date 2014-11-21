@@ -52,6 +52,7 @@
         # computing dependencies file-by-file in the build.
         # This data is generally stable.
         '<(bindings_modules_output_dir)/InterfacesInfoOverall.pickle',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
         # Further, if any dependency (partial interface or implemented
         # interface) changes, rebuild everything, since every IDL potentially
         # depends on them, because we're not computing dependencies
@@ -76,6 +77,8 @@
         '<(bindings_modules_v8_output_dir)',
         '--interfaces-info',
         '<(bindings_modules_output_dir)/InterfacesInfoOverall.pickle',
+        '--component-info',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '<(RULE_INPUT_PATH)',
@@ -201,6 +204,7 @@
         # computing dependencies file-by-file in the build.
         # This data is generally stable.
         '<(bindings_modules_output_dir)/InterfacesInfoOverall.pickle',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
         # Further, if any dependency (partial interface or implemented
         # interface) changes, rebuild everything, since every IDL potentially
         # depends on them, because we're not computing dependencies
@@ -226,6 +230,8 @@
         '<(bindings_modules_v8_output_dir)',
         '--interfaces-info',
         '<(bindings_modules_output_dir)/InterfacesInfoOverall.pickle',
+        '--component-info',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
         '--target-component',

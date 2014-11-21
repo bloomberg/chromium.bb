@@ -68,7 +68,7 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_generated = modules_generated_dependency_idl_files
   interfaces_info_file =
     "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
-  component_wide_info_file =
+  component_info_file =
     "$bindings_modules_output_dir/ComponentInfoModules.pickle"
   deps = [
     ":modules_core_global_constructors_idls",

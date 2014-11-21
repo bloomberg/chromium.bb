@@ -31,11 +31,7 @@
 Classes are primarily constructors, which build an IdlDefinitions object
 (and various contained objects) from an AST (produced by blink_idl_parser).
 
-This is in two steps:
-* Constructors walk the AST, creating objects.
-* Typedef resolution.
-
-Typedefs are all resolved here, and not stored in IR.
+IR stores typedefs and they are resolved by the code generator.
 
 Typedef resolution uses some auxiliary classes and OOP techniques to make this
 a generic call, via the resolve_typedefs() method.
@@ -110,14 +106,11 @@ class IdlDefinitions(object):
         self.implements = []
         self.interfaces = {}
         self.idl_name = idl_name
+        self.typedefs = {}
 
         node_class = node.GetClass()
         if node_class != 'File':
             raise ValueError('Unrecognized node class: %s' % node_class)
-
-        typedefs = dict((typedef_name, IdlType(type_name))
-                        for typedef_name, type_name in
-                        STANDARD_TYPEDEFS.iteritems())
 
         children = node.GetChildren()
         for child in children:
@@ -131,7 +124,7 @@ class IdlDefinitions(object):
                 self.interfaces[exception.name] = exception
             elif child_class == 'Typedef':
                 type_name = child.GetName()
-                typedefs[type_name] = typedef_node_to_type(child)
+                self.typedefs[type_name] = typedef_node_to_type(child)
             elif child_class == 'Enum':
                 enumeration = IdlEnum(idl_name, child)
                 self.enumerations[enumeration.name] = enumeration
@@ -146,12 +139,12 @@ class IdlDefinitions(object):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
-        # Typedefs are not stored in IR:
-        # Resolve typedefs with the actual types and then discard the Typedefs.
-        # http://www.w3.org/TR/WebIDL/#idl-typedefs
-        self.resolve_typedefs(typedefs)
-
     def resolve_typedefs(self, typedefs):
+        # Resolve typedefs with the actual types.
+        # http://www.w3.org/TR/WebIDL/#idl-typedefs
+        typedefs.update(dict((typedef_name, IdlType(type_name))
+                        for typedef_name, type_name in
+                        STANDARD_TYPEDEFS.iteritems()))
         for callback_function in self.callback_functions.itervalues():
             callback_function.resolve_typedefs(typedefs)
         for interface in self.interfaces.itervalues():

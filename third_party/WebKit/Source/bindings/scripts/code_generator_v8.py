@@ -116,9 +116,10 @@ def set_global_type_info(interfaces_info):
 class CodeGeneratorBase(object):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
-    def __init__(self, interfaces_info, cache_dir, output_dir):
+    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
         interfaces_info = interfaces_info or {}
         self.interfaces_info = interfaces_info
+        self.component_info = component_info
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
         set_global_type_info(interfaces_info)
@@ -129,6 +130,8 @@ class CodeGeneratorBase(object):
         IdlType.set_callback_functions(definitions.callback_functions.keys())
         IdlType.set_enums((enum.name, enum.values)
                           for enum in definitions.enumerations.values())
+        # Resolve typedefs
+        definitions.resolve_typedefs(self.component_info['typedefs'])
         return self.generate_code_internal(definitions, definition_name)
 
     def generate_code_internal(self, definitions, definition_name):
@@ -137,8 +140,8 @@ class CodeGeneratorBase(object):
 
 
 class CodeGeneratorV8(CodeGeneratorBase):
-    def __init__(self, interfaces_info, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, interfaces_info, cache_dir, output_dir)
+    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, interfaces_info, component_info, cache_dir, output_dir)
 
     def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir,
@@ -221,8 +224,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
 
 
 class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
-    def __init__(self, interfaces_info, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, interfaces_info, cache_dir, output_dir)
+    def __init__(self, interfaces_info, component_info, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, interfaces_info, component_info, cache_dir, output_dir)
 
     def output_paths(self, definition_name, interface_info):
         output_dir = posixpath.join(self.output_dir,
