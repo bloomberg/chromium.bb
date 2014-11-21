@@ -53,8 +53,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 };
 
 FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
-    : folder_item_(NULL),
-      back_button_(new views::ImageButton(this)),
+    : folder_item_(nullptr),
+      back_button_(nullptr),
       folder_name_view_(new FolderNameView),
       folder_name_placeholder_text_(
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
@@ -62,15 +62,19 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
       delegate_(delegate),
       folder_name_visible_(true) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  back_button_->SetImage(views::ImageButton::STATE_NORMAL,
-      rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-      views::ImageButton::ALIGN_MIDDLE);
-  AddChildView(back_button_);
-  back_button_->SetFocusable(true);
-  back_button_->SetAccessibleName(
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-          IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
+  if (!app_list::switches::IsExperimentalAppListEnabled()) {
+    back_button_ = new views::ImageButton(this);
+    back_button_->SetImage(
+        views::ImageButton::STATE_NORMAL,
+        rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
+    back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                    views::ImageButton::ALIGN_MIDDLE);
+    AddChildView(back_button_);
+    back_button_->SetFocusable(true);
+    back_button_->SetAccessibleName(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME));
+  }
 
   folder_name_view_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::MediumFont));
@@ -157,15 +161,13 @@ void FolderHeaderView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  gfx::Rect back_bounds(rect);
-  back_bounds.set_width(kIconDimension + 2 * kBackButtonPadding);
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    // Align the left edge of the button image with the left margin of the
-    // launcher window. Note that this means the physical button dimensions
-    // extends slightly into the margin.
-    back_bounds.set_x(kExperimentalWindowPadding - kBackButtonPadding);
+  if (!switches::IsExperimentalAppListEnabled()) {
+    gfx::Rect back_bounds;
+    DCHECK(back_button_);
+    back_bounds = rect;
+    back_bounds.set_width(kIconDimension + 2 * kBackButtonPadding);
+    back_button_->SetBoundsRect(back_bounds);
   }
-  back_button_->SetBoundsRect(back_bounds);
 
   gfx::Rect text_bounds(rect);
   base::string16 text = folder_item_ && !folder_item_->name().empty()
@@ -176,7 +178,7 @@ void FolderHeaderView::Layout() {
       folder_name_view_->GetCaretBounds().width() +
       folder_name_view_->GetInsets().width();
   text_width = std::min(text_width, kMaxFolderNameWidth);
-  text_bounds.set_x(back_bounds.x() + (rect.width() - text_width) / 2);
+  text_bounds.set_x(rect.x() + (rect.width() - text_width) / 2);
   text_bounds.set_width(text_width);
   text_bounds.ClampToCenteredSize(gfx::Size(text_bounds.width(),
       folder_name_view_->GetPreferredSize().height()));
