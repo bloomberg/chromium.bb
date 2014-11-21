@@ -59,6 +59,10 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
   // There are no formally defined accelerators we can query so we assume
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
   switch (command_id) {
+    case IDC_BACK:
+      *accel = ui::Accelerator(ui::VKEY_LEFT, ui::EF_ALT_DOWN);
+      return true;
+
     case IDC_CONTENT_CONTEXT_UNDO:
       *accel = ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
       return true;
@@ -103,12 +107,20 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = ui::Accelerator(ui::VKEY_OEM_6, ui::EF_CONTROL_DOWN);
       return true;
 
+    case IDC_FORWARD:
+      *accel = ui::Accelerator(ui::VKEY_RIGHT, ui::EF_ALT_DOWN);
+      return true;
+
     case IDC_PRINT:
       *accel = ui::Accelerator(ui::VKEY_P, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_RELOAD:
       *accel = ui::Accelerator(ui::VKEY_R, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDC_SAVE_PAGE:
+      *accel = ui::Accelerator(ui::VKEY_S, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_VIEW_SOURCE:
