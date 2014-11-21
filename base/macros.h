@@ -13,8 +13,6 @@
 #include <stddef.h>  // For size_t.
 #include <string.h>  // For memcpy.
 
-#include "base/compiler_specific.h"  // For ALLOW_UNUSED.
-
 // Put this in the private: declarations for a class to be uncopyable.
 #define DISALLOW_COPY(TypeName) \
   TypeName(const TypeName&)

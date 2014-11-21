@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_BATTERY_STATUS_BATTERY_STATUS_DISPATCHER_H_
 #define CONTENT_RENDERER_BATTERY_STATUS_BATTERY_STATUS_DISPATCHER_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "device/battery/battery_monitor.mojom.h"

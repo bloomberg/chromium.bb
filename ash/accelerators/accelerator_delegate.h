@@ -6,6 +6,7 @@
 #define ASH_ACCELERATORS_ACCELERATOR_DELEGATE_H_
 
 #include "ash/ash_export.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/wm/core/accelerator_delegate.h"
 

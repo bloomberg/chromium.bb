@@ -6,6 +6,7 @@
 
 #include <X11/Xlib.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 
 namespace ui {

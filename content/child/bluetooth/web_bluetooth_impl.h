@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 #define CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebBluetooth.h"
 #include "third_party/WebKit/public/platform/WebBluetoothError.h"
