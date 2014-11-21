@@ -17,9 +17,11 @@
         '../testing/gtest.gyp:gtest',
         'ios_base.gyp:ios_consumer_base',
         'web/ios_web.gyp:ios_web',
+        'web/ios_web.gyp:test_support_ios_web',
       ],
       'sources': [
         'consumer/base/supports_user_data_unittest.cc',
+        'web/browser_state_unittest.cc',
         'web/navigation/navigation_item_impl_unittest.mm',
       ],
     },

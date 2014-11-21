@@ -34,6 +34,11 @@ class BrowserState : public base::SupportsUserData {
   // BrowserState.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
+  // Safely cast a base::SupportsUserData to a BrowserState. Returns nullptr
+  // if |supports_user_data| is not a BrowserState.
+  static BrowserState* FromSupportsUserData(
+      base::SupportsUserData* supports_user_data);
+
  protected:
   BrowserState();
 };
