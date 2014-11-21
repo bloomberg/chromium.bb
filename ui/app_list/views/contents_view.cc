@@ -200,8 +200,16 @@ void ContentsView::ActivePageChanged() {
 
   app_list_main_view_->model()->SetState(state);
 
+  // Set the visibility of the search box's back button.
+  if (switches::IsExperimentalAppListEnabled()) {
+    DCHECK(start_page_view_);
+    app_list_main_view_->search_box_view()->back_button()->SetVisible(
+        state != AppListModel::STATE_START);
+    app_list_main_view_->search_box_view()->Layout();
+  }
+
   // TODO(xiyuan): Highlight default match instead of the first.
-  if (IsStateActive(AppListModel::STATE_SEARCH_RESULTS) &&
+  if (state == AppListModel::STATE_SEARCH_RESULTS &&
       search_results_list_view_ && search_results_list_view_->visible()) {
     search_results_list_view_->OnContainerSelected(false);
   }
@@ -363,6 +371,34 @@ gfx::Rect ContentsView::GetCustomPageCollapsedBounds() const {
   int page_height = bounds.height();
   bounds.set_y(page_height - kCustomPageCollapsedHeight);
   return bounds;
+}
+
+bool ContentsView::Back() {
+  AppListModel::State state = view_to_state_[GetActivePageIndex()];
+  switch (state) {
+    case AppListModel::STATE_START:
+      // Close the app list when Back() is called from the start page.
+      return false;
+    case AppListModel::STATE_CUSTOM_LAUNCHER_PAGE:
+      // TODO(calamity): send an API message to let the custom launcher page
+      // handle the back button if it wants to.
+      SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
+      break;
+    case AppListModel::STATE_APPS:
+      if (apps_container_view_->IsInFolderView())
+        apps_container_view_->app_list_folder_view()->CloseFolderPage();
+      else
+        SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
+      break;
+    case AppListModel::STATE_SEARCH_RESULTS:
+      app_list_main_view_->search_box_view()->ClearSearch();
+      ShowSearchResults(false);
+      break;
+    case AppListModel::INVALID_STATE:
+      NOTREACHED();
+      break;
+  }
+  return true;
 }
 
 gfx::Size ContentsView::GetDefaultContentsSize() const {

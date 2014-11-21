@@ -20,13 +20,14 @@ namespace test {
 class ContentsViewTest : public testing::Test {
  public:
   ContentsViewTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalAppList);
+
     delegate_.reset(new AppListTestViewDelegate());
     main_view_.reset(new app_list::AppListMainView(delegate_.get()));
     search_box_view_.reset(
         new SearchBoxView(main_view_.get(), delegate_.get()));
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAppList);
     main_view_->Init(NULL, 0, search_box_view_.get());
     DCHECK(GetContentsView());
   }

@@ -112,6 +112,8 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     last_query_ = sender->search_box()->text();
   }
 
+  void BackButtonPressed() override {}
+
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;
   SearchBoxView* view_;

@@ -52,6 +52,7 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
 
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(SearchBoxView* sender) override;
+  void BackButtonPressed() override;
 
   // The parent view of ContentsView which is the parent of this view.
   AppListMainView* app_list_main_view_;

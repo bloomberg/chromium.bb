@@ -82,10 +82,20 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       view_delegate_(view_delegate),
       model_(NULL),
       icon_view_(NULL),
+      back_button_(NULL),
       speech_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
   if (switches::IsExperimentalAppListEnabled()) {
+    back_button_ = new views::ImageButton(this);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    back_button_->SetImage(
+        views::ImageButton::STATE_NORMAL,
+        rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
+    back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                    views::ImageButton::ALIGN_MIDDLE);
+    AddChildView(back_button_);
+
     set_background(new ExperimentalSearchBoxBackground());
   } else {
     set_background(
@@ -207,8 +217,12 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
-  DCHECK(speech_button_ && sender == speech_button_);
-  view_delegate_->ToggleSpeechRecognition();
+  if (back_button_ && sender == back_button_)
+    delegate_->BackButtonPressed();
+  else if (speech_button_ && sender == speech_button_)
+    view_delegate_->ToggleSpeechRecognition();
+  else
+    NOTREACHED();
 }
 
 void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {

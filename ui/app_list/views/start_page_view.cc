@@ -50,6 +50,7 @@ class DummySearchBoxView : public SearchBoxView {
   DummySearchBoxView(SearchBoxViewDelegate* delegate,
                      AppListViewDelegate* view_delegate)
       : SearchBoxView(delegate, view_delegate) {
+    back_button()->SetVisible(false);
   }
 
   ~DummySearchBoxView() override {}
@@ -202,6 +203,9 @@ void StartPageView::QueryChanged(SearchBoxView* sender) {
   app_list_main_view_->OnStartPageSearchTextfieldChanged(
       sender->search_box()->text());
   sender->search_box()->SetText(base::string16());
+}
+
+void StartPageView::BackButtonPressed() {
 }
 
 }  // namespace app_list

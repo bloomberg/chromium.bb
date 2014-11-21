@@ -97,6 +97,9 @@ class AppListViewTestContext {
   // view to be shown.
   void RunReshowWithOpenFolderTest();
 
+  // Tests that pressing the search box's back button navigates correctly.
+  void RunBackTest();
+
   // Tests displaying of the experimental app list and shows the start page.
   void RunStartPageTest();
 
@@ -215,6 +218,7 @@ void AppListViewTestContext::CheckView(views::View* subview) {
   EXPECT_TRUE(subview->parent());
   EXPECT_TRUE(subview->visible());
   EXPECT_TRUE(subview->IsDrawn());
+  EXPECT_FALSE(subview->bounds().IsEmpty());
 }
 
 bool AppListViewTestContext::SetAppListState(AppListModel::State state) {
@@ -347,6 +351,63 @@ void AppListViewTestContext::RunReshowWithOpenFolderTest() {
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
   EXPECT_NO_FATAL_FAILURE(CheckView(container_view->apps_grid_view()));
   EXPECT_FALSE(container_view->app_list_folder_view()->visible());
+
+  Close();
+}
+
+void AppListViewTestContext::RunBackTest() {
+  if (test_type_ != EXPERIMENTAL) {
+    Close();
+    return;
+  }
+
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
+
+  Show();
+
+  AppListMainView* main_view = view_->app_list_main_view();
+  ContentsView* contents_view = main_view->contents_view();
+  SearchBoxView* search_box_view = main_view->search_box_view();
+
+  // Show the apps grid.
+  SetAppListState(AppListModel::STATE_APPS);
+  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
+
+  // The back button should return to the start page.
+  EXPECT_TRUE(contents_view->Back());
+  contents_view->Layout();
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_START));
+  EXPECT_FALSE(search_box_view->back_button()->visible());
+
+  // Show the apps grid again.
+  SetAppListState(AppListModel::STATE_APPS);
+  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
+
+  // Pressing ESC should return to the start page.
+  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  contents_view->Layout();
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_START));
+  EXPECT_FALSE(search_box_view->back_button()->visible());
+
+  // Pressing ESC from the start page should close the app list.
+  EXPECT_EQ(0, delegate_->dismiss_count());
+  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  EXPECT_EQ(1, delegate_->dismiss_count());
+
+  // Show the search results.
+  base::string16 new_search_text = base::UTF8ToUTF16("apple");
+  search_box_view->search_box()->SetText(base::string16());
+  search_box_view->search_box()->InsertText(new_search_text);
+  contents_view->Layout();
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_SEARCH_RESULTS));
+  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
+
+  // The back button should return to the start page.
+  EXPECT_TRUE(contents_view->Back());
+  contents_view->Layout();
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_START));
+  EXPECT_FALSE(search_box_view->back_button()->visible());
 
   Close();
 }
@@ -737,6 +798,15 @@ TEST_P(AppListViewTestAura, SearchResultsTest) {
 
 TEST_P(AppListViewTestDesktop, SearchResultsTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunSearchResultsTest());
+}
+
+// Tests that the back button navigates through the app list correctly.
+TEST_P(AppListViewTestAura, BackTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunBackTest());
+}
+
+TEST_P(AppListViewTestDesktop, BackTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunBackTest());
 }
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,

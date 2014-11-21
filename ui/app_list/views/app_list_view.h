@@ -121,6 +121,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel();
 
+  // Overridden from views::View:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void Layout() override;
+  void SchedulePaintInRect(const gfx::Rect& rect) override;
+
  private:
   friend class ::test::AppListViewTestApi;
 
@@ -139,11 +144,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   gfx::ImageSkia GetWindowIcon() override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(gfx::Path* mask) const override;
-
-  // Overridden from views::View:
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  void Layout() override;
-  void SchedulePaintInRect(const gfx::Rect& rect) override;
 
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

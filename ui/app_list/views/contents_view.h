@@ -126,6 +126,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     return GetAnimatorForTransition(from_page, to_page, reverse);
   }
 
+  // Performs the 'back' action for the active page. Returns whether the action
+  // was handled.
+  bool Back();
+
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
