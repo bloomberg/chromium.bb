@@ -1,0 +1,32 @@
+
+Tests that debugger will step through Promise handlers while not stepping into V8 internal scripts.
+
+Set timer for test function.
+Call stack:
+    0) p1 (debugger-step-through-promises.html:12)
+
+Executing StepInto...
+Call stack:
+    0) p1 (debugger-step-through-promises.html:13)
+
+Executing StepInto...
+Call stack:
+    0) p2 (debugger-step-through-promises.html:17)
+
+Executing StepOver...
+Call stack:
+    0) p2 (debugger-step-through-promises.html:18)
+
+Executing StepOver...
+Call stack:
+    0) p2 (debugger-step-through-promises.html:19)
+
+Executing StepOver...
+Call stack:
+    0) p3 (debugger-step-through-promises.html:23)
+
+Executing StepOver...
+Call stack:
+    0) p3 (debugger-step-through-promises.html:24)
+
+
