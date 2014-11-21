@@ -95,6 +95,8 @@
           'sources': [
             'keyed_service/ios/browser_state_dependency_manager.cc',
             'keyed_service/ios/browser_state_dependency_manager.h',
+            'keyed_service/ios/browser_state_helper.cc',
+            'keyed_service/ios/browser_state_helper.h',
             'keyed_service/ios/browser_state_keyed_service_factory.cc',
             'keyed_service/ios/browser_state_keyed_service_factory.h',
             'keyed_service/ios/refcounted_browser_state_keyed_service_factory.cc',

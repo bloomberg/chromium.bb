@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/keyed_service/ios/browser_state_helper.h"
 #include "ios/web/public/browser_state.h"
 
 void BrowserStateKeyedServiceFactory::SetTestingFactory(
@@ -27,7 +28,7 @@ KeyedService* BrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
 
 BrowserStateKeyedServiceFactory::BrowserStateKeyedServiceFactory(
     const char* name,
-    BrowserStateDependencyManager* manager)
+    /*BrowserState*/DependencyManager* manager)
     : KeyedServiceFactory(name, manager) {
 }
 
@@ -75,12 +76,12 @@ void BrowserStateKeyedServiceFactory::BrowserStateDestroyed(
 
 KeyedService* BrowserStateKeyedServiceFactory::BuildServiceInstanceFor(
     base::SupportsUserData* context) const {
-  return BuildServiceInstanceFor(static_cast<web::BrowserState*>(context));
+  return BuildServiceInstanceFor(BrowserStateFromContext(context));
 }
 
 bool BrowserStateKeyedServiceFactory::IsOffTheRecord(
     base::SupportsUserData* context) const {
-  return static_cast<web::BrowserState*>(context)->IsOffTheRecord();
+  return BrowserStateFromContext(context)->IsOffTheRecord();
 }
 
 user_prefs::PrefRegistrySyncable*
@@ -92,7 +93,7 @@ BrowserStateKeyedServiceFactory::GetAssociatedPrefRegistry(
 
 base::SupportsUserData* BrowserStateKeyedServiceFactory::GetContextToUse(
     base::SupportsUserData* context) const {
-  return GetBrowserStateToUse(static_cast<web::BrowserState*>(context));
+  return GetBrowserStateToUse(BrowserStateFromContext(context));
 }
 
 bool BrowserStateKeyedServiceFactory::ServiceIsCreatedWithContext() const {
@@ -101,12 +102,12 @@ bool BrowserStateKeyedServiceFactory::ServiceIsCreatedWithContext() const {
 
 void BrowserStateKeyedServiceFactory::ContextShutdown(
     base::SupportsUserData* context) {
-  BrowserStateShutdown(static_cast<web::BrowserState*>(context));
+  BrowserStateShutdown(BrowserStateFromContext(context));
 }
 
 void BrowserStateKeyedServiceFactory::ContextDestroyed(
     base::SupportsUserData* context) {
-  BrowserStateDestroyed(static_cast<web::BrowserState*>(context));
+  BrowserStateDestroyed(BrowserStateFromContext(context));
 }
 
 void BrowserStateKeyedServiceFactory::RegisterPrefs(

@@ -62,7 +62,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserStateKeyedServiceFactory
   //   }
   RefcountedBrowserStateKeyedServiceFactory(
       const char* name,
-      BrowserStateDependencyManager* manager);
+      /*BrowserState*/DependencyManager* manager);
   ~RefcountedBrowserStateKeyedServiceFactory() override;
 
   // Common implementation that maps |context| to some service object. Deals

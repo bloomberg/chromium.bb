@@ -56,7 +56,7 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
   //         BrowserStateDependencyManager::GetInstance()) {
   //   }
   BrowserStateKeyedServiceFactory(const char* name,
-                                  BrowserStateDependencyManager* manager);
+                                  /*BrowserState*/DependencyManager* manager);
   ~BrowserStateKeyedServiceFactory() override;
 
   // Common implementation that maps |context| to some service object. Deals
