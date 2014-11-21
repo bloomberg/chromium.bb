@@ -395,6 +395,11 @@ typedef struct {
 /** Detached thread type; for use with pthread_attr_setdetachstate(). */
 #define PTHREAD_CREATE_DETACHED 0
 
+/** For use with pthread_attr_setscope(). */
+#define PTHREAD_SCOPE_PROCESS 0
+/** For use with pthread_attr_setscope(). */
+#define PTHREAD_SCOPE_SYSTEM  1
+
 /** Minimum stack size; for use with pthread_attr_setstacksize(). */
 #define PTHREAD_STACK_MIN     (1024)
 
@@ -543,6 +548,33 @@ extern int pthread_attr_setdetachstate(pthread_attr_t *attr,
 */
 extern int pthread_attr_getdetachstate(const pthread_attr_t *attr,
                                        int *detachstate);
+
+/** @nqPosix
+* Sets the contention scope attribute in thread attributes.
+* Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
+*
+* @linkPthread
+*
+* @param attr Pointer to thread attributes structure.
+* @param scope Value to be set, determines the contention scope of the thread.
+*
+* @return 0 on success, non-zero error code otherwise.
+*/
+extern int pthread_attr_setscope(pthread_attr_t *attr, int scope);
+
+/** @nqPosix
+* Gets the contention scope attribute from thread attributes.
+* Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
+*
+* @linkPthread
+*
+* @param attr Pointer to thread attributes structure.
+* @param scope Location where the value of `scope` is stored upon
+* successful completion.
+*
+* @return 0 on success, non-zero error code otherwise.
+*/
+extern int pthread_attr_getscope(const pthread_attr_t *attr, int *scope);
 
 /** @nqPosix
 * Sets the stacksize attribute in thread attributes.  Has no effect if the

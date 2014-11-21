@@ -682,6 +682,21 @@ int pthread_attr_getdetachstate(const pthread_attr_t *attr,
   return attr->joinable;
 }
 
+int pthread_attr_setscope(pthread_attr_t *attr, int scope) {
+  if (scope == PTHREAD_SCOPE_PROCESS) {
+    return ENOTSUP;
+  }
+  if (scope != PTHREAD_SCOPE_SYSTEM) {
+    return EINVAL;
+  }
+  return 0;
+}
+
+int pthread_attr_getscope(const pthread_attr_t *attr, int *scope) {
+  *scope = PTHREAD_SCOPE_SYSTEM;
+  return 0;
+}
+
 int pthread_attr_setstacksize(pthread_attr_t *attr,
                               size_t stacksize) {
   if (NULL == attr) {

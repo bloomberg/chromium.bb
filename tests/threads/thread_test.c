@@ -840,9 +840,32 @@ static void TestCondvarTimeout(void) {
   TEST_FUNCTION_END;
 }
 
+void TestScope(void) {
+  pthread_attr_t attr;
+  int scope;
+
+  TEST_FUNCTION_START;
+
+  /* Check that the default scope is PTHREAD_SCOPE_SYSTEM */
+  CHECK_OK(pthread_attr_init(&attr));
+  CHECK_OK(pthread_attr_getscope(&attr, &scope));
+  EXPECT_EQ(PTHREAD_SCOPE_SYSTEM, scope);
+
+  /* Setting to PTHREAD_SCOPE_PROCESS is invalid */
+  EXPECT_EQ(ENOTSUP, pthread_attr_setscope(&attr, PTHREAD_SCOPE_PROCESS));
+  EXPECT_EQ(EINVAL, pthread_attr_setscope(&attr, 0xff));
+
+  /* Setting to PTHREAD_SCOPE_SYSTEM should work (no-op) */
+  CHECK_OK(pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM));
+
+  TEST_FUNCTION_END;
+}
+
 void TestStackSize(void) {
   pthread_attr_t attr;
   size_t stack_size, stack_size2;
+
+  TEST_FUNCTION_START;
 
   CHECK_OK(pthread_attr_init(&attr));
   CHECK_OK(pthread_attr_getstacksize(&attr, &stack_size));
@@ -852,6 +875,8 @@ void TestStackSize(void) {
   CHECK_OK(pthread_attr_getstacksize(&attr, &stack_size2));
 
   EXPECT_EQ(stack_size, stack_size2);
+
+  TEST_FUNCTION_END;
 }
 
 struct MutexClaimerThreadArgs {
@@ -958,6 +983,7 @@ int main(int argc, char *argv[]) {
   TestCondvar();
   TestCondvarTimeout();
   TestStackSize();
+  TestScope();
   TestErrorcheckMutexWorksWithCondvarTimeout();
 
   return g_errors;
