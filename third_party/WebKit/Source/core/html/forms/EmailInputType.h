@@ -46,6 +46,7 @@ private:
     virtual bool typeMismatchFor(const String&) const override;
     virtual bool typeMismatch() const override;
     virtual String typeMismatchText() const override;
+    virtual void warnIfValueIsInvalid(const String&) const override;
     virtual bool supportsSelectionAPI() const override;
     virtual String sanitizeValue(const String&) const override;
     virtual String convertFromVisibleValue(const String&) const override;

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<div id="container">
+<input type="email">
+<input type="email" style="visibility: hidden;">
+<input type="email" style="display: none;">
+<input type="email" value="parsing&#x263A;"><!-- This should show one warning. -->
+<input value="value-before-type&#x263A;" type="email"><!-- This should show one warning. -->
+<input value="valid@example.com, invalid-in-multiple&#x263A;" type="email" multiple><!-- This should show one warning. -->
+</div>
+<script>
+var inputs = document.querySelectorAll('input');
+var visibleInput = inputs[0];
+var invisibleInput2 = inputs[1];
+var invisibleInput3 = inputs[2];
+// Force layout.  The warning message behavior depends on computed style.
+visibleInput.offsetWidth;
+
+debug('Invisible INPUT element should not show a format warning.');
+invisibleInput2.value = ':)';
+invisibleInput3.value = ':)';
+debug('');
+
+debug('Visible INPUT element should show a format warning. We\'ll see three warnings.');
+visibleInput.setAttribute('value', 'Invalid attribute value'); // This shows a warning.
+visibleInput.type = 'text';
+visibleInput.type = 'email'; // This shows a warning again.
+
+visibleInput.offsetWidth;
+visibleInput.value = 'Invalid IDL value'; // This shows a warning.
+visibleInput.type = 'text';
+visibleInput.type = 'email'; // This doesn't show a warning.
+
+document.querySelector('#container').remove();
+</script>
+</body>

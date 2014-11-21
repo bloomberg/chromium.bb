@@ -237,6 +237,29 @@ String EmailInputType::typeMismatchText() const
     return locale().queryString(WebLocalizedString::ValidationTypeMismatchForEmail);
 }
 
+static String escapeNonASCII(const String& source)
+{
+    StringBuilder builder;
+    builder.reserveCapacity(source.length());
+    for (unsigned i = 0; i < source.length(); ++i) {
+        if (isASCIIPrintable(source[i])) {
+            builder.append(source[i]);
+            continue;
+        }
+        builder.append(String::format("\\u%04x", source[i]));
+    }
+    return builder.toString();
+}
+
+void EmailInputType::warnIfValueIsInvalid(const String& value) const
+{
+    String invalidAddress = findInvalidAddress(value);
+    if (invalidAddress.isNull())
+        return;
+    element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
+        String::format("The specified value '%s' is not a valid email address.", escapeNonASCII(invalidAddress).utf8().data())));
+}
+
 bool EmailInputType::supportsSelectionAPI() const
 {
     return false;
