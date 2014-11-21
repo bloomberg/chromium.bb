@@ -320,6 +320,8 @@
       'browser/android/in_process/synchronous_compositor_impl.h',
       'browser/android/in_process/synchronous_compositor_output_surface.cc',
       'browser/android/in_process/synchronous_compositor_output_surface.h',
+      'browser/android/in_process/synchronous_compositor_registry.cc',
+      'browser/android/in_process/synchronous_compositor_registry.h',
       'browser/android/in_process/synchronous_input_event_filter.cc',
       'browser/android/in_process/synchronous_input_event_filter.h',
       'browser/android/interstitial_page_delegate_android.cc',

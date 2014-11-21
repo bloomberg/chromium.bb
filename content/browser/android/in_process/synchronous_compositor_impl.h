@@ -39,7 +39,6 @@ struct DidOverscrollParams;
 class SynchronousCompositorImpl
     : public cc::LayerScrollOffsetDelegate,
       public SynchronousCompositor,
-      public SynchronousCompositorOutputSurfaceDelegate,
       public WebContentsUserData<SynchronousCompositorImpl> {
  public:
   // When used from browser code, use both |process_id| and |routing_id|.
@@ -50,15 +49,16 @@ class SynchronousCompositorImpl
 
   InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
 
-  void DidInitializeExternalBeginFrameSource(
+  // Called by SynchronousCompositorRegistry.
+  void DidInitializeRendererObjects(
+      SynchronousCompositorOutputSurface* output_surface,
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source);
-  void DidDestroyExternalBeginFrameSource(
-      SynchronousCompositorExternalBeginFrameSource* begin_frame_source);
+  void DidDestroyRendererObjects();
+
+  // Called by SynchronousCompositorExternalBeginFrameSource.
   void NeedsBeginFramesChanged() const;
 
   // SynchronousCompositor
-  virtual void SetClient(SynchronousCompositorClient* compositor_client)
-      override;
   virtual bool InitializeHwDraw() override;
   virtual void ReleaseHwDraw() override;
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
@@ -73,13 +73,6 @@ class SynchronousCompositorImpl
       const cc::CompositorFrameAck& frame_ack) override;
   virtual void SetMemoryPolicy(size_t bytes_limit) override;
   virtual void DidChangeRootLayerScrollOffset() override;
-
-  // SynchronousCompositorOutputSurfaceDelegate
-  virtual void DidBindOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) override;
-  virtual void DidDestroySynchronousOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) override;
-  virtual void DidActivatePendingTree() override;
 
   // LayerScrollOffsetDelegate
   virtual gfx::ScrollOffset GetTotalScrollOffset() override;
@@ -97,12 +90,15 @@ class SynchronousCompositorImpl
   void DidStopFlinging();
 
  private:
+  friend class WebContentsUserData<SynchronousCompositorImpl>;
+  friend class SynchronousCompositor;
   explicit SynchronousCompositorImpl(WebContents* contents);
   virtual ~SynchronousCompositorImpl();
-  friend class WebContentsUserData<SynchronousCompositorImpl>;
 
+  void SetClient(SynchronousCompositorClient* compositor_client);
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
   void NotifyDidDestroyCompositorToClient();
+  void DidActivatePendingTree();
   void DeliverMessages();
   bool CalledOnValidThread() const;
 
@@ -110,6 +106,7 @@ class SynchronousCompositorImpl
   SynchronousCompositorOutputSurface* output_surface_;
   SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
   WebContents* contents_;
+  const int routing_id_;
   cc::InputHandler* input_handler_;
   bool invoking_composite_;
 

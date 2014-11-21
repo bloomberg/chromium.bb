@@ -15,8 +15,9 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   TestSynchronousCompositor();
   ~TestSynchronousCompositor() override;
 
+  void SetClient(SynchronousCompositorClient* client);
+
   // SynchronousCompositor overrides.
-  void SetClient(SynchronousCompositorClient* client) override;
   bool InitializeHwDraw() override;
   void ReleaseHwDraw() override;
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(

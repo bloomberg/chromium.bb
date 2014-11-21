@@ -41,12 +41,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   static void SetClientForWebContents(WebContents* contents,
                                       SynchronousCompositorClient* client);
 
-  // Allows changing or resetting the client to NULL (this must be used if
-  // the client is being deleted prior to the DidDestroyCompositor() call
-  // being received by the client). Ownership of |client| remains with
-  // the caller.
-  virtual void SetClient(SynchronousCompositorClient* client) = 0;
-
   static void SetGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 

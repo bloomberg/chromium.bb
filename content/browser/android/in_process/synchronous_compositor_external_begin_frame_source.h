@@ -29,12 +29,13 @@ class SynchronousCompositorExternalBeginFrameSource
   void SetClientReady() override;
 
  private:
-  int routing_id_;
+  bool CalledOnValidThread() const;
+
+  const int routing_id_;
+  bool registered_;
 
   // Not owned. This can be null when compositor is gone first than BFS.
   SynchronousCompositorImpl* compositor_;
-
-  bool CalledOnValidThread() const;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorExternalBeginFrameSource);
 };

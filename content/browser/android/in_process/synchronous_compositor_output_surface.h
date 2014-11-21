@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,25 +36,12 @@ class SynchronousCompositorExternalBeginFrameSource;
 class SynchronousCompositorOutputSurface;
 class WebGraphicsContext3DCommandBufferImpl;
 
-class SynchronousCompositorOutputSurfaceDelegate {
- public:
-   virtual void DidBindOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) = 0;
-  virtual void DidDestroySynchronousOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface) = 0;
-  virtual void DidActivatePendingTree() = 0;
-
- protected:
-  SynchronousCompositorOutputSurfaceDelegate() {}
-  virtual ~SynchronousCompositorOutputSurfaceDelegate() {}
-};
-
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
 // layer, instead of driven by the compositor internals - hence it holds two
 // 'client' pointers (|client_| in the OutputSurface baseclass and
-// GetDelegate()) which represent the consumers of the two roles in plays.
+// |delegate_|) which represent the consumers of the two roles in plays.
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousCompositorOutputSurface
@@ -69,6 +57,9 @@ class SynchronousCompositorOutputSurface
   virtual void Reshape(const gfx::Size& size, float scale_factor) override;
   virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
+  void SetBeginFrameSource(
+      SynchronousCompositorExternalBeginFrameSource* begin_frame_source);
+
   // Partial SynchronousCompositor API implementation.
   bool InitializeHwDraw(
       scoped_refptr<cc::ContextProvider> onscreen_context_provider);
@@ -83,12 +74,8 @@ class SynchronousCompositorOutputSurface
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
+  void SetTreeActivationCallback(const base::Closure& callback);
   void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
-
-  void set_external_begin_frame_source(
-      SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
-    begin_frame_source_ = begin_frame_source;
-  }
 
  private:
   class SoftwareDevice;
@@ -101,9 +88,9 @@ class SynchronousCompositorOutputSurface
                        gfx::Transform transform_for_tile_priority,
                        bool hardware_draw);
   bool CalledOnValidThread() const;
-  SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
-  int routing_id_;
+  const int routing_id_;
+  bool registered_;
 
   gfx::Transform cached_hw_transform_;
   gfx::Rect cached_hw_viewport_;
