@@ -54,6 +54,7 @@ class PageCyclerIntlJaZh(_PageCycler):
   page_set = page_sets.IntlJaZhPageSet
 
 
+@benchmark.Disabled('xp')  # crbug.com/434366
 class PageCyclerIntlKoThVi(_PageCycler):
   page_set = page_sets.IntlKoThViPageSet
 
