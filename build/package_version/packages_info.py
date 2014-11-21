@@ -41,6 +41,7 @@ class PackagesInfo(object):
     self._shared_packages = set(packages_json.get('shared', []))
     self._packages = packages_json.get('packages', {})
     self._modes = packages_json.get('modes', {})
+    self._revision_sets = packages_json.get('revision_sets', {})
 
   def IsSharedPackage(self, package_name):
     """Returns whether or not a package is shared between all host platforms.
@@ -97,3 +98,15 @@ class PackagesInfo(object):
       Modes dictionary.
     """
     return self._modes
+
+  def GetRevisionSet(self, revision_set_name):
+    """Returns a list of package names within a revision set.
+
+    A revision set contains a list of packages that are meant to be updated
+    together, this list is specified as a "revision_set" field within the
+    packages json file.
+
+    Returns:
+      List of packages of the same revision set or None if invalid.
+    """
+    return self._revision_sets.get(revision_set_name, None)

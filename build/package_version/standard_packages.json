@@ -80,6 +80,19 @@
     ]
   },
 
+  # A revision set contains a list of packages which should be updated in sync.
+  # The revision set name does not need to be the same name as a package, but
+  # it is convenient to use the name of the "main" package name so users do not
+  # need to remember an extra revision set name.
+  "revision_sets": {
+    # Revision Set Name
+    "pnacl_newlib": [
+      # Packages contained within this revision set.
+      "pnacl_newlib",
+      "pnacl_translator"
+    ]
+  },
+
   # Modes specify a subset of packages to be used, this is a convenient way
   # to filter packages for groups of users to get just what they need.
   # Each mode has a list of packages associated with the mode. When you

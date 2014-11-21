@@ -851,8 +851,12 @@ def _SetRevisionCmdArgParser(subparser):
   subparser.description = 'Specify the revision of a package.'
   subparser.add_argument(
     '--revision-package', metavar='NAME', dest='setrevision__package',
-    required=True,
+    action='append', default=[],
     help='Package name to set revision of.')
+  subparser.add_argument(
+    '--revision-set', metavar='SET-NAME', dest='setrevision__revset',
+    action='append', default=[],
+    help='Revision set to set revision for.')
   subparser.add_argument(
     '--revision', metavar='NUM', dest='setrevision__revision',
     type=int, required=True,
@@ -860,52 +864,64 @@ def _SetRevisionCmdArgParser(subparser):
 
 
 def _DoSetRevisionCmd(arguments):
-  package_name = arguments.setrevision__package
+  packages_list = arguments.setrevision__package
+  revision_sets = arguments.setrevision__revset
   revision_num = arguments.setrevision__revision
 
-  revision_desc = revision_info.RevisionInfo(arguments.packages_desc)
-  revision_desc.SetRevisionNumber(revision_num)
+  for revision_set in revision_sets:
+    set_packages = arguments.packages_desc.GetRevisionSet(revision_set)
+    if set_packages is None:
+      raise error.Error('Invalid Revision Set: %s' % revision_set)
+    packages_list.extend(set_packages)
 
-  custom_package_targets = GetPackageTargetPackages(package_name, [])
-  if not custom_package_targets:
-    package_targets = arguments.packages_desc.GetPackageTargetsForPackage(
+  if not packages_list:
+    raise error.Error('No revision packages have been supplied.')
+
+  for package_name in packages_list:
+    revision_desc = revision_info.RevisionInfo(arguments.packages_desc)
+    revision_desc.SetRevisionNumber(revision_num)
+
+    custom_package_targets = GetPackageTargetPackages(package_name, [])
+    if not custom_package_targets:
+      package_targets = arguments.packages_desc.GetPackageTargetsForPackage(
+          package_name
+      )
+    else:
+      package_targets = [target[0] for target in custom_package_targets]
+      first_target = custom_package_targets[0]
+      package_name = first_target[1]
+
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      for package_target in package_targets:
+        remote_package_key = package_locations.GetRemotePackageKey(
+            arguments.packages_desc.IsSharedPackage(package_name),
+            revision_num,
+            package_target,
+            package_name)
+
+        temp_package_file = os.path.join(
+            work_dir,
+            os.path.basename(remote_package_key) + TEMP_SUFFIX)
+
+        package_info.DownloadPackageInfoFiles(
+            temp_package_file,
+            remote_package_key,
+            downloader=arguments.gsd_store.GetFile)
+
+        package_desc = package_info.PackageInfo(temp_package_file)
+
+        logging.info('Setting %s:%s to revision %s',
+                     package_target, package_name, revision_num)
+        revision_desc.SetTargetRevision(
+            package_name,
+            package_target,
+            package_desc)
+
+    revision_file = package_locations.GetRevisionFile(
+        arguments.revisions_dir,
         package_name)
-  else:
-    package_targets = [target[0] for target in custom_package_targets]
-    first_target = custom_package_targets[0]
-    package_name = first_target[1]
-
-  with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
-    for package_target in package_targets:
-      remote_package_key = package_locations.GetRemotePackageKey(
-          arguments.packages_desc.IsSharedPackage(package_name),
-          revision_num,
-          package_target,
-          package_name)
-
-      temp_package_file = os.path.join(
-          work_dir,
-          os.path.basename(remote_package_key) + TEMP_SUFFIX)
-
-      package_info.DownloadPackageInfoFiles(
-          temp_package_file,
-          remote_package_key,
-          downloader=arguments.gsd_store.GetFile)
-
-      package_desc = package_info.PackageInfo(temp_package_file)
-
-      logging.info('Setting %s:%s to revision %s',
-                   package_target, package_name, revision_num)
-      revision_desc.SetTargetRevision(
-          package_name,
-          package_target,
-          package_desc)
-
-  revision_file = package_locations.GetRevisionFile(
-      arguments.revisions_dir,
-      package_name)
-  pynacl.file_tools.MakeParentDirectoryIfAbsent(revision_file)
-  revision_desc.SaveRevisionFile(revision_file)
+    pynacl.file_tools.MakeParentDirectoryIfAbsent(revision_file)
+    revision_desc.SaveRevisionFile(revision_file)
 
   CleanTempFiles(arguments.revisions_dir)
 
@@ -913,27 +929,74 @@ def _DoSetRevisionCmd(arguments):
 def _GetRevisionCmdArgParser(subparser):
   subparser.description = 'Get the revision of a package.'
   subparser.add_argument(
-    '--revision-package', metavar='NAME', dest='getrevision__package',
-    required=True,
+    '--revision-package', metavar='NAME', dest='getrevision__packages',
+    action='append', default=[],
     help='Package name to get revision of.')
+  subparser.add_argument(
+    '--revision-set', metavar='SET-NAME', dest='getrevision__revset',
+    action='append', default=[],
+    help='Revision set to set revision for.')
 
 
 def _DoGetRevisionCmd(arguments):
-  package_name = arguments.getrevision__package
+  packages_list = arguments.getrevision__packages
+  revision_sets = arguments.getrevision__revset
 
-  custom_package_targets = GetPackageTargetPackages(package_name, [])
-  if custom_package_targets:
-    custom_target, package_name = custom_package_targets[0]
+  for revision_set in revision_sets:
+    set_packages = arguments.packages_desc.GetRevisionSet(revision_set)
+    if set_packages is None:
+      raise error.Error('Invalid Revision Set: %s' % revision_set)
+    packages_list.extend(set_packages)
 
-  revision_file = package_locations.GetRevisionFile(arguments.revisions_dir,
-                                                    package_name)
+  if not packages_list:
+    raise error.Error('No revision packages have been supplied.')
 
-  if not os.path.isfile(revision_file):
-    raise error.Error('No revision set for package: %s.' % package_name)
+  revision_number = None
+  for package_name in packages_list:
+    custom_package_targets = GetPackageTargetPackages(package_name, [])
+    if custom_package_targets:
+      custom_target, package_name = custom_package_targets[0]
 
-  revision_desc = revision_info.RevisionInfo(arguments.packages_desc,
-                                             revision_file)
-  print revision_desc.GetRevisionNumber()
+    revision_file = package_locations.GetRevisionFile(arguments.revisions_dir,
+                                                      package_name)
+
+    if not os.path.isfile(revision_file):
+      raise error.Error('No revision set for package: %s.' % package_name)
+
+    revision_desc = revision_info.RevisionInfo(arguments.packages_desc,
+                                               revision_file)
+
+    package_revision = revision_desc.GetRevisionNumber()
+    if revision_number is None:
+      revision_number = package_revision
+    elif revision_number != package_revision:
+      logging.error('Listing Get Revision Packages:')
+      for package in packages_list:
+        logging.error('  %s', package)
+      raise error.Error('Package revisions are not set to the same revision.')
+
+  print revision_number
+
+
+def _RevPackagesCmdArgParser(subparser):
+  subparser.description = 'Prints list of packages for a revision set name.'
+  subparser.add_argument(
+    '--revision-set', metavar='NAME', dest='revpackages__name',
+    required=True,
+    help='Name of the package or revision set.')
+
+
+def _DoRevPackagesCmd(arguments):
+  revision_package = arguments.revpackages__name
+  packages_list = [revision_package]
+
+  # Check if the package_name is a revision set.
+  revision_set = arguments.packages_desc.GetRevisionSet(revision_package)
+  if revision_set is not None:
+    packages_list = revision_set
+
+  for package_name in packages_list:
+    print package_name
 
 
 def _FillEmptyTarsParser(subparser):
@@ -1030,6 +1093,7 @@ COMMANDS = {
     'sync': CommandFuncs(_SyncCmdArgParser, _DoSyncCmd),
     'setrevision': CommandFuncs(_SetRevisionCmdArgParser, _DoSetRevisionCmd),
     'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
+    'revpackages': CommandFuncs(_RevPackagesCmdArgParser, _DoRevPackagesCmd),
     'fillemptytars': CommandFuncs(_FillEmptyTarsParser, _DoFillEmptyTarsCmd),
     'recalcrevisions': CommandFuncs(_RecalcRevsParser, _DoRecalcRevsCmd),
     'cleanup': CommandFuncs(_CleanupParser, _DoCleanupCmd),

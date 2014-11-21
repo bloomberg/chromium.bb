@@ -20,9 +20,7 @@ NACL_DIR = os.path.dirname(BUILD_DIR)
 TOOLCHAIN_REV_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
 PKG_VER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
-PKGS = ['pnacl_newlib', 'pnacl_translator']
-REV_FILES = [os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % package)
-             for package in PKGS]
+PNACL_PACKAGE = 'pnacl_newlib'
 
 
 def ParseArgs(args):
@@ -93,18 +91,25 @@ def ExecCommand(command):
 
 
 def GetCurrentRevision():
-  return [ExecCommand([sys.executable, PKG_VER,
-                       'getrevision',
-                       '--revision-package', package]).strip()
-          for package in PKGS]
+  return ExecCommand([sys.executable, PKG_VER,
+                      'getrevision',
+                      '--revision-package', PNACL_PACKAGE]).strip()
 
 
 def SetCurrentRevision(revision_num):
-  for package in PKGS:
-    ExecCommand([sys.executable, PKG_VER,
-                 'setrevision',
-                 '--revision-package', package,
-                 '--revision', str(revision_num)])
+  ExecCommand([sys.executable, PKG_VER,
+               'setrevision',
+               '--revision-set', PNACL_PACKAGE,
+               '--revision', str(revision_num)])
+
+
+def GetRevisionPackageFiles():
+  out = ExecCommand([sys.executable, PKG_VER,
+                     'revpackages',
+                     '--revision-set', PNACL_PACKAGE])
+  package_list = [package.strip() for package in out.strip().split('\n')]
+  return [os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % package)
+          for package in package_list]
 
 
 def GitCurrentBranch():
@@ -365,7 +370,7 @@ def Main():
     # The current revision file points at a specific PNaCl LLVM
     # version. LLVM is checked-in to the NaCl repository, but its head
     # isn't necessarily the one that we currently use in PNaCl.
-    (pnacl_revision, translator_revision) = GetCurrentRevision()
+    pnacl_revision = GetCurrentRevision()
     tr_points_at['git svn id'] = pnacl_revision
     tr_points_at['hash'] = FindCommitWithGitSvnId(tr_points_at['git svn id'])
     tr_points_at['date'] = GitCommitInfo(
@@ -432,7 +437,7 @@ def Main():
       DryRun("Would update PNaCl revision to: %s" % new_pnacl_revision)
     else:
       SetCurrentRevision(new_pnacl_revision)
-      for f in REV_FILES:
+      for f in GetRevisionPackageFiles():
         GitAdd(f)
       GitCommit(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision))
 
