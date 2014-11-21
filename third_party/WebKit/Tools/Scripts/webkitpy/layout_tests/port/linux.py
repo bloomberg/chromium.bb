@@ -75,14 +75,14 @@ class LinuxPort(base.Port):
             # The --dereference flag tells file to follow symlinks
             file_output = executive.run_command(['file', '--brief', '--dereference', driver_path], return_stderr=True)
 
-        if re.match(r'ELF 32-bit LSB\s+executable', file_output):
+        if re.match(r'ELF 32-bit LSB\s+(executable|shared object)', file_output):
             return 'x86'
-        if re.match(r'ELF 64-bit LSB\s+executable', file_output):
+        if re.match(r'ELF 64-bit LSB\s+(executable|shared object)', file_output):
             return 'x86_64'
         if file_output:
             _log.warning('Could not determine architecture from "file" output: %s' % file_output)
 
-        # We don't know what the architecture is; default to 'x86' because
+        # We don't know what the architecture is; default to 'x86_64' because
         # maybe we're rebaselining and the binary doesn't actually exist,
         # or something else weird is going on. It's okay to do this because
         # if we actually try to use the binary, check_build() should fail.
