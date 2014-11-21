@@ -24,13 +24,13 @@ namespace test {
 
 void AddTestSurfaceQuad(TestRenderPass* pass,
                         const gfx::Size& surface_size,
+                        float opacity,
                         SurfaceId surface_id) {
   gfx::Transform content_to_target_transform;
   gfx::Size content_bounds = surface_size;
   gfx::Rect visible_content_rect = gfx::Rect(surface_size);
   gfx::Rect clip_rect = gfx::Rect(surface_size);
   bool is_clipped = false;
-  float opacity = 1.0;
   SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
 
   SharedQuadState* shared_quad_state = pass->CreateAndAppendSharedQuadState();
@@ -82,7 +82,7 @@ void AddQuadInPass(TestRenderPass* pass, Quad desc) {
       AddQuad(pass, gfx::Rect(0, 0, 5, 5), desc.color);
       break;
     case DrawQuad::SURFACE_CONTENT:
-      AddTestSurfaceQuad(pass, gfx::Size(5, 5), desc.surface_id);
+      AddTestSurfaceQuad(pass, gfx::Size(5, 5), desc.opacity, desc.surface_id);
       break;
     case DrawQuad::RENDER_PASS:
       AddTestRenderPassQuad(pass, desc.render_pass_id);

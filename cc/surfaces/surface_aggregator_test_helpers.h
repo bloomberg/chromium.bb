@@ -30,9 +30,10 @@ struct Quad {
     return quad;
   }
 
-  static Quad SurfaceQuad(SurfaceId surface_id) {
+  static Quad SurfaceQuad(SurfaceId surface_id, float opacity) {
     Quad quad;
     quad.material = DrawQuad::SURFACE_CONTENT;
+    quad.opacity = opacity;
     quad.surface_id = surface_id;
     return quad;
   }
@@ -47,6 +48,7 @@ struct Quad {
   DrawQuad::Material material;
   // Set when material==DrawQuad::SURFACE_CONTENT.
   SurfaceId surface_id;
+  float opacity;
   // Set when material==DrawQuad::SOLID_COLOR.
   SkColor color;
   // Set when material==DrawQuad::RENDER_PASS.
@@ -55,6 +57,7 @@ struct Quad {
  private:
   Quad()
       : material(DrawQuad::INVALID),
+        opacity(1.f),
         color(SK_ColorWHITE),
         render_pass_id(-1, -1) {}
 };
