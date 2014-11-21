@@ -647,10 +647,15 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   if (index < toolbarActionsBar_->GetIconCount()) {
     // Make sure the button is within the visible container.
     if ([button superview] != containerView_) {
-      [containerView_ addSubview:button];
-      [button setAlphaValue:1.0];
+      // We add the subview under the sibling views so that when it "slides in",
+      // it does so under its neighbors.
+      [containerView_ addSubview:button
+                      positioned:NSWindowBelow
+                      relativeTo:nil];
       [hiddenButtons_ removeObjectIdenticalTo:button];
     }
+    // We need to set the alpha value in case the container has resized.
+    [button setAlphaValue:1.0];
   } else if (![hiddenButtons_ containsObject:button]) {
     [hiddenButtons_ addObject:button];
     [button removeFromSuperview];

@@ -671,7 +671,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
-  CGFloat locationBarXPos = NSMaxX([locationBar_ frame]);
+  CGFloat locationBarXPos = NSMaxX([[locationBar_ animator] frame]);
   CGFloat leftDistance;
 
   if ([browserActionsContainerView_ isHidden]) {
@@ -739,7 +739,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
   // Ensure that the location bar is in its proper place.
-  NSRect locationFrame = [locationBar_ frame];
+  NSRect locationFrame = [[locationBar_ animator] frame];
   locationFrame.size.width += dX;
 
   if (!animate) {
