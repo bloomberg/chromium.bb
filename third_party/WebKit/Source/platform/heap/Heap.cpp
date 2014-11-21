@@ -645,7 +645,6 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_firstLargeHeapObject(0)
     , m_firstPageAllocatedDuringSweeping(0)
     , m_lastPageAllocatedDuringSweeping(0)
-    , m_mergePoint(0)
     , m_threadState(state)
     , m_index(index)
     , m_numberOfNormalPages(0)
@@ -1376,20 +1375,16 @@ void ThreadHeap<Header>::sweepNormalPages()
     TRACE_EVENT0("blink_gc", "ThreadHeap::sweepNormalPages");
     HeapPage<Header>* page = m_firstPage;
     HeapPage<Header>** previousNext = &m_firstPage;
-    HeapPage<Header>* previous = 0;
     while (page) {
         page->resetPromptlyFreedSize();
         if (page->isEmpty()) {
-            HeapPage<Header>* unused = page;
-            if (unused == m_mergePoint)
-                m_mergePoint = previous;
+            HeapPage<Header>* unusedPage = page;
             page = page->next();
-            HeapPage<Header>::unlink(this, unused, previousNext);
+            HeapPage<Header>::unlink(this, unusedPage, previousNext);
             --m_numberOfNormalPages;
         } else {
             page->sweep(this);
             previousNext = &page->m_next;
-            previous = page;
             page = page->next();
         }
     }

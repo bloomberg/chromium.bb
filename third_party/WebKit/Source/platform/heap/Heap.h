@@ -836,9 +836,6 @@ private:
     HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
     HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
 
-    // Merge point for parallel sweep.
-    HeapPage<Header>* m_mergePoint;
-
     ThreadState* m_threadState;
 
     FreeList<Header> m_freeList;
