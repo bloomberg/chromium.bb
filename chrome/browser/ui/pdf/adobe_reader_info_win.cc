@@ -88,7 +88,8 @@ AdobeReaderPluginInfo GetReaderPlugin(
     reader_info.is_installed = true;
 
     if (profile) {
-      PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+      scoped_refptr<PluginPrefs> plugin_prefs =
+          PluginPrefs::GetForProfile(profile);
       PluginPrefs::PolicyStatus plugin_status =
           plugin_prefs->PolicyStatusForPlugin(plugin_metadata->name());
       reader_info.is_enabled = plugin_status != PluginPrefs::POLICY_DISABLED;

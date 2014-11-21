@@ -41,7 +41,7 @@ bool ActivateMetroChrome() {
   base::win::ScopedComPtr<IApplicationActivationManager> activation_manager;
   HRESULT hr = activation_manager.CreateInstance(
       CLSID_ApplicationActivationManager);
-  if (!activation_manager) {
+  if (!activation_manager.get()) {
     NOTREACHED() << "Failed to cocreate activation manager. Error: "
                  << std::showbase << std::hex << hr;
     return false;
