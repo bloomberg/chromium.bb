@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/EllipsisBoxPainter.h"
 
+#include "core/paint/DrawingRecorder.h"
 #include "core/paint/TextPainter.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/PaintInfo.h"
@@ -16,14 +17,23 @@ namespace blink {
 
 void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    GraphicsContext* context = paintInfo.context;
     RenderStyle* style = m_ellipsisBox.renderer().style(m_ellipsisBox.isFirstLineStyle());
+    paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
+    paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
+}
+
+void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
+{
+    GraphicsContext* context = paintInfo.context;
     const Font& font = style->font();
     FloatPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
     boxOrigin.moveBy(FloatPoint(paintOffset));
     if (!m_ellipsisBox.isHorizontal())
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
+
+    DrawingRecorder recorder(paintInfo.context, &m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
+
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
@@ -44,8 +54,6 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
     TextRun textRun = constructTextRun(&m_ellipsisBox.renderer(), font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
-
-    paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
 void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, RenderStyle* style)
