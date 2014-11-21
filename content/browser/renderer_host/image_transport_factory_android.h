@@ -42,7 +42,7 @@ class CONTENT_EXPORT ImageTransportFactoryAndroid {
   static ImageTransportFactoryAndroid* GetInstance();
 
   virtual GLHelper* GetGLHelper() = 0;
-  virtual uint32 GetChannelID() = 0;
+  static uint32 GetChannelID();
 
   static void AddObserver(ImageTransportFactoryAndroidObserver* observer);
   static void RemoveObserver(ImageTransportFactoryAndroidObserver* observer);

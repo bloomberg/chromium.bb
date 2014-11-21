@@ -29,9 +29,4 @@ GLHelper* NoTransportImageTransportFactoryAndroid::GetGLHelper() {
   return gl_helper_.get();
 }
 
-uint32 NoTransportImageTransportFactoryAndroid::GetChannelID() {
-  NOTREACHED();
-  return 0;
-}
-
 }  // namespace content

@@ -39,9 +39,6 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual ~CmdBufferImageTransportFactory();
 
   virtual GLHelper* GetGLHelper() override;
-  virtual uint32 GetChannelID() override {
-    return BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
-  }
 
  private:
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
@@ -102,6 +99,11 @@ GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
 }
 
 }  // anonymous namespace
+
+// static
+uint32 ImageTransportFactoryAndroid::GetChannelID() {
+  return BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
+}
 
 // static
 void ImageTransportFactoryAndroid::InitializeForUnitTests(

@@ -1321,8 +1321,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   gfx::GLSurfaceHandle handle =
       gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
   if (CompositorImpl::IsInitialized()) {
-    handle.parent_client_id =
-        ImageTransportFactoryAndroid::GetInstance()->GetChannelID();
+    handle.parent_client_id = ImageTransportFactoryAndroid::GetChannelID();
   }
   return handle;
 }
