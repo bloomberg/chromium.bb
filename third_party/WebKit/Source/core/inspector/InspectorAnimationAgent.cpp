@@ -192,6 +192,8 @@ void InspectorAnimationAgent::pauseAnimationPlayer(ErrorString* errorString, con
     AnimationPlayer* player = assertAnimationPlayer(errorString, id);
     if (!player)
         return;
+    if (player->playStateInternal() == AnimationPlayer::Idle)
+        player->play();
     player->pause();
     animationPlayer = buildObjectForAnimationPlayer(*player);
 }
