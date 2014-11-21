@@ -1,0 +1,10 @@
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+performance.onwebkitresourcetimingbufferfull = function() {
+  document.body.innerHTML = "PASS";
+};
+performance.webkitSetResourceTimingBufferSize(1);
+</script>
+<iframe src="resources/content-iframe.html"></iframe>

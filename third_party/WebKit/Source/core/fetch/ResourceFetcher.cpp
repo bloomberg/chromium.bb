@@ -1171,12 +1171,9 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
 
 void ResourceFetcher::didLoadResource()
 {
-    RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
-    RefPtrWillBeRawPtr<Document> protectDocument(m_document.get());
-
+    scheduleDocumentResourcesGC();
     if (frame())
         frame()->loader().loadDone();
-    scheduleDocumentResourcesGC();
 }
 
 void ResourceFetcher::scheduleDocumentResourcesGC()
@@ -1314,6 +1311,8 @@ void ResourceFetcher::clearPreloads()
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
+    RefPtr<Document> protectDocument(m_document);
+    RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400 && document()) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
