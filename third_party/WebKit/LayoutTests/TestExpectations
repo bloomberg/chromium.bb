@@ -401,11 +401,6 @@ crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 
-# crbug.com/245630 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
-
-crbug.com/435286 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
-crbug.com/435286 [ Mac ] plugins/plugin-javascript-access.html [ NeedsRebaseline ]
-
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]

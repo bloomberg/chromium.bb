@@ -6,22 +6,22 @@ Filename: test_netscape_plugin.plugin
 
 Mime Types:
 
-Type: image/png
+Type: application/x-webkit-test-netscape
 
-Description: PNG image
+Description: test netscape content
 
-Suffixes: png
+Suffixes: testnetscape
 
 
 Plugin.item() works.
 
 Plugin.namedItem() works.
 
-Type: application/x-webkit-test-netscape
+Type: image/png
 
-Description: test netscape content
+Description: PNG image
 
-Suffixes: testnetscape
+Suffixes: png
 
 
 Plugin.item() works.
