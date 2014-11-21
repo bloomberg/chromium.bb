@@ -200,14 +200,14 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
-  if (data_reduction_proxy_config_service_.get()) {
-    builder.set_proxy_config_service(
-        data_reduction_proxy_config_service_.release());
-  } else {
-    builder.set_proxy_config_service(
-        net::ProxyService::CreateSystemProxyConfigService(
-            GetNetworkTaskRunner(), NULL /* Ignored on Android */ ));
-  }
+  DCHECK(data_reduction_proxy_config_service_.get());
+  // Android provides a local HTTP proxy that handles all the proxying.
+  // Create the proxy without a resolver since we rely on this local HTTP proxy.
+  // TODO(sgurun) is this behavior guaranteed through SDK?
+  builder.set_proxy_service(
+      net::ProxyService::CreateWithoutProxyResolver(
+          data_reduction_proxy_config_service_.release(),
+          net_log_.get()));
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
   builder.set_net_log(net_log_.get());

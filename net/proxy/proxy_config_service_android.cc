@@ -197,7 +197,8 @@ class ProxyConfigServiceAndroid::Delegate
       : jni_delegate_(this),
         network_task_runner_(network_task_runner),
         jni_task_runner_(jni_task_runner),
-        get_property_callback_(get_property_callback) {
+        get_property_callback_(get_property_callback),
+        exclude_pac_url_(false) {
   }
 
   void SetupJNI() {
@@ -271,11 +272,20 @@ class ProxyConfigServiceAndroid::Delegate
                               const std::vector<std::string>& exclusion_list) {
     DCHECK(OnJNIThread());
     ProxyConfig proxy_config;
-    CreateStaticProxyConfig(host, port, pac_url, exclusion_list, &proxy_config);
+    if (exclude_pac_url_) {
+      CreateStaticProxyConfig(host, port, "", exclusion_list, &proxy_config);
+    } else {
+      CreateStaticProxyConfig(host, port, pac_url, exclusion_list,
+          &proxy_config);
+    }
     network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             &Delegate::SetNewConfigOnNetworkThread, this, proxy_config));
+  }
+
+  void set_exclude_pac_url(bool enabled) {
+    exclude_pac_url_ = enabled;
   }
 
  private:
@@ -344,6 +354,7 @@ class ProxyConfigServiceAndroid::Delegate
   scoped_refptr<base::SequencedTaskRunner> jni_task_runner_;
   GetPropertyCallback get_property_callback_;
   ProxyConfig proxy_config_;
+  bool exclude_pac_url_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -364,6 +375,10 @@ ProxyConfigServiceAndroid::~ProxyConfigServiceAndroid() {
 // static
 bool ProxyConfigServiceAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+void ProxyConfigServiceAndroid::set_exclude_pac_url(bool enabled) {
+  delegate_->set_exclude_pac_url(enabled);
 }
 
 void ProxyConfigServiceAndroid::AddObserver(Observer* observer) {

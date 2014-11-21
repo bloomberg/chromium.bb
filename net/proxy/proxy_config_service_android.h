@@ -64,6 +64,11 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   // Register JNI bindings.
   static bool Register(JNIEnv* env);
 
+  // Android provides a local HTTP proxy that does PAC resolution. When this
+  // setting is enabled, the proxy config service ignores the PAC URL and uses
+  // the local proxy for all proxy resolution.
+  void set_exclude_pac_url(bool enabled);
+
   // ProxyConfigService:
   // Called only on the network thread.
   virtual void AddObserver(Observer* observer) override;
