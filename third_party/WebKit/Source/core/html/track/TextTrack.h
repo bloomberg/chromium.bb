@@ -64,7 +64,7 @@ public:
     static const AtomicString& descriptionsKeyword();
     static const AtomicString& chaptersKeyword();
     static const AtomicString& metadataKeyword();
-    static bool isValidKindKeyword(const AtomicString&);
+    static bool isValidKindKeyword(const String&);
 
     static const AtomicString& disabledKeyword();
     static const AtomicString& hiddenKeyword();

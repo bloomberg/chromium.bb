@@ -34,11 +34,13 @@ public:
     static const AtomicString& subtitlesKeyword();
     static const AtomicString& commentaryKeyword();
 
+    static bool isValidKindKeyword(const String&);
+
 private:
     VideoTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected);
 
     // TrackBase
-    virtual bool isValidKind(const AtomicString&) const override;
+    virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const override;
 
     bool m_selected;

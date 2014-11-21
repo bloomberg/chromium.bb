@@ -448,6 +448,7 @@ Timing
 Touch
 TouchEvent
 TouchList
+TrackDefault
 TrackEvent
 TransitionEvent
 TreeWalker

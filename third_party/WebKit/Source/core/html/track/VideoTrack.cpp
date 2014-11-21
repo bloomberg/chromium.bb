@@ -69,14 +69,15 @@ const AtomicString& VideoTrack::commentaryKeyword()
     return keyword;
 }
 
-bool VideoTrack::isValidKind(const AtomicString& kind) const
+bool VideoTrack::isValidKindKeyword(const String& kind)
 {
     return (kind == alternativeKeyword())
         || (kind == captionsKeyword())
         || (kind == mainKeyword())
         || (kind == signKeyword())
         || (kind == subtitlesKeyword())
-        || (kind == commentaryKeyword());
+        || (kind == commentaryKeyword())
+        || (kind == emptyAtom);
 }
 
 AtomicString VideoTrack::defaultKind() const

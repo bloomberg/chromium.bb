@@ -125,7 +125,7 @@ TextTrack::~TextTrack()
 #endif
 }
 
-bool TextTrack::isValidKindKeyword(const AtomicString& value)
+bool TextTrack::isValidKindKeyword(const String& value)
 {
     if (value == subtitlesKeyword())
         return true;
