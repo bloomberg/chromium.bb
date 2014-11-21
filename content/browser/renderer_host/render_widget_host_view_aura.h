@@ -86,8 +86,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
-      public aura::client::CursorClientObserver,
-      public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
+      public aura::client::CursorClientObserver {
  public:
   // Displays and controls touch editing elements such as selection handles.
   class TouchEditingClient {
@@ -618,8 +617,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
-  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
-
   gfx::Rect disambiguation_target_rect_;
 
   // The last scroll offset when we start to render the link disambiguation
@@ -627,6 +624,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // compositing surface and showing the disambiguation popup.
   gfx::Vector2dF disambiguation_scroll_offset_;
 
+  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 

@@ -332,6 +332,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
+      virtual_keyboard_requested_(false),
       loading_weak_factory_(this) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);

@@ -1279,9 +1279,8 @@ void RenderWidgetHostViewAura::ShowDisambiguationPopup(
       disambiguation_target_rect_,
       zoomed_size,
       base::Bind(&RenderWidgetHostViewAura::DisambiguationPopupRendered,
-          base::internal::SupportsWeakPtrBase::StaticAsWeakPtr
-              <RenderWidgetHostViewAura>(this)),
-      kN32_SkColorType);
+                 weak_ptr_factory_.GetWeakPtr()),
+                 kN32_SkColorType);
 }
 
 void RenderWidgetHostViewAura::DisambiguationPopupRendered(
@@ -1307,11 +1306,9 @@ void RenderWidgetHostViewAura::DisambiguationPopupRendered(
         disambiguation_target_rect_,
         result,
         base::Bind(&RenderWidgetHostViewAura::ProcessDisambiguationGesture,
-            base::internal::SupportsWeakPtrBase::StaticAsWeakPtr
-                <RenderWidgetHostViewAura>(this)),
+                   weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&RenderWidgetHostViewAura::ProcessDisambiguationMouse,
-            base::internal::SupportsWeakPtrBase::StaticAsWeakPtr
-                <RenderWidgetHostViewAura>(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

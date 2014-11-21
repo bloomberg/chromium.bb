@@ -129,11 +129,12 @@ class CONTENT_EXPORT TaskQueueManager {
   TaskQueueSelector* selector_;
 
   base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;
-  base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   // The pending_dowork_count_ is only tracked on the main thread since that's
   // where re-entrant problems happen.
   int pending_dowork_count_;
+
+  base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);
 };

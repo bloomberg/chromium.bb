@@ -1230,9 +1230,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Created on-demand to mute all audio output from this WebContents.
   scoped_ptr<WebContentsAudioMuter> audio_muter_;
 
-  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
-
   bool virtual_keyboard_requested_;
+
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

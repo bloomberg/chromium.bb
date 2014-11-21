@@ -247,8 +247,8 @@ TaskQueueManager::TaskQueueManager(
     TaskQueueSelector* selector)
     : main_task_runner_(main_task_runner),
       selector_(selector),
-      weak_factory_(this),
-      pending_dowork_count_(0) {
+      pending_dowork_count_(0),
+      weak_factory_(this) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
