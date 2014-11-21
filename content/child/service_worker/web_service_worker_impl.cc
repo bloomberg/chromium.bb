@@ -89,6 +89,11 @@ void WebServiceWorkerImpl::postMessage(const WebString& message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
 }
 
+void WebServiceWorkerImpl::terminate() {
+  thread_safe_sender_->Send(
+      new ServiceWorkerHostMsg_TerminateWorker(handle_ref_->handle_id()));
+}
+
 void WebServiceWorkerImpl::CommitState(blink::WebServiceWorkerState new_state) {
   DCHECK(proxy_);
   DCHECK(proxy_->isReady());

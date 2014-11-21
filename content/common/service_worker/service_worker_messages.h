@@ -160,6 +160,11 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementRegistrationRefCount,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
                      int /* registration_handle_id */)
 
+// Tells the browser to terminate a service worker. Used in layout tests to
+// verify behavior when a service worker isn't running.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
+                     int /* handle_id */)
+
 // Informs the browser that |provider_id| is associated
 // with a service worker script running context and
 // |version_id| identifies which ServiceWorkerVersion.

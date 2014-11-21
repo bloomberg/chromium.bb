@@ -117,6 +117,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                              const base::string16& message,
                              const std::vector<int>& sent_message_port_ids);
   void OnServiceWorkerObjectDestroyed(int handle_id);
+  void OnTerminateWorker(int handle_id);
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
