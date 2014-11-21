@@ -17,6 +17,7 @@
 #include "base/environment.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "crypto/ec_private_key.h"
@@ -899,9 +900,19 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
 }
 
 int SSLClientSocketOpenSSL::DoHandshake() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::DoHandshake1"));
+
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int net_error = OK;
   int rv = SSL_do_handshake(ssl_);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::DoHandshake2"));
 
   if (client_auth_cert_needed_) {
     net_error = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
@@ -1608,6 +1619,11 @@ int SSLClientSocketOpenSSL::TransportReadComplete(int result) {
 }
 
 int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::ClientCertRequestCallback"));
+
   DVLOG(3) << "OpenSSL ClientCertRequestCallback called";
   DCHECK(ssl == ssl_);
 
@@ -1705,6 +1721,11 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
 }
 
 int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::CertVerifyCallback"));
+
   if (!completed_connect_) {
     // If the first handshake hasn't completed then we accept any certificates
     // because we verify after the handshake.
@@ -1739,6 +1760,11 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     unsigned char* outlen,
                                                     const unsigned char* in,
                                                     unsigned int inlen) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketOpenSSL::SelectNextProtoCallback"));
+
   if (ssl_config_.next_protos.empty()) {
     *out = reinterpret_cast<uint8*>(
         const_cast<char*>(kDefaultSupportedNPNProtocol));
