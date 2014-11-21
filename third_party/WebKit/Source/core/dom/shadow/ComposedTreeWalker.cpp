@@ -41,7 +41,7 @@ static inline ElementShadow* shadowFor(const Node* node)
     return 0;
 }
 
-Node* ComposedTreeWalker::traverseChild(const Node* node, TraversalDirection direction) const
+Node* ComposedTreeWalker::traverseChild(const Node* node, TraversalDirection direction)
 {
     ASSERT(node);
     ElementShadow* shadow = shadowFor(node);
@@ -127,7 +127,7 @@ Node* ComposedTreeWalker::traverseBackToYoungerShadowRoot(const Node* node, Trav
 
 // FIXME: Use an iterative algorithm so that it can be inlined.
 // https://bugs.webkit.org/show_bug.cgi?id=90415
-Node* ComposedTreeWalker::traverseParent(const Node* node, ParentTraversalDetails* details) const
+Node* ComposedTreeWalker::traverseParent(const Node* node, ParentTraversalDetails* details)
 {
     if (node->isPseudoElement())
         return node->parentOrShadowHostNode();
@@ -146,7 +146,7 @@ Node* ComposedTreeWalker::traverseParent(const Node* node, ParentTraversalDetail
     return traverseParentOrHost(node);
 }
 
-inline Node* ComposedTreeWalker::traverseParentOrHost(const Node* node) const
+inline Node* ComposedTreeWalker::traverseParentOrHost(const Node* node)
 {
     Node* parent = node->parentNode();
     if (!parent)

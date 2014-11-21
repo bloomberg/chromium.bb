@@ -62,7 +62,7 @@ public:
     void next();
     void previous();
 
-    Node* traverseParent(const Node*, ParentTraversalDetails* = 0) const;
+    static Node* traverseParent(const Node*, ParentTraversalDetails* = 0);
 
 private:
     ComposedTreeWalker(const Node*, ParentTraversalDetails*);
@@ -92,9 +92,9 @@ private:
     static Node* traverseNode(const Node*, TraversalDirection);
     static Node* traverseLightChildren(const Node*, TraversalDirection);
 
-    Node* traverseFirstChild(const Node*) const;
-    Node* traverseLastChild(const Node*) const;
-    Node* traverseChild(const Node*, TraversalDirection) const;
+    static Node* traverseFirstChild(const Node*);
+    static Node* traverseLastChild(const Node*);
+    static Node* traverseChild(const Node*, TraversalDirection);
 
     static Node* traverseNextSibling(const Node*);
     static Node* traversePreviousSibling(const Node*);
@@ -107,7 +107,7 @@ private:
 
     static Node* traverseBackToYoungerShadowRoot(const Node*, TraversalDirection);
 
-    Node* traverseParentOrHost(const Node*) const;
+    static Node* traverseParentOrHost(const Node*);
 
     RawPtrWillBeMember<const Node> m_node;
 };
@@ -198,13 +198,13 @@ inline Node* ComposedTreeWalker::traversePreviousSibling(const Node* node)
     return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
 }
 
-inline Node* ComposedTreeWalker::traverseFirstChild(const Node* node) const
+inline Node* ComposedTreeWalker::traverseFirstChild(const Node* node)
 {
     ASSERT(node);
     return traverseChild(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedTreeWalker::traverseLastChild(const Node* node) const
+inline Node* ComposedTreeWalker::traverseLastChild(const Node* node)
 {
     ASSERT(node);
     return traverseChild(node, TraversalDirectionBackward);

@@ -57,8 +57,7 @@ ContainerNode* parent(const Node& node, ParentDetails* details)
     ASSERT(!node.document().childNeedsDistributionRecalc());
     if (isActiveInsertionPoint(node))
         return 0;
-    ComposedTreeWalker walker(node, ComposedTreeWalker::CanStartFromShadowBoundary);
-    return toContainerNode(walker.traverseParent(walker.get(), details));
+    return toContainerNode(ComposedTreeWalker::traverseParent(&node, details));
 }
 
 bool contains(const ContainerNode& container, const Node& node)
@@ -82,7 +81,7 @@ Node* nextSibling(const Node& node)
     if (walker.get() || node.isAfterPseudoElement())
         return walker.get();
 
-    Node* parent = walker.traverseParent(&node);
+    Node* parent = ComposedTreeWalker::traverseParent(&node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(AFTER);
 
@@ -101,7 +100,7 @@ Node* previousSibling(const Node& node)
     if (walker.get() || node.isBeforePseudoElement())
         return walker.get();
 
-    Node* parent = walker.traverseParent(&node);
+    Node* parent = ComposedTreeWalker::traverseParent(&node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(BEFORE);
 
