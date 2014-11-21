@@ -64,7 +64,7 @@ void RTreeBase::RecordBase::AppendAllRecords(Records* matches_out) const {
 
 scoped_ptr<RTreeBase::NodeBase>
 RTreeBase::RecordBase::RemoveAndReturnLastChild() {
-  return scoped_ptr<NodeBase>();
+  return nullptr;
 }
 
 int RTreeBase::RecordBase::Level() const {
@@ -146,7 +146,7 @@ scoped_ptr<RTreeBase::NodeBase> RTreeBase::Node::RemoveChild(
 
 scoped_ptr<RTreeBase::NodeBase> RTreeBase::Node::RemoveAndReturnLastChild() {
   if (children_.empty())
-    return scoped_ptr<NodeBase>();
+    return nullptr;
 
   scoped_ptr<NodeBase> last_child(children_.back());
   children_.weak_erase(children_.end() - 1);

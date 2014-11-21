@@ -33,7 +33,7 @@ class TestFontDelegate : public LinuxFontDelegate {
   scoped_ptr<ScopedPangoFontDescription> GetDefaultPangoFontDescription()
       const override {
     NOTIMPLEMENTED();
-    return scoped_ptr<ScopedPangoFontDescription>();
+    return nullptr;
   }
   double GetFontDPI() const override {
     NOTIMPLEMENTED();

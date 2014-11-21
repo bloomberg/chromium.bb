@@ -266,7 +266,7 @@ scoped_ptr<SkBitmap> IconUtil::CreateSkBitmapFromIconResource(HMODULE module,
   size_t icon_dir_size = 0;
   if (!base::win::GetResourceFromModule(module, resource_id, RT_GROUP_ICON,
                                         &icon_dir_data, &icon_dir_size)) {
-    return scoped_ptr<SkBitmap>();
+    return nullptr;
   }
   DCHECK(icon_dir_data);
   DCHECK_GE(icon_dir_size, sizeof(GRPICONDIR));
@@ -284,13 +284,13 @@ scoped_ptr<SkBitmap> IconUtil::CreateSkBitmapFromIconResource(HMODULE module,
     }
   }
   if (!large_icon_entry)
-    return scoped_ptr<SkBitmap>();
+    return nullptr;
 
   void* png_data = NULL;
   size_t png_size = 0;
   if (!base::win::GetResourceFromModule(module, large_icon_entry->nID, RT_ICON,
                                         &png_data, &png_size)) {
-    return scoped_ptr<SkBitmap>();
+    return nullptr;
   }
   DCHECK(png_data);
   DCHECK_EQ(png_size, large_icon_entry->dwBytesInRes);
