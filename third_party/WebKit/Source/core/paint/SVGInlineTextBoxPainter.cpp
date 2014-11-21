@@ -55,7 +55,9 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     RenderStyle* style = parentRenderer.style();
     ASSERT(style);
 
-    InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(paintInfo.context, paintOffset, style, textRenderer.scaledFont(), true);
+    InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
+        paintInfo.context, FloatPoint(paintOffset), style,
+        textRenderer.scaledFont(), true);
 
     const SVGRenderStyle& svgStyle = style->svgStyle();
 

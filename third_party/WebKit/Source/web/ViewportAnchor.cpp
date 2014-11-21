@@ -144,7 +144,7 @@ void ViewportAnchor::setAnchor(const IntRect& outerViewRect, const IntRect& inne
 
     m_anchorNode = node;
     m_anchorNodeBounds = node->boundingBox();
-    m_anchorInNodeCoords = anchorPoint - m_anchorNodeBounds.location();
+    m_anchorInNodeCoords = anchorPoint - FloatPoint(m_anchorNodeBounds.location());
     m_anchorInNodeCoords.scale(1.f / m_anchorNodeBounds.width(), 1.f / m_anchorNodeBounds.height());
 }
 
@@ -183,9 +183,9 @@ FloatPoint ViewportAnchor::getInnerOrigin(const FloatSize& innerSize) const
         return m_pinchViewportInDocument;
 
     // Compute the new anchor point relative to the node position
-    FloatSize anchorOffsetFromNode = currentNodeBounds.size();
+    FloatSize anchorOffsetFromNode(currentNodeBounds.size());
     anchorOffsetFromNode.scale(m_anchorInNodeCoords.width(), m_anchorInNodeCoords.height());
-    FloatPoint anchorPoint = currentNodeBounds.location() + anchorOffsetFromNode;
+    FloatPoint anchorPoint = FloatPoint(currentNodeBounds.location()) + anchorOffsetFromNode;
 
     // Compute the new origin point relative to the new anchor point
     FloatSize anchorOffsetFromOrigin = innerSize;

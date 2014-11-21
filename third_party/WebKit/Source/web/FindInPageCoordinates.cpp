@@ -73,7 +73,7 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const RenderObj
     if (container->hasOverflowClip())
         scrolledOrigin = -IntPoint(container->scrolledContentOffset());
 
-    FloatRect overflowRect(scrolledOrigin, container->maxLayoutOverflow());
+    FloatRect overflowRect(scrolledOrigin, FloatSize(container->maxLayoutOverflow()));
     FloatRect containerRect = container->localToAbsoluteQuad(FloatQuad(overflowRect)).enclosingBoundingBox();
 
     if (containerRect.isEmpty())

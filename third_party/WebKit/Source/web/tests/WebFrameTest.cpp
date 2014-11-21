@@ -1916,7 +1916,7 @@ protected:
 
     static FloatSize computeRelativeOffset(const IntPoint& absoluteOffset, const LayoutRect& rect)
     {
-        FloatSize relativeOffset = FloatPoint(absoluteOffset) - rect.location();
+        FloatSize relativeOffset = FloatPoint(absoluteOffset) - FloatPoint(rect.location());
         relativeOffset.scale(1.f / rect.width(), 1.f / rect.height());
         return relativeOffset;
     }

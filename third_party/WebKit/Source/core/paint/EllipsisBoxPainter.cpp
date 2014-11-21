@@ -23,7 +23,7 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
     boxOrigin.moveBy(FloatPoint(paintOffset));
     if (!m_ellipsisBox.isHorizontal())
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
-    FloatRect boxRect(boxOrigin, LayoutSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
+    FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));

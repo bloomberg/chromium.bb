@@ -32,6 +32,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace blink {
 
@@ -116,6 +117,11 @@ public:
         m_p2 += offset;
         m_p3 += offset;
         m_p4 += offset;
+    }
+
+    void move(const LayoutSize& offset)
+    {
+        move(offset.width().toFloat(), offset.height().toFloat());
     }
 
     void move(float dx, float dy)

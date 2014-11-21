@@ -914,7 +914,7 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& tr
 
 void RenderStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin) const
 {
-    applyTransform(transform, FloatRect(FloatPoint(), borderBoxSize), applyOrigin);
+    applyTransform(transform, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin);
 }
 
 void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin) const

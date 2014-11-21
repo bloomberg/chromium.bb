@@ -132,14 +132,14 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
                 LayoutUnit ascent = fontMetrics.ascent();
                 LayoutPoint textRectOrigin = paintOffset;
                 textRectOrigin.move(leftBorder + leftPad + (RenderImage::paddingWidth / 2) - borderWidth, topBorder + topPad + (RenderImage::paddingHeight / 2) - borderWidth);
-                LayoutPoint textOrigin(textRectOrigin.x(), textRectOrigin.y() + ascent);
+                FloatPoint textOrigin(textRectOrigin.x().toFloat(), (textRectOrigin.y() + ascent).toFloat());
 
                 // Only draw the alt text if it'll fit within the content box,
                 // and only if it fits above the error image.
                 TextRun textRun = constructTextRun(&m_renderImage, font, m_renderImage.altText(), m_renderImage.style(), TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, DefaultTextRunFlags | RespectDirection);
                 float textWidth = font.width(textRun);
                 TextRunPaintInfo textRunPaintInfo(textRun);
-                textRunPaintInfo.bounds = FloatRect(textRectOrigin, FloatSize(textWidth, fontMetrics.height()));
+                textRunPaintInfo.bounds = FloatRect(FloatPoint(textRectOrigin), FloatSize(textWidth, fontMetrics.height()));
                 context->setFillColor(m_renderImage.resolveColor(CSSPropertyColor));
                 if (textRun.direction() == RTL) {
                     int availableWidth = cWidth - static_cast<int>(RenderImage::paddingWidth);

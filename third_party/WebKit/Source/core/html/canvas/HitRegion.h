@@ -30,6 +30,7 @@ public:
     void updateAccessibility(Element* canvas);
 
     bool contains(const LayoutPoint&) const;
+    bool contains(const FloatPoint&) const;
 
     const String& id() const { return m_id; }
     const Path& path() const { return m_path; }

@@ -60,7 +60,7 @@ void TransformState::translateTransform(const LayoutSize& offset)
 
 void TransformState::translateMappedCoordinates(const LayoutSize& offset)
 {
-    LayoutSize adjustedOffset = (m_direction == ApplyTransformDirection) ? offset : -offset;
+    FloatSize adjustedOffset((m_direction == ApplyTransformDirection) ? offset : -offset);
     if (m_mapPoint)
         m_lastPlanarPoint.move(adjustedOffset);
     if (m_mapQuad)
@@ -175,7 +175,7 @@ FloatQuad TransformState::mappedQuad(bool* wasClamped) const
         *wasClamped = false;
 
     FloatQuad quad = m_lastPlanarQuad;
-    quad.move((m_direction == ApplyTransformDirection) ? m_accumulatedOffset : -m_accumulatedOffset);
+    quad.move(FloatSize((m_direction == ApplyTransformDirection) ? m_accumulatedOffset : -m_accumulatedOffset));
     if (!m_accumulatedTransform)
         return quad;
 

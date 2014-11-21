@@ -31,7 +31,6 @@
 #ifndef LayoutPoint_h
 #define LayoutPoint_h
 
-#include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "wtf/MathExtras.h"
@@ -44,7 +43,6 @@ public:
     LayoutPoint(LayoutUnit x, LayoutUnit y) : m_x(x), m_y(y) { }
     LayoutPoint(const IntPoint& point) : m_x(point.x()), m_y(point.y()) { }
     explicit LayoutPoint(const FloatPoint& size) : m_x(size.x()), m_y(size.y()) { }
-    explicit LayoutPoint(const DoublePoint& size) : m_x(size.x()), m_y(size.y()) { }
     explicit LayoutPoint(const LayoutSize& size) : m_x(size.width()), m_y(size.height()) { }
 
     static LayoutPoint zero() { return LayoutPoint(); }
@@ -111,6 +109,11 @@ ALWAYS_INLINE LayoutPoint operator+(const LayoutPoint& a, const LayoutPoint& b)
 }
 
 ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const LayoutPoint& b)
+{
+    return LayoutSize(a.x() - b.x(), a.y() - b.y());
+}
+
+ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const IntPoint& b)
 {
     return LayoutSize(a.x() - b.x(), a.y() - b.y());
 }

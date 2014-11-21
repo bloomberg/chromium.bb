@@ -408,6 +408,7 @@
       'fonts/win/FontFallbackWin.cpp',
       'fonts/win/FontFallbackWin.h',
       'fonts/win/FontPlatformDataWin.cpp',
+      'geometry/DoublePoint.cpp',
       'geometry/DoublePoint.h',
       'geometry/DoubleSize.cpp',
       'geometry/DoubleSize.h',

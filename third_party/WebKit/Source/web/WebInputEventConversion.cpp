@@ -457,7 +457,7 @@ static int getWebInputModifiers(const UIEventWithKeyState& event)
 
 static FloatPoint convertAbsoluteLocationForRenderObjectFloat(const LayoutPoint& location, const RenderObject& renderObject)
 {
-    return renderObject.absoluteToLocal(location, UseTransforms);
+    return renderObject.absoluteToLocal(FloatPoint(location), UseTransforms);
 }
 
 static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& location, const RenderObject& renderObject)

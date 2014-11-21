@@ -33,6 +33,7 @@
 
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/DoubleSize.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
 
@@ -172,6 +173,11 @@ inline bool operator==(const LayoutSize& a, const LayoutSize& b)
 inline bool operator!=(const LayoutSize& a, const LayoutSize& b)
 {
     return a.width() != b.width() || a.height() != b.height();
+}
+
+inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b)
+{
+    return FloatPoint(a.x() + b.width(), a.y() + b.height());
 }
 
 inline IntSize flooredIntSize(const LayoutSize& s)

@@ -66,7 +66,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         paintInfo.context->setFillColor(m_renderFileUploadControl.resolveColor(CSSPropertyColor));
 
         // Draw the filename
-        paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));
+        paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));
     }
 
     // Paint the children.

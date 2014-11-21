@@ -671,7 +671,7 @@ int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
     // This ignores transforms on purpose, for now. Vertical navigation is done
     // without consulting transforms, so that 'up' in transformed text is 'up'
     // relative to the text, not absolute 'up'.
-    FloatPoint caretPoint = renderer->localToAbsolute(localRect.location());
+    FloatPoint caretPoint = renderer->localToAbsolute(FloatPoint(localRect.location()));
     RenderObject* containingBlock = renderer->containingBlock();
     if (!containingBlock)
         containingBlock = renderer; // Just use ourselves to determine the writing mode if we have no containing block.

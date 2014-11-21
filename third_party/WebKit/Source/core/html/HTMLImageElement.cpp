@@ -596,10 +596,8 @@ FloatSize HTMLImageElement::sourceSize() const
     ImageResource* image = cachedImage();
     if (!image)
         return FloatSize();
-    LayoutSize size;
-    size = image->imageSizeForRenderer(renderer(), 1.0f); // FIXME: Not sure about this.
 
-    return size;
+    return FloatSize(image->imageSizeForRenderer(renderer(), 1.0f));
 }
 
 FloatSize HTMLImageElement::defaultDestinationSize() const
@@ -608,10 +606,10 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
     if (!image)
         return FloatSize();
     LayoutSize size;
-    size = image->imageSizeForRenderer(renderer(), 1.0f); // FIXME: Not sure about this.
+    size = image->imageSizeForRenderer(renderer(), 1.0f);
     if (renderer() && renderer()->isRenderImage() && image->image() && !image->image()->hasRelativeWidth())
         size.scale(toRenderImage(renderer())->imageDevicePixelRatio());
-    return size;
+    return FloatSize(size);
 }
 
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)

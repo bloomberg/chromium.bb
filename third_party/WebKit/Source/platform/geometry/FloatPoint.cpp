@@ -52,6 +52,11 @@ FloatPoint::FloatPoint(const LayoutPoint& p)
 {
 }
 
+FloatPoint::FloatPoint(const LayoutSize& size)
+    : m_x(size.width().toFloat()), m_y(size.height().toFloat())
+{
+}
+
 void FloatPoint::normalize()
 {
     float tempLength = length();

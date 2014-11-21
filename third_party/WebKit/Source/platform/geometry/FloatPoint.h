@@ -54,8 +54,10 @@ public:
     FloatPoint() : m_x(0), m_y(0) { }
     FloatPoint(float x, float y) : m_x(x), m_y(y) { }
     FloatPoint(const IntPoint&);
-    FloatPoint(const LayoutPoint&);
+    explicit FloatPoint(const LayoutPoint&);
     explicit FloatPoint(const FloatSize& size) : m_x(size.width()), m_y(size.height()) { }
+    explicit FloatPoint(const LayoutSize&);
+    explicit FloatPoint(const IntSize& size) : m_x(size.width()), m_y(size.height()) { }
 
     static FloatPoint zero() { return FloatPoint(); }
 
@@ -177,12 +179,32 @@ inline FloatPoint operator+(const FloatPoint& a, const FloatSize& b)
     return FloatPoint(a.x() + b.width(), a.y() + b.height());
 }
 
+inline FloatPoint operator+(const FloatPoint& a, const IntSize& b)
+{
+    return FloatPoint(a.x() + b.width(), a.y() + b.height());
+}
+
+inline FloatPoint operator+(const IntPoint& a, const FloatSize& b)
+{
+    return FloatPoint(a.x() + b.width(), a.y() + b.height());
+}
+
 inline FloatPoint operator+(const FloatPoint& a, const FloatPoint& b)
 {
     return FloatPoint(a.x() + b.x(), a.y() + b.y());
 }
 
+inline FloatPoint operator+(const FloatPoint& a, const IntPoint& b)
+{
+    return FloatPoint(a.x() + b.x(), a.y() + b.y());
+}
+
 inline FloatSize operator-(const FloatPoint& a, const FloatPoint& b)
+{
+    return FloatSize(a.x() - b.x(), a.y() - b.y());
+}
+
+inline FloatSize operator-(const FloatPoint& a, const IntPoint& b)
 {
     return FloatSize(a.x() - b.x(), a.y() - b.y());
 }

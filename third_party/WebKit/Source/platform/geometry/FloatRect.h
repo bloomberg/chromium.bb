@@ -41,8 +41,9 @@ typedef struct CGRect CGRect;
 
 namespace blink {
 
-class LayoutRect;
 class IntRect;
+class LayoutRect;
+class LayoutSize;
 
 class PLATFORM_EXPORT FloatRect {
 public:
@@ -87,6 +88,8 @@ public:
     FloatPoint center() const { return FloatPoint(x() + width() / 2, y() + height() / 2); }
 
     void move(const FloatSize& delta) { m_location += delta; }
+    void move(const LayoutSize&);
+    void move(const IntSize&);
     void moveBy(const FloatPoint& delta) { m_location.move(delta.x(), delta.y()); }
     void move(float dx, float dy) { m_location.move(dx, dy); }
 

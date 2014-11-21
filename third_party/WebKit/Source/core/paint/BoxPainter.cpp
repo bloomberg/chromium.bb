@@ -2005,10 +2005,10 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
     //
     switch (side) {
     case BSTop:
-        quad[0] = outerRect.minXMinYCorner();
-        quad[1] = innerRect.minXMinYCorner();
-        quad[2] = innerRect.maxXMinYCorner();
-        quad[3] = outerRect.maxXMinYCorner();
+        quad[0] = FloatPoint(outerRect.minXMinYCorner());
+        quad[1] = FloatPoint(innerRect.minXMinYCorner());
+        quad[2] = FloatPoint(innerRect.maxXMinYCorner());
+        quad[3] = FloatPoint(outerRect.maxXMinYCorner());
 
         if (!innerBorder.radii().topLeft().isZero()) {
             findIntersection(quad[0], quad[1],
@@ -2034,10 +2034,10 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
         break;
 
     case BSLeft:
-        quad[0] = outerRect.minXMinYCorner();
-        quad[1] = innerRect.minXMinYCorner();
-        quad[2] = innerRect.minXMaxYCorner();
-        quad[3] = outerRect.minXMaxYCorner();
+        quad[0] = FloatPoint(outerRect.minXMinYCorner());
+        quad[1] = FloatPoint(innerRect.minXMinYCorner());
+        quad[2] = FloatPoint(innerRect.minXMaxYCorner());
+        quad[3] = FloatPoint(outerRect.minXMaxYCorner());
 
         if (!innerBorder.radii().topLeft().isZero()) {
             findIntersection(quad[0], quad[1],
@@ -2063,10 +2063,10 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
         break;
 
     case BSBottom:
-        quad[0] = outerRect.minXMaxYCorner();
-        quad[1] = innerRect.minXMaxYCorner();
-        quad[2] = innerRect.maxXMaxYCorner();
-        quad[3] = outerRect.maxXMaxYCorner();
+        quad[0] = FloatPoint(outerRect.minXMaxYCorner());
+        quad[1] = FloatPoint(innerRect.minXMaxYCorner());
+        quad[2] = FloatPoint(innerRect.maxXMaxYCorner());
+        quad[3] = FloatPoint(outerRect.maxXMaxYCorner());
 
         if (!innerBorder.radii().bottomLeft().isZero()) {
             findIntersection(quad[0], quad[1],
@@ -2092,10 +2092,10 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
         break;
 
     case BSRight:
-        quad[0] = outerRect.maxXMinYCorner();
-        quad[1] = innerRect.maxXMinYCorner();
-        quad[2] = innerRect.maxXMaxYCorner();
-        quad[3] = outerRect.maxXMaxYCorner();
+        quad[0] = FloatPoint(outerRect.maxXMinYCorner());
+        quad[1] = FloatPoint(innerRect.maxXMinYCorner());
+        quad[2] = FloatPoint(innerRect.maxXMaxYCorner());
+        quad[3] = FloatPoint(outerRect.maxXMaxYCorner());
 
         if (!innerBorder.radii().topRight().isZero()) {
             findIntersection(quad[0], quad[1],

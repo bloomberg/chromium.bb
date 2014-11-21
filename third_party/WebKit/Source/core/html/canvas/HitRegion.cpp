@@ -45,6 +45,11 @@ void HitRegion::updateAccessibility(Element* canvas)
 
 bool HitRegion::contains(const LayoutPoint& point) const
 {
+    return m_path.contains(FloatPoint(point), m_fillRule);
+}
+
+bool HitRegion::contains(const FloatPoint& point) const
+{
     return m_path.contains(point, m_fillRule);
 }
 

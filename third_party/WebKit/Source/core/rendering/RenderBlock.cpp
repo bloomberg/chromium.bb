@@ -2195,7 +2195,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         case ClipPathOperation::SHAPE: {
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style()->clipPath());
             // FIXME: handle marginBox etc.
-            if (!clipPath->path(borderBoxRect()).contains(locationInContainer.point() - localOffset, clipPath->windRule()))
+            if (!clipPath->path(borderBoxRect()).contains(FloatPoint(locationInContainer.point() - localOffset), clipPath->windRule()))
                 return false;
             break;
         }

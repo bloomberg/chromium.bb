@@ -103,7 +103,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     FloatPoint boxOrigin = m_inlineTextBox.locationIncludingFlipping();
     boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
-    FloatRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
+    FloatRect boxRect(boxOrigin, FloatSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
 
     RenderCombineText* combinedText = styleToUse->hasTextCombine() && m_inlineTextBox.renderer().isCombineText() && toRenderCombineText(m_inlineTextBox.renderer()).isCombined() ? &toRenderCombineText(m_inlineTextBox.renderer()) : 0;
 

@@ -233,7 +233,7 @@ void RenderImage::paintInvalidationOrMarkForLayout(bool imageSizeChangedToAccomo
     if (rect) {
         // The image changed rect is in source image coordinates (without zoom),
         // so map from the bounds of the image to the contentsBox.
-        const LayoutSize imageSizeWithoutZoom = m_imageResource->imageSize(1 / style()->effectiveZoom());
+        const FloatSize imageSizeWithoutZoom(m_imageResource->imageSize(1 / style()->effectiveZoom()));
         paintInvalidationRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSizeWithoutZoom), contentBoxRect()));
         // Guard against too-large changed rects.
         paintInvalidationRect.intersect(contentBoxRect());

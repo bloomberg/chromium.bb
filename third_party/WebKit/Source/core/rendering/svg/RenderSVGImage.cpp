@@ -90,7 +90,7 @@ bool RenderSVGImage::updateImageViewport()
     ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->usesImageContainerSize()) {
         FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
-        if (imageViewportSize != m_imageResource->imageSize(style()->effectiveZoom())) {
+        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(style()->effectiveZoom())) {
             m_imageResource->setContainerSizeForRenderer(roundedIntSize(imageViewportSize));
             updatedViewport = true;
         }

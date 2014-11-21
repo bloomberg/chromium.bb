@@ -50,6 +50,16 @@ FloatRect::FloatRect(const SkRect& r) : m_location(r.fLeft, r.fTop), m_size(r.wi
 {
 }
 
+void FloatRect::move(const LayoutSize& delta)
+{
+    m_location.move(delta.width().toFloat(), delta.height().toFloat());
+}
+
+void FloatRect::move(const IntSize& delta)
+{
+    m_location.move(delta.width(), delta.height());
+}
+
 FloatRect FloatRect::narrowPrecision(double x, double y, double width, double height)
 {
     return FloatRect(narrowPrecisionToFloat(x), narrowPrecisionToFloat(y), narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));

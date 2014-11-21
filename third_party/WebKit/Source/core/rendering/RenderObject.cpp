@@ -2045,7 +2045,7 @@ FloatPoint RenderObject::localToInvalidationBackingPoint(const LayoutPoint& loca
 
     if (backingLayer)
         *backingLayer = layer;
-    FloatPoint containerPoint = localToContainerPoint(localPoint, paintInvalidationContainer, TraverseDocumentBoundaries);
+    FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), paintInvalidationContainer, TraverseDocumentBoundaries);
 
     if (layer->compositingState() == NotComposited) // This can happen for RenderFlowThread.
         return containerPoint;

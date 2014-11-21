@@ -193,7 +193,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
         int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
         textPos.setX(availableWidth - ceilf(textWidth));
     }
-    buffer->context()->drawBidiText(labelFont, TextRunPaintInfo(textRun), textPos);
+    buffer->context()->drawBidiText(labelFont, TextRunPaintInfo(textRun), FloatPoint(textPos));
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);

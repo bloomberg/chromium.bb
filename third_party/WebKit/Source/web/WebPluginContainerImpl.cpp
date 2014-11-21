@@ -549,7 +549,7 @@ WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
     if (!view)
         return point;
     WebPoint windowPoint = view->windowToContents(point);
-    return roundedIntPoint(m_element->renderer()->absoluteToLocal(LayoutPoint(windowPoint), UseTransforms));
+    return roundedIntPoint(m_element->renderer()->absoluteToLocal(FloatPoint(windowPoint), UseTransforms));
 }
 
 WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
@@ -557,7 +557,7 @@ WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
     FrameView* view = toFrameView(parent());
     if (!view)
         return point;
-    IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(LayoutPoint(point), UseTransforms));
+    IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(FloatPoint(point), UseTransforms));
     return view->contentsToWindow(absolutePoint);
 }
 

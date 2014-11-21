@@ -327,7 +327,7 @@ String RenderText::plainText() const
 void RenderText::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        rects.append(enclosingIntRect(FloatRect(accumulatedOffset + box->topLeft(), box->size())));
+        rects.append(enclosingIntRect(FloatRect(FloatPoint(accumulatedOffset) + box->topLeft(), box->size())));
 }
 
 static FloatRect localQuadForTextBox(InlineTextBox* box, unsigned start, unsigned end, bool useSelectionHeight)

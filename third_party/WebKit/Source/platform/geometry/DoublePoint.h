@@ -8,6 +8,7 @@
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
 
@@ -33,6 +34,7 @@ public:
         , m_y(p.y())
     {
     }
+    explicit DoublePoint(const LayoutPoint&);
 
     explicit DoublePoint(const DoubleSize& size)
         : m_x(size.width()), m_y(size.height())
@@ -67,6 +69,11 @@ inline bool operator!=(const DoublePoint& a, const DoublePoint& b)
 }
 
 inline DoublePoint operator+(const DoublePoint& a, const DoubleSize& b)
+{
+    return DoublePoint(a.x() + b.width(), a.y() + b.height());
+}
+
+inline DoublePoint operator+(const IntPoint& a, const DoubleSize& b)
 {
     return DoublePoint(a.x() + b.width(), a.y() + b.height());
 }

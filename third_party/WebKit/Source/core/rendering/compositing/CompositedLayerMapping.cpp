@@ -1325,8 +1325,8 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
 
     if (GraphicsLayer* layer = layerForScrollCorner()) {
         const LayoutRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
-        layer->setPosition(scrollCornerAndResizer.location() - offsetFromRenderer);
-        layer->setSize(scrollCornerAndResizer.size());
+        layer->setPosition(FloatPoint(scrollCornerAndResizer.location() - offsetFromRenderer));
+        layer->setSize(FloatSize(scrollCornerAndResizer.size()));
         layer->setDrawsContent(!scrollCornerAndResizer.isEmpty());
     }
 }
