@@ -195,7 +195,7 @@ void BluetoothTaskManagerWin::StartPolling() {
 
 void BluetoothTaskManagerWin::Shutdown() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  if (worker_pool_)
+  if (worker_pool_.get())
     worker_pool_->Shutdown();
 }
 
