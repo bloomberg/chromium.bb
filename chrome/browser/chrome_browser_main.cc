@@ -37,6 +37,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -602,8 +603,10 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBenchmarking))
+  if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
+      command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
+  }
 
   // Ensure any field trials specified on the command line are initialized.
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
