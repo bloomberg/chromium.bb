@@ -135,8 +135,6 @@ void CastSenderImpl::InitializeVideo(
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  CHECK(video_config.use_external_encoder ||
-        cast_environment_->HasVideoThread());
 
   VLOG(1) << "CastSenderImpl@" << this << "::InitializeVideo()";
 

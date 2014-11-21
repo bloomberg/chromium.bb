@@ -56,6 +56,7 @@ VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config)
     : cast_environment_(cast_environment) {
+  CHECK(cast_environment_->HasVideoThread());
   if (video_config.codec == CODEC_VIDEO_VP8) {
     encoder_.reset(new Vp8Encoder(video_config));
     cast_environment_->PostTask(CastEnvironment::VIDEO,

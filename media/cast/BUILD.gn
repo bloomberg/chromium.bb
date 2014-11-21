@@ -156,6 +156,14 @@ source_set("sender") {
       "sender/vp8_encoder.h",
     ]
   }
+
+  # iOS and OS X encoders
+  if (is_ios || is_mac) {
+    sources += [
+      "sender/h264_vt_encoder.cc",
+      "sender/h264_vt_encoder.h",
+    ]
+  }
 }
 
 source_set("receiver") {
@@ -302,6 +310,23 @@ test("cast_unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+if (is_ios || is_mac) {
+  test("cast_h264_vt_encoder_unittests") {
+    sources = [
+      "sender/h264_vt_encoder_unittest.cc",
+    ]
+    deps = [
+      ":common",
+      ":sender",
+      ":test_support",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/ffmpeg",
+    ]
+  }
 }
 
 executable("generate_barcode_video") {

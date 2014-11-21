@@ -192,6 +192,13 @@
             'sender/vp8_encoder.h',
           ],
         }], # OS=="ios"
+        # iOS and OS X encoders
+        ['OS=="ios" or OS=="mac"', {
+          'sources': [
+            'sender/h264_vt_encoder.cc',
+            'sender/h264_vt_encoder.h',
+          ],
+        }],  # OS=="ios" or OS=="mac"
       ], # conditions
     },
     {

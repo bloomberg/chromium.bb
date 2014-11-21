@@ -340,6 +340,29 @@
           }
         ]
       }
-    ]
-  ], # targets
+    ],
+    ['OS=="ios" or OS=="mac"', {
+      'targets': [
+        {
+          # GN version: //media/cast:cast_h264_vt_encoder_unittests
+          'target_name': 'cast_h264_vt_encoder_unittests',
+          'type': '<(gtest_target_type)',
+          'include_dirs': [
+            '<(DEPTH)/',
+          ],
+          'dependencies': [
+            'cast_base',
+            'cast_sender',
+            'cast_test_utility',
+            '<(DEPTH)/base/base.gyp:test_support_base',
+            '<(DEPTH)/testing/gmock.gyp:gmock',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
+          'sources': [
+            'sender/h264_vt_encoder_unittest.cc',
+          ],
+      }], # targets
+    }], # OS=="ios" or OS=="mac"
+  ], # conditions
 }
