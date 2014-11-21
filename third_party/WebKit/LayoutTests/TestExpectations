@@ -693,8 +693,6 @@ crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ F
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
-crbug.com/435286 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
-
 crbug.com/408992 [ Mac ] fast/text/international/vertical-text-glyph-test.html [ Failure ]
 crbug.com/408992 [ Mac ] virtual/textblob/fast/text/international/vertical-text-glyph-test.html [ Failure ]
 crbug.com/408992 [ Mac ] fast/writing-mode/text-orientation-basic.html [ Failure ]
