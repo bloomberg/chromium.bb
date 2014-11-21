@@ -405,12 +405,11 @@ static const char* GetThreadName(BrowserThread::ID thread) {
 
 // static
 std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
-  const std::string& message_loop_name =
-      base::MessageLoop::current()->thread_name();
+  const base::MessageLoop* message_loop = base::MessageLoop::current();
   ID actual_browser_thread;
   const char* actual_name = "Unknown Thread";
-  if (!message_loop_name.empty()) {
-    actual_name = message_loop_name.c_str();
+  if (message_loop && !message_loop->thread_name().empty()) {
+    actual_name = message_loop->thread_name().c_str();
   } else if (GetCurrentThreadIdentifier(&actual_browser_thread)) {
     actual_name = GetThreadName(actual_browser_thread);
   }
