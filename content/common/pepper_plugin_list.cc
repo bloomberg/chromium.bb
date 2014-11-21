@@ -57,9 +57,9 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
   size_t plugins_to_register = modules.size();
   if (plugins_to_register > kMaxPluginsToRegisterFromCommandLine) {
-    VLOG(1) << plugins_to_register << " pepper plugins registered from"
-        << " command line which exceeds the limit (maximum "
-        << kMaxPluginsToRegisterFromCommandLine << " plugins allowed)";
+    DVLOG(1) << plugins_to_register << " pepper plugins registered from"
+             << " command line which exceeds the limit (maximum "
+             << kMaxPluginsToRegisterFromCommandLine << " plugins allowed)";
     plugins_to_register = kMaxPluginsToRegisterFromCommandLine;
   }
 
@@ -67,7 +67,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     std::vector<std::string> parts;
     base::SplitString(modules[i], ';', &parts);
     if (parts.size() < 2) {
-      VLOG(1) << "Required mime-type not found";
+      DVLOG(1) << "Required mime-type not found";
       continue;
     }
 
@@ -90,7 +90,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
       if (base::PathExists(plugin.path)) {
         skip_file_check_flags |= index_mask;
       } else {
-        VLOG(1) << "Plugin doesn't exist: " << plugin.path.MaybeAsASCII();
+        DVLOG(1) << "Plugin doesn't exist: " << plugin.path.MaybeAsASCII();
         continue;
       }
     }

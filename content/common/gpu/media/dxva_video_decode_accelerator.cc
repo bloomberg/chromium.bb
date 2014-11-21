@@ -836,7 +836,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
                                        &status);
   IMFCollection* events = output_data_buffer.pEvents;
   if (events != NULL) {
-    VLOG(1) << "Got events from ProcessOuput, but discarding";
+    DVLOG(1) << "Got events from ProcessOuput, but discarding";
     events->Release();
   }
   if (FAILED(hr)) {

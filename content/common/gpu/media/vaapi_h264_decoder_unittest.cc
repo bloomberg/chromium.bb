@@ -167,7 +167,7 @@ bool VaapiH264DecoderLoop::Run() {
         LOG(ERROR) << "Decode Error";
         return false;
       case VaapiH264Decoder::kAllocateNewSurfaces:
-        VLOG(1) << "Allocate new surfaces";
+        DVLOG(1) << "Allocate new surfaces";
         if (!AllocateNewSurfaces()) {
           LOG(ERROR) << "Failed to allocate new surfaces";
           return false;
@@ -175,11 +175,11 @@ bool VaapiH264DecoderLoop::Run() {
         break;
       case VaapiH264Decoder::kRanOutOfStreamData: {
         bool rc = decoder_->Flush();
-        VLOG(1) << "Flush returns " << rc;
+        DVLOG(1) << "Flush returns " << rc;
         return rc;
       }
       case VaapiH264Decoder::kRanOutOfSurfaces:
-        VLOG(1) << "Ran out of surfaces";
+        DVLOG(1) << "Ran out of surfaces";
         RefillSurfaces();
         break;
     }
@@ -258,7 +258,7 @@ bool VaapiH264DecoderLoop::ProcessVideoFrame(
 void VaapiH264DecoderLoop::OutputPicture(
     int32 input_id,
     const scoped_refptr<VASurface>& va_surface) {
-  VLOG(1) << "OutputPicture: picture " << num_outputted_pictures_++;
+  DVLOG(1) << "OutputPicture: picture " << num_outputted_pictures_++;
 
   VAImage image;
   void* mem;
@@ -328,9 +328,9 @@ TEST(VaapiH264DecoderTest, TestDecode) {
     ASSERT_FALSE(input_file.empty()) << "Need to specify --input_file";
   }
 
-  VLOG(1) << "Input File: " << input_file.value();
-  VLOG(1) << "Output File: " << output_file.value();
-  VLOG(1) << "Expected MD5 sum: " << md5sum;
+  DVLOG(1) << "Input File: " << input_file.value();
+  DVLOG(1) << "Output File: " << output_file.value();
+  DVLOG(1) << "Expected MD5 sum: " << md5sum;
 
   content::VaapiH264DecoderLoop loop;
   ASSERT_TRUE(loop.Initialize(input_file, output_file))
@@ -339,7 +339,7 @@ TEST(VaapiH264DecoderTest, TestDecode) {
 
   if (!md5sum.empty()) {
     std::string actual = loop.GetMD5Sum();
-    VLOG(1) << "Actual MD5 sum: " << actual;
+    DVLOG(1) << "Actual MD5 sum: " << actual;
     EXPECT_EQ(md5sum, actual);
   }
 }
