@@ -29,13 +29,17 @@ function DeviceHandler() {
    * @private {boolean}
    */
   this.mediaImportEnabled_ = false;
+
   // Use the command line switch to enable this new feature.
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-cloud-backup',
-      /** @param {boolean} enabled */
-      function(enabled) {
-        this.mediaImportEnabled_ = enabled;
-      }.bind(this));
+  importer.importEnabled()
+      .then(
+          /**
+           * @param {boolean} enabled
+           * @this {DeviceHandler}
+           */
+          function(enabled) {
+            this.mediaImportEnabled_ = enabled;
+          }.bind(this));
 }
 
 DeviceHandler.prototype = {

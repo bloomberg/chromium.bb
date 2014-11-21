@@ -159,24 +159,18 @@ FileBrowserBackground.prototype = {
  * @return {!Promise.<!importer.HistoryLoader>}
  */
 FileBrowserBackground.initHistoryLoader_ = function() {
-  return new Promise(
-      function(resolve) {
-        // Replaces the dummy history object with a real instance
-        // if cloud backup is enabled.
-        chrome.commandLinePrivate.hasSwitch(
-            'enable-cloud-backup',
-            /**
-             * @param {boolean} enabled
-             * @this {!FileBrowserBackground}
-             */
-            function(enabled) {
-              var loader = enabled ?
-                  new importer.SynchronizedHistoryLoader(
-                      new importer.ChromeSyncFileEntryProvider()) :
-                  new importer.DummyImportHistory(false);
-              resolve(loader);
-            });
-      });
+  return importer.importEnabled()
+      .then(
+          /**
+           * @param {boolean} enabled
+           * @this {!FileBrowserBackground}
+           */
+          function(enabled) {
+            return enabled ?
+                new importer.SynchronizedHistoryLoader(
+                    new importer.ChromeSyncFileEntryProvider()) :
+                new importer.DummyImportHistory(false);
+          });
 };
 
 /**

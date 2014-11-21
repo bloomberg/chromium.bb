@@ -105,55 +105,82 @@ function testGoodDevice() {
       chrome.notifications.items['deviceNavigation:/device/path'].message);
 }
 
-function testMediaDeviceWithImportEnabled() {
+function testMediaDeviceWithImportEnabled(testCallback) {
   // "Enable" cloud backup, then make a device handler.
   chrome.commandLinePrivate.cloudBackupEnabled = true;
   var handler = new DeviceHandler();
 
-  chrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      isParentDevice: true,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label',
-      hasMedia: true
-    },
-    shouldNotify: true
-  });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertTrue('deviceImport:/device/path' in chrome.notifications.items,
-      'The import notification was not found in the notifications queue');
-  assertEquals(
-      'DEVICE_IMPORT',
-      chrome.notifications.items['deviceImport:/device/path'].message,
-      'The import notification did not have the right message');
+  importer.importEnabled()
+      .then(
+          function(ignored) {
+            chrome.fileManagerPrivate.onMountCompleted.dispatch({
+              eventType: 'mount',
+              status: 'success',
+              volumeMetadata: {
+                isParentDevice: true,
+                deviceType: 'usb',
+                devicePath: '/device/path',
+                deviceLabel: 'label',
+                hasMedia: true
+              },
+              shouldNotify: true
+            });
+            assertEquals(1, Object.keys(chrome.notifications.items).length);
+            assertTrue(
+                'deviceImport:/device/path' in chrome.notifications.items,
+                'Import notification not found in the notifications queue.');
+            assertEquals(
+                'DEVICE_IMPORT',
+                chrome.notifications.items[
+                    'deviceImport:/device/path'].message,
+                'Import notification did not have the right message.');
+
+            testCallback(/* was error */ false);
+          })
+      .catch(
+          function(error) {
+            console.error('TEST FAILED: ' + error);
+            testCallback(/* was error */ true);
+          });
 }
 
-function testMediaDeviceWithImportDisabled() {
+function testMediaDeviceWithImportDisabled(testCallback) {
   // "Disable" cloud backup, then make a device handler.
   chrome.commandLinePrivate.cloudBackupEnabled = false;
   var handler = new DeviceHandler();
 
-  chrome.fileManagerPrivate.onMountCompleted.dispatch({
-    eventType: 'mount',
-    status: 'success',
-    volumeMetadata: {
-      isParentDevice: true,
-      deviceType: 'usb',
-      devicePath: '/device/path',
-      deviceLabel: 'label',
-      hasMedia: true
-    },
-    shouldNotify: true
-  });
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertFalse('deviceImport:/device/path' in chrome.notifications.items,
-      'An unexpected import notification was found in the notifications queue');
-  assertEquals(
-      'DEVICE_NAVIGATION',
-      chrome.notifications.items['deviceNavigation:/device/path'].message);
+  importer.importEnabled()
+      .then(
+          function(ignored) {
+            chrome.fileManagerPrivate.onMountCompleted.dispatch({
+              eventType: 'mount',
+              status: 'success',
+              volumeMetadata: {
+                isParentDevice: true,
+                deviceType: 'usb',
+                devicePath: '/device/path',
+                deviceLabel: 'label',
+                hasMedia: true
+              },
+              shouldNotify: true
+            });
+            assertEquals(1, Object.keys(chrome.notifications.items).length);
+            assertFalse(
+                'deviceImport:/device/path' in chrome.notifications.items,
+                'Unexpected import notification found in notifications queue.');
+            assertEquals(
+                'DEVICE_NAVIGATION',
+                chrome.notifications.items[
+                    'deviceNavigation:/device/path'].message,
+                'Device notification did not have the right message.');
+
+            testCallback(/* was error */ false);
+          })
+      .catch(
+          function(error) {
+            console.error('TEST FAILED: ' + error);
+            testCallback(/* was error */ true);
+          });
 }
 
 function testGoodDeviceNotNavigated() {
