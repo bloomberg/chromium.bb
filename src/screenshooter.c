@@ -481,7 +481,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	do_yflip = !!(compositor->capabilities & WESTON_CAP_CAPTURE_YFLIP);
 
-	recorder = malloc(sizeof *recorder);
+	recorder = zalloc(sizeof *recorder);
 	if (recorder == NULL) {
 		weston_log("%s: out of memory\n", __func__);
 		return;
@@ -491,9 +491,6 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	size = stride * 4 * output->current_mode->height;
 	recorder->frame = zalloc(size);
 	recorder->rect = malloc(size);
-	recorder->total = 0;
-	recorder->count = 0;
-	recorder->destroying = 0;
 	recorder->output = output;
 
 	if ((recorder->frame == NULL) || (recorder->rect == NULL)) {
@@ -502,9 +499,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		return;
 	}
 
-	if (do_yflip)
-		recorder->tmpbuf = NULL;
-	else
+	if (!do_yflip)
 		recorder->tmpbuf = malloc(size);
 
 	header.magic = WCAP_HEADER_MAGIC;

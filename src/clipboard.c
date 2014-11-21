@@ -214,9 +214,10 @@ clipboard_client_create(struct clipboard_source *source, int fd)
 	struct wl_event_loop *loop =
 		wl_display_get_event_loop(seat->compositor->wl_display);
 
-	client = malloc(sizeof *client);
+	client = zalloc(sizeof *client);
+	if (client == NULL)
+		return;
 
-	client->offset = 0;
 	client->source = source;
 	source->refcount++;
 	client->event_source =
