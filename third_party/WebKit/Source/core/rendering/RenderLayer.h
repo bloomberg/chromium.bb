@@ -116,7 +116,7 @@ public:
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
 
-    bool isTransparent() const { return renderer()->isTransparent() || renderer()->hasBlendMode() || renderer()->hasMask(); }
+    bool isTransparent() const { return renderer()->isTransparent() || renderer()->style()->hasBlendMode() || renderer()->hasMask(); }
 
     bool isReflection() const { return renderer()->isReplica(); }
     RenderLayerReflectionInfo* reflectionInfo() { return m_reflectionInfo.get(); }

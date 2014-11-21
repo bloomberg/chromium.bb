@@ -396,7 +396,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);
         }
 
-        if (willBeCompositedOrSquashed && layer->renderer()->hasBlendMode())
+        if (willBeCompositedOrSquashed && layer->renderer()->style()->hasBlendMode())
             currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
 
         // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.

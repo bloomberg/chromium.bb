@@ -943,13 +943,13 @@ public:
     const FilterOperations& filter() const { return rareNonInheritedData->m_filter->m_operations; }
     bool hasFilter() const { return !rareNonInheritedData->m_filter->m_operations.operations().isEmpty(); }
 
-    WebBlendMode blendMode() const;
-    void setBlendMode(WebBlendMode v);
-    bool hasBlendMode() const;
+    WebBlendMode blendMode() const { return static_cast<WebBlendMode>(rareNonInheritedData->m_effectiveBlendMode); }
+    void setBlendMode(WebBlendMode v) { rareNonInheritedData.access()->m_effectiveBlendMode = v; }
+    bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }
 
-    EIsolation isolation() const;
-    void setIsolation(EIsolation v);
-    bool hasIsolation() const;
+    EIsolation isolation() const { return static_cast<EIsolation>(rareNonInheritedData->m_isolation); }
+    void setIsolation(EIsolation v) { rareNonInheritedData.access()->m_isolation = v; }
+    bool hasIsolation() const { return isolation() != IsolationAuto; }
 
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 

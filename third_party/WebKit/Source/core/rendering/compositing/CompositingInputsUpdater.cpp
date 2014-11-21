@@ -172,7 +172,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
         updateRecursive(child, updateType, info);
 
         descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->renderer()->hasClipPath();
-        descendantProperties.hasNonIsolatedDescendantWithBlendMode |= (!child->stackingNode()->isStackingContext() && child->hasNonIsolatedDescendantWithBlendMode()) || child->renderer()->hasBlendMode();
+        descendantProperties.hasNonIsolatedDescendantWithBlendMode |= (!child->stackingNode()->isStackingContext() && child->hasNonIsolatedDescendantWithBlendMode()) || child->renderer()->style()->hasBlendMode();
     }
 
     layer->updateDescendantDependentCompositingInputs(descendantProperties);

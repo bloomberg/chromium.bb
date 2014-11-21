@@ -594,8 +594,6 @@ public:
 
     bool hasFilter() const { return style() && style()->hasFilter(); }
 
-    bool hasBlendMode() const;
-
     bool hasShapeOutside() const { return style() && style()->shapeOutside(); }
 
     inline bool preservesNewline() const;
@@ -978,7 +976,7 @@ public:
     bool shouldUseTransformFromContainer(const RenderObject* container) const;
     void getTransformFromContainer(const RenderObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;
 
-    bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || hasBlendMode(); }
+    bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || style()->hasBlendMode(); }
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const { }
 

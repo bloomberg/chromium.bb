@@ -2702,11 +2702,6 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyleFromParentOrShadowHo
     return getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
 }
 
-bool RenderObject::hasBlendMode() const
-{
-    return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasBlendMode();
-}
-
 void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     RenderObject* curr = this;
