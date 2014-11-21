@@ -13,6 +13,8 @@ namespace blink {
 class DOMDataView final : public DOMArrayBufferView {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    typedef char ValueType;
+
     static PassRefPtr<DOMDataView> create(PassRefPtr<DOMArrayBuffer>, unsigned byteOffset, unsigned byteLength);
 
     const DataView* view() const { return static_cast<const DataView*>(DOMArrayBufferView::view()); }

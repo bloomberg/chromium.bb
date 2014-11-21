@@ -17,8 +17,6 @@ class DOMArrayBuffer final : public RefCounted<DOMArrayBuffer>, public ScriptWra
 public:
     static PassRefPtr<DOMArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
-        if (!buffer)
-            return nullptr;
         return adoptRef(new DOMArrayBuffer(buffer));
     }
     static PassRefPtr<DOMArrayBuffer> create(unsigned numElements, unsigned elementByteSize)

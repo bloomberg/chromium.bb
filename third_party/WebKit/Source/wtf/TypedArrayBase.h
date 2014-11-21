@@ -94,9 +94,7 @@ protected:
     static PassRefPtr<Subclass> create(unsigned length)
     {
         RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(T));
-        if (!buffer.get())
-            return nullptr;
-        return create<Subclass>(buffer, 0, length);
+        return create<Subclass>(buffer.release(), 0, length);
     }
 
     template <class Subclass>
@@ -115,19 +113,24 @@ protected:
                                        unsigned length)
     {
         RefPtr<ArrayBuffer> buf(buffer);
-        if (!verifySubRange<T>(buf, byteOffset, length))
-            return nullptr;
+        RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
+        return adoptRef(new Subclass(buf.release(), byteOffset, length));
+    }
 
-        return adoptRef(new Subclass(buf, byteOffset, length));
+    template <class Subclass>
+    static PassRefPtr<Subclass> createOrNull(unsigned length)
+    {
+        RefPtr<ArrayBuffer> buffer = ArrayBuffer::createOrNull(length, sizeof(T));
+        if (!buffer)
+            return nullptr;
+        return create<Subclass>(buffer.release(), 0, length);
     }
 
     template <class Subclass>
     static PassRefPtr<Subclass> createUninitialized(unsigned length)
     {
         RefPtr<ArrayBuffer> buffer = ArrayBuffer::createUninitialized(length, sizeof(T));
-        if (!buffer.get())
-            return nullptr;
-        return create<Subclass>(buffer, 0, length);
+        return create<Subclass>(buffer.release(), 0, length);
     }
 
     template <class Subclass>

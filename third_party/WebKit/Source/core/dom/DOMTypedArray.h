@@ -29,8 +29,6 @@ public:
 
     static PassRefPtr<ThisType> create(PassRefPtr<WTFTypedArray> bufferView)
     {
-        if (!bufferView)
-            return nullptr;
         return adoptRef(new ThisType(bufferView));
     }
     static PassRefPtr<ThisType> create(unsigned length)
@@ -48,12 +46,16 @@ public:
     static PassRefPtr<ThisType> create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned length)
     {
         RefPtr<DOMArrayBuffer> buffer = prpBuffer;
-        if (!buffer)
-            return nullptr;
         RefPtr<WTFTypedArray> bufferView = WTFTypedArray::create(buffer->buffer(), byteOffset, length);
+        return adoptRef(new ThisType(bufferView.release(), buffer.release()));
+    }
+
+    static PassRefPtr<ThisType> createOrNull(unsigned length)
+    {
+        RefPtr<WTFTypedArray> bufferView = WTFTypedArray::createOrNull(length);
         if (!bufferView)
             return nullptr;
-        return adoptRef(new ThisType(bufferView.release(), buffer));
+        return create(bufferView.release());
     }
 
     const WTFTypedArray* view() const { return static_cast<const WTFTypedArray*>(DOMArrayBufferView::view()); }

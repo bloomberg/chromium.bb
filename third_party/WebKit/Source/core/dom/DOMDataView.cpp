@@ -14,12 +14,8 @@ namespace blink {
 PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned byteLength)
 {
     RefPtr<DOMArrayBuffer> buffer = prpBuffer;
-    if (!buffer)
-        return nullptr;
     RefPtr<DataView> dataView = DataView::create(buffer->buffer(), byteOffset, byteLength);
-    if (!dataView)
-        return nullptr;
-    return adoptRef(new DOMDataView(dataView, buffer));
+    return adoptRef(new DOMDataView(dataView.release(), buffer.release()));
 }
 
 v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

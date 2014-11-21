@@ -622,12 +622,6 @@ void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > binaryData)
 
     case BinaryTypeArrayBuffer:
         RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(binaryData->data(), binaryData->size());
-        if (!arrayBuffer) {
-            // Failed to allocate an ArrayBuffer. We need to crash the renderer
-            // since there's no way defined in the spec to tell this to the
-            // user.
-            CRASH();
-        }
         m_eventQueue->dispatch(MessageEvent::create(arrayBuffer.release(), SecurityOrigin::create(m_url)->toString()));
         break;
     }

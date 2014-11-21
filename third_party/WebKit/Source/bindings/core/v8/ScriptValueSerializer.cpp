@@ -1622,68 +1622,82 @@ bool Reader::readArrayBufferView(v8::Handle<v8::Value>* value, CompositeCreator&
     if (!arrayBuffer)
         return false;
 
-    v8::Handle<v8::Object> creationContext = m_scriptState->context()->Global();
+    // Check the offset, length and alignment.
+    int elementByteSize;
     switch (subTag) {
     case ByteArrayTag:
-        *value = toV8(DOMInt8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+        elementByteSize = sizeof(DOMInt8Array::ValueType);
         break;
     case UnsignedByteArrayTag:
-        *value = toV8(DOMUint8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext,  isolate());
+        elementByteSize = sizeof(DOMUint8Array::ValueType);
         break;
     case UnsignedByteClampedArrayTag:
-        *value = toV8(DOMUint8ClampedArray::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+        elementByteSize = sizeof(DOMUint8ClampedArray::ValueType);
         break;
-    case ShortArrayTag: {
-        uint32_t shortLength = byteLength / sizeof(int16_t);
-        if (shortLength * sizeof(int16_t) != byteLength)
-            return false;
-        *value = toV8(DOMInt16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
+    case ShortArrayTag:
+        elementByteSize = sizeof(DOMInt16Array::ValueType);
         break;
-    }
-    case UnsignedShortArrayTag: {
-        uint32_t shortLength = byteLength / sizeof(uint16_t);
-        if (shortLength * sizeof(uint16_t) != byteLength)
-            return false;
-        *value = toV8(DOMUint16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
+    case UnsignedShortArrayTag:
+        elementByteSize = sizeof(DOMUint16Array::ValueType);
         break;
-    }
-    case IntArrayTag: {
-        uint32_t intLength = byteLength / sizeof(int32_t);
-        if (intLength * sizeof(int32_t) != byteLength)
-            return false;
-        *value = toV8(DOMInt32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
+    case IntArrayTag:
+        elementByteSize = sizeof(DOMInt32Array::ValueType);
         break;
-    }
-    case UnsignedIntArrayTag: {
-        uint32_t intLength = byteLength / sizeof(uint32_t);
-        if (intLength * sizeof(uint32_t) != byteLength)
-            return false;
-        *value = toV8(DOMUint32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
+    case UnsignedIntArrayTag:
+        elementByteSize = sizeof(DOMUint32Array::ValueType);
         break;
-    }
-    case FloatArrayTag: {
-        uint32_t floatLength = byteLength / sizeof(float);
-        if (floatLength * sizeof(float) != byteLength)
-            return false;
-        *value = toV8(DOMFloat32Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
+    case FloatArrayTag:
+        elementByteSize = sizeof(DOMFloat32Array::ValueType);
         break;
-    }
-    case DoubleArrayTag: {
-        uint32_t floatLength = byteLength / sizeof(double);
-        if (floatLength * sizeof(double) != byteLength)
-            return false;
-        *value = toV8(DOMFloat64Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
+    case DoubleArrayTag:
+        elementByteSize = sizeof(DOMFloat64Array::ValueType);
         break;
-    }
     case DataViewTag:
-        *value = toV8(DOMDataView::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+        elementByteSize = sizeof(DOMDataView::ValueType);
         break;
     default:
         return false;
     }
-    // The various *Array::create() methods will return null if the range the view expects is
-    // mismatched with the range the buffer can provide or if the byte offset is not aligned
-    // to the size of the element type.
+    const unsigned numElements = byteLength / elementByteSize;
+    const unsigned remainingElements = (arrayBuffer->byteLength() - byteOffset) / elementByteSize;
+    if (byteOffset % elementByteSize
+        || byteOffset > arrayBuffer->byteLength()
+        || numElements > remainingElements)
+        return false;
+
+    v8::Handle<v8::Object> creationContext = m_scriptState->context()->Global();
+    switch (subTag) {
+    case ByteArrayTag:
+        *value = toV8(DOMInt8Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case UnsignedByteArrayTag:
+        *value = toV8(DOMUint8Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext,  isolate());
+        break;
+    case UnsignedByteClampedArrayTag:
+        *value = toV8(DOMUint8ClampedArray::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case ShortArrayTag:
+        *value = toV8(DOMInt16Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case UnsignedShortArrayTag:
+        *value = toV8(DOMUint16Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case IntArrayTag:
+        *value = toV8(DOMInt32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case UnsignedIntArrayTag:
+        *value = toV8(DOMUint32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case FloatArrayTag:
+        *value = toV8(DOMFloat32Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case DoubleArrayTag:
+        *value = toV8(DOMFloat64Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
+        break;
+    case DataViewTag:
+        *value = toV8(DOMDataView::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+        break;
+    }
     return !value->IsEmpty();
 }
 
