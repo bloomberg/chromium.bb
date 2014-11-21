@@ -377,7 +377,7 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
     case TOGGLE_FULLSCREEN_CHROME:
 #if defined(OS_MACOSX)
       if (chrome::mac::SupportsSystemFullscreen()) {
-        GetFullscreenController()->ToggleBrowserFullscreenWithChrome();
+        GetFullscreenController()->ToggleBrowserFullscreenWithToolbar();
         break;
       }
 #endif
@@ -450,56 +450,48 @@ void FullscreenControllerStateTest::VerifyWindowState() {
   switch (state_) {
     case STATE_NORMAL:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_FALSE,
                                     FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_FALSE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_BROWSER_FULLSCREEN_NO_CHROME:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_TRUE,
                                     FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_FALSE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_BROWSER_FULLSCREEN_WITH_CHROME:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_TRUE,
-                                    FULLSCREEN_WITHOUT_CHROME_FALSE,
                                     FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_FALSE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_METRO_SNAP:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_NO_EXPECTATION,
-                                    FULLSCREEN_WITHOUT_CHROME_NO_EXPECTATION,
                                     FULLSCREEN_FOR_BROWSER_NO_EXPECTATION,
                                     FULLSCREEN_FOR_TAB_NO_EXPECTATION,
                                     IN_METRO_SNAP_TRUE);
       break;
     case STATE_TAB_FULLSCREEN:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_TRUE,
                                     FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_TRUE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_TAB_BROWSER_FULLSCREEN:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_TRUE,
                                     FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_TRUE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_TRUE,
                                     FULLSCREEN_FOR_BROWSER_TRUE,
                                     FULLSCREEN_FOR_TAB_TRUE,
                                     IN_METRO_SNAP_FALSE);
       break;
     case STATE_TO_NORMAL:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_FALSE,
                                     FULLSCREEN_FOR_BROWSER_NO_EXPECTATION,
                                     FULLSCREEN_FOR_TAB_NO_EXPECTATION,
                                     IN_METRO_SNAP_FALSE);
@@ -507,7 +499,6 @@ void FullscreenControllerStateTest::VerifyWindowState() {
 
     case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_FALSE,
-                                    FULLSCREEN_WITHOUT_CHROME_TRUE,
 #if defined(OS_MACOSX)
                                     FULLSCREEN_FOR_BROWSER_TRUE,
 #else
@@ -519,7 +510,6 @@ void FullscreenControllerStateTest::VerifyWindowState() {
 
     case STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_TRUE,
-                                    FULLSCREEN_WITHOUT_CHROME_FALSE,
 #if defined(OS_MACOSX)
                                     FULLSCREEN_FOR_BROWSER_TRUE,
 #else
@@ -541,7 +531,6 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       //     << GetAndClearDebugLog();
 #endif
       VerifyWindowStateExpectations(FULLSCREEN_WITH_CHROME_NO_EXPECTATION,
-                                    FULLSCREEN_WITHOUT_CHROME_NO_EXPECTATION,
                                     FULLSCREEN_FOR_BROWSER_FALSE,
                                     FULLSCREEN_FOR_TAB_TRUE,
                                     IN_METRO_SNAP_FALSE);
@@ -742,21 +731,15 @@ void FullscreenControllerStateTest::TestStateAndEvent(State state,
 }
 
 void FullscreenControllerStateTest::VerifyWindowStateExpectations(
-    FullscreenWithChromeExpectation fullscreen_with_chrome,
-    FullscreenWithoutChromeExpectation fullscreen_without_chrome,
+    FullscreenWithToolbarExpectation fullscreen_with_toolbar,
     FullscreenForBrowserExpectation fullscreen_for_browser,
     FullscreenForTabExpectation fullscreen_for_tab,
     InMetroSnapExpectation in_metro_snap) {
-#if defined(OS_MACOSX)
-  if (fullscreen_with_chrome != FULLSCREEN_WITH_CHROME_NO_EXPECTATION) {
-    EXPECT_EQ(GetBrowser()->window()->IsFullscreenWithChrome(),
-              !!fullscreen_with_chrome) << GetAndClearDebugLog();
+  if (fullscreen_with_toolbar != FULLSCREEN_WITH_CHROME_NO_EXPECTATION &&
+      GetBrowser()->window()->SupportsFullscreenWithToolbar()) {
+    EXPECT_EQ(GetBrowser()->window()->IsFullscreenWithToolbar(),
+              !!fullscreen_with_toolbar) << GetAndClearDebugLog();
   }
-  if (fullscreen_without_chrome != FULLSCREEN_WITHOUT_CHROME_NO_EXPECTATION) {
-    EXPECT_EQ(GetBrowser()->window()->IsFullscreenWithoutChrome(),
-              !!fullscreen_without_chrome) << GetAndClearDebugLog();
-  }
-#endif
   if (fullscreen_for_browser != FULLSCREEN_FOR_BROWSER_NO_EXPECTATION) {
     EXPECT_EQ(GetFullscreenController()->IsFullscreenForBrowser(),
               !!fullscreen_for_browser) << GetAndClearDebugLog();

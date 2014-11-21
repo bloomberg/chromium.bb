@@ -64,18 +64,22 @@ class TestBrowserWindow : public BrowserWindow {
   void Minimize() override {}
   void Restore() override {}
   void EnterFullscreen(const GURL& url,
-                       FullscreenExitBubbleType type) override {}
+                       FullscreenExitBubbleType type,
+                       bool with_toolbar) override {}
   void ExitFullscreen() override {}
   void UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) override {}
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
+  bool IsFullscreenBubbleVisible() const override;
+  bool SupportsFullscreenWithToolbar() const override;
+  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
+  bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) override {}
   virtual bool IsInMetroSnapMode() const override;
 #endif
-  bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
@@ -130,13 +134,6 @@ class TestBrowserWindow : public BrowserWindow {
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
-#if defined(OS_MACOSX)
-  void EnterFullscreenWithChrome() override {}
-  void EnterFullscreenWithoutChrome() override {}
-  bool IsFullscreenWithChrome() override;
-  bool IsFullscreenWithoutChrome() override;
-#endif
-
   WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;

@@ -501,8 +501,14 @@ class Command;
 // or exit Lion fullscreen mode.  Must not be called on Snow Leopard or earlier.
 - (void)handleLionToggleFullscreen;
 
-// Enters Canonical Fullscreen.
-- (void)enterFullscreenWithChrome;
+// Enters Browser/Appkit Fullscreen.
+// If |withToolbar| is NO, the tab strip and toolbar are hidden
+// (aka Presentation Mode).
+- (void)enterBrowserFullscreenWithToolbar:(BOOL)withToolbar;
+
+// Adds or removes the tab strip and toolbar from the current window. The
+// window must be in immersive or AppKit Fullscreen.
+- (void)updateFullscreenWithToolbar:(BOOL)withToolbar;
 
 // Updates the contents of the fullscreen exit bubble with |url| and
 // |bubbleType|.
@@ -519,9 +525,6 @@ class Command;
 // Returns YES if the browser window is currently in or entering fullscreen via
 // the AppKit Fullscreen API.
 - (BOOL)isInAppKitFullscreen;
-
-// Enters presentation mode.
-- (void)enterPresentationMode;
 
 // Enter fullscreen for an extension.
 - (void)enterExtensionFullscreenForURL:(const GURL&)url

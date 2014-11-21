@@ -39,21 +39,19 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   ~FullscreenControllerTestWindow() override {}
 
   // BrowserWindow Interface:
-  void EnterFullscreen(const GURL& url, FullscreenExitBubbleType type) override;
+  void EnterFullscreen(const GURL& url,
+                       FullscreenExitBubbleType type,
+                       bool with_toolbar) override;
   void ExitFullscreen() override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
+  bool SupportsFullscreenWithToolbar() const override;
+  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
+  bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) override;
   virtual bool IsInMetroSnapMode() const override;
 #endif
-#if defined(OS_MACOSX)
-  void EnterFullscreenWithChrome() override;
-  void EnterFullscreenWithoutChrome() override;
-  bool IsFullscreenWithChrome() override;
-  bool IsFullscreenWithoutChrome() override;
-#endif
-
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }
   void set_browser(Browser* browser) { browser_ = browser; }
@@ -62,34 +60,36 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   void ChangeWindowFullscreenState();
 
  private:
-  // Enters fullscreen with |new_mac_with_chrome_mode|.
-  void EnterFullscreen(bool new_mac_with_chrome_mode);
+  // Enters fullscreen with |new_mac_with_toolbar_mode|.
+  void EnterFullscreen(bool new_mac_with_toolbar_mode);
 
   // Returns true if ChangeWindowFullscreenState() should be called as a result
   // of updating the current fullscreen state to the passed in state.
   bool IsTransitionReentrant(bool new_fullscreen,
-                             bool new_mac_with_chrome_mode);
+                             bool new_mac_with_toolbar_mode);
 
   WindowState state_;
-  bool mac_with_chrome_mode_;
+  bool mac_with_toolbar_mode_;
   Browser* browser_;
 };
 
 FullscreenControllerTestWindow::FullscreenControllerTestWindow()
     : state_(NORMAL),
-      mac_with_chrome_mode_(false),
+      mac_with_toolbar_mode_(false),
       browser_(NULL) {
 }
 
 void FullscreenControllerTestWindow::EnterFullscreen(
-    const GURL& url, FullscreenExitBubbleType type) {
-  EnterFullscreen(false);
+    const GURL& url,
+    FullscreenExitBubbleType type,
+    bool with_toolbar) {
+  EnterFullscreen(with_toolbar);
 }
 
 void FullscreenControllerTestWindow::ExitFullscreen() {
   if (IsFullscreen()) {
     state_ = TO_NORMAL;
-    mac_with_chrome_mode_ = false;
+    mac_with_toolbar_mode_ = false;
 
     if (IsTransitionReentrant(false, false))
       ChangeWindowFullscreenState();
@@ -108,6 +108,23 @@ bool FullscreenControllerTestWindow::IsFullscreen() const {
 #endif
 }
 
+bool FullscreenControllerTestWindow::SupportsFullscreenWithToolbar() const {
+#if defined(OS_MACOSX)
+  return true;
+#else
+  return false;
+#endif
+}
+
+void FullscreenControllerTestWindow::UpdateFullscreenWithToolbar(
+    bool with_toolbar) {
+  EnterFullscreen(with_toolbar);
+}
+
+bool FullscreenControllerTestWindow::IsFullscreenWithToolbar() const {
+  return IsFullscreen() && mac_with_toolbar_mode_;
+}
+
 #if defined(OS_WIN)
 void FullscreenControllerTestWindow::SetMetroSnapMode(bool enable) {
   if (enable != IsInMetroSnapMode())
@@ -119,24 +136,6 @@ void FullscreenControllerTestWindow::SetMetroSnapMode(bool enable) {
 
 bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
   return state_ == METRO_SNAP;
-}
-#endif
-
-#if defined(OS_MACOSX)
-void FullscreenControllerTestWindow::EnterFullscreenWithChrome() {
-  EnterFullscreen(true);
-}
-
-void FullscreenControllerTestWindow::EnterFullscreenWithoutChrome() {
-  EnterFullscreen(false);
-}
-
-bool FullscreenControllerTestWindow::IsFullscreenWithChrome() {
-  return IsFullscreen() && mac_with_chrome_mode_;
-}
-
-bool FullscreenControllerTestWindow::IsFullscreenWithoutChrome() {
-  return IsFullscreen() && !mac_with_chrome_mode_;
 }
 #endif
 
@@ -170,10 +169,10 @@ void FullscreenControllerTestWindow::ChangeWindowFullscreenState() {
 }
 
 void FullscreenControllerTestWindow::EnterFullscreen(
-    bool new_mac_with_chrome_mode) {
-  bool reentrant = IsTransitionReentrant(true, new_mac_with_chrome_mode);
+    bool new_mac_with_toolbar_mode) {
+  bool reentrant = IsTransitionReentrant(true, new_mac_with_toolbar_mode);
 
-  mac_with_chrome_mode_ = new_mac_with_chrome_mode;
+  mac_with_toolbar_mode_ = new_mac_with_toolbar_mode;
   if (!IsFullscreen())
     state_ = TO_FULLSCREEN;
 
@@ -183,27 +182,27 @@ void FullscreenControllerTestWindow::EnterFullscreen(
 
 bool FullscreenControllerTestWindow::IsTransitionReentrant(
     bool new_fullscreen,
-    bool new_mac_with_chrome_mode) {
+    bool new_mac_with_toolbar_mode) {
 #if defined(OS_MACOSX)
-  bool mac_with_chrome_mode_changed = new_mac_with_chrome_mode ?
-      IsFullscreenWithoutChrome() : IsFullscreenWithChrome();
+  bool mac_with_toolbar_mode_changed =
+      new_mac_with_toolbar_mode != IsFullscreenWithToolbar();
 #else
-  bool mac_with_chrome_mode_changed = false;
+  bool mac_with_toolbar_mode_changed = false;
 #endif
   bool fullscreen_changed = (new_fullscreen != IsFullscreen());
 
-  if (!fullscreen_changed && !mac_with_chrome_mode_changed)
+  if (!fullscreen_changed && !mac_with_toolbar_mode_changed)
     return false;
 
   if (FullscreenControllerStateTest::IsWindowFullscreenStateChangedReentrant())
     return true;
 
   // BrowserWindowCocoa::EnterFullscreen() and
-  // BrowserWindowCocoa::EnterFullscreenWithChrome() are reentrant when
+  // BrowserWindowCocoa::EnterFullscreenWithToolbar() are reentrant when
   // switching between fullscreen with chrome and fullscreen without chrome.
   return state_ == FULLSCREEN &&
       !fullscreen_changed &&
-      mac_with_chrome_mode_changed;
+      mac_with_toolbar_mode_changed;
 }
 
 

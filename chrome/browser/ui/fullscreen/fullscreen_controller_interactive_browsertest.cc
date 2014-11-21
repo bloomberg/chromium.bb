@@ -370,13 +370,11 @@ IN_PROC_BROWSER_TEST_F(
   {
     FullscreenNotificationObserver fullscreen_observer;
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithChrome());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithoutChrome());
+    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
     browser()->ToggleFullscreenModeForTab(tab, true);
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithChrome());
-    EXPECT_TRUE(browser()->window()->IsFullscreenWithoutChrome());
+    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
   }
 
   {
@@ -384,8 +382,7 @@ IN_PROC_BROWSER_TEST_F(
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithChrome());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithoutChrome());
+    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
   }
 
   if (chrome::mac::SupportsSystemFullscreen()) {
@@ -395,8 +392,7 @@ IN_PROC_BROWSER_TEST_F(
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_TRUE(browser()->window()->IsFullscreenWithChrome());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithoutChrome());
+    EXPECT_TRUE(browser()->window()->IsFullscreenWithToolbar());
   }
 }
 #endif

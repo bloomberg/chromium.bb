@@ -75,7 +75,9 @@ class BrowserWindowCocoa :
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
-  void EnterFullscreen(const GURL& url, FullscreenExitBubbleType type) override;
+  void EnterFullscreen(const GURL& url,
+                       FullscreenExitBubbleType type,
+                       bool with_toolbar) override;
   void ExitFullscreen() override;
   void UpdateFullscreenExitBubbleContent(
       const GURL& url,
@@ -83,6 +85,9 @@ class BrowserWindowCocoa :
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
+  bool SupportsFullscreenWithToolbar() const override;
+  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
+  bool IsFullscreenWithToolbar() const override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
@@ -136,10 +141,6 @@ class BrowserWindowCocoa :
   void Cut() override;
   void Copy() override;
   void Paste() override;
-  void EnterFullscreenWithChrome() override;
-  void EnterFullscreenWithoutChrome() override;
-  bool IsFullscreenWithChrome() override;
-  bool IsFullscreenWithoutChrome() override;
   WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;

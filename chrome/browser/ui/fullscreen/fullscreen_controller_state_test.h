@@ -33,7 +33,7 @@ class FullscreenControllerStateTest {
   // Events names for FullscreenController methods.
   enum Event {
     TOGGLE_FULLSCREEN,         // ToggleBrowserFullscreenMode()
-    TOGGLE_FULLSCREEN_CHROME,  // ToggleBrowserFullscreenWithChrome()
+    TOGGLE_FULLSCREEN_CHROME,  // ToggleBrowserFullscreenWithToolbar()
     TAB_FULLSCREEN_TRUE,       // ToggleFullscreenModeForTab(, true)
     TAB_FULLSCREEN_FALSE,      // ToggleFullscreenModeForTab(, false)
     METRO_SNAP_TRUE,           // SetMetroSnapMode(true)
@@ -143,9 +143,7 @@ class FullscreenControllerStateTest {
         enum_prefix##_TRUE, \
         enum_prefix##_NO_EXPECTATION \
       }
-  EXPECTATION_ENUM(FullscreenWithChromeExpectation, FULLSCREEN_WITH_CHROME);
-  EXPECTATION_ENUM(FullscreenWithoutChromeExpectation,
-                   FULLSCREEN_WITHOUT_CHROME);
+  EXPECTATION_ENUM(FullscreenWithToolbarExpectation, FULLSCREEN_WITH_CHROME);
   EXPECTATION_ENUM(FullscreenForBrowserExpectation, FULLSCREEN_FOR_BROWSER);
   EXPECTATION_ENUM(FullscreenForTabExpectation, FULLSCREEN_FOR_TAB);
   EXPECTATION_ENUM(InMetroSnapExpectation, IN_METRO_SNAP);
@@ -181,12 +179,10 @@ class FullscreenControllerStateTest {
 
   // Checks that window state matches the expected controller state.
   virtual void VerifyWindowStateExpectations(
-      FullscreenWithChromeExpectation fullscreen_with_chrome,
-      FullscreenWithoutChromeExpectation fullscreen_without_chrome,
+      FullscreenWithToolbarExpectation fullscreen_with_toolbar,
       FullscreenForBrowserExpectation fullscreen_for_browser,
       FullscreenForTabExpectation fullscreen_for_tab,
       InMetroSnapExpectation in_metro_snap);
-
 
   virtual Browser* GetBrowser() = 0;
   FullscreenController* GetFullscreenController();

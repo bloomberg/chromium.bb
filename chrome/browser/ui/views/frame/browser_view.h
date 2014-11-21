@@ -281,7 +281,8 @@ class BrowserView : public BrowserWindow,
   void Minimize() override;
   void Restore() override;
   void EnterFullscreen(const GURL& url,
-                       FullscreenExitBubbleType bubble_type) override;
+                       FullscreenExitBubbleType bubble_type,
+                       bool with_toolbar) override;
   void ExitFullscreen() override;
   void UpdateFullscreenExitBubbleContent(
       const GURL& url,
@@ -289,6 +290,9 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
+  bool SupportsFullscreenWithToolbar() const override;
+  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
+  bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) override;
   virtual bool IsInMetroSnapMode() const override;

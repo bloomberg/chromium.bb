@@ -65,6 +65,10 @@ class FullscreenController : public content::NotificationObserver {
 
   void ToggleBrowserFullscreenMode();
 
+  // Fullscreen mode with tab strip and toolbar shown.
+  // Currently only supported on Mac.
+  void ToggleBrowserFullscreenWithToolbar();
+
   // Extension API implementation uses this method to toggle fullscreen mode.
   // The extension's name is displayed in the full screen bubble UI to attribute
   // the cause of the full screen state change.
@@ -102,10 +106,6 @@ class FullscreenController : public content::NotificationObserver {
   // API that puts the window into a mode suitable for rendering when Chrome
   // is rendered in a 20% screen-width Metro snap view on Windows 8.
   void SetMetroSnapMode(bool enable);
-#endif
-
-#if defined(OS_MACOSX)
-  void ToggleBrowserFullscreenWithChrome();
 #endif
 
   // Mouse Lock ////////////////////////////////////////////////////////////////
@@ -168,9 +168,7 @@ class FullscreenController : public content::NotificationObserver {
 
   enum FullscreenInternalOption {
     BROWSER,
-#if defined(OS_MACOSX)
-    BROWSER_WITH_CHROME,
-#endif
+    BROWSER_WITH_TOOLBAR,
     TAB
   };
 
@@ -225,10 +223,8 @@ class FullscreenController : public content::NotificationObserver {
   enum PriorFullscreenState {
     STATE_INVALID,
     STATE_NORMAL,
-    STATE_BROWSER_FULLSCREEN_NO_CHROME,
-#if defined(OS_MACOSX)
-    STATE_BROWSER_FULLSCREEN_WITH_CHROME,
-#endif
+    STATE_BROWSER_FULLSCREEN_NO_TOOLBAR,
+    STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR,
   };
   // The state before entering tab fullscreen mode via webkitRequestFullScreen.
   // When not in tab fullscreen, it is STATE_INVALID.

@@ -14,10 +14,10 @@
 
 namespace chrome {
 
-void ToggleFullscreenWithChromeOrFallback(Browser* browser) {
+void ToggleFullscreenWithToolbarOrFallback(Browser* browser) {
   DCHECK(browser);
   if (chrome::mac::SupportsSystemFullscreen())
-    browser->fullscreen_controller()->ToggleBrowserFullscreenWithChrome();
+    browser->fullscreen_controller()->ToggleBrowserFullscreenWithToolbar();
   else
     ToggleFullscreenMode(browser);
 }

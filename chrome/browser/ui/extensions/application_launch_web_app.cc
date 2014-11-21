@@ -200,7 +200,7 @@ WebContents* OpenWebAppTab(const AppLaunchParams& launch_params,
     if (launch_type == extensions::LAUNCH_TYPE_FULLSCREEN &&
         !browser->window()->IsFullscreen()) {
 #if defined(OS_MACOSX)
-      chrome::ToggleFullscreenWithChromeOrFallback(browser);
+      chrome::ToggleFullscreenWithToolbarOrFallback(browser);
 #else
       chrome::ToggleFullscreenMode(browser);
 #endif

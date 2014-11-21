@@ -873,8 +873,9 @@ void BrowserView::Restore() {
   frame_->Restore();
 }
 
-void BrowserView::EnterFullscreen(
-    const GURL& url, FullscreenExitBubbleType bubble_type) {
+void BrowserView::EnterFullscreen(const GURL& url,
+                                  FullscreenExitBubbleType bubble_type,
+                                  bool with_toolbar) {
   if (IsFullscreen())
     return;  // Nothing to do.
 
@@ -918,6 +919,19 @@ bool BrowserView::IsFullscreen() const {
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
   return fullscreen_bubble_ != nullptr;
+}
+
+bool BrowserView::SupportsFullscreenWithToolbar() const {
+  return false;
+}
+
+void BrowserView::UpdateFullscreenWithToolbar(bool with_toolbar) {
+  // This is currently a Mac only feature.
+  NOTIMPLEMENTED();
+}
+
+bool BrowserView::IsFullscreenWithToolbar() const {
+  return false;
 }
 
 #if defined(OS_WIN)

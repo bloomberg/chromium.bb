@@ -127,9 +127,12 @@ class BrowserWindow : public ui::BaseWindow {
   // + or - in the wrench menu to change zoom).
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) = 0;
 
-  // Accessors for fullscreen mode state.
+  // Methods that change fullscreen state.
+  // On Mac, the tab strip and toolbar will be shown if |with_toolbar| is true,
+  // |with_toolbar| is ignored on other platforms.
   virtual void EnterFullscreen(const GURL& url,
-                               FullscreenExitBubbleType bubble_type) = 0;
+                               FullscreenExitBubbleType bubble_type,
+                               bool with_toolbar) = 0;
   virtual void ExitFullscreen() = 0;
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
@@ -141,6 +144,13 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Returns true if the fullscreen bubble is visible.
   virtual bool IsFullscreenBubbleVisible() const = 0;
+
+  // Show or hide the tab strip, toolbar and bookmark bar when in browser
+  // fullscreen.
+  // Currently only supported on Mac.
+  virtual bool SupportsFullscreenWithToolbar() const = 0;
+  virtual void UpdateFullscreenWithToolbar(bool with_toolbar) = 0;
+  virtual bool IsFullscreenWithToolbar() const = 0;
 
 #if defined(OS_WIN)
   // Sets state for entering or exiting Win8 Metro snap mode.
@@ -311,18 +321,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void Cut() = 0;
   virtual void Copy() = 0;
   virtual void Paste() = 0;
-
-#if defined(OS_MACOSX)
-  // The following two methods cause the browser window to enter AppKit
-  // Fullscreen. The methods are idempotent. The methods are invalid to call on
-  // OSX 10.6. One method displays chrome (e.g. omnibox, tabstrip), whereas the
-  // other method hides it.
-  virtual void EnterFullscreenWithChrome() = 0;
-  virtual void EnterFullscreenWithoutChrome() = 0;
-
-  virtual bool IsFullscreenWithChrome() = 0;
-  virtual bool IsFullscreenWithoutChrome() = 0;
-#endif
 
   // Return the correct disposition for a popup window based on |bounds|.
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

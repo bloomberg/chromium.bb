@@ -455,7 +455,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_FULLSCREEN:
 #if defined(OS_MACOSX)
-      chrome::ToggleFullscreenWithChromeOrFallback(browser_);
+      chrome::ToggleFullscreenWithToolbarOrFallback(browser_);
 #else
       chrome::ToggleFullscreenMode(browser_);
 #endif

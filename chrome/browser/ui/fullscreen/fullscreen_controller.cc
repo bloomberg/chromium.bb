@@ -10,7 +10,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -29,9 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#else
+#if !defined(OS_MACOSX)
 #include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #endif
@@ -67,6 +64,10 @@ bool FullscreenController::IsFullscreenForBrowser() const {
 void FullscreenController::ToggleBrowserFullscreenMode() {
   extension_caused_fullscreen_ = GURL();
   ToggleFullscreenModeInternal(BROWSER);
+}
+
+void FullscreenController::ToggleBrowserFullscreenWithToolbar() {
+  ToggleFullscreenModeInternal(BROWSER_WITH_TOOLBAR);
 }
 
 void FullscreenController::ToggleBrowserFullscreenModeWithExtension(
@@ -126,21 +127,18 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
   if (enter_fullscreen) {
     SetFullscreenedTab(web_contents);
     if (!in_browser_or_tab_fullscreen_mode) {
+      // Normal -> Tab Fullscreen.
       state_prior_to_tab_fullscreen_ = STATE_NORMAL;
       ToggleFullscreenModeInternal(TAB);
     } else {
-#if defined(OS_MACOSX)
-      state_prior_to_tab_fullscreen_ =
-          window_->IsFullscreenWithChrome()
-              ? STATE_BROWSER_FULLSCREEN_WITH_CHROME
-              : STATE_BROWSER_FULLSCREEN_NO_CHROME;
-
-      // The browser is in AppKit fullscreen. Remove the chrome, if it's
-      // present.
-      window_->EnterFullscreenWithoutChrome();
-#else
-      state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_NO_CHROME;
-#endif  // defined(OS_MACOSX)
+      if (window_->IsFullscreenWithToolbar()) {
+        // Browser Fullscreen with Toolbar -> Tab Fullscreen (no toolbar).
+        window_->UpdateFullscreenWithToolbar(false);
+        state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR;
+      } else {
+        // Browser Fullscreen without Toolbar -> Tab Fullscreen.
+        state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN_NO_TOOLBAR;
+      }
 
       // We need to update the fullscreen exit bubble, e.g., going from browser
       // fullscreen to tab fullscreen will need to show different content.
@@ -158,16 +156,17 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
   } else {
     if (in_browser_or_tab_fullscreen_mode) {
       if (IsFullscreenCausedByTab()) {
+        // Tab Fullscreen -> Normal.
         ToggleFullscreenModeInternal(TAB);
       } else {
-#if defined(OS_MACOSX)
+        // Tab Fullscreen -> Browser Fullscreen (with or without toolbar).
         if (state_prior_to_tab_fullscreen_ ==
-            STATE_BROWSER_FULLSCREEN_WITH_CHROME) {
-          // The browser is still in AppKit Fullscreen. This just adds back the
-          // chrome.
-          window_->EnterFullscreenWithChrome();
+            STATE_BROWSER_FULLSCREEN_WITH_TOOLBAR) {
+          // Tab Fullscreen (no toolbar) -> Browser Fullscreen with Toolbar.
+          window_->UpdateFullscreenWithToolbar(true);
         }
 
+#if defined(OS_MACOSX)
         // Clear the bubble URL, which forces the Mac UI to redraw.
         UpdateFullscreenExitBubbleContent();
 #endif  // defined(OS_MACOSX)
@@ -208,12 +207,6 @@ void FullscreenController::SetMetroSnapMode(bool enable) {
   CHECK(reentrant_window_state_change_call_check_);
 }
 #endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-void FullscreenController::ToggleBrowserFullscreenWithChrome() {
-  ToggleFullscreenModeInternal(BROWSER_WITH_CHROME);
-}
-#endif
 
 bool FullscreenController::IsMouseLockRequested() const {
   return mouse_lock_state_ == MOUSELOCK_REQUESTED;
@@ -577,16 +570,19 @@ void FullscreenController::ToggleFullscreenModeInternal(
 #endif
 
   bool enter_fullscreen = !window_->IsFullscreen();
-#if defined(OS_MACOSX)
+
   // When a Mac user requests a toggle they may be toggling between
-  // FullscreenWithoutChrome and FullscreenWithChrome.
-  if (!IsWindowFullscreenForTabOrPending()) {
-    if (option == BROWSER_WITH_CHROME)
-      enter_fullscreen |= window_->IsFullscreenWithoutChrome();
-    else
-      enter_fullscreen |= window_->IsFullscreenWithChrome();
+  // FullscreenWithoutChrome and FullscreenWithToolbar.
+  if (window_->IsFullscreen() &&
+      !IsWindowFullscreenForTabOrPending() &&
+      window_->SupportsFullscreenWithToolbar()) {
+    if (option == BROWSER_WITH_TOOLBAR) {
+      enter_fullscreen =
+          enter_fullscreen || !window_->IsFullscreenWithToolbar();
+    } else {
+      enter_fullscreen = enter_fullscreen || window_->IsFullscreenWithToolbar();
+    }
   }
-#endif
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
@@ -624,19 +620,12 @@ void FullscreenController::EnterFullscreenModeInternal(
 
   if (option == BROWSER)
     content::RecordAction(UserMetricsAction("ToggleFullscreen"));
-  // TODO(scheib): Record metrics for WITH_CHROME, without counting transitions
-  // from tab fullscreen out to browser with chrome.
+  // TODO(scheib): Record metrics for WITH_TOOLBAR, without counting transitions
+  // from tab fullscreen out to browser with toolbar.
 
-#if defined(OS_MACOSX)
-  if (option == BROWSER_WITH_CHROME) {
-    CHECK(chrome::mac::SupportsSystemFullscreen());
-    window_->EnterFullscreenWithChrome();
-  } else {
-#else
-  {
-#endif
-    window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
-  }
+  window_->EnterFullscreen(url,
+                           GetFullscreenExitBubbleType(),
+                           option == BROWSER_WITH_TOOLBAR);
 
   UpdateFullscreenExitBubbleContent();
 

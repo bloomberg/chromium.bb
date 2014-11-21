@@ -137,15 +137,26 @@ bool TestBrowserWindow::IsFullscreen() const {
   return false;
 }
 
+bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
+  return false;
+}
+
+bool TestBrowserWindow::SupportsFullscreenWithToolbar() const {
+  return false;
+}
+
+void TestBrowserWindow::UpdateFullscreenWithToolbar(bool with_toolbar) {
+}
+
+bool TestBrowserWindow::IsFullscreenWithToolbar() const {
+  return false;
+}
+
 #if defined(OS_WIN)
 bool TestBrowserWindow::IsInMetroSnapMode() const {
   return false;
 }
 #endif
-
-bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
-  return false;
-}
 
 LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
@@ -188,16 +199,6 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
 int TestBrowserWindow::GetExtraRenderViewHeight() const {
   return 0;
 }
-
-#if defined(OS_MACOSX)
-bool TestBrowserWindow::IsFullscreenWithChrome() {
-  return false;
-}
-
-bool TestBrowserWindow::IsFullscreenWithoutChrome() {
-  return false;
-}
-#endif
 
 WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {

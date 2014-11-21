@@ -2063,16 +2063,27 @@ willAnimateFromState:(BookmarkBar::State)oldState
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 
-- (void)enterFullscreenWithChrome {
-  if (![self isInAppKitFullscreen]) {
-    // Invoking the AppKitFullscreen API by default uses Canonical Fullscreen.
-    [self enterAppKitFullscreen];
+- (void)enterBrowserFullscreenWithToolbar:(BOOL)withToolbar {
+  if (!chrome::mac::SupportsSystemFullscreen()) {
+    if (![self isInImmersiveFullscreen])
+      [self enterImmersiveFullscreen];
     return;
   }
 
-  // If AppKitFullscreen is already enabled, then just switch to Canonical
-  // Fullscreen.
-  [self adjustUIForSlidingFullscreenStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
+  if ([self isInAppKitFullscreen]) {
+    [self updateFullscreenWithToolbar:withToolbar];
+  } else {
+    // Need to invoke AppKit Fullscreen API. Presentation mode (if set) will
+    // automatically be enabled in |-windowWillEnterFullScreen:|.
+    enteringPresentationMode_ = !withToolbar;
+    [self enterAppKitFullscreen];
+  }
+}
+
+- (void)updateFullscreenWithToolbar:(BOOL)withToolbar {
+  [self adjustUIForSlidingFullscreenStyle:
+            withToolbar ? fullscreen_mac::OMNIBOX_TABS_PRESENT
+                        : fullscreen_mac::OMNIBOX_TABS_HIDDEN];
 }
 
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
@@ -2097,32 +2108,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
          enteringAppKitFullscreen_;
 }
 
-- (void)enterPresentationMode {
-  if (!chrome::mac::SupportsSystemFullscreen()) {
-    if ([self isInImmersiveFullscreen])
-      return;
-    [self enterImmersiveFullscreen];
-    return;
-  }
-
-  if ([self isInAppKitFullscreen]) {
-    // Already in AppKit Fullscreen. Adjust the UI to use Presentation Mode.
-    [self
-        adjustUIForSlidingFullscreenStyle:fullscreen_mac::OMNIBOX_TABS_HIDDEN];
-  } else {
-    // Need to invoke AppKit Fullscreen API. Presentation mode will
-    // automatically be enabled in |-windowWillEnterFullScreen:|.
-    enteringPresentationMode_ = YES;
-    [self enterAppKitFullscreen];
-  }
-}
-
 - (void)enterExtensionFullscreenForURL:(const GURL&)url
                             bubbleType:(FullscreenExitBubbleType)bubbleType {
   if (chrome::mac::SupportsSystemFullscreen()) {
     fullscreenUrl_ = url;
     fullscreenBubbleType_ = bubbleType;
-    [self enterPresentationMode];
+    [self enterBrowserFullscreenWithToolbar:NO];
   } else {
     [self enterImmersiveFullscreen];
     DCHECK(!url.is_empty());
