@@ -360,6 +360,7 @@ class BuildData(object):
   and get() on a BuildData object.  Some values from metadata_dict are
   also surfaced through the following list of supported properties:
 
+  build_id
   build_number
   stages
   slaves
@@ -706,6 +707,10 @@ class BuildData(object):
       return 0
 
     return len(self.metadata_dict['changes'])
+
+  @property
+  def build_id(self):
+    return self.metadata_dict['build_id']
 
   @property
   def run_date(self):

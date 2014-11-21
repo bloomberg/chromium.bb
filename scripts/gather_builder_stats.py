@@ -923,6 +923,7 @@ class CLStats(StatsManager):
     self.blames = {}
     self.summary = {}
     self.builds_by_number = {}
+    self.build_numbers_by_build_id = {}
     self.pre_cq_stats = PreCQStats(db=self.db)
 
   def GatherFailureReasons(self, creds):
@@ -1035,6 +1036,11 @@ class CLStats(StatsManager):
     self.builds_by_number.update({(PRE_CQ, b.build_number): b
                                   for b in self.pre_cq_stats.builds})
 
+    self.build_numbers_by_build_id.update(
+        {b['build_id'] : b.build_number for b in self.builds})
+    self.build_numbers_by_build_id.update(
+        {b['build_id'] : b.build_number for b in self.pre_cq_stats.builds})
+
   def GetSubmittedPatchNumber(self, actions):
     """Get the patch number of the final patchset submitted.
 
@@ -1127,9 +1133,11 @@ class CLStats(StatsManager):
     bad_cl_builds = set()
     for a in reject_actions:
       if self.BotType(a) == CQ:
-        reason = self.reasons.get(a.build_number)
-        if reason == self.REASON_BAD_CL:
-          bad_cl_builds.add(a.build_id)
+        build_number = self.build_numbers_by_build_id.get(a.build_id)
+        if build_number:
+          reason = self.reasons.get(build_number)
+          if reason == self.REASON_BAD_CL:
+            bad_cl_builds.add(a.build_id)
 
     # Keep track of the stages that correctly detected a bad CL. We assume
     # here that all of the stages that are broken were broken by the bad CL.
@@ -1137,10 +1145,12 @@ class CLStats(StatsManager):
     for _, _, a, falsely_rejected in self.ClassifyRejections(submitted_changes):
       if not falsely_rejected:
         good = correctly_rejected_by_stage.setdefault(self.BotType(a), {})
-        build = self.builds_by_number.get((self.BotType(a), a.build_number))
-        if build:
-          for stage_name in build.GetFailedStages():
-            good[stage_name] = good.get(stage_name, 0) + 1
+        build_number = self.build_numbers_by_build_id.get(a.build_id)
+        if build_number:
+          build = self.builds_by_number.get((self.BotType(a), build_number))
+          if build:
+            for stage_name in build.GetFailedStages():
+              good[stage_name] = good.get(stage_name, 0) + 1
 
     # Keep track of the stages that failed flakily.
     incorrectly_rejected_by_stage = {}
@@ -1149,10 +1159,12 @@ class CLStats(StatsManager):
         # A stage only failed flakily if it wasn't broken by another CL.
         if a.build_id not in bad_cl_builds:
           bad = incorrectly_rejected_by_stage.setdefault(self.BotType(a), {})
-          build = self.builds_by_number.get((self.BotType(a), a.build_number))
-          if build:
-            for stage_name in build.GetFailedStages():
-              bad[stage_name] = bad.get(stage_name, 0) + 1
+          build_number = self.build_numbers_by_build_id.get(a.build_id)
+          if build_number:
+            build = self.builds_by_number.get((self.BotType(a), build_number))
+            if build:
+              for stage_name in build.GetFailedStages():
+                bad[stage_name] = bad.get(stage_name, 0) + 1
 
     return correctly_rejected_by_stage, incorrectly_rejected_by_stage
 
@@ -1299,9 +1311,10 @@ class CLStats(StatsManager):
     for k, v in good_patch_rejections.iteritems():
       for a in v:
         if a.action == constants.CL_ACTION_KICKED_OUT:
-          if self.BotType(a) == CQ:
-            reason = self.reasons.get(a.build_number, 'None')
-            blames = self.blames.get(a.build_number, ['None'])
+          build_number = self.build_numbers_by_build_id.get(a.build_id)
+          if self.BotType(a) == CQ and build_number:
+            reason = self.reasons.get(build_number, 'None')
+            blames = self.blames.get(build_number, ['None'])
             patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
             for blame in blames:
               patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1

@@ -491,7 +491,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
 
   _SQL_FETCH_ACTIONS = (
-      'SELECT c.id, b.id, action, c.reason, build_config, build_number, '
+      'SELECT c.id, b.id, action, c.reason, build_config, '
       'change_number, patch_number, change_source, timestamp FROM '
       'clActionTable c JOIN buildTable b ON build_id = b.id ')
 

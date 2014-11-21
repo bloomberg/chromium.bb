@@ -156,18 +156,19 @@ class TestCLActionLogic(unittest.TestCase):
     random.seed(0)
     random.shuffle(TEST_METADATA)
 
-    # Wrap the test metadata into BuildData objects.
-    TEST_BUILDDATA = [metadata_lib.BuildData('', d.GetDict())
-                      for d in TEST_METADATA]
-
     for m in TEST_METADATA:
       build_id = self.fake_db.InsertBuild(m.GetValue('bot-config'),
           constants.WATERFALL_INTERNAL, m.GetValue('build-number'),
           m.GetValue('bot-config'), 'bot-hostname')
+      m.UpdateWithDict({'build_id': build_id})
       actions = []
       for action_metadata in m.GetDict()['cl_actions']:
         actions.append(clactions.CLAction.FromMetadataEntry(action_metadata))
       self.fake_db.InsertCLActions(build_id, actions)
+
+    # Wrap the test metadata into BuildData objects.
+    TEST_BUILDDATA = [metadata_lib.BuildData('', d.GetDict())
+                      for d in TEST_METADATA]
 
     return TEST_BUILDDATA
 

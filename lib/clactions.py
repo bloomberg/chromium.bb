@@ -29,8 +29,8 @@ assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
     '_PRECQ_STATUS_TO_ACTION values are not unique.'
 
 CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
-                     'build_config', 'build_number', 'change_number',
-                     'patch_number', 'change_source', 'timestamp']
+                     'build_config', 'change_number', 'patch_number',
+                     'change_source', 'timestamp']
 
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
 
@@ -54,7 +54,7 @@ class CLAction(_CLActionTuple):
       reason: Optional reason string.
       timestamp: Optional datetime.datetime timestamp.
     """
-    return CLAction(None, None, action, reason, None, None,
+    return CLAction(None, None, action, reason, None,
                     int(change.gerrit_number), int(change.patch_number),
                     BoolToChangeSource(change.internal), timestamp)
 
@@ -68,7 +68,7 @@ class CLAction(_CLActionTuple):
       build_metadata: The full build metadata.json entry.
     """
     change_dict = entry[0]
-    return CLAction(None, None, entry[1], entry[3], None, None,
+    return CLAction(None, None, entry[1], entry[3], None,
                     int(change_dict['gerrit_number']),
                     int(change_dict['patch_number']),
                     BoolToChangeSource(change_dict['internal']),

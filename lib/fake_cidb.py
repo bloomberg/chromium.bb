@@ -98,7 +98,6 @@ class FakeCIDBConnection(object):
           item['action'],
           item['reason'],
           self.buildTable[item['build_id']]['build_config'],
-          self.buildTable[item['build_id']]['build_number'],
           item['change_number'],
           item['patch_number'],
           item['change_source'],
