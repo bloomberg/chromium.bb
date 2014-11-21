@@ -707,9 +707,6 @@ public:
     virtual void prepareHeapForTermination() = 0;
 
     virtual int normalPageCount() = 0;
-
-    virtual PassOwnPtr<BaseHeap> split(int normalPages) = 0;
-    virtual void merge(PassOwnPtr<BaseHeap> other) = 0;
 };
 
 template<typename Header>
@@ -792,9 +789,6 @@ public:
     virtual void prepareHeapForTermination() override;
 
     virtual int normalPageCount() override { return m_numberOfNormalPages; }
-
-    virtual PassOwnPtr<BaseHeap> split(int numberOfNormalPages) override;
-    virtual void merge(PassOwnPtr<BaseHeap> splitOffBase) override;
 
     void removePageFromHeap(HeapPage<Header>*);
 

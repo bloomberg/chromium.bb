@@ -1267,7 +1267,6 @@ void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
 {
     Heap::decreaseAllocatedSpace(blinkPageSize);
 
-    MutexLocker locker(m_threadState->sweepMutex());
     if (page->terminating()) {
         // The thread is shutting down so this page is being removed as part
         // of a thread local GC. In that case the page could be accessed in the
@@ -2621,57 +2620,6 @@ void ThreadHeap<Header>::prepareHeapForTermination()
         current->setTerminating();
     }
 }
-
-template<typename Header>
-PassOwnPtr<BaseHeap> ThreadHeap<Header>::split(int numberOfNormalPages)
-{
-    // Create a new split off thread heap containing
-    // |numberOfNormalPages| of the pages of this ThreadHeap for
-    // parallel sweeping. The split off thread heap will be merged
-    // with this heap at the end of sweeping and the temporary
-    // ThreadHeap object will be deallocated after the merge.
-    ASSERT(numberOfNormalPages > 0);
-    OwnPtr<ThreadHeap<Header>> splitOff = adoptPtr(new ThreadHeap(m_threadState, m_index));
-    HeapPage<Header>* splitPoint = m_firstPage;
-    for (int i = 1; i < numberOfNormalPages; i++)
-        splitPoint = splitPoint->next();
-    splitOff->m_firstPage = m_firstPage;
-    m_firstPage = splitPoint->m_next;
-    splitOff->m_mergePoint = splitPoint;
-    splitOff->m_numberOfNormalPages = numberOfNormalPages;
-    m_numberOfNormalPages -= numberOfNormalPages;
-    splitPoint->m_next = 0;
-    return splitOff.release();
-}
-
-template<typename Header>
-void ThreadHeap<Header>::merge(PassOwnPtr<BaseHeap> splitOffBase)
-{
-    ThreadHeap<Header>* splitOff = static_cast<ThreadHeap<Header>*>(splitOffBase.get());
-    // If the mergePoint is zero all split off pages became empty in
-    // this round and we don't have to merge. There are no pages and
-    // nothing on the freelists.
-    ASSERT(splitOff->m_mergePoint || splitOff->m_numberOfNormalPages == 0);
-    if (splitOff->m_mergePoint) {
-        // Link the split off pages into the beginning of the list again.
-        splitOff->m_mergePoint->m_next = m_firstPage;
-        m_firstPage = splitOff->m_firstPage;
-        m_numberOfNormalPages += splitOff->m_numberOfNormalPages;
-        splitOff->m_firstPage = 0;
-        // Merge free lists.
-        for (size_t i = 0; i < blinkPageSizeLog2; i++) {
-            if (!m_freeList.m_freeLists[i]) {
-                m_freeList.m_freeLists[i] = splitOff->m_freeList.m_freeLists[i];
-            } else if (splitOff->m_freeList.m_freeLists[i]) {
-                m_freeList.m_lastFreeListEntries[i]->append(splitOff->m_freeList.m_freeLists[i]);
-                m_freeList.m_lastFreeListEntries[i] = splitOff->m_freeList.m_lastFreeListEntries[i];
-            }
-        }
-        if (m_freeList.m_biggestFreeListIndex < splitOff->m_freeList.m_biggestFreeListIndex)
-            m_freeList.m_biggestFreeListIndex = splitOff->m_freeList.m_biggestFreeListIndex;
-    }
-}
-
 size_t Heap::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;

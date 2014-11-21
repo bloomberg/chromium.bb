@@ -667,9 +667,6 @@ public:
 
     void setupHeapsForTermination();
 
-    void registerSweepingTask();
-    void unregisterSweepingTask();
-
     // Request to call a pref-finalizer of the target object before the object
     // is destructed.  The class T must have USING_PRE_FINALIZER().  The
     // argument should be |*this|.  Registering a lot of objects affects GC
@@ -692,8 +689,6 @@ public:
         ASSERT(&T::invokePreFinalizer);
         unregisterPreFinalizerInternal(&target);
     }
-
-    Mutex& sweepMutex() { return m_sweepMutex; }
 
     Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
 
@@ -738,8 +733,6 @@ private:
     void cleanup();
     void cleanupPages();
 
-    void performPendingSweepInParallel();
-    void waitUntilSweepersDone();
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
 
@@ -784,11 +777,6 @@ private:
 
     bool m_shouldFlushHeapDoesNotContainCache;
     bool m_lowCollectionRate;
-
-    OwnPtr<WebThread> m_sweeperThread;
-    int m_numberOfSweeperTasks;
-    Mutex m_sweepMutex;
-    ThreadCondition m_sweepThreadCondition;
 
     CallbackStack* m_weakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
