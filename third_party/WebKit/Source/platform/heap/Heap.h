@@ -42,7 +42,6 @@
 #include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PageAllocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -111,11 +110,13 @@ template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTr
 class TracedValue;
 #endif
 
+PLATFORM_EXPORT size_t osPageSize();
+
 // Blink heap pages are set up with a guard page before and after the
 // payload.
 inline size_t blinkPagePayloadSize()
 {
-    return blinkPageSize - 2 * WTF::kSystemPageSize;
+    return blinkPageSize - 2 * osPageSize();
 }
 
 // Blink heap pages are aligned to the Blink heap page size.
@@ -152,7 +153,7 @@ inline Address blinkPageAddress(Address address)
 // aligned.
 inline bool isPageHeaderAddress(Address address)
 {
-    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - WTF::kSystemPageSize);
+    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - osPageSize());
 }
 #endif
 
@@ -163,7 +164,7 @@ inline bool isPageHeaderAddress(Address address)
 PLATFORM_EXPORT inline BaseHeapPage* pageHeaderFromObject(const void* object)
 {
     Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-    return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
+    return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + osPageSize());
 }
 
 // Large allocations are allocated as separate objects and linked in a
@@ -503,7 +504,7 @@ public:
     virtual bool contains(Address addr) override
     {
         Address blinkPageStart = roundToBlinkPageStart(address());
-        ASSERT(blinkPageStart == address() - WTF::kSystemPageSize); // Page is at aligned address plus guard page size.
+        ASSERT(blinkPageStart == address() - osPageSize()); // Page is at aligned address plus guard page size.
         return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
     }
 

@@ -92,7 +92,23 @@ static Address roundToBlinkPageBoundary(void* base)
 
 static size_t roundToOsPageSize(size_t size)
 {
-    return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);
+    return (size + osPageSize() - 1) & ~(osPageSize() - 1);
+}
+
+size_t osPageSize()
+{
+#if OS(POSIX)
+    static const size_t pageSize = getpagesize();
+#else
+    static size_t pageSize = 0;
+    if (!pageSize) {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        pageSize = info.dwPageSize;
+        ASSERT(IsPowerOf2(pageSize));
+    }
+#endif
+    return pageSize;
 }
 
 class MemoryRegion {
@@ -364,7 +380,7 @@ public:
     {
         // Setup the payload one OS page into the page memory. The
         // first os page is the guard page.
-        Address payloadAddress = region->base() + pageOffset + WTF::kSystemPageSize;
+        Address payloadAddress = region->base() + pageOffset + osPageSize();
         return new PageMemory(region, MemoryRegion(payloadAddress, payloadSize));
     }
 
@@ -384,7 +400,7 @@ public:
 
         // Overallocate by 2 times OS page size to have space for a
         // guard page at the beginning and end of blink heap page.
-        size_t allocationSize = payloadSize + 2 * WTF::kSystemPageSize;
+        size_t allocationSize = payloadSize + 2 * osPageSize();
         PageMemoryRegion* pageMemoryRegion = PageMemoryRegion::allocateLargePage(allocationSize);
         PageMemory* storage = setupPageMemoryInRegion(pageMemoryRegion, 0, payloadSize);
         RELEASE_ASSERT(storage->commit());
@@ -762,7 +778,7 @@ BaseHeapPage* ThreadHeap<Header>::heapPageFromAddress(Address address)
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
         // Check that large pages are blinkPageSize aligned (modulo the
         // osPageSize for the guard page).
-        ASSERT(reinterpret_cast<Address>(current) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(current)));
+        ASSERT(reinterpret_cast<Address>(current) - osPageSize() == roundToBlinkPageStart(reinterpret_cast<Address>(current)));
         if (current->contains(address))
             return current;
     }
