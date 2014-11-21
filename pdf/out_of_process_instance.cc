@@ -287,8 +287,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   pp::PDF::GetV8ExternalSnapshotData(this, &natives.data, &natives.raw_size,
                                      &snapshot.data, &snapshot.raw_size);
   if (natives.data) {
-    natives.compressed_size = natives.raw_size;
-    snapshot.compressed_size = snapshot.raw_size;
     v8::V8::SetNativesDataBlob(&natives);
     v8::V8::SetSnapshotDataBlob(&snapshot);
   }
