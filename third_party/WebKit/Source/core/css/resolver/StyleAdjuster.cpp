@@ -34,7 +34,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -244,14 +243,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (isSVGTextElement(*e))
             style->clearMultiCol();
     }
-
-    if (e && e->renderStyle() && e->renderStyle()->textAutosizingMultiplier() != 1) {
-        // Preserve the text autosizing multiplier on style recalc.
-        // (The autosizer will update it during layout if it needs to be changed.)
-        style->setTextAutosizingMultiplier(e->renderStyle()->textAutosizingMultiplier());
-        style->setUnique();
-    }
-
     adjustStyleForAlignment(*style, *parentStyle);
 }
 

@@ -628,6 +628,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
         matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
 
+        if (element->renderStyle() && element->renderStyle()->textAutosizingMultiplier() != state.style()->textAutosizingMultiplier()) {
+            // Preserve the text autosizing multiplier on style recalc. Autosizer will update it during layout if needed.
+            // NOTE: this must occur before applyMatchedProperties for correct computation of font-relative lengths.
+            state.style()->setTextAutosizingMultiplier(element->renderStyle()->textAutosizingMultiplier());
+            state.style()->setUnique();
+        }
+
         applyMatchedProperties(state, collector.matchedResult());
         applyCallbackSelectors(state);
 
