@@ -53,11 +53,7 @@ public:
     bool hasCallbackForObject(const void*);
 #endif
 
-#if ENABLE_PARALLEL_MARKING
-    static const size_t blockSize = 128;
-#else
     static const size_t blockSize = 8192;
-#endif
 
 private:
     class Block {

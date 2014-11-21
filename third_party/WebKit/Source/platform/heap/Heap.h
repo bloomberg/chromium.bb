@@ -48,14 +48,6 @@
 
 #include <stdint.h>
 
-// FIXME: We temporarily disable parallel marking because the current
-// implementation is slower than a single-thread marking. The reason
-// of the slowness is that the parallel marking pollutes CPU caches
-// because marking threads write mark bits on on-heap objects which
-// will be touched by the mutator thread later. We need to make
-// the implementation more cache-aware (e.g., bitmap marking).
-#define ENABLE_PARALLEL_MARKING 0
-
 namespace blink {
 
 const size_t blinkPageSizeLog2 = 17;
@@ -103,13 +95,6 @@ const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
-
-#if ENABLE_PARALLEL_MARKING
-const int maxNumberOfMarkingThreads = 4;
-#else
-const int maxNumberOfMarkingThreads = 0;
-#endif
-
 const int numberOfPagesToConsiderForCoalescing = 100;
 
 enum CallbackInvocationMode {
@@ -939,9 +924,6 @@ public:
     static void collectGarbage(ThreadState::StackState, ThreadState::CauseOfGC = ThreadState::NormalGC);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
-    static void processMarkingStackEntries(int*);
-    static void processMarkingStackOnMultipleThreads();
-    static void processMarkingStackInParallel();
     template<CallbackInvocationMode Mode> static void processMarkingStack();
     static void postMarkingProcessing();
     static void globalWeakProcessing();
@@ -1024,7 +1006,6 @@ private:
     static void resetMarkedObjectSize() { ASSERT(ThreadState::isAnyThreadInGC()); s_markedObjectSize = 0; }
 
     static Visitor* s_markingVisitor;
-    static Vector<OwnPtr<WebThread>>* s_markingThreads;
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
     static CallbackStack* s_weakCallbackStack;
@@ -1336,17 +1317,7 @@ NO_SANITIZE_ADDRESS
 void HeapObjectHeader::mark()
 {
     checkHeader();
-#if ENABLE_PARALLEL_MARKING
-    // The use of atomic ops guarantees that the reads and writes are
-    // atomic and that no memory operation reorderings take place.
-    // Multiple threads can still read the old value and all store the
-    // new value. However, the new value will be the same for all of
-    // the threads and the end result is therefore consistent.
-    unsigned size = asanUnsafeAcquireLoad(&m_size);
-    asanUnsafeReleaseStore(&m_size, size | markBitMask);
-#else
     m_size = m_size | markBitMask;
-#endif
 }
 
 Address FinalizedHeapObjectHeader::payload()

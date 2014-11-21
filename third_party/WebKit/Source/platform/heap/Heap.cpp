@@ -460,12 +460,7 @@ NO_SANITIZE_ADDRESS inline
 bool HeapObjectHeader::isMarked() const
 {
     checkHeader();
-#if ENABLE_PARALLEL_MARKING
-    unsigned size = asanUnsafeAcquireLoad(&m_size);
-    return size & markBitMask;
-#else
     return m_size & markBitMask;
-#endif
 }
 
 NO_SANITIZE_ADDRESS inline
@@ -1941,25 +1936,6 @@ void Heap::flushHeapDoesNotContainCache()
     s_heapDoesNotContainCache->flush();
 }
 
-// The marking mutex is used to ensure sequential access to data
-// structures during marking. The marking mutex needs to be acquired
-// during marking when elements are taken from the global marking
-// stack or when elements are added to the global ephemeron,
-// post-marking, and weak processing stacks. In debug mode the mutex
-// also needs to be acquired when asserts use the heap contains
-// caches.
-static Mutex& markingMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
-static ThreadCondition& markingCondition()
-{
-    AtomicallyInitializedStatic(ThreadCondition&, condition = *new ThreadCondition);
-    return condition;
-}
-
 static void markNoTracingCallback(Visitor* visitor, void* object)
 {
     visitor->markNoTracing(object);
@@ -1987,9 +1963,6 @@ public:
             // call Heap::contains when outside a GC and we call mark
             // when doing weakness for ephemerons. Hence we only check
             // when called within.
-#if ENABLE_PARALLEL_MARKING
-            MutexLocker locker(markingMutex());
-#endif
             ASSERT(!ThreadState::isAnyThreadInGC() || Heap::containedInHeapOrOrphanedPage(header));
         }
 #endif
@@ -2196,16 +2169,9 @@ void Heap::init()
     s_markingVisitor = new MarkingVisitor(s_markingStack);
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
-    s_markingThreads = new Vector<OwnPtr<WebThread>>();
     s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
     s_markedObjectSize = 0;
-    if (Platform::current()) {
-        int processors = Platform::current()->numberOfProcessors();
-        int numberOfMarkingThreads = std::min(processors, maxNumberOfMarkingThreads);
-        for (int i = 0; i < numberOfMarkingThreads; i++)
-            s_markingThreads->append(adoptPtr(Platform::current()->createThread("Blink GC Marking Thread")));
-    }
 }
 
 void Heap::shutdown()
@@ -2222,8 +2188,6 @@ void Heap::doShutdown()
 
     ASSERT(!ThreadState::isAnyThreadInGC());
     ASSERT(!ThreadState::attachedThreads().size());
-    delete s_markingThreads;
-    s_markingThreads = 0;
     delete s_markingVisitor;
     s_markingVisitor = 0;
     delete s_heapDoesNotContainCache;
@@ -2345,9 +2309,6 @@ void Heap::pushTraceCallback(CallbackStack* stack, void* object, TraceCallback c
 {
 #if ENABLE(ASSERT)
     {
-#if ENABLE_PARALLEL_MARKING
-        MutexLocker locker(markingMutex());
-#endif
         ASSERT(Heap::containedInHeapOrOrphanedPage(object));
     }
 #endif
@@ -2388,9 +2349,6 @@ bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
 
 void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
 {
-#if ENABLE_PARALLEL_MARKING
-    MutexLocker locker(markingMutex());
-#endif
     ASSERT(!Heap::orphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
@@ -2407,9 +2365,6 @@ bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
 
 void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback)
 {
-#if ENABLE_PARALLEL_MARKING
-    MutexLocker locker(markingMutex());
-#endif
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
     CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(cell, callback);
@@ -2417,9 +2372,6 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
 
 void Heap::pushWeakObjectPointerCallback(void* closure, void* object, WeakPointerCallback callback)
 {
-#if ENABLE_PARALLEL_MARKING
-    MutexLocker locker(markingMutex());
-#endif
     ASSERT(Heap::contains(object));
     BaseHeapPage* heapPageForObject = pageHeaderFromObject(object);
     ASSERT(!heapPageForObject->orphaned());
@@ -2445,9 +2397,6 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
 void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
 {
     {
-#if ENABLE_PARALLEL_MARKING
-        MutexLocker locker(markingMutex());
-#endif
         // Check that the ephemeron table being pushed onto the stack is not on an
         // orphaned page.
         ASSERT(!Heap::orphanedPagePool()->contains(table));
@@ -2463,9 +2412,6 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
 #if ENABLE(ASSERT)
 bool Heap::weakTableRegistered(const void* table)
 {
-#if ENABLE_PARALLEL_MARKING
-    MutexLocker locker(markingMutex());
-#endif
     ASSERT(s_ephemeronStack);
     return s_ephemeronStack->hasCallbackForObject(table);
 }
@@ -2519,11 +2465,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     ThreadState::visitPersistentRoots(s_markingVisitor);
 
     // 2. trace objects reachable from the persistent roots including ephemerons.
-#if ENABLE_PARALLEL_MARKING
-    processMarkingStackInParallel();
-#else
     processMarkingStack<GlobalMarking>();
-#endif
 
     // 3. trace objects reachable from the stack. We do this independent of the
     // given stackState since other threads might have a different stack state.
@@ -2533,11 +2475,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
     if (lastGCWasConservative()) {
-#if ENABLE_PARALLEL_MARKING
-        processMarkingStackInParallel();
-#else
         processMarkingStack<GlobalMarking>();
-#endif
     }
 
     postMarkingProcessing();
@@ -2600,70 +2538,6 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         state->leaveGC();
     }
     state->performPendingSweep();
-}
-
-void Heap::processMarkingStackEntries(int* runningMarkingThreads)
-{
-    TRACE_EVENT0("blink_gc", "Heap::processMarkingStackEntries");
-    CallbackStack stack;
-    MarkingVisitor visitor(&stack);
-    {
-        MutexLocker locker(markingMutex());
-        stack.takeBlockFrom(s_markingStack);
-    }
-    while (!stack.isEmpty()) {
-        while (popAndInvokeTraceCallback<GlobalMarking>(&stack, &visitor)) { }
-        {
-            MutexLocker locker(markingMutex());
-            stack.takeBlockFrom(s_markingStack);
-        }
-    }
-    {
-        MutexLocker locker(markingMutex());
-        if (!--(*runningMarkingThreads))
-            markingCondition().signal();
-    }
-}
-
-void Heap::processMarkingStackOnMultipleThreads()
-{
-    int runningMarkingThreads = s_markingThreads->size() + 1;
-
-    for (size_t i = 0; i < s_markingThreads->size(); ++i)
-        s_markingThreads->at(i)->postTask(new Task(WTF::bind(Heap::processMarkingStackEntries, &runningMarkingThreads)));
-
-    processMarkingStackEntries(&runningMarkingThreads);
-
-    // Wait for the other threads to finish their part of marking.
-    MutexLocker locker(markingMutex());
-    while (runningMarkingThreads)
-        markingCondition().wait(markingMutex());
-}
-
-void Heap::processMarkingStackInParallel()
-{
-    static const size_t sizeOfStackForParallelMarking = 2 * CallbackStack::blockSize;
-    // Ephemeron fixed point loop run on the garbage collecting thread.
-    do {
-        // Iteratively mark all objects that are reachable from the objects
-        // currently pushed onto the marking stack. Do so in parallel if there
-        // are multiple blocks on the global marking stack.
-        if (s_markingStack->sizeExceeds(sizeOfStackForParallelMarking)) {
-            processMarkingStackOnMultipleThreads();
-        } else {
-            TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-            while (popAndInvokeTraceCallback<GlobalMarking>(s_markingStack, s_markingVisitor)) { }
-        }
-
-        {
-            // Mark any strong pointers that have now become reachable in ephemeron
-            // maps.
-            TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-            s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
-        }
-
-        // Rerun loop if ephemeron processing queued more objects for tracing.
-    } while (!s_markingStack->isEmpty());
 }
 
 template<CallbackInvocationMode Mode>
@@ -3001,7 +2875,6 @@ template class ThreadHeap<FinalizedHeapObjectHeader>;
 template class ThreadHeap<HeapObjectHeader>;
 
 Visitor* Heap::s_markingVisitor;
-Vector<OwnPtr<WebThread>>* Heap::s_markingThreads;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_postMarkingCallbackStack;
 CallbackStack* Heap::s_weakCallbackStack;
