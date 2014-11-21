@@ -96,8 +96,9 @@ class _OctaneMeasurement(page_test.PageTest):
     self._power_metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    tab.WaitForJavaScriptExpression('window.completed', 10)
     tab.WaitForJavaScriptExpression(
-        'completed && !document.getElementById("progress-bar-container")', 1200)
+        '!document.getElementById("progress-bar-container")', 1200)
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
@@ -135,7 +136,8 @@ class Octane(benchmark.Benchmark):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/octane.json',
       make_javascript_deterministic=False,
-      file_path=os.path.abspath(__file__))
+      file_path=os.path.abspath(__file__),
+      bucket=page_set.PUBLIC_BUCKET)
     ps.AddPageWithDefaultRunNavigate(
       'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1')
     return ps
