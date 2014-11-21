@@ -7,6 +7,10 @@
 
 #include "base/supports_user_data.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -22,6 +26,9 @@ class BrowserState : public base::SupportsUserData {
 
   // Return whether this BrowserState is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
+
+  // Retrieves the path where the BrowserState data is stored.
+  virtual base::FilePath GetPath() const = 0;
 
   // Returns the request context information associated with this
   // BrowserState.
