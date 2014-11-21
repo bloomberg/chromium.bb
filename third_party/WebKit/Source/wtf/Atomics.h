@@ -145,11 +145,6 @@ ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
     return __tsan_atomic32_load(ptr, __tsan_memory_order_acquire);
 }
 
-ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
-{
-    return static_cast<unsigned long>(__tsan_atomic64_load(reinterpret_cast<volatile const long*>(ptr), __tsan_memory_order_acquire));
-}
-
 ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value)
 {
     __tsan_atomic32_store(reinterpret_cast<volatile int*>(ptr), static_cast<int>(value), __tsan_memory_order_release);
@@ -197,13 +192,6 @@ ALWAYS_INLINE void releaseStore(volatile int* ptr, int value)
 ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
 {
     int value = *ptr;
-    MEMORY_BARRIER();
-    return value;
-}
-
-ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
-{
-    unsigned long long value = *ptr;
     MEMORY_BARRIER();
     return value;
 }
