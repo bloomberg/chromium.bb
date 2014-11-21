@@ -1953,7 +1953,7 @@ static void markNoTracingCallback(Visitor* visitor, void* object)
     visitor->markNoTracing(object);
 }
 
-class MarkingVisitor : public Visitor {
+class MarkingVisitor final : public Visitor {
 public:
 #if ENABLE(GC_PROFILE_MARKING)
     typedef HashSet<uintptr_t> LiveObjectSet;
