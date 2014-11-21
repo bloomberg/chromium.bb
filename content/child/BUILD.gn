@@ -15,6 +15,10 @@ source_set("child") {
   sources = rebase_path(content_child_gypi_values.private_child_sources,
                         ".", "//content")
 
+  public_deps = [
+    "//mojo/edk/system",
+  ]
+
   deps = [
     "//base",
     "//components/tracing",

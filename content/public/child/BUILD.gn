@@ -23,8 +23,11 @@ source_set("child_sources") {
     "//content:content_implementation",
   ]
 
-  deps = [
+  public_deps = [
     "//content/child",
+  ]
+
+  deps = [
     "//content/public/common:common_sources",
   ]
 }

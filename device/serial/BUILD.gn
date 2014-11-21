@@ -45,7 +45,7 @@ static_library("serial") {
     configs += [ "//build/config/linux:udev" ]
   }
 
-  deps = [
+  public_deps = [
     ":serial_mojo",
   ]
 }
