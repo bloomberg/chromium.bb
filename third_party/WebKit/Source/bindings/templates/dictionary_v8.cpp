@@ -29,7 +29,6 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
 
     {% endif %}
     v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
-    v8::TryCatch block;
     {% for member in members %}
     v8::Local<v8::Value> {{member.name}}Value = v8Object->Get(v8String(isolate, "{{member.name}}"));
     if (!{{member.name}}Value.IsEmpty() && !isUndefinedOrNull({{member.name}}Value)) {
@@ -47,9 +46,6 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
         }
     {% endif %}
         impl.{{member.setter_name}}({{member.name}});
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     {% endfor %}

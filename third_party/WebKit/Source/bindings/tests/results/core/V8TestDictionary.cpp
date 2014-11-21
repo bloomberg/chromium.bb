@@ -26,64 +26,45 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
     }
 
     v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
-    v8::TryCatch block;
     v8::Local<v8::Value> booleanMemberValue = v8Object->Get(v8String(isolate, "booleanMember"));
     if (!booleanMemberValue.IsEmpty() && !isUndefinedOrNull(booleanMemberValue)) {
         bool booleanMember = booleanMemberValue->BooleanValue();
         impl.setBooleanMember(booleanMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> createValue = v8Object->Get(v8String(isolate, "create"));
     if (!createValue.IsEmpty() && !isUndefinedOrNull(createValue)) {
         bool create = createValue->BooleanValue();
         impl.setCreateMember(create);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> doubleOrNullMemberValue = v8Object->Get(v8String(isolate, "doubleOrNullMember"));
     if (!doubleOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(doubleOrNullMemberValue)) {
         TONATIVE_VOID_EXCEPTIONSTATE(double, doubleOrNullMember, toDouble(doubleOrNullMemberValue, exceptionState), exceptionState);
         impl.setDoubleOrNullMember(doubleOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> elementOrNullMemberValue = v8Object->Get(v8String(isolate, "elementOrNullMember"));
     if (!elementOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(elementOrNullMemberValue)) {
         Element* elementOrNullMember = V8Element::toImplWithTypeCheck(isolate, elementOrNullMemberValue);
         impl.setElementOrNullMember(elementOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> enumMemberValue = v8Object->Get(v8String(isolate, "enumMember"));
     if (!enumMemberValue.IsEmpty() && !isUndefinedOrNull(enumMemberValue)) {
-        TOSTRING_VOID(V8StringResource<>, enumMember, enumMemberValue);
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, enumMember, enumMemberValue, exceptionState);
         String string = enumMember;
         if (!(string == "foo" || string == "bar" || string == "baz")) {
             exceptionState.throwTypeError("member enumMember ('" + string + "') is not a valid enum value.");
             return;
         }
         impl.setEnumMember(enumMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> longMemberValue = v8Object->Get(v8String(isolate, "longMember"));
     if (!longMemberValue.IsEmpty() && !isUndefinedOrNull(longMemberValue)) {
         TONATIVE_VOID_EXCEPTIONSTATE(int, longMember, toInt32(longMemberValue, exceptionState), exceptionState);
         impl.setLongMember(longMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> objectMemberValue = v8Object->Get(v8String(isolate, "objectMember"));
@@ -94,9 +75,6 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
             return;
         }
         impl.setObjectMember(objectMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> objectOrNullMemberValue = v8Object->Get(v8String(isolate, "objectOrNullMember"));
@@ -107,99 +85,66 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
             return;
         }
         impl.setObjectOrNullMember(objectOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> stringArrayMemberValue = v8Object->Get(v8String(isolate, "stringArrayMember"));
     if (!stringArrayMemberValue.IsEmpty() && !isUndefinedOrNull(stringArrayMemberValue)) {
         TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, stringArrayMember, toImplArray<String>(stringArrayMemberValue, 0, isolate, exceptionState), exceptionState);
         impl.setStringArrayMember(stringArrayMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> stringMemberValue = v8Object->Get(v8String(isolate, "stringMember"));
     if (!stringMemberValue.IsEmpty() && !isUndefinedOrNull(stringMemberValue)) {
-        TOSTRING_VOID(V8StringResource<>, stringMember, stringMemberValue);
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, stringMember, stringMemberValue, exceptionState);
         impl.setStringMember(stringMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> stringOrNullMemberValue = v8Object->Get(v8String(isolate, "stringOrNullMember"));
     if (!stringOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(stringOrNullMemberValue)) {
-        TOSTRING_VOID(V8StringResource<>, stringOrNullMember, stringOrNullMemberValue);
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, stringOrNullMember, stringOrNullMemberValue, exceptionState);
         impl.setStringOrNullMember(stringOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> stringSequenceMemberValue = v8Object->Get(v8String(isolate, "stringSequenceMember"));
     if (!stringSequenceMemberValue.IsEmpty() && !isUndefinedOrNull(stringSequenceMemberValue)) {
         TONATIVE_VOID_EXCEPTIONSTATE(Vector<String>, stringSequenceMember, toImplArray<String>(stringSequenceMemberValue, 0, isolate, exceptionState), exceptionState);
         impl.setStringSequenceMember(stringSequenceMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceGarbageCollectedMemberValue = v8Object->Get(v8String(isolate, "testInterfaceGarbageCollectedMember"));
     if (!testInterfaceGarbageCollectedMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceGarbageCollectedMemberValue)) {
         TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedMemberValue);
         impl.setTestInterfaceGarbageCollectedMember(testInterfaceGarbageCollectedMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceGarbageCollectedOrNullMemberValue = v8Object->Get(v8String(isolate, "testInterfaceGarbageCollectedOrNullMember"));
     if (!testInterfaceGarbageCollectedOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceGarbageCollectedOrNullMemberValue)) {
         TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedOrNullMemberValue);
         impl.setTestInterfaceGarbageCollectedOrNullMember(testInterfaceGarbageCollectedOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceMemberValue = v8Object->Get(v8String(isolate, "testInterfaceMember"));
     if (!testInterfaceMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceMemberValue)) {
         TestInterfaceImplementation* testInterfaceMember = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceMemberValue);
         impl.setTestInterfaceMember(testInterfaceMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceOrNullMemberValue = v8Object->Get(v8String(isolate, "testInterfaceOrNullMember"));
     if (!testInterfaceOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceOrNullMemberValue)) {
         TestInterfaceImplementation* testInterfaceOrNullMember = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceOrNullMemberValue);
         impl.setTestInterfaceOrNullMember(testInterfaceOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceWillBeGarbageCollectedMemberValue = v8Object->Get(v8String(isolate, "testInterfaceWillBeGarbageCollectedMember"));
     if (!testInterfaceWillBeGarbageCollectedMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceWillBeGarbageCollectedMemberValue)) {
         TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedMember = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceWillBeGarbageCollectedMemberValue);
         impl.setTestInterfaceWillBeGarbageCollectedMember(testInterfaceWillBeGarbageCollectedMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     v8::Local<v8::Value> testInterfaceWillBeGarbageCollectedOrNullMemberValue = v8Object->Get(v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"));
     if (!testInterfaceWillBeGarbageCollectedOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(testInterfaceWillBeGarbageCollectedOrNullMemberValue)) {
         TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedOrNullMember = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceWillBeGarbageCollectedOrNullMemberValue);
         impl.setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
 }
