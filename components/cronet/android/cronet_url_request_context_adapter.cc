@@ -99,12 +99,6 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
     return false;
   }
 
-  int OnBeforeSocketStreamConnect(
-      net::SocketStream* stream,
-      const net::CompletionCallback& callback) override {
-    return net::OK;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 

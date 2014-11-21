@@ -325,8 +325,6 @@ class TestNetworkDelegate : public NetworkDelegate {
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override;
   bool OnCanThrottleRequest(const URLRequest& request) const override;
-  int OnBeforeSocketStreamConnect(SocketStream* stream,
-                                  const CompletionCallback& callback) override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,

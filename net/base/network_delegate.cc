@@ -339,12 +339,6 @@ bool NetworkDelegate::OnCanEnablePrivacyMode(
   return false;
 }
 
-int NetworkDelegate::OnBeforeSocketStreamConnect(
-    SocketStream* socket,
-    const CompletionCallback& callback) {
-  return OK;
-}
-
 bool NetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const URLRequest& request,
     const GURL& target_url,

@@ -82,9 +82,6 @@ class AwNetworkDelegate : public net::NetworkDelegate {
                                const base::FilePath& path) const override;
   virtual bool OnCanThrottleRequest(
       const net::URLRequest& request) const override;
-  virtual int OnBeforeSocketStreamConnect(
-      net::SocketStream* stream,
-      const net::CompletionCallback& callback) override;
 
   // Data reduction proxy parameters object. Must outlive this.
   data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;

@@ -77,10 +77,6 @@ class TestNetworkDelegate : public net::NetworkDelegate {
   bool OnCanThrottleRequest(const URLRequest& request) const override {
     return false;
   }
-  int OnBeforeSocketStreamConnect(SocketStream* stream,
-                                  const CompletionCallback& callback) override {
-    return OK;
-  }
 
   bool got_pac_error_;
 };

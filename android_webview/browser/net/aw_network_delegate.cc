@@ -120,10 +120,4 @@ bool AwNetworkDelegate::OnCanThrottleRequest(
   return false;
 }
 
-int AwNetworkDelegate::OnBeforeSocketStreamConnect(
-    net::SocketStream* stream,
-    const net::CompletionCallback& callback) {
-  return net::OK;
-}
-
 }  // namespace android_webview

@@ -604,12 +604,6 @@ bool TestNetworkDelegate::OnCanThrottleRequest(
   return can_throttle_requests_;
 }
 
-int TestNetworkDelegate::OnBeforeSocketStreamConnect(
-    SocketStream* socket,
-    const CompletionCallback& callback) {
-  return OK;
-}
-
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const URLRequest& request,
     const GURL& target_url,

@@ -179,11 +179,6 @@ class BasicNetworkDelegate : public NetworkDelegate {
     return false;
   }
 
-  int OnBeforeSocketStreamConnect(SocketStream* stream,
-                                  const CompletionCallback& callback) override {
-    return OK;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
