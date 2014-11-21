@@ -70,28 +70,54 @@ void GetTextMetricsForFont(HDC hdc, HFONT font, TEXTMETRIC* text_metrics) {
   GetTextMetrics(hdc, text_metrics);
 }
 
-// Returns a matching IDWriteFont for the |face_name| passed in. If we fail
+// Returns a matching IDWriteFont for the |font_info| passed in. If we fail
 // to find a matching font, then we return the IDWriteFont corresponding to
 // the default font on the system.
 // Returns S_OK on success.
-HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
-                                              int font_style,
-                                              IDWriteFactory* factory,
-                                              IDWriteFont** dwrite_font) {
-  // Enumerate the system font collectione exposed by DirectWrite for a
-  // matching font.
-  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
-  HRESULT hr = factory->GetSystemFontCollection(font_collection.Receive());
+HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
+                                   int font_style,
+                                   IDWriteFactory* factory,
+                                   IDWriteFont** dwrite_font) {
+  // First try the GDI compat route to convert the LOGFONT to a IDWriteFont
+  // If that succeeds then we are good. If that fails then try and find a
+  // match from the DirectWrite font collection.
+  base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
+  HRESULT hr = factory->GetGdiInterop(gdi_interop.Receive());
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
   }
 
+  hr = gdi_interop->CreateFontFromLOGFONT(&font_info, dwrite_font);
+  if (SUCCEEDED(hr))
+    return hr;
+
+  // Get the matching font from the system font collection exposed by
+  // DirectWrite.
+  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  hr = factory->GetSystemFontCollection(font_collection.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return hr;
+  }
+
+  // Steps as below:-
+  // This mirrors skia.
+  // 1. Attempt to find a DirectWrite font family based on the face name in the
+  //    font. That may not work at all times, as the face name could be random
+  //    GDI has its own font system where in it creates a font matching the
+  //    characteristics in the LOGFONT structure passed into
+  //    CreateFontIndirect. DirectWrite does not do that. If this succeeds then
+  //    return the matching IDWriteFont from the family.
+  // 2. If step 1 fails then repeat with the default system font. This has the
+  //    same limitations with the face name as mentioned above.
+  // 3. If step 2 fails then return the first family from the collection and
+  //    use that.
   base::win::ScopedComPtr<IDWriteFontFamily> font_family;
   BOOL exists = FALSE;
   uint32 index = 0;
-  hr = font_collection->FindFamilyName(face_name, &index, &exists);
-  // If we fail to find a match then fallback to the default font on the
+  hr = font_collection->FindFamilyName(font_info.lfFaceName, &index, &exists);
+  // If we fail to find a match then try fallback to the default font on the
   // system. This is what skia does as well.
   if (FAILED(hr) || (index == UINT_MAX) || !exists) {
     NONCLIENTMETRICS metrics = {0};
@@ -108,12 +134,14 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
                                          &exists);
   }
 
-  if (FAILED(hr) || (index == UINT_MAX) || !exists) {
-    CHECK(false);
-    return hr;
+  if (index != UINT_MAX && exists) {
+    hr = font_collection->GetFontFamily(index, font_family.Receive());
+  } else {
+    // If we fail to find a matching font, then fallback to the first font in
+    // the list. This is what skia does as well.
+    hr = font_collection->GetFontFamily(0, font_family.Receive());
   }
 
-  hr = font_collection->GetFontFamily(index, font_family.Receive());
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
@@ -133,13 +161,13 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
   // The code below adds some debug fields to help track down these failures.
   // 1. We get the matching font list for the font attributes passed in.
   // 2. We get the font count in the family with a debug alias variable.
-  // 3. If we fail to get the font via the GetFirstMatchingFont call then we
-  //    try to get the first matching font in the IDWriteFontList.
-  // 4. If GetFirstMatchingFont and IDWriteFontList both fail then we CHECK as
-  //    before.
+  // 3. If GetFirstMatchingFont fails then we CHECK as before.
   // Next step would be to remove the CHECKs in this function and fallback to
   // GDI.
   // http://crbug.com/434425
+  // TODO(ananta)
+  // Remove the GetMatchingFonts and related code here once we get to a stable
+  // state in canary.
   base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
   hr = font_family->GetMatchingFonts(weight, stretch, italic,
                                      matching_font_list.Receive());
@@ -149,9 +177,6 @@ HRESULT GetMatchingDirectWriteFontForTypeface(const wchar_t* face_name,
 
   hr = font_family->GetFirstMatchingFont(weight, stretch, italic,
                                          dwrite_font);
-  if (FAILED(hr) && matching_font_list)
-    hr = matching_font_list->GetFont(0, dwrite_font);
-
   if (FAILED(hr)) {
     base::debug::Alias(&matching_font_count);
     CHECK(false);
@@ -434,10 +459,10 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // DirectWrite and remove the code here which retrieves metrics from
   // DirectWrite to calculate the cap height.
   base::win::ScopedComPtr<IDWriteFont> dwrite_font;
-  HRESULT hr = GetMatchingDirectWriteFontForTypeface(font_info.lfFaceName,
-                                                     skia_style,
-                                                     direct_write_factory_,
-                                                     dwrite_font.Receive());
+  HRESULT hr = GetMatchingDirectWriteFont(font_info,
+                                          skia_style,
+                                          direct_write_factory_,
+                                          dwrite_font.Receive());
   if (FAILED(hr)) {
     CHECK(false);
     return nullptr;
