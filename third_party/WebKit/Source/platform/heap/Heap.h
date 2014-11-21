@@ -251,7 +251,7 @@ public:
     size_t objectPayloadSizeForTesting();
     void mark(Visitor*);
     void finalize();
-    void setDeadMark();
+    void markDead();
     virtual void markOrphaned() override
     {
         // Zap the payload with a recognizable value to detect any incorrect
@@ -352,9 +352,8 @@ public:
     inline size_t payloadSize();
     inline Address payloadEnd();
 
-    inline void setDeadMark();
-    inline void clearDeadMark();
-    inline bool hasDeadMark() const;
+    inline void markDead();
+    inline bool isDead() const;
 
     // Zap magic number with a new magic number that means there was once an
     // object allocated here, but it was freed because nobody marked it during
@@ -523,7 +522,7 @@ public:
     Address end() { return payload() + payloadSize(); }
 
     size_t objectPayloadSizeForTesting();
-    void clearLiveAndMarkDead();
+    void markUnmarkedObjectsDead();
     void sweep(ThreadHeap<Header>*);
     void clearObjectStartBitMap();
     void finalize(Header*);
@@ -695,7 +694,7 @@ public:
     virtual void postSweepProcessing() = 0;
 
     virtual void clearFreeLists() = 0;
-    virtual void clearLiveAndMarkDead() = 0;
+    virtual void markUnmarkedObjectsDead() = 0;
 
     virtual void makeConsistentForSweeping() = 0;
 #if ENABLE(ASSERT)
@@ -762,7 +761,7 @@ public:
     virtual void postSweepProcessing() override;
 
     virtual void clearFreeLists() override;
-    virtual void clearLiveAndMarkDead() override;
+    virtual void markUnmarkedObjectsDead() override;
 
     virtual void makeConsistentForSweeping() override;
 #if ENABLE(ASSERT)

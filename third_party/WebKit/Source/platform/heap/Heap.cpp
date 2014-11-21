@@ -487,21 +487,14 @@ void HeapObjectHeader::unmark()
 }
 
 NO_SANITIZE_ADDRESS inline
-bool HeapObjectHeader::hasDeadMark() const
+bool HeapObjectHeader::isDead() const
 {
     checkHeader();
     return m_size & deadBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::clearDeadMark()
-{
-    checkHeader();
-    m_size &= ~deadBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::setDeadMark()
+void HeapObjectHeader::markDead()
 {
     ASSERT(!isMarked());
     checkHeader();
@@ -567,16 +560,16 @@ bool LargeHeapObject<Header>::isMarked()
 }
 
 template<typename Header>
-void LargeHeapObject<Header>::setDeadMark()
+void LargeHeapObject<Header>::markDead()
 {
-    heapObjectHeader()->setDeadMark();
+    heapObjectHeader()->markDead();
 }
 
 template<typename Header>
 void LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
-    if (!objectContains(address) || heapObjectHeader()->hasDeadMark())
+    if (!objectContains(address) || heapObjectHeader()->isDead())
         return;
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
@@ -1492,16 +1485,16 @@ void ThreadHeap<Header>::makeConsistentForSweeping()
 }
 
 template<typename Header>
-void ThreadHeap<Header>::clearLiveAndMarkDead()
+void ThreadHeap<Header>::markUnmarkedObjectsDead()
 {
     ASSERT(isConsistentForSweeping());
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
-        page->clearLiveAndMarkDead();
+        page->markUnmarkedObjectsDead();
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
         if (current->isMarked())
             current->unmark();
         else
-            current->setDeadMark();
+            current->markDead();
     }
 }
 
@@ -1640,7 +1633,7 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 }
 
 template<typename Header>
-void HeapPage<Header>::clearLiveAndMarkDead()
+void HeapPage<Header>::markUnmarkedObjectsDead()
 {
     for (Address headerAddress = payload(); headerAddress < end();) {
         Header* header = reinterpret_cast<Header*>(headerAddress);
@@ -1654,7 +1647,7 @@ void HeapPage<Header>::clearLiveAndMarkDead()
         if (header->isMarked())
             header->unmark();
         else
-            header->setDeadMark();
+            header->markDead();
         headerAddress += header->size();
     }
 }
@@ -1734,7 +1727,7 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
     Header* header = findHeaderFromAddress(address);
-    if (!header || header->hasDeadMark())
+    if (!header || header->isDead())
         return;
 
 #if ENABLE(GC_PROFILE_MARKING)

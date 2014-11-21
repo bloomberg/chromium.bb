@@ -879,7 +879,7 @@ void ThreadState::prepareForGC()
         // into garbage or the middle of another object via the newly conservatively found
         // object.
         if (sweepRequested())
-            heap->clearLiveAndMarkDead();
+            heap->markUnmarkedObjectsDead();
     }
     prepareRegionTree();
     setSweepRequested();
