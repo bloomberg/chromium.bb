@@ -23,6 +23,7 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/layer_selection_bound.h"
+#include "cc/input/page_scale_animation.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -382,12 +383,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
   if (pending_page_scale_animation_) {
-    sync_tree->SetPageScaleAnimation(
-        pending_page_scale_animation_->target_offset,
-        pending_page_scale_animation_->use_anchor,
-        pending_page_scale_animation_->scale,
-        pending_page_scale_animation_->duration);
-    pending_page_scale_animation_ = nullptr;
+    sync_tree->SetPendingPageScaleAnimation(
+        pending_page_scale_animation_.Pass());
   }
 
   if (!ui_resource_request_queue_.empty()) {
@@ -725,11 +722,12 @@ void LayerTreeHost::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                             bool use_anchor,
                                             float scale,
                                             base::TimeDelta duration) {
-  pending_page_scale_animation_.reset(new PendingPageScaleAnimation);
-  pending_page_scale_animation_->target_offset = target_offset;
-  pending_page_scale_animation_->use_anchor = use_anchor;
-  pending_page_scale_animation_->scale = scale;
-  pending_page_scale_animation_->duration = duration;
+  pending_page_scale_animation_.reset(
+      new PendingPageScaleAnimation(
+          target_offset,
+          use_anchor,
+          scale,
+          duration));
 
   SetNeedsCommit();
 }

@@ -414,6 +414,48 @@ void LayerTreeHostImpl::ManageTiles() {
   client_->DidManageTiles();
 }
 
+void LayerTreeHostImpl::StartPageScaleAnimation(
+    const gfx::Vector2d& target_offset,
+    bool anchor_point,
+    float page_scale,
+    base::TimeDelta duration) {
+  if (!InnerViewportScrollLayer())
+    return;
+
+  gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
+  gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
+  gfx::SizeF viewport_size =
+      active_tree_->InnerViewportContainerLayer()->bounds();
+
+  // Easing constants experimentally determined.
+  scoped_ptr<TimingFunction> timing_function =
+      CubicBezierTimingFunction::Create(.8, 0, .3, .9);
+
+  // TODO(miletus) : Pass in ScrollOffset.
+  page_scale_animation_ =
+      PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
+                                 active_tree_->total_page_scale_factor(),
+                                 viewport_size,
+                                 scaled_scrollable_size,
+                                 timing_function.Pass());
+
+  if (anchor_point) {
+    gfx::Vector2dF anchor(target_offset);
+    page_scale_animation_->ZoomWithAnchor(anchor,
+                                          page_scale,
+                                          duration.InSecondsF());
+  } else {
+    gfx::Vector2dF scaled_target_offset = target_offset;
+    page_scale_animation_->ZoomTo(scaled_target_offset,
+                                  page_scale,
+                                  duration.InSecondsF());
+  }
+
+  SetNeedsAnimate();
+  client_->SetNeedsCommitOnImplThread();
+  client_->RenewTreePriority();
+}
+
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
     const gfx::Point& viewport_point,
     InputHandler::ScrollInputType type) {
@@ -1808,13 +1850,14 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         stats.draw_duration.GetLastTimeDelta());
   }
 
-  scoped_ptr<PageScaleAnimation> page_scale_animation =
-      active_tree_->TakePageScaleAnimation();
-  if (page_scale_animation) {
-    page_scale_animation_ = page_scale_animation.Pass();
-    SetNeedsAnimate();
-    client_->SetNeedsCommitOnImplThread();
-    client_->RenewTreePriority();
+  scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation =
+      active_tree_->TakePendingPageScaleAnimation();
+  if (pending_page_scale_animation) {
+    StartPageScaleAnimation(
+        pending_page_scale_animation->target_offset,
+        pending_page_scale_animation->use_anchor,
+        pending_page_scale_animation->scale,
+        pending_page_scale_animation->duration);
   }
 }
 

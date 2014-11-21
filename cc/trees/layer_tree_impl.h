@@ -44,6 +44,7 @@ class Proxy;
 class ResourceProvider;
 class TileManager;
 class UIResourceRequest;
+struct PendingPageScaleAnimation;
 struct RendererCapabilities;
 struct SelectionHandle;
 
@@ -314,12 +315,9 @@ class CC_EXPORT LayerTreeImpl {
     return top_controls_content_offset_ + top_controls_delta_;
   }
 
-  void SetPageScaleAnimation(
-      const gfx::Vector2d& target_offset,
-      bool anchor_point,
-      float page_scale,
-      base::TimeDelta duration);
-  scoped_ptr<PageScaleAnimation> TakePageScaleAnimation();
+  void SetPendingPageScaleAnimation(
+      scoped_ptr<PendingPageScaleAnimation> pending_animation);
+  scoped_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
@@ -392,7 +390,7 @@ class CC_EXPORT LayerTreeImpl {
   float top_controls_delta_;
   float sent_top_controls_delta_;
 
-  scoped_ptr<PageScaleAnimation> page_scale_animation_;
+  scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

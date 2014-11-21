@@ -146,6 +146,10 @@ class CC_EXPORT LayerTreeHostImpl
   void PinchGestureUpdate(float magnify_delta,
                           const gfx::Point& anchor) override;
   void PinchGestureEnd() override;
+  void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
+                               bool anchor_point,
+                               float page_scale,
+                               base::TimeDelta duration);
   void SetNeedsAnimate() override;
   bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
                                    InputHandler::ScrollInputType type) override;

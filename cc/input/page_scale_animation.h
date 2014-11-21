@@ -10,11 +10,30 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 
 class TimingFunction;
+
+// Used in the CC to pass around a scale animation that hasn't yet been
+// initialized.
+struct PendingPageScaleAnimation {
+  PendingPageScaleAnimation(
+      const gfx::Vector2d _target_offset,
+      bool _use_anchor,
+      float _scale,
+      const base::TimeDelta& _duration)
+      : target_offset(_target_offset),
+        use_anchor(_use_anchor),
+        scale(_scale),
+        duration(_duration) {}
+  gfx::Vector2d target_offset;
+  bool use_anchor;
+  float scale;
+  base::TimeDelta duration;
+};
 
 // A small helper class that does the math for zoom animations, primarily for
 // double-tap zoom. Initialize it with starting and ending scroll/page scale
