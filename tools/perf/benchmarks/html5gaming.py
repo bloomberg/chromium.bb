@@ -40,6 +40,8 @@ class HTML5Gaming(benchmark.Benchmark):
     ps = page_set.PageSet(
       file_path=os.path.abspath(__file__),
       archive_data_file='../page_sets/data/html5gaming.json',
-      make_javascript_deterministic=False)
+      make_javascript_deterministic=False,
+      bucket=page_set.PARTNER_BUCKET)
+
     ps.AddPageWithDefaultRunNavigate('http://html5-benchmark.com/')
     return ps
