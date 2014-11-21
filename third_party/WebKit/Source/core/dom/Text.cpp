@@ -260,7 +260,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
     if (style.preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
         return true;
 
-    const RenderObject* prev = NodeRenderingTraversal::previousSiblingRenderer(this);
+    const RenderObject* prev = NodeRenderingTraversal::previousSiblingRenderer(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
@@ -279,7 +279,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
         RenderObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || first == renderer() || NodeRenderingTraversal::nextSiblingRenderer(this) == first)
+        if (!first || first == renderer() || NodeRenderingTraversal::nextSiblingRenderer(*this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
@@ -307,7 +307,7 @@ RenderText* Text::createTextRenderer(RenderStyle* style)
 
 void Text::attach(const AttachContext& context)
 {
-    if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(this)) {
+    if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
         if (RenderObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 RenderTreeBuilderForText(this, parentRenderer).createRenderer();
@@ -319,7 +319,7 @@ void Text::attach(const AttachContext& context)
 void Text::reattachIfNeeded(const AttachContext& context)
 {
     bool rendererIsNeeded = false;
-    ContainerNode* renderingParent = NodeRenderingTraversal::parent(this);
+    ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this);
     if (renderingParent) {
         if (RenderObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))

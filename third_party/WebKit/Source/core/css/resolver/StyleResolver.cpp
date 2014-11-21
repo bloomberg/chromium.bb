@@ -932,7 +932,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 {
     ASSERT(textNode);
 
-    Node* parentNode = NodeRenderingTraversal::parent(textNode);
+    Node* parentNode = NodeRenderingTraversal::parent(*textNode);
     if (!parentNode || !parentNode->renderStyle())
         return defaultStyleForElement();
     return parentNode->renderStyle();

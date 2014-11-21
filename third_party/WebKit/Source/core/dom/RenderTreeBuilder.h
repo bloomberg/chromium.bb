@@ -69,7 +69,7 @@ protected:
         if (m_renderingParent->node() && m_renderingParent->node()->needsAttach())
             return 0;
 
-        return NodeRenderingTraversal::nextSiblingRenderer(m_node);
+        return NodeRenderingTraversal::nextSiblingRenderer(*m_node);
     }
 
     RawPtrWillBeMember<NodeType> m_node;

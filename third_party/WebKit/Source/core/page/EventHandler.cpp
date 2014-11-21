@@ -662,7 +662,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     RenderObject* renderer = targetNode->renderer();
     if (!renderer) {
-        Node* parent = NodeRenderingTraversal::parent(targetNode);
+        Node* parent = NodeRenderingTraversal::parent(*targetNode);
         if (!parent)
             return false;
 
@@ -1276,7 +1276,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 #endif
 
     m_clickCount = mouseEvent.clickCount();
-    m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(mev.innerNode()) : mev.innerNode();
+    m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
     if (FrameView* view = m_frame->view()) {
         RenderLayer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : nullptr;
@@ -1506,7 +1506,7 @@ static Node* parentForClickEvent(const Node& node)
     // controls.
     if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
         return nullptr;
-    return NodeRenderingTraversal::parent(&node);
+    return NodeRenderingTraversal::parent(node);
 }
 
 bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
@@ -1711,7 +1711,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, DataTransf
     // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
     RefPtrWillBeRawPtr<Node> newTarget = mev.innerNode();
     if (newTarget && newTarget->isTextNode())
-        newTarget = NodeRenderingTraversal::parent(newTarget.get());
+        newTarget = NodeRenderingTraversal::parent(*newTarget);
 
     if (AutoscrollController* controller = autoscrollController())
         controller->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
@@ -1831,7 +1831,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
         if (result && result->isTextNode())
-            result = NodeRenderingTraversal::parent(result);
+            result = NodeRenderingTraversal::parent(*result);
     }
     m_nodeUnderMouse = result;
 
@@ -1978,7 +1978,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
     if (node && node->isTextNode())
-        node = NodeRenderingTraversal::parent(node);
+        node = NodeRenderingTraversal::parent(*node);
 
     bool isOverWidget;
     if (event.useLatchedEventNode()) {
@@ -2255,7 +2255,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     m_clickNode = currentHitTest.innerNode();
     if (m_clickNode && m_clickNode->isTextNode())
-        m_clickNode = NodeRenderingTraversal::parent(m_clickNode.get());
+        m_clickNode = NodeRenderingTraversal::parent(*m_clickNode);
 
     PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
@@ -3569,7 +3569,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
             // Touch events should not go to text nodes
             if (node->isTextNode())
-                node = NodeRenderingTraversal::parent(node);
+                node = NodeRenderingTraversal::parent(*node);
 
             if (!m_touchSequenceDocument) {
                 // Keep track of which document should receive all touch events
@@ -3765,7 +3765,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     // touch-action from the target node up to the nearest scrollable ancestor
     // and exclude any prohibited actions.
     TouchAction effectiveTouchAction = TouchActionAuto;
-    for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(curNode)) {
+    for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(*curNode)) {
         if (RenderObject* renderer = curNode->renderer()) {
             if (renderer->supportsTouchAction()) {
                 TouchAction action = renderer->style()->touchAction();

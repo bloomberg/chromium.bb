@@ -1022,7 +1022,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
                 break;
 
             hostContext.elementStyle = 0;
-            nextElement = NodeRenderingTraversal::parentElement(nextElement);
+            nextElement = NodeRenderingTraversal::parentElement(*nextElement);
         } while (nextElement);
     }
     if (matched) {

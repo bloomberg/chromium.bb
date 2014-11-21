@@ -1897,7 +1897,7 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 {
     bool needsRecalc = needsFullRenderTreeUpdate();
 
-    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(ancestor))
+    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(*ancestor))
         needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation();
 
     if (needsRecalc)
@@ -3459,12 +3459,12 @@ void Document::hoveredNodeDetached(Node* node)
         return;
 
     m_hoverNode->document().updateDistributionForNodeIfNeeded(m_hoverNode.get());
-    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(m_hoverNode.get())))
+    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(*m_hoverNode)))
         return;
 
-    m_hoverNode = NodeRenderingTraversal::parent(node);
+    m_hoverNode = NodeRenderingTraversal::parent(*node);
     while (m_hoverNode && !m_hoverNode->renderer())
-        m_hoverNode = NodeRenderingTraversal::parent(m_hoverNode.get());
+        m_hoverNode = NodeRenderingTraversal::parent(*m_hoverNode);
 
     // If the mouse cursor is not visible, do not clear existing
     // hover effects on the ancestors of |node| and do not invoke
@@ -3484,9 +3484,9 @@ void Document::activeChainNodeDetached(Node* node)
     if (node != m_activeHoverElement)
         return;
 
-    Node* activeNode = NodeRenderingTraversal::parent(node);
+    Node* activeNode = NodeRenderingTraversal::parent(*node);
     while (activeNode && activeNode->isElementNode() && !activeNode->renderer())
-        activeNode = NodeRenderingTraversal::parent(activeNode);
+        activeNode = NodeRenderingTraversal::parent(*activeNode);
 
     m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }
@@ -5335,7 +5335,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     if (oldActiveElement && !request.active()) {
         // The oldActiveElement renderer is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
-        for (Node* node = oldActiveElement; node; node = NodeRenderingTraversal::parent(node)) {
+        for (Node* node = oldActiveElement; node; node = NodeRenderingTraversal::parent(*node)) {
             ASSERT(!node->isTextNode());
             node->setActive(false);
             m_userActionElements.setInActiveChain(node, false);
@@ -5346,7 +5346,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         if (!oldActiveElement && newActiveElement && !newActiveElement->isDisabledFormControl() && request.active() && !request.touchMove()) {
             // We are setting the :active chain and freezing it. If future moves happen, they
             // will need to reference this chain.
-            for (Node* node = newActiveElement; node; node = NodeRenderingTraversal::parent(node)) {
+            for (Node* node = newActiveElement; node; node = NodeRenderingTraversal::parent(*node)) {
                 ASSERT(!node->isTextNode());
                 m_userActionElements.setInActiveChain(node, true);
             }

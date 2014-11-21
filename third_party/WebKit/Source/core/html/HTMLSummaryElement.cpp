@@ -60,7 +60,7 @@ void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
 {
-    Node* parent = NodeRenderingTraversal::parent(this);
+    Node* parent = NodeRenderingTraversal::parent(*this);
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
     return nullptr;

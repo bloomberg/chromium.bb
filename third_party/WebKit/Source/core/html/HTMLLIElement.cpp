@@ -88,7 +88,7 @@ void HTMLLIElement::attach(const AttachContext& context)
         Element* listNode = 0;
         Element* current = this;
         while (!listNode) {
-            current = NodeRenderingTraversal::parentElement(current);
+            current = NodeRenderingTraversal::parentElement(*current);
             if (!current)
                 break;
             if (isHTMLUListElement(*current) || isHTMLOListElement(*current))

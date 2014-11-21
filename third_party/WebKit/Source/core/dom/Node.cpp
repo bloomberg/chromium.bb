@@ -757,7 +757,7 @@ bool Node::shouldHaveFocusAppearance() const
 bool Node::isInert() const
 {
     const HTMLDialogElement* dialog = document().activeModalDialog();
-    if (dialog && this != document() && !NodeRenderingTraversal::contains(dialog, this))
+    if (dialog && this != document() && !NodeRenderingTraversal::contains(*dialog, *this))
         return true;
     return document().ownerElement() && document().ownerElement()->isInert();
 }
@@ -1767,7 +1767,7 @@ void Node::showTreeForThisAcrossFrame() const
 
 Element* Node::enclosingLinkEventParentOrSelf()
 {
-    for (Node* node = this; node; node = NodeRenderingTraversal::parent(node)) {
+    for (Node* node = this; node; node = NodeRenderingTraversal::parent(*node)) {
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.

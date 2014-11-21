@@ -176,7 +176,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
     if (renderer->isRenderInline()) {
-        for (Node* child = NodeRenderingTraversal::firstChild(&node); child; child = NodeRenderingTraversal::nextSibling(child))
+        for (Node* child = NodeRenderingTraversal::firstChild(node); child; child = NodeRenderingTraversal::nextSibling(*child))
             computeQuads(*child, outQuads);
     } else {
         // FIXME: this does not need to be absolute, just in the paint invalidation container's space.

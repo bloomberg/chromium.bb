@@ -50,7 +50,7 @@ RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element* element, Rende
     if (element->isFirstLetterPseudoElement()) {
         if (RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element))
             m_renderingParent = nextRenderer->parent();
-    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
+    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(*element)) {
         m_renderingParent = containerNode->renderer();
     }
 }
@@ -60,7 +60,7 @@ RenderObject* RenderTreeBuilderForElement::nextRenderer() const
     ASSERT(m_renderingParent);
 
     if (m_node->isInTopLayer())
-        return NodeRenderingTraversal::nextInTopLayer(m_node);
+        return NodeRenderingTraversal::nextInTopLayer(*m_node);
 
     if (m_node->isFirstLetterPseudoElement())
         return FirstLetterPseudoElement::firstLetterTextRenderer(*m_node);

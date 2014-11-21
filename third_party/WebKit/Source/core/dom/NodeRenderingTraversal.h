@@ -55,18 +55,18 @@ private:
     const InsertionPoint* m_insertionPoint;
 };
 
-ContainerNode* parent(const Node*, ParentDetails* = 0);
-bool contains(const ContainerNode*, const Node*);
-Node* firstChild(const Node*);
-Node* nextSibling(const Node*);
-Node* previousSibling(const Node*);
-Node* previous(const Node*, const Node* stayWithin);
-Node* next(const Node*, const Node* stayWithin);
-RenderObject* nextSiblingRenderer(const Node*);
-RenderObject* previousSiblingRenderer(const Node*);
-RenderObject* nextInTopLayer(const Element*);
+ContainerNode* parent(const Node&, ParentDetails* = 0);
+bool contains(const ContainerNode&, const Node&);
+Node* firstChild(const Node&);
+Node* nextSibling(const Node&);
+Node* previousSibling(const Node&);
+Node* previous(const Node&, const Node* stayWithin);
+Node* next(const Node&, const Node* stayWithin);
+RenderObject* nextSiblingRenderer(const Node&);
+RenderObject* previousSiblingRenderer(const Node&);
+RenderObject* nextInTopLayer(const Element&);
 
-inline Element* parentElement(const Node* node)
+inline Element* parentElement(const Node& node)
 {
     ContainerNode* found = parent(node);
     return found && found->isElementNode() ? toElement(found) : 0;

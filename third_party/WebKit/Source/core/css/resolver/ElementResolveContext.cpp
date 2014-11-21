@@ -44,7 +44,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
     , m_distributedToInsertionPoint(false)
 {
     NodeRenderingTraversal::ParentDetails parentDetails;
-    m_parentNode = NodeRenderingTraversal::parent(&element, &parentDetails);
+    m_parentNode = NodeRenderingTraversal::parent(element, &parentDetails);
     m_distributedToInsertionPoint = parentDetails.insertionPoint();
 
     const Document& document = element.document();

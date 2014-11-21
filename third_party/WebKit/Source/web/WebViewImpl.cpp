@@ -1095,7 +1095,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
     // Find the block type node based on the hit node.
     // FIXME: This wants to walk composed tree with NodeRenderingTraversal::parent().
     while (node && (!node->renderer() || node->renderer()->isInline()))
-        node = NodeRenderingTraversal::parent(node);
+        node = NodeRenderingTraversal::parent(*node);
 
     // Return the bounding box in the window coordinate system.
     if (node) {
@@ -1219,7 +1219,7 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
             if (cursor != CURSOR_AUTO || frame->eventHandler().useHandCursor(node, node->isLink()))
                 break;
         }
-        node = NodeRenderingTraversal::parent(node);
+        node = NodeRenderingTraversal::parent(*node);
     }
 
     return node;
@@ -1248,7 +1248,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     // Walk up the tree until we have a node with an attached renderer
     // FIXME: This wants to walk composed tree with NodeRenderingTraversal::parent().
     while (bestTouchNode && !bestTouchNode->renderer())
-        bestTouchNode = NodeRenderingTraversal::parent(bestTouchNode);
+        bestTouchNode = NodeRenderingTraversal::parent(*bestTouchNode);
 
     Node* cursorDefiningAncestor =
         findCursorDefiningAncestor(bestTouchNode, m_page->deprecatedLocalMainFrame());
@@ -1263,7 +1263,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     // has hand cursor set.
     do {
         bestTouchNode = cursorDefiningAncestor;
-        cursorDefiningAncestor = findCursorDefiningAncestor(NodeRenderingTraversal::parent(bestTouchNode),
+        cursorDefiningAncestor = findCursorDefiningAncestor(NodeRenderingTraversal::parent(*bestTouchNode),
             m_page->deprecatedLocalMainFrame());
     } while (cursorDefiningAncestor && showsHandCursor(cursorDefiningAncestor, m_page->deprecatedLocalMainFrame()));
 
@@ -4434,7 +4434,7 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
 
     // Ignore when tapping on links or nodes listening to click events, unless the click event is on the
     // body element, in which case it's unlikely that the original node itself was intended to be clickable.
-    for (; node && !isHTMLBodyElement(*node); node = NodeRenderingTraversal::parent(node)) {
+    for (; node && !isHTMLBodyElement(*node); node = NodeRenderingTraversal::parent(*node)) {
         if (node->isLink() || node->willRespondToTouchEvents() || node->willRespondToMouseClickEvents())
             return false;
     }

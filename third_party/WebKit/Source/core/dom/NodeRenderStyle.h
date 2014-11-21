@@ -47,7 +47,7 @@ inline RenderStyle* Node::renderStyle() const
 
 inline RenderStyle* Node::parentRenderStyle() const
 {
-    ContainerNode* parent = NodeRenderingTraversal::parent(this);
+    ContainerNode* parent = NodeRenderingTraversal::parent(*this);
     return parent ? parent->renderStyle() : 0;
 }
 
