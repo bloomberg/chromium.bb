@@ -216,7 +216,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
-        header_path, cpp_path = self.output_paths(dictionary_name)
+        header_path, cpp_path = self.output_paths(cpp_name(dictionary))
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
@@ -247,7 +247,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(
-            definition_name, interface_info)
+            cpp_name(dictionary), interface_info)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
