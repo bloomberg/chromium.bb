@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom3/dom_key.h"
 
 using ui::KeycodeConverter;
 
@@ -16,7 +18,7 @@ namespace {
 #if defined(OS_WIN)
 const size_t kExpectedMappedKeyCount = 138;
 #elif defined(OS_LINUX)
-const size_t kExpectedMappedKeyCount = 145;
+const size_t kExpectedMappedKeyCount = 155;
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
 #else
@@ -107,6 +109,49 @@ TEST(UsbKeycodeMap, UsBackslashIsNonUsHash) {
   // as equivalent to the US "backslash" key.
   EXPECT_EQ(ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbUsBackslash),
             ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbNonUsHash));
+}
+
+TEST(KeycodeConverter, DomCode) {
+  // Test invalid and unknown arguments to CodeStringToDomCode()
+  EXPECT_EQ(ui::DomCode::NONE,
+            ui::KeycodeConverter::CodeStringToDomCode(nullptr));
+  EXPECT_EQ(ui::DomCode::NONE, ui::KeycodeConverter::CodeStringToDomCode("-"));
+  EXPECT_EQ(ui::DomCode::NONE, ui::KeycodeConverter::CodeStringToDomCode(""));
+  // Round-trip test DOM Level 3 .code strings.
+  const ui::KeycodeMapEntry* keycode_map =
+      ui::KeycodeConverter::GetKeycodeMapForTest();
+  size_t numEntries = ui::KeycodeConverter::NumKeycodeMapEntriesForTest();
+  for (size_t i = 0; i < numEntries; ++i) {
+    SCOPED_TRACE(i);
+    const ui::KeycodeMapEntry* entry = &keycode_map[i];
+    ui::DomCode code = ui::KeycodeConverter::CodeStringToDomCode(entry->code);
+    if (entry->code) {
+      EXPECT_STREQ(entry->code,
+                   ui::KeycodeConverter::DomCodeToCodeString(code));
+    } else {
+      EXPECT_EQ(static_cast<int>(ui::DomCode::NONE),
+                static_cast<int>(code));
+    }
+  }
+}
+
+TEST(KeycodeConverter, DomKey) {
+  // Test invalid and unknown arguments to KeyStringToDomKey()
+  EXPECT_EQ(ui::DomKey::NONE, ui::KeycodeConverter::KeyStringToDomKey(nullptr));
+  EXPECT_EQ(ui::DomKey::NONE, ui::KeycodeConverter::KeyStringToDomKey("-"));
+  // Round-trip test DOM Level 3 .key strings.
+  const char* s = nullptr;
+  for (size_t i = 0;
+       (s = ui::KeycodeConverter::DomKeyStringForTest(i)) != nullptr;
+       ++i) {
+    SCOPED_TRACE(i);
+    ui::DomKey key = ui::KeycodeConverter::KeyStringToDomKey(s);
+    if (s) {
+      EXPECT_STREQ(s, ui::KeycodeConverter::DomKeyToKeyString(key));
+    } else {
+      EXPECT_EQ(ui::DomKey::NONE, key);
+    }
+  }
 }
 
 }  // namespace

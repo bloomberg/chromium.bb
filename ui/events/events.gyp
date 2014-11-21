@@ -16,6 +16,9 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'keycodes/dom3/dom_code.h',
+        'keycodes/dom3/dom_key.h',
+        'keycodes/dom3/dom_key_data.h',
         'keycodes/dom4/keycode_converter.cc',
         'keycodes/dom4/keycode_converter.h',
         'keycodes/dom4/keycode_converter_data.h',

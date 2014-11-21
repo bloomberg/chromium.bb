@@ -13,6 +13,9 @@
 
 namespace ui {
 
+enum class DomCode;
+enum class DomKey;
+
 // This structure is used to define the keycode mapping table.
 // It is defined here because the unittests need access to it.
 typedef struct {
@@ -28,7 +31,7 @@ typedef struct {
   uint16_t native_keycode;
 
   // The UIEvents (aka: DOM4Events) |code| value as defined in:
-  // https://dvcs.w3.org/hg/d4e/raw-file/tip/source_respec.htm
+  // http://www.w3.org/TR/DOM-Level-3-Events-code/
   const char* code;
 } KeycodeMapEntry;
 
@@ -48,8 +51,26 @@ class KeycodeConverter {
   // The returned pointer references a static global string.
   static const char* NativeKeycodeToCode(uint16_t native_keycode);
 
+  // Convert a native (Mac/Win/Linux) keycode into a DomCode.
+  static DomCode NativeKeycodeToDomCode(uint16_t native_keycode);
+
   // Convert a UI Events |code| string value into a native keycode.
   static uint16_t CodeToNativeKeycode(const char* code);
+
+  // Convert a DomCode into a native keycode.
+  static uint16_t DomCodeToNativeKeycode(DomCode code);
+
+  // Convert a UI Events |code| string value into a DomCode.
+  static DomCode CodeStringToDomCode(const char* code);
+
+  // Convert a DomCode into a UI Events |code| string value.
+  static const char* DomCodeToCodeString(DomCode dom_code);
+
+  // Convert a UI Events |key| string value into a DomKey.
+  static DomKey KeyStringToDomKey(const char* key);
+
+  // Convert a DomKey into a UI Events |key| string value.
+  static const char* DomKeyToKeyString(DomKey dom_key);
 
   // The following methods relate to USB keycodes.
   // Note that USB keycodes are not part of any web standard.
@@ -74,6 +95,8 @@ class KeycodeConverter {
   // Static methods to support testing.
   static size_t NumKeycodeMapEntriesForTest();
   static const KeycodeMapEntry* GetKeycodeMapForTest();
+  static const char* DomCodeStringForTest(size_t index);
+  static const char* DomKeyStringForTest(size_t index);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeycodeConverter);
