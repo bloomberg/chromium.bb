@@ -148,7 +148,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
         return;
 
     Document* document = nullptr;
-    if (info.Length() >= 4) {
+    if (info.Length() >= 4 && v8::Local<v8::Value>::Cast(info[3])->IsObject()) {
         v8::Local<v8::Object> documentWrapper = v8::Local<v8::Object>::Cast(info[3]);
         if (!V8HTMLDocument::wrapperTypeInfo.equals(toWrapperTypeInfo(documentWrapper)))
             return;
