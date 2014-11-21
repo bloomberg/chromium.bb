@@ -97,9 +97,10 @@ private:
   bool delayed_task_posted_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
-  base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyStatisticsPrefs);
 };

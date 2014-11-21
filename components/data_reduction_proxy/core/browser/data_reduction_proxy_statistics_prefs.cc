@@ -25,8 +25,8 @@ DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
       task_runner_(task_runner),
       delay_(delay),
       delayed_task_posted_(false),
-      weak_factory_(this),
-      pref_change_registrar_(new PrefChangeRegistrar()) {
+      pref_change_registrar_(new PrefChangeRegistrar()),
+      weak_factory_(this) {
   DCHECK(prefs);
   DCHECK_GE(delay.InMilliseconds(), 0);
   Init();
