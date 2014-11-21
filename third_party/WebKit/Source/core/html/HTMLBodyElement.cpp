@@ -55,7 +55,7 @@ HTMLBodyElement::~HTMLBodyElement()
 
 bool HTMLBodyElement::isPresentationAttribute(const QualifiedName& name) const
 {
-    if (name == backgroundAttr || name == marginwidthAttr || name == leftmarginAttr || name == marginheightAttr || name == topmarginAttr || name == bgcolorAttr || name == textAttr || name == bgpropertiesAttr)
+    if (name == backgroundAttr || name == marginwidthAttr || name == leftmarginAttr || name == marginheightAttr || name == topmarginAttr || name == bgcolorAttr || name == textAttr)
         return true;
     return HTMLElement::isPresentationAttribute(name);
 }
@@ -80,13 +80,9 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(const QualifiedName& 
         addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
     } else if (name == textAttr) {
         addHTMLColorToStyle(style, CSSPropertyColor, value);
-    } else if (name == bgpropertiesAttr) {
-        if (equalIgnoringCase(value, "fixed")) {
-            UseCounter::countDeprecation(document(), UseCounter::BgPropertiesFixed);
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyBackgroundAttachment, CSSValueFixed);
-        }
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

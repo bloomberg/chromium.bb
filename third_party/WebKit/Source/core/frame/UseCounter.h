@@ -465,7 +465,6 @@ public:
         UIEventLayerY = 512,
         UIEventPageX = 513,
         UIEventPageY = 514,
-        BgPropertiesFixed = 515,
         DevToolsConsoleTimeline = 517,
         DevToolsConsoleProfile = 518,
         SVGStyleElementTitle = 519,
