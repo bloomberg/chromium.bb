@@ -31,6 +31,14 @@ struct BASE_EXPORT ReceiveRightTraits {
   static void Free(mach_port_t port);
 };
 
+struct PortSetTraits {
+  static mach_port_t InvalidValue() {
+    return MACH_PORT_NULL;
+  }
+
+  static void Free(mach_port_t port);
+};
+
 }  // namespace internal
 
 // A scoper for handling a Mach port that names a send right. Send rights are
@@ -55,6 +63,19 @@ class BASE_EXPORT ScopedMachReceiveRight :
  public:
   explicit ScopedMachReceiveRight(
       mach_port_t port = traits_type::InvalidValue()) : ScopedGeneric(port) {}
+
+  operator mach_port_t() const { return get(); }
+};
+
+// A scoper for handling a Mach port set. A port set can have only one
+// reference. This takes ownership of that single reference on construction and
+// destroys the port set on destruction. Destroying a port set does not destroy
+// the receive rights that are members of the port set.
+class BASE_EXPORT ScopedMachPortSet :
+    public ScopedGeneric<mach_port_t, internal::PortSetTraits> {
+ public:
+  explicit ScopedMachPortSet(mach_port_t port = traits_type::InvalidValue())
+      : ScopedGeneric(port) {}
 
   operator mach_port_t() const { return get(); }
 };
