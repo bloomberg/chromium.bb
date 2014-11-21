@@ -449,7 +449,7 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   scoped_refptr<SetupDialog> dialog(new SetupDialog());
   dialog->Create(NULL);
   dialog->ShowWindow(SW_SHOW);
-  SetupDialog::Dispatcher dispatcher(dialog);
+  SetupDialog::Dispatcher dispatcher(dialog.get());
   base::RunLoop run_loop(&dispatcher);
   run_loop.Run();
   return 0;
