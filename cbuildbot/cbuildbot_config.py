@@ -1186,6 +1186,7 @@ _arm_internal_release_boards = frozenset([
   'rush',
   'rush_ryu',
   'veyron_jerry',
+  'veyron_mighty',
   'veyron_pinky',
 ])
 
@@ -1887,6 +1888,7 @@ _non_paladin_boards = frozenset([
   'rush',
   'tricky',
   'veyron_jerry',
+  'veyron_mighty',
   'x86-alex_he',
   'x86-pineview',
   'x86-zgb_he',
@@ -2741,6 +2743,7 @@ _AddGroupConfig('auron', 'auron', (
 # veyron-based boards
 _AddGroupConfig('veyron', 'veyron_pinky', (
     'veyron_jerry',
+    'veyron_mighty',
     ),
     important=False,
 )
