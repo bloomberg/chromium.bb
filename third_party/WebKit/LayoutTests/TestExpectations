@@ -1164,8 +1164,6 @@ crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_mea
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
-crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeout ]
-
 # crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 # crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 # crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
