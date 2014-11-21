@@ -743,6 +743,11 @@
                 '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',
               ],
             }], # internal_filter_fuzzer
+            ['clang==1', {
+              'dependencies': [
+                'sanitizers/sanitizers.gyp:llvm-symbolizer',
+              ],
+            }],
             ['OS=="win" and fastbuild==0 and target_arch=="ia32" and syzyasan==1', {
               'dependencies': [
                 '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
