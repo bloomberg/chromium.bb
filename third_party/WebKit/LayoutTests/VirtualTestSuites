@@ -2,22 +2,24 @@
   {
     "prefix": "gpu",
     "base": "fast/canvas",
-    "args": ["--enable-accelerated-2d-canvas"]
+    "args": ["--enable-accelerated-2d-canvas",
+             "--disable-display-list-2d-canvas"]
   },
   {
     "prefix": "gpu",
     "base": "canvas/philip",
-    "args": ["--enable-accelerated-2d-canvas"]
+    "args": ["--enable-accelerated-2d-canvas",
+             "--disable-display-list-2d-canvas"]
   },
   {
     "prefix": "display_list_2d_canvas",
     "base": "fast/canvas",
-    "args": ["--enable-display-list-2d-canvas"]
+    "args": ["--force-display-list-2d-canvas"]
   },
   {
     "prefix": "display_list_2d_canvas",
     "base": "canvas/philip",
-    "args": ["--enable-display-list-2d-canvas"]
+    "args": ["--force-display-list-2d-canvas"]
   },
   {
     "prefix": "threaded",
