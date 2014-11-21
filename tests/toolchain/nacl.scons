@@ -84,7 +84,7 @@ AddIntrinsicTest(env, 'synchronization_sync.c', '0',
                  # work on PNaCl because it avoids the broken 16-bit
                  # instructions on x86-32 by using 32-bit instructions.
                  # The test also exercises instructions that confuse valgrind.
-                 is_broken=((env.Bit('target_x86_32') and
+                 is_broken=((env.Bit('build_x86_32') and
                              not env.Bit('bitcode')) or
                             env.IsRunningUnderValgrind()))
 AddIntrinsicTest(env, 'synchronization_volatile.c', '0')
@@ -183,7 +183,7 @@ env.AddNodeToTestSuite(
     # __attribute__((destructor)) is broken in nacl-glibc on x86-64.
     # See http://code.google.com/p/nativeclient/issues/detail?id=3056
     # TODO(mseaborn): Enable this test there when this is fixed.
-    is_broken=env.Bit('nacl_glibc') and env.Bit('target_x86_64'))
+    is_broken=env.Bit('nacl_glibc') and env.Bit('build_x86_64'))
 
 
 nexe = env.ComponentProgram('pthread_cleanup', 'pthread_cleanup.c',
@@ -211,7 +211,7 @@ env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        'run_cpp_threadsafe_static_init_test',
                        is_broken=(not env.Bit('bitcode') and
                                   not env.Bit('nacl_glibc') and
-                                  not env.Bit('target_x86_32')))
+                                  not env.Bit('build_x86_32')))
 
 
 # NOTE: the tests below break easily under valgrid and since
@@ -251,7 +251,7 @@ EH_ENVIRONMENTS_TO_TRY = []
 
 base_eh_env = env.Clone()
 
-supports_cxx11 = env.Bit('bitcode') or env.Bit('target_arm')
+supports_cxx11 = env.Bit('bitcode') or env.Bit('build_arm')
 base_eh_env.Append(CPPDEFINES=[['SUPPORTS_CXX11', str(int(supports_cxx11))]])
 if supports_cxx11:
   # This flag is necessary for testing std::rethrow_exception(), at
@@ -516,7 +516,7 @@ c99_env = env.Clone()
 c99_env.Append(CFLAGS=['-std=c99'])
 # VLA test is broken on nacl-gcc x86-64 (segfaults in test_two_recursion()).
 # http://code.google.com/p/nativeclient/issues/detail?id=3527
-vla_is_broken = not env.Bit('bitcode') and env.Bit('target_x86_64')
+vla_is_broken = not env.Bit('bitcode') and env.Bit('build_x86_64')
 nexe = c99_env.ComponentProgram('vla', 'vla.c',
                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('vla.out', nexe,
@@ -553,7 +553,7 @@ if not env.Bit('pnacl_generate_pexe'):
   if not env.Bit('bitcode'):
     pic_env = asm_env.Clone()
     pic_env.Append(CFLAGS=['-fPIC'])
-    if pic_env.Bit('target_arm'):
+    if pic_env.Bit('build_arm'):
       pic_env.Append(LINKFLAGS=['-Wl,--pic-veneer'])
     nexe = pic_env.ComponentProgram('far_call_pic',
                                     FarCallObjects(pic_env, '_pic'),
@@ -593,7 +593,7 @@ node = env.CommandSelLdrTestNacl('wrap.out', nexe,
                                  stdout_golden=env.File('wrap.stdout'))
 env.AddNodeToTestSuite(node, ['toolchain_tests','small_tests'], 'run_wrap_test')
 
-if (env.Bit('target_x86_32') and env.Bit('bitcode') and
+if (env.Bit('build_x86_32') and env.Bit('bitcode') and
     not env.Bit('pnacl_generate_pexe') and
     env['TOOLCHAIN_FEATURE_VERSION'] >= 8):
   # This test compiles a file that will need to generate a call to a compiler-rt

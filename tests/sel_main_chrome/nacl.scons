@@ -22,7 +22,7 @@ sel_main_chrome_test = trusted_env.ComponentProgram(
 env_vars = ['NACLVERBOSITY=1']
 # The check for no-execute page protection does not work under
 # qemu-arm (which does not implement no-execute page protection).
-if env.Bit('target_arm') and env.UsingEmulator():
+if env.Bit('build_arm') and env.UsingEmulator():
   env_vars.append('NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1')
 
 # This test runs the platform qualification test, which checks for DEP
@@ -81,7 +81,7 @@ env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
 
 # Disable the seg_gap tests for MIPS, since its SFI is based on data section
 # starting at 256 MB, so even nexes that do not use IRT have a gap.
-if env.Bit('target_mips32'):
+if env.Bit('build_mips32'):
   Return()
 
 # Test 'irt_load_optional' can help skip loading the IRT if a nexe is built

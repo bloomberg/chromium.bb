@@ -13,7 +13,7 @@ Import('env')
 Return()
 
 # BUG(adonovan): test is breaking on ARM.  Disable in haste...
-if env.Bit('target_arm'):
+if env.Bit('build_arm'):
   Return()
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_test_example')

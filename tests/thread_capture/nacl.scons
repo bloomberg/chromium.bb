@@ -22,16 +22,16 @@ test_injection_files = [
     'nacl_thread_capture_test_injection_test.c')]
 
 if trusted_env.Bit('linux') or trusted_env.Bit('mac'):
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     test_injection_files += [
       'arch/x86_32/thread_capture_test_injection.c']
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     test_injection_files += [
       'arch/x86_64/thread_capture_test_injection.c']
-  elif env.Bit('target_arm'):
+  elif env.Bit('build_arm'):
     test_injection_files += [
       'arch/arm/thread_capture_test_injection.c']
-  elif env.Bit('target_mips32'):
+  elif env.Bit('build_mips32'):
      test_injection_files += [
       'arch/mips/thread_capture_test_injection.c']
   else:

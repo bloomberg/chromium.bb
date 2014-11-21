@@ -49,7 +49,7 @@ if env.Bit('nacl_static_link'):
 env.Append(CPPDEFINES=[['DYNAMIC_CODE_SEGMENT_END', code_segment_end]])
 
 def GetTemplate(env):
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     return 'templates_arm.S'
   else:
     return 'templates_x86.S'
@@ -100,7 +100,7 @@ test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests',
                'nonpexe_tests']
 
 sel_ldr_flags = ['-E', 'OUTSIDE_BROWSER=1']
-if env.Bit('target_arm') and env.UsingEmulator():
+if env.Bit('build_arm') and env.UsingEmulator():
   sel_ldr_flags.extend(['-E', 'UNDER_QEMU_ARM=1'])
 if env.IsRunningUnderValgrind():
   sel_ldr_flags.extend(['-E', 'RUNNING_ON_VALGRIND=1'])
@@ -116,7 +116,7 @@ env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
 # This test is flaky on nacl-clang:
 # See https://code.google.com/p/nativeclient/issues/detail?id=3980
                                  (env.Bit('nacl_clang') and
-                                  env.Bit('target_x86_32')))
+                                  env.Bit('build_x86_32')))
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode_before_alloc.out',

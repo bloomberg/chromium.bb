@@ -14,7 +14,7 @@ if env['TOOLCHAIN_FEATURE_VERSION'] < 6:
 # reloc against <blah> which may overflow at runtime".  (In contrast,
 # the BFD linker in the glibc toolchain does handle this relocation.)
 # TODO(mseaborn): Fix this and enable the test for x86-64.
-if env.Bit('target_x86_64'):
+if env.Bit('build_x86_64'):
   Return()
 # The sandboxed translator does not support translating PSOs yet.
 if env.Bit('use_sandboxed_translator'):

@@ -11,7 +11,7 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 
 # This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
 # to test PNaCl against.
-if env.Bit('target_mips32'):
+if env.Bit('build_mips32'):
   Return()
 
 if env.Bit('bitcode'):
@@ -76,7 +76,7 @@ def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
 
 if not env.Bit('bitcode'):
   # For gcc, only do a self-consistency test.
-  if env.Bit('target_x86'):
+  if env.Bit('build_x86'):
     # Assume for nacl-gcc the bots have at least SSE2.
     extra_flags = ['-msse2']
   else:
@@ -87,19 +87,19 @@ else:
   # For clang, do a self-consistency + a cross toolchain check.
   envlist, link_env = MakeSelfTestEnv(env, [])
   test_configurations.append((envlist, link_env, '_self'))
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     envlist, link_env = MakeCrossEnvs(
         env,
         gcc_flags=[],
         clang_flags=['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard'])
     test_configurations.append((envlist, link_env, ''))
-  elif env.Bit('target_x86_32'):
+  elif env.Bit('build_x86_32'):
     envlist, link_env = MakeCrossEnvs(
         env,
         gcc_flags=['-msse2'],
         clang_flags=['--target=i686-unknown-nacl'])
     test_configurations.append((envlist, link_env, ''))
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     envlist, link_env = MakeCrossEnvs(
         env,
         gcc_flags=['-msse2'],

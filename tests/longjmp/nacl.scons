@@ -28,7 +28,7 @@ env.AddNodeToTestSuite(node,
                        'run_longjmp_stackslots_test')
 
 # Test that ARM setjmp/longjmp saves and restores floating point regs.
-if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
+if env.Bit('build_arm') and not env.Bit('pnacl_generate_pexe'):
   native_env = env.Clone()
   # PNaCl needs ARM-target-flags to understand ARM inline ASM.
   if native_env.Bit('bitcode'):

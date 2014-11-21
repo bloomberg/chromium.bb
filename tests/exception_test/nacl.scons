@@ -12,11 +12,11 @@ if not env.AllowInlineAssembly() or env.Bit('nacl_clang'):
 
 test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
              'declares_exit_status': True}
-if env.Bit('target_arm') and env.UsingEmulator():
+if env.Bit('build_arm') and env.UsingEmulator():
   test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
 helper_files = []
-if env.Bit('target_x86'):
+if env.Bit('build_x86'):
   helper_files.append('direction_flag_x86.S')
 exception_test = env.ComponentProgram(
     env.ProgramNameForNmf('exception_test'),

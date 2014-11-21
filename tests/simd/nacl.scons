@@ -30,13 +30,13 @@ cxx_flags = (['-Wc++11-narrowing', '-std=gnu++11']
 native_env = env.Clone()
 if env.Bit('bitcode'):
   native_flags = []
-elif env.Bit('target_x86_32'):
+elif env.Bit('build_x86_32'):
   native_flags = ['-msse2', '-msse3', '-msse4']
-elif env.Bit('target_x86_64'):
+elif env.Bit('build_x86_64'):
   native_flags = ['-msse2', '-msse3', '-msse4']
-elif env.Bit('target_arm'):
+elif env.Bit('build_arm'):
   native_flags = ['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard']
-elif env.Bit('target_mips32'):
+elif env.Bit('build_mips32'):
   native_flags = []
 native_env.Append(CFLAGS=c_flags)
 native_env.Append(CXXFLAGS=cxx_flags)

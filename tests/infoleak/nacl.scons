@@ -11,9 +11,9 @@ if env.Bit('bitcode') and not env.Bit('pnacl_generate_pexe'):
 testsuites = ['small_tests', 'sel_ldr_tests', 'nonpexe_tests']
 
 infoleak_sources = ['test_infoleak.c']
-if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
+if env.Bit('build_arm') and not env.Bit('pnacl_generate_pexe'):
   infoleak_sources.append('test_infoleak_arm.S')
-elif env.Bit('target_mips32') and not env.Bit('pnacl_generate_pexe'):
+elif env.Bit('build_mips32') and not env.Bit('pnacl_generate_pexe'):
   infoleak_sources.append('test_infoleak_mips.S')
 
 nexe = env.ComponentProgram('test_infoleak', infoleak_sources,
@@ -29,9 +29,9 @@ env.AddNodeToTestSuite(node,
                        # hardware's power-up default value of 0x1f80.
                        is_broken=env.IsRunningUnderValgrind())
 
-if not env.Bit('pnacl_generate_pexe') and not env.Bit('target_mips32'):
+if not env.Bit('pnacl_generate_pexe') and not env.Bit('build_mips32'):
   fpu_cw_sources = ['test_fpu_control_word.c']
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     fpu_cw_sources.append('test_fpu_control_word_arm.S')
   nexe = env.ComponentProgram('test_fpu_control_word', fpu_cw_sources,
                               EXTRA_LIBS=['${NONIRT_LIBS}'])

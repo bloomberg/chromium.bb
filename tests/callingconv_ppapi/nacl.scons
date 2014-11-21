@@ -17,7 +17,7 @@ if env.Bit('pnacl_generate_pexe'):
 
 # This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
 # to test PNaCl against.
-if env.Bit('target_mips32'):
+if env.Bit('build_mips32'):
   Return()
 
 env_pnacl_cc = env.Clone()
@@ -25,12 +25,12 @@ env_pnacl_cc.PNaClForceNative()
 # for ppapi headers which include other ppapi headers
 env_pnacl_cc.Append(CPPPATH='${SCONSTRUCT_DIR}/tests/callingconv_ppapi')
 
-if env.Bit('target_arm'):
+if env.Bit('build_arm'):
   pnacl_nativecc_flags = ['--target=armv7a-unknown-nacl-gnueabi',
                           '-mfloat-abi=hard']
-elif env.Bit('target_x86_32'):
+elif env.Bit('build_x86_32'):
   pnacl_nativecc_flags = ['--target=i686-unknown-nacl']
-elif env.Bit('target_x86_64'):
+elif env.Bit('build_x86_64'):
   pnacl_nativecc_flags = ['--target=x86_64-unknown-nacl']
 
 env_pnacl_cc_calling = env_pnacl_cc.Clone()

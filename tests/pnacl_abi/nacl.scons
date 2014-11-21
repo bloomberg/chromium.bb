@@ -11,7 +11,7 @@ div_nexe = env.ComponentProgram('divide_by_zero',
                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 # On ARM we insert a trap instruction, whereas x86 faults in hardware.
-if env.Bit('target_arm'):
+if env.Bit('build_arm'):
   div_expected_exit_status = 'untrusted_sigill'
 else:
   div_expected_exit_status = 'untrusted_sigfpe'

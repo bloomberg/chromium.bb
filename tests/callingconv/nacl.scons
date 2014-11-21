@@ -11,7 +11,7 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 
 # This test is disabled for MIPS because we do not have a MIPS-enabled nacl-gcc
 # to test PNaCl against.
-if env.Bit('target_mips32'):
+if env.Bit('build_mips32'):
   Return()
 
 # If this test is failing on the bots, you can find the seed
@@ -124,7 +124,7 @@ if env.Bit('bitcode'):
   AddTest(base_env, 'callingconv_self', envlist, settings)
 
   # (2) Cross-check.
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     # Constant pool items are sometimes too far away with nacl-gcc.
     # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
@@ -134,14 +134,14 @@ if env.Bit('bitcode'):
   pnacl_env = base_env.Clone()
   pnacl_env.PNaClForceNative()
   # PNaCl only uses the standard ABI if given special flags.
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     pnacl_env.Append(CCFLAGS=[
         '--target=armv7a-unknown-nacl-gnueabi',
         '-mfloat-abi=hard',
         ])
-  elif env.Bit('target_x86_32'):
+  elif env.Bit('build_x86_32'):
     pnacl_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     pnacl_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
   else:
     raise Exception('Unknown architecture')
@@ -158,7 +158,7 @@ else:
   settings = dict(base_settings)
   link_env = base_env
   envlist = [base_env]
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     # Constant pool items sometimes too far away:
     # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
