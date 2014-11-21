@@ -329,9 +329,9 @@ public:
     // mark method above to automatically provide the callback
     // function.
     virtual void mark(const void*, TraceCallback) = 0;
-    virtual void markNoTracing(const void* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
-    virtual void markNoTracing(HeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
-    virtual void markNoTracing(FinalizedHeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
+    void markNoTracing(const void* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
+    void markNoTracing(HeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
+    void markNoTracing(FinalizedHeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
 
     // Used to mark objects during conservative scanning.
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
