@@ -203,6 +203,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   Delegate* delegate_;
 };
 
+// RPH stands for Register Protocol Handler.
 class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingRPHBubbleModel(Delegate* delegate,
@@ -215,14 +216,6 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
   void OnDoneClicked() override;
 
  private:
-  // These states must match the order of appearance of the radio buttons
-  // in the XIB file for the Mac port.
-  enum RPHState {
-    RPH_ALLOW = 0,
-    RPH_BLOCK,
-    RPH_IGNORE,
-  };
-
   void RegisterProtocolHandler();
   void UnregisterProtocolHandler();
   void IgnoreProtocolHandler();

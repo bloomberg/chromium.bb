@@ -50,6 +50,14 @@ namespace {
 
 const int kAllowButtonIndex = 0;
 
+// These states must match the order of appearance of the radio buttons
+// in the XIB file for the Mac port.
+enum RPHState {
+  RPH_ALLOW = 0,
+  RPH_BLOCK,
+  RPH_IGNORE,
+};
+
 struct ContentSettingsTypeIdEntry {
   ContentSettingsType type;
   int id;
