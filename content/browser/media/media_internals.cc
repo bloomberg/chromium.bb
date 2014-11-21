@@ -298,34 +298,34 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (player_info.has_video && player_info.has_audio) {
     if (player_info.video_codec_name == "vp8") {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP8",
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP8.SW",
                                 player_info.last_pipeline_status,
                                 media::PIPELINE_STATUS_MAX + 1);
     } else if (player_info.video_codec_name == "vp9") {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP9",
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP9.SW",
                                 player_info.last_pipeline_status,
                                 media::PIPELINE_STATUS_MAX + 1);
     } else if (player_info.video_codec_name == "h264") {
       if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName) {
-        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.HW.H264",
+        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.H264.HW",
                                   player_info.last_pipeline_status,
                                   media::PIPELINE_STATUS_MAX + 1);
       } else {
-        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.SW.H264",
+        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.H264.SW",
                                   player_info.last_pipeline_status,
                                   media::PIPELINE_STATUS_MAX + 1);
       }
     } else {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo",
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.Other",
                                 player_info.last_pipeline_status,
                                 media::PIPELINE_STATUS_MAX + 1);
     }
   } else if (player_info.has_audio) {
-    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Audio",
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioOnly",
                               player_info.last_pipeline_status,
                               media::PIPELINE_STATUS_MAX + 1);
   } else if (player_info.has_video) {
-    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Video",
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.VideoOnly",
                               player_info.last_pipeline_status,
                               media::PIPELINE_STATUS_MAX + 1);
   } else {
