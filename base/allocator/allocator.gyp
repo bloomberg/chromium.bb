@@ -8,7 +8,7 @@
       # This code gets run a lot and debugged rarely, so it should be fast
       # by default. See http://crbug.com/388949.
       'debug_optimize': '2',
-      'win_debug_Optimization': '2',
+      'win_debug_Optimization': '0',
       # Run time checks are incompatible with any level of optimizations.
       'win_debug_RuntimeChecks': '0',
     },
