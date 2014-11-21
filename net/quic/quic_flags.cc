@@ -64,4 +64,4 @@ bool FLAGS_quic_record_send_time_before_write = false;
 
 // If true, enables the QUIC bandwidth resumption experiment (triggered by
 // Chrome/Finch).
-bool FLAGS_quic_enable_bandwidth_resumption_experiment = false;
+bool FLAGS_quic_enable_bandwidth_resumption_experiment = true;
