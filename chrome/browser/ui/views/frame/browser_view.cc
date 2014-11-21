@@ -1219,8 +1219,7 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
     GetDownloadShelf();
   }
 
-  if (!browser_)
-    browser_->UpdateDownloadShelfVisibility(visible);
+  browser_->UpdateDownloadShelfVisibility(visible);
 
   // SetDownloadShelfVisible can force-close the shelf, so make sure we lay out
   // everything correctly, as if the animation had finished. This doesn't
