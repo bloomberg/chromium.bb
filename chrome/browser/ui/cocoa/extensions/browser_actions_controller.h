@@ -42,9 +42,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   // displayed (includes both hidden and visible buttons).
   base::scoped_nsobject<NSMutableArray> buttons_;
 
-  // Array of hidden buttons in the correct order in which the user specified.
-  base::scoped_nsobject<NSMutableArray> hiddenButtons_;
-
   // The delegate for the ToolbarActionsBar.
   scoped_ptr<ToolbarActionsBarDelegate> toolbarActionsBarBridge_;
 

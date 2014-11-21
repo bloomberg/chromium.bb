@@ -595,12 +595,12 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
         addObserver:self
            selector:@selector(browserActionsContainerWillDrag:)
                name:kBrowserActionGrippyWillDragNotification
-             object:browserActionsController_];
+             object:browserActionsContainerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(browserActionsContainerDragged:)
                name:kBrowserActionGrippyDraggingNotification
-             object:browserActionsController_];
+             object:browserActionsContainerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(browserActionsContainerDragFinished:)

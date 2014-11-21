@@ -85,17 +85,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // container out smoothly shows the Browser Action buttons.
 - (void)containerDragStart:(NSNotification*)notification;
 
-// Sends a notification for the toolbar to reposition surrounding UI elements.
-- (void)containerDragging:(NSNotification*)notification;
-
 // Determines which buttons need to be hidden based on the new size, hides them
 // and updates the chevron overflow menu. Also fires a notification to let the
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
-
-// Sends a notification for the toolbar to determine whether the container can
-// translate with a delta on x-axis.
-- (void)containerWillTranslateOnX:(NSNotification*)notification;
 
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
@@ -269,18 +262,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
              object:containerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(containerDragging:)
-               name:kBrowserActionGrippyDraggingNotification
-             object:containerView_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
            selector:@selector(containerDragFinished:)
                name:kBrowserActionGrippyDragFinishedNotification
-             object:containerView_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(containerWillTranslateOnX:)
-               name:kBrowserActionGrippyWillDragNotification
              object:containerView_];
     // Listen for a finished drag from any button to make sure each open window
     // stays in sync.
@@ -296,7 +279,6 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
                              eventMask:NSLeftMouseUpMask];
     [chevronAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
-    hiddenButtons_.reset([[NSMutableArray alloc] init]);
     buttons_.reset([[NSMutableArray alloc] init]);
     toolbarActionsBar_->CreateActions();
     if ([buttons_ count] != 0)
@@ -330,7 +312,10 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (NSUInteger)visibleButtonCount {
-  return [self buttonCount] - [hiddenButtons_ count];
+  NSUInteger visibleCount = 0;
+  for (BrowserActionButton* button in buttons_.get())
+    visibleCount += [button superview] == containerView_;
+  return visibleCount;
 }
 
 - (void)resizeContainerAndAnimate:(BOOL)animate {
@@ -349,7 +334,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
   NSRect bounds;
   NSButton* referenceButton = button;
-  if ([hiddenButtons_ containsObject:button]) {
+  if ([button superview] != containerView_) {
     bounds = [chevronMenuButton_ bounds];
     referenceButton = chevronMenuButton_.get();
   } else {
@@ -400,7 +385,11 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   // See menu_button.h for documentation on why this is needed.
   [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 
-  for (BrowserActionButton* button in hiddenButtons_.get()) {
+  NSUInteger iconCount = toolbarActionsBar_->GetIconCount();
+  NSRange hiddenButtonRange =
+      NSMakeRange(iconCount, [buttons_ count] - iconCount);
+  for (BrowserActionButton* button in
+           [buttons_ subarrayWithRange:hiddenButtonRange]) {
     NSString* name =
         base::SysUTF16ToNSString([button viewController]->GetActionName());
     NSMenuItem* item =
@@ -468,12 +457,7 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   BrowserActionButton* button = [self buttonForId:action->GetId()];
 
   [button removeFromSuperview];
-  // It may or may not be hidden, but it won't matter to NSMutableArray either
-  // way.
-  [hiddenButtons_ removeObject:button];
-
   [button onRemoved];
-
   [buttons_ removeObject:button];
 }
 
@@ -481,7 +465,6 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   for (BrowserActionButton* button in buttons_.get()) {
     [button removeFromSuperview];
     [button onRemoved];
-    [hiddenButtons_ removeObject:button];
   }
   [buttons_ removeAllObjects];
 }
@@ -549,18 +532,12 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 - (void)containerDragStart:(NSNotification*)notification {
   [self setChevronHidden:YES inFrame:[containerView_ frame] animate:YES];
-  while([hiddenButtons_ count] > 0) {
-    BrowserActionButton* button = [hiddenButtons_ objectAtIndex:0];
-    [button setAlphaValue:1.0];
-    [containerView_ addSubview:button];
-    [hiddenButtons_ removeObjectAtIndex:0];
+  for (BrowserActionButton* button in buttons_.get()) {
+    if ([button superview] != containerView_) {
+      [button setAlphaValue:1.0];
+      [containerView_ addSubview:button];
+    }
   }
-}
-
-- (void)containerDragging:(NSNotification*)notification {
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionGrippyDraggingNotification
-                    object:self];
 }
 
 - (void)containerDragFinished:(NSNotification*)notification {
@@ -577,24 +554,17 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
         (intersectionWidth <= (NSWidth(buttonFrame) / 2) + 5.0)) {
       [button setAlphaValue:0.0];
       [button removeFromSuperview];
-      [hiddenButtons_ addObject:button];
     }
   }
-  [self updateGrippyCursors];
 
   toolbarActionsBar_->OnResizeComplete(
       toolbarActionsBar_->IconCountToWidth([self visibleButtonCount]));
 
+  [self updateGrippyCursors];
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragFinishedNotification
                     object:self];
-}
-
-- (void)containerWillTranslateOnX:(NSNotification*)notification {
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionGrippyWillDragNotification
-                    object:self
-                  userInfo:notification.userInfo];
 }
 
 - (void)actionButtonDragging:(NSNotification*)notification {
@@ -652,12 +622,10 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
       [containerView_ addSubview:button
                       positioned:NSWindowBelow
                       relativeTo:nil];
-      [hiddenButtons_ removeObjectIdenticalTo:button];
     }
     // We need to set the alpha value in case the container has resized.
     [button setAlphaValue:1.0];
-  } else if (![hiddenButtons_ containsObject:button]) {
-    [hiddenButtons_ addObject:button];
+  } else if ([button superview] == containerView_) {
     [button removeFromSuperview];
     [button setAlphaValue:0.0];
   }
@@ -749,7 +717,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 }
 
 - (void)updateGrippyCursors {
-  [containerView_ setCanDragLeft:[hiddenButtons_ count] > 0];
+  [containerView_
+      setCanDragLeft:toolbarActionsBar_->GetIconCount() != [buttons_ count]];
   [containerView_ setCanDragRight:[self visibleButtonCount] > 0];
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
