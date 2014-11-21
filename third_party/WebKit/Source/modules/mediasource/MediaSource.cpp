@@ -366,20 +366,25 @@ PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::seekable() const
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
 
     double sourceDuration = duration();
-    // 1. If duration equals NaN then return an empty TimeRanges object.
+    // If duration equals NaN: Return an empty TimeRanges object.
     if (std::isnan(sourceDuration))
         return TimeRanges::create();
 
-    // 2. If duration equals positive Infinity, then return a single range with a start time of 0 and an end time equal to the
-    // highest end time reported by the HTMLMediaElement.buffered attribute.
+    // If duration equals positive Infinity:
     if (sourceDuration == std::numeric_limits<double>::infinity()) {
         RefPtrWillBeRawPtr<TimeRanges> buffered = m_attachedElement->buffered();
+
+        // 1. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges object, then
+        // return an empty TimeRanges object and abort these steps.
         if (buffered->length() == 0)
             return TimeRanges::create();
+
+        // 2. Return a single range with a start time of 0 and an end time equal to the highest end
+        // time reported by the HTMLMediaElement.buffered attribute.
         return TimeRanges::create(0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
     }
 
-    // 3. Otherwise, return a single range with a start time of 0 and an end time equal to duration.
+    // 3. Otherwise: Return a single range with a start time of 0 and an end time equal to duration.
     return TimeRanges::create(0, sourceDuration);
 }
 

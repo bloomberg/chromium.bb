@@ -56,9 +56,10 @@
                         {
                             assert_equals(mediaElement.seekable.length, 1, 'mediaElement.seekable.length');
                             assert_equals(mediaElement.buffered.length, 1, 'mediaElement.buffered.length');
+                            assert_not_equals(mediaElement.seekable.start(0), mediaElement.buffered.start(0));
                             assert_equals(mediaElement.seekable.start(0), 0);
                             assert_not_equals(mediaElement.seekable.end(0), mediaElement.duration);
-                            assert_not_equals(0, mediaElement.buffered.start(0));
+                            assert_not_equals(mediaElement.seekable.end(0), mediaElement.buffered.start(0));
                             assert_equals(mediaElement.seekable.end(0), mediaElement.buffered.end(0));
                             test.done();
                         });
