@@ -51,6 +51,9 @@ class MaskContentLayerClient : public ContentLayerClient {
   gfx::Size bounds_;
 };
 
+// TODO(enne): these time out on Windows.  http://crbug.com/435632
+#if !defined(OS_WIN)
+
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
@@ -271,6 +274,8 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
                        base::FilePath(FILE_PATH_LITERAL(
                            "mask_of_replica_of_clipped_layer.png")));
 }
+
+#endif  // !defined(OS_WIN)
 
 }  // namespace
 }  // namespace cc
