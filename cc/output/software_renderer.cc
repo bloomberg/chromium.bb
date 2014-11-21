@@ -108,6 +108,7 @@ void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
   current_framebuffer_lock_ = nullptr;
+  current_framebuffer_canvas_.clear();
   current_canvas_ = NULL;
   root_canvas_ = NULL;
 
@@ -151,6 +152,7 @@ void SoftwareRenderer::Finish() {}
 void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   DCHECK(!output_surface_->HasExternalStencilTest());
   current_framebuffer_lock_ = nullptr;
+  current_framebuffer_canvas_.clear();
   current_canvas_ = root_canvas_;
 }
 
@@ -161,7 +163,9 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   current_framebuffer_lock_ = make_scoped_ptr(
       new ResourceProvider::ScopedWriteLockSoftware(
           resource_provider_, texture->id()));
-  current_canvas_ = current_framebuffer_lock_->sk_canvas();
+  current_framebuffer_canvas_ =
+      skia::AdoptRef(new SkCanvas(current_framebuffer_lock_->sk_bitmap()));
+  current_canvas_ = current_framebuffer_canvas_.get();
   InitializeViewport(frame,
                      target_rect,
                      gfx::Rect(target_rect.size()),

@@ -21,17 +21,20 @@ class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
                    const Resource* resource)
-      : lock_(resource_provider, resource->id()) {}
+      : lock_(resource_provider, resource->id()), resource_(resource) {}
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale) override {
-    raster_source->PlaybackToCanvas(lock_.sk_canvas(), rect, scale);
+    RasterWorkerPool::PlaybackToMemory(lock_.sk_bitmap().getPixels(),
+                                       resource_->format(), resource_->size(),
+                                       0, raster_source, rect, scale);
   }
 
  private:
   ResourceProvider::ScopedWriteLockSoftware lock_;
+  const Resource* resource_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };

@@ -296,14 +296,13 @@ class CC_EXPORT ResourceProvider {
                             ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockSoftware();
 
-    SkCanvas* sk_canvas() { return sk_canvas_.get(); }
+    SkBitmap& sk_bitmap() { return sk_bitmap_; }
     bool valid() const { return !!sk_bitmap_.getPixels(); }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
     SkBitmap sk_bitmap_;
-    scoped_ptr<SkCanvas> sk_canvas_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);

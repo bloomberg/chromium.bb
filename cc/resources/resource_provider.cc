@@ -794,9 +794,9 @@ void ResourceProvider::SetPixels(ResourceId id,
     image += source_offset.y() * image_row_bytes + source_offset.x() * 4;
 
     ScopedWriteLockSoftware lock(this, id);
-    SkCanvas* dest = lock.sk_canvas();
-    dest->writePixels(
-        source_info, image, image_row_bytes, dest_offset.x(), dest_offset.y());
+    SkCanvas dest(lock.sk_bitmap());
+    dest.writePixels(source_info, image, image_row_bytes, dest_offset.x(),
+                     dest_offset.y());
   }
 }
 
@@ -1038,7 +1038,6 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
       resource_(resource_provider->LockForWrite(resource_id)) {
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource_);
   DCHECK(valid());
-  sk_canvas_.reset(new SkCanvas(sk_bitmap_));
 }
 
 ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
