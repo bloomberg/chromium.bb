@@ -2852,13 +2852,11 @@ static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const
     }
 }
 
-void RenderBox::shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUnit logicalLeftValue, const LayoutUnit bordersPlusPadding, LogicalExtentComputedValues& computedValues) const
+LayoutUnit RenderBox::shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const
 {
-    // FIXME: would it be better to have shrink-to-fit in one step?
-    LayoutUnit preferredWidth = maxPreferredLogicalWidth() - bordersPlusPadding;
-    LayoutUnit preferredMinWidth = minPreferredLogicalWidth() - bordersPlusPadding;
-    LayoutUnit availableWidth = availableSpace - logicalLeftValue;
-    computedValues.m_extent = std::min(std::max(preferredMinWidth, availableWidth), preferredWidth);
+    LayoutUnit preferredLogicalWidth = maxPreferredLogicalWidth() - bordersPlusPadding;
+    LayoutUnit preferredMinLogicalWidth = minPreferredLogicalWidth() - bordersPlusPadding;
+    return std::min(std::max(preferredMinLogicalWidth, availableLogicalWidth), preferredLogicalWidth);
 }
 
 void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
@@ -2992,17 +2990,13 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             // RULE 1: (use shrink-to-fit for width, and solve of left)
             LayoutUnit logicalRightValue = valueForLength(logicalRight, containerLogicalWidth);
 
-            // FIXME: would it be better to have shrink-to-fit in one step?
-            LayoutUnit preferredWidth = maxPreferredLogicalWidth() - bordersPlusPadding;
-            LayoutUnit preferredMinWidth = minPreferredLogicalWidth() - bordersPlusPadding;
-            LayoutUnit availableWidth = availableSpace - logicalRightValue;
-            computedValues.m_extent = std::min(std::max(preferredMinWidth, availableWidth), preferredWidth);
+            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalRightValue, bordersPlusPadding);
             logicalLeftValue = availableSpace - (computedValues.m_extent + logicalRightValue);
         } else if (!logicalLeftIsAuto && logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 3: (use shrink-to-fit for width, and no need solve of right)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
 
-            shrinkToFitWidth(availableSpace, logicalLeftValue, bordersPlusPadding, computedValues);
+            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalLeftValue, bordersPlusPadding);
         } else if (logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 4: (solve for left)
             computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
@@ -3011,7 +3005,7 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             // RULE 5: (solve for width)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
             if (autoWidthShouldFitContent())
-                shrinkToFitWidth(availableSpace, logicalLeftValue, bordersPlusPadding, computedValues);
+                computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalLeftValue, bordersPlusPadding);
             else
                 computedValues.m_extent = std::max<LayoutUnit>(0, availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth)));
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
