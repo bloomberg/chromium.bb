@@ -8,10 +8,10 @@ PASS successfullyParsed is true
 TEST COMPLETE
 Basics
 
-PASS classString(document.createAttribute()) is "Attr"
-FAIL classString(document.createAttribute().__proto__) should be AttrPrototype. Was Object.
-PASS classString(document.createAttribute().constructor) is "Function"
-PASS document.createAttribute().constructor.name is "Attr"
+PASS classString(document.createAttribute('x')) is "Attr"
+FAIL classString(document.createAttribute('x').__proto__) should be AttrPrototype. Was Object.
+PASS classString(document.createAttribute('x').constructor) is "Function"
+PASS document.createAttribute('x').constructor.name is "Attr"
 PASS classString(document.createComment('')) is "Comment"
 FAIL classString(document.createComment('').__proto__) should be CommentPrototype. Was Object.
 PASS classString(document.createComment('').constructor) is "Function"
@@ -55,10 +55,10 @@ PASS classString(xmlDocument) is "XMLDocument"
 FAIL classString(xmlDocument.__proto__) should be XMLDocumentPrototype. Was Object.
 PASS classString(xmlDocument.constructor) is "Function"
 PASS xmlDocument.constructor.name is "XMLDocument"
-PASS classString(xmlDocument.createCDATASection()) is "CDATASection"
-FAIL classString(xmlDocument.createCDATASection().__proto__) should be CDATASectionPrototype. Was Object.
-PASS classString(xmlDocument.createCDATASection().constructor) is "Function"
-PASS xmlDocument.createCDATASection().constructor.name is "CDATASection"
+PASS classString(xmlDocument.createCDATASection('')) is "CDATASection"
+FAIL classString(xmlDocument.createCDATASection('').__proto__) should be CDATASectionPrototype. Was Object.
+PASS classString(xmlDocument.createCDATASection('').constructor) is "Function"
+PASS xmlDocument.createCDATASection('').constructor.name is "CDATASection"
 PASS classString(xmlDocument.createElementNS('x', 'x', 'x')) is "Element"
 FAIL classString(xmlDocument.createElementNS('x', 'x', 'x').__proto__) should be ElementPrototype. Was Object.
 PASS classString(xmlDocument.createElementNS('x', 'x', 'x').constructor) is "Function"

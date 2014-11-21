@@ -1,4 +1,8 @@
 PASS document.adoptNode() threw exception TypeError: Failed to execute 'adoptNode' on 'Document': 1 argument required, but only 0 present..
+PASS document.createAttribute() threw exception TypeError: Failed to execute 'createAttribute' on 'Document': 1 argument required, but only 0 present..
+PASS document.createAttributeNS('http://www.w3.org/2000/svg') threw exception TypeError: Failed to execute 'createAttributeNS' on 'Document': 2 arguments required, but only 1 present..
+PASS document.createAttributeNS() threw exception TypeError: Failed to execute 'createAttributeNS' on 'Document': 2 arguments required, but only 0 present..
+PASS document.createCDATASection() threw exception TypeError: Failed to execute 'createCDATASection' on 'Document': 1 argument required, but only 0 present..
 PASS document.createComment() threw exception TypeError: Failed to execute 'createComment' on 'Document': 1 argument required, but only 0 present..
 PASS document.createElement() threw exception TypeError: Failed to execute 'createElement' on 'Document': 1 argument required, but only 0 present..
 PASS document.createElementNS('http://www.w3.org/2000/svg') threw exception TypeError: Failed to execute 'createElementNS' on 'Document': 2 arguments required, but only 1 present..

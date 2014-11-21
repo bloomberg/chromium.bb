@@ -124,8 +124,4 @@ function runNSTests()
     }
 }
 
-// Moz throws a "Not enough arguments" exception in these, we don't:
-shouldBeEqualToString("document.createAttributeNS().toString()", "[object Attr]");
-shouldBeEqualToString("document.createAttributeNS(\"http://www.example.com\").toString()", "[object Attr]");
-
 runNSTests();

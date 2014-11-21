@@ -10,6 +10,9 @@ var element = document.createElementNS("http://example.com/", "example");
     "getAttribute()",
     "getAttributeNS()",
     "getAttributeNS('http://example.com/')",
+    "getAttributeNode()",
+    "getAttributeNodeNS()",
+    "getAttributeNodeNS('http://www.w3.org/2000/svg')",
     "getElementsByClassName()",
     "getElementsByTagName()",
     "getElementsByTagNameNS()",
@@ -19,11 +22,14 @@ var element = document.createElementNS("http://example.com/", "example");
     "removeAttribute()",
     "removeAttributeNS()",
     "removeAttributeNS('http://example.com/')",
+    "removeAttributeNode()",
     "setAttribute()",
     "setAttribute('example')",
     "setAttributeNS()",
     "setAttributeNS('http://example.com/')",
-    "setAttributeNS('http://example.com/', 'example')"
+    "setAttributeNS('http://example.com/', 'example')",
+    "setAttributeNode()",
+    "setAttributeNodeNS()"
 ].forEach(function(expr)
 {
     shouldThrow("element." + expr);

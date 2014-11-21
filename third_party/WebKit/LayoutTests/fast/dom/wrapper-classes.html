@@ -76,7 +76,7 @@ function runTest()
     debug('Basics');
     debug('');
 
-    test("document.createAttribute()", "Attr");
+    test("document.createAttribute('x')", "Attr");
     test("document.createComment('')", "Comment");
     test("document.createDocumentFragment()", "DocumentFragment");
     test("document.implementation", "DOMImplementation");
@@ -92,7 +92,7 @@ function runTest()
     debug('');
 
     test("xmlDocument", "XMLDocument");
-    test("xmlDocument.createCDATASection()", "CDATASection");
+    test("xmlDocument.createCDATASection('')", "CDATASection");
     test("xmlDocument.createElementNS('x', 'x', 'x')", "Element");
     test("xmlDocument.createProcessingInstruction('x', '')", "ProcessingInstruction");
 

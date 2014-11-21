@@ -3,8 +3,6 @@ createAttirbuteNS tests adapted from createElementNS tests attached to webkit bu
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS document.createAttributeNS().toString() is "[object Attr]"
-PASS document.createAttributeNS("http://www.example.com").toString() is "[object Attr]"
 PASS createAttributeNS(undefined, undefined)
 PASS createAttributeNS(null, undefined)
 PASS createAttributeNS(undefined, null); threw InvalidCharacterError: Failed to execute 'createAttributeNS' on 'Document': The qualified name provided is empty.
