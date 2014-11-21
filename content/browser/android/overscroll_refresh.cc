@@ -382,6 +382,11 @@ void OverscrollRefresh::OnScrollEnd(const gfx::Vector2dF& scroll_velocity) {
   Release(allow_activation);
 }
 
+void OverscrollRefresh::OnPinchBegin() {
+  bool allow_activation = false;
+  Release(allow_activation);
+}
+
 void OverscrollRefresh::OnScrollUpdateAck(bool was_consumed) {
   if (scroll_consumption_state_ != AWAITING_SCROLL_UPDATE_ACK)
     return;

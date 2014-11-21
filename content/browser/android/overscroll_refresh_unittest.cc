@@ -260,4 +260,39 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
   EXPECT_FALSE(GetAndResetRefreshTriggered());
 }
 
+TEST_F(OverscrollRefreshTest, NotTriggeredIfPinched) {
+  OverscrollRefresh effect(this, this, kDragTargetPixels);
+  effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
+  effect.OnScrollBegin();
+  ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
+  ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
+  effect.OnScrollUpdateAck(false);
+  ASSERT_TRUE(effect.IsActive());
+
+  // Ensure the pull exceeds the necessary threshold.
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+  EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
+
+  // A pinch gesture should prevent the refresh action from firing.
+  effect.OnPinchBegin();
+  effect.OnScrollEnd(gfx::Vector2dF());
+  EXPECT_FALSE(GetAndResetRefreshTriggered());
+
+  // The pinch should trigger a dismissal animation.
+  EXPECT_TRUE(effect.IsActive());
+  base::TimeTicks initial_time = base::TimeTicks::Now();
+  base::TimeTicks current_time = initial_time;
+  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+  while (effect.Animate(current_time, layer.get()))
+    current_time += base::TimeDelta::FromMilliseconds(16);
+
+  EXPECT_GT(current_time.ToInternalValue(), initial_time.ToInternalValue());
+  EXPECT_FALSE(effect.IsActive());
+  EXPECT_FALSE(GetAndResetRefreshTriggered());
+}
+
 }  // namespace content

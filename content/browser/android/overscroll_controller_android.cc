@@ -133,6 +133,10 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
       maybe_needs_animate = true;
     } break;
 
+    case blink::WebInputEvent::GesturePinchBegin:
+      refresh_effect_->OnPinchBegin();
+      break;
+
     default:
       break;
   }

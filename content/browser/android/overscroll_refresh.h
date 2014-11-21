@@ -56,6 +56,9 @@ class CONTENT_EXPORT OverscrollRefresh {
   void OnScrollBegin();
   void OnScrollEnd(const gfx::Vector2dF& velocity);
 
+  // The effect will be dismissed when pinching begins.
+  void OnPinchBegin();
+
   // Scroll ack listener. The effect will only be activated if the initial
   // updates go unconsumed.
   void OnScrollUpdateAck(bool was_consumed);
@@ -73,7 +76,8 @@ class CONTENT_EXPORT OverscrollRefresh {
   void UpdateDisplay(const gfx::SizeF& viewport_size,
                      const gfx::Vector2dF& content_scroll_offset);
 
-  // Reset the effect to its inactive state, detaching any active effects.
+  // Reset the effect to its inactive state, immediately detaching and
+  // disabling any active effects.
   void Reset();
 
   // Returns true if the refresh effect is either being manipulated or animated.
