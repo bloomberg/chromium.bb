@@ -375,8 +375,10 @@ unsigned RenderMultiColumnSet::columnIndexAtOffset(LayoutUnit offset, ColumnInde
             return actualColumnCount() - 1;
     }
 
-    // Just divide by the column height to determine the correct column.
-    return (offset - flowThreadLogicalTop).toFloat() / pageLogicalHeight().toFloat();
+    if (LayoutUnit pageLogicalHeight = this->pageLogicalHeight())
+        return (offset - flowThreadLogicalTop).toFloat() / pageLogicalHeight.toFloat();
+
+    return 0;
 }
 
 LayoutRect RenderMultiColumnSet::flowThreadPortionRectAt(unsigned index) const
