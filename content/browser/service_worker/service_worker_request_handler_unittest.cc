@@ -121,9 +121,9 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
   EXPECT_FALSE(InitializeHandlerCheck(
       "ftp://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
 
-  EXPECT_FALSE(InitializeHandlerCheck(
+  EXPECT_TRUE(InitializeHandlerCheck(
       "http://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_FALSE(InitializeHandlerCheck(
+  EXPECT_TRUE(InitializeHandlerCheck(
       "https://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
 
   provider_host_->SetDocumentUrl(GURL(""));

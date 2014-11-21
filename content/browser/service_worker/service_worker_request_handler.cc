@@ -48,13 +48,6 @@ class ServiceWorkerRequestInterceptor
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
 };
 
-// This is work around to avoid hijacking CORS preflight.
-// TODO(horo): Remove this check when we implement "HTTP fetch" correctly.
-// http://fetch.spec.whatwg.org/#concept-http-fetch
-bool IsMethodSupportedForServiceWorker(const std::string& method) {
-  return method != "OPTIONS";
-}
-
 }  // namespace
 
 void ServiceWorkerRequestHandler::InitializeHandler(
@@ -70,10 +63,8 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
-  if (!request->url().SchemeIsHTTPOrHTTPS() ||
-      !IsMethodSupportedForServiceWorker(request->method())) {
+  if (!request->url().SchemeIsHTTPOrHTTPS())
     return;
-  }
 
   if (!context_wrapper || !context_wrapper->context() ||
       provider_id == kInvalidServiceWorkerProviderId) {
