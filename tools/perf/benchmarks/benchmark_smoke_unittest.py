@@ -26,7 +26,9 @@ def SmokeTestGenerator(benchmark):
   # failing or flaky benchmark would disable a much wider swath of coverage
   # than is usally intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
-  @benchmark_module.Disabled('chromeos')  # crbug.com/351114
+
+  # EXCEPTIONS TO THE ABOVE RULE: crbug.com/351114, crbug.com/423688
+  @benchmark_module.Disabled('chromeos', 'mavericks')
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
