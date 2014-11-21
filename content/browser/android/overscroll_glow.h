@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_
 #define CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -20,6 +19,15 @@ namespace content {
 
 class EdgeEffectBase;
 
+// Provides lazy, customized EdgeEffect creation.
+class OverscrollGlowClient {
+ public:
+  virtual ~OverscrollGlowClient() {}
+
+  // Called lazily, after the initial overscrolling event.
+  virtual scoped_ptr<EdgeEffectBase> CreateEdgeEffect() = 0;
+};
+
 /* |OverscrollGlow| mirrors its Android counterpart, OverscrollGlow.java.
  * Conscious tradeoffs were made to align this as closely as possible with the
  * original Android Java version.
@@ -28,14 +36,10 @@ class OverscrollGlow {
  public:
   enum Edge { EDGE_TOP = 0, EDGE_LEFT, EDGE_BOTTOM, EDGE_RIGHT, EDGE_COUNT };
 
-  // Allows lazy creation of the edge effects.
-  typedef base::Callback<scoped_ptr<EdgeEffectBase>(void)> EdgeEffectProvider;
-
-  // |edge_effect_provider| must be valid for the duration of the effect's
-  // lifetime.  The effect is enabled by default, but will remain dormant until
-  // the first overscroll event.
-  explicit OverscrollGlow(const EdgeEffectProvider& edge_effect_provider);
-
+  // |client| must be valid for the duration of the effect's lifetime.
+  // The effect is enabled by default, but will remain dormant until the first
+  // overscroll event.
+  explicit OverscrollGlow(OverscrollGlowClient* client);
   ~OverscrollGlow();
 
   // Called when the root content layer overscrolls.
@@ -81,7 +85,7 @@ class OverscrollGlow {
 
   EdgeEffectBase* GetOppositeEdge(int edge_index);
 
-  EdgeEffectProvider edge_effect_provider_;
+  OverscrollGlowClient* const client_;
   scoped_ptr<EdgeEffectBase> edge_effects_[EDGE_COUNT];
 
   gfx::SizeF viewport_size_;

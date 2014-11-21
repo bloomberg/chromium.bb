@@ -93,9 +93,6 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // Indicates the routing_ids for which input events should be filtered.
   std::set<int> routes_;
 
-  // Specifies whether overscroll notifications are forwarded to the host.
-  bool overscroll_notifications_enabled_;
-
   // Used to intercept overscroll notifications while an event is being
   // dispatched.  If the event causes overscroll, the overscroll metadata can be
   // bundled in the event ack, saving an IPC.  Note that we must continue

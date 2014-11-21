@@ -217,9 +217,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
-      overscroll_controller_enabled_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableOverscrollEdgeEffect)),
       gesture_provider_(CreateGestureProviderConfig(), this),
       gesture_text_selector_(this),
       accelerated_surface_route_id_(0),
@@ -1551,7 +1548,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!selection_controller_)
     selection_controller_ = CreateSelectionController(this, content_view_core_);
 
-  if (overscroll_controller_enabled_ && !overscroll_controller_ &&
+  if (!overscroll_controller_ &&
       content_view_core_->GetWindowAndroid()->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(content_view_core_);
   }
@@ -1575,7 +1572,7 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
-  if (overscroll_controller_enabled_ && !overscroll_controller_)
+  if (!overscroll_controller_)
     overscroll_controller_ = CreateOverscrollController(content_view_core_);
 }
 

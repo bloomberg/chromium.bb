@@ -400,9 +400,6 @@ const char kEnableOneCopy[]                 = "enable-one-copy";
 // Enables use of hardware overlay for fullscreen video playback. Android only.
 const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 
-// Forward overscroll event data from the renderer to the browser.
-const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
-
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
@@ -909,6 +906,9 @@ const char kDisableClickDelay[]             = "disable-click-delay";
 
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
+
+// Disable the pull-to-refresh effect when vertically overscrolling content.
+const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";

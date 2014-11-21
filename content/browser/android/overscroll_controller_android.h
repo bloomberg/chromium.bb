@@ -32,7 +32,8 @@ struct DidOverscrollParams;
 // Glue class for handling all inputs into Android-specific overscroll effects,
 // both the passive overscroll glow and the active overscroll pull-to-refresh.
 // Note that all input coordinates (both for events and overscroll) are in DIPs.
-class OverscrollControllerAndroid : public OverscrollRefreshClient,
+class OverscrollControllerAndroid : public OverscrollGlowClient,
+                                    public OverscrollRefreshClient,
                                     public WebContentsObserver {
  public:
   OverscrollControllerAndroid(WebContents* web_contents,
@@ -72,6 +73,9 @@ class OverscrollControllerAndroid : public OverscrollRefreshClient,
   void TriggerRefresh() override;
   bool IsStillRefreshing() const override;
 
+  // OverscrollGlowClient implementation.
+  scoped_ptr<EdgeEffectBase> CreateEdgeEffect() override;
+
   void SetNeedsAnimate();
 
   ui::WindowAndroidCompositor* compositor_;
@@ -80,8 +84,8 @@ class OverscrollControllerAndroid : public OverscrollRefreshClient,
   bool enabled_;
 
   // TODO(jdduke): Factor out a common API from the two overscroll effects.
-  OverscrollGlow glow_effect_;
-  OverscrollRefresh refresh_effect_;
+  scoped_ptr<OverscrollGlow> glow_effect_;
+  scoped_ptr<OverscrollRefresh> refresh_effect_;
   bool triggered_refresh_active_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerAndroid);

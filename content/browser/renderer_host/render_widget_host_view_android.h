@@ -373,7 +373,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::queue<base::Closure> ack_callbacks_;
 
   // Used to control and render overscroll-related effects.
-  const bool overscroll_controller_enabled_;
   scoped_ptr<OverscrollControllerAndroid> overscroll_controller_;
 
   // Provides gesture synthesis given a stream of touch events (derived from

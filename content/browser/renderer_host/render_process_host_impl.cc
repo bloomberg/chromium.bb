@@ -1147,7 +1147,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableOneCopy,
     switches::kEnableOverlayFullscreenVideo,
     switches::kEnableOverlayScrollbar,
-    switches::kEnableOverscrollNotifications,
     switches::kEnablePinch,
     switches::kEnablePreciseMemoryInfo,
     switches::kEnableRendererMojoChannel,

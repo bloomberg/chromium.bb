@@ -62,6 +62,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebView uses the Android system's scrollbars and overscroll glow.
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 
+  // Pull-to-refresh should never be a default WebView action.
+  cl->AppendSwitch(switches::kDisablePullToRefreshEffect);
+
   // Not yet supported in single-process mode.
   cl->AppendSwitch(switches::kDisableSharedWorkers);
 

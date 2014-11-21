@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -48,12 +47,8 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_loop_(target_loop),
-      overscroll_notifications_enabled_(false),
       current_overscroll_params_(NULL) {
   DCHECK(target_loop_.get());
-  overscroll_notifications_enabled_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOverscrollNotifications);
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {
@@ -74,9 +69,6 @@ void InputEventFilter::DidRemoveInputHandler(int routing_id) {
 
 void InputEventFilter::DidOverscroll(int routing_id,
                                      const DidOverscrollParams& params) {
-  if (!overscroll_notifications_enabled_)
-    return;
-
   if (current_overscroll_params_) {
     current_overscroll_params_->reset(new DidOverscrollParams(params));
     return;

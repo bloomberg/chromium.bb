@@ -75,11 +75,9 @@ gfx::SizeF ComputeSize(OverscrollGlow::Edge edge,
 
 }  // namespace
 
-OverscrollGlow::OverscrollGlow(const EdgeEffectProvider& edge_effect_provider)
-    : edge_effect_provider_(edge_effect_provider),
-      edge_offsets_(),
-      initialized_(false) {
-  DCHECK(!edge_effect_provider_.is_null());
+OverscrollGlow::OverscrollGlow(OverscrollGlowClient* client)
+    : client_(client), edge_offsets_(), initialized_(false) {
+  DCHECK(client);
 }
 
 OverscrollGlow::~OverscrollGlow() {
@@ -206,7 +204,7 @@ bool OverscrollGlow::InitializeIfNecessary() {
   DCHECK(!root_layer_.get());
   root_layer_ = cc::Layer::Create();
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
-    edge_effects_[i] = edge_effect_provider_.Run();
+    edge_effects_[i] = client_->CreateEdgeEffect();
     DCHECK(edge_effects_[i]);
   }
 

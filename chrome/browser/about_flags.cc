@@ -1644,6 +1644,13 @@ const Experiment kExperiments[] = {
     // Java-only switch: CommandLine.DISABLE_CLICK_DELAY
     SINGLE_VALUE_TYPE("disable-click-delay")
   },
+  {
+    "disable-pull-to-refresh-effect",
+    IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME,
+    IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kDisablePullToRefreshEffect)
+  },
 #endif
 #if defined(OS_MACOSX)
   {

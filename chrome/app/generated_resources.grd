@@ -6604,6 +6604,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_CLICK_DELAY_DESCRIPTION" desc="Description of the flag to disable the click delay.">
           Always send click events immediate upon a tap, even when it's part of a double-tap gesture.  This speeds up navigation and other tap actions by 300ms on most pages, but means links and buttons must be avoided when double tapping to zoom.
         </message>
+        <message name="IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME" desc="Name of the flag to disable the pull-to-refresh effect.">
+          Disable the pull-to-refresh effect.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_DESCRIPTION" desc="Description of the flag to disable the pull-to-refresh effect.">
+          Disable page reloads triggered by vertically overscrolling content.
+        </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME" desc="Name of the flag to enable the new Translate UX.">
