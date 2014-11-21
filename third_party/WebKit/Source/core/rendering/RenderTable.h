@@ -286,7 +286,6 @@ private:
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTable || RenderBlock::isOfType(type); }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;

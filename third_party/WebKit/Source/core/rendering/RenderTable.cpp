@@ -611,11 +611,6 @@ void RenderTable::addOverflowFromChildren()
         addOverflowFromChild(section);
 }
 
-void RenderTable::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    TablePainter(*this).paint(paintInfo, paintOffset);
-}
-
 void RenderTable::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     TablePainter(*this).paintObject(paintInfo, paintOffset);

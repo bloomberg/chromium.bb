@@ -15,7 +15,6 @@ class TablePainter {
 public:
     TablePainter(RenderTable& renderTable) : m_renderTable(renderTable) { }
 
-    void paint(const PaintInfo&, const LayoutPoint&);
     void paintObject(const PaintInfo&, const LayoutPoint&);
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     void paintMask(const PaintInfo&, const LayoutPoint&);

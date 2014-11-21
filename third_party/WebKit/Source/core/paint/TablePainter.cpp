@@ -17,26 +17,6 @@
 
 namespace blink {
 
-void TablePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderTable);
-
-    LayoutPoint adjustedPaintOffset = paintOffset + m_renderTable.location();
-
-    if (!m_renderTable.isDocumentElement()) {
-        LayoutRect overflowBox = m_renderTable.visualOverflowRect();
-        m_renderTable.flipForWritingMode(overflowBox);
-        overflowBox.moveBy(adjustedPaintOffset);
-        if (!overflowBox.intersects(paintInfo.rect))
-            return;
-    }
-
-    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
-    PaintInfo localPaintInfo(paintInfo);
-    BoxClipper boxClipper(m_renderTable, localPaintInfo, adjustedPaintOffset, ForceContentsClip);
-    paintObject(localPaintInfo, adjustedPaintOffset);
-}
-
 void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
