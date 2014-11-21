@@ -74,7 +74,7 @@ static base::File::Error GetDirectoryEntries(
   FindClose(find_handle);
   return return_value;
 #else
-  const std::string dir_string = FilePathToString(dir_param);
+  const std::string dir_string = dir_param.AsUTF8Unsafe();
   DIR* dir = opendir(dir_string.c_str());
   if (!dir)
     return base::File::OSErrorToFileError(errno);
@@ -250,13 +250,13 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
       file_type_(kOther),
       make_backup_(make_backup) {
   base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
-  if (FilePathToString(path.BaseName()).find("MANIFEST") == 0)
+  if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
     file_type_ = kManifest;
   else if (ChromiumEnv::HasTableExtension(path))
     file_type_ = kTable;
   if (file_type_ != kManifest)
     tracker_->DidCreateNewFile(filename_);
-  parent_dir_ = FilePathToString(ChromiumEnv::CreateFilePath(fname).DirName());
+  parent_dir_ = ChromiumEnv::CreateFilePath(fname).DirName().AsUTF8Unsafe();
 }
 
 Status ChromiumWritableFile::SyncParent() {
@@ -520,14 +520,6 @@ bool IsIOError(const leveldb::Status& status) {
   return result != leveldb_env::NONE;
 }
 
-std::string FilePathToString(const base::FilePath& file_path) {
-#if defined(OS_WIN)
-  return base::UTF16ToUTF8(file_path.value());
-#else
-  return file_path.value();
-#endif
-}
-
 base::FilePath ChromiumEnv::CreateFilePath(const std::string& file_path) {
   return base::FilePath::FromUTF8Unsafe(file_path);
 }
@@ -651,7 +643,7 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
        ++it) {
     base::FilePath restored_table_name =
         RestoreFromBackup(dir_filepath.Append(*it));
-    result->push_back(FilePathToString(restored_table_name.BaseName()));
+    result->push_back(restored_table_name.BaseName().AsUTF8Unsafe());
   }
 }
 
@@ -668,7 +660,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir_string,
 
   result->clear();
   for (const auto& entry : entries)
-    result->push_back(FilePathToString(entry));
+    result->push_back(entry.BaseName().AsUTF8Unsafe());
 
   if (make_backup_)
     RestoreIfNecessary(dir_string, result);
@@ -840,7 +832,7 @@ Status ChromiumEnv::GetTestDirectory(std::string* path) {
           "Could not create temp directory.", "", kGetTestDirectory);
     }
   }
-  *path = FilePathToString(test_directory_);
+  *path = test_directory_.AsUTF8Unsafe();
   mu_.Release();
   return Status::OK();
 }
@@ -1086,8 +1078,7 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
 }
 
 static std::string GetDirName(const std::string& filename) {
-  base::FilePath file = base::FilePath::FromUTF8Unsafe(filename);
-  return FilePathToString(file.DirName());
+  return base::FilePath::FromUTF8Unsafe(filename).DirName().AsUTF8Unsafe();
 }
 
 void ChromiumEnv::DidCreateNewFile(const std::string& filename) {

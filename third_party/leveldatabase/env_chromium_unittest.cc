@@ -94,8 +94,8 @@ TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   std::string some_data = "some data";
   Slice data = some_data;
 
-  std::string manifest_file_name = leveldb_env::FilePathToString(
-      dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")));
+  std::string manifest_file_name =
+      dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")).AsUTF8Unsafe();
   WritableFile* manifest_file_ptr;
   Status s = env.NewWritableFile(manifest_file_name, &manifest_file_ptr);
   EXPECT_TRUE(s.ok());
@@ -105,8 +105,8 @@ TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   manifest_file->Append(data);
   EXPECT_EQ(0, env.directory_syncs());
 
-  std::string sst_file_name = leveldb_env::FilePathToString(
-      dir_path.Append(FILE_PATH_LITERAL("000003.sst")));
+  std::string sst_file_name =
+      dir_path.Append(FILE_PATH_LITERAL("000003.sst")).AsUTF8Unsafe();
   WritableFile* sst_file_ptr;
   s = env.NewWritableFile(sst_file_name, &sst_file_ptr);
   EXPECT_TRUE(s.ok());
