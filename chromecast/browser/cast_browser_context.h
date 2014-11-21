@@ -48,6 +48,8 @@ class CastBrowserContext : public content::BrowserContext {
   virtual content::PushMessagingService* GetPushMessagingService() override;
   virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
+  net::URLRequestContextGetter* GetSystemRequestContext();
+
  private:
   class CastResourceContext;
 

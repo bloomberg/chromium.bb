@@ -116,6 +116,10 @@ CastBrowserContext::GetMediaRequestContextForStoragePartition(
   return GetMediaRequestContext();
 }
 
+net::URLRequestContextGetter* CastBrowserContext::GetSystemRequestContext() {
+  return url_request_context_factory_->GetSystemGetter();
+}
+
 content::ResourceContext* CastBrowserContext::GetResourceContext() {
   return resource_context_.get();
 }
