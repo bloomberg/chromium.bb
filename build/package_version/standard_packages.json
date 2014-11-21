@@ -52,26 +52,38 @@
   "packages": {
     "win_x86": [
       "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
+      "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
+      "nacl_x86_newlib_raw",
       "pnacl_newlib",
+      "pnacl_newlib_raw",
       "pnacl_translator"
     ],
 
     "mac_x86": [
       "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
+      "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
+      "nacl_x86_newlib_raw",
       "pnacl_newlib",
+      "pnacl_newlib_raw",
       "pnacl_translator"
     ],
 
     "linux_x86": [
       "arm_trusted",
       "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
+      "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
+      "nacl_x86_newlib_raw",
       "pnacl_newlib",
+      "pnacl_newlib_raw",
       "pnacl_translator"
     ],
 
@@ -86,9 +98,22 @@
   # need to remember an extra revision set name.
   "revision_sets": {
     # Revision Set Name
-    "pnacl_newlib": [
+    "nacl_arm_newlib": [
       # Packages contained within this revision set.
+      "nacl_arm_newlib",
+      "nacl_arm_newlib_raw"
+    ],
+    "nacl_x86_newlib": [
+      "nacl_x86_newlib",
+      "nacl_x86_newlib_raw"
+    ],
+    "nacl_x86_glibc": [
+      "nacl_x86_glibc",
+      "nacl_x86_glibc_raw"
+    ],
+    "pnacl_newlib": [
       "pnacl_newlib",
+      "pnacl_newlib_raw",
       "pnacl_translator"
     ]
   },
