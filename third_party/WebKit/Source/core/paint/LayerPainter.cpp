@@ -8,6 +8,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
+#include "core/paint/TransformDisplayItem.h"
 #include "core/paint/TransparencyDisplayItem.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
@@ -414,17 +415,26 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    // Apply the transform.
-    GraphicsContextStateSaver stateSaver(*context, false);
     if (!transform.isIdentity()) {
-        stateSaver.save();
-        context->concatCTM(transform.toAffineTransform());
+        OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = adoptPtr(new BeginTransformDisplayItem(m_renderLayer.renderer(), transform));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            m_renderLayer.renderer()->view()->viewDisplayList().add(beginTransformDisplayItem.release());
+        else
+            beginTransformDisplayItem->replay(context);
     }
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect)), paintingInfo.paintBehavior,
         adjustedSubPixelAccumulation, paintingInfo.paintingRoot);
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
+
+    if (!transform.isIdentity()) {
+        OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransformDisplayItem.release());
+        else
+            endTransformDisplayItem->replay(context);
+    }
 }
 
 void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)

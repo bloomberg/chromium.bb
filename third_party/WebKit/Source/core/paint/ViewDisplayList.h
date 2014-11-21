@@ -58,7 +58,9 @@ public:
         ClipBoxSelection = 36,
         ClipBoxCollapsedTableBorders = 37,
         ClipBoxTextClip = 38,
-        ClipBoxClippingMask = 39
+        ClipBoxClippingMask = 39,
+        BeginTransform = 40,
+        EndTransform = 41
     };
 
     virtual ~DisplayItem() { }

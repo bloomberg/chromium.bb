@@ -158,6 +158,8 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case ClipBoxCollapsedTableBorders: return "ClipBoxCollapsedTableBorders";
     case ClipBoxTextClip: return "ClipBoxTextClip";
     case ClipBoxClippingMask: return "ClipBoxClippingMask";
+    case BeginTransform: return "BeginTransform";
+    case EndTransform: return "EndTransform";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
