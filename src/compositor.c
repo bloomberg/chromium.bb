@@ -440,10 +440,6 @@ weston_view_create(struct weston_surface *surface)
 	wl_list_init(&view->link);
 	wl_list_init(&view->layer_link.link);
 
-	view->plane = NULL;
-	view->layer_link.layer = NULL;
-	view->parent_view = NULL;
-
 	pixman_region32_init(&view->clip);
 	pixman_region32_init(&view->transform.masked_boundingbox);
 	pixman_region32_init(&view->transform.masked_opaque);
@@ -458,8 +454,6 @@ weston_view_create(struct weston_surface *surface)
 	wl_list_init(&view->geometry.child_list);
 	pixman_region32_init(&view->transform.boundingbox);
 	view->transform.dirty = 1;
-
-	view->output = NULL;
 
 	return view;
 }
@@ -617,8 +611,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	wl_signal_init(&surface->destroy_signal);
 
-	surface->resource = NULL;
-
 	surface->compositor = compositor;
 	surface->ref_count = 1;
 
@@ -628,10 +620,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->buffer_viewport.surface.width = -1;
 
 	weston_surface_state_init(&surface->pending);
-
-	surface->output = NULL;
-
-	surface->viewport_resource = NULL;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);

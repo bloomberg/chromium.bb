@@ -533,10 +533,6 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	output->base.start_repaint_loop = fbdev_output_start_repaint_loop;
 	output->base.repaint = fbdev_output_repaint;
 	output->base.destroy = fbdev_output_destroy;
-	output->base.assign_planes = NULL;
-	output->base.set_backlight = NULL;
-	output->base.set_dpms = NULL;
-	output->base.switch_mode = NULL;
 
 	/* only one static mode in list */
 	output->mode.flags =

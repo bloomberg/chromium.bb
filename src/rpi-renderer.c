@@ -497,7 +497,6 @@ rpir_surface_create(struct rpi_renderer *renderer)
 		return NULL;
 
 	wl_list_init(&surface->views);
-	surface->visible_views = 0;
 	surface->single_buffer = renderer->single_buffer;
 	surface->enable_opaque_regions = renderer->enable_opaque_regions;
 	rpi_resource_init(&surface->resources[0]);

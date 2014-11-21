@@ -1841,8 +1841,6 @@ gl_renderer_output_create(struct weston_output *output,
 	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
 		pixman_region32_init(&go->buffer_damage[i]);
 
-	go->buffer_damage_index = 0;
-
 	output->renderer_state = go;
 
 	log_egl_config_info(gr->egl_display, egl_config);
