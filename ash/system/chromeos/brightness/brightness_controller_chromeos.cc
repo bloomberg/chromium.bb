@@ -12,7 +12,7 @@
 namespace ash {
 namespace system {
 
-bool BrightnessControllerChromeos::HandleBrightnessDown(
+void BrightnessControllerChromeos::HandleBrightnessDown(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
     base::RecordAction(
@@ -20,17 +20,15 @@ bool BrightnessControllerChromeos::HandleBrightnessDown(
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseScreenBrightness(true);
-  return true;
 }
 
-bool BrightnessControllerChromeos::HandleBrightnessUp(
+void BrightnessControllerChromeos::HandleBrightnessUp(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
     base::RecordAction(base::UserMetricsAction("Accel_BrightnessUp_F7"));
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       IncreaseScreenBrightness();
-  return true;
 }
 
 void BrightnessControllerChromeos::SetBrightnessPercent(double percent,

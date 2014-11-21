@@ -22,9 +22,9 @@ class ASH_EXPORT KeyboardBrightnessController
 
  private:
   // Overridden from KeyboardBrightnessControlDelegate:
-  virtual bool HandleKeyboardBrightnessDown(
+  virtual void HandleKeyboardBrightnessDown(
       const ui::Accelerator& accelerator) override;
-  virtual bool HandleKeyboardBrightnessUp(
+  virtual void HandleKeyboardBrightnessUp(
       const ui::Accelerator& accelerator) override;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardBrightnessController);

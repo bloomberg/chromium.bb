@@ -85,22 +85,17 @@ class ReleaseAccelerator : public ui::Accelerator {
 
 class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
  public:
-  explicit DummyBrightnessControlDelegate(bool consume)
-      : consume_(consume),
-        handle_brightness_down_count_(0),
-        handle_brightness_up_count_(0) {
-  }
+  DummyBrightnessControlDelegate()
+      : handle_brightness_down_count_(0), handle_brightness_up_count_(0) {}
   ~DummyBrightnessControlDelegate() override {}
 
-  bool HandleBrightnessDown(const ui::Accelerator& accelerator) override {
+  void HandleBrightnessDown(const ui::Accelerator& accelerator) override {
     ++handle_brightness_down_count_;
     last_accelerator_ = accelerator;
-    return consume_;
   }
-  bool HandleBrightnessUp(const ui::Accelerator& accelerator) override {
+  void HandleBrightnessUp(const ui::Accelerator& accelerator) override {
     ++handle_brightness_up_count_;
     last_accelerator_ = accelerator;
-    return consume_;
   }
   void SetBrightnessPercent(double percent, bool gradual) override {}
   void GetBrightnessPercent(
@@ -119,7 +114,6 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   }
 
  private:
-  const bool consume_;
   int handle_brightness_down_count_;
   int handle_brightness_up_count_;
   ui::Accelerator last_accelerator_;
@@ -129,24 +123,20 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
 
 class DummyImeControlDelegate : public ImeControlDelegate {
  public:
-  explicit DummyImeControlDelegate(bool consume)
-      : consume_(consume),
-        handle_next_ime_count_(0),
+  DummyImeControlDelegate()
+      : handle_next_ime_count_(0),
         handle_previous_ime_count_(0),
-        handle_switch_ime_count_(0) {
-  }
+        handle_switch_ime_count_(0) {}
   ~DummyImeControlDelegate() override {}
 
   void HandleNextIme() override { ++handle_next_ime_count_; }
   bool HandlePreviousIme(const ui::Accelerator& accelerator) override {
     ++handle_previous_ime_count_;
-    last_accelerator_ = accelerator;
-    return consume_;
+    return true;
   }
   bool HandleSwitchIme(const ui::Accelerator& accelerator) override {
     ++handle_switch_ime_count_;
-    last_accelerator_ = accelerator;
-    return consume_;
+    return true;
   }
 
   int handle_next_ime_count() const {
@@ -158,20 +148,15 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   int handle_switch_ime_count() const {
     return handle_switch_ime_count_;
   }
-  const ui::Accelerator& last_accelerator() const {
-    return last_accelerator_;
-  }
   ui::Accelerator RemapAccelerator(
       const ui::Accelerator& accelerator) override {
     return ui::Accelerator(accelerator);
   }
 
  private:
-  const bool consume_;
   int handle_next_ime_count_;
   int handle_previous_ime_count_;
   int handle_switch_ime_count_;
-  ui::Accelerator last_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyImeControlDelegate);
 };
@@ -179,24 +164,20 @@ class DummyImeControlDelegate : public ImeControlDelegate {
 class DummyKeyboardBrightnessControlDelegate
     : public KeyboardBrightnessControlDelegate {
  public:
-  explicit DummyKeyboardBrightnessControlDelegate(bool consume)
-      : consume_(consume),
-        handle_keyboard_brightness_down_count_(0),
-        handle_keyboard_brightness_up_count_(0) {
-  }
+  DummyKeyboardBrightnessControlDelegate()
+      : handle_keyboard_brightness_down_count_(0),
+        handle_keyboard_brightness_up_count_(0) {}
   ~DummyKeyboardBrightnessControlDelegate() override {}
 
-  bool HandleKeyboardBrightnessDown(
+  void HandleKeyboardBrightnessDown(
       const ui::Accelerator& accelerator) override {
     ++handle_keyboard_brightness_down_count_;
     last_accelerator_ = accelerator;
-    return consume_;
   }
 
-  bool HandleKeyboardBrightnessUp(const ui::Accelerator& accelerator) override {
+  void HandleKeyboardBrightnessUp(const ui::Accelerator& accelerator) override {
     ++handle_keyboard_brightness_up_count_;
     last_accelerator_ = accelerator;
-    return consume_;
   }
 
   int handle_keyboard_brightness_down_count() const {
@@ -212,7 +193,6 @@ class DummyKeyboardBrightnessControlDelegate
   }
 
  private:
-  const bool consume_;
   int handle_keyboard_brightness_down_count_;
   int handle_keyboard_brightness_up_count_;
   ui::Accelerator last_accelerator_;
@@ -830,8 +810,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE)));
 
 #if defined(OS_CHROMEOS)
-  // Take screenshot / partial screenshot
-  // True should always be returned regardless of the existence of the delegate.
+  // The "Take Screenshot", "Take Partial Screenshot", volume, brightness, and
+  // keyboard brightness accelerators are only defined on ChromeOS.
   {
     test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
     delegate->set_can_take_screenshot(false);
@@ -854,30 +834,11 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
-#endif
   const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
-    TestVolumeControlDelegate* delegate =
-        new TestVolumeControlDelegate(false);
-    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_FALSE(GetController()->Process(volume_mute));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(volume_mute, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_FALSE(GetController()->Process(volume_down));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(volume_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_FALSE(GetController()->Process(volume_up));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(volume_up, delegate->last_accelerator());
-  }
-  {
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate(true);
+    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
@@ -893,28 +854,13 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_volume_up_count());
     EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
-#if defined(OS_CHROMEOS)
   // Brightness
   // ui::VKEY_BRIGHTNESS_DOWN/UP are not defined on Windows.
   const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   {
     DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(false);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_FALSE(GetController()->Process(brightness_down));
-    EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(brightness_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_FALSE(GetController()->Process(brightness_up));
-    EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(brightness_up, delegate->last_accelerator());
-  }
-  {
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
+        new DummyBrightnessControlDelegate;
     GetController()->SetBrightnessControlDelegate(
         scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
@@ -936,21 +882,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(GetController()->Process(alt_brightness_down));
     EXPECT_TRUE(GetController()->Process(alt_brightness_up));
     DummyKeyboardBrightnessControlDelegate* delegate =
-        new DummyKeyboardBrightnessControlDelegate(false);
-    GetController()->SetKeyboardBrightnessControlDelegate(
-        scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_FALSE(GetController()->Process(alt_brightness_down));
-    EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
-    EXPECT_EQ(alt_brightness_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_FALSE(GetController()->Process(alt_brightness_up));
-    EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
-    EXPECT_EQ(alt_brightness_up, delegate->last_accelerator());
-  }
-  {
-    DummyKeyboardBrightnessControlDelegate* delegate =
-        new DummyKeyboardBrightnessControlDelegate(true);
+        new DummyKeyboardBrightnessControlDelegate;
     GetController()->SetKeyboardBrightnessControlDelegate(
         scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
@@ -1070,7 +1002,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(GetController()->Process(wide_half_1));
     EXPECT_FALSE(GetController()->Process(wide_half_2));
     EXPECT_FALSE(GetController()->Process(hangul));
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
         scoped_ptr<ImeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_previous_ime_count());
@@ -1098,7 +1030,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
                                           ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
     const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
 
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
         scoped_ptr<ImeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_next_ime_count());
@@ -1160,7 +1092,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
     const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
 
-    DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
         scoped_ptr<ImeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_next_ime_count());
@@ -1360,21 +1292,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   {
     DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(false);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_brightness_down_count());
-    EXPECT_FALSE(GetController()->Process(brightness_down));
-    EXPECT_EQ(1, delegate->handle_brightness_down_count());
-    EXPECT_EQ(brightness_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_brightness_up_count());
-    EXPECT_FALSE(GetController()->Process(brightness_up));
-    EXPECT_EQ(1, delegate->handle_brightness_up_count());
-    EXPECT_EQ(brightness_up, delegate->last_accelerator());
-  }
-  {
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
+        new DummyBrightnessControlDelegate;
     GetController()->SetBrightnessControlDelegate(
         scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
@@ -1394,25 +1312,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(GetController()->Process(volume_mute));
     EXPECT_TRUE(GetController()->Process(volume_down));
     EXPECT_TRUE(GetController()->Process(volume_up));
-    TestVolumeControlDelegate* delegate =
-        new TestVolumeControlDelegate(false);
-    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_FALSE(GetController()->Process(volume_mute));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(volume_mute, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_FALSE(GetController()->Process(volume_down));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(volume_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_FALSE(GetController()->Process(volume_up));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(volume_up, delegate->last_accelerator());
-  }
-  {
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate(true);
+    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());

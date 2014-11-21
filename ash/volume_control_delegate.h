@@ -16,9 +16,9 @@ class VolumeControlDelegate {
  public:
   virtual ~VolumeControlDelegate() {}
 
-  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) = 0;
-  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) = 0;
-  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) = 0;
+  virtual void HandleVolumeMute(const ui::Accelerator& accelerator) = 0;
+  virtual void HandleVolumeDown(const ui::Accelerator& accelerator) = 0;
+  virtual void HandleVolumeUp(const ui::Accelerator& accelerator) = 0;
 };
 
 }  // namespace ash

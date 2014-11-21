@@ -17,10 +17,10 @@ class KeyboardBrightnessControlDelegate {
   virtual ~KeyboardBrightnessControlDelegate() {}
 
   // Handles an accelerator-driven request to decrease or increase the keyboard
-  // brightness. Returns true if the brightness is changed.
-  virtual bool HandleKeyboardBrightnessDown(
+  // brightness.
+  virtual void HandleKeyboardBrightnessDown(
       const ui::Accelerator& accelerator) = 0;
-  virtual bool HandleKeyboardBrightnessUp(
+  virtual void HandleKeyboardBrightnessUp(
       const ui::Accelerator& accelerator) = 0;
 };
 

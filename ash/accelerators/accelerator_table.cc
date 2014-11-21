@@ -94,6 +94,9 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
   { false, ui::VKEY_RSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
   { false, ui::VKEY_LWIN, ui::EF_ALT_DOWN, TOGGLE_CAPS_LOCK },
+  { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
+  { true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN },
+  { true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
@@ -122,9 +125,6 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_FULLSCREEN },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_SHIFT_DOWN, TOGGLE_FULLSCREEN },
-  { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
-  { true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN },
-  { true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, FOCUS_SHELF },
   { true, ui::VKEY_HELP, ui::EF_NONE, SHOW_KEYBOARD_OVERLAY },
   { true, ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -249,8 +249,6 @@ const AcceleratorAction kReservedActions[] = {
 const size_t kReservedActionsLength = arraysize(kReservedActions);
 
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
@@ -264,10 +262,9 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
@@ -279,6 +276,9 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   TOGGLE_MIRROR_MODE,
   TOGGLE_WIFI,
   TOUCH_HUD_CLEAR,
+  VOLUME_DOWN,
+  VOLUME_MUTE,
+  VOLUME_UP,
 #endif
 #if defined(OS_CHROMEOS) && !defined(NDEBUG)
   POWER_PRESSED,
@@ -297,8 +297,6 @@ const size_t kActionsAllowedAtLockScreenLength =
     arraysize(kActionsAllowedAtLockScreen);
 
 const AcceleratorAction kActionsAllowedAtModalWindow[] = {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
   EXIT,
   MAGNIFY_SCREEN_ZOOM_IN,
   MAGNIFY_SCREEN_ZOOM_OUT,
@@ -317,10 +315,9 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   SWITCH_IME,
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
@@ -333,6 +330,9 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   TOGGLE_MIRROR_MODE,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
+  VOLUME_DOWN,
+  VOLUME_MUTE,
+  VOLUME_UP,
 #endif
 };
 
@@ -360,8 +360,6 @@ const size_t kNonrepeatableActionsLength =
     arraysize(kNonrepeatableActions);
 
 const AcceleratorAction kActionsAllowedInAppMode[] = {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
@@ -378,10 +376,9 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   SCALE_UI_RESET,
   SCALE_UI_UP,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
   DEBUG_ADD_REMOVE_DISPLAY,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
@@ -395,6 +392,9 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
   TOUCH_HUD_CLEAR,
+  VOLUME_DOWN,
+  VOLUME_MUTE,
+  VOLUME_UP,
 #endif  // defined(OS_CHROMEOS)
 };
 

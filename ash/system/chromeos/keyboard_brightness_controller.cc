@@ -12,7 +12,7 @@
 
 namespace ash {
 
-bool KeyboardBrightnessController::HandleKeyboardBrightnessDown(
+void KeyboardBrightnessController::HandleKeyboardBrightnessDown(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
@@ -21,10 +21,9 @@ bool KeyboardBrightnessController::HandleKeyboardBrightnessDown(
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseKeyboardBrightness();
-  return true;
 }
 
-bool KeyboardBrightnessController::HandleKeyboardBrightnessUp(
+void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
@@ -33,7 +32,6 @@ bool KeyboardBrightnessController::HandleKeyboardBrightnessUp(
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       IncreaseKeyboardBrightness();
-  return true;
 }
 
 }  // namespace ash

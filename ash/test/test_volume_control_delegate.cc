@@ -6,9 +6,8 @@
 
 namespace ash {
 
-TestVolumeControlDelegate::TestVolumeControlDelegate(bool consume)
-    : consume_(consume),
-      handle_volume_mute_count_(0),
+TestVolumeControlDelegate::TestVolumeControlDelegate()
+    : handle_volume_mute_count_(0),
       handle_volume_down_count_(0),
       handle_volume_up_count_(0) {
 }
@@ -16,25 +15,22 @@ TestVolumeControlDelegate::TestVolumeControlDelegate(bool consume)
 TestVolumeControlDelegate::~TestVolumeControlDelegate() {
 }
 
-bool TestVolumeControlDelegate::HandleVolumeMute(
+void TestVolumeControlDelegate::HandleVolumeMute(
     const ui::Accelerator& accelerator) {
   ++handle_volume_mute_count_;
   last_accelerator_ = accelerator;
-  return consume_;
 }
 
-bool TestVolumeControlDelegate::HandleVolumeDown(
+void TestVolumeControlDelegate::HandleVolumeDown(
     const ui::Accelerator& accelerator) {
   ++handle_volume_down_count_;
   last_accelerator_ = accelerator;
-  return consume_;
 }
 
-bool TestVolumeControlDelegate::HandleVolumeUp(
+void TestVolumeControlDelegate::HandleVolumeUp(
     const ui::Accelerator& accelerator) {
   ++handle_volume_up_count_;
   last_accelerator_ = accelerator;
-  return consume_;
 }
 
 }  // namespace ash

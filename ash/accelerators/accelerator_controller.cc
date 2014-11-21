@@ -454,7 +454,7 @@ bool HandleToggleFullscreen(ui::KeyboardCode key_code) {
   return true;
 }
 
-bool HandleToggleOverview(const ui::Accelerator& accelerator) {
+bool HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
   Shell::GetInstance()->window_selector_controller()->ToggleOverview();
   return true;
@@ -501,6 +501,20 @@ bool HandlePositionCenter() {
 }
 
 #if defined(OS_CHROMEOS)
+bool HandleBrightnessDown(BrightnessControlDelegate* delegate,
+                          const ui::Accelerator& accelerator) {
+  if (delegate)
+    delegate->HandleBrightnessDown(accelerator);
+  return true;
+}
+
+bool HandleBrightnessUp(BrightnessControlDelegate* delegate,
+                        const ui::Accelerator& accelerator) {
+  if (delegate)
+    delegate->HandleBrightnessUp(accelerator);
+  return true;
+}
+
 bool HandleDisableCapsLock(ui::KeyboardCode key_code,
                            ui::EventType previous_event_type,
                            ui::KeyboardCode previous_key_code) {
@@ -522,6 +536,20 @@ bool HandleDisableCapsLock(ui::KeyboardCode key_code,
     return true;
   }
   return false;
+}
+
+bool HandleKeyboardBrightnessDown(KeyboardBrightnessControlDelegate* delegate,
+                                  const ui::Accelerator& accelerator) {
+  if (delegate)
+    delegate->HandleKeyboardBrightnessDown(accelerator);
+  return true;
+}
+
+bool HandleKeyboardBrightnessUp(KeyboardBrightnessControlDelegate* delegate,
+                                const ui::Accelerator& accelerator) {
+  if (delegate)
+    delegate->HandleKeyboardBrightnessUp(accelerator);
+  return true;
 }
 
 bool HandleLock(ui::KeyboardCode key_code) {
@@ -648,6 +676,30 @@ bool HandleTouchHudModeChange() {
     return true;
   }
   return false;
+}
+
+bool HandleVolumeDown(const ui::Accelerator& accelerator) {
+  VolumeControlDelegate* volume_delegate =
+      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+  if (volume_delegate)
+    volume_delegate->HandleVolumeDown(accelerator);
+  return true;
+}
+
+bool HandleVolumeMute(const ui::Accelerator& accelerator) {
+  VolumeControlDelegate* volume_delegate =
+      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+  if (volume_delegate)
+    volume_delegate->HandleVolumeMute(accelerator);
+  return true;
+}
+
+bool HandleVolumeUp(const ui::Accelerator& accelerator) {
+  VolumeControlDelegate* volume_delegate =
+      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+  if (volume_delegate)
+    volume_delegate->HandleVolumeUp(accelerator);
+  return true;
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -831,7 +883,6 @@ void AcceleratorController::RegisterAccelerators(
 
 bool AcceleratorController::PerformAction(AcceleratorAction action,
                                           const ui::Accelerator& accelerator) {
-  ash::Shell* shell = ash::Shell::GetInstance();
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);
   if (restriction != RESTRICTION_NONE)
@@ -860,14 +911,6 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
       return HandleAccessibleFocusCycle(false);
     case ACCESSIBLE_FOCUS_PREVIOUS:
       return HandleAccessibleFocusCycle(true);
-    case BRIGHTNESS_DOWN:
-      if (brightness_control_delegate_)
-        return brightness_control_delegate_->HandleBrightnessDown(accelerator);
-      return false;
-    case BRIGHTNESS_UP:
-      if (brightness_control_delegate_)
-        return brightness_control_delegate_->HandleBrightnessUp(accelerator);
-      return false;
     case CYCLE_BACKWARD_MRU:
       return HandleCycleBackwardMRU(accelerator);
     case CYCLE_FORWARD_MRU:
@@ -974,22 +1017,7 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
       accelerators::ToggleMaximized();
       return true;
     case TOGGLE_OVERVIEW:
-      return HandleToggleOverview(accelerator);
-    case VOLUME_DOWN: {
-      ash::VolumeControlDelegate* volume_delegate =
-          shell->system_tray_delegate()->GetVolumeControlDelegate();
-      return volume_delegate && volume_delegate->HandleVolumeDown(accelerator);
-    }
-    case VOLUME_MUTE: {
-      ash::VolumeControlDelegate* volume_delegate =
-          shell->system_tray_delegate()->GetVolumeControlDelegate();
-      return volume_delegate && volume_delegate->HandleVolumeMute(accelerator);
-    }
-    case VOLUME_UP: {
-      ash::VolumeControlDelegate* volume_delegate =
-          shell->system_tray_delegate()->GetVolumeControlDelegate();
-      return volume_delegate && volume_delegate->HandleVolumeUp(accelerator);
-    }
+      return HandleToggleOverview();
     case WINDOW_CYCLE_SNAP_DOCK_LEFT:
     case WINDOW_CYCLE_SNAP_DOCK_RIGHT:
       return HandleWindowSnapOrDock(action);
@@ -998,6 +1026,12 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
     case WINDOW_POSITION_CENTER:
       return HandlePositionCenter();
 #if defined(OS_CHROMEOS)
+    case BRIGHTNESS_DOWN:
+      return HandleBrightnessDown(brightness_control_delegate_.get(),
+                                  accelerator);
+    case BRIGHTNESS_UP:
+      return HandleBrightnessUp(brightness_control_delegate_.get(),
+                                accelerator);
     case DEBUG_ADD_REMOVE_DISPLAY:
       return debug::PerformDebugAction(action);
     case DISABLE_CAPS_LOCK:
@@ -1007,15 +1041,11 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
       Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       return true;
     case KEYBOARD_BRIGHTNESS_DOWN:
-      if (keyboard_brightness_control_delegate_)
-        return keyboard_brightness_control_delegate_->
-            HandleKeyboardBrightnessDown(accelerator);
-      return false;
+      return HandleKeyboardBrightnessDown(
+          keyboard_brightness_control_delegate_.get(), accelerator);
     case KEYBOARD_BRIGHTNESS_UP:
-      if (keyboard_brightness_control_delegate_)
-        return keyboard_brightness_control_delegate_->
-            HandleKeyboardBrightnessUp(accelerator);
-      return false;
+      return HandleKeyboardBrightnessUp(
+          keyboard_brightness_control_delegate_.get(), accelerator);
     case LOCK_PRESSED:
     case LOCK_RELEASED:
       Shell::GetInstance()->power_button_controller()->
@@ -1068,6 +1098,12 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
     case TOUCH_HUD_PROJECTION_TOGGLE:
       accelerators::ToggleTouchHudProjection();
       return true;
+    case VOLUME_DOWN:
+      return HandleVolumeDown(accelerator);
+    case VOLUME_MUTE:
+      return HandleVolumeMute(accelerator);
+    case VOLUME_UP:
+      return HandleVolumeUp(accelerator);
 #else
     case DUMMY_FOR_RESERVED:
       NOTREACHED();

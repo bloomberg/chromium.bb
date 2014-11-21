@@ -20,8 +20,8 @@ class BrightnessControlDelegate {
 
   // Handles an accelerator-driven request to decrease or increase the screen
   // brightness.
-  virtual bool HandleBrightnessDown(const ui::Accelerator& accelerator) = 0;
-  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) = 0;
+  virtual void HandleBrightnessDown(const ui::Accelerator& accelerator) = 0;
+  virtual void HandleBrightnessUp(const ui::Accelerator& accelerator) = 0;
 
   // Requests that the brightness be set to |percent|, in the range
   // [0.0, 100.0].  |gradual| specifies whether the transition to the new
