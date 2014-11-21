@@ -134,7 +134,7 @@ class DataReductionProxyAuthRequestHandlerTest : public testing::Test {
   base::MessageLoopProxy* loop_proxy_;
 };
 
-TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIO) {
+TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationOnIOThread) {
   scoped_ptr<TestDataReductionProxyParams> params;
   params.reset(
       new TestDataReductionProxyParams(

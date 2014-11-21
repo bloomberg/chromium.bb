@@ -57,11 +57,11 @@ class DataReductionProxyChromeConfigurator
   void AddURLPatternToBypass(const std::string& pattern) override;
 
   // Updates the config for use on the IO thread.
-  void UpdateProxyConfigOnIO(const net::ProxyConfig& config);
+  void UpdateProxyConfigOnIOThread(const net::ProxyConfig& config);
 
   // Returns the current data reduction proxy config, even if it is not the
   // effective configuration used by the proxy service.
-  const net::ProxyConfig& GetProxyConfigOnIO() const;
+  const net::ProxyConfig& GetProxyConfigOnIOThread() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestBypassList);

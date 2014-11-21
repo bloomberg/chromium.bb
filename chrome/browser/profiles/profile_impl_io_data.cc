@@ -457,7 +457,7 @@ void ProfileImplIOData::InitializeInternal(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
   network_delegate()->set_proxy_config_getter(
       base::Bind(
-          &DataReductionProxyChromeConfigurator::GetProxyConfigOnIO,
+          &DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread,
           base::Unretained(data_reduction_proxy_chrome_configurator())));
   network_delegate()->set_predictor(predictor_.get());
 

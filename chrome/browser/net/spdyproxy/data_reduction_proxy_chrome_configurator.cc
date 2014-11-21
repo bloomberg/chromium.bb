@@ -104,7 +104,7 @@ void DataReductionProxyChromeConfigurator::Enable(
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIO,
+          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread,
           base::Unretained(this),
           config));
 }
@@ -115,7 +115,7 @@ void DataReductionProxyChromeConfigurator::Disable() {
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIO,
+          &DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread,
           base::Unretained(this),
           config));
 }
@@ -170,12 +170,12 @@ bool DataReductionProxyChromeConfigurator::ContainsDataReductionProxy(
   return false;
 }
 
-void DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIO(
+void DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIOThread(
     const net::ProxyConfig& config) {
   config_ = config;
 }
 
 const net::ProxyConfig&
-DataReductionProxyChromeConfigurator::GetProxyConfigOnIO() const {
+DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread() const {
   return config_;
 }

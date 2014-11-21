@@ -115,7 +115,7 @@ class DataReductionProxyAuthRequestHandler {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
-                           AuthorizationOnIO);
+                           AuthorizationOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthorizationIgnoresEmptyKey);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
