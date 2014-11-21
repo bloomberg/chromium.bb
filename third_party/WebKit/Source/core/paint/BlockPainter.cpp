@@ -163,7 +163,6 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         bounds.moveBy(scrolledOffset);
     }
 
-    // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {
         if (m_renderBlock.hasBoxDecorationBackground())
             m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
@@ -187,7 +186,6 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
         return;
 
-    // 2. paint contents
     if (paintPhase != PaintPhaseSelfOutline) {
         if (m_renderBlock.hasColumns())
             paintColumnContents(paintInfo, scrolledOffset);
@@ -195,13 +193,11 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             paintContents(paintInfo, scrolledOffset);
     }
 
-    // 3. paint selection
     // FIXME: Make this work with multi column layouts. For now don't fill gaps.
     bool isPrinting = m_renderBlock.document().printing();
     if (!isPrinting && !m_renderBlock.hasColumns())
         m_renderBlock.paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
 
-    // 4. paint floats.
     if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
         if (m_renderBlock.hasColumns())
             paintColumnContents(paintInfo, scrolledOffset, true);
@@ -209,7 +205,6 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             m_renderBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
     }
 
-    // 5. paint outline.
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_renderBlock.style()->hasOutline() && m_renderBlock.style()->visibility() == VISIBLE) {
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
@@ -217,11 +212,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             ObjectPainter(m_renderBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_renderBlock.size()));
     }
 
-    // 6. paint continuation outlines.
     if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
         paintContinuationOutlines(paintInfo, paintOffset);
 
-    // 7. paint caret.
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground) {
