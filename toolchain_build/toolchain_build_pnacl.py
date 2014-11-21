@@ -191,6 +191,9 @@ def ConfigureHostArchFlags(host, extra_cflags, options):
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
   else:
+    if TripleIsMac(host):
+      # This is required for building with recent libc++ against OSX 10.6
+      extra_cflags.append('-U__STRICT_ANSI__')
     if options.gcc:
       configure_args.extend(['CFLAGS=' + ' '.join(extra_cflags),
                              'CXXFLAGS=' + ' '.join(extra_cflags)])

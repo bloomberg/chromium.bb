@@ -2,8 +2,10 @@
 ### Mac-only failures
 ###
 
-# Introduced by the update to clang for the host build, still investigating.
-LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll
+# Failing only on the mac bot. I suspect it's just because the
+# .macosx_version_min on that output has a 10 in it (i.e. it's not hermetic).
+# TODO(dschuff): prove it.
+LLVM::CodeGen/X86/2008-11-03-F80VAARG.ll mac
 
 ###
 ### Windows-only failures
@@ -44,7 +46,6 @@ LLVM::DebugInfo/debuglineinfo.test win
 # Tries to open LLVMHello.dll, but that apparently does not get built.
 LLVM::Feature/load_module.ll win
 
-
 ###
 ### x86-32-host only failures
 ###
@@ -60,3 +61,16 @@ LLVM::ExecutionEngine/MCJIT/remote/cross-module-sm-pic-a.ll x86_32
 LLVM::ExecutionEngine/MCJIT/eh-lg-pic.ll x86_32
 LLVM::ExecutionEngine/MCJIT/remote/test-global-init-nonzero-sm-pic.ll x86_32
 LLVM::ExecutionEngine/MCJIT/test-global-init-nonzero-sm-pic.ll x86_32
+
+###
+### Post LLVM 3.5 merge failures.
+###
+
+# Mips was reverted to upstream state in the merge, but a few LOCALMODs need to
+# be put back.
+LLVM::CodeGen/Mips/prevent-hoisting.ll
+LLVM::MC/Mips/nacl-mask.s
+
+# Failure on mac introduced by the update to clang for the host build, now
+# on Linux too; still investigating.
+LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll

@@ -80,13 +80,18 @@ def AddIntrinsicTest(test_env, src, exit_status,
 AddIntrinsicTest(env, 'intrinsics.cc', '55'),
 AddIntrinsicTest(env, 'float2.c', '0', golden_file=env.File('float2.stdout'))
 AddIntrinsicTest(env, 'synchronization_sync.c', '0',
+                 is_broken=(
+                 # TODO(jfb) Broken after the LLVM 3.5 merge because of:
+                 #           http://llvm.org/bugs/show_bug.cgi?id=20376
+                     env.Bit('bitcode') or env.Bit('nacl_clang') or
                  # TODO(jfb) Blocked on bugs 3579 and 2981. This should
                  # work on PNaCl because it avoids the broken 16-bit
                  # instructions on x86-32 by using 32-bit instructions.
+                     (env.Bit('build_x86_32') and
+                      not env.Bit('bitcode')) or
                  # The test also exercises instructions that confuse valgrind.
-                 is_broken=((env.Bit('build_x86_32') and
-                             not env.Bit('bitcode')) or
-                            env.IsRunningUnderValgrind()))
+                     env.IsRunningUnderValgrind())
+               )
 AddIntrinsicTest(env, 'synchronization_volatile.c', '0')
 if env.Bit('bitcode') or env.Bit('nacl_clang'):
   # The following tests were only made to work on LLVM for

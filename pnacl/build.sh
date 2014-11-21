@@ -34,6 +34,7 @@ source scripts/common-tools.sh
 
 readonly PNACL_ROOT="$(pwd)"
 readonly NACL_ROOT="$(GetAbsolutePath ..)"
+readonly GCLIENT_ROOT="$(GetAbsolutePath ${NACL_ROOT}/..)"
 readonly SCONS_OUT="${NACL_ROOT}/scons-out"
 
 SetScriptPath "${PNACL_ROOT}/build.sh"
@@ -172,6 +173,14 @@ readonly PNACL_READELF="${INSTALL_BIN}/pnacl-readelf"
 readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-size"
 readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
+
+# Tools for building the LLVM BuildTools in the translator build
+readonly HOST_CLANG_PATH="${GCLIENT_ROOT}/third_party/llvm-build/Release+Asserts/bin"
+readonly HOST_CLANG="${HOST_CLANG_PATH}/clang"
+# Use toolchain_build's libcxx install directory instead of ${INSTALL_ROOT}/lib
+# because the latter also has the LLVM shared libs in it, and given how stupid
+# the LLVM BuildTools build is, who knows what would happen if it found those.
+readonly HOST_LIBCXX="${NACL_ROOT}/toolchain_build/out/libcxx_x86_64_linux_install"
 
 GetNNaClTool() {
   local arch=$1
@@ -1771,7 +1780,9 @@ llvm-sb-setup() {
     CXX="${PNACL_CXX} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
-    RANLIB="${PNACL_RANLIB}")
+    RANLIB="${PNACL_RANLIB}" \
+    BUILD_CC="${HOST_CLANG}" \
+    BUILD_CXX="${HOST_CLANG}++")
 }
 
 #+-------------------------------------------------------------------------
@@ -1849,6 +1860,7 @@ llvm-sb-configure() {
         --enable-shared=no \
         --disable-jit \
         --enable-optimized \
+        --enable-libcpp \
         --target=${CROSS_TARGET_ARM} \
         llvm_cv_link_use_export_dynamic=no \
         ac_cv_func_getrusage=no \
@@ -1870,11 +1882,17 @@ llvm-sb-make() {
   local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
-      env -i PATH="/usr/bin:/bin" \
+      env -i PATH="/usr/bin:/bin:${HOST_CLANG_PATH}" \
+      LD_LIBRARY_PATH="${HOST_LIBCXX}/lib" \
       ONLY_TOOLS="${tools_to_build}" \
       NACL_SANDBOX=1 \
       KEEP_SYMBOLS=1 \
+      NO_DEAD_STRIP=1 \
       VERBOSE=1 \
+    BUILD_CC="${HOST_CLANG}" \
+    BUILD_CXX="${HOST_CLANG}++" \
+    BUILD_CXXFLAGS="-stdlib=libc++ -I${HOST_LIBCXX}/include/c++/v1" \
+    BUILD_LDFLAGS="-L${HOST_LIBCXX}/lib" \
       ${export_dyn_env} \
       make ${MAKE_OPTS} tools-only
 

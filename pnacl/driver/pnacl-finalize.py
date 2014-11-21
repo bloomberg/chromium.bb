@@ -54,7 +54,7 @@ def main(argv):
       shutil.copyfile(f_input, f_output)
     return 0
 
-  opt_flags = ['-disable-opt', '-strip-metadata',
+  opt_flags = ['-disable-opt', '-strip-metadata', '-strip-module-flags',
                '--bitcode-format=pnacl', f_input, '-o', f_output]
   if env.getbool('DISABLE_STRIP_SYMS'):
     opt_flags += ['-strip-debug']

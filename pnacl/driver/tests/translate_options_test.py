@@ -178,14 +178,14 @@ define i32 @_start() {
           pexe,
           self.platform,
           ['-mtls-use-call', '-fdata-sections', '-ffunction-sections'],
-          ['-mtls-use-call', '-fdata-sections', '-ffunction-sections'])
+          ['-mtls-use-call', '-data-sections', '-function-sections'])
       self.checkLLCTranslateFlags(
           pexe,
           self.platform,
           ['-mtls-use-call', '-fdata-sections', '-ffunction-sections',
            '--pnacl-sb'],
           ['StreamInitWith.*-mtls-use-call' +
-           '.*-fdata-sections.*-ffunction-sections'])
+           '.*-data-sections.*-function-sections'])
 
   def test_overrideMCPU(self):
     if driver_test_utils.CanRunHost():

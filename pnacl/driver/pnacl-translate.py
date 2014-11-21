@@ -157,8 +157,9 @@ TranslatorPatterns = [
   ( '(-force-align-stack)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   # These flags are usually used for linktime dead code/data
   # removal but also help with reloc overflows on ARM
-  ( '(-fdata-sections)',     "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '(-ffunction-sections)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-fdata-sections)',     "env.append('LLC_FLAGS_EXTRA', '-data-sections')"),
+  ( '(-ffunction-sections)',
+    "env.append('LLC_FLAGS_EXTRA', '-function-sections')"),
   ( '(--gc-sections)',       "env.append('LD_FLAGS', $0)"),
   ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mcpu=.*)', "env.set('LLC_MCPU', '')\n"
@@ -248,7 +249,8 @@ def SetUpArch():
       'ARM': ['-float-abi=hard', '-mattr=+neon'],
       # Once PNaCl's build of compiler-rt (libgcc.a) defines __aeabi_*
       # functions, we can drop '-arm-enable-aeabi-functions=0' option.
-      'ARM_NONSFI': ['-float-abi=hard', '-arm-enable-aeabi-functions=0'],
+      'ARM_NONSFI': ['-float-abi=hard', '-arm-enable-aeabi-functions=0',
+                     '-arm-enable-dwarf-eh=1'],
       # To translate x86-32 binary, we set -malign-double option so that the
       # backend's datalayout matches the datalayout for "le32" used by the
       # frontend. The le32 datalayout uses 8-byte alignment for the types i64

@@ -41,6 +41,9 @@ def main(argv):
   driver_tools.Run(
       '"${LLVM_OPT}" ${ARGS} ' +
       '${DISABLE_SIMPLIFY_LIBCALLS ? -disable-simplify-libcalls} ' +
+      '-disable-loop-vectorization -disable-slp-vectorization ' +
+      '-vectorize-loops=false -vectorize-slp=false ' +
+      '-vectorize-slp-aggressive=false ' +
       '${HAVE_OUTPUT ? -o ${OUTPUT}} ' +
       '${INPUT}')
 
