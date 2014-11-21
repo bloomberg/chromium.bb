@@ -208,7 +208,7 @@ void AdbDeviceInfoQuery::ReceivedModel(int result,
     Respond();
     return;
   }
-  device_info_.model = response;
+  TrimWhitespaceASCII(response, base::TRIM_ALL, &device_info_.model);
   device_info_.connected = true;
   command_callback_.Run(
       kDumpsysCommand,
