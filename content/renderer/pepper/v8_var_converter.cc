@@ -244,15 +244,15 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
           new HostArrayBufferVar(*web_array_buffer));
       *result = buffer_var->GetPPVar();
     } else if (object_vars_allowed == V8VarConverter::kAllowObjectVars) {
-      v8::Handle<v8::Object> object = val->ToObject();
+      v8::Handle<v8::Object> object = val.As<v8::Object>();
       *result = content::HostGlobals::Get()->
           host_var_tracker()->V8ObjectVarForV8Object(instance, object);
     } else if (val->IsArray()) {
       *result = (new ArrayVar())->GetPPVar();
     } else {
       bool was_resource;
-      if (!resource_converter->FromV8Value(
-              val->ToObject(), context, result, &was_resource))
+      if (!resource_converter->FromV8Value(val.As<v8::Object>(), context,
+                                           result, &was_resource))
         return false;
       if (!was_resource) {
         *result = (new DictionaryVar())->GetPPVar();
@@ -268,7 +268,7 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
   *did_create = true;
   if (val->IsObject() || val->IsString()) {
     visited_handles->insert(
-        make_pair(HashedHandle(val->ToObject()),
+        make_pair(HashedHandle(val->ToObject(isolate)),
                   ScopedPPVar(ScopedPPVar::PassRef(), *result)));
   }
   return true;
@@ -391,7 +391,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         return false;
       }
       DCHECK(current_v8->IsObject());
-      v8::Handle<v8::Object> v8_object = current_v8->ToObject();
+      v8::Handle<v8::Object> v8_object = current_v8.As<v8::Object>();
 
       for (DictionaryVar::KeyValueMap::const_iterator iter =
                dict_var->key_value_map().begin();
@@ -480,7 +480,7 @@ bool V8VarConverter::FromV8ValueInternal(
     if (stack.top().sentinel) {
       stack.pop();
       if (current_v8->IsObject())
-        parent_handles.erase(HashedHandle(current_v8->ToObject()));
+        parent_handles.erase(HashedHandle(current_v8.As<v8::Object>()));
       continue;
     } else {
       stack.top().sentinel = true;
@@ -544,7 +544,7 @@ bool V8VarConverter::FromV8ValueInternal(
       }
     } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
       DCHECK(current_v8->IsObject());
-      v8::Handle<v8::Object> v8_object = current_v8->ToObject();
+      v8::Handle<v8::Object> v8_object = current_v8.As<v8::Object>();
       parent_handles.insert(HashedHandle(v8_object));
 
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
@@ -565,11 +565,13 @@ bool V8VarConverter::FromV8ValueInternal(
           return false;
         }
 
+        v8::Handle<v8::String> key_string =
+            key->ToString(context->GetIsolate());
         // Skip all callbacks: crbug.com/139933
-        if (v8_object->HasRealNamedCallbackProperty(key->ToString()))
+        if (v8_object->HasRealNamedCallbackProperty(key_string))
           continue;
 
-        v8::String::Utf8Value name_utf8(key->ToString());
+        v8::String::Utf8Value name_utf8(key_string);
 
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_object->Get(key);

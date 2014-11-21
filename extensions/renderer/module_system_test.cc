@@ -80,13 +80,13 @@ class ModuleSystemTestEnvironment::AssertNatives
   void AssertTrue(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(1, args.Length());
     assertion_made_ = true;
-    failed_ = failed_ || !args[0]->ToBoolean()->Value();
+    failed_ = failed_ || !args[0]->ToBoolean(args.GetIsolate())->Value();
   }
 
   void AssertFalse(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(1, args.Length());
     assertion_made_ = true;
-    failed_ = failed_ || args[0]->ToBoolean()->Value();
+    failed_ = failed_ || args[0]->ToBoolean(args.GetIsolate())->Value();
   }
 
  private:

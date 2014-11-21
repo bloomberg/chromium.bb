@@ -235,7 +235,8 @@ PP_Var CallDeprecatedInternal(PP_Var var,
   v8::Handle<v8::Object> recv =
       accessor.instance()->GetMainWorldContext()->Global();
   if (v8_method_name.As<v8::String>()->Length() != 0) {
-    function = function->Get(v8_method_name)->ToObject();
+    function = function->Get(v8_method_name)
+                   ->ToObject(accessor.instance()->GetIsolate());
     recv = accessor.GetObject();
   }
 

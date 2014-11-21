@@ -32,8 +32,8 @@ void TabsCustomBindings::OpenChannelToTab(
   if (args.Length() >= 3 && args[0]->IsInt32() && args[1]->IsString() &&
       args[2]->IsString()) {
     int tab_id = args[0]->Int32Value();
-    std::string extension_id = *v8::String::Utf8Value(args[1]->ToString());
-    std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
+    std::string extension_id = *v8::String::Utf8Value(args[1]);
+    std::string channel_name = *v8::String::Utf8Value(args[2]);
     int port_id = -1;
     renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
       renderview->GetRoutingID(), tab_id, extension_id, channel_name,

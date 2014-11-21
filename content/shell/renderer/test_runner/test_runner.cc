@@ -2160,7 +2160,7 @@ void TestRunner::SetIsolatedWorldSecurityOrigin(int world_id,
   WebSecurityOrigin web_origin;
   if (origin->IsString()) {
     web_origin = WebSecurityOrigin::createFromString(
-        V8StringToWebString(origin->ToString()));
+        V8StringToWebString(origin.As<v8::String>()));
   }
   web_view_->focusedFrame()->setIsolatedWorldSecurityOrigin(world_id,
                                                             web_origin);
@@ -2479,7 +2479,9 @@ void TestRunner::OverridePreference(const std::string key,
   } else if (key == "WebKitMinimumFontSize") {
     prefs->minimum_font_size = value->Int32Value();
   } else if (key == "WebKitDefaultTextEncodingName") {
-    prefs->default_text_encoding_name = V8StringToWebString(value->ToString());
+    v8::Isolate* isolate = blink::mainThreadIsolate();
+    prefs->default_text_encoding_name =
+        V8StringToWebString(value->ToString(isolate));
   } else if (key == "WebKitJavaScriptEnabled") {
     prefs->java_script_enabled = value->BooleanValue();
   } else if (key == "WebKitSupportsMultipleWindows") {

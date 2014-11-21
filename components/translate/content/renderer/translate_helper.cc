@@ -310,7 +310,7 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
     return std::string();
   }
 
-  v8::Local<v8::String> v8_str = results[0]->ToString();
+  v8::Local<v8::String> v8_str = results[0].As<v8::String>();
   int length = v8_str->Utf8Length() + 1;
   scoped_ptr<char[]> str(new char[length]);
   v8_str->WriteUtf8(str.get(), length);

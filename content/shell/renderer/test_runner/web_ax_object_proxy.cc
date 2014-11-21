@@ -1108,7 +1108,7 @@ v8::Handle<v8::Object> WebAXObjectProxyList::GetOrCreate(
       isolate, new WebAXObjectProxy(object, this)).ToV8();
   if (value_handle.IsEmpty())
     return v8::Handle<v8::Object>();
-  v8::Handle<v8::Object> handle = value_handle->ToObject();
+  v8::Handle<v8::Object> handle = value_handle->ToObject(isolate);
   elements_.Append(handle);
   return handle;
 }
@@ -1120,7 +1120,7 @@ v8::Handle<v8::Object> WebAXObjectProxyList::CreateRoot(
       isolate, new RootWebAXObjectProxy(object, this)).ToV8();
   if (value_handle.IsEmpty())
     return v8::Handle<v8::Object>();
-  v8::Handle<v8::Object> handle = value_handle->ToObject();
+  v8::Handle<v8::Object> handle = value_handle->ToObject(isolate);
   elements_.Append(handle);
   return handle;
 }
