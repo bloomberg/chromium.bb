@@ -12,33 +12,33 @@ function log(str) {
 }
 
 function addEventListeners() {
-    window.addEventListener("keydown", 
+    window.addEventListener("keydown",
     function(e) {
         log("keydown in mainframe: " + e);
     },
-false);
+    false);
 
-    window.frames[0].addEventListener("keydown", 
+    window.frames[0].addEventListener("keydown",
     function(e) {
         log("keydown in subframe: " + e);
     },
-false);
+    false);
 }
 
-function step2() {
+function runTest() {
     addEventListeners();
-    
+
     if (!window.testRunner)
         return;
-        
+
     var iframe = document.getElementById("iframe");
     var x = iframe.offsetParent.offsetLeft + iframe.offsetLeft + iframe.offsetWidth / 2;
     var y = iframe.offsetParent.offsetTop + iframe.offsetTop + iframe.offsetHeight / 2;
-    
+
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
-    
+
     window.frames[0].document.execCommand("InsertText", false, "This sentence should not end with a period.");
     // Move backward by one character.
     eventSender.keyDown("leftArrow");
@@ -49,14 +49,10 @@ function step2() {
     window.testRunner.notifyDone();
 }
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        window.testRunner.waitUntilDone();
-    }
-    window.setTimeout(step2, 200);
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
-
-runTest();
+window.onload = runTest;
 </script>
 </body>

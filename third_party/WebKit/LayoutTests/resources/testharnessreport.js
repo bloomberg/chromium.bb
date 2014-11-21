@@ -72,9 +72,17 @@ add_completion_callback(function (tests, harness_status){
     // Set results element's textContent to the results string
     results.textContent = resultStr;
 
-    // Add results element to document
-    document.body.appendChild(results);
+    function done() {
+        // Add results element to document
+        document.body.appendChild(results);
 
-    if (self.testRunner)
-        testRunner.notifyDone();
+        if (self.testRunner)
+            testRunner.notifyDone();
+    }
+
+    if (!document.body || document.readyState === 'loading') {
+        window.addEventListener('load', done);
+    } else {
+        done();
+    }
 });
