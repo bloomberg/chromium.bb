@@ -152,7 +152,8 @@ sets Weston's idle timeout in seconds. This idle timeout is the time
 after which Weston will enter an "inactive" mode and screen will fade to
 black. Note that a screensaver may also start at this moment after fade-out
 (if enabled in the SCREENSAVER section below), but the current idle-time
-option has nothing to do with screensavers.
+option has nothing to do with screensavers. A value of 0 disables the
+timeout.
 
 .IR Important
 : This option may also be set via Weston's '-i' command
