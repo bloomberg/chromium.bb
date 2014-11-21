@@ -53,7 +53,7 @@ class ATL_NO_VTABLE InputSourceMonitor
   }
 
   void Unadvise() {
-    if (cookie_ == TF_INVALID_COOKIE || !source_)
+    if (cookie_ == TF_INVALID_COOKIE || !source_.get())
       return;
     if (FAILED(source_->UnadviseSink(cookie_)))
       return;
@@ -145,7 +145,7 @@ scoped_ptr<InputSource> InputSource::Create() {
     return scoped_ptr<InputSource>();
   }
   base::win::ScopedComPtr<ITfSource> profiles_source;
-  hr = profiles_source.QueryFrom(profile_manager);
+  hr = profiles_source.QueryFrom(profile_manager.get());
   if (FAILED(hr)) {
     LOG(ERROR) << "QueryFrom to ITfSource failed. hr = " << hr;
     return scoped_ptr<InputSource>();
@@ -158,13 +158,14 @@ scoped_ptr<InputSource> InputSource::Create() {
                << " hr = " << hr;
     return scoped_ptr<InputSource>();
   }
-  if (!monitor->Initialize(profiles_source)) {
+  if (!monitor->Initialize(profiles_source.get())) {
     LOG(ERROR) << "Failed to initialize the monitor.";
     return scoped_ptr<InputSource>();
   }
 
   // Transfer the ownership.
-  return scoped_ptr<InputSource>(new InputSourceImpl(profile_manager, monitor));
+  return scoped_ptr<InputSource>(
+      new InputSourceImpl(profile_manager.get(), monitor));
 }
 
 }  // namespace metro_driver

@@ -249,11 +249,8 @@ HRESULT UIAutomationClient::Context::InstallWindowObserver() {
       event_handler_obj);
 
   result = automation_->AddAutomationEventHandler(
-      UIA_Window_WindowOpenedEventId,
-      root_element,
-      TreeScope_Descendants,
-      cache_request,
-      event_handler);
+      UIA_Window_WindowOpenedEventId, root_element.get(), TreeScope_Descendants,
+      cache_request.get(), event_handler.get());
 
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
@@ -281,9 +278,7 @@ HRESULT UIAutomationClient::Context::RemoveWindowObserver() {
   }
 
   result = automation_->RemoveAutomationEventHandler(
-      UIA_Window_WindowOpenedEventId,
-      root_element,
-      event_handler_);
+      UIA_Window_WindowOpenedEventId, root_element.get(), event_handler_.get());
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
     return result;
@@ -423,9 +418,7 @@ HRESULT UIAutomationClient::Context::InvokeDesiredItem(
 
   result = element->FindFirstBuildCache(
       static_cast<TreeScope>(TreeScope_Children | TreeScope_Descendants),
-      condition,
-      cache_request,
-      target.Receive());
+      condition.get(), cache_request.get(), target.Receive());
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
     return result;
@@ -489,8 +482,9 @@ HRESULT UIAutomationClient::Context::GetInvokableItems(
     return result;
   }
 
-  result = automation_->CreateAndCondition(
-      invokable_condition, control_view_condition, condition.Receive());
+  result = automation_->CreateAndCondition(invokable_condition.get(),
+                                           control_view_condition.get(),
+                                           condition.Receive());
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
     return result;
@@ -506,9 +500,7 @@ HRESULT UIAutomationClient::Context::GetInvokableItems(
 
   result = element->FindAllBuildCache(
       static_cast<TreeScope>(TreeScope_Children | TreeScope_Descendants),
-      condition,
-      cache_request,
-      element_array.Receive());
+      condition.get(), cache_request.get(), element_array.Receive());
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
     return result;

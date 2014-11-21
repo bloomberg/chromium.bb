@@ -176,7 +176,7 @@ class EventSink {
       : cookie_(cookie),
         source_(source) {}
   ~EventSink() {
-    if (!source_ || cookie_ != TF_INVALID_COOKIE)
+    if (!source_.get() || cookie_ != TF_INVALID_COOKIE)
       return;
     source_->UnadviseSink(cookie_);
     cookie_ = TF_INVALID_COOKIE;
@@ -218,7 +218,7 @@ scoped_ptr<EventSink> CreateTextEditSink(ITfContext* context,
 class DocumentBinding {
  public:
   ~DocumentBinding() {
-    if (!document_manager_)
+    if (!document_manager_.get())
       return;
     document_manager_->Pop(TF_POPF_ALL);
   }
@@ -244,7 +244,7 @@ class DocumentBinding {
     scoped_refptr<TextStore> text_store;
     if (!use_null_text_store) {
       text_store = TextStore::Create(window_handle, input_scopes, delegate);
-      if (!text_store) {
+      if (!text_store.get()) {
         LOG(ERROR) << "Failed to create TextStore.";
         return scoped_ptr<DocumentBinding>();
       }
@@ -266,20 +266,20 @@ class DocumentBinding {
     // If null-TextStore is used or |input_scopes| looks like a password field,
     // set special properties to tell IMEs to be disabled.
     if ((use_null_text_store || IsPasswordField(input_scopes)) &&
-        !InitializeDisabledContext(context, client_id)) {
+        !InitializeDisabledContext(context.get(), client_id)) {
       LOG(ERROR) << "InitializeDisabledContext failed.";
       return scoped_ptr<DocumentBinding>();
     }
 
     scoped_ptr<EventSink> text_edit_sink;
     if (!use_null_text_store) {
-      text_edit_sink = CreateTextEditSink(context, text_store);
+      text_edit_sink = CreateTextEditSink(context.get(), text_store.get());
       if (!text_edit_sink) {
         LOG(ERROR) << "CreateTextEditSink failed.";
         return scoped_ptr<DocumentBinding>();
       }
     }
-    hr = document_manager->Push(context);
+    hr = document_manager->Push(context.get());
     if (FAILED(hr)) {
       LOG(ERROR) << "ITfDocumentMgr::Push failed. hr = " << hr;
       return scoped_ptr<DocumentBinding>();
@@ -290,9 +290,7 @@ class DocumentBinding {
                             text_edit_sink.Pass()));
   }
 
-  ITfDocumentMgr* document_manager() const {
-    return document_manager_;
-  }
+  ITfDocumentMgr* document_manager() const { return document_manager_.get(); }
 
   scoped_refptr<TextStore> text_store() const {
     return text_store_;
@@ -326,7 +324,7 @@ class TextServiceImpl : public TextService,
         thread_manager_(thread_manager) {
     DCHECK_NE(TF_CLIENTID_NULL, client_id);
     DCHECK(window_handle != NULL);
-    DCHECK(thread_manager_);
+    DCHECK(thread_manager_.get());
   }
   virtual ~TextServiceImpl() {
     thread_manager_->Deactivate();
@@ -339,8 +337,8 @@ class TextServiceImpl : public TextService,
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
     }
-    TextStore* text_store = current_document_->text_store();
-    if (!text_store)
+    scoped_refptr<TextStore> text_store = current_document_->text_store();
+    if (!text_store.get())
       return;
     text_store->CancelComposition();
   }
@@ -479,15 +477,13 @@ CreateTextService(TextServiceDelegate* delegate, HWND window_handle) {
     LOG(ERROR) << "ITfThreadMgr::Activate failed. hr = " << hr;
     return scoped_ptr<TextService>();
   }
-  if (!InitializeSentenceMode(thread_manager, client_id)) {
+  if (!InitializeSentenceMode(thread_manager.get(), client_id)) {
     LOG(ERROR) << "InitializeSentenceMode failed.";
     thread_manager->Deactivate();
     return scoped_ptr<TextService>();
   }
-  return scoped_ptr<TextService>(new TextServiceImpl(thread_manager,
-                                                     client_id,
-                                                     window_handle,
-                                                     delegate));
+  return scoped_ptr<TextService>(new TextServiceImpl(
+      thread_manager.get(), client_id, window_handle, delegate));
 }
 
 }  // namespace metro_driver

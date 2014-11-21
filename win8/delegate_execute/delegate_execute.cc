@@ -62,8 +62,9 @@ class DelegateExecuteModule
         instance_.ReceiveVoid());
     if (FAILED(hr))
       return hr;
-    hr = ::CoRegisterClassObject(clsid, instance_, CLSCTX_LOCAL_SERVER,
-        REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED, &registration_token_);
+    hr = ::CoRegisterClassObject(clsid, instance_.get(), CLSCTX_LOCAL_SERVER,
+                                 REGCLS_MULTIPLEUSE | REGCLS_SUSPENDED,
+                                 &registration_token_);
     if (FAILED(hr))
       return hr;
 

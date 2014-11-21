@@ -59,7 +59,7 @@ scoped_refptr<TextStore> TextStore::Create(
   }
   base::win::ScopedComPtr<ITfInputScope> input_scope =
       CreteInputScope(input_scopes);
-  if (!input_scope) {
+  if (!input_scope.get()) {
     LOG(ERROR) << "Failed to initialize InputScope.";
     return scoped_refptr<TextStore>();
   }
@@ -72,10 +72,8 @@ scoped_refptr<TextStore> TextStore::Create(
                << hr;
     return scoped_refptr<TextStore>();
   }
-  object->Initialize(window_handle,
-                     category_manager,
-                     display_attribute_manager,
-                     input_scope,
+  object->Initialize(window_handle, category_manager.get(),
+                     display_attribute_manager.get(), input_scope.get(),
                      delegate);
   return scoped_refptr<TextStore>(object);
 }
@@ -98,7 +96,7 @@ STDMETHODIMP TextStore::AdviseSink(REFIID iid,
                                    DWORD mask) {
   if (!IsEqualGUID(iid, IID_ITextStoreACPSink))
     return E_INVALIDARG;
-  if (text_store_acp_sink_) {
+  if (text_store_acp_sink_.get()) {
     if (text_store_acp_sink_.IsSameObject(unknown)) {
       text_store_acp_sink_mask_ = mask;
       return S_OK;
@@ -581,7 +579,7 @@ STDMETHODIMP TextStore::RequestSupportedAttrs(
     const TS_ATTRID* attribute_buffer) {
   if (!attribute_buffer)
     return E_INVALIDARG;
-  if (!input_scope_)
+  if (!input_scope_.get())
     return E_FAIL;
   // We support only input scope attribute.
   for (size_t i = 0; i < attribute_buffer_size; ++i) {
@@ -600,7 +598,7 @@ STDMETHODIMP TextStore::RetrieveRequestedAttrs(
   *attribute_buffer_copied = 0;
   if (!attribute_buffer)
     return E_INVALIDARG;
-  if (!input_scope_)
+  if (!input_scope_.get())
     return E_UNEXPECTED;
   // We support only input scope attribute.
   *attribute_buffer_copied = 0;
@@ -751,14 +749,14 @@ bool TextStore::GetCompositionStatus(
   }
   if (FAILED(context->GetEnd(read_only_edit_cookie, end_range.Receive())))
     return false;
-  if (FAILED(start_to_end_range->ShiftEndToRange(read_only_edit_cookie,
-                                                 end_range, TF_ANCHOR_END))) {
+  if (FAILED(start_to_end_range->ShiftEndToRange(
+          read_only_edit_cookie, end_range.get(), TF_ANCHOR_END))) {
     return false;
   }
 
   base::win::ScopedComPtr<IEnumTfRanges> ranges;
   if (FAILED(track_property->EnumRanges(read_only_edit_cookie, ranges.Receive(),
-                                        start_to_end_range))) {
+                                        start_to_end_range.get()))) {
     return false;
   }
 
@@ -768,7 +766,7 @@ bool TextStore::GetCompositionStatus(
       return true;
     base::win::ScopedVariant value;
     base::win::ScopedComPtr<IEnumTfPropertyValue> enum_prop_value;
-    if (FAILED(track_property->GetValue(read_only_edit_cookie, range,
+    if (FAILED(track_property->GetValue(read_only_edit_cookie, range.get(),
                                         value.Receive()))) {
       return false;
     }
@@ -792,7 +790,7 @@ bool TextStore::GetCompositionStatus(
     }
 
     base::win::ScopedComPtr<ITfRangeACP> range_acp;
-    range_acp.QueryFrom(range);
+    range_acp.QueryFrom(range.get());
     LONG start_pos, length;
     range_acp->GetExtent(&start_pos, &length);
     if (is_composition) {
@@ -879,8 +877,10 @@ bool TextStore::ConfirmComposition() {
 }
 
 void TextStore::SendOnLayoutChange() {
-  if (text_store_acp_sink_ && (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE))
+  if (text_store_acp_sink_.get() &&
+      (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)) {
     text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
+  }
 }
 
 bool TextStore::HasReadLock() const {

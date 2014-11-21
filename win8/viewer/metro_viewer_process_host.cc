@@ -65,7 +65,7 @@ MetroViewerProcessHost::~MetroViewerProcessHost() {
 
   base::ProcessId viewer_process_id = GetViewerProcessId();
   channel_->Close();
-  if (message_filter_) {
+  if (message_filter_.get()) {
     // Wait for the viewer process to go away.
     if (viewer_process_id != base::kNullProcessId) {
       base::ProcessHandle viewer_process = NULL;
@@ -78,7 +78,7 @@ MetroViewerProcessHost::~MetroViewerProcessHost() {
         ::CloseHandle(viewer_process);
       }
     }
-    channel_->RemoveFilter(message_filter_);
+    channel_->RemoveFilter(message_filter_.get());
   }
   instance_ = NULL;
 }
@@ -96,7 +96,7 @@ bool MetroViewerProcessHost::LaunchViewerAndWaitForConnection(
   channel_connected_event_.reset(new base::WaitableEvent(false, false));
 
   message_filter_ = new InternalMessageFilter(this);
-  channel_->AddFilter(message_filter_);
+  channel_->AddFilter(message_filter_.get());
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     base::win::ScopedComPtr<IApplicationActivationManager> activator;
