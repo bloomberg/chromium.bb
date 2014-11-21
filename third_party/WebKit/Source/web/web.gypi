@@ -187,7 +187,6 @@
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',
       'WebNodeList.cpp',
-      'WebNotification.cpp',
       'WebOptionElement.cpp',
       'WebPagePopupImpl.cpp',
       'WebPagePopupImpl.h',

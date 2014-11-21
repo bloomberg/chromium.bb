@@ -71,7 +71,6 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMIDIClient;
 class WebNotificationPermissionCallback;
-class WebNotificationPresenter;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
 class WebSocketHandle;
@@ -329,10 +328,6 @@ public:
 
     // Requests permission to display platform notifications on the origin of this frame.
     virtual void requestNotificationPermission(const WebSecurityOrigin&, WebNotificationPermissionCallback* callback) { }
-
-    // Called to retrieve the provider of desktop notifications.
-    // FIXME: Remove this method once the presenter is obtained through Platform.
-    virtual WebNotificationPresenter* notificationPresenter() { return 0; }
 
 
     // Push API ---------------------------------------------------
