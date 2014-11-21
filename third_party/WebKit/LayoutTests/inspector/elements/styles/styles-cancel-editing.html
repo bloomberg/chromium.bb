@@ -31,6 +31,11 @@ function test()
         function onStyleApplied()
         {
             treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+            InspectorTest.waitForStyleApplied(onStyleReverted);
+        }
+
+        function onStyleReverted()
+        {
             InspectorTest.selectNodeWithId("other", step2);
         }
     }
