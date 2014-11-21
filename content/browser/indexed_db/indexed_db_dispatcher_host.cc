@@ -648,10 +648,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
     const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
     if (info.is_file) {
-      base::FilePath path = base::FilePath::FromUTF16Unsafe(info.file_path);
-      if (!policy->CanReadFile(parent_->ipc_process_id_, path)) {
-        parent_->BadMessageReceived();
-        return;
+      base::FilePath path;
+      if (!info.file_path.empty()) {
+        path = base::FilePath::FromUTF16Unsafe(info.file_path);
+        if (!policy->CanReadFile(parent_->ipc_process_id_, path)) {
+          parent_->BadMessageReceived();
+          return;
+        }
       }
       blob_info[i] =
           IndexedDBBlobInfo(info.uuid, path, info.file_name, info.mime_type);

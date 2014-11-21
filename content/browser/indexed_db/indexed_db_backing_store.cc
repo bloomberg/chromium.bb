@@ -2356,8 +2356,7 @@ bool IndexedDBBackingStore::WriteBlobFile(
 
   FilePath path = GetBlobFileName(database_id, descriptor.key());
 
-  if (descriptor.is_file()) {
-    DCHECK(!descriptor.file_path().empty());
+  if (descriptor.is_file() && !descriptor.file_path().empty()) {
     if (!base::CopyFile(descriptor.file_path(), path))
       return false;
 
@@ -2389,6 +2388,7 @@ bool IndexedDBBackingStore::WriteBlobFile(
     DCHECK(descriptor.url().is_valid());
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
+    // TODO(jsbell): If it's a file, persist last_modified timestamp.
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
@@ -2688,7 +2688,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
       entry.set_release_callback(
           backing_store_->active_blob_registry()->GetFinalReleaseCallback(
               database_id, entry.key()));
-      if (entry.is_file()) {
+      if (entry.is_file() && !entry.file_path().empty()) {
         base::File::Info info;
         if (base::GetFileInfo(entry.file_path(), &info)) {
           // This should always work, but it isn't fatal if it doesn't; it just
@@ -3913,7 +3913,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
         BlobJournalEntryType journal_entry =
             std::make_pair(database_id_, next_blob_key);
         journal.push_back(journal_entry);
-        if (entry.is_file()) {
+        if (entry.is_file() && !entry.file_path().empty()) {
           new_files_to_write->push_back(
               WriteDescriptor(entry.file_path(),
                               next_blob_key,

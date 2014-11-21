@@ -253,6 +253,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
                           base::FilePath(FILE_PATH_LITERAL("path/to/file")),
                           base::UTF8ToUTF16("file name"),
                           base::UTF8ToUTF16("file type")));
+    m_blob_info.push_back(
+        IndexedDBBlobInfo("uuid 5",
+                          base::FilePath(),
+                          base::UTF8ToUTF16("file name"),
+                          base::UTF8ToUTF16("file type")));
     m_value3 = IndexedDBValue("value3", m_blob_info);
 
     m_key1 = IndexedDBKey(99, blink::WebIDBKeyTypeNumber);
@@ -306,9 +311,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
       const IndexedDBBackingStore::Transaction::WriteDescriptor& desc =
           backing_store_->writes()[i];
       const IndexedDBBlobInfo& info = m_blob_info[i];
-      if (desc.is_file() != info.is_file())
-        return false;
-      if (desc.is_file()) {
+      if (desc.is_file() != info.is_file()) {
+        if (!info.is_file() || !info.file_path().empty())
+          return false;
+      } else if (desc.is_file()) {
         if (desc.file_path() != info.file_path())
           return false;
       } else {
