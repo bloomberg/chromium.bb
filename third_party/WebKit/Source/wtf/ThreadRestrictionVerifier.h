@@ -60,7 +60,7 @@ public:
         if (!m_shared)
             return;
 
-        ASSERT(shared != previouslyShared);
+        ASSERT_UNUSED(previouslyShared, shared != previouslyShared);
         // Capture the current thread to verify that subsequent ref/deref happen on this thread.
         m_owningThread = currentThread();
     }

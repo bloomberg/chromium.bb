@@ -1283,10 +1283,7 @@ private:
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {
-#if ENABLE(ASSERT)
-    BaseHeapPage* page = pageHeaderFromObject(this);
-    ASSERT(page->orphaned() || m_magic == magic);
-#endif
+    ASSERT(pageHeaderFromObject(this)->orphaned() || m_magic == magic);
 }
 
 Address HeapObjectHeader::payload()

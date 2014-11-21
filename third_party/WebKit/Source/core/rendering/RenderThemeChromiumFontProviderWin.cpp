@@ -63,7 +63,7 @@ static void getNonClientMetrics(NONCLIENTMETRICS* metrics)
         sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
     metrics->cbSize = size;
     bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS, size, metrics, 0);
-    ASSERT(success);
+    ASSERT_UNUSED(success, success);
 }
 
 // Return the height of system font |font| in pixels. We use this size by

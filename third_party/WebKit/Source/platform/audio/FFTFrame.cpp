@@ -270,27 +270,6 @@ void FFTFrame::multiply(const FFTFrame& frame)
     imagP1[0] = imag0 * imagP2[0];
 }
 
-#ifndef NDEBUG
-void FFTFrame::print()
-{
-    FFTFrame& frame = *this;
-    float* realP = frame.realData();
-    float* imagP = frame.imagData();
-    WTF_LOG(WebAudio, "**** \n");
-    WTF_LOG(WebAudio, "DC = %f : nyquist = %f\n", realP[0], imagP[0]);
-
-    int n = m_FFTSize / 2;
-
-    for (int i = 1; i < n; i++) {
-        double mag = sqrt(realP[i] * realP[i] + imagP[i] * imagP[i]);
-        double phase = atan2(realP[i], imagP[i]);
-
-        WTF_LOG(WebAudio, "[%d] (%f %f)\n", i, mag, phase);
-    }
-    WTF_LOG(WebAudio, "****\n");
-}
-#endif // NDEBUG
-
 } // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

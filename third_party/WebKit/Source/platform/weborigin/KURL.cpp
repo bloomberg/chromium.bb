@@ -673,13 +673,6 @@ bool KURL::isHierarchical() const
         url::IsStandard(m_string.characters16(), m_parsed.scheme);
 }
 
-#ifndef NDEBUG
-void KURL::print() const
-{
-    printf("%s\n", m_string.utf8().data());
-}
-#endif
-
 bool equalIgnoringFragmentIdentifier(const KURL& a, const KURL& b)
 {
     // Compute the length of each URL without its ref. Note that the reference

@@ -172,10 +172,6 @@ public:
 
     const KURL* innerURL() const { return m_innerURL.get(); }
 
-#ifndef NDEBUG
-    void print() const;
-#endif
-
     bool isSafeToSendToAnotherThread() const;
 
 private:

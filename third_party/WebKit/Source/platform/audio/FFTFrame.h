@@ -80,10 +80,6 @@ public:
     void addConstantGroupDelay(double sampleFrameDelay);
     void multiply(const FFTFrame&); // multiplies ourself with frame : effectively operator*=()
 
-#ifndef NDEBUG
-    void print(); // for debugging
-#endif
-
 private:
     void interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double x);
 

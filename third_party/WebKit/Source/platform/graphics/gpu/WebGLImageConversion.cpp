@@ -1414,22 +1414,22 @@ void FormatConverter::convert()
 
     const SrcType *srcRowStart = static_cast<const SrcType*>(m_srcStart);
     DstType* dstRowStart = static_cast<DstType*>(m_dstStart);
-    if (!trivialUnpack && trivialPack) {
+    if (trivialUnpack) {
+        for (size_t i = 0; i < m_height; ++i) {
+            pack<DstFormat, alphaOp>(srcRowStart, dstRowStart, m_width);
+            srcRowStart += srcStrideInElements;
+            dstRowStart += dstStrideInElements;
+        }
+    } else if (trivialPack) {
         for (size_t i = 0; i < m_height; ++i) {
             unpack<SrcFormat>(srcRowStart, dstRowStart, m_width);
             srcRowStart += srcStrideInElements;
             dstRowStart += dstStrideInElements;
         }
-    } else if (!trivialUnpack && !trivialPack) {
+    } else {
         for (size_t i = 0; i < m_height; ++i) {
             unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermediateSrcType*>(m_unpackedIntermediateSrcData.get()), m_width);
             pack<DstFormat, alphaOp>(reinterpret_cast<IntermediateSrcType*>(m_unpackedIntermediateSrcData.get()), dstRowStart, m_width);
-            srcRowStart += srcStrideInElements;
-            dstRowStart += dstStrideInElements;
-        }
-    } else {
-        for (size_t i = 0; i < m_height; ++i) {
-            pack<DstFormat, alphaOp>(srcRowStart, dstRowStart, m_width);
             srcRowStart += srcStrideInElements;
             dstRowStart += dstStrideInElements;
         }
