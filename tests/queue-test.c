@@ -207,7 +207,7 @@ dummy_bind(struct wl_client *client,
 {
 }
 
-TEST(queue)
+TEST(queue_proxy_destroy)
 {
 	struct display *d;
 	const struct wl_interface *dummy_interfaces[] = {
@@ -230,8 +230,26 @@ TEST(queue)
 	client_create(d, client_test_proxy_destroy);
 	display_run(d);
 
+	display_destroy(d);
+}
+
+TEST(queue_multiple_queues)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
+
 	client_create(d, client_test_multiple_queues);
 	display_run(d);
+
+	display_destroy(d);
+}
+
+TEST(queue_roundtrip)
+{
+	struct display *d = display_create();
+
+	test_set_timeout(2);
 
 	client_create(d, client_test_queue_roundtrip);
 	display_run(d);
