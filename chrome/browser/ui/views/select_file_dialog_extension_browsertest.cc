@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // waiting for chrome.test.sendMessage('selection-change-complete').
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                      test_file, owning_window,
-                                     "dialog-ready"));
+                                     "selection-change-complete"));
 
   // Click open button.
   CloseDialog(DIALOG_BTN_OK, owning_window);
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // chrome.test.sendMessage().
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                      test_file, owning_window,
-                                     "dialog-ready"));
+                                     "directory-change-complete"));
 
   // Click save button.
   CloseDialog(DIALOG_BTN_OK, owning_window);
