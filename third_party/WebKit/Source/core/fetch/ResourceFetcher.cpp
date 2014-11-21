@@ -1350,11 +1350,9 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
 
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
+    // We check the URL not to load the resources which are forbidden by the page CSP. This behavior is not specified in the CSP specification yet.
     if (response.wasFetchedViaServiceWorker()) {
-        KURL originalURL = response.url();
-        // FIXME: Use response.originalURLViaServiceWorker() after the chromium side patch will land.
-        if (!response.originalURLViaServiceWorker().isEmpty())
-            originalURL = response.originalURLViaServiceWorker();
+        const KURL& originalURL = response.originalURLViaServiceWorker();
         if (!canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
