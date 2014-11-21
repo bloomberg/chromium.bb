@@ -244,6 +244,13 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, self.interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
+        # Add union containers header file to header_includes rather than
+        # cpp file so that union containers can be used in dictionary headers.
+        union_container_headers = [header for header in include_paths
+                                   if header.find('UnionTypes') > 0]
+        include_paths = [header for header in include_paths
+                         if header not in union_container_headers]
+        template_context['header_includes'].update(union_container_headers)
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(

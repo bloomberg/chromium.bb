@@ -29,6 +29,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.enumOrNullMember');
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
+    shouldBeUndefined('dict.doubleOrStringMember');
     debug('');
 
     debug('Test for setting undefined');
@@ -71,6 +72,7 @@ if (window.internals && internals.dictionaryTest) {
         enumOrNullMember: 'baz',
         objectMember: testObject1,
         objectOrNullMemberWithDefault: testObject2,
+        doubleOrStringMember: 3.14,
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '1');
@@ -91,6 +93,40 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('dict.enumOrNullMember', 'baz');
     shouldBe('dict.objectMember', 'testObject1');
     shouldBe('dict.objectOrNullMemberWithDefault', 'testObject2');
+    shouldBe('dict.doubleOrStringMember', '3.14');
+    debug('');
+
+    debug('Additional test for union type members');
+    dictionaryTest.set({
+        doubleOrStringMember: "foo",
+    });
+    dict = dictionaryTest.get();
+    shouldBeEqualToString('dict.doubleOrStringMember', 'foo');
+    dictionaryTest.set({
+        doubleOrStringMember: {},
+    });
+    dict = dictionaryTest.get();
+    shouldBeEqualToString('dict.doubleOrStringMember', '[object Object]');
+    dictionaryTest.set({
+        doubleOrStringMember: [],
+    });
+    dict = dictionaryTest.get();
+    shouldBeEqualToString('dict.doubleOrStringMember', '');
+    dictionaryTest.set({
+        doubleOrStringMember: null,
+    });
+    dict = dictionaryTest.get();
+    // This behavior doesn't match the spec. The spec says it should be "null"
+    // (of type string). This is an intentional mismatch; however, we might
+    // want to follow the spec at some time.
+    debug('This FAIL is intentional');
+    shouldBeEqualToString('dict.doubleOrStringMember', 'null');
+    dictionaryTest.set({
+        doubleOrStringMember: undefined,
+    });
+    dict = dictionaryTest.get();
+    shouldBeUndefined('dict.doubleOrStringMember');
+
     debug('');
 
     debug('Test for explicit undefined or null, and missing members');

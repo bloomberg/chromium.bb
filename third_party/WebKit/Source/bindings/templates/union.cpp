@@ -137,7 +137,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
     {% endif %}
 }
 
-v8::Handle<v8::Value> toV8({{container.cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const {{container.cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case {{container.cpp_class}}::SpecificTypeNone:

@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
@@ -96,6 +97,10 @@ public:
     bool createMember() const { return m_createMember.get(); }
     void setCreateMember(bool value) { m_createMember = value; }
 
+    bool hasDoubleOrStringMember() const { return !m_doubleOrStringMember.isNull(); }
+    const DoubleOrString& doubleOrStringMember() const { return m_doubleOrStringMember; }
+    void setDoubleOrStringMember(const DoubleOrString& value) { m_doubleOrStringMember = value; }
+
     virtual void trace(Visitor*);
 
 private:
@@ -117,6 +122,7 @@ private:
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;
     Nullable<bool> m_createMember;
+    DoubleOrString m_doubleOrStringMember;
 
     friend class V8TestDictionary;
 };

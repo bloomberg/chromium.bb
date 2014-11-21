@@ -55,7 +55,7 @@ private:
     RefPtr<TestArrayBufferView> m_arrayBufferView;
     Dictionary m_dictionary;
 
-    friend v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8ArrayBufferOrArrayBufferViewOrDictionary final {
@@ -63,7 +63,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl)
@@ -107,7 +107,7 @@ private:
     String m_string;
     double m_unrestrictedDouble;
 
-    friend v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrStringOrUnrestrictedDouble final {
@@ -115,7 +115,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOrUnrestrictedDouble& impl)
@@ -153,7 +153,7 @@ private:
     double m_double;
     String m_string;
 
-    friend v8::Handle<v8::Value> toV8(DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8DoubleOrString final {
@@ -161,7 +161,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, DoubleOrString&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& impl)
@@ -201,7 +201,7 @@ private:
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<NodeList> m_nodeList;
 
-    friend v8::Handle<v8::Value> toV8(NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8NodeOrNodeList final {
@@ -209,7 +209,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, NodeOrNodeList&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& impl)
@@ -253,7 +253,7 @@ private:
     RefPtr<TestArrayBuffer> m_arrayBuffer;
     RefPtr<TestArrayBufferView> m_arrayBufferView;
 
-    friend v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrArrayBufferOrArrayBufferView final {
@@ -261,7 +261,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, StringOrArrayBufferOrArrayBufferView&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBufferOrArrayBufferView& impl)
@@ -299,7 +299,7 @@ private:
     String m_string;
     double m_double;
 
-    friend v8::Handle<v8::Value> toV8(StringOrDouble&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const StringOrDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrDouble final {
@@ -307,7 +307,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, StringOrDouble&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(StringOrDouble&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const StringOrDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& impl)
@@ -347,7 +347,7 @@ private:
     Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
     String m_string;
 
-    friend v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceGarbageCollectedOrString final {
@@ -355,7 +355,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterfaceGarbageCollectedOrString&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl)
@@ -393,7 +393,7 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterface;
     int m_long;
 
-    friend v8::Handle<v8::Value> toV8(TestInterfaceOrLong&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const TestInterfaceOrLong&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrLong final {
@@ -401,7 +401,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterfaceOrLong&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(TestInterfaceOrLong&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const TestInterfaceOrLong&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLong& impl)
@@ -439,7 +439,7 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterface;
     RefPtr<TestInterfaceEmpty> m_testInterfaceEmpty;
 
-    friend v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrTestInterfaceEmpty final {
@@ -447,7 +447,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterfaceOrTestInterfaceEmpty&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrTestInterfaceEmpty& impl)
@@ -487,7 +487,7 @@ private:
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
     TestDictionary m_testDictionary;
 
-    friend v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
@@ -495,7 +495,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl)

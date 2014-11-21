@@ -199,8 +199,9 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             if idl_type.is_nullable:
                 return idl_type.inner_type.name
             return idl_type.name
-        return "Or".join(member_cpp_name(member)
-                         for member in idl_type.member_types)
+        idl_type_name = "Or".join(member_cpp_name(member)
+                                  for member in idl_type.member_types)
+        return 'const %s&' % idl_type_name if used_as_rvalue_type else idl_type_name
 
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
@@ -323,9 +324,12 @@ IdlTypeBase.gc_type = property(gc_type)
 
 def is_traceable(idl_type):
     return (idl_type.is_garbage_collected
-            or idl_type.is_will_be_garbage_collected)
+            or idl_type.is_will_be_garbage_collected
+            or idl_type.is_dictionary)
 
 IdlTypeBase.is_traceable = property(is_traceable)
+IdlUnionType.is_traceable = property(
+    lambda self: any((member_type.is_traceable for member_type in self.member_types)))
 
 
 ################################################################################

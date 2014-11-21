@@ -96,6 +96,7 @@ def member_context(member):
         'is_object': idl_type.name == 'Object',
         'name': member.name,
         'setter_name': setter_name_for_dictionary_member(member),
+        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'v8_default_value': v8_default_value,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             member.extended_attributes, member.name + 'Value',
@@ -136,7 +137,7 @@ def member_impl_context(member, interfaces_info, header_includes):
         return 'm_%s' % cpp_name
 
     def has_method_expression():
-        if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type:
+        if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type or idl_type.is_union_type:
             return '!m_%s.isNull()' % cpp_name
         elif is_object:
             return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(cpp_name)

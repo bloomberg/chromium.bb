@@ -8,6 +8,7 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -65,6 +66,7 @@ private:
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMemberWithDefault;
+    DoubleOrString m_doubleOrStringMember;
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
 };

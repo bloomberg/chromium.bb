@@ -8,6 +8,7 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Node.h"
@@ -98,7 +99,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
     exceptionState.throwTypeError("The provided value is not of type '(ArrayBuffer or ArrayBufferView or Dictionary)'");
 }
 
-v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeNone:
@@ -190,7 +191,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Han
 
 }
 
-v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeNone:
@@ -264,7 +265,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 }
 
-v8::Handle<v8::Value> toV8(DoubleOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const DoubleOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case DoubleOrString::SpecificTypeNone:
@@ -343,7 +344,7 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
     exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
-v8::Handle<v8::Value> toV8(NodeOrNodeList& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const NodeOrNodeList& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case NodeOrNodeList::SpecificTypeNone:
@@ -434,7 +435,7 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Ha
 
 }
 
-v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
@@ -508,7 +509,7 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 }
 
-v8::Handle<v8::Value> toV8(StringOrDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const StringOrDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case StringOrDouble::SpecificTypeNone:
@@ -585,7 +586,7 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::H
 
 }
 
-v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
@@ -663,7 +664,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v
 
 }
 
-v8::Handle<v8::Value> toV8(TestInterfaceOrLong& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestInterfaceOrLong& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case TestInterfaceOrLong::SpecificTypeNone:
@@ -736,7 +737,7 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Handl
     exceptionState.throwTypeError("The provided value is not of type '(TestInterface or TestInterfaceEmpty)'");
 }
 
-v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeNone:
@@ -792,6 +793,7 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestDictionary(Test
 void TestInterfaceWillBeGarbageCollectedOrTestDictionary::trace(Visitor* visitor)
 {
     visitor->trace(m_testInterfaceWillBeGarbageCollected);
+    visitor->trace(m_testDictionary);
 }
 
 void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, ExceptionState& exceptionState)
@@ -815,7 +817,7 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
     exceptionState.throwTypeError("The provided value is not of type '(TestInterfaceWillBeGarbageCollected or TestDictionary)'");
 }
 
-v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (impl.m_type) {
     case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeNone:

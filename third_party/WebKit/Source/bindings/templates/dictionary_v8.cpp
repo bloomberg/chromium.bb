@@ -33,6 +33,9 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
     {% for member in members %}
     v8::Local<v8::Value> {{member.name}}Value = v8Object->Get(v8String(isolate, "{{member.name}}"));
     if (!{{member.name}}Value.IsEmpty() && !isUndefinedOrNull({{member.name}}Value)) {
+    {% if member.use_output_parameter_for_result %}
+        {{member.cpp_type}} {{member.name}};
+    {% endif %}
         {{member.v8_value_to_local_cpp_value}};
     {% if member.enum_validation_expression %}
         String string = {{member.name}};

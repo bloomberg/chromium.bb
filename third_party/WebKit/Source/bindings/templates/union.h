@@ -47,7 +47,7 @@ private:
     {{member.cpp_type}} m_{{member.cpp_name}};
     {% endfor %}
 
-    friend v8::Handle<v8::Value> toV8({{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+    friend v8::Handle<v8::Value> toV8(const {{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8{{container.cpp_class}} final {
@@ -55,7 +55,7 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8({{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const {{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_class}}& impl)

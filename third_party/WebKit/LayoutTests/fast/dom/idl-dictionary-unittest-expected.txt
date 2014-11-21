@@ -21,6 +21,7 @@ PASS dict.enumMemberWithDefault is "foo"
 PASS dict.enumOrNullMember is undefined.
 PASS dict.objectMember is undefined.
 PASS dict.objectOrNullMemberWithDefault is null
+PASS dict.doubleOrStringMember is undefined.
 
 Test for setting undefined
 PASS dict.longMember is undefined.
@@ -56,6 +57,15 @@ PASS dict.enumMemberWithDefault is "bar"
 PASS dict.enumOrNullMember is "baz"
 PASS dict.objectMember is testObject1
 PASS dict.objectOrNullMemberWithDefault is testObject2
+PASS dict.doubleOrStringMember is 3.14
+
+Additional test for union type members
+PASS dict.doubleOrStringMember is "foo"
+PASS dict.doubleOrStringMember is "[object Object]"
+PASS dict.doubleOrStringMember is ""
+This FAIL is intentional
+FAIL dict.doubleOrStringMember should be null (of type string). Was undefined (of type undefined).
+PASS dict.doubleOrStringMember is undefined.
 
 Test for explicit undefined or null, and missing members
 PASS dict.longMember is undefined.

@@ -24,4 +24,5 @@ dictionary InternalDictionary {
     Element? elementOrNullMember;
     object objectMember;
     object? objectOrNullMemberWithDefault = null;
+    (double or DOMString) doubleOrStringMember;
 };

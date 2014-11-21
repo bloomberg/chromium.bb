@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
@@ -49,6 +50,16 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
     if (!doubleOrNullMemberValue.IsEmpty() && !isUndefinedOrNull(doubleOrNullMemberValue)) {
         TONATIVE_VOID_EXCEPTIONSTATE(double, doubleOrNullMember, toDouble(doubleOrNullMemberValue, exceptionState), exceptionState);
         impl.setDoubleOrNullMember(doubleOrNullMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+
+    v8::Local<v8::Value> doubleOrStringMemberValue = v8Object->Get(v8String(isolate, "doubleOrStringMember"));
+    if (!doubleOrStringMemberValue.IsEmpty() && !isUndefinedOrNull(doubleOrStringMemberValue)) {
+        DoubleOrString doubleOrStringMember;
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrString::toImpl(isolate, doubleOrStringMemberValue, doubleOrStringMember, exceptionState), exceptionState);
+        impl.setDoubleOrStringMember(doubleOrStringMember);
     } else if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return;
@@ -225,6 +236,10 @@ void toV8TestDictionary(TestDictionary& impl, v8::Handle<v8::Object> dictionary,
         dictionary->Set(v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl.doubleOrNullMember()));
     } else {
         dictionary->Set(v8String(isolate, "doubleOrNullMember"), v8::Null(isolate));
+    }
+
+    if (impl.hasDoubleOrStringMember()) {
+        dictionary->Set(v8String(isolate, "doubleOrStringMember"), toV8(impl.doubleOrStringMember(), creationContext, isolate));
     }
 
     if (impl.hasElementOrNullMember()) {

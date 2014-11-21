@@ -53,6 +53,8 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
         m_elementOrNullMember = testingDictionary.elementOrNullMember();
     m_objectMember = testingDictionary.objectMember();
     m_objectOrNullMemberWithDefault = testingDictionary.objectOrNullMemberWithDefault();
+    if (testingDictionary.hasDoubleOrStringMember())
+        m_doubleOrStringMember = testingDictionary.doubleOrStringMember();
 }
 
 void DictionaryTest::get(InternalDictionary& result)
@@ -87,6 +89,8 @@ void DictionaryTest::get(InternalDictionary& result)
         result.setElementOrNullMember(m_elementOrNullMember);
     result.setObjectMember(m_objectMember);
     result.setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
+    if (!m_doubleOrStringMember.isNull())
+        result.setDoubleOrStringMember(m_doubleOrStringMember);
 }
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived& derived)
@@ -125,6 +129,7 @@ void DictionaryTest::reset()
     m_elementOrNullMember = nullptr;
     m_objectMember = ScriptValue();
     m_objectOrNullMemberWithDefault = ScriptValue();
+    m_doubleOrStringMember = DoubleOrString();
     m_derivedStringMember = String();
     m_derivedStringMemberWithDefault = String();
 }
