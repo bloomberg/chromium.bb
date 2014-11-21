@@ -11,6 +11,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -229,6 +230,10 @@ int Label::GetBaseline() const {
 }
 
 gfx::Size Label::GetPreferredSize() const {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::GetPreferredSize"));
+
   // Return a size of (0, 0) if the label is not visible and if the
   // collapse_when_hidden_ flag is set.
   // TODO(munjal): This logic probably belongs to the View class. But for now,
@@ -341,6 +346,10 @@ void Label::PaintText(gfx::Canvas* canvas,
 
 gfx::Size Label::GetTextSize() const {
   if (!text_size_valid_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::GetTextSize1"));
+
     // For single-line strings, we supply the largest possible width, because
     // while adding NO_ELLIPSIS to the flags works on Windows for forcing
     // SizeStringInt() to calculate the desired width, it doesn't seem to work
@@ -353,8 +362,15 @@ gfx::Size Label::GetTextSize() const {
     int flags = ComputeDrawStringFlags();
     if (!multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::Canvas::SizeStringInt(
-        layout_text_, font_list_, &w, &h, line_height_, flags);
+    {
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::GetTextSize2"));
+
+      gfx::Canvas::SizeStringInt(layout_text_, font_list_, &w, &h, line_height_,
+                                 flags);
+    }
     text_size_.SetSize(w, h);
     const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(shadows_);
     text_size_.Enlarge(shadow_margin.width(), shadow_margin.height());
