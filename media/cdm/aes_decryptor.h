@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
@@ -25,7 +26,9 @@ namespace media {
 
 // Decrypts an AES encrypted buffer into an unencrypted buffer. The AES
 // encryption must be CTR with a key size of 128bits.
-class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
+class MEDIA_EXPORT AesDecryptor : public MediaKeys,
+                                  public CdmContext,
+                                  public Decryptor {
  public:
   AesDecryptor(const SessionMessageCB& session_message_cb,
                const SessionClosedCB& session_closed_cb,
@@ -53,6 +56,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
                      scoped_ptr<SimpleCdmPromise> promise) override;
   void GetUsableKeyIds(const std::string& web_session_id,
                        scoped_ptr<KeyIdsPromise> promise) override;
+  CdmContext* GetCdmContext() override;
+
+  // CdmContext implementation.
   Decryptor* GetDecryptor() override;
 #if defined(ENABLE_BROWSER_CDMS)
   virtual int GetCdmId() const override;

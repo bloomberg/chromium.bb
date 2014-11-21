@@ -59,6 +59,8 @@ source_set("base") {
     "byte_queue.h",
     "cdm_callback_promise.cc",
     "cdm_callback_promise.h",
+    "cdm_context.cc",
+    "cdm_context.h",
     "cdm_factory.cc",
     "cdm_factory.h",
     "cdm_promise.cc",

@@ -10,6 +10,7 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/render_view_impl.h"
+#include "media/base/cdm_context.h"
 #include "ui/gfx/rect_f.h"
 
 namespace content {
@@ -248,7 +249,7 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
 }
 
 void RendererMediaPlayerManager::SetCdm(int player_id, int cdm_id) {
-  if (cdm_id == media::MediaKeys::kInvalidCdmId) {
+  if (cdm_id == media::CdmContext::kInvalidCdmId) {
     NOTREACHED();
     return;
   }

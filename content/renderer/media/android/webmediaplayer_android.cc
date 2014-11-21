@@ -33,6 +33,7 @@
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
@@ -178,7 +179,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   // Set the initial CDM, if specified.
   if (initial_cdm) {
     web_cdm_ = media::ToWebContentDecryptionModuleImpl(initial_cdm);
-    if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
+    if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
       player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
   }
 }
@@ -1531,7 +1532,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
     // Only browser CDMs have CDM ID. Render side CDMs (e.g. ClearKey CDM) do
     // not have a CDM ID and there is no need to call player_manager_->SetCdm().
-    if (proxy_decryptor_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
+    if (proxy_decryptor_->GetCdmId() != media::CdmContext::kInvalidCdmId)
       player_manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
 
     current_key_system_ = key_system;
@@ -1650,7 +1651,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
         .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
   }
 
-  if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
+  if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
     player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }
 
@@ -1684,7 +1685,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     ContentDecryptionModuleAttached(result, true);
   }
 
-  if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
+  if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
     player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }
 

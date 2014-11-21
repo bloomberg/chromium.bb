@@ -142,6 +142,14 @@ void ProxyMediaKeys::GetUsableKeyIds(const std::string& web_session_id,
   promise->reject(NOT_SUPPORTED_ERROR, 0, "Not yet implemented.");
 }
 
+media::CdmContext* ProxyMediaKeys::GetCdmContext() {
+  return this;
+}
+
+media::Decryptor* ProxyMediaKeys::GetDecryptor() {
+  return NULL;
+}
+
 int ProxyMediaKeys::GetCdmId() const {
   return cdm_id_;
 }

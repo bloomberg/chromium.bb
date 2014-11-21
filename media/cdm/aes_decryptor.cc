@@ -384,6 +384,10 @@ void AesDecryptor::GetUsableKeyIds(const std::string& web_session_id,
   promise->resolve(keyids);
 }
 
+CdmContext* AesDecryptor::GetCdmContext() {
+  return this;
+}
+
 Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }

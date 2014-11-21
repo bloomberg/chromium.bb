@@ -128,7 +128,7 @@ void CdmSessionAdapter::GetUsableKeyIds(
 }
 
 Decryptor* CdmSessionAdapter::GetDecryptor() {
-  return media_keys_->GetDecryptor();
+  return media_keys_->GetCdmContext()->GetDecryptor();
 }
 
 const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
@@ -137,7 +137,7 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 
 #if defined(ENABLE_BROWSER_CDMS)
 int CdmSessionAdapter::GetCdmId() const {
-  return media_keys_->GetCdmId();
+  return media_keys_->GetCdmContext()->GetCdmId();
 }
 #endif  // defined(ENABLE_BROWSER_CDMS)
 

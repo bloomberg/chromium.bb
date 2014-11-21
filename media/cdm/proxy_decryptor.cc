@@ -43,12 +43,12 @@ ProxyDecryptor::~ProxyDecryptor() {
 }
 
 Decryptor* ProxyDecryptor::GetDecryptor() {
-  return media_keys_ ? media_keys_->GetDecryptor() : NULL;
+  return media_keys_ ? media_keys_->GetCdmContext()->GetDecryptor() : NULL;
 }
 
 #if defined(ENABLE_BROWSER_CDMS)
 int ProxyDecryptor::GetCdmId() {
-  return media_keys_->GetCdmId();
+  return media_keys_->GetCdmContext()->GetCdmId();
 }
 #endif
 

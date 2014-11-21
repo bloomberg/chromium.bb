@@ -20,7 +20,7 @@ class Time;
 
 namespace media {
 
-class Decryptor;
+class CdmContext;
 
 template <typename... T>
 class CdmPromiseTemplate;
@@ -34,7 +34,7 @@ typedef CdmPromiseTemplate<KeyIdsVector> KeyIdsPromise;
 //
 // All key operations are called on the renderer thread. Therefore, these calls
 // should be fast and nonblocking; key events should be fired asynchronously.
-class MEDIA_EXPORT MediaKeys {
+class MEDIA_EXPORT MediaKeys{
  public:
   // Reported to UMA, so never reuse a value!
   // Must be kept in sync with blink::WebMediaPlayerClient::MediaKeyErrorCode
@@ -72,11 +72,7 @@ class MEDIA_EXPORT MediaKeys {
   };
 
   static const uint32 kInvalidSessionId = 0;
-#if defined(ENABLE_BROWSER_CDMS)
-  static const int kInvalidCdmId = 0;
-#endif
 
-  MediaKeys();
   virtual ~MediaKeys();
 
   // Provides a server certificate to be used to encrypt messages to the
@@ -121,16 +117,13 @@ class MEDIA_EXPORT MediaKeys {
   virtual void GetUsableKeyIds(const std::string& web_session_id,
                                scoped_ptr<KeyIdsPromise> promise) = 0;
 
-  // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
-  // no Decryptor object is associated. The returned object is only guaranteed
-  // to be valid during the MediaKeys' lifetime.
-  virtual Decryptor* GetDecryptor();
+  // Returns the CdmContext associated with |this|, which must NOT be null.
+  // Usually the CdmContext is owned by |this|. Caller needs to make sure it is
+  // not used after |this| is destructed.
+  virtual CdmContext* GetCdmContext() = 0;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM ID associated with |this|. May be kInvalidCdmId if no CDM
-  // ID is associated.
-  virtual int GetCdmId() const = 0;
-#endif
+ protected:
+  MediaKeys();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaKeys);

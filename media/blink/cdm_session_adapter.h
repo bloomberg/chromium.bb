@@ -20,6 +20,7 @@ class GURL;
 namespace media {
 
 class CdmFactory;
+class Decryptor;
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.

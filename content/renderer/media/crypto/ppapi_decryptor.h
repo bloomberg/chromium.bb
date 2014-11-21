@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
@@ -29,7 +30,9 @@ class PepperPluginInstanceImpl;
 // PpapiDecryptor implements media::MediaKeys and media::Decryptor and forwards
 // all calls to the PluginInstance.
 // This class should always be created & destroyed on the main renderer thread.
-class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
+class PpapiDecryptor : public media::MediaKeys,
+                       public media::CdmContext,
+                       public media::Decryptor {
  public:
   static scoped_ptr<PpapiDecryptor> Create(
       const std::string& key_system,
@@ -66,6 +69,9 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
   void GetUsableKeyIds(const std::string& web_session_id,
                        scoped_ptr<media::KeyIdsPromise> promise) override;
+  CdmContext* GetCdmContext() override;
+
+  // media::CdmContext implementation.
   Decryptor* GetDecryptor() override;
 
   // media::Decryptor implementation.

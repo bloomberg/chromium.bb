@@ -195,6 +195,10 @@ void PpapiDecryptor::GetUsableKeyIds(const std::string& web_session_id,
   CdmDelegate()->GetUsableKeyIds(web_session_id, promise.Pass());
 }
 
+media::CdmContext* PpapiDecryptor::GetCdmContext() {
+  return this;
+}
+
 media::Decryptor* PpapiDecryptor::GetDecryptor() {
   return this;
 }
