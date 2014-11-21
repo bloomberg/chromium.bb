@@ -47,7 +47,16 @@ function testFile()
     debug("");
     debug("testFile():");
     evalAndLog("file = fileInput.files[0]");
-    validateResult("file", fileValidation, testFileList);
+    validateResult("file", fileValidation, testNewFile);
+}
+
+var newFileValidation = ".name == newFile.name";
+function testNewFile()
+{
+    debug("");
+    debug("testNewFile():");
+    evalAndLog("newFile = new File([test_content], 'filename', {type:'text/plain'})");
+    validateResult("newFile", newFileValidation, testFileList);
 }
 
 var fileListValidation = "[1].name == fileInput.files[1].name";
@@ -90,6 +99,9 @@ function testCursor()
             shouldBeTrue("cursor.value == 'value'");
             break;
           case 4:
+            shouldBeTrue("cursor.value" + newFileValidation);
+            break;
+          case 5:
             shouldBeNull("cursor");
             finishJSTest();
             return;
