@@ -5417,6 +5417,7 @@
           # removed as code is fixed.
           4100, # Unreferenced formal parameter
           4121, # Alignment of a member was sensitive to packing
+          4189, # Local variable is initialized but not referenced
           4244, # Conversion from 'type1' to 'type2', possible loss of data
           4481, # Nonstandard extension used: override specifier 'keyword'
           4505, # Unreferenced local function has been removed
