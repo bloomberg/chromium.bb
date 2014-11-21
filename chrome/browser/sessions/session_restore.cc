@@ -28,6 +28,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_utils.h"
+#include "chrome/browser/sessions/tab_loader_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -52,7 +53,6 @@
 #include "content/public/common/page_state.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
-#include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -74,14 +74,10 @@ std::set<SessionRestoreImpl*>* active_session_restorers = NULL;
 
 // TabLoader ------------------------------------------------------------------
 
-// Initial delay (see class decription for details).
-static const int kInitialDelayTimerMS = 100;
-
-// TabLoader is responsible for loading tabs after session restore creates
-// tabs. New tabs are loaded after the current tab finishes loading, or a delay
-// is reached (initially kInitialDelayTimerMS). If the delay is reached before
-// a tab finishes loading a new tab is loaded and the time of the delay
-// doubled.
+// TabLoader is responsible for loading tabs after session restore has finished
+// creating all the tabs. Tabs are loaded after a previously tab finishes
+// loading or a timeout is reached. If the timeout is reached before a tab
+// finishes loading the timeout delay is doubled.
 //
 // TabLoader keeps a reference to itself when it's loading. When it has finished
 // loading, it drops the reference. If another profile is restored while the
@@ -91,8 +87,8 @@ static const int kInitialDelayTimerMS = 100;
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
 class TabLoader : public content::NotificationObserver,
-                  public net::NetworkChangeNotifier::ConnectionTypeObserver,
-                  public base::RefCounted<TabLoader> {
+                  public base::RefCounted<TabLoader>,
+                  public TabLoaderCallback {
  public:
   // Retrieves a pointer to the TabLoader instance shared between profiles, or
   // creates a new TabLoader if it doesn't exist. If a TabLoader is created, its
@@ -111,6 +107,9 @@ class TabLoader : public content::NotificationObserver,
   // This must be invoked once to start loading.
   void StartLoading();
 
+  // TabLoaderCallback:
+  void SetTabLoadingEnabled(bool enable_tab_loading) override;
+
  private:
   friend class base::RefCounted<TabLoader>;
 
@@ -125,23 +124,23 @@ class TabLoader : public content::NotificationObserver,
   // otherwise |force_load_timer_| is restarted.
   void LoadNextTab();
 
+  // Starts a timer to load load the next tab once expired before the current
+  // tab loading is finished.
+  void StartTimer();
+
   // NotificationObserver method. Removes the specified tab and loads the next
   // tab.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
-  void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
-
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
   // from.
   void RemoveTab(NavigationController* tab);
 
-  // Invoked from |force_load_timer_|. Doubles |force_load_delay_| and invokes
-  // |LoadNextTab| to load the next tab
+  // Invoked from |force_load_timer_|. Doubles |force_load_delay_multiplier_|
+  // and invokes |LoadNextTab| to load the next tab
   void ForceLoadTimerFired();
 
   // Returns the RenderWidgetHost associated with a tab if there is one,
@@ -157,14 +156,15 @@ class TabLoader : public content::NotificationObserver,
   // TODO(sky): remove. For debugging 368236.
   void CheckNotObserving(NavigationController* controller);
 
+  scoped_ptr<TabLoaderDelegate> delegate_;
+
   content::NotificationRegistrar registrar_;
 
-  // Current delay before a new tab is loaded. See class description for
-  // details.
-  int64 force_load_delay_;
+  // The delay timer multiplier. See class description for details.
+  size_t force_load_delay_multiplier_;
 
-  // Has Load been invoked?
-  bool loading_;
+  // True if the tab loading is enabled.
+  bool loading_enabled_;
 
   // Have we recorded the times for a foreground tab load?
   bool got_first_foreground_load_;
@@ -236,29 +236,37 @@ void TabLoader::StartLoading() {
   // already have started loading. In that case, the tabs scheduled for loading
   // by this profile are already in the loading queue, and they will get loaded
   // eventually.
-  if (loading_)
+  if (delegate_)
     return;
+
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
       content::NotificationService::AllSources());
   this_retainer_ = this;
-#if defined(OS_CHROMEOS)
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    loading_ = true;
-    LoadNextTab();
-  } else {
-    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  // Create a TabLoaderDelegate which will allow OS specific behavior for tab
+  // loading.
+  if (!delegate_) {
+    delegate_ = TabLoaderDelegate::Create(this);
+    // There is already at least one tab loading (the active tab). As such we
+    // only have to start the timeout timer here.
+    StartTimer();
   }
-#else
-  loading_ = true;
-  LoadNextTab();
-#endif
+}
+
+void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
+  if (enable_tab_loading == loading_enabled_)
+    return;
+  loading_enabled_ = enable_tab_loading;
+  if (loading_enabled_)
+    LoadNextTab();
+  else
+    force_load_timer_.Stop();
 }
 
 TabLoader::TabLoader(base::TimeTicks restore_started)
-    : force_load_delay_(kInitialDelayTimerMS),
-      loading_(false),
+    : force_load_delay_multiplier_(1),
+      loading_enabled_(true),
       got_first_foreground_load_(false),
       got_first_paint_(false),
       tab_count_(0),
@@ -269,11 +277,13 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
 TabLoader::~TabLoader() {
   DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
           tabs_loading_.empty() && tabs_to_load_.empty());
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   shared_tab_loader = NULL;
 }
 
 void TabLoader::LoadNextTab() {
+  // LoadNextTab should only get called after we have started the tab
+  // loading.
+  CHECK(delegate_);
   if (!tabs_to_load_.empty()) {
     NavigationController* tab = tabs_to_load_.front();
     DCHECK(tab);
@@ -299,14 +309,8 @@ void TabLoader::LoadNextTab() {
     }
   }
 
-  if (!tabs_to_load_.empty()) {
-    force_load_timer_.Stop();
-    // Each time we load a tab we also set a timer to force us to start loading
-    // the next tab if this one doesn't load quickly enough.
-    force_load_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(force_load_delay_),
-        this, &TabLoader::ForceLoadTimerFired);
-  }
+  if (!tabs_to_load_.empty())
+    StartTimer();
 
   // When the session restore is done synchronously, notification is sent from
   // SessionRestoreImpl::Restore .
@@ -316,6 +320,14 @@ void TabLoader::LoadNextTab() {
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   }
+}
+
+void TabLoader::StartTimer() {
+  force_load_timer_.Stop();
+  force_load_timer_.Start(FROM_HERE,
+                          delegate_->GetTimeoutBeforeLoadingNextTab() *
+                              force_load_delay_multiplier_,
+                          this, &TabLoader::ForceLoadTimerFired);
 }
 
 void TabLoader::Observe(int type,
@@ -426,18 +438,6 @@ void TabLoader::Observe(int type,
     this_retainer_ = NULL;
 }
 
-void TabLoader::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
-    if (!loading_) {
-      loading_ = true;
-      LoadNextTab();
-    }
-  } else {
-    loading_ = false;
-  }
-}
-
 void TabLoader::RemoveTab(NavigationController* tab) {
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     content::Source<WebContents>(tab->GetWebContents()));
@@ -457,7 +457,7 @@ void TabLoader::RemoveTab(NavigationController* tab) {
 }
 
 void TabLoader::ForceLoadTimerFired() {
-  force_load_delay_ *= 2;
+  force_load_delay_multiplier_ *= 2;
   LoadNextTab();
 }
 
@@ -484,7 +484,7 @@ void TabLoader::RegisterForNotifications(NavigationController* controller) {
 
 void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
   RemoveTab(tab);
-  if (loading_)
+  if (delegate_ && loading_enabled_)
     LoadNextTab();
   if (tabs_loading_.empty() && tabs_to_load_.empty()) {
     base::TimeDelta time_to_load =
@@ -743,7 +743,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   Profile* profile() { return profile_; }
 
  private:
-  // Invoked when beginning to create new tabs. Resets the tab_loader_.
+  // Invoked when beginning to create new tabs. Resets the |tab_loader_|.
   void StartTabCreation() {
     tab_loader_ = TabLoader::GetTabLoader(restore_started_);
   }
@@ -859,9 +859,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // After the for loop, this contains the browser to activate, if one of the
     // windows has the same id as specified in active_window_id.
     Browser* browser_to_activate = NULL;
-#if defined(OS_WIN)
-    int selected_tab_to_activate = -1;
-#endif
 
     // Determine if there is a visible window.
     bool has_visible_browser = false;
@@ -922,12 +919,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 : std::max(0,
                                     std::min((*i)->selected_tab_index,
                                     static_cast<int>((*i)->tabs.size()) - 1));
-      if ((*i)->window_id.id() == active_window_id) {
+      if ((*i)->window_id.id() == active_window_id)
         browser_to_activate = browser;
-#if defined(OS_WIN)
-        selected_tab_to_activate = selected_tab_index;
-#endif
-      }
+
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
                            selected_tab_index);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
@@ -935,9 +929,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // close the whole window.
       if (close_active_tab)
         chrome::CloseWebContents(browser, active_tab, true);
-#if defined(OS_WIN)
-        selected_tab_to_activate = -1;
-#endif
     }
 
     if (browser_to_activate && browser_to_activate->is_type_tabbed())
