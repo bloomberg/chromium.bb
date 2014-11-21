@@ -10,8 +10,9 @@ Security Critical: no
 
 Description:
 Android Platform engineering tools, specifically stack symbolization scripts
-and a jar containing the AOSP framework to build the Android WebView
-glue layer against.
+and a jar containing the AOSP framework to compile the Android WebView
+glue layer against. The sources used to build the AOSP framework jar can be
+checked out using repo on the corresponding manifest file.
 
 Local Modifications:
 Only picked the few scripts needed by chrome.
