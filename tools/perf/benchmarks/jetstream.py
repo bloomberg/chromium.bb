@@ -83,6 +83,7 @@ class Jetstream(benchmark.Benchmark):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/jetstream.json',
         make_javascript_deterministic=False,
-        file_path=os.path.abspath(__file__))
+        file_path=os.path.abspath(__file__),
+        bucket=page_set.INTERNAL_BUCKET)
     ps.AddPageWithDefaultRunNavigate('http://browserbench.org/JetStream/')
     return ps
