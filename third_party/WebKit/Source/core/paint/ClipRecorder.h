@@ -51,6 +51,10 @@ public:
     // certain column.
     // FIXME: The BorderRadiusClippingRule parameter is really useless now. If we want to skip self,
     // why not just supply the parent layer as the first parameter instead?
+    // FIXME: The ClipRect passed is in visual coordinates (not flow thread coordinates), but at the
+    // same time we pass a fragmentOffset, so that we can translate from flow thread coordinates to
+    // visual coordinates. This may look rather confusing/redundant, but it is needed for rounded
+    // border clipping. Would be nice to clean up this.
     explicit ClipRecorder(const RenderLayerModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&, const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
 
     ~ClipRecorder();

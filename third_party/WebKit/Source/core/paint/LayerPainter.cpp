@@ -71,35 +71,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
 
     // PaintLayerAppliedTransform is used in RenderReplica, to avoid applying the transform twice.
     if (m_renderLayer.paintsWithTransform(paintingInfo.paintBehavior) && !(paintFlags & PaintLayerAppliedTransform)) {
-        TransformationMatrix layerTransform = m_renderLayer.renderableTransform(paintingInfo.paintBehavior);
-        // If the transform can't be inverted, then don't paint anything.
-        if (!layerTransform.isInvertible())
-            return;
-
-        if (m_renderLayer.enclosingPaginationLayer()) {
-            // FIXME: unify this one-off path with the code below.
-            paintTransformedLayerIntoFragments(context, paintingInfo, paintFlags);
-            return;
-        }
-
-        // Make sure the parent's clip rects have been calculated.
-        ClipRect clipRect = paintingInfo.paintDirtyRect;
-
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (m_renderLayer.parent()) {
-            ClipRectsContext clipRectsContext(paintingInfo.rootLayer, (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize);
-            if (shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()) == IgnoreOverflowClip)
-                clipRectsContext.setIgnoreOverflowClip();
-            clipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
-            clipRect.intersect(paintingInfo.paintDirtyRect);
-
-            if (needsToClip(paintingInfo, clipRect)) {
-                clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent()->renderer(), context, DisplayItem::ClipLayerParent, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
-            }
-        }
-
-        paintLayerByApplyingTransform(context, paintingInfo, paintFlags);
-
+        paintLayerWithTransform(context, paintingInfo, paintFlags);
         return;
     }
 
@@ -371,13 +343,72 @@ bool LayerPainter::atLeastOneFragmentIntersectsDamageRect(LayerFragments& fragme
     return false;
 }
 
-void LayerPainter::paintLayerByApplyingTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& translationOffset)
+void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+{
+    TransformationMatrix layerTransform = m_renderLayer.renderableTransform(paintingInfo.paintBehavior);
+    // If the transform can't be inverted, then don't paint anything.
+    if (!layerTransform.isInvertible())
+        return;
+
+    // FIXME: We should make sure that we don't walk past paintingInfo.rootLayer here.
+    // m_renderLayer may be the "root", and then we should avoid looking at its parent.
+    RenderLayer* parentLayer = m_renderLayer.parent();
+
+    ClipRect clipRect(LayoutRect::infiniteRect());
+    if (parentLayer) {
+        // Calculate the clip rectangle that the ancestors establish.
+        ClipRectsContext clipRectsContext(paintingInfo.rootLayer, (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize);
+        if (shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()) == IgnoreOverflowClip)
+            clipRectsContext.setIgnoreOverflowClip();
+        clipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
+    }
+
+    RenderLayer* paginationLayer = m_renderLayer.enclosingPaginationLayer();
+    LayerFragments fragments;
+    if (paginationLayer) {
+        // FIXME: This is a mess. Look closely at this code and the code in RenderLayer and fix any
+        // issues in it & refactor to make it obvious from code structure what it does and that it's
+        // correct.
+        ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
+        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer());
+        // Calculate the transformed bounding box in the current coordinate space, to figure out
+        // which fragmentainers (e.g. columns) we need to visit.
+        LayoutRect transformedExtent = RenderLayer::transparencyClipBox(&m_renderLayer, paginationLayer, RenderLayer::PaintingTransparencyClipBox, RenderLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+        // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer here.
+        paginationLayer->collectFragments(fragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0, paintingInfo.subPixelAccumulation, &transformedExtent);
+    } else {
+        // We don't need to collect any fragments in the regular way here. We have already
+        // calculated a clip rectangle for the ancestry if it was needed, and clipping this
+        // layer is something that can be done further down the path, when the transform has
+        // been applied.
+        LayerFragment fragment;
+        fragment.backgroundRect = paintingInfo.paintDirtyRect;
+        fragments.append(fragment);
+    }
+
+    for (const auto& fragment: fragments) {
+        OwnPtr<ClipRecorder> clipRecorder;
+        if (parentLayer) {
+            ClipRect clipRectForFragment(clipRect);
+            clipRectForFragment.moveBy(fragment.paginationOffset);
+            clipRectForFragment.intersect(fragment.backgroundRect);
+            if (clipRectForFragment.isEmpty())
+                continue;
+            if (needsToClip(paintingInfo, clipRectForFragment))
+                clipRecorder = adoptPtr(new ClipRecorder(parentLayer->renderer(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
+        }
+
+        paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
+    }
+}
+
+void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& fragmentTranslation)
 {
     // This involves subtracting out the position of the layer in our current coordinate space, but preserving
     // the accumulated error for sub-pixel layout.
     LayoutPoint delta;
     m_renderLayer.convertToLayerCoords(paintingInfo.rootLayer, delta);
-    delta.moveBy(translationOffset);
+    delta.moveBy(fragmentTranslation);
     TransformationMatrix transform(m_renderLayer.renderableTransform(paintingInfo.paintBehavior));
     IntPoint roundedDelta = roundedIntPoint(delta);
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
@@ -722,42 +753,6 @@ void LayerPainter::paintOverlayScrollbars(GraphicsContext* context, const Layout
     paintLayer(context, paintingInfo, PaintLayerPaintingOverlayScrollbars);
 
     m_renderLayer.setContainsDirtyOverlayScrollbars(false);
-}
-
-void LayerPainter::paintTransformedLayerIntoFragments(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
-{
-    LayerFragments enclosingPaginationFragments;
-    LayoutPoint offsetOfPaginationLayerFromRoot;
-    LayoutRect transformedExtent = RenderLayer::transparencyClipBox(&m_renderLayer, m_renderLayer.enclosingPaginationLayer(), RenderLayer::PaintingTransparencyClipBox, RenderLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
-    m_renderLayer.enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
-        (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize,
-        shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()), &offsetOfPaginationLayerFromRoot, paintingInfo.subPixelAccumulation, &transformedExtent);
-
-    for (size_t i = 0; i < enclosingPaginationFragments.size(); ++i) {
-        const LayerFragment& fragment = enclosingPaginationFragments.at(i);
-
-        // Apply the page/column clip for this fragment, as well as any clips established by layers in between us and
-        // the enclosing pagination layer.
-        LayoutRect clipRect = fragment.backgroundRect.rect();
-
-        // Now compute the clips within a given fragment
-        if (m_renderLayer.parent() != m_renderLayer.enclosingPaginationLayer()) {
-            m_renderLayer.enclosingPaginationLayer()->convertToLayerCoords(paintingInfo.rootLayer, offsetOfPaginationLayerFromRoot);
-
-            ClipRectsContext clipRectsContext(m_renderLayer.enclosingPaginationLayer(), (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize);
-            if (shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()) == IgnoreOverflowClip)
-                clipRectsContext.setIgnoreOverflowClip();
-            LayoutRect parentClipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext).rect();
-            parentClipRect.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot);
-            clipRect.intersect(parentClipRect);
-        }
-
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (needsToClip(paintingInfo, clipRect))
-            clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerFragmentParent, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
-
-        paintLayerByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
-    }
 }
 
 } // namespace blink
