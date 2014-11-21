@@ -602,7 +602,8 @@ _Same(_compile, 'BrowseInformation',
 _Same(_compile, 'CallingConvention',
       _Enumeration(['Cdecl',  # /Gd
                     'FastCall',  # /Gr
-                    'StdCall']))  # /Gz
+                    'StdCall',  # /Gz
+                    'VectorCall']))  # /Gv
 _Same(_compile, 'CompileAs',
       _Enumeration(['Default',
                     'CompileAsC',  # /TC

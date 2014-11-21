@@ -43,5 +43,24 @@
         'calling-convention-stdcall.def',
       ],
     },
-  ]
+  ],
+  'conditions': [
+    ['MSVS_VERSION[0:4]>="2013"', {
+      'targets': [
+        {
+          'target_name': 'test_vectorcall',
+          'type': 'loadable_module',
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'CallingConvention': 3,
+            },
+          },
+          'sources': [
+            'calling-convention.cc',
+            'calling-convention-vectorcall.def',
+          ],
+        },
+      ],
+    }],
+  ],
 }
