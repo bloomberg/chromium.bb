@@ -28,15 +28,13 @@
     GarbageCollected,
     NoInterfaceObject,
 ] interface Geolocation {
-    // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
     [LogActivity] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
-                                     optional Dictionary options);
+                                     optional PositionOptions options);
 
-    // FIXME: should be: PositionOptions options: need PositionOptions.idl and dictionary http:/crbug.com/321462
     [LogActivity] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
-                                optional Dictionary options);
+                                optional PositionOptions options);
 
     void clearWatch(long watchID);
 };

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCallback, PositionErrorCallback* errorCallback, PositionOptions* options)
+GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCallback, PositionErrorCallback* errorCallback, const PositionOptions& options)
     // FIXME : m_geolocation should be removed, it makes circular dependancy.
     : m_geolocation(geolocation)
     , m_successCallback(successCallback)
@@ -22,7 +22,6 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCall
 {
     ASSERT(m_geolocation);
     ASSERT(m_successCallback);
-    ASSERT(m_options);
 }
 
 void GeoNotifier::trace(Visitor* visitor)
@@ -30,7 +29,6 @@ void GeoNotifier::trace(Visitor* visitor)
     visitor->trace(m_geolocation);
     visitor->trace(m_successCallback);
     visitor->trace(m_errorCallback);
-    visitor->trace(m_options);
     visitor->trace(m_fatalError);
 }
 
@@ -67,7 +65,7 @@ void GeoNotifier::runErrorCallback(PositionError* error)
 
 void GeoNotifier::startTimer()
 {
-    m_timer.startOneShot(m_options->timeout() / 1000.0, FROM_HERE);
+    m_timer.startOneShot(m_options.timeout() / 1000.0, FROM_HERE);
 }
 
 void GeoNotifier::stopTimer()
