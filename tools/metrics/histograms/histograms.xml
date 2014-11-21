@@ -32165,7 +32165,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
     a read-only entry stream is closed.
@@ -32173,7 +32173,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.CreationToIndex" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index has
     been loaded from disk.
@@ -32181,7 +32181,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.CreationToIndexFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index fails
     to load.
@@ -32190,7 +32190,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.EntryCreatedAndStream2Omitted"
     enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon creation of a new cache entry, the file for stream 2 was
     omitted since that stream was empty.
@@ -32198,7 +32198,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.EntryCreationResult" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For entry creation operations that were sent to the disk, the result of
     creation.
@@ -32206,13 +32206,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.EntryCreationTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.EntryOpenedAndStream2Removed"
     enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon opening of an existing cache entry, stream 2 was empty and the
     file for that stream was therefore removed.
@@ -32220,7 +32220,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.EntryOperationsPending">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that operations are run, the number of pending operations on a
     particular entry.
@@ -32228,72 +32228,72 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.EntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.Result" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The result of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.SizeOfEvicted" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.SizeOfEvicted2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.SizeWhenDone" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.SizeWhenDone2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.TimeToDone" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.Eviction.TimeToSelectEntries"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.FileDescriptorLimitHard">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (This
@@ -32302,7 +32302,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.FileDescriptorLimitSoft">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (We can
@@ -32312,7 +32312,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
     the browser is launched.
@@ -32320,7 +32320,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.GlobalOpenEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
     entry is opened whenever a caller asks to open it to read or write cache
@@ -32330,7 +32330,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.HeaderSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
     the headers are written or rewritten.
@@ -32339,7 +32339,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.HeaderSizeChange"
     enum="SimpleCacheHeaderSizeChange">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
     a write operation occurs on the header stream.  (This includes the initial
@@ -32348,7 +32348,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.HeaderSizeDecreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -32356,7 +32356,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.HeaderSizeDecreasePercentage" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -32364,7 +32364,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -32372,7 +32372,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.HeaderSizeIncreasePercentage" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -32380,22 +32380,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexCreatedEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexEntriesLoaded">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexEntriesRestored">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Number of entries restored from disk when there was no index or the index
     was corrupted.
@@ -32403,14 +32403,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.IndexFileStateOnLoad" enum="SimpleIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The state the index file is at when an attempt is made to load from it.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexInitializationWaiters">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
@@ -32419,24 +32419,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.IndexInitializeMethod"
     enum="SimpleCacheIndexInitializeMethod">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexLoadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexNumEntriesOnWrite">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.IndexRestoreTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
     iterating directory entries.
@@ -32445,7 +32445,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.IndexWriteInterval.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the background.
   </summary>
@@ -32453,7 +32453,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.IndexWriteInterval.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the foreground.
   </summary>
@@ -32461,7 +32461,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.IndexWriteToDiskTime.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     background, measured starting at the beginning of the write on the callback
@@ -32471,7 +32471,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.IndexWriteToDiskTime.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     foreground, measured starting at the beginning of the write on the callback
@@ -32480,14 +32480,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.LastClusterLossPercent" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
     cluster loss, the unused disk space in the last 4096 byte cluster of the
@@ -32496,7 +32496,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.LastClusterSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
@@ -32505,7 +32505,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
   </summary>
@@ -32513,7 +32513,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.ReadIsParallelizable"
     enum="SimpleCacheReadParallelizable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
     previous Read operation.
@@ -32521,12 +32521,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.ReadResult" enum="SimpleCacheReadResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
     also contains a CRC.
@@ -32535,7 +32535,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCheckEOFResult"
     enum="SimpleCacheSyncCheckEOFResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
     entry.
@@ -32544,7 +32544,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCloseResult"
     enum="SimpleCacheSyncCloseResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
   </summary>
@@ -32552,7 +32552,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreatePlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -32561,7 +32561,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -32570,7 +32570,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreatePlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not yet initialized.
@@ -32579,7 +32579,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
@@ -32588,7 +32588,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreateResult_WithIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has already initialized.
@@ -32597,7 +32597,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncCreateResult_WithoutIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has not yet initialized.
@@ -32605,7 +32605,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.App.SyncOpenEntryAge" units="hours">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The age of the entry (time since last modified), when opened at the
     synchronous layer.
@@ -32614,7 +32614,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenPlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -32623,7 +32623,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -32632,7 +32632,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenPlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not initialized.
@@ -32641,7 +32641,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenResult"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry.
@@ -32650,7 +32650,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenResult_WithIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has already initialized.
@@ -32659,7 +32659,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncOpenResult_WithoutIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has not yet initialized.
@@ -32668,7 +32668,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.SyncWriteResult"
     enum="SimpleCacheSyncWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
   </summary>
@@ -32676,7 +32676,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.App.WriteDependencyType"
     enum="SimpleCacheWriteDependencyType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
     particularly in the aspect of its possibility to run in parallel.
@@ -32688,12 +32688,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
     return&quot;, which previously showed up as &quot;success&quot;.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.App.WriteResult2" enum="SimpleCacheWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
@@ -32701,7 +32701,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
     a read-only entry stream is closed.
@@ -32712,7 +32712,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index has
     been loaded from disk.
@@ -32723,7 +32723,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index fails
     to load.
@@ -32734,7 +32734,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For entry creation operations that were sent to the disk, the result of
     creation.
@@ -32745,7 +32745,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
@@ -32753,7 +32753,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that operations are run, the number of pending operations on a
     particular entry.
@@ -32764,7 +32764,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
@@ -32772,7 +32772,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
@@ -32780,7 +32780,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
@@ -32788,7 +32788,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
@@ -32798,7 +32798,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
@@ -32808,7 +32808,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The result of an eviction.</summary>
 </histogram>
 
@@ -32816,7 +32816,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
@@ -32824,7 +32824,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
@@ -32832,7 +32832,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
@@ -32840,7 +32840,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
@@ -32848,7 +32848,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
@@ -32856,7 +32856,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
@@ -32864,7 +32864,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (This
@@ -32876,7 +32876,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (We can
@@ -32889,7 +32889,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
     the browser is launched.
@@ -32900,7 +32900,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
     entry is opened whenever a caller asks to open it to read or write cache
@@ -32913,7 +32913,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
     the headers are written or rewritten.
@@ -32925,7 +32925,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
     a write operation occurs on the header stream.  (This includes the initial
@@ -32937,7 +32937,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -32948,7 +32948,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -32959,7 +32959,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -32970,7 +32970,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -32978,7 +32978,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.CheckCRCResult" enum="CheckCRCResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
     a read-only entry stream is closed.
@@ -32986,7 +32985,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.CreationToIndex" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index has
     been loaded from disk.
@@ -32994,7 +32993,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.CreationToIndexFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index fails
     to load.
@@ -33003,7 +33002,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.EntryCreatedAndStream2Omitted"
     enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon creation of a new cache entry, the file for stream 2 was
     omitted since that stream was empty.
@@ -33011,7 +33010,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.EntryCreationResult" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For entry creation operations that were sent to the disk, the result of
     creation.
@@ -33019,13 +33018,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.EntryCreationTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.EntryOpenedAndStream2Removed"
     enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon opening of an existing cache entry, stream 2 was empty and the
     file for that stream was therefore removed.
@@ -33033,7 +33032,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.EntryOperationsPending">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that operations are run, the number of pending operations on a
     particular entry.
@@ -33041,72 +33040,72 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.EntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.Result" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The result of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.SizeOfEvicted" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.SizeOfEvicted2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.SizeWhenDone" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.SizeWhenDone2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.TimeToDone" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.Eviction.TimeToSelectEntries"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.FileDescriptorLimitHard">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (This
@@ -33115,7 +33114,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.FileDescriptorLimitSoft">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (We can
@@ -33125,7 +33124,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
     the browser is launched.
@@ -33133,7 +33132,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.GlobalOpenEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
     entry is opened whenever a caller asks to open it to read or write cache
@@ -33143,7 +33142,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.HeaderSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
     the headers are written or rewritten.
@@ -33152,7 +33151,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.HeaderSizeChange"
     enum="SimpleCacheHeaderSizeChange">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
     a write operation occurs on the header stream.  (This includes the initial
@@ -33161,7 +33160,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.HeaderSizeDecreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -33169,7 +33168,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.HeaderSizeDecreasePercentage" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -33177,7 +33176,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -33185,7 +33184,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.HeaderSizeIncreasePercentage" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -33193,22 +33192,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexCreatedEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexEntriesLoaded">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexEntriesRestored">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Number of entries restored from disk when there was no index or the index
     was corrupted.
@@ -33216,14 +33215,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexFileStateOnLoad" enum="SimpleIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The state the index file is at when an attempt is made to load from it.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexInitializationWaiters">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
@@ -33232,24 +33231,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.IndexInitializeMethod"
     enum="SimpleCacheIndexInitializeMethod">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexLoadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexNumEntriesOnWrite">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.IndexRestoreTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
     iterating directory entries.
@@ -33258,7 +33257,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.IndexWriteInterval.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the background.
   </summary>
@@ -33266,7 +33265,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.IndexWriteInterval.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the foreground.
   </summary>
@@ -33274,7 +33273,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.IndexWriteToDiskTime.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     background, measured starting at the beginning of the write on the callback
@@ -33284,7 +33283,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.IndexWriteToDiskTime.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     foreground, measured starting at the beginning of the write on the callback
@@ -33293,14 +33292,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.LastClusterLossPercent" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
     cluster loss, the unused disk space in the last 4096 byte cluster of the
@@ -33309,7 +33308,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.LastClusterSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
@@ -33318,7 +33317,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
   </summary>
@@ -33326,7 +33325,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.ReadIsParallelizable"
     enum="SimpleCacheReadParallelizable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
     previous Read operation.
@@ -33334,12 +33333,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.ReadResult" enum="SimpleCacheReadResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
     also contains a CRC.
@@ -33348,7 +33347,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCheckEOFResult"
     enum="SimpleCacheSyncCheckEOFResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
     entry.
@@ -33357,7 +33356,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCloseResult"
     enum="SimpleCacheSyncCloseResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
   </summary>
@@ -33365,7 +33364,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreatePlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -33374,7 +33373,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -33383,7 +33382,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreatePlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not yet initialized.
@@ -33392,7 +33391,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
@@ -33401,7 +33400,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreateResult_WithIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has already initialized.
@@ -33410,7 +33409,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncCreateResult_WithoutIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has not yet initialized.
@@ -33418,7 +33417,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Http.SyncOpenEntryAge" units="hours">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The age of the entry (time since last modified), when opened at the
     synchronous layer.
@@ -33427,7 +33426,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenPlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -33436,7 +33435,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -33445,7 +33444,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenPlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not initialized.
@@ -33454,7 +33453,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenResult"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry.
@@ -33463,7 +33462,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenResult_WithIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has already initialized.
@@ -33472,7 +33471,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncOpenResult_WithoutIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has not yet initialized.
@@ -33481,7 +33480,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.SyncWriteResult"
     enum="SimpleCacheSyncWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
   </summary>
@@ -33489,7 +33488,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Http.WriteDependencyType"
     enum="SimpleCacheWriteDependencyType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
     particularly in the aspect of its possibility to run in parallel.
@@ -33501,12 +33500,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
     return&quot;, which previously showed up as &quot;success&quot;.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.WriteResult2" enum="SimpleCacheWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
@@ -33514,7 +33513,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
@@ -33522,7 +33521,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
@@ -33530,7 +33529,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
@@ -33538,7 +33537,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Number of entries restored from disk when there was no index or the index
     was corrupted.
@@ -33549,7 +33548,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The state the index file is at when an attempt is made to load from it.
   </summary>
@@ -33559,7 +33558,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
@@ -33571,7 +33570,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
@@ -33579,7 +33578,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
   </summary>
@@ -33589,7 +33588,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
@@ -33597,7 +33596,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
     iterating directory entries.
@@ -33608,7 +33607,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 07/2013, and replaced by IndexFileStateOnLoad.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was stale.</summary>
 </histogram>
 
@@ -33617,7 +33616,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the background.
   </summary>
@@ -33628,7 +33627,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the foreground.
   </summary>
@@ -33640,7 +33639,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     SimpleCache.SimpleIndexWriteToDiskTime.Background and
     SimpleCache.SimpleIndexWriteToDiskTime.Foreground.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, measured starting
     at the beginning of the write on the callback thread, and calculated using
@@ -33653,7 +33652,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     background, measured starting at the beginning of the write on the callback
@@ -33666,7 +33665,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     foreground, measured starting at the beginning of the write on the callback
@@ -33678,7 +33677,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
   </summary>
@@ -33688,7 +33687,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
     cluster loss, the unused disk space in the last 4096 byte cluster of the
@@ -33700,7 +33699,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
@@ -33708,7 +33707,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.CheckCRCResult" enum="CheckCRCResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to
     a read-only entry stream is closed.
@@ -33716,7 +33715,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.CreationToIndex" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index has
     been loaded from disk.
@@ -33724,7 +33723,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.CreationToIndexFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The time from the creation of the simple cache backend until the index fails
     to load.
@@ -33733,7 +33732,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.EntryCreatedAndStream2Omitted"
     enum="SimpleCache.EntryCreatedAndStream2Omitted">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon creation of a new cache entry, the file for stream 2 was
     omitted since that stream was empty.
@@ -33741,7 +33740,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.EntryCreationResult" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For entry creation operations that were sent to the disk, the result of
     creation.
@@ -33749,13 +33748,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.EntryCreationTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.EntryOpenedAndStream2Removed"
     enum="SimpleCache.EntryOpenedAndStream2Removed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Whether, upon opening of an existing cache entry, stream 2 was empty and the
     file for that stream was therefore removed.
@@ -33763,7 +33762,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.EntryOperationsPending">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that operations are run, the number of pending operations on a
     particular entry.
@@ -33771,72 +33770,71 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.CacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.CacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.EntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.MaxCacheSizeOnStart" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.MaxCacheSizeOnStart2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.Result" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The result of an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.SizeOfEvicted" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.SizeOfEvicted2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The amount of memory freed in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.SizeWhenDone" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.SizeWhenDone2" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.TimeToDone" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent completing an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.Eviction.TimeToSelectEntries"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.FileDescriptorLimitHard">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (This
@@ -33845,7 +33843,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.FileDescriptorLimitSoft">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
     each time the browser is launched, if the limit could be retrieved.  (We can
@@ -33855,7 +33853,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result of trying to get the file descriptor limit.  Emitted each time
     the browser is launched.
@@ -33863,7 +33861,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.GlobalOpenEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
     entry is opened whenever a caller asks to open it to read or write cache
@@ -33873,7 +33871,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.HeaderSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The size of the header stream of a Simple Cache entry, emitted every time
     the headers are written or rewritten.
@@ -33882,7 +33880,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.HeaderSizeChange"
     enum="SimpleCacheHeaderSizeChange">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     How the header size has changed in a Simple Cache entry, emitted every time
     a write operation occurs on the header stream.  (This includes the initial
@@ -33891,7 +33889,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.HeaderSizeDecreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The absolute size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -33900,7 +33897,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.HeaderSizeDecreasePercentage"
     units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size decrease of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a smaller size.
@@ -33908,7 +33905,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.HeaderSizeIncreaseAbsolute" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The absolute size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -33917,7 +33914,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.HeaderSizeIncreasePercentage"
     units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The relative size increase of the header stream of a Simple Cache entry,
     emitted every time the headers are rewritten with a larger size.
@@ -33925,22 +33922,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexCorrupt" enum="BooleanCorrupt">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexCreatedEntryCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexEntriesLoaded">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>Number of entries loaded from the index file on start.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexEntriesRestored">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Number of entries restored from disk when there was no index or the index
     was corrupted.
@@ -33949,14 +33946,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexFileStateOnLoad"
     enum="SimpleIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The state the index file is at when an attempt is made to load from it.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexInitializationWaiters">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting
     index initialization.
@@ -33965,24 +33962,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexInitializeMethod"
     enum="SimpleCacheIndexInitializeMethod">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The method used to initialize the simple cache index.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexLoadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent loading the index file.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexNumEntriesOnWrite">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The number of entries written to the index on a flush.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.IndexRestoreTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Time (as measured on the worker pool) spent restoring the index file by
     iterating directory entries.
@@ -33991,7 +33988,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexWriteInterval.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the background.
   </summary>
@@ -33999,7 +33996,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexWriteInterval.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The interval between index saves, for apps in the foreground.
   </summary>
@@ -34007,7 +34004,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexWriteToDiskTime.Background"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     background, measured starting at the beginning of the write on the callback
@@ -34017,7 +34014,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.IndexWriteToDiskTime.Foreground"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The amount of time spend writing the index file to disk, for apps in the
     foreground, measured starting at the beginning of the write on the callback
@@ -34026,14 +34023,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.KeyMatchedOnOpen" enum="BooleanMatched">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.LastClusterLossPercent" units="percent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
     cluster loss, the unused disk space in the last 4096 byte cluster of the
@@ -34042,7 +34039,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.LastClusterSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
     cluster when the entry is saved to disk.
@@ -34051,7 +34048,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
   </summary>
@@ -34059,7 +34056,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.ReadIsParallelizable"
     enum="SimpleCacheReadParallelizable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
     previous Read operation.
@@ -34067,12 +34064,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.ReadResult" enum="SimpleCacheReadResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Media.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
     also contains a CRC.
@@ -34081,7 +34078,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCheckEOFResult"
     enum="SimpleCacheSyncCheckEOFResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
     entry.
@@ -34090,7 +34087,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCloseResult"
     enum="SimpleCacheSyncCloseResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
   </summary>
@@ -34098,7 +34095,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreatePlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -34107,7 +34104,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreatePlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -34116,7 +34113,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreatePlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not yet initialized.
@@ -34125,7 +34122,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
@@ -34134,7 +34131,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreateResult_WithIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has already initialized.
@@ -34143,7 +34140,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncCreateResult_WithoutIndex"
     enum="SimpleCacheSyncCreateResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has not yet initialized.
@@ -34151,7 +34148,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.SyncOpenEntryAge" units="hours">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The age of the entry (time since last modified), when opened at the
     synchronous layer.
@@ -34160,7 +34157,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenPlatformFileError"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -34169,7 +34166,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenPlatformFileError_WithIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -34178,7 +34175,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenPlatformFileError_WithoutIndex"
     enum="PlatformFileError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not initialized.
@@ -34187,7 +34184,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenResult"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry.
@@ -34196,7 +34193,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenResult_WithIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has already initialized.
@@ -34205,7 +34202,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncOpenResult_WithoutIndex"
     enum="SimpleCacheSyncOpenResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has not yet initialized.
@@ -34214,7 +34211,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.SyncWriteResult"
     enum="SimpleCacheSyncWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
   </summary>
@@ -34222,7 +34219,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SimpleCache.Media.WriteDependencyType"
     enum="SimpleCacheWriteDependencyType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
     particularly in the aspect of its possibility to run in parallel.
@@ -34230,7 +34227,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SimpleCache.Media.WriteResult2" enum="SimpleCacheWriteResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
@@ -34239,7 +34235,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     At the time that an entry is opened, the state of that entry in the index.
   </summary>
@@ -34250,7 +34246,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each Read operation, whether it could have been issued in parallel of a
     previous Read operation.
@@ -34261,7 +34257,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
@@ -34269,7 +34265,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     For each EOFRecord found with a valid magic number, indicates if the record
     also contains a CRC.
@@ -34281,7 +34277,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of checking the EOF record of a cache
     entry.
@@ -34292,7 +34288,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of closing a cache entry.
   </summary>
@@ -34303,7 +34299,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -34315,7 +34311,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -34327,7 +34323,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not yet initialized.
@@ -34339,7 +34335,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
@@ -34351,7 +34347,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has already initialized.
@@ -34363,7 +34359,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry when the index has not yet initialized.
@@ -34374,7 +34370,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The age of the entry (time since last modified), when opened at the
     synchronous layer.
@@ -34386,7 +34382,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer.
@@ -34398,7 +34394,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has already initialized.
@@ -34410,7 +34406,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The platform error reported when attempting to create a new cache entry at
     the synchronous layer when the index has not initialized.
@@ -34421,7 +34417,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry.
@@ -34433,7 +34429,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has already initialized.
@@ -34445,7 +34441,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, reported when attempting to open a new
     cache entry when the index has not yet initialized.
@@ -34456,7 +34452,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     The result, at the synchronous layer, of writing to a cache entry.
   </summary>
@@ -34467,7 +34463,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>
     Shows whether a write operation depends on the previous operation in queue
     particularly in the aspect of its possibility to run in parallel.
@@ -34478,7 +34474,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2013-08 in favor of cache type specific version (App or Http).
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gavinp@chromium.org</owner>
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
