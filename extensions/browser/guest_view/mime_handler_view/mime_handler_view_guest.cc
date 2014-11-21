@@ -66,7 +66,6 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
 
 // |embedder_extension_id| is empty for mime handler view.
 void MimeHandlerViewGuest::CreateWebContents(
-    const std::string& embedder_extension_id,
     int embedder_render_process_id,
     const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
@@ -110,7 +109,7 @@ void MimeHandlerViewGuest::CreateWebContents(
   ProcessManager* process_manager = ProcessManager::Get(browser_context());
   content::SiteInstance* guest_site_instance =
       process_manager->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(embedder_extension_id));
+          Extension::GetBaseURLFromExtensionId(embedder_site_url.host()));
 
   WebContents::CreateParams params(browser_context(), guest_site_instance);
   params.guest_delegate = this;

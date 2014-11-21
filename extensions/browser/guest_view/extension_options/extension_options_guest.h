@@ -27,8 +27,7 @@ class ExtensionOptionsGuest
       int guest_instance_id);
 
   // GuestViewBase implementation.
-  void CreateWebContents(const std::string& embedder_extension_id,
-                         int embedder_render_process_id,
+  void CreateWebContents(int embedder_render_process_id,
                          const GURL& embedder_site_url,
                          const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;

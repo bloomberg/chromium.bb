@@ -198,7 +198,6 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::CreateWebContents(
-    const std::string& embedder_extension_id,
     int embedder_render_process_id,
     const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
@@ -224,18 +223,7 @@ void WebViewGuest::CreateWebContents(
   }
   std::string url_encoded_partition = net::EscapeQueryParamValue(
       storage_partition_id, false);
-  // The SiteInstance of a given webview tag is based on the fact that it's
-  // a guest process in addition to which platform application or which WebUI
-  // page the tag belongs to and what storage partition is in use, rather than
-  // the URL that the tag is being navigated to.
-  std::string partition_domain;
-  if (embedder_extension_id.empty()) {
-    DCHECK(content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-        embedder_render_process_id));
-    partition_domain = embedder_site_url.host();
-  } else {
-    partition_domain = embedder_extension_id;
-  }
+  std::string partition_domain = embedder_site_url.host();
   GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
                                      content::kGuestScheme,
                                      partition_domain.c_str(),

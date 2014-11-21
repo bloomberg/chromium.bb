@@ -57,7 +57,6 @@ extensions::GuestViewBase* ExtensionOptionsGuest::Create(
 }
 
 void ExtensionOptionsGuest::CreateWebContents(
-    const std::string& embedder_extension_id,
     int embedder_render_process_id,
     const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
@@ -71,6 +70,7 @@ void ExtensionOptionsGuest::CreateWebContents(
     return;
   }
 
+  std::string embedder_extension_id = embedder_site_url.host();
   if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
       extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.

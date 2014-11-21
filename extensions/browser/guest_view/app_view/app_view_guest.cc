@@ -136,7 +136,6 @@ int AppViewGuest::GetTaskPrefix() const {
 }
 
 void AppViewGuest::CreateWebContents(
-    const std::string& embedder_extension_id,
     int embedder_render_process_id,
     const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
@@ -157,7 +156,7 @@ void AppViewGuest::CreateWebContents(
       ExtensionRegistry::Get(browser_context())->enabled_extensions();
   const Extension* guest_extension = enabled_extensions.GetByID(app_id);
   const Extension* embedder_extension =
-      enabled_extensions.GetByID(embedder_extension_id);
+      enabled_extensions.GetByID(embedder_site_url.host());
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
       !embedder_extension | !embedder_extension->is_platform_app()) {
