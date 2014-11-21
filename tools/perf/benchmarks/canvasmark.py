@@ -57,7 +57,7 @@ class CanvasMark(benchmark.Benchmark):
     ps = page_set.PageSet(
       file_path=os.path.abspath(__file__),
       archive_data_file='../page_sets/data/canvasmark.json',
-      make_javascript_deterministic=False)
+      make_javascript_deterministic=False, bucket=page_set.PARTNER_BUCKET)
     ps.AddPageWithDefaultRunNavigate(
       'http://www.kevs3d.co.uk/dev/canvasmark/?auto=true')
     return ps
