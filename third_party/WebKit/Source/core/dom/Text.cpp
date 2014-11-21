@@ -310,7 +310,7 @@ void Text::attach(const AttachContext& context)
     if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
         if (RenderObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
-                RenderTreeBuilderForText(this, parentRenderer).createRenderer();
+                RenderTreeBuilderForText(*this, parentRenderer).createRenderer();
         }
     }
     CharacterData::attach(context);
@@ -338,7 +338,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
     if (styleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     if (rendererIsNeeded)
-        RenderTreeBuilderForText(this, renderingParent->renderer()).createRenderer();
+        RenderTreeBuilderForText(*this, renderingParent->renderer()).createRenderer();
     CharacterData::attach(reattachContext);
 }
 

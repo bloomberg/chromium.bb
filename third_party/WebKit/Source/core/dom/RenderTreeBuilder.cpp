@@ -43,14 +43,14 @@
 
 namespace blink {
 
-RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element* element, RenderStyle* style)
+RenderTreeBuilderForElement::RenderTreeBuilderForElement(Element& element, RenderStyle* style)
     : RenderTreeBuilder(element, nullptr)
     , m_style(style)
 {
-    if (element->isFirstLetterPseudoElement()) {
-        if (RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element))
+    if (element.isFirstLetterPseudoElement()) {
+        if (RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(element))
             m_renderingParent = nextRenderer->parent();
-    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(*element)) {
+    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
         m_renderingParent = containerNode->renderer();
     }
 }

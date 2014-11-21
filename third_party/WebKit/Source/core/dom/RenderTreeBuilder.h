@@ -44,13 +44,13 @@ template <typename NodeType>
 class RenderTreeBuilder {
     STACK_ALLOCATED();
 protected:
-    RenderTreeBuilder(NodeType* node, RenderObject* renderingParent)
+    RenderTreeBuilder(NodeType& node, RenderObject* renderingParent)
         : m_node(node)
         , m_renderingParent(renderingParent)
     {
-        ASSERT(!node->renderer());
-        ASSERT(node->needsAttach());
-        ASSERT(node->document().inStyleRecalc());
+        ASSERT(!node.renderer());
+        ASSERT(node.needsAttach());
+        ASSERT(node.document().inStyleRecalc());
 
         // FIXME: We should be able to ASSERT(node->inActiveDocument()) but childrenChanged is called
         // before ChildNodeInsertionNotifier in ContainerNode's methods and some implementations
@@ -78,7 +78,7 @@ protected:
 
 class RenderTreeBuilderForElement : public RenderTreeBuilder<Element> {
 public:
-    RenderTreeBuilderForElement(Element*, RenderStyle*);
+    RenderTreeBuilderForElement(Element&, RenderStyle*);
 
     void createRendererIfNeeded()
     {
@@ -98,7 +98,7 @@ private:
 
 class RenderTreeBuilderForText : public RenderTreeBuilder<Text> {
 public:
-    RenderTreeBuilderForText(Text* text, RenderObject* renderingParent)
+    RenderTreeBuilderForText(Text& text, RenderObject* renderingParent)
         : RenderTreeBuilder(text, renderingParent) { }
 
     void createRenderer();
