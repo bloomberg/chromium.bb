@@ -5,9 +5,12 @@
 #include "media/audio/fake_audio_input_stream.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
+#include "media/base/media_switches.h"
 
 using base::TimeTicks;
 using base::TimeDelta;
@@ -53,6 +56,59 @@ class BeepContext {
   bool automatic_beep_;
 };
 
+// Opens |wav_filename|, reads it and loads it as a wav file. This function will
+// bluntly trigger CHECKs if we can't read the file or if it's malformed. The
+// caller takes ownership of the returned data. The size of the data is stored
+// in |read_length|.
+scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
+                                size_t* file_length) {
+  base::File wav_file(
+      wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!wav_file.IsValid()) {
+    CHECK(false) << "Failed to read " << wav_filename.value() << " as input to "
+        << "the fake device.";
+    return nullptr;
+  }
+
+  size_t wav_file_length = wav_file.GetLength();
+
+  uint8* wav_file_data = new uint8[wav_file_length];
+  size_t read_bytes = wav_file.Read(0, reinterpret_cast<char*>(wav_file_data),
+                                    wav_file_length);
+  if (read_bytes != wav_file_length) {
+    CHECK(false) << "Failed to read all bytes of " << wav_filename.value();
+    return nullptr;
+  }
+  *file_length = wav_file_length;
+  return scoped_ptr<uint8[]>(wav_file_data);
+}
+
+// Opens |wav_filename|, reads it and loads it as a Wav file. This function will
+// bluntly trigger CHECKs if the file doesn't have the sampling frequency, bits
+// per sample or number of channels as specified in |expected_params|. We also
+// trigger CHECKs if we can't read the file or if it's malformed.
+scoped_ptr<media::WavAudioHandler> CreateWavAudioHandler(
+    const base::FilePath& wav_filename, const uint8* wav_file_data,
+    size_t wav_file_length, const AudioParameters& expected_params) {
+  base::StringPiece wav_data(reinterpret_cast<const char*>(wav_file_data),
+                             wav_file_length);
+  scoped_ptr<media::WavAudioHandler> wav_audio_handler(
+      new media::WavAudioHandler(wav_data));
+
+  // Ensure the input file matches what the audio bus wants, otherwise bail out.
+  CHECK_EQ(wav_audio_handler->params().channels(),
+           expected_params.channels())
+      << "Failed to read " << wav_filename.value() << " to fake device.";
+  CHECK_EQ(wav_audio_handler->params().sample_rate(),
+           expected_params.sample_rate())
+      << "Failed to read " << wav_filename.value() << " to fake device.";
+  CHECK_EQ(wav_audio_handler->params().bits_per_sample(),
+           expected_params.bits_per_sample())
+      << "Failed to read " << wav_filename.value() << " to fake device.";
+
+  return wav_audio_handler.Pass();
+}
+
 static base::LazyInstance<BeepContext> g_beep_context =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -81,8 +137,8 @@ FakeAudioInputStream::FakeAudioInputStream(AudioManagerBase* manager,
                                 1000),
       beep_generated_in_buffers_(0),
       beep_period_in_frames_(params.sample_rate() / kBeepFrequency),
-      frames_elapsed_(0),
       audio_bus_(AudioBus::Create(params)),
+      wav_file_read_pos_(0),
       weak_factory_(this) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 }
@@ -94,6 +150,13 @@ bool FakeAudioInputStream::Open() {
   buffer_.reset(new uint8[buffer_size_]);
   memset(buffer_.get(), 0, buffer_size_);
   audio_bus_->Zero();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFileForFakeAudioCapture)) {
+    OpenInFileMode(CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        switches::kUseFileForFakeAudioCapture));
+  }
+
   return true;
 }
 
@@ -102,6 +165,7 @@ void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
   DCHECK(!callback_);
   callback_ = callback;
   last_callback_time_ = TimeTicks::Now();
+
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeAudioInputStream::DoCallback, weak_factory_.GetWeakPtr()),
@@ -120,13 +184,52 @@ void FakeAudioInputStream::DoCallback() {
   if (next_callback_time < base::TimeDelta())
     next_callback_time = base::TimeDelta();
 
-  // Accumulate the time from the last beep.
-  interval_from_last_beep_ += now - last_callback_time_;
+  if (PlayingFromFile()) {
+    PlayFileLooping();
+  } else {
+    PlayBeep();
+  }
 
   last_callback_time_ = now;
 
-  memset(buffer_.get(), 0, buffer_size_);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeAudioInputStream::DoCallback, weak_factory_.GetWeakPtr()),
+      next_callback_time);
+}
 
+void FakeAudioInputStream::OpenInFileMode(const base::FilePath& wav_filename) {
+  CHECK(!wav_filename.empty())
+      << "You must pass the file to use as argument to --"
+      << switches::kUseFileForFakeAudioCapture << ".";
+
+  // Read the file, and put its data in a scoped_ptr so it gets deleted later.
+  size_t file_length = 0;
+  wav_file_data_ = ReadWavFile(wav_filename, &file_length);
+  wav_audio_handler_ = CreateWavAudioHandler(
+      wav_filename, wav_file_data_.get(), file_length, params_);
+}
+
+bool FakeAudioInputStream::PlayingFromFile() {
+  return wav_audio_handler_.get() != nullptr;
+}
+
+void FakeAudioInputStream::PlayFileLooping() {
+  // Unfilled frames will be zeroed by CopyTo.
+  size_t bytes_written;
+  wav_audio_handler_->CopyTo(audio_bus_.get(), wav_file_read_pos_,
+                             &bytes_written);
+  wav_file_read_pos_ += bytes_written;
+  if (wav_audio_handler_->AtEnd(wav_file_read_pos_))
+    wav_file_read_pos_ = 0;
+  callback_->OnData(this, audio_bus_.get(), buffer_size_, 1.0);
+}
+
+void FakeAudioInputStream::PlayBeep() {
+  // Accumulate the time from the last beep.
+  interval_from_last_beep_ += TimeTicks::Now() - last_callback_time_;
+
+  memset(buffer_.get(), 0, buffer_size_);
   bool should_beep = false;
   {
     BeepContext* beep_context = g_beep_context.Pointer();
@@ -170,12 +273,6 @@ void FakeAudioInputStream::DoCallback() {
   audio_bus_->FromInterleaved(
       buffer_.get(), audio_bus_->frames(), params_.bits_per_sample() / 8);
   callback_->OnData(this, audio_bus_.get(), buffer_size_, 1.0);
-  frames_elapsed_ += params_.frames_per_buffer();
-
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeAudioInputStream::DoCallback, weak_factory_.GetWeakPtr()),
-      next_callback_time);
 }
 
 void FakeAudioInputStream::Stop() {

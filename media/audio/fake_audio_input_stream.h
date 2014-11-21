@@ -9,23 +9,26 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/sounds/wav_audio_handler.h"
 
 namespace media {
 
 class AudioBus;
 class AudioManagerBase;
 
+// This class can either generate a beep sound or play audio from a file.
 class MEDIA_EXPORT FakeAudioInputStream
     : public AudioInputStream {
  public:
-  static AudioInputStream* MakeFakeStream(AudioManagerBase* manager,
-                                          const AudioParameters& params);
+  static AudioInputStream* MakeFakeStream(
+      AudioManagerBase* manager, const AudioParameters& params);
 
   bool Open() override;
   void Start(AudioInputCallback* callback) override;
@@ -52,10 +55,18 @@ class MEDIA_EXPORT FakeAudioInputStream
  private:
   FakeAudioInputStream(AudioManagerBase* manager,
                        const AudioParameters& params);
-
   ~FakeAudioInputStream() override;
 
   void DoCallback();
+
+  // Opens this stream reading from a |wav_filename| rather than beeping.
+  void OpenInFileMode(const base::FilePath& wav_filename);
+
+  // Returns true if the device is playing from a file; false if we're beeping.
+  bool PlayingFromFile();
+
+  void PlayFileLooping();
+  void PlayBeep();
 
   AudioManagerBase* audio_manager_;
   AudioInputCallback* callback_;
@@ -69,8 +80,10 @@ class MEDIA_EXPORT FakeAudioInputStream
   int beep_duration_in_buffers_;
   int beep_generated_in_buffers_;
   int beep_period_in_frames_;
-  int frames_elapsed_;
   scoped_ptr<media::AudioBus> audio_bus_;
+  scoped_ptr<uint8[]> wav_file_data_;
+  scoped_ptr<media::WavAudioHandler> wav_audio_handler_;
+  int wav_file_read_pos_;
 
   // Allows us to run tasks on the FakeAudioInputStream instance which are
   // bound by its lifetime.

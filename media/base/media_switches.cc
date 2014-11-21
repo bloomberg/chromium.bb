@@ -91,8 +91,16 @@ const char kUseCras[] = "use-cras";
 // Use fake device for Media Stream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
-// Use a raw video file as fake video capture device.
+// Use an .y4m file to play as the webcam. See the comments in
+// media/video/capture/file_video_capture_device.h for more details.
 const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
+
+// Play a .wav file as the microphone. Note that for WebRTC calls we'll treat
+// the bits as if they came from the microphone, which means you should disable
+// audio processing (lest your audio file will play back distorted). Also the
+// wav file will have to have the same number of channels, bits per sample and
+// sampling frequency as the system's input device.
+const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
