@@ -1346,6 +1346,9 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fi
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ ImageOnlyFailure ]
 
+# Skip until V8's --harmony-scoping is shipped by default.
+crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ Skip ]
+
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/385014 accessibility/clickable.html [ Failure ]
 crbug.com/385014 accessibility/nochildren-elements.html [ Failure ]

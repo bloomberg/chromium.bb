@@ -1429,6 +1429,21 @@ InjectedScript.CallFrameProxy.prototype = {
 }
 
 /**
+ * @const
+ * @type {!Object.<number, !DebuggerAgent.ScopeType>}
+ */
+InjectedScript.CallFrameProxy._scopeTypeNames = {
+    0: "global",
+    1: "local",
+    2: "with",
+    3: "closure",
+    4: "catch",
+    5: "block",
+    6: "script",
+    __proto__: null
+};
+
+/**
  * @param {number} scopeTypeCode
  * @param {*} scopeObject
  * @param {string} groupId
@@ -1436,23 +1451,9 @@ InjectedScript.CallFrameProxy.prototype = {
  */
 InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeObject, groupId)
 {
-    const GLOBAL_SCOPE = 0;
-    const LOCAL_SCOPE = 1;
-    const WITH_SCOPE = 2;
-    const CLOSURE_SCOPE = 3;
-    const CATCH_SCOPE = 4;
-
-    /** @type {!Object.<number, string>} */
-    var scopeTypeNames = { __proto__: null };
-    scopeTypeNames[GLOBAL_SCOPE] = "global";
-    scopeTypeNames[LOCAL_SCOPE] = "local";
-    scopeTypeNames[WITH_SCOPE] = "with";
-    scopeTypeNames[CLOSURE_SCOPE] = "closure";
-    scopeTypeNames[CATCH_SCOPE] = "catch";
-
     return {
         object: injectedScript._wrapObject(scopeObject, groupId),
-        type: /** @type {!DebuggerAgent.ScopeType} */ (scopeTypeNames[scopeTypeCode]),
+        type: InjectedScript.CallFrameProxy._scopeTypeNames[scopeTypeCode],
         __proto__: null
     };
 }

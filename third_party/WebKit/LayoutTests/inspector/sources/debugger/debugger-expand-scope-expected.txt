@@ -1,10 +1,10 @@
 
 Test that sections representing scopes of the current call frame are expandable and contain correct data.
 
-Evaluated script in console.
+Set timer for test function.
 Script execution paused.
 
-Dump scope sections:
+Scope variables sidebar pane:
 Catch
     e: Error: An exception
 Local

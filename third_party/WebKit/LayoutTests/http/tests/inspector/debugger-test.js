@@ -359,6 +359,26 @@ InspectorTest.dumpBreakpointSidebarPane = function(title)
     InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
 };
 
+InspectorTest.dumpScopeVariablesSidebarPane = function()
+{
+    InspectorTest.addResult("Scope variables sidebar pane:");
+    var sections = WebInspector.panels.sources.sidebarPanes.scopechain._sections;
+    for (var i = 0; i < sections.length; ++i) {
+        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(sections[i].element));
+        if (!sections[i].expanded)
+            InspectorTest.addResult("    <section collapsed>");
+    }
+};
+
+InspectorTest.expandScopeVariablesSidebarPane = function(callback)
+{
+    // Expand all but the global scope. Expanding global scope takes for too long so we keep it collapsed.
+    var sections = WebInspector.panels.sources.sidebarPanes.scopechain._sections;
+    for (var i = 0; i < sections.length - 1; ++i)
+        sections[i].expand();
+    InspectorTest.runAfterPendingDispatches(callback);
+};
+
 InspectorTest.expandProperties = function(properties, callback)
 {
     var index = 0;

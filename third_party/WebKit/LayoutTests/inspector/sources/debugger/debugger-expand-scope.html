@@ -4,64 +4,48 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function makeClosure(n) {
-  var makeClosureLocalVar = 'local.' + n;
-  return function innerFunction(x) {
-    var innerFunctionLocalVar = x + 2;
-    var negInf = -Infinity;
-    var negZero = 1 / negInf;
-    try {
-      throw new Error("An exception");
-    } catch (e) {
-      e.toString();
-      debugger;
+function makeClosure(n)
+{
+    var makeClosureLocalVar = "local." + n;
+    return function innerFunction(x)
+    {
+        var innerFunctionLocalVar = x + 2;
+        var negInf = -Infinity;
+        var negZero = 1 / negInf;
+        try {
+            throw new Error("An exception");
+        } catch (e) {
+            e.toString();
+            debugger;
+        }
+        return n + makeClosureLocalVar + x + innerFunctionLocalVar;
     }
-    return n + makeClosureLocalVar + x + innerFunctionLocalVar;
-  }
 }
 
-function testFunction() {
-  var f = makeClosure('TextParam');
-  f(2010);
+function testFunction()
+{
+    var f = makeClosure("TextParam");
+    f(2010);
 }
-
 
 function test()
 {
-    var scriptToEvaluate = "setTimeout(testFunction, 0)";
-
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.evaluateInPage(scriptToEvaluate, InspectorTest.addResult.bind(InspectorTest, "Evaluated script in console."));
-        InspectorTest.waitUntilPaused(step2);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        // Expand all but global scopes. Expanding global scope takes for too long
-        // so we keep it collapsed.
-        var sections = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain._sections;
-        // global scope is always the last one.
-        for (var i = 0; i < sections.length - 1; i++)
-            sections[i].expand();
-        InspectorTest.runAfterPendingDispatches(step3);
+        InspectorTest.expandScopeVariablesSidebarPane(step3);
     }
 
     function step3()
     {
-    
-        var sections = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain._sections;
         InspectorTest.addResult("");
-        InspectorTest.addResult("Dump scope sections:");
-        for (var i = 0; i < sections.length; i++) {
-            var section = sections[i];
-            var properties = section.propertiesForTest;
-            InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(section.element));
-            if (!section.expanded)
-                InspectorTest.addResult("    <section collapsed>");
-        }
+        InspectorTest.dumpScopeVariablesSidebarPane();
         InspectorTest.completeDebuggerTest();
     }
 }

@@ -526,12 +526,18 @@ DebuggerScript._buildScopeObject = function(scopeType, scopeObject)
     case ScopeType.Local:
     case ScopeType.Closure:
     case ScopeType.Catch:
+    case ScopeType.Block:
+    case ScopeType.Script:
         // For transient objects we create a "persistent" copy that contains
         // the same properties.
         // Reset scope object prototype to null so that the proto properties
         // don't appear in the local scope section.
-        result = { __proto__: null };
         var properties = MakeMirror(scopeObject, true /* transient */).properties();
+        // Almost always Script scope will be empty, so just filter out that noise.
+        // Also drop empty Block scopes, should we get any.
+        if (!properties.length && (scopeType === ScopeType.Script || scopeType === ScopeType.Block))
+            break;
+        result = { __proto__: null };
         for (var j = 0; j < properties.length; j++) {
             var name = properties[j].name();
             if (name.charAt(0) === ".")
@@ -542,9 +548,6 @@ DebuggerScript._buildScopeObject = function(scopeType, scopeObject)
     case ScopeType.Global:
     case ScopeType.With:
         result = scopeObject;
-        break;
-    case ScopeType.Block:
-        // Unsupported yet. Mustn't be reachable.
         break;
     }
     return result;
