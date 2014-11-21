@@ -17,20 +17,12 @@ import java.util.List;
  */
 public class MockUrlRequestJobTest extends CronetTestBase {
     private static final String TAG = "MockURLRequestJobTest";
-    private static final String MOCK_CRONET_TEST_SUCCESS_URL =
-            "http://mock.http/success.txt";
-    private static final String MOCK_CRONET_TEST_REDIRECT_URL =
-            "http://mock.http/redirect.html";
-    private static final String MOCK_CRONET_TEST_NOTFOUND_URL =
-            "http://mock.http/notfound.html";
-    private static final String MOCK_CRONET_TEST_FAILED_URL =
-            "http://mock.failed.request/-2";
 
     private CronetTestActivity mActivity;
     private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
 
     // Helper function to create a HttpUrlRequest with the specified url.
-    private TestHttpUrlRequestListener createUrlRequestAndWaitForComplete(
+    private TestHttpUrlRequestListener createRequestAndWaitForComplete(
             String url, boolean disableRedirects) {
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -68,9 +60,9 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testSuccessURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createUrlRequestAndWaitForComplete(
-                MOCK_CRONET_TEST_SUCCESS_URL, false);
-        assertEquals(MOCK_CRONET_TEST_SUCCESS_URL, listener.mUrl);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                MockUrlRequestJobFactory.SUCCESS_URL, false);
+        assertEquals(MockUrlRequestJobFactory.SUCCESS_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
         assertEquals("OK", listener.mHttpStatusText);
         assertEquals("this is a text file\n",
@@ -80,11 +72,11 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testRedirectURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createUrlRequestAndWaitForComplete(
-                MOCK_CRONET_TEST_REDIRECT_URL, false);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                MockUrlRequestJobFactory.REDIRECT_URL, false);
 
         // Currently Cronet does not expose the url after redirect.
-        assertEquals(MOCK_CRONET_TEST_REDIRECT_URL, listener.mUrl);
+        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
         assertEquals("OK", listener.mHttpStatusText);
         // Expect that the request is redirected to success.txt.
@@ -95,9 +87,9 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testNotFoundURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createUrlRequestAndWaitForComplete(
-                MOCK_CRONET_TEST_NOTFOUND_URL, false);
-        assertEquals(MOCK_CRONET_TEST_NOTFOUND_URL, listener.mUrl);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                MockUrlRequestJobFactory.NOTFOUND_URL, false);
+        assertEquals(MockUrlRequestJobFactory.NOTFOUND_URL, listener.mUrl);
         assertEquals(404, listener.mHttpStatusCode);
         assertEquals("Not Found", listener.mHttpStatusText);
         assertEquals(
@@ -109,10 +101,10 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testFailedURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createUrlRequestAndWaitForComplete(
-                MOCK_CRONET_TEST_FAILED_URL, false);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                MockUrlRequestJobFactory.FAILED_URL, false);
 
-        assertEquals(MOCK_CRONET_TEST_FAILED_URL, listener.mUrl);
+        assertEquals(MockUrlRequestJobFactory.FAILED_URL, listener.mUrl);
         assertEquals(null, listener.mHttpStatusText);
         assertEquals(0, listener.mHttpStatusCode);
     }
@@ -121,10 +113,10 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @Feature({"Cronet"})
     // Test that redirect can be disabled for a request.
     public void testDisableRedirects() throws Exception {
-        TestHttpUrlRequestListener listener = createUrlRequestAndWaitForComplete(
-                MOCK_CRONET_TEST_REDIRECT_URL, true);
+        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+                MockUrlRequestJobFactory.REDIRECT_URL, true);
         // Currently Cronet does not expose the url after redirect.
-        assertEquals(MOCK_CRONET_TEST_REDIRECT_URL, listener.mUrl);
+        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, listener.mUrl);
         assertEquals(302, listener.mHttpStatusCode);
         // Expect that the request is not redirected to success.txt.
         assertNotNull(listener.mResponseHeaders);

@@ -23,6 +23,17 @@ import java.util.List;
  */
 @JNINamespace("cronet")
 public final class MockUrlRequestJobFactory {
+    public static final String SUCCESS_URL =
+            "http://mock.http/success.txt";
+    public static final String REDIRECT_URL =
+            "http://mock.http/redirect.html";
+    public static final String MULTI_REDIRECT_URL =
+            "http://mock.http/multiredirect.html";
+    public static final String NOTFOUND_URL =
+            "http://mock.http/notfound.html";
+    public static final String FAILED_URL =
+            "http://mock.failed.request/-2";
+
     private static final String TAG = "MockUrlRequestJobFactory";
     // Name of the asset directory in which test files are stored.
     private static final String TEST_FILE_ASSET_PATH = "test";
