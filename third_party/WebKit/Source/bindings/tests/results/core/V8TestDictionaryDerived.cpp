@@ -26,16 +26,23 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Hand
         return;
 
     v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
+    v8::TryCatch block;
     v8::Local<v8::Value> derivedStringMemberValue = v8Object->Get(v8String(isolate, "derivedStringMember"));
     if (!derivedStringMemberValue.IsEmpty() && !isUndefinedOrNull(derivedStringMemberValue)) {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, derivedStringMember, derivedStringMemberValue, exceptionState);
+        TOSTRING_VOID(V8StringResource<>, derivedStringMember, derivedStringMemberValue);
         impl.setDerivedStringMember(derivedStringMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
     }
 
     v8::Local<v8::Value> derivedStringMemberWithDefaultValue = v8Object->Get(v8String(isolate, "derivedStringMemberWithDefault"));
     if (!derivedStringMemberWithDefaultValue.IsEmpty() && !isUndefinedOrNull(derivedStringMemberWithDefaultValue)) {
-        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, derivedStringMemberWithDefault, derivedStringMemberWithDefaultValue, exceptionState);
+        TOSTRING_VOID(V8StringResource<>, derivedStringMemberWithDefault, derivedStringMemberWithDefaultValue);
         impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefault);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
     }
 
 }

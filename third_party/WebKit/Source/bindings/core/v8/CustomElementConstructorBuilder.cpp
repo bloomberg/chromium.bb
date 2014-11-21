@@ -89,14 +89,11 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
             m_prototype->SetPrototype(basePrototype);
     }
 
-    if (tryCatch.HasCaught()) {
-        tryCatch.ReThrow();
-        return false;
-    }
-
     AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;
     if (hasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
         namespaceURI = SVGNames::svgNamespaceURI;
+
+    ASSERT(!tryCatch.HasCaught());
 
     AtomicString localName;
 
