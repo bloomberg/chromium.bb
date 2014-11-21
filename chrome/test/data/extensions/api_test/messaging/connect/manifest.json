@@ -3,7 +3,7 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests connect from a content script.",
-  "permissions": ["tabs"],
+  "permissions": ["tabs", "webNavigation"],
   "background": {
     "persistent": false,
     "scripts": ["test.js"]
@@ -12,6 +12,11 @@
     {
       "matches": ["http://*/*"],
       "js": ["page.js"]
+    },
+    {
+      "all_frames": true,
+      "matches": ["http://*/*?testSendMessageFromFrame*"],
+      "js": ["frame.js"]
     }
   ]
 }

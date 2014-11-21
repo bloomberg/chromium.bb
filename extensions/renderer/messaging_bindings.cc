@@ -13,8 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
@@ -106,8 +106,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    content::RenderView* renderview = context()->GetRenderView();
-    if (!renderview)
+    content::RenderFrame* renderframe = context()->GetRenderFrame();
+    if (!renderframe)
       return;
 
     // Arguments are (int32 port_id, string message).
@@ -120,8 +120,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
       return;
     }
 
-    renderview->Send(new ExtensionHostMsg_PostMessage(
-        renderview->GetRoutingID(), port_id,
+    renderframe->Send(new ExtensionHostMsg_PostMessage(
+        renderframe->GetRoutingID(), port_id,
         Message(*v8::String::Utf8Value(args[1]),
                 blink::WebUserGestureIndicator::isProcessingUserGesture())));
   }
@@ -137,7 +137,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     if (!HasPortData(port_id))
       return;
 
-    // Send via the RenderThread because the RenderView might be closing.
+    // Send via the RenderThread because the RenderFrame might be closing.
     bool notify_browser = args[1]->BooleanValue();
     if (notify_browser) {
       content::RenderThread::Get()->Send(
@@ -168,7 +168,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
     int port_id = args[0]->Int32Value();
     if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
-      // Send via the RenderThread because the RenderView might be closing.
+      // Send via the RenderThread because the RenderFrame might be closing.
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_CloseChannel(port_id, std::string()));
       ClearPortDataAndNotifyDispatcher(port_id);
@@ -240,7 +240,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 void DispatchOnConnectToScriptContext(
     int target_port_id,
     const std::string& channel_name,
-    const base::DictionaryValue* source_tab,
+    const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
     bool* port_created,
@@ -258,8 +258,8 @@ void DispatchOnConnectToScriptContext(
   v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
 
   if (extension) {
-    if (!source_tab->empty() && !extension->is_platform_app())
-      tab = converter->ToV8Value(source_tab, script_context->v8_context());
+    if (!source->tab.empty() && !extension->is_platform_app())
+      tab = converter->ToV8Value(&source->tab, script_context->v8_context());
 
     ExternallyConnectableInfo* externally_connectable =
         ExternallyConnectableInfo::Get(extension);
@@ -282,6 +282,8 @@ void DispatchOnConnectToScriptContext(
                               channel_name.size()),
       // sourceTab
       tab,
+      // source_frame_id
+      v8::Integer::New(isolate, source->frame_id),
       // sourceExtensionId
       v8::String::NewFromUtf8(isolate,
                               info.source_id.c_str(),
@@ -372,20 +374,19 @@ void MessagingBindings::DispatchOnConnect(
     const ScriptContextSet& context_set,
     int target_port_id,
     const std::string& channel_name,
-    const base::DictionaryValue& source_tab,
+    const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
-    content::RenderView* restrict_to_render_view) {
+    content::RenderFrame* restrict_to_render_frame) {
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
   bool port_created = false;
-  context_set.ForEach(info.target_id,
-                      restrict_to_render_view,
-                      base::Bind(&DispatchOnConnectToScriptContext,
-                                 target_port_id,
-                                 channel_name,
-                                 &source_tab,
-                                 info,
-                                 tls_channel_id,
-                                 &port_created));
+  context_set.ForEach(
+      info.target_id, restrict_to_render_view,
+      base::Bind(&DispatchOnConnectToScriptContext, target_port_id,
+                 channel_name, &source, info, tls_channel_id, &port_created));
 
   // If we didn't create a port, notify the other end of the channel (treat it
   // as a disconnect).
@@ -400,7 +401,7 @@ void MessagingBindings::DeliverMessage(
     const ScriptContextSet& context_set,
     int target_port_id,
     const Message& message,
-    content::RenderView* restrict_to_render_view) {
+    content::RenderFrame* restrict_to_render_frame) {
   scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
   scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
   if (message.user_gesture) {
@@ -408,6 +409,10 @@ void MessagingBindings::DeliverMessage(
     allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
   }
 
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
   context_set.ForEach(
       restrict_to_render_view,
       base::Bind(&DeliverMessageToScriptContext, message.data, target_port_id));
@@ -418,7 +423,11 @@ void MessagingBindings::DispatchOnDisconnect(
     const ScriptContextSet& context_set,
     int port_id,
     const std::string& error_message,
-    content::RenderView* restrict_to_render_view) {
+    content::RenderFrame* restrict_to_render_frame) {
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
   context_set.ForEach(
       restrict_to_render_view,
       base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));

@@ -846,28 +846,28 @@ void Dispatcher::OnDeliverMessage(int target_port_id, const Message& message) {
   MessagingBindings::DeliverMessage(script_context_set_,
                                     target_port_id,
                                     message,
-                                    NULL);  // All render views.
+                                    NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnConnect(
     int target_port_id,
     const std::string& channel_name,
-    const base::DictionaryValue& source_tab,
+    const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
   DCHECK(!ContainsKey(port_to_tab_id_map_, target_port_id));
   DCHECK_EQ(1, target_port_id % 2);  // target renderer ports have odd IDs.
   int sender_tab_id = -1;
-  source_tab.GetInteger("id", &sender_tab_id);
+  source.tab.GetInteger("id", &sender_tab_id);
   port_to_tab_id_map_[target_port_id] = sender_tab_id;
 
   MessagingBindings::DispatchOnConnect(script_context_set_,
                                        target_port_id,
                                        channel_name,
-                                       source_tab,
+                                       source,
                                        info,
                                        tls_channel_id,
-                                       NULL);  // All render views.
+                                       NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(int port_id,
@@ -875,7 +875,7 @@ void Dispatcher::OnDispatchOnDisconnect(int port_id,
   MessagingBindings::DispatchOnDisconnect(script_context_set_,
                                           port_id,
                                           error_message,
-                                          NULL);  // All render views.
+                                          NULL);  // All render frames.
 }
 
 void Dispatcher::OnLoaded(

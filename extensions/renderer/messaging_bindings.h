@@ -10,13 +10,14 @@
 #include "extensions/renderer/script_context_set.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
+struct ExtensionMsg_TabConnectionInfo;
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace content {
-class RenderView;
+class RenderFrame;
 }
 
 namespace v8 {
@@ -41,30 +42,30 @@ class MessagingBindings {
                                         ScriptContext* context);
 
   // Dispatches the onConnect content script messaging event to some contexts
-  // in |context_set|. If |restrict_to_render_view| is specified, only contexts
-  // in that render view will receive the message.
+  // in |context_set|. If |restrict_to_render_frame| is specified, only contexts
+  // in that render frame will receive the message.
   static void DispatchOnConnect(const ScriptContextSet& context_set,
                                 int target_port_id,
                                 const std::string& channel_name,
-                                const base::DictionaryValue& source_tab,
+                                const ExtensionMsg_TabConnectionInfo& source,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& tls_channel_id,
-                                content::RenderView* restrict_to_render_view);
+                                content::RenderFrame* restrict_to_render_frame);
 
   // Delivers a message sent using content script messaging to some of the
-  // contexts in |bindings_context_set|. If |restrict_to_render_view| is
+  // contexts in |bindings_context_set|. If |restrict_to_render_frame| is
   // specified, only contexts in that render view will receive the message.
   static void DeliverMessage(const ScriptContextSet& context_set,
                              int target_port_id,
                              const Message& message,
-                             content::RenderView* restrict_to_render_view);
+                             content::RenderFrame* restrict_to_render_frame);
 
   // Dispatches the onDisconnect event in response to the channel being closed.
   static void DispatchOnDisconnect(
       const ScriptContextSet& context_set,
       int port_id,
       const std::string& error_message,
-      content::RenderView* restrict_to_render_view);
+      content::RenderFrame* restrict_to_render_frame);
 };
 
 }  // namespace extensions

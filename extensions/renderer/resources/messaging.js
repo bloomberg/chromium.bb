@@ -216,6 +216,7 @@
   function dispatchOnConnect(portId,
                              channelName,
                              sourceTab,
+                             sourceFrameId,
                              sourceExtensionId,
                              targetExtensionId,
                              sourceUrl,
@@ -244,6 +245,8 @@
       sender.url = sourceUrl;
     if (sourceTab)
       sender.tab = sourceTab;
+    if (sourceFrameId >= 0)
+      sender.frameId = sourceFrameId;
     if (tlsChannelId !== undefined)
       sender.tlsChannelId = tlsChannelId;
 

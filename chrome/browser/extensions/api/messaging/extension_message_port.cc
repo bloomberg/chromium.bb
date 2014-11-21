@@ -25,18 +25,24 @@ ExtensionMessagePort::ExtensionMessagePort(content::RenderProcessHost* process,
 void ExtensionMessagePort::DispatchOnConnect(
     int dest_port_id,
     const std::string& channel_name,
-    const base::DictionaryValue& source_tab,
+    scoped_ptr<base::DictionaryValue> source_tab,
+    int source_frame_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const GURL& source_url,
     const std::string& tls_channel_id) {
+  ExtensionMsg_TabConnectionInfo source;
+  if (source_tab)
+    source.tab.Swap(source_tab.get());
+  source.frame_id = source_frame_id;
+
   ExtensionMsg_ExternalConnectionInfo info;
   info.target_id = target_extension_id;
   info.source_id = source_extension_id;
   info.source_url = source_url;
+
   process_->Send(new ExtensionMsg_DispatchOnConnect(
-      routing_id_, dest_port_id, channel_name, source_tab, info,
-      tls_channel_id));
+      routing_id_, dest_port_id, channel_name, source, info, tls_channel_id));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(

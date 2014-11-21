@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
@@ -46,10 +47,10 @@ RuntimeCustomBindings::~RuntimeCustomBindings() {
 
 void RuntimeCustomBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Get the current RenderView so that we can send a routed IPC message from
+  // Get the current RenderFrame so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = context()->GetRenderView();
-  if (!renderview)
+  content::RenderFrame* renderframe = context()->GetRenderFrame();
+  if (!renderframe)
     return;
 
   // The Javascript code should validate/fill the arguments.
@@ -70,12 +71,9 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
-  renderview->Send(
-      new ExtensionHostMsg_OpenChannelToExtension(renderview->GetRoutingID(),
-                                                  info,
-                                                  channel_name,
-                                                  include_tls_channel_id,
-                                                  &port_id));
+  renderframe->Send(new ExtensionHostMsg_OpenChannelToExtension(
+      renderframe->GetRoutingID(), info, channel_name, include_tls_channel_id,
+      &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

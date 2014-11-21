@@ -6,7 +6,6 @@
 
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -14,7 +13,6 @@
 #include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/messaging_bindings.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -137,11 +135,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect,
-                        OnExtensionDispatchOnConnect)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
-                        OnExtensionDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
@@ -204,34 +197,6 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
   dispatcher_->InvokeModuleSystemMethod(
       render_view(), extension_id, module_name, function_name, args,
       user_gesture);
-}
-
-void ExtensionHelper::OnExtensionDispatchOnConnect(
-    int target_port_id,
-    const std::string& channel_name,
-    const base::DictionaryValue& source_tab,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id) {
-  MessagingBindings::DispatchOnConnect(dispatcher_->script_context_set(),
-                                       target_port_id,
-                                       channel_name,
-                                       source_tab,
-                                       info,
-                                       tls_channel_id,
-                                       render_view());
-}
-
-void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
-                                                const Message& message) {
-  MessagingBindings::DeliverMessage(
-      dispatcher_->script_context_set(), target_id, message, render_view());
-}
-
-void ExtensionHelper::OnExtensionDispatchOnDisconnect(
-    int port_id,
-    const std::string& error_message) {
-  MessagingBindings::DispatchOnDisconnect(
-      dispatcher_->script_context_set(), port_id, error_message, render_view());
 }
 
 void ExtensionHelper::OnNotifyRendererViewType(ViewType type) {

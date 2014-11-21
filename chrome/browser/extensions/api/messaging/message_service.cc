@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -119,7 +119,8 @@ struct MessageService::MessageChannel {
 
 struct MessageService::OpenChannelParams {
   content::RenderProcessHost* source;
-  base::DictionaryValue source_tab;
+  scoped_ptr<base::DictionaryValue> source_tab;
+  int source_frame_id;
   scoped_ptr<MessagePort> receiver;
   int receiver_port_id;
   std::string source_extension_id;
@@ -132,6 +133,7 @@ struct MessageService::OpenChannelParams {
   // Takes ownership of receiver.
   OpenChannelParams(content::RenderProcessHost* source,
                     scoped_ptr<base::DictionaryValue> source_tab,
+                    int source_frame_id,
                     MessagePort* receiver,
                     int receiver_port_id,
                     const std::string& source_extension_id,
@@ -140,6 +142,7 @@ struct MessageService::OpenChannelParams {
                     const std::string& channel_name,
                     bool include_tls_channel_id)
       : source(source),
+        source_frame_id(source_frame_id),
         receiver(receiver),
         receiver_port_id(receiver_port_id),
         source_extension_id(source_extension_id),
@@ -148,7 +151,7 @@ struct MessageService::OpenChannelParams {
         channel_name(channel_name),
         include_tls_channel_id(include_tls_channel_id) {
     if (source_tab)
-      this->source_tab.Swap(source_tab.get());
+      this->source_tab = source_tab.Pass();
   }
 
  private:
@@ -298,7 +301,7 @@ void MessageService::OpenChannelToExtension(
     }
   }
 
-  WebContents* source_contents = tab_util::GetWebContentsByID(
+  WebContents* source_contents = tab_util::GetWebContentsByFrameID(
       source_process_id, source_routing_id);
 
   if (context->IsOffTheRecord() &&
@@ -332,15 +335,22 @@ void MessageService::OpenChannelToExtension(
 
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;
+  int source_frame_id = -1;
   if (source_contents && ExtensionTabUtil::GetTabId(source_contents) >= 0) {
     // Only the tab id is useful to platform apps for internal use. The
     // unnecessary bits will be stripped out in
     // MessagingBindings::DispatchOnConnect().
     source_tab.reset(ExtensionTabUtil::CreateTabValue(source_contents));
+
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(source_process_id, source_routing_id);
+    // Main frame's frameId is 0.
+    if (rfh)
+      source_frame_id = !rfh->GetParent() ? 0 : source_routing_id;
   }
 
   OpenChannelParams* params = new OpenChannelParams(
-      source, source_tab.Pass(), receiver, receiver_port_id,
+      source, source_tab.Pass(), source_frame_id, receiver, receiver_port_id,
       source_extension_id, target_extension_id, source_url, channel_name,
       include_tls_channel_id);
 
@@ -463,9 +473,11 @@ void MessageService::OpenChannelToTab(
   scoped_ptr<MessagePort> receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
+    // TODO(robwu): Update logic so that frames that are not hosted in the main
+    // frame's process can also receive the port.
     receiver.reset(new ExtensionMessagePort(
         contents->GetRenderProcessHost(),
-        contents->GetRenderViewHost()->GetRoutingID(),
+        contents->GetMainFrame()->GetRoutingID(),
         extension_id));
   }
 
@@ -480,6 +492,7 @@ void MessageService::OpenChannelToTab(
         source,
         scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
                                               // for opening to tabs.
+        -1,  // If there is no tab, then there is no frame either.
         receiver.release(),
         receiver_port_id,
         extension_id,
@@ -521,7 +534,8 @@ bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
   // opener has the opposite port ID).
   channel->receiver->DispatchOnConnect(params->receiver_port_id,
                                        params->channel_name,
-                                       params->source_tab,
+                                       params->source_tab.Pass(),
+                                       params->source_frame_id,
                                        params->source_extension_id,
                                        params->target_extension_id,
                                        params->source_url,

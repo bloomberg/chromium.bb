@@ -29,6 +29,8 @@ chrome.runtime.onConnect.addListener(function(port) {
       testPostMessageFromTab(port);
     } else if (msg.testSendMessageFromTab) {
       testSendMessageFromTab();
+    } else if (msg.testSendMessageFromFrame) {
+      testSendMessageFromFrame();
     } else if (msg.testDisconnect) {
       port.disconnect();
     } else if (msg.testDisconnectOnClose) {
@@ -63,6 +65,18 @@ function testSendMessageFromTab() {
       chrome.runtime.sendMessage({step: 2});
     }
   });
+}
+
+function testSendMessageFromFrame() {
+  // Add two frames. The content script declared in manifest.json (frame.js)
+  // runs in frames whose URL matches ?testSendMessageFromFrame.
+  // frame.js sends a message to the background page, which checks that
+  // sender.frameId exists and is different for both frames.
+  for (var i = 0; i < 2; ++i) {
+    var f = document.createElement('iframe');
+    f.src = '?testSendMessageFromFrame' + i;
+    document.body.appendChild(f);
+  }
 }
 
 // Tests sendMessage to an invalid extension.

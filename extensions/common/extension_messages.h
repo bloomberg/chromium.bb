@@ -147,6 +147,17 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   IPC_STRUCT_MEMBER(bool, user_gesture)
 IPC_STRUCT_END()
 
+// Struct containing information about the sender of connect() calls that
+// originate from a tab.
+IPC_STRUCT_BEGIN(ExtensionMsg_TabConnectionInfo)
+  // The tab from where the connection was created.
+  IPC_STRUCT_MEMBER(base::DictionaryValue, tab)
+
+  // The ID of the frame that initiated the connection.
+  // 0 if main frame, positive otherwise. -1 if not initiated from a frame.
+  IPC_STRUCT_MEMBER(int, frame_id)
+IPC_STRUCT_END()
+
 // Struct containing the data for external connections to extensions. Used to
 // handle the IPCs initiated by both connect() and onConnect().
 IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
@@ -485,7 +496,7 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
 IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
                     int /* target_port_id */,
                     std::string /* channel_name */,
-                    base::DictionaryValue /* source_tab */,
+                    ExtensionMsg_TabConnectionInfo /* source */,
                     ExtensionMsg_ExternalConnectionInfo,
                     std::string /* tls_channel_id */)
 

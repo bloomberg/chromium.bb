@@ -15,10 +15,8 @@
 
 class GURL;
 class SkBitmap;
-struct ExtensionMsg_ExternalConnectionInfo;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 
@@ -26,8 +24,6 @@ namespace extensions {
 class AutomationApiHelper;
 class Dispatcher;
 class URLPatternSet;
-
-struct Message;
 
 // RenderView-level plumbing for extension features.
 class ExtensionHelper
@@ -73,16 +69,6 @@ class ExtensionHelper
                                 const std::string& function_name,
                                 const base::ListValue& args,
                                 bool user_gesture);
-  void OnExtensionDispatchOnConnect(
-      int target_port_id,
-      const std::string& channel_name,
-      const base::DictionaryValue& source_tab,
-      const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& tls_channel_id);
-  void OnExtensionDeliverMessage(int target_port_id,
-                                 const Message& message);
-  void OnExtensionDispatchOnDisconnect(int port_id,
-                                       const std::string& error_message);
   void OnNotifyRendererViewType(ViewType view_type);
   void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);

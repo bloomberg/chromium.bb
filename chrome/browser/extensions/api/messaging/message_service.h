@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,10 +23,6 @@
 
 class GURL;
 class Profile;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace content {
 class BrowserContext;
@@ -74,7 +71,8 @@ class MessageService : public BrowserContextKeyedAPI,
     // Notify the port that the channel has been opened.
     virtual void DispatchOnConnect(int dest_port_id,
                                    const std::string& channel_name,
-                                   const base::DictionaryValue& source_tab,
+                                   scoped_ptr<base::DictionaryValue> source_tab,
+                                   int source_frame_id,
                                    const std::string& source_extension_id,
                                    const std::string& target_extension_id,
                                    const GURL& source_url,

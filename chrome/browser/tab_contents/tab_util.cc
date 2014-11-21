@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +17,7 @@
 #include "extensions/browser/extension_registry.h"
 #endif
 
+using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
@@ -29,6 +31,15 @@ content::WebContents* GetWebContentsByID(int render_process_id,
   if (!render_view_host)
     return NULL;
   return WebContents::FromRenderViewHost(render_view_host);
+}
+
+content::WebContents* GetWebContentsByFrameID(int render_process_id,
+                                              int render_frame_id) {
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return NULL;
+  return WebContents::FromRenderFrameHost(render_frame_host);
 }
 
 SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
