@@ -586,7 +586,7 @@ RTCVideoEncoder::~RTCVideoEncoder() {
 
 int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
                                     int32_t number_of_cores,
-                                    uint32_t max_payload_size) {
+                                    size_t max_payload_size) {
   DVLOG(1) << "InitEncode(): codecType=" << codec_settings->codecType
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height
