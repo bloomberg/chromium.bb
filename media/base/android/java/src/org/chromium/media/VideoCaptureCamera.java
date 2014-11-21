@@ -165,6 +165,13 @@ public abstract class VideoCaptureCamera extends VideoCapture
             Log.d(TAG, "Image stabilization not supported.");
         }
 
+        if (parameters.getSupportedFocusModes().contains(
+                android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+            parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        } else {
+            Log.d(TAG, "Continuous focus mode not supported.");
+        }
+
         setCaptureParameters(matchedWidth, matchedHeight, chosenFrameRate, parameters);
         parameters.setPictureSize(matchedWidth, matchedHeight);
         parameters.setPreviewSize(matchedWidth, matchedHeight);
