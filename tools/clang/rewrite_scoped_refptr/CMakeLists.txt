@@ -2,6 +2,7 @@ set(LLVM_LINK_COMPONENTS
   BitReader
   MCParser
   Option
+  X86AsmParser
   )
 
 add_llvm_executable(rewrite_scoped_refptr

@@ -22,6 +22,7 @@
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/support/TargetSelect.h"
 
 using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
@@ -255,6 +256,10 @@ void MacroRewriterCallback::run(const MatchFinder::MatchResult& result) {
 static llvm::cl::extrahelp common_help(CommonOptionsParser::HelpMessage);
 
 int main(int argc, const char* argv[]) {
+  // TODO(dcheng): Clang tooling should do this itself.
+  // http://llvm.org/bugs/show_bug.cgi?id=21627
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmParser();
   llvm::cl::OptionCategory category("Remove scoped_refptr conversions");
   CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
