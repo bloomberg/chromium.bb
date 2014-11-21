@@ -508,8 +508,8 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 
 	weston_log("Creating fbdev output.\n");
 
-	output = calloc(1, sizeof *output);
-	if (!output)
+	output = zalloc(sizeof *output);
+	if (output == NULL)
 		return -1;
 
 	output->compositor = compositor;
@@ -869,7 +869,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 
 	weston_log("initializing fbdev backend\n");
 
-	compositor = calloc(1, sizeof *compositor);
+	compositor = zalloc(sizeof *compositor);
 	if (compositor == NULL)
 		return NULL;
 

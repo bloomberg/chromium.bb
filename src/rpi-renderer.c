@@ -492,8 +492,8 @@ rpir_surface_create(struct rpi_renderer *renderer)
 {
 	struct rpir_surface *surface;
 
-	surface = calloc(1, sizeof *surface);
-	if (!surface)
+	surface = zalloc(sizeof *surface);
+	if (surface == NULL)
 		return NULL;
 
 	wl_list_init(&surface->views);
@@ -576,8 +576,8 @@ rpir_view_create(struct rpir_surface *surface)
 {
 	struct rpir_view *view;
 
-	view = calloc(1, sizeof *view);
-	if (!view)
+	view = zalloc(sizeof *view);
+	if (view == NULL)
 		return NULL;
 
 	view->surface = surface;
@@ -1549,7 +1549,7 @@ rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 		surface->buffer_type = BUFFER_TYPE_EGL;
 
 		if(surface->egl_back == NULL)
-			surface->egl_back = calloc(1, sizeof *surface->egl_back);
+			surface->egl_back = zalloc(sizeof *surface->egl_back);
 
 		weston_buffer_reference(&surface->egl_back->buffer_ref, buffer);
 		surface->egl_back->resource_handle =
@@ -1725,7 +1725,7 @@ rpi_renderer_create(struct weston_compositor *compositor,
 
 	weston_log("Initializing the DispmanX compositing renderer\n");
 
-	renderer = calloc(1, sizeof *renderer);
+	renderer = zalloc(sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
 
@@ -1797,8 +1797,8 @@ rpi_renderer_output_create(struct weston_output *base,
 
 	assert(base->renderer_state == NULL);
 
-	output = calloc(1, sizeof *output);
-	if (!output)
+	output = zalloc(sizeof *output);
+	if (output == NULL)
 		return -1;
 
 	output->display = display;

@@ -348,8 +348,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 	if (fb)
 		return fb;
 
-	fb = calloc(1, sizeof *fb);
-	if (!fb)
+	fb = zalloc(sizeof *fb);
+	if (fb == NULL)
 		return NULL;
 
 	fb->bo = bo;

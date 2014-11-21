@@ -357,7 +357,9 @@ static void text_input_manager_create_text_input(struct wl_client *client,
 	struct text_input_manager *text_input_manager = wl_resource_get_user_data(resource);
 	struct text_input *text_input;
 
-	text_input = calloc(1, sizeof *text_input);
+	text_input = zalloc(sizeof *text_input);
+	if (text_input == NULL)
+		return;
 
 	text_input->resource =
 		wl_resource_create(client, &wl_text_input_interface, 1, id);
@@ -409,7 +411,9 @@ text_input_manager_create(struct weston_compositor *ec)
 {
 	struct text_input_manager *text_input_manager;
 
-	text_input_manager = calloc(1, sizeof *text_input_manager);
+	text_input_manager = zalloc(sizeof *text_input_manager);
+	if (text_input_manager == NULL)
+		return;
 
 	text_input_manager->ec = ec;
 
@@ -726,7 +730,7 @@ input_method_context_create(struct text_input *model,
 	if (!input_method->input_method_binding)
 		return;
 
-	context = calloc(1, sizeof *context);
+	context = zalloc(sizeof *context);
 	if (context == NULL)
 		return;
 
@@ -913,7 +917,9 @@ handle_seat_created(struct wl_listener *listener,
 	struct input_method *input_method;
 	struct weston_compositor *ec = seat->compositor;
 
-	input_method = calloc(1, sizeof *input_method);
+	input_method = zalloc(sizeof *input_method);
+	if (input_method == NULL)
+		return;
 
 	input_method->seat = seat;
 	input_method->model = NULL;
@@ -972,7 +978,9 @@ text_backend_init(struct weston_compositor *ec)
 {
 	struct text_backend *text_backend;
 
-	text_backend = calloc(1, sizeof(*text_backend));
+	text_backend = zalloc(sizeof(*text_backend));
+	if (text_backend == NULL)
+		return -1;
 
 	text_backend->compositor = ec;
 

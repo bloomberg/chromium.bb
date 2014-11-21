@@ -112,7 +112,7 @@ weston_cms_create_profile(const char *filename,
 			  void *lcms_profile)
 {
 	struct weston_color_profile *p;
-	p = calloc(1, sizeof(struct weston_color_profile));
+	p = zalloc(sizeof(struct weston_color_profile));
 	p->filename = strdup(filename);
 	p->lcms_handle = lcms_profile;
 	return p;

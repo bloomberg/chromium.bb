@@ -834,8 +834,8 @@ weston_logind_connect(struct weston_logind **out,
 	char *t;
 	int r;
 
-	wl = calloc(1, sizeof(*wl));
-	if (!wl) {
+	wl = zalloc(sizeof(*wl));
+	if (wl == NULL) {
 		r = -ENOMEM;
 		goto err_out;
 	}

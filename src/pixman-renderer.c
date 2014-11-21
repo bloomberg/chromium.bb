@@ -622,8 +622,8 @@ pixman_renderer_create_surface(struct weston_surface *surface)
 	struct pixman_surface_state *ps;
 	struct pixman_renderer *pr = get_renderer(surface->compositor);
 
-	ps = calloc(1, sizeof *ps);
-	if (!ps)
+	ps = zalloc(sizeof *ps);
+	if (ps == NULL)
 		return -1;
 
 	surface->renderer_state = ps;
@@ -701,7 +701,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 {
 	struct pixman_renderer *renderer;
 
-	renderer = calloc(1, sizeof *renderer);
+	renderer = zalloc(sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
 
@@ -746,10 +746,11 @@ pixman_renderer_output_set_buffer(struct weston_output *output, pixman_image_t *
 WL_EXPORT int
 pixman_renderer_output_create(struct weston_output *output)
 {
-	struct pixman_output_state *po = calloc(1, sizeof *po);
+	struct pixman_output_state *po;
 	int w, h;
 
-	if (!po)
+	po = zalloc(sizeof *po);
+	if (po == NULL)
 		return -1;
 
 	/* set shadow image transformation */

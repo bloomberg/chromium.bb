@@ -427,7 +427,7 @@ weston_view_create(struct weston_surface *surface)
 {
 	struct weston_view *view;
 
-	view = calloc(1, sizeof *view);
+	view = zalloc(sizeof *view);
 	if (view == NULL)
 		return NULL;
 
@@ -605,7 +605,7 @@ weston_surface_create(struct weston_compositor *compositor)
 {
 	struct weston_surface *surface;
 
-	surface = calloc(1, sizeof *surface);
+	surface = zalloc(sizeof *surface);
 	if (surface == NULL)
 		return NULL;
 
@@ -3066,8 +3066,8 @@ weston_subsurface_create(uint32_t id, struct weston_surface *surface,
 	struct weston_subsurface *sub;
 	struct wl_client *client = wl_resource_get_client(surface->resource);
 
-	sub = calloc(1, sizeof *sub);
-	if (!sub)
+	sub = zalloc(sizeof *sub);
+	if (sub == NULL)
 		return NULL;
 
 	wl_list_init(&sub->unused_views);
@@ -3099,8 +3099,8 @@ weston_subsurface_create_for_parent(struct weston_surface *parent)
 {
 	struct weston_subsurface *sub;
 
-	sub = calloc(1, sizeof *sub);
-	if (!sub)
+	sub = zalloc(sizeof *sub);
+	if (sub == NULL)
 		return NULL;
 
 	weston_subsurface_link_surface(sub, parent);
@@ -3908,8 +3908,8 @@ presentation_feedback(struct wl_client *client,
 
 	surface = wl_resource_get_user_data(surface_resource);
 
-	feedback = calloc(1, sizeof *feedback);
-	if (!feedback)
+	feedback = zalloc(sizeof *feedback);
+	if (feedback == NULL)
 		goto err_calloc;
 
 	feedback->resource = wl_resource_create(client,

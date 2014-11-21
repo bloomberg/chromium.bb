@@ -289,8 +289,8 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	int ret;
 	float mm_width, mm_height;
 
-	output = calloc(1, sizeof *output);
-	if (!output)
+	output = zalloc(sizeof *output);
+	if (output == NULL)
 		return -1;
 
 	output->compositor = compositor;
@@ -459,7 +459,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 
 	weston_log("initializing Raspberry Pi backend\n");
 
-	compositor = calloc(1, sizeof *compositor);
+	compositor = zalloc(sizeof *compositor);
 	if (compositor == NULL)
 		return NULL;
 

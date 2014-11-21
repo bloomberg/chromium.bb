@@ -951,8 +951,8 @@ vaapi_recorder_create(int drm_fd, int width, int height, const char *filename)
 	int major, minor;
 	int flags;
 
-	r = calloc(1, sizeof *r);
-	if (!r)
+	r = zalloc(sizeof *r);
+	if (r == NULL)
 		return NULL;
 
 	r->width = width;

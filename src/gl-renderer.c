@@ -1413,8 +1413,8 @@ gl_renderer_create_surface(struct weston_surface *surface)
 	struct gl_surface_state *gs;
 	struct gl_renderer *gr = get_renderer(surface->compositor);
 
-	gs = calloc(1, sizeof *gs);
-	if (!gs)
+	gs = zalloc(sizeof *gs);
+	if (gs == NULL)
 		return -1;
 
 	/* A buffer is never attached to solid color surfaces, yet
@@ -1816,9 +1816,8 @@ gl_renderer_output_create(struct weston_output *output,
 		return -1;
 	}
 
-	go = calloc(1, sizeof *go);
-
-	if (!go)
+	go = zalloc(sizeof *go);
+	if (go == NULL)
 		return -1;
 
 	go->egl_surface =
@@ -1979,8 +1978,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	struct gl_renderer *gr;
 	EGLint major, minor;
 
-	gr = calloc(1, sizeof *gr);
-
+	gr = zalloc(sizeof *gr);
 	if (gr == NULL)
 		return -1;
 
