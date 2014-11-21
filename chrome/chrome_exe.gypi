@@ -98,6 +98,12 @@
             }],
           ]
         }],
+        ['OS == "win"', {
+          'dependencies': [
+            'chrome_watcher',
+            '../components/components.gyp:browser_watcher_client',
+          ],
+        }],
         ['OS == "android"', {
           # Don't put the 'chrome' target in 'all' on android
           'suppress_wildcard': 1,

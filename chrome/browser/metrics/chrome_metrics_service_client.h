@@ -30,13 +30,13 @@ class SigninStatusMetricsProvider;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace metrics {
 class MetricsService;
 class MetricsStateManager;
 class ProfilerMetricsProvider;
-}
+}  // namespace metrics
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.

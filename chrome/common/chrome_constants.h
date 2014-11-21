@@ -139,6 +139,10 @@ extern const wchar_t kLaunchModeValue[];
 // stored in a subkey named with the version number of the build. Each value
 // under the subkey represents an additional attempt.
 extern const wchar_t kBrowserCrashDumpAttemptsRegistryPath[];
+// Registry location where the browser watcher stores browser exit codes.
+// This is picked up and stored in histograms by the browser on the subsequent
+// launch.
+extern const wchar_t kBrowserExitCodesRegistryPath[];
 // Used by chrome.exe to signal that chrome.dll was started via a key sequence
 // that requires it to start in safe mode. For example, in software rendering.
 extern const char kSafeModeEnvVar[];

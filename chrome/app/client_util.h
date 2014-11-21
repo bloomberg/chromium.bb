@@ -45,8 +45,11 @@ class MainDllLoader {
  protected:
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
+  // |process_type| is the argument to the --type command line argument, e.g.
+  // "renderer", "watcher", etc.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual void OnBeforeLaunch(const base::string16& dll_path) = 0;
+  virtual void OnBeforeLaunch(const std::string& process_type,
+                              const base::string16& dll_path) = 0;
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.

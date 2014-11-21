@@ -9,7 +9,7 @@
           {
             # This is a separate lib to minimize the dependencies for its
             # hosting binary "chrome_watcher.dll".
-            'target_name': 'browser_watcher_lib',
+            'target_name': 'browser_watcher',
             'type': 'static_library',
             'sources': [
               'browser_watcher/exit_code_watcher_win.cc',
@@ -26,11 +26,13 @@
             'sources': [
               'browser_watcher/watcher_client_win.cc',
               'browser_watcher/watcher_client_win.h',
+              'browser_watcher/watcher_main_api_win.cc',
+              'browser_watcher/watcher_main_api_win.h',
               'browser_watcher/watcher_metrics_provider_win.cc',
               'browser_watcher/watcher_metrics_provider_win.h',
             ],
             'dependencies': [
-              'browser_watcher_lib',
+              'browser_watcher',
               '../base/base.gyp:base',
             ],
           },

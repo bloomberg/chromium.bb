@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/process/kill.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,7 +22,7 @@ namespace browser_watcher {
 
 namespace {
 
-const wchar_t kRegistryPath[] = L"Software\\BrowserWatcherTest";
+const base::char16 kRegistryPath[] = L"Software\\BrowserWatcherTest";
 
 MULTIPROCESS_TEST_MAIN(Sleeper) {
   // Sleep forever - the test harness will kill this process to give it an

@@ -18,6 +18,7 @@ include_rules = [
   "+components/bookmarks/browser",
   "+components/bookmarks/common",
   "+components/bookmarks/test",
+  "+components/browser_watcher",
   "+components/cdm/browser",
   "+components/cloud_devices/common",
   "+components/component_updater",

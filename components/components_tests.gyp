@@ -493,8 +493,8 @@
             ['OS=="win"', {
               'dependencies': [
                  # Dependencies of browser_watcher, windows only.
+                 'components.gyp:browser_watcher',
                  'components.gyp:browser_watcher_client',
-                 'components.gyp:browser_watcher_lib',
               ]
             }],
             ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
