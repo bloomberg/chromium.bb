@@ -4,10 +4,18 @@
 
 #include "ui/ozone/common/display_util.h"
 
+#include "base/command_line.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
+
+namespace {
+
+const int64_t kDummyDisplayId = 1;
+
+}  // namespace
 
 FindDisplayById::FindDisplayById(int64_t display_id) : display_id_(display_id) {
 }
@@ -49,6 +57,46 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
   params.string_representation = display.ToString();
 
   return params;
+}
+
+DisplaySnapshot_Params CreateSnapshotFromCommandLine() {
+  DisplaySnapshot_Params display_param;
+
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  std::string spec =
+      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayBounds);
+  std::string physical_spec =
+      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayPhysicalSizeMm);
+
+  if (spec.empty())
+    return display_param;
+
+  int width = 0;
+  int height = 0;
+  if (sscanf(spec.c_str(), "%dx%d", &width, &height) < 2)
+    return display_param;
+
+  if (width == 0 || height == 0)
+    return display_param;
+
+  int physical_width = 0;
+  int physical_height = 0;
+  sscanf(physical_spec.c_str(), "%dx%d", &physical_width, &physical_height);
+
+  DisplayMode_Params mode_param;
+  mode_param.size = gfx::Size(width, height);
+  mode_param.refresh_rate = 60;
+
+  display_param.display_id = kDummyDisplayId;
+  display_param.modes.push_back(mode_param);
+  display_param.type = DISPLAY_CONNECTION_TYPE_INTERNAL;
+  display_param.physical_size = gfx::Size(physical_width, physical_height);
+  display_param.has_current_mode = true;
+  display_param.current_mode = mode_param;
+  display_param.has_native_mode = true;
+  display_param.native_mode = mode_param;
+
+  return display_param;
 }
 
 }  // namespace ui

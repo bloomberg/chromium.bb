@@ -27,6 +27,9 @@ class FindDisplayById {
 DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode);
 DisplaySnapshot_Params GetDisplaySnapshotParams(const DisplaySnapshot& display);
 
+// Create a display using the Ozone command line parameters.
+DisplaySnapshot_Params CreateSnapshotFromCommandLine();
+
 }  // namespace ui
 
 #endif  // UI_OZONE_COMMON_DISPLAY_UTIL_H_

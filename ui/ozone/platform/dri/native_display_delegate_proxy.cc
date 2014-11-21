@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_observer.h"
@@ -17,13 +16,10 @@
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
-#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
 namespace {
-
-const int64_t kDummyDisplayId = 1;
 
 class DriDisplaySnapshotProxy : public DisplaySnapshotProxy {
  public:
@@ -42,41 +38,6 @@ class DriDisplaySnapshotProxy : public DisplaySnapshotProxy {
 
   DISALLOW_COPY_AND_ASSIGN(DriDisplaySnapshotProxy);
 };
-
-DisplaySnapshotProxy* CreateSnapshotFromSpec(const std::string& spec,
-                                             const std::string& physical_spec,
-                                             DisplayManager* display_manager) {
-  if (spec.empty())
-    return nullptr;
-
-  int width = 0;
-  int height = 0;
-  if (sscanf(spec.c_str(), "%dx%d", &width, &height) < 2)
-    return nullptr;
-
-  if (width == 0 || height == 0)
-    return nullptr;
-
-  int physical_width = 0;
-  int physical_height = 0;
-  sscanf(physical_spec.c_str(), "%dx%d", &physical_width, &physical_height);
-
-  DisplayMode_Params mode_param;
-  mode_param.size = gfx::Size(width, height);
-  mode_param.refresh_rate = 60;
-
-  DisplaySnapshot_Params display_param;
-  display_param.display_id = kDummyDisplayId;
-  display_param.modes.push_back(mode_param);
-  display_param.type = DISPLAY_CONNECTION_TYPE_INTERNAL;
-  display_param.physical_size = gfx::Size(physical_width, physical_height);
-  display_param.has_current_mode = true;
-  display_param.current_mode = mode_param;
-  display_param.has_native_mode = true;
-  display_param.native_mode = mode_param;
-
-  return new DriDisplaySnapshotProxy(display_param, display_manager);
-}
 
 }  // namespace
 
@@ -104,13 +65,9 @@ void NativeDisplayDelegateProxy::Initialize() {
   if (!displays_.empty())
     return;
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  DisplaySnapshotProxy* display = CreateSnapshotFromSpec(
-      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayBounds),
-      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayPhysicalSizeMm),
-      display_manager_);
-  if (display)
-    displays_.push_back(display);
+  DisplaySnapshot_Params params = CreateSnapshotFromCommandLine();
+  if (params.type != DISPLAY_CONNECTION_TYPE_NONE)
+    displays_.push_back(new DriDisplaySnapshotProxy(params, display_manager_));
 }
 
 void NativeDisplayDelegateProxy::GrabServer() {
