@@ -697,6 +697,10 @@ crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure
 
 crbug.com/393217 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Pass Crash Timeout ]
 
+crbug.com/435286 [ Mac ] compositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] svg/css/text-gradient-shadow.svg [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] svg/css/text-shadow-multiple.xhtml [ NeedsRebaseline ]
+
 crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
