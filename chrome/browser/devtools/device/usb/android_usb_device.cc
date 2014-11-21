@@ -72,6 +72,7 @@ bool IsAndroidInterface(const UsbInterfaceDescriptor& interface) {
 scoped_refptr<AndroidUsbDevice> ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
     scoped_refptr<UsbDeviceHandle> usb_handle,
+    const base::string16& serial,
     const UsbInterfaceDescriptor& interface) {
   int inbound_address = 0;
   int outbound_address = 0;
@@ -93,10 +94,6 @@ scoped_refptr<AndroidUsbDevice> ClaimInterface(
     return NULL;
 
   if (!usb_handle->ClaimInterface(interface.interface_number))
-    return NULL;
-
-  base::string16 serial;
-  if (!usb_handle->GetDevice()->GetSerialNumber(&serial) || serial.empty())
     return NULL;
 
   return new AndroidUsbDevice(rsa_key,
@@ -201,15 +198,19 @@ static void OpenAndroidDeviceOnFileThread(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (success) {
-    const UsbConfigDescriptor& config = device->GetConfiguration();
-    scoped_refptr<UsbDeviceHandle> usb_handle = device->Open();
-    if (usb_handle.get()) {
-      scoped_refptr<AndroidUsbDevice> android_device =
-          ClaimInterface(rsa_key, usb_handle, config.interfaces[interface_id]);
-      if (android_device.get())
-        devices->push_back(android_device.get());
-      else
-        usb_handle->Close();
+    base::string16 serial;
+    if (device->GetSerialNumber(&serial) && !serial.empty()) {
+      const UsbConfigDescriptor& config = device->GetConfiguration();
+      scoped_refptr<UsbDeviceHandle> usb_handle = device->Open();
+      if (usb_handle.get()) {
+        scoped_refptr<AndroidUsbDevice> android_device =
+            ClaimInterface(rsa_key, usb_handle, serial,
+                           config.interfaces[interface_id]);
+        if (android_device.get())
+          devices->push_back(android_device.get());
+        else
+          usb_handle->Close();
+      }
     }
   }
   barrier.Run();
