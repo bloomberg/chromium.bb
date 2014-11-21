@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.util.ChromeApiCompatibilityUtils;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.app.ContentApplication;
@@ -360,7 +361,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
                     activeTab.getTitle(), activeTab.getUrl(), null,
-                    Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                    ChromeApiCompatibilityUtils.getActivityNewDocumentFlag());
             return true;
         } else {
             return super.onOptionsItemSelected(item);
