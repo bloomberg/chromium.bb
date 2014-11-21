@@ -262,14 +262,6 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
         make_scoped_ptr(message));
   }
 
-  // Route IPCs through the RenderFrameProxyHost when in swapped out state.
-  // Note: For subframes in --site-per-process mode, we don't use swapped out
-  // RenderFrameHosts.
-  if (frame_tree_node_->IsMainFrame() && is_swapped_out()) {
-    DCHECK(render_frame_proxy_host_);
-    return render_frame_proxy_host_->Send(message);
-  }
-
   return GetProcess()->Send(message);
 }
 

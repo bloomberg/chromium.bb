@@ -860,12 +860,6 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
       delete message;
       return false;
     }
-
-    // In most cases, send IPCs through the proxy when swapped out. In some
-    // calls the associated RenderViewImpl routing id is used to send
-    // messages, so don't use the proxy.
-    if (render_frame_proxy_ && message->routing_id() == routing_id_)
-      return render_frame_proxy_->Send(message);
   }
 
   return RenderThread::Get()->Send(message);

@@ -152,21 +152,11 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  // If |handled| is true, |this| may have been deleted.
-  if (handled)
-    return true;
-
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromRoutingID(frame_routing_id_);
-  return render_frame && render_frame->OnMessageReceived(msg);
+  // Note: If |handled| is true, |this| may have been deleted.
+  return handled;
 }
 
 bool RenderFrameProxy::Send(IPC::Message* message) {
-  if (!SwappedOutMessages::CanSendWhileSwappedOut(message)) {
-    delete message;
-    return false;
-  }
-  message->set_routing_id(routing_id_);
   return RenderThread::Get()->Send(message);
 }
 

@@ -104,14 +104,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameProxyHost::PassFrameHostOwnership() {
 }
 
 bool RenderFrameProxyHost::Send(IPC::Message *msg) {
-  // TODO(nasko): For now, RenderFrameHost uses this object to send IPC messages
-  // while swapped out. This can be removed once we don't have a swapped out
-  // state on RenderFrameHosts. See https://crbug.com/357747.
-
-  // Don't reset the routing ID for control messages.  See
-  // https://crbug.com/423538
-  if (msg->routing_id() != MSG_ROUTING_CONTROL)
-    msg->set_routing_id(routing_id_);
   return GetProcess()->Send(msg);
 }
 
@@ -119,11 +111,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   if (cross_process_frame_connector_.get() &&
       cross_process_frame_connector_->OnMessageReceived(msg))
     return true;
-
-  // TODO(nasko): This can be removed once we don't have a swapped out state on
-  // RenderFrameHosts. See https://crbug.com/357747.
-  if (render_frame_host_.get())
-    return render_frame_host_->OnMessageReceived(msg);
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
