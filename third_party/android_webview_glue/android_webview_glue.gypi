@@ -7,7 +7,7 @@
       'target_name': 'system_webview_apk',
       'variables': {
         'apk_name': 'SystemWebView',
-        'shared_resources': 0,
+        'shared_resources': 1,
       },
       'includes': [ 'android_webview_glue_common.gypi' ],
       'copies': [
