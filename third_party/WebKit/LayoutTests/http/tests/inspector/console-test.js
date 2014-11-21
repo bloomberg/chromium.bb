@@ -124,7 +124,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, r
     if (forceInvalidate)
         WebInspector.ConsolePanel._view()._viewport.invalidate();
     var table = viewMessage.contentElement();
-    var headers = table.querySelectorAll("th div");
+    var headers = table.querySelectorAll("th > div:first-child");
     if (!headers.length)
         return false;
 
