@@ -2,16 +2,24 @@
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<script src="../../resources/js-test.js"></script>
+<style>
+canvas {
+    border: 1px solid #000;
+    margin: 2px;
+}
+</style>
 <script>
 var img;
+var imgdata;
 
 function imageLoaded() {
     var NUM_IMAGE = 16;
     for (var i = 0; i < NUM_IMAGE; i++) {
-        var canvases = document.getElementById('canvases');
+        var canvases = document.getElementById('canvases')
         var canvas = document.createElement('canvas');
-        canvas.width = 3;
-        canvas.height = 3;
+        canvas.width = 9;
+        canvas.height = 9;
         var ctx = canvas.getContext('2d');
 
         var pattern = ctx.createPattern(img, 'no-repeat');
@@ -25,6 +33,12 @@ function imageLoaded() {
         var div = document.createElement('div');
         div.appendChild(canvas);
         canvases.appendChild(div);
+
+        var imageData = ctx.getImageData(4, 4, 1, 1);
+        imgdata = imageData.data;
+        shouldBe("imgdata[0]", "0");
+        shouldBe("imgdata[1]", "255");
+        shouldBe("imgdata[2]", "0");
     }
 
     if (window.testRunner) {
@@ -34,20 +48,25 @@ function imageLoaded() {
 
 function runTests() {
     if (window.testRunner) {
-		testRunner.dumpAsTextWithPixelResults();
+		testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
 
+    var patternCanvas = document.createElement('canvas');
+    patternCanvas.width = 9;
+    patternCanvas.height = 9;
+    var patternCtx = patternCanvas.getContext('2d');
+    patternCtx.fillStyle = '#0F0';
+    patternCtx.fillRect(3, 3, 3, 3);
     img = new Image();
     img.onload = imageLoaded;
-    img.src = ('data:image/png;base64,' +
-               'iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9kHEAcrAR/kt7IAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAFElEQVQI12P4//8/AwMDhIQBuBgAs2oL9bpyMd8AAAAASUVORK5CYII=');
+    img.src = patternCanvas.toDataURL();
 
 }
 </script>
 </head>
 <body onload="runTests();">
-You should see (almost) straight vertical line below.
+Visual result below is for debugging purposes only (test uses text baseline only). You should see sixteen canvases with a green dot (rotated square) in the center.
 <div id="canvases"></div>
 </pre>
 </body>
