@@ -32,7 +32,8 @@ public:
         return create(WTF::ArrayBuffer::create(contents));
     }
 
-    // Only for use by Internals::serializeObject.
+    // Only for use by XMLHttpRequest::responseArrayBuffer and
+    // Internals::serializeObject.
     static PassRefPtr<DOMArrayBuffer> createUninitialized(unsigned numElements, unsigned elementByteSize)
     {
         return create(WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));

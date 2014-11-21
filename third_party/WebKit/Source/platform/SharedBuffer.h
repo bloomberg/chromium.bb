@@ -30,7 +30,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/PurgeableVector.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -82,10 +81,10 @@ public:
     //      }
     unsigned getSomeData(const char*& data, unsigned position = 0) const;
 
-    // Creates an ArrayBuffer and copies this SharedBuffer's contents to that
-    // ArrayBuffer without merging segmented buffers into a flat buffer. If
-    // allocation of an ArrayBuffer fails, returns 0.
-    PassRefPtr<ArrayBuffer> getAsArrayBuffer() const;
+    // Returns the content data into "dest" as a flat buffer. "byteLength" must
+    // exactly match with size(). Returns true on success, otherwise the content
+    // of "dest" is not guaranteed.
+    bool getAsBytes(void* dest, unsigned byteLength) const;
 
     // Creates an SkData and copies this SharedBuffer's contents to that
     // SkData without merging segmented buffers into a flat buffer.

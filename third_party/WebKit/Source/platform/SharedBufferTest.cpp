@@ -29,24 +29,21 @@
  */
 
 #include "config.h"
-
-#include <algorithm>
-#include <cstdlib>
-
 #include "platform/SharedBuffer.h"
+
 #include "platform/TestingPlatformSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
-
-#include "wtf/ArrayBuffer.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <algorithm>
+#include <cstdlib>
 #include <gtest/gtest.h>
 
 using namespace blink;
 
 namespace {
 
-TEST(SharedBufferTest, getAsArrayBuffer)
+TEST(SharedBufferTest, getAsBytes)
 {
     char testData0[] = "Hello";
     char testData1[] = "World";
@@ -56,14 +53,16 @@ TEST(SharedBufferTest, getAsArrayBuffer)
     sharedBuffer->append(testData1, strlen(testData1));
     sharedBuffer->append(testData2, strlen(testData2));
 
-    RefPtr<ArrayBuffer> arrayBuffer = sharedBuffer->getAsArrayBuffer();
+    const unsigned size = sharedBuffer->size();
+    OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
+    ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
     char expectedConcatenation[] = "HelloWorldGoodbye";
-    ASSERT_EQ(strlen(expectedConcatenation), arrayBuffer->byteLength());
-    EXPECT_EQ(0, memcmp(expectedConcatenation, arrayBuffer->data(), strlen(expectedConcatenation)));
+    ASSERT_EQ(strlen(expectedConcatenation), size);
+    EXPECT_EQ(0, memcmp(expectedConcatenation, data.get(), strlen(expectedConcatenation)));
 }
 
-TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
+TEST(SharedBufferTest, getAsBytesLargeSegments)
 {
     Vector<char> vector0(0x4000);
     for (size_t i = 0; i < vector0.size(); ++i)
@@ -79,20 +78,22 @@ TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
     sharedBuffer->append(vector1);
     sharedBuffer->append(vector2);
 
-    RefPtr<ArrayBuffer> arrayBuffer = sharedBuffer->getAsArrayBuffer();
+    const unsigned size = sharedBuffer->size();
+    OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
+    ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
-    ASSERT_EQ(0x4000U + 0x4000U + 0x4000U, arrayBuffer->byteLength());
+    ASSERT_EQ(0x4000U + 0x4000U + 0x4000U, size);
     int position = 0;
     for (int i = 0; i < 0x4000; ++i) {
-        EXPECT_EQ('a', static_cast<char*>(arrayBuffer->data())[position]);
+        EXPECT_EQ('a', data[position]);
         ++position;
     }
     for (int i = 0; i < 0x4000; ++i) {
-        EXPECT_EQ('b', static_cast<char*>(arrayBuffer->data())[position]);
+        EXPECT_EQ('b', data[position]);
         ++position;
     }
     for (int i = 0; i < 0x4000; ++i) {
-        EXPECT_EQ('c', static_cast<char*>(arrayBuffer->data())[position]);
+        EXPECT_EQ('c', data[position]);
         ++position;
     }
 }

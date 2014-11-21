@@ -439,13 +439,14 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 
     if (!m_responseArrayBuffer) {
         if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
-            m_responseArrayBuffer = DOMArrayBuffer::create(m_binaryResponseBuilder->getAsArrayBuffer());
-            if (!m_responseArrayBuffer) {
+            RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::createUninitialized(m_binaryResponseBuilder->size(), 1);
+            if (!m_binaryResponseBuilder->getAsBytes(buffer->data(), buffer->byteLength())) {
                 // m_binaryResponseBuilder failed to allocate an ArrayBuffer.
                 // We need to crash the renderer since there's no way defined in
                 // the spec to tell this to the user.
                 CRASH();
             }
+            m_responseArrayBuffer = buffer.release();
             m_binaryResponseBuilder.clear();
         } else {
             m_responseArrayBuffer = DOMArrayBuffer::create(nullptr, 0);
