@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -57,6 +58,9 @@ public class TabManager extends LinearLayout {
         @Override
         public void willCloseTab(Tab tab, boolean animate) {
             if (tab == mCurrentTab) setCurrentTab(null);
+            if (mTabModelSelector.getCurrentModel().getCount() == 1) {
+                createNewTab();
+            }
         }
     };
 
@@ -142,6 +146,11 @@ public class TabManager extends LinearLayout {
      */
     public void closeAllTabs() {
         mTabModelSelector.getCurrentModel().closeAllTabs();
+    }
+
+    @VisibleForTesting
+    public void closeTab() {
+        mTabModelSelector.getCurrentModel().closeTab(mCurrentTab);
     }
 
     /**

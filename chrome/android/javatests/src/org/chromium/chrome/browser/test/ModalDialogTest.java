@@ -283,7 +283,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().closeAllTabs();
+                getActivity().closeTab();
             }
         });
 

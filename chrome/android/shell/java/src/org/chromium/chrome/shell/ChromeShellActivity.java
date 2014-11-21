@@ -294,6 +294,11 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         mTabManager.closeAllTabs();
     }
 
+    @VisibleForTesting
+    public void closeTab() {
+        mTabManager.closeTab();
+    }
+
     /**
      * Override the menu key event to show AppMenu.
      */
