@@ -8168,7 +8168,13 @@ TEST_F(HTTPSOCSPTest, ValidStapled) {
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
-TEST_F(HTTPSOCSPTest, RevokedStapled) {
+// Disabled on NSS ports. See https://crbug.com/431716.
+#if defined(USE_NSS)
+#define MAYBE_RevokedStapled DISABLED_RevokedStapled
+#else
+#define MAYBE_RevokedStapled RevokedStapled
+#endif
+TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
   if (!SystemSupportsOCSPStapling()) {
     LOG(WARNING)
         << "Skipping test because system doesn't support OCSP stapling";
