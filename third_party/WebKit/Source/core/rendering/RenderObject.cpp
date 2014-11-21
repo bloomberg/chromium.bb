@@ -1685,14 +1685,6 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
-    if (diff.visualOverflowChanged() && !needsLayout()) {
-        // FIXME crbug.com/425610: Compute overflow without layout for line boxes too.
-        if (isRenderBlock())
-            setNeedsOverflowRecalcAfterStyleChange();
-        else
-            setNeedsLayoutAndPrefWidthsRecalc();
-    }
-
     if (updatedDiff.needsPaintInvalidationLayer())
         toRenderLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())

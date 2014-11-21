@@ -107,11 +107,6 @@ public:
             && m_bottomRight == o.m_bottomRight;
     }
 
-    bool visualOverflowEqual(const BorderData& o) const
-    {
-        return m_image.outset() == o.m_image.outset();
-    }
-
     bool operator!=(const BorderData& o) const
     {
         return !(*this == o);

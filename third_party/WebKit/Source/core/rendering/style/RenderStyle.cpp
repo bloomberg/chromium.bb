@@ -474,6 +474,10 @@ bool RenderStyle::diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& oth
             && *rareNonInheritedData->m_flexibleBox.get() != *other.rareNonInheritedData->m_flexibleBox.get())
             return true;
 
+        // FIXME: We should add an optimized form of layout that just recomputes visual overflow.
+        if (!rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get()))
+            return true;
+
         if (!rareNonInheritedData->reflectionDataEquivalent(*other.rareNonInheritedData.get()))
             return true;
 
@@ -589,6 +593,11 @@ bool RenderStyle::diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& oth
     if ((visibility() == COLLAPSE) != (other.visibility() == COLLAPSE))
         return true;
 
+    if (!m_background->outline().visuallyEqual(other.m_background->outline())) {
+        // FIXME: We only really need to recompute the overflow but we don't have an optimized layout for it.
+        return true;
+    }
+
     // Movement of non-static-positioned object is special cased in RenderStyle::visualInvalidationDiff().
 
     return false;
@@ -652,9 +661,6 @@ bool RenderStyle::diffNeedsPaintInvalidationLayer(const RenderStyle& other) cons
 
 bool RenderStyle::diffNeedsPaintInvalidationObject(const RenderStyle& other) const
 {
-    if (!m_background->outline().visuallyEqual(other.m_background->outline()))
-        return true;
-
     if (inherited_flags._visibility != other.inherited_flags._visibility
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
         || inherited_flags._insideLink != other.inherited_flags._insideLink
@@ -673,7 +679,6 @@ bool RenderStyle::diffNeedsPaintInvalidationObject(const RenderStyle& other) con
         if (rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
             || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
-            || !rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get())
             || !rareNonInheritedData->shapeOutsideDataEquivalent(*other.rareNonInheritedData.get())
             || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get()))
             return true;
@@ -697,13 +702,7 @@ void RenderStyle::updatePropertySpecificDifferences(const RenderStyle& other, St
 
         if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
             diff.setFilterChanged();
-
-        if (!rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get()))
-            diff.setVisualOverflowChanged();
     }
-
-    if (!m_background->outline().visuallyEqual(other.m_background->outline()) || !surround->border.visualOverflowEqual(other.surround->border))
-        diff.setVisualOverflowChanged();
 
     if (!diff.needsPaintInvalidation()) {
         if (inherited->color != other.inherited->color
