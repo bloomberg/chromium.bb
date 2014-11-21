@@ -18,6 +18,20 @@ namespace autofill {
 // A form group that stores credit card information.
 class CreditCard : public AutofillDataModel {
  public:
+  enum RecordType {
+    // A card with a complete number managed by Chrome (and not Wallet).
+    LOCAL_CARD,
+
+    // A card from Wallet with masked information. Such cards will only have
+    // the last 4 digits of the card number, and require an extra download to
+    // convert to a FULL_WALLET_CARD.
+    MASKED_WALLET_CARD,
+
+    // A card from Wallet with full information. This card is not locally
+    // editable.
+    FULL_WALLET_CARD,
+  };
+
   CreditCard(const std::string& guid, const std::string& origin);
 
   // For use in STL containers.
@@ -67,7 +81,8 @@ class CreditCard : public AutofillDataModel {
 
   // The number altered for display, for example: ******1234
   base::string16 ObfuscatedNumber() const;
-  // The last four digits of the credit card number.
+  // The last four digits of the credit card number (or possibly less if there
+  // aren't enough characters).
   base::string16 LastFourDigits() const;
   // The user-visible type of the card, e.g. 'Mastercard'.
   base::string16 TypeForDisplay() const;
@@ -101,14 +116,20 @@ class CreditCard : public AutofillDataModel {
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
 
+  // How this card is stored.
+  RecordType record_type() const { return record_type_; }
+  void set_record_type(RecordType rt) { record_type_ = rt; }
+
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
 
-  // Returns true if all field types have valid values set.
+  // Returns true if all field types have valid values set. Server masked cards
+  // will not be complete. MASKED_WALLET_CARDs will never be complete.
   bool IsComplete() const;
 
   // Returns true if all field types have valid values set and the card is not
-  // expired.
+  // expired. MASKED_WALLET_CARDs will never be valid because the number is
+  // not complete.
   bool IsValid() const;
 
   // Returns the credit card number.
@@ -140,9 +161,18 @@ class CreditCard : public AutofillDataModel {
   void SetExpirationMonth(int expiration_month);
   void SetExpirationYear(int expiration_year);
 
-  base::string16 number_;  // The credit card number.
-  base::string16 name_on_card_;  // The cardholder's name.
-  std::string type_;  // The type of the card.
+  // See enum definition above.
+  RecordType record_type_;
+
+  // The credit card number. For MASKED_WALLET_CARDs, this number will
+  // just contain the last four digits of the card number.
+  base::string16 number_;
+
+  // The cardholder's name. May be empty.
+  base::string16 name_on_card_;
+
+  // The type of the card. This is one of the k...Card constants below.
+  std::string type_;
 
   // These members are zero if not present.
   int expiration_month_;

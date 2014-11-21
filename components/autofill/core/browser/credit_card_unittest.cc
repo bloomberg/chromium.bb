@@ -530,4 +530,19 @@ TEST(CreditCardTest, GetCreditCardType) {
   }
 }
 
+TEST(CreditCardTest, LastFourDigits) {
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
+  ASSERT_EQ(base::string16(), card.LastFourDigits());
+
+  test::SetCreditCardInfo(&card, "Baby Face Nelson",
+                          "5212341234123489", "01", "2010");
+  ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
+
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("3489"));
+  ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
+
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("489"));
+  ASSERT_EQ(base::ASCIIToUTF16("489"), card.LastFourDigits());
+}
+
 }  // namespace autofill
