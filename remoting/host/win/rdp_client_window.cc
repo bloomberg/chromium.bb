@@ -122,8 +122,8 @@ RdpClientWindow::~RdpClientWindow() {
   if (m_hWnd)
     DestroyWindow();
 
-  DCHECK(!client_);
-  DCHECK(!client_settings_);
+  DCHECK(!client_.get());
+  DCHECK(!client_settings_.get());
 }
 
 bool RdpClientWindow::Connect(const webrtc::DesktopSize& screen_size) {
@@ -209,7 +209,7 @@ void RdpClientWindow::InjectSas() {
 }
 
 void RdpClientWindow::OnClose() {
-  if (!client_) {
+  if (!client_.get()) {
     NotifyDisconnected();
     return;
   }
@@ -478,7 +478,7 @@ scoped_refptr<RdpClientWindow::WindowHook>
 RdpClientWindow::WindowHook::Create() {
   scoped_refptr<WindowHook> window_hook = g_window_hook.Pointer()->Get();
 
-  if (!window_hook)
+  if (!window_hook.get())
     window_hook = new WindowHook();
 
   return window_hook;

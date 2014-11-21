@@ -130,7 +130,7 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
 
   DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(!rdp_client_window_);
-  DCHECK(!self_);
+  DCHECK(!self_.get());
 
   // Read the port number used by RDP.
   DWORD server_port;
