@@ -261,7 +261,8 @@ class LayerTreeHostImplTest : public testing::Test,
 
     layer_tree_impl->SetRootLayer(root.Pass());
     layer_tree_impl->SetViewportLayersFromIds(
-        kPageScaleLayerId, kInnerViewportScrollLayerId, Layer::INVALID_ID);
+        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportScrollLayerId,
+        Layer::INVALID_ID);
 
     return scroll_layer;
   }
@@ -1400,53 +1401,51 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   base::TimeTicks fake_current_physical_time_;
 };
 
-#define SETUP_LAYERS_FOR_SCROLLBAR_ANIMATION_TEST()                           \
-  gfx::Size viewport_size(10, 10);                                            \
-  gfx::Size content_size(100, 100);                                           \
-                                                                              \
-  LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =            \
-      new LayerTreeHostImplOverridePhysicalTime(settings,                     \
-                                                this,                         \
-                                                &proxy_,                      \
-                                                shared_bitmap_manager_.get(), \
-                                                &stats_instrumentation_);     \
-  host_impl_ = make_scoped_ptr(host_impl_override_time);                      \
-  host_impl_->InitializeRenderer(CreateOutputSurface());                      \
-  host_impl_->SetViewportSize(viewport_size);                                 \
-                                                                              \
-  scoped_ptr<LayerImpl> root =                                                \
-      LayerImpl::Create(host_impl_->active_tree(), 1);                        \
-  root->SetBounds(viewport_size);                                             \
-                                                                              \
-  scoped_ptr<LayerImpl> scroll =                                              \
-      LayerImpl::Create(host_impl_->active_tree(), 2);                        \
-  scroll->SetScrollClipLayer(root->id());                                     \
-  scroll->SetScrollOffset(gfx::ScrollOffset());                               \
-  root->SetBounds(viewport_size);                                             \
-  scroll->SetBounds(content_size);                                            \
-  scroll->SetContentBounds(content_size);                                     \
-  scroll->SetIsContainerForFixedPositionLayers(true);                         \
-                                                                              \
-  scoped_ptr<LayerImpl> contents =                                            \
-      LayerImpl::Create(host_impl_->active_tree(), 3);                        \
-  contents->SetDrawsContent(true);                                            \
-  contents->SetBounds(content_size);                                          \
-  contents->SetContentBounds(content_size);                                   \
-                                                                              \
-  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =                        \
-      SolidColorScrollbarLayerImpl::Create(                                   \
-          host_impl_->active_tree(), 4, VERTICAL, 10, 0, false, true);        \
-  EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());                                 \
-                                                                              \
-  scroll->AddChild(contents.Pass());                                          \
-  root->AddChild(scroll.Pass());                                              \
-  scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);                           \
-  root->AddChild(scrollbar.Pass());                                           \
-                                                                              \
-  host_impl_->active_tree()->SetRootLayer(root.Pass());                       \
-  host_impl_->active_tree()->SetViewportLayersFromIds(                        \
-      1, 2, Layer::INVALID_ID);                                               \
-  host_impl_->active_tree()->DidBecomeActive();                               \
+#define SETUP_LAYERS_FOR_SCROLLBAR_ANIMATION_TEST()                            \
+  gfx::Size viewport_size(10, 10);                                             \
+  gfx::Size content_size(100, 100);                                            \
+                                                                               \
+  LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =             \
+      new LayerTreeHostImplOverridePhysicalTime(settings, this, &proxy_,       \
+                                                shared_bitmap_manager_.get(),  \
+                                                &stats_instrumentation_);      \
+  host_impl_ = make_scoped_ptr(host_impl_override_time);                       \
+  host_impl_->InitializeRenderer(CreateOutputSurface());                       \
+  host_impl_->SetViewportSize(viewport_size);                                  \
+                                                                               \
+  scoped_ptr<LayerImpl> root =                                                 \
+      LayerImpl::Create(host_impl_->active_tree(), 1);                         \
+  root->SetBounds(viewport_size);                                              \
+                                                                               \
+  scoped_ptr<LayerImpl> scroll =                                               \
+      LayerImpl::Create(host_impl_->active_tree(), 2);                         \
+  scroll->SetScrollClipLayer(root->id());                                      \
+  scroll->SetScrollOffset(gfx::ScrollOffset());                                \
+  root->SetBounds(viewport_size);                                              \
+  scroll->SetBounds(content_size);                                             \
+  scroll->SetContentBounds(content_size);                                      \
+  scroll->SetIsContainerForFixedPositionLayers(true);                          \
+                                                                               \
+  scoped_ptr<LayerImpl> contents =                                             \
+      LayerImpl::Create(host_impl_->active_tree(), 3);                         \
+  contents->SetDrawsContent(true);                                             \
+  contents->SetBounds(content_size);                                           \
+  contents->SetContentBounds(content_size);                                    \
+                                                                               \
+  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =                         \
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 4,       \
+                                           VERTICAL, 10, 0, false, true);      \
+  EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());                                  \
+                                                                               \
+  scroll->AddChild(contents.Pass());                                           \
+  root->AddChild(scroll.Pass());                                               \
+  scrollbar->SetScrollLayerAndClipLayerByIds(2, 1);                            \
+  root->AddChild(scrollbar.Pass());                                            \
+                                                                               \
+  host_impl_->active_tree()->SetRootLayer(root.Pass());                        \
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2, \
+                                                      Layer::INVALID_ID);      \
+  host_impl_->active_tree()->DidBecomeActive();                                \
   DrawFrame();
 
 TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
@@ -1613,7 +1612,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   root->AddChild(scrollbar.Pass());
 
   host_impl_->active_tree()->SetRootLayer(root.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
 
@@ -2287,7 +2287,8 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root_clip->AddChild(root.Pass());
     host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
     host_impl_->active_tree()->SetViewportLayersFromIds(
-        page_scale_layer_id, inner_viewport_scroll_layer_id, Layer::INVALID_ID);
+        Layer::INVALID_ID, page_scale_layer_id, inner_viewport_scroll_layer_id,
+        Layer::INVALID_ID);
     // Set a viewport size that is large enough to contain both the top controls
     // and some content.
     host_impl_->SetViewportSize(viewport_size_);
@@ -2311,7 +2312,8 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root_clip->AddChild(root.Pass());
     host_impl_->sync_tree()->SetRootLayer(root_clip.Pass());
     host_impl_->sync_tree()->SetViewportLayersFromIds(
-        page_scale_layer_id, inner_viewport_scroll_layer_id, Layer::INVALID_ID);
+        Layer::INVALID_ID, page_scale_layer_id, inner_viewport_scroll_layer_id,
+        Layer::INVALID_ID);
     // Set a viewport size that is large enough to contain both the top controls
     // and some content.
     host_impl_->SetViewportSize(viewport_size_);
@@ -2366,8 +2368,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
 
     host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
     host_impl_->active_tree()->SetViewportLayersFromIds(
-        page_scale_layer_id,
-        inner_viewport_scroll_layer_id,
+        Layer::INVALID_ID, page_scale_layer_id, inner_viewport_scroll_layer_id,
         outer_viewport_scroll_layer_id);
 
     host_impl_->SetViewportSize(inner_viewport_size);
@@ -2991,7 +2992,8 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   // The behaviour in this test assumes the page scale is applied at a layer
   // above the clip layer.
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 3, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
   DrawFrame();
@@ -3041,7 +3043,8 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   // The behaviour in this test assumes the page scale is applied at a layer
   // above the clip layer.
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 3, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 3,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, page_scale);
@@ -3156,7 +3159,8 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   LayerImpl* child = child_scrolling.get();
   root_scrolling_ptr->AddChild(child_scrolling.Pass());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
   DrawFrame();
@@ -3259,7 +3263,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   root->AddChild(root_scrolling.Pass());
   EXPECT_EQ(viewport_size, root->bounds());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
 
@@ -3365,7 +3370,8 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
 
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 2, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 2,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
@@ -3394,7 +3400,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   root_scroll->SetIsContainerForFixedPositionLayers(true);
   root_clip->AddChild(root_scroll.Pass());
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 2,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
 
@@ -3409,7 +3416,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   root_scroll2->SetIsContainerForFixedPositionLayers(true);
   root_clip2->AddChild(root_scroll2.Pass());
   host_impl_->active_tree()->SetRootLayer(root_clip2.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 4, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 4,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
 
   // Scrolling should still work even though we did not draw yet.
@@ -3997,7 +4005,8 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildEventBubbling) {
 
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 1, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
@@ -4056,7 +4065,8 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollOnFractionalDeviceScale) {
   host_impl_->SetViewportSize(surface_size);
   host_impl_->SetDeviceScaleFactor(device_scale_factor);
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 1, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
@@ -4090,7 +4100,8 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
 
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 1, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
@@ -6657,7 +6668,8 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
 
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(3, 1, Layer::INVALID_ID);
+  host_impl_->active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 3, 1,
+                                                      Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
@@ -7499,8 +7511,9 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     inner_clip->AddChild(page_scale.Pass());
 
     layer_tree_impl->SetRootLayer(inner_clip.Pass());
-    layer_tree_impl->SetViewportLayersFromIds(kPageScaleLayerId,
-        kInnerViewportScrollLayerId, kOuterViewportScrollLayerId);
+    layer_tree_impl->SetViewportLayersFromIds(
+        Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportScrollLayerId,
+        kOuterViewportScrollLayerId);
 
     host_impl_->active_tree()->DidBecomeActive();
   }

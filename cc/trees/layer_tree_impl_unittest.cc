@@ -1798,7 +1798,8 @@ TEST_F(LayerTreeImplTest,
   host_impl().active_tree()->SetPageScaleFactorAndLimits(
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->SetViewportLayersFromIds(1, 1, Layer::INVALID_ID);
+  host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
+                                                      Layer::INVALID_ID);
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
@@ -2301,7 +2302,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   host_impl().active_tree()->SetPageScaleFactorAndLimits(
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->SetViewportLayersFromIds(1, 1, Layer::INVALID_ID);
+  host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
+                                                      Layer::INVALID_ID);
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.

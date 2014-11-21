@@ -225,8 +225,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   if (page_scale_layer_ && inner_viewport_scroll_layer_) {
     target_tree->SetViewportLayersFromIds(
-        page_scale_layer_->id(),
-        inner_viewport_scroll_layer_->id(),
+        overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
+                                     : Layer::INVALID_ID,
+        page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
         outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
                                      : Layer::INVALID_ID);
   } else {
@@ -425,9 +426,11 @@ void LayerTreeImpl::ApplyScrollDeltasSinceBeginMainFrame() {
 }
 
 void LayerTreeImpl::SetViewportLayersFromIds(
+    int overscroll_elasticity_layer_id,
     int page_scale_layer_id,
     int inner_viewport_scroll_layer_id,
     int outer_viewport_scroll_layer_id) {
+  overscroll_elasticity_layer_ = LayerById(overscroll_elasticity_layer_id);
   page_scale_layer_ = LayerById(page_scale_layer_id);
   DCHECK(page_scale_layer_);
 

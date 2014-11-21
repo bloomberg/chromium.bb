@@ -114,6 +114,12 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setDeferCommits(bool defer_commits);
   virtual void registerForAnimations(blink::WebLayer* layer);
   virtual void registerViewportLayers(
+      const blink::WebLayer* overscrollElasticityLayer,
+      const blink::WebLayer* pageScaleLayer,
+      const blink::WebLayer* innerViewportScrollLayer,
+      const blink::WebLayer* outerViewportScrollLayer) override;
+  // TODO(ccameron): Remove this when Blink no longer calls it.
+  virtual void registerViewportLayers(
       const blink::WebLayer* pageScaleLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;

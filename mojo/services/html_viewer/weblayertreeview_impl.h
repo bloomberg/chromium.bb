@@ -96,6 +96,12 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void setDeferCommits(bool defer_commits) {}
   virtual void registerForAnimations(blink::WebLayer* layer) override;
   virtual void registerViewportLayers(
+      const blink::WebLayer* overscrollElasticityLayer,
+      const blink::WebLayer* pageScaleLayerLayer,
+      const blink::WebLayer* innerViewportScrollLayer,
+      const blink::WebLayer* outerViewportScrollLayer) override;
+  // TODO(ccameron): Remove this when Blink no longer calls it.
+  virtual void registerViewportLayers(
       const blink::WebLayer* page_scale_layer,
       const blink::WebLayer* inner_viewport_scroll_layer,
       const blink::WebLayer* outer_viewport_scroll_layer) override;

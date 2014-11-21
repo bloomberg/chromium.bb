@@ -45,7 +45,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     scroll_layer->SetIsContainerForFixedPositionLayers(true);
     scroll_layer->SetScrollClipLayerId(root_layer->id());
     scroll_layer->SetScrollOffset(initial_scroll_);
-    layer_tree_host()->RegisterViewportLayers(root_layer, scroll_layer, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer, scroll_layer,
+                                              NULL);
     PostSetNeedsCommitToMainThread();
   }
 
@@ -122,7 +123,8 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
     scroll_layer_->SetIsContainerForFixedPositionLayers(true);
     scroll_layer_->SetScrollClipLayerId(root_layer->id());
     scroll_layer_->SetScrollOffset(initial_scroll_);
-    layer_tree_host()->RegisterViewportLayers(root_layer, scroll_layer_, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer, scroll_layer_,
+                                              NULL);
     PostSetNeedsCommitToMainThread();
   }
 
@@ -224,8 +226,8 @@ class LayerTreeHostScrollTestScrollAbortedCommit
     root_scroll_layer->SetIsContainerForFixedPositionLayers(true);
     root_layer->AddChild(root_scroll_layer);
 
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, root_scroll_layer, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              root_scroll_layer, NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.01f, 100.f);
   }
 
@@ -407,8 +409,8 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
     root_scroll_layer->SetIsContainerForFixedPositionLayers(true);
     root_layer->AddChild(root_scroll_layer);
 
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, root_scroll_layer, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              root_scroll_layer, NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.01f, 100.f);
   }
 
@@ -510,8 +512,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     expected_scroll_layer_->SetScrollOffset(initial_offset_);
 
     layer_tree_host()->SetRootLayer(root_layer);
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, root_scroll_layer_, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              root_scroll_layer_, NULL);
     LayerTreeHostScrollTest::SetupTree();
   }
 
@@ -779,8 +781,8 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     root_scroll_layer->SetIsContainerForFixedPositionLayers(true);
     root_layer->AddChild(root_scroll_layer);
 
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, root_scroll_layer, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              root_scroll_layer, NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.01f, 100.f);
   }
 
@@ -910,8 +912,8 @@ class ImplSidePaintingScrollTestImplOnlyScroll
     root_scroll_layer->SetIsContainerForFixedPositionLayers(true);
     root_layer->AddChild(root_scroll_layer);
 
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, root_scroll_layer, NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              root_scroll_layer, NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.01f, 100.f);
   }
 

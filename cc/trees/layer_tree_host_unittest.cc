@@ -1020,8 +1020,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
     // This test requires the page_scale and inner viewport layers to be
     // identified.
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, scroll_layer_.get(), NULL);
+    layer_tree_host()->RegisterViewportLayers(NULL, root_layer,
+                                              scroll_layer_.get(), NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
   }
 
@@ -5512,7 +5512,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     layer->disable_lcd_text();
     pinch->AddChild(layer);
 
-    layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
+    layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, pinch);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
@@ -5722,7 +5722,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     layer->disable_lcd_text();
     pinch->AddChild(layer);
 
-    layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
+    layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, pinch);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();

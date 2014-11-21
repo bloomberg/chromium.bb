@@ -137,10 +137,14 @@ class CC_EXPORT LayerTreeImpl {
   void SetCurrentlyScrollingLayer(LayerImpl* layer);
   void ClearCurrentlyScrollingLayer();
 
-  void SetViewportLayersFromIds(int page_scale_layer_id,
+  void SetViewportLayersFromIds(int overscroll_elasticity_layer,
+                                int page_scale_layer_id,
                                 int inner_viewport_scroll_layer_id,
                                 int outer_viewport_scroll_layer_id);
   void ClearViewportLayers();
+  LayerImpl* overscroll_elasticity_layer() {
+    return overscroll_elasticity_layer_;
+  }
   LayerImpl* page_scale_layer() { return page_scale_layer_; }
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
   void ApplyScrollDeltasSinceBeginMainFrame();
@@ -334,6 +338,7 @@ class CC_EXPORT LayerTreeImpl {
   SkColor background_color_;
   bool has_transparent_background_;
 
+  LayerImpl* overscroll_elasticity_layer_;
   LayerImpl* page_scale_layer_;
   LayerImpl* inner_viewport_scroll_layer_;
   LayerImpl* outer_viewport_scroll_layer_;

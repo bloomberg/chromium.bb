@@ -197,7 +197,7 @@ LayerTreeHost::~LayerTreeHost() {
   }
 
   // We must clear any pointers into the layer tree prior to destroying it.
-  RegisterViewportLayers(NULL, NULL, NULL);
+  RegisterViewportLayers(NULL, NULL, NULL, NULL);
 
   if (root_layer_.get()) {
     // The layer tree must be destroyed before the layer tree host. We've
@@ -347,11 +347,12 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_has_transparent_background(has_transparent_background_);
 
   if (page_scale_layer_.get() && inner_viewport_scroll_layer_.get()) {
-    sync_tree->SetViewportLayersFromIds(page_scale_layer_->id(),
-                                        inner_viewport_scroll_layer_->id(),
-                                        outer_viewport_scroll_layer_.get()
-                                            ? outer_viewport_scroll_layer_->id()
-                                            : Layer::INVALID_ID);
+    sync_tree->SetViewportLayersFromIds(
+        overscroll_elasticity_layer_.get() ? overscroll_elasticity_layer_->id()
+                                           : Layer::INVALID_ID,
+        page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
+        outer_viewport_scroll_layer_.get() ? outer_viewport_scroll_layer_->id()
+                                           : Layer::INVALID_ID);
   } else {
     sync_tree->ClearViewportLayers();
   }
@@ -1288,9 +1289,11 @@ gfx::Size LayerTreeHost::GetUIResourceSize(UIResourceId uid) const {
 }
 
 void LayerTreeHost::RegisterViewportLayers(
+    scoped_refptr<Layer> overscroll_elasticity_layer,
     scoped_refptr<Layer> page_scale_layer,
     scoped_refptr<Layer> inner_viewport_scroll_layer,
     scoped_refptr<Layer> outer_viewport_scroll_layer) {
+  overscroll_elasticity_layer_ = overscroll_elasticity_layer;
   page_scale_layer_ = page_scale_layer;
   inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
