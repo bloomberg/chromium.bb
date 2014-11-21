@@ -215,6 +215,9 @@ void UsbDeviceImpl::RequestUsbAccess(
                    base::Bind(&OnRequestUsbAccessReplied,
                               base::ThreadTaskRunnerHandle::Get(),
                               callback)));
+  } else {
+    // Not really running on Chrome OS, declare success.
+    callback.Run(true);
   }
 }
 
