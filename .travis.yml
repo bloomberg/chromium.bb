@@ -7,7 +7,7 @@ before_install:
 install: 
   - wget http://ftp.gnu.org/gnu/texinfo/texinfo-5.2.tar.xz
   - tar -xJvf texinfo-5.2.tar.xz
-  - cd texinfo-5.2 && ./configure --prefix=/usr && make && sudo make install
+  - cd texinfo-5.2 && ./configure --prefix=/usr && make && sudo make install && cd ..
 env:
   - ENABLE_UCS4=
   - ENABLE_UCS4=--enable-ucs4
