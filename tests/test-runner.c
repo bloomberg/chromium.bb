@@ -296,6 +296,9 @@ int main(int argc, char *argv[])
 			fprintf(stderr, ", pass.\n");
 		} else
 			fprintf(stderr, ", fail.\n");
+
+		/* print separator line */
+		fprintf(stderr, "----------------------------------------\n");
 	}
 
 	total = &__stop_test_section - &__start_test_section;
