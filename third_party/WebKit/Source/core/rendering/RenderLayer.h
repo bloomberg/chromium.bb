@@ -586,6 +586,7 @@ private:
 
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void updatePagination();
+    void clearPaginationRecursive();
 
     // FIXME: Temporary. Remove when new columns come online.
     bool useRegionBasedColumns() const;

@@ -535,6 +535,13 @@ void RenderLayer::updatePagination()
     }
 }
 
+void RenderLayer::clearPaginationRecursive()
+{
+    m_enclosingPaginationLayer = 0;
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->clearPaginationRecursive();
+}
+
 LayoutPoint RenderLayer::positionFromPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     FloatPoint point = renderObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
@@ -1238,6 +1245,9 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
 
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
+
+    if (oldChild->enclosingPaginationLayer())
+        oldChild->clearPaginationRecursive();
 
     return oldChild;
 }
