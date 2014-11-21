@@ -44,11 +44,12 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // is not opened, otherwise the opened device. Called on IO thread.
   const StreamDeviceInfo* GetOpenedDeviceInfoById(int session_id);
 
+  void Unregister();
+
   // MediaStreamProvider implementation, called on IO thread.
   void Register(MediaStreamProviderListener* listener,
                 const scoped_refptr<base::SingleThreadTaskRunner>&
                     device_task_runner) override;
-  void Unregister() override;
   void EnumerateDevices(MediaStreamType stream_type) override;
   int Open(const StreamDeviceInfo& device) override;
   void Close(int session_id) override;

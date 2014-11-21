@@ -67,9 +67,6 @@ class CONTENT_EXPORT MediaStreamProvider
                         const scoped_refptr<base::SingleThreadTaskRunner>&
                             device_task_runner) = 0;
 
-  // Unregisters the previously registered listener.
-  virtual void Unregister() = 0;
-
   // Enumerates existing capture devices and calls |DevicesEnumerated|.
   virtual void EnumerateDevices(MediaStreamType stream_type) = 0;
 
