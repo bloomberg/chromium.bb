@@ -25,9 +25,9 @@ class Origin {
   stime_t ButtonGoingUp(int button) const;
 
  private:
-  stime_t button_going_up_left_;
-  stime_t button_going_up_middle_;
-  stime_t button_going_up_right_;
+  stime_t button_going_up_left_{0.0};
+  stime_t button_going_up_middle_{0.0};
+  stime_t button_going_up_right_{0.0};
 };
 
 class MultitouchMouseInterpreter : public MouseInterpreter {
