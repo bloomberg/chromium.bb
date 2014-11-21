@@ -84,7 +84,7 @@ TEST(WebDocumentTest, BeginExitTransition)
     // The transition_exit.css stylesheet should not have been applied at this point.
     ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 
-    frame->document().beginExitTransition("#foo");
+    frame->document().beginExitTransition("#foo", false);
 
     // Make sure the stylesheet load request gets processed.
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
@@ -94,6 +94,51 @@ TEST(WebDocumentTest, BeginExitTransition)
     transitionStyle = transitionElement->renderStyle();
     ASSERT_TRUE(transitionStyle);
     ASSERT_EQ(transitionStyle->opacity(), 0);
+
+    // The stylesheet should now have been applied.
+    bodyStyle = bodyElement->renderStyle();
+    ASSERT(bodyStyle);
+    ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
+}
+
+
+TEST(WebDocumentTest, BeginExitTransitionToNativeApp)
+{
+    std::string baseURL = "http://www.test.com:0/";
+    const char* htmlURL = "transition_exit.html";
+    const char* cssURL = "transition_exit.css";
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + htmlURL), WebString::fromUTF8(htmlURL));
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + cssURL), WebString::fromUTF8(cssURL));
+
+    WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(baseURL + htmlURL);
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    Element* transitionElement = coreDoc->getElementById("foo");
+    ASSERT(transitionElement);
+
+    RenderStyle* transitionStyle = transitionElement->renderStyle();
+    ASSERT(transitionStyle);
+
+    HTMLElement* bodyElement = coreDoc->body();
+    ASSERT(bodyElement);
+
+    RenderStyle* bodyStyle = bodyElement->renderStyle();
+    ASSERT(bodyStyle);
+    // The transition_exit.css stylesheet should not have been applied at this point.
+    ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
+
+    frame->document().beginExitTransition("#foo", true);
+
+    // Make sure the stylesheet load request gets processed.
+    FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
+    coreDoc->updateRenderTreeIfNeeded();
+
+    // The element should not be hidden.
+    transitionStyle = transitionElement->renderStyle();
+    ASSERT_TRUE(transitionStyle);
+    ASSERT_EQ(transitionStyle->opacity(), 1);
 
     // The stylesheet should now have been applied.
     bodyStyle = bodyElement->renderStyle();
