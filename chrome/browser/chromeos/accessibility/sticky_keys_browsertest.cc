@@ -21,11 +21,19 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
 
 class StickyKeysBrowserTest : public InProcessBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    content::BrowserTestBase::SetUpOnMainThread();
+    event_generator_.reset(
+        new ui::test::EventGenerator(browser()->window()->GetNativeWindow()));
+  }
+
  protected:
   StickyKeysBrowserTest() {}
   virtual ~StickyKeysBrowserTest() {}
@@ -43,18 +51,12 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
-    gfx::NativeWindow root_window =
-        ash::Shell::GetInstance()->GetPrimaryRootWindow();
-    ASSERT_TRUE(
-        ui_test_utils::SendKeyPressToWindowSync(root_window,
-                                                key,
-                                                false, // control
-                                                false, // shift
-                                                false, // alt
-                                                false)); // command
+    event_generator_->PressKey(key, ui::EF_NONE);
+    event_generator_->ReleaseKey(key, ui::EF_NONE);
   }
 
   content::NotificationRegistrar registrar_;
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysBrowserTest);
 };
@@ -153,6 +155,11 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
   // Give the omnibox focus.
   omnibox->ShowURL();
 
+  // Make sure that the AppList is not erronously displayed and the omnibox
+  // doesn't lost focus
+  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
+
   // Type 'foo'.
   SendKeyPress(ui::VKEY_F);
   SendKeyPress(ui::VKEY_O);
@@ -164,9 +171,15 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
   ASSERT_EQ(3U, start);
   ASSERT_EQ(3U, end);
 
+  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
+
   // Hit Home by sequencing Search (left Windows) and Left (arrow).
   SendKeyPress(ui::VKEY_LWIN);
   SendKeyPress(ui::VKEY_LEFT);
+
+  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Verify caret moved to the beginning.
   omnibox->GetSelectionBounds(&start, &end);

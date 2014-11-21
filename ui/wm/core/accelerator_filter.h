@@ -12,6 +12,7 @@
 
 namespace ui {
 class Accelerator;
+class AcceleratorHistory;
 }
 
 namespace wm {
@@ -21,7 +22,10 @@ class AcceleratorDelegate;
 // keyboard accelerators.
 class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
  public:
-  AcceleratorFilter(scoped_ptr<AcceleratorDelegate> delegate);
+  // AcceleratorFilter doesn't own |accelerator_history|, it's owned by
+  // AcceleratorController.
+  AcceleratorFilter(scoped_ptr<AcceleratorDelegate> delegate,
+                    ui::AcceleratorHistory* accelerator_history);
   ~AcceleratorFilter() override;
 
   // Overridden from ui::EventHandler:
@@ -29,6 +33,7 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
 
  private:
   scoped_ptr<AcceleratorDelegate> delegate_;
+  ui::AcceleratorHistory* accelerator_history_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);
 };

@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_history.h"
 
 namespace ui {
 class AcceleratorManager;
@@ -112,8 +113,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return &exit_warning_handler_;
   }
 
-  const ui::Accelerator& previous_accelerator_for_test() const {
-    return previous_accelerator_;
+  ui::AcceleratorHistory* accelerator_history() {
+    return accelerator_history_.get();
   }
 
   // Overridden from ui::AcceleratorTarget:
@@ -149,6 +150,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
+  // A tracker for the current and previous accelerators.
+  scoped_ptr<ui::AcceleratorHistory> accelerator_history_;
+
   // TODO(derat): BrightnessControlDelegate is also used by the system tray;
   // move it outside of this class.
   scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
@@ -156,10 +160,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   scoped_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
-
-  // Remember previous accelerator as some accelerator needs to be fired
-  // with a specific sequence.
-  ui::Accelerator previous_accelerator_;
 
   // Handles the exit accelerator which requires a double press to exit and
   // shows a popup with an explanation.

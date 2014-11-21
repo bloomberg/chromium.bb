@@ -429,16 +429,22 @@ bool HandleToggleAppList(ui::KeyboardCode key_code,
   // If something else was pressed between the Search key (LWIN)
   // being pressed and released, then ignore the release of the
   // Search key.
-  if (key_code == ui::VKEY_LWIN &&
-      (previous_event_type == ui::ET_KEY_RELEASED ||
-       previous_key_code != ui::VKEY_LWIN))
+
+  if ((key_code != ui::VKEY_BROWSER_SEARCH ||
+       accelerator.type() != ui::ET_KEY_PRESSED) &&
+      (key_code != ui::VKEY_LWIN ||
+       previous_event_type != ui::ET_KEY_PRESSED ||
+       previous_key_code != ui::VKEY_LWIN ||
+       accelerator.type() != ui::ET_KEY_RELEASED)) {
     return false;
+  }
+
   if (key_code == ui::VKEY_LWIN)
     base::RecordAction(base::UserMetricsAction("Accel_Search_LWin"));
+
   // When spoken feedback is enabled, we should neither toggle the list nor
   // consume the key since Search+Shift is one of the shortcuts the a11y
   // feature uses. crbug.com/132296
-  DCHECK_EQ(ui::VKEY_LWIN, accelerator.key_code());
   if (Shell::GetInstance()->accessibility_delegate()->
       IsSpokenFeedbackEnabled())
     return false;
@@ -704,26 +710,14 @@ bool HandleVolumeUp(const ui::Accelerator& accelerator) {
 
 #endif  // defined(OS_CHROMEOS)
 
-class AutoSet {
- public:
-  AutoSet(ui::Accelerator* scoped, ui::Accelerator new_value)
-      : scoped_(scoped), new_value_(new_value) {}
-  ~AutoSet() { *scoped_ = new_value_; }
-
- private:
-  ui::Accelerator* scoped_;
-  const ui::Accelerator new_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoSet);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController()
-    : accelerator_manager_(new ui::AcceleratorManager) {
+    : accelerator_manager_(new ui::AcceleratorManager),
+      accelerator_history_(new ui::AcceleratorHistory) {
   Init();
 }
 
@@ -747,8 +741,6 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
 }
 
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
-  AutoSet auto_set(&previous_accelerator_, accelerator);
-
   if (ime_control_delegate_) {
     return accelerator_manager_->Process(
         ime_control_delegate_->RemapAccelerator(accelerator));
@@ -830,7 +822,6 @@ bool AcceleratorController::CanHandleAccelerators() const {
 // AcceleratorController, private:
 
 void AcceleratorController::Init() {
-  previous_accelerator_.set_type(ui::ET_UNKNOWN);
   for (size_t i = 0; i < kActionsAllowedAtLoginOrLockScreenLength; ++i) {
     actions_allowed_at_login_screen_.insert(
         kActionsAllowedAtLoginOrLockScreen[i]);
@@ -896,8 +887,10 @@ bool AcceleratorController::PerformAction(AcceleratorAction action,
   const ui::KeyboardCode key_code = accelerator.key_code();
 
   // Type of the previous accelerator. Used by NEXT_IME and DISABLE_CAPS_LOCK.
-  const ui::EventType previous_event_type = previous_accelerator_.type();
-  const ui::KeyboardCode previous_key_code = previous_accelerator_.key_code();
+  const ui::Accelerator& previous_accelerator =
+      accelerator_history_->previous_accelerator();
+  const ui::EventType previous_event_type = previous_accelerator.type();
+  const ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
 
   // You *MUST* return true when some action is performed. Otherwise, this
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent

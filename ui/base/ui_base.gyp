@@ -41,6 +41,8 @@
         # Note: file list duplicated in GN build.
         'accelerators/accelerator.cc',
         'accelerators/accelerator.h',
+        'accelerators/accelerator_history.cc',
+        'accelerators/accelerator_history.h',
         'accelerators/accelerator_manager.cc',
         'accelerators/accelerator_manager.h',
         'accelerators/menu_label_accelerator_util_linux.cc',

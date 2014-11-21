@@ -262,7 +262,8 @@ void AcceleratorManagerImpl::Init() {
       new AcceleratorDelegate(this));
 
   accelerator_filter_.reset(
-      new wm::AcceleratorFilter(accelerator_delegate.Pass()));
+      new wm::AcceleratorFilter(accelerator_delegate.Pass(),
+                                accelerator_history_.get()));
   toplevel->AddPreTargetHandler(accelerator_filter_.get());
 }
 
@@ -289,6 +290,7 @@ AcceleratorManagerImpl::AcceleratorManagerImpl(
     AcceleratorWrapper* accelerator_wrapper,
     bool global)
     : accelerator_wrapper_(accelerator_wrapper),
+      accelerator_history_(new ui::AcceleratorHistory),
       debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()),
       global_(global) {
 }

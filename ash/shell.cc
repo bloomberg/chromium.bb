@@ -927,7 +927,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddPreTargetHandler(input_method_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
-      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass()));
+      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass(),
+      accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
   event_transformation_handler_.reset(new EventTransformationHandler);

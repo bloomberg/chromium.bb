@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_history.h"
 #include "ui/events/event_target_iterator.h"
 
 namespace aura {
@@ -75,6 +76,7 @@ class AcceleratorManagerImpl : public AcceleratorManager,
 
   std::map<ui::Accelerator, InternalData> accelerators_;
   scoped_ptr<AcceleratorWrapper> accelerator_wrapper_;
+  scoped_ptr<ui::AcceleratorHistory> accelerator_history_;
   scoped_ptr<wm::AcceleratorFilter> accelerator_filter_;
   scoped_ptr<wm::NestedAcceleratorController> nested_accelerator_controller_;
   bool debug_accelerators_enabled_;
