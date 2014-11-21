@@ -138,7 +138,7 @@ def _RegistryQueryBase(sysdir, key, value):
 
 
 def _RegistryQuery(key, value=None):
-  """Use reg.exe to read a particular key through _RegistryQueryBase.
+  r"""Use reg.exe to read a particular key through _RegistryQueryBase.
 
   First tries to launch from %WinDir%\Sysnative to avoid WoW64 redirection. If
   that fails, it falls back to System32.  Sysnative is available on Vista and

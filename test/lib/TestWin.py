@@ -44,7 +44,7 @@ class Registry(object):
     return text
 
   def Query(self, key, value=None):
-    """Use reg.exe to read a particular key through _QueryBase.
+    r"""Use reg.exe to read a particular key through _QueryBase.
 
     First tries to launch from %WinDir%\Sysnative to avoid WoW64 redirection. If
     that fails, it falls back to System32.  Sysnative is available on Vista and

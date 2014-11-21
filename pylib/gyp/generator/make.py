@@ -673,7 +673,7 @@ target_outputs = {}
 target_link_deps = {}
 
 
-class MakefileWriter:
+class MakefileWriter(object):
   """MakefileWriter packages up the writing of one target-specific foobar.mk.
 
   Its only real entry point is Write(), and is mostly used for namespacing.

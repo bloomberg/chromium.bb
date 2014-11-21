@@ -108,7 +108,7 @@ def AddArch(output, arch):
   return '%s.%s%s' % (output, arch, extension)
 
 
-class Target:
+class Target(object):
   """Target represents the paths used within a single gyp target.
 
   Conceptually, building a single target A is a series of steps:
@@ -212,7 +212,7 @@ class Target:
 #   an output file; the result can be namespaced such that it is unique
 #   to the input file name as well as the output target name.
 
-class NinjaWriter:
+class NinjaWriter(object):
   def __init__(self, hash_for_rules, target_outputs, base_dir, build_dir,
                output_file, toplevel_build, output_file_name, flavor,
                toplevel_dir=None):
@@ -652,10 +652,11 @@ class NinjaWriter:
       needed_variables = set(['source'])
       for argument in args:
         for var in special_locals:
-          if ('${%s}' % var) in argument:
+          if '${%s}' % var in argument:
             needed_variables.add(var)
 
       def cygwin_munge(path):
+        # pylint: disable=cell-var-from-loop
         if is_cygwin:
           return path.replace('\\', '/')
         return path
@@ -1161,7 +1162,7 @@ class NinjaWriter:
         rpath = 'lib/'
         if self.toolset != 'target':
           rpath += self.toolset
-        ldflags.append('-Wl,-rpath=\$$ORIGIN/%s' % rpath)
+        ldflags.append(r'-Wl,-rpath=\$$ORIGIN/%s' % rpath)
         ldflags.append('-Wl,-rpath-link=%s' % rpath)
     self.WriteVariableList(ninja_file, 'ldflags',
                            gyp.common.uniquer(map(self.ExpandSpecial, ldflags)))

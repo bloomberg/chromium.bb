@@ -210,8 +210,8 @@ def CheckNode(node, keypath):
   elif isinstance(node, Const):
     return node.getChildren()[0]
   else:
-    raise TypeError, "Unknown AST node at key path '" + '.'.join(keypath) + \
-         "': " + repr(node)
+    raise TypeError("Unknown AST node at key path '" + '.'.join(keypath) +
+         "': " + repr(node))
 
 
 def LoadOneBuildFile(build_file_path, data, aux_data, includes,
@@ -675,24 +675,24 @@ def IsStrCanonicalInt(string):
 # "<!interpreter(arguments)", "<([list])", and even "<([)" and "<(<())".
 # In the last case, the inner "<()" is captured in match['content'].
 early_variable_re = re.compile(
-    '(?P<replace>(?P<type><(?:(?:!?@?)|\|)?)'
-    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
-    '\((?P<is_array>\s*\[?)'
-    '(?P<content>.*?)(\]?)\))')
+    r'(?P<replace>(?P<type><(?:(?:!?@?)|\|)?)'
+    r'(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    r'\((?P<is_array>\s*\[?)'
+    r'(?P<content>.*?)(\]?)\))')
 
 # This matches the same as early_variable_re, but with '>' instead of '<'.
 late_variable_re = re.compile(
-    '(?P<replace>(?P<type>>(?:(?:!?@?)|\|)?)'
-    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
-    '\((?P<is_array>\s*\[?)'
-    '(?P<content>.*?)(\]?)\))')
+    r'(?P<replace>(?P<type>>(?:(?:!?@?)|\|)?)'
+    r'(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    r'\((?P<is_array>\s*\[?)'
+    r'(?P<content>.*?)(\]?)\))')
 
 # This matches the same as early_variable_re, but with '^' instead of '<'.
 latelate_variable_re = re.compile(
-    '(?P<replace>(?P<type>[\^](?:(?:!?@?)|\|)?)'
-    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
-    '\((?P<is_array>\s*\[?)'
-    '(?P<content>.*?)(\]?)\))')
+    r'(?P<replace>(?P<type>[\^](?:(?:!?@?)|\|)?)'
+    r'(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    r'\((?P<is_array>\s*\[?)'
+    r'(?P<content>.*?)(\]?)\))')
 
 # Global cache of results from running commands so they don't have to be run
 # more then once.
@@ -1079,9 +1079,9 @@ def EvalSingleCondition(
   cond_expr_expanded = ExpandVariables(cond_expr, phase, variables,
                                        build_file)
   if type(cond_expr_expanded) not in (str, int):
-    raise ValueError, \
+    raise ValueError(
           'Variable expansion in this context permits str and int ' + \
-            'only, found ' + cond_expr_expanded.__class__.__name__
+            'only, found ' + cond_expr_expanded.__class__.__name__)
 
   try:
     if cond_expr_expanded in cached_conditions_asts:
@@ -1223,9 +1223,9 @@ def ProcessVariablesAndConditionsInDict(the_dict, phase, variables_in,
     if key != 'variables' and type(value) is str:
       expanded = ExpandVariables(value, phase, variables, build_file)
       if type(expanded) not in (str, int):
-        raise ValueError, \
+        raise ValueError(
               'Variable expansion in this context permits str and int ' + \
-              'only, found ' + expanded.__class__.__name__ + ' for ' + key
+              'only, found ' + expanded.__class__.__name__ + ' for ' + key)
       the_dict[key] = expanded
 
   # Variable expansion may have resulted in changes to automatics.  Reload.
@@ -1294,8 +1294,8 @@ def ProcessVariablesAndConditionsInDict(the_dict, phase, variables_in,
       ProcessVariablesAndConditionsInList(value, phase, variables,
                                           build_file)
     elif type(value) is not int:
-      raise TypeError, 'Unknown type ' + value.__class__.__name__ + \
-                       ' for ' + key
+      raise TypeError('Unknown type ' + value.__class__.__name__ + \
+                      ' for ' + key)
 
 
 def ProcessVariablesAndConditionsInList(the_list, phase, variables,
@@ -1322,13 +1322,13 @@ def ProcessVariablesAndConditionsInList(the_list, phase, variables,
         # without falling into the index increment below.
         continue
       else:
-        raise ValueError, \
+        raise ValueError(
               'Variable expansion in this context permits strings and ' + \
               'lists only, found ' + expanded.__class__.__name__ + ' at ' + \
-              index
+              index)
     elif type(item) is not int:
-      raise TypeError, 'Unknown type ' + item.__class__.__name__ + \
-                       ' at index ' + index
+      raise TypeError('Unknown type ' + item.__class__.__name__ + \
+                      ' at index ' + index)
     index = index + 1
 
 
@@ -2081,9 +2081,9 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
       to_item = []
       MergeLists(to_item, item, to_file, fro_file)
     else:
-      raise TypeError, \
+      raise TypeError(
           'Attempt to merge list item of unsupported type ' + \
-          item.__class__.__name__
+          item.__class__.__name__)
 
     if append:
       # If appending a singleton that's already in the list, don't append.
@@ -2125,10 +2125,10 @@ def MergeDicts(to, fro, to_file, fro_file):
         bad_merge = True
 
       if bad_merge:
-        raise TypeError, \
+        raise TypeError(
             'Attempt to merge dict value of type ' + v.__class__.__name__ + \
             ' into incompatible type ' + to[k].__class__.__name__ + \
-            ' for key ' + k
+            ' for key ' + k)
     if type(v) in (str, int):
       # Overwrite the existing value, if any.  Cheap and easy.
       is_path = IsPathSection(k)
@@ -2187,10 +2187,10 @@ def MergeDicts(to, fro, to_file, fro_file):
         elif type(to[list_base]) is not list:
           # This may not have been checked above if merging in a list with an
           # extension character.
-          raise TypeError, \
+          raise TypeError(
               'Attempt to merge dict value of type ' + v.__class__.__name__ + \
               ' into incompatible type ' + to[list_base].__class__.__name__ + \
-              ' for key ' + list_base + '(' + k + ')'
+              ' for key ' + list_base + '(' + k + ')')
       else:
         to[list_base] = []
 
@@ -2202,9 +2202,9 @@ def MergeDicts(to, fro, to_file, fro_file):
       is_paths = IsPathSection(list_base)
       MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
-      raise TypeError, \
+      raise TypeError(
           'Attempt to merge dict value of unsupported type ' + \
-          v.__class__.__name__ + ' for key ' + k
+          v.__class__.__name__ + ' for key ' + k)
 
 
 def MergeConfigWithInheritance(new_configuration_dict, build_file,
@@ -2349,8 +2349,8 @@ def ProcessListFiltersInDict(name, the_dict):
       continue
 
     if type(value) is not list:
-      raise ValueError, name + ' key ' + key + ' must be list, not ' + \
-                        value.__class__.__name__
+      raise ValueError(name + ' key ' + key + ' must be list, not ' + \
+                       value.__class__.__name__)
 
     list_key = key[:-1]
     if list_key not in the_dict:
@@ -2362,10 +2362,10 @@ def ProcessListFiltersInDict(name, the_dict):
 
     if type(the_dict[list_key]) is not list:
       value = the_dict[list_key]
-      raise ValueError, name + ' key ' + list_key + \
-                        ' must be list, not ' + \
-                        value.__class__.__name__ + ' when applying ' + \
-                        {'!': 'exclusion', '/': 'regex'}[operation]
+      raise ValueError(name + ' key ' + list_key + \
+                       ' must be list, not ' + \
+                       value.__class__.__name__ + ' when applying ' + \
+                       {'!': 'exclusion', '/': 'regex'}[operation])
 
     if not list_key in lists:
       lists.append(list_key)
@@ -2414,8 +2414,8 @@ def ProcessListFiltersInDict(name, the_dict):
           action_value = 1
         else:
           # This is an action that doesn't make any sense.
-          raise ValueError, 'Unrecognized action ' + action + ' in ' + name + \
-                            ' key ' + regex_key
+          raise ValueError('Unrecognized action ' + action + ' in ' + name + \
+                           ' key ' + regex_key)
 
         for index in xrange(0, len(the_list)):
           list_item = the_list[index]

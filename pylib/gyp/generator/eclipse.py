@@ -320,7 +320,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   """Generate an XML settings file that can be imported into a CDT project."""
 
   if params['options'].generator_output:
-    raise NotImplementedError, "--generator_output not implemented for eclipse"
+    raise NotImplementedError("--generator_output not implemented for eclipse")
 
   user_config = params.get('generator_flags', {}).get('config', None)
   if user_config:

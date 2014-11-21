@@ -329,7 +329,7 @@ def WriteOnDiff(filename):
     the target if it differs (on close).
   """
 
-  class Writer:
+  class Writer(object):
     """Wrapper around file which only covers the target if it differs."""
     def __init__(self):
       # Pick temporary file.
@@ -548,7 +548,7 @@ class CycleError(Exception):
 
 
 def TopologicallySorted(graph, get_edges):
-  """Topologically sort based on a user provided edge definition.
+  r"""Topologically sort based on a user provided edge definition.
 
   Args:
     graph: A list of node names.

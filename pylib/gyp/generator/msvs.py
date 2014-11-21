@@ -42,7 +42,7 @@ OrderedDict = _import_OrderedDict()
 # if IncrediBuild is executed from inside Visual Studio.  This regex
 # validates that the string looks like a GUID with all uppercase hex
 # letters.
-VALID_MSVS_GUID_CHARS = re.compile('^[A-F0-9\-]+$')
+VALID_MSVS_GUID_CHARS = re.compile(r'^[A-F0-9\-]+$')
 
 
 generator_default_variables = {
@@ -118,11 +118,11 @@ def _GetDomainAndUserName():
       call = subprocess.Popen(['net', 'config', 'Workstation'],
                               stdout=subprocess.PIPE)
       config = call.communicate()[0]
-      username_re = re.compile('^User name\s+(\S+)', re.MULTILINE)
+      username_re = re.compile(r'^User name\s+(\S+)', re.MULTILINE)
       username_match = username_re.search(config)
       if username_match:
         username = username_match.group(1)
-      domain_re = re.compile('^Logon domain\s+(\S+)', re.MULTILINE)
+      domain_re = re.compile(r'^Logon domain\s+(\S+)', re.MULTILINE)
       domain_match = domain_re.search(config)
       if domain_match:
         domain = domain_match.group(1)
@@ -1236,7 +1236,7 @@ def _GetLibraries(spec):
   found = OrderedSet()
   unique_libraries_list = []
   for entry in reversed(libraries):
-    library = re.sub('^\-l', '', entry)
+    library = re.sub(r'^\-l', '', entry)
     if not os.path.splitext(library)[1]:
       library += '.lib'
     if library not in found:
@@ -2859,7 +2859,7 @@ def _AddConditionalProperty(properties, condition, name, value):
 
 
 # Regex for msvs variable references ( i.e. $(FOO) ).
-MSVS_VARIABLE_REFERENCE = re.compile('\$\(([a-zA-Z_][a-zA-Z0-9_]*)\)')
+MSVS_VARIABLE_REFERENCE = re.compile(r'\$\(([a-zA-Z_][a-zA-Z0-9_]*)\)')
 
 
 def _GetMSBuildPropertyGroup(spec, label, properties):

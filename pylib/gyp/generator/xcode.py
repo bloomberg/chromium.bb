@@ -522,7 +522,7 @@ def AddHeaderToTarget(header, pbxp, xct, is_public):
   xct.HeadersPhase().AddFile(header, settings)
 
 
-_xcode_variable_re = re.compile('(\$\((.*?)\))')
+_xcode_variable_re = re.compile(r'(\$\((.*?)\))')
 def ExpandXcodeVariables(string, expansions):
   """Expands Xcode-style $(VARIABLES) in string per the expansions dict.
 

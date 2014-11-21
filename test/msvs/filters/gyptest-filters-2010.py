@@ -47,7 +47,7 @@ test.must_contain('nested_folders.vcxproj.filters', '''\
     <ClCompile Include="..\\folder1\\nested\\b.c">
       <Filter>folder1\\nested</Filter>
     </ClCompile>
-    <ClCompile Include="..\\folder1\\other\c.c">
+    <ClCompile Include="..\\folder1\\other\\c.c">
       <Filter>folder1\\other</Filter>
     </ClCompile>
   </ItemGroup>

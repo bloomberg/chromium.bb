@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Code to validate and convert settings of the Microsoft build tools.
+r"""Code to validate and convert settings of the Microsoft build tools.
 
 This file contains code to validate and convert settings of the Microsoft
 build tools.  The function ConvertToMSBuildSettings(), ValidateMSVSSettings(),

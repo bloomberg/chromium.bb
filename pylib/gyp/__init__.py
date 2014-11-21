@@ -371,7 +371,7 @@ def gyp_main(args):
     if options.use_environment:
       generate_formats = os.environ.get('GYP_GENERATORS', [])
     if generate_formats:
-      generate_formats = re.split('[\s,]', generate_formats)
+      generate_formats = re.split(r'[\s,]', generate_formats)
     if generate_formats:
       options.formats = generate_formats
     else:

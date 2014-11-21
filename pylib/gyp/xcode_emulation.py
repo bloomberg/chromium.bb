@@ -713,8 +713,8 @@ class XcodeSettings(object):
     #   -exported_symbols_list file
     #   -Wl,exported_symbols_list file
     #   -Wl,exported_symbols_list,file
-    LINKER_FILE = '(\S+)'
-    WORD = '\S+'
+    LINKER_FILE = r'(\S+)'
+    WORD = r'\S+'
     linker_flags = [
       ['-exported_symbols_list', LINKER_FILE],    # Needed for NaCl.
       ['-unexported_symbols_list', LINKER_FILE],
@@ -1213,13 +1213,13 @@ def XcodeVersion():
     # In that case this may be a CLT-only install so fall back to
     # checking that version.
     if len(version_list) < 2:
-      raise GypError, "xcodebuild returned unexpected results"
+      raise GypError("xcodebuild returned unexpected results")
   except:
     version = CLTVersion()
     if version:
-      version = re.match('(\d\.\d\.?\d*)', version).groups()[0]
+      version = re.match(r'(\d\.\d\.?\d*)', version).groups()[0]
     else:
-      raise GypError, "No Xcode or CLT version detected!"
+      raise GypError("No Xcode or CLT version detected!")
     # The CLT has no build information, so we return an empty string.
     version_list = [version, '']
   version = version_list[0]

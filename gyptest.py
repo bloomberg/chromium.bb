@@ -13,7 +13,7 @@ import optparse
 import subprocess
 import sys
 
-class CommandRunner:
+class CommandRunner(object):
   """
   Executor class for commands, including "commands" implemented by
   Python functions.
@@ -117,7 +117,7 @@ class CommandRunner:
     return self.execute(command, stdout, stderr)
 
 
-class Unbuffered:
+class Unbuffered(object):
   def __init__(self, fp):
     self.fp = fp
   def write(self, arg):

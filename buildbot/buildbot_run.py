@@ -232,9 +232,9 @@ def GypBuild():
       retcode += GypTestFormat('msvs-ninja-2013', format='msvs-ninja',
                                msvs_version='2013',
                                tests=[
-                                   'test\generator-output\gyptest-actions.py',
-                                   'test\generator-output\gyptest-relocate.py',
-                                   'test\generator-output\gyptest-rules.py'])
+                                  r'test\generator-output\gyptest-actions.py',
+                                  r'test\generator-output\gyptest-relocate.py',
+                                  r'test\generator-output\gyptest-rules.py'])
       retcode += GypTestFormat('msvs-2013', format='msvs', msvs_version='2013')
   else:
     raise Exception('Unknown platform')
