@@ -47,10 +47,17 @@ bool MaybeBypassProxyAndPrepareToRetry(
   DCHECK(request);
   if (!data_reduction_proxy_params)
     return false;
+
   const net::HttpResponseHeaders* response_headers =
       request->response_info().headers.get();
   if (!response_headers)
     return false;
+
+  // Empty implies either that the request was served from cache or that
+  // request was served directly from the origin.
+  if (request->proxy_server().IsEmpty())
+    return false;
+
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!data_reduction_proxy_params->WasDataReductionProxyUsed(
           request, &data_reduction_proxy_type_info)) {
@@ -58,11 +65,6 @@ bool MaybeBypassProxyAndPrepareToRetry(
   }
   // TODO(bengr): Implement bypass for CONNECT tunnel.
   if (data_reduction_proxy_type_info.is_ssl)
-    return false;
-
-  // Empty implies either that the request was served from cache or that
-  // request was served directly from the origin.
-  if (request->proxy_server().IsEmpty())
     return false;
 
   if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
