@@ -887,6 +887,19 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
     {
         ThreadState::NoSweepScope scope(m_threadState);
         HeapObjectHeader::finalize(header->gcInfo(), payload, payloadSize);
+        if (address + size == m_currentAllocationPoint) {
+            m_currentAllocationPoint = address;
+            if (m_lastRemainingAllocationSize == m_remainingAllocationSize) {
+                Heap::decreaseAllocatedObjectSize(size);
+                m_lastRemainingAllocationSize += size;
+            }
+            m_remainingAllocationSize += size;
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+            memset(address, 0, size);
+#endif
+            ASAN_POISON_MEMORY_REGION(address, size);
+            return;
+        }
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
         memset(payload, 0, payloadSize);
 #endif
