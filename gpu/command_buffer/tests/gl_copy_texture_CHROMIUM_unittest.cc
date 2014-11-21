@@ -76,6 +76,43 @@ TEST_F(GLCopyTextureCHROMIUMTest, Basic) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
+TEST_F(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
+  if (!GLTestHelper::HasExtension("GL_EXT_texture_storage")) {
+    LOG(INFO) << "GL_EXT_texture_storage not supported. Skipping test...";
+    return;
+  }
+
+  uint8 pixels[1 * 4] = {255u, 0u, 0u, 255u};
+
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                  pixels);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textures_[1], 0);
+  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE);
+  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+  // Check the FB is still bound.
+  GLint value = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
+  GLuint fb_id = value;
+  EXPECT_EQ(framebuffer_id_, fb_id);
+
+  // Check that FB is complete.
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
 TEST_F(GLCopyTextureCHROMIUMTest, InternalFormat) {
   GLint src_formats[] = {GL_ALPHA,     GL_RGB,             GL_RGBA,
                          GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
