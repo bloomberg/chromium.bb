@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
-#define CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#ifndef COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
+#include "components/web_resource/resource_request_allowed_notifier.h"
 
 class PrefService;
 
@@ -48,4 +48,4 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   DISALLOW_COPY_AND_ASSIGN(TestRequestAllowedNotifier);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#endif  // COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_

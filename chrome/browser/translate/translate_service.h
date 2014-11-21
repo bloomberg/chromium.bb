@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_SERVICE_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_SERVICE_H_
 
-#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
+#include "components/web_resource/resource_request_allowed_notifier.h"
 
 class GURL;
 class PrefService;

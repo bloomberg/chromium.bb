@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
+#include "components/web_resource/resource_request_allowed_notifier.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 
 ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier(
-    PrefService* local_state)
-    : local_state_(local_state),
+    PrefService* local_state,
+    const char* disable_network_switch)
+    : disable_network_switch_(disable_network_switch),
+      local_state_(local_state),
       observer_requested_permission_(false),
       waiting_for_network_(false),
       waiting_for_user_to_accept_eula_(false),
-      observer_(NULL) {
+      observer_(nullptr) {
 }
 
 ResourceRequestAllowedNotifier::~ResourceRequestAllowedNotifier() {
@@ -39,11 +40,9 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
 }
 
 ResourceRequestAllowedNotifier::State
-    ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking)) {
+ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(disable_network_switch_))
     return DISALLOWED_COMMAND_LINE_DISABLED;
-  }
 
   // The observer requested permission. Return the current criteria state and
   // set a flag to remind this class to notify the observer once the criteria
@@ -65,8 +64,7 @@ void ResourceRequestAllowedNotifier::SetWaitingForNetworkForTesting(
   waiting_for_network_ = waiting;
 }
 
-void ResourceRequestAllowedNotifier::SetWaitingForEulaForTesting(
-    bool waiting) {
+void ResourceRequestAllowedNotifier::SetWaitingForEulaForTesting(bool waiting) {
   waiting_for_user_to_accept_eula_ = waiting;
 }
 

@@ -117,6 +117,7 @@ static_library("browser") {
     "//components/variations",
     "//components/variations/net",
     "//components/webdata/common",
+    "//components/web_resource",
     "//content/public/browser",
     "//content/public/common",
     "//courgette:courgette_lib",

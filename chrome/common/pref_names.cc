@@ -1270,9 +1270,6 @@ const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 // through.
 const char kSSLBlockingBypassed[] = "ssl.ssl_blocking_bypassed";
 
-// A boolean pref of the EULA accepted flag.
-const char kEulaAccepted[] = "EulaAccepted";
-
 // Boolean that specifies whether or not crash reporting and metrics reporting
 // are sent over the network for analysis.
 const char kMetricsReportingEnabled[] =

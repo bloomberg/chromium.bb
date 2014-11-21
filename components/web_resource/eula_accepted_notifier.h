@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_
-#define CHROME_BROWSER_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_
+#ifndef COMPONENTS_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_
+#define COMPONENTS_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_
 
 #include "base/basictypes.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -56,4 +56,4 @@ class EulaAcceptedNotifier {
   DISALLOW_COPY_AND_ASSIGN(EulaAcceptedNotifier);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_
+#endif  // COMPONENTS_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_

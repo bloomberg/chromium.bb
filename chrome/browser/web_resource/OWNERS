@@ -1,9 +1,3 @@
 achuith@chromium.org
 dbeam@chromium.org
 rsesek@chromium.org
-
-# For ResourceRequestAllowedNotifier and EulaAcceptedNotifier:
-per-file eula_accepted_notifier*=asvitkine@chromium.org
-per-file eula_accepted_notifier*=stevet@chromium.org
-per-file resource_request_allowed_notifier*=asvitkine@chromium.org
-per-file resource_request_allowed_notifier*=stevet@chromium.org

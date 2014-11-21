@@ -1,0 +1,6 @@
+include_rules = [
+  "+net",
+
+  # web_resource is used on iOS.
+  "-content",
+]

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -26,7 +27,9 @@ WebResourceService::WebResourceService(PrefService* prefs,
                                        int start_fetch_delay_ms,
                                        int cache_update_delay_ms)
     : prefs_(prefs),
-      resource_request_allowed_notifier_(prefs),
+      resource_request_allowed_notifier_(
+          prefs,
+          switches::kDisableBackgroundNetworking),
       json_unpacker_(NULL),
       in_fetch_(false),
       web_resource_server_(web_resource_server),

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/web_resource/eula_accepted_notifier.h"
-#include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
+#include "components/web_resource/eula_accepted_notifier.h"
+#include "components/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Override NetworkChangeNotifier to simulate connection type changes for tests.
@@ -42,7 +42,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 class TestEulaAcceptedNotifier : public EulaAcceptedNotifier {
  public:
   TestEulaAcceptedNotifier()
-      : EulaAcceptedNotifier(NULL),
+      : EulaAcceptedNotifier(nullptr),
         eula_accepted_(false) {
   }
   ~TestEulaAcceptedNotifier() override {}
@@ -170,17 +170,13 @@ TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnReconnect) {
 TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnWardriving) {
   SetWaitingForNetwork(false);
   EXPECT_TRUE(SimulateResourceRequest());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_3G);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_3G);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_4G);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_4G);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
 }
 
@@ -189,14 +185,11 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnFlakyConnection) {
   SetWaitingForNetwork(false);
   EXPECT_TRUE(SimulateResourceRequest());
   // The callback is nerver invoked whatever happens on network connection.
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
 }
 
@@ -205,16 +198,13 @@ TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnFlakyConnection) {
   EXPECT_TRUE(SimulateResourceRequest());
   // Network goes online, but not notified because SimulateResourceRequest()
   // returns true before.
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_FALSE(SimulateResourceRequest());
   // Now, SimulateResourceRequest() returns false and will be notified later.
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_TRUE(was_notified());
 }
 
@@ -222,11 +212,9 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnEulaAfterGoOffline) {
   DisableEulaAndNetwork();
   EXPECT_FALSE(SimulateResourceRequest());
 
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_FALSE(was_notified());
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
@@ -257,8 +245,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, EulaFirst) {
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
 
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_TRUE(was_notified());
 }
 
@@ -266,8 +253,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, NetworkFirst) {
   DisableEulaAndNetwork();
   EXPECT_FALSE(SimulateResourceRequest());
 
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
 
   SimulateEulaAccepted();
@@ -280,8 +266,7 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoRequestNoNotifyEula) {
   // calling SimulateResourceRequest here.
   DisableEulaAndNetwork();
 
-  SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
 
   SimulateEulaAccepted();

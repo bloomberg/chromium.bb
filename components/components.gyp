@@ -62,6 +62,7 @@
     'user_prefs.gypi',
     'variations.gypi',
     'webdata.gypi',
+    'web_resource.gypi',
   ],
   'conditions': [
     ['OS != "ios"', {

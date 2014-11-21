@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
+#include "components/web_resource/resource_request_allowed_notifier_test_util.h"
+
+namespace {
+const char kDisableNetworkSwitch[] = "someSwitch";
+}
 
 TestRequestAllowedNotifier::TestRequestAllowedNotifier(PrefService* local_state)
-    : ResourceRequestAllowedNotifier(local_state),
+    : ResourceRequestAllowedNotifier(local_state, kDisableNetworkSwitch),
       override_requests_allowed_(false),
       requests_allowed_(true) {
 }
@@ -36,7 +40,7 @@ void TestRequestAllowedNotifier::NotifyObserver() {
 }
 
 ResourceRequestAllowedNotifier::State
-    TestRequestAllowedNotifier::GetResourceRequestsAllowedState() {
+TestRequestAllowedNotifier::GetResourceRequestsAllowedState() {
   if (override_requests_allowed_)
     return requests_allowed_ ? ALLOWED : DISALLOWED_NETWORK_DOWN;
   return ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState();

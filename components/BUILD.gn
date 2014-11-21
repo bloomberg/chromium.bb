@@ -106,6 +106,7 @@ group("all_components") {
     "//components/web_cache/renderer",
     "//components/web_modal",
     "//components/webdata/common",
+    "//components/web_resource",
     "//components/wifi",
   ]
 
@@ -241,6 +242,7 @@ test("components_unittests") {
     "//components/ownership:unit_tests",
     "//components/proximity_auth:unit_tests",
     "//components/variations:unit_tests",
+    "//components/web_resource:unit_tests",
   ]
 
   # TODO(GYP) need this target.

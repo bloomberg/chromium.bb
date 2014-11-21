@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
-#define CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#ifndef COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
-#include "chrome/browser/web_resource/eula_accepted_notifier.h"
+#include "components/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
 
 class PrefService;
@@ -48,11 +48,16 @@ class ResourceRequestAllowedNotifier
     DISALLOWED_COMMAND_LINE_DISABLED,
   };
 
-  explicit ResourceRequestAllowedNotifier(PrefService* local_state);
+  // Creates a new ResourceRequestAllowedNotifier.
+  // |local_state| is the PrefService to observe.
+  // |disable_network_switch| is the command line switch to disable network
+  // activity, and is expected to outlive the ResourceRequestAllowedNotifier.
+  ResourceRequestAllowedNotifier(PrefService* local_state,
+                                 const char* disable_network_switch);
   ~ResourceRequestAllowedNotifier() override;
 
   // Sets |observer| as the service to be notified by this instance, and
-  // performs initial checks on the criteria. |observer| may not be NULL.
+  // performs initial checks on the criteria. |observer| may not be null.
   // This is to be called immediately after construction of an instance of
   // ResourceRequestAllowedNotifier to pass it the interested service.
   void Init(Observer* observer);
@@ -78,7 +83,7 @@ class ResourceRequestAllowedNotifier
   void MaybeNotifyObserver();
 
  private:
-  // Creates the EulaAcceptNotifier or NULL if one is not needed. Virtual so
+  // Creates the EulaAcceptNotifier or null if one is not needed. Virtual so
   // that it can be overridden by test subclasses.
   virtual EulaAcceptedNotifier* CreateEulaNotifier();
 
@@ -88,6 +93,9 @@ class ResourceRequestAllowedNotifier
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // Name of the command line switch to disable the network activity.
+  const char* disable_network_switch_;
 
   // The local state this class is observing.
   PrefService* local_state_;
@@ -103,7 +111,7 @@ class ResourceRequestAllowedNotifier
   // Tracks EULA acceptance criteria.
   bool waiting_for_user_to_accept_eula_;
 
-  // Platform-specific notifier of EULA acceptance, or NULL if not needed.
+  // Platform-specific notifier of EULA acceptance, or null if not needed.
   scoped_ptr<EulaAcceptedNotifier> eula_notifier_;
 
   // Observing service interested in request permissions.
@@ -112,4 +120,4 @@ class ResourceRequestAllowedNotifier
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestAllowedNotifier);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#endif  // COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_

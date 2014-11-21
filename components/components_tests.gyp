@@ -274,6 +274,8 @@
             'visitedlink/test/visitedlink_unittest.cc',
             'web_cache/browser/web_cache_manager_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
+            'web_resource/eula_accepted_notifier_unittest.cc',
+            'web_resource/resource_request_allowed_notifier_unittest.cc',
             'webdata/common/web_database_migration_unittest.cc',
           ],
           'include_dirs': [
@@ -471,6 +473,11 @@
             # Dependencies of variations
             'components.gyp:variations',
             'components.gyp:variations_http_provider',
+
+            # Dependencies of web_resource
+            'components.gyp:web_resource',
+            'components.gyp:web_resource_test_support',
+            '../base/base.gyp:base',
           ],
           'conditions': [
             ['toolkit_views == 1', {

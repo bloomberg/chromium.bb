@@ -422,8 +422,6 @@ extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];
 
-extern const char kEulaAccepted[];
-
 extern const char kMetricsReportingEnabled[];
 
 // Android has it's own metric / crash reporting implemented in Android
