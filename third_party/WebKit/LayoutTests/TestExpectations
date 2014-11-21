@@ -495,6 +495,14 @@ crbug.com/435286 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overf
 
 # crbug.com/245630 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
+crbug.com/435286 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] plugins/plugin-javascript-access.html [ NeedsRebaseline ]
+
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
