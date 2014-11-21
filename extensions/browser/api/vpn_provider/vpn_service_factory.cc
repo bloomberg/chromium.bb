@@ -11,7 +11,6 @@
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extensions_browser_client.h"
 
 namespace chromeos {
 
@@ -34,12 +33,6 @@ VpnServiceFactory::VpnServiceFactory()
 }
 
 VpnServiceFactory::~VpnServiceFactory() {
-}
-
-content::BrowserContext* VpnServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
-      context);
 }
 
 bool VpnServiceFactory::ServiceIsCreatedWithBrowserContext() const {

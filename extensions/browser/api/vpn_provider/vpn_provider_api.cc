@@ -100,11 +100,15 @@ void VpnProviderCreateConfigFunction::SignalCallCompletionSuccess(int handle) {
 ExtensionFunction::ResponseAction VpnProviderCreateConfigFunction::Run() {
   scoped_ptr<api_vpn::CreateConfig::Params> params(
       api_vpn::CreateConfig::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params) {
+    return RespondNow(Error("Invalid arguments."));
+  }
 
   chromeos::VpnService* service =
       chromeos::VpnServiceFactory::GetForBrowserContext(browser_context());
-  DCHECK(service);
+  if (!service) {
+    return RespondNow(Error("Invalid profile."));
+  }
 
   // TODO(kaliamoorthi): (crbug.com/434711) Sort out the dependencies and
   // replace the string concatenation with internationalized version.
@@ -125,11 +129,15 @@ VpnProviderDestroyConfigFunction::~VpnProviderDestroyConfigFunction() {
 ExtensionFunction::ResponseAction VpnProviderDestroyConfigFunction::Run() {
   scoped_ptr<api_vpn::DestroyConfig::Params> params(
       api_vpn::DestroyConfig::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params) {
+    return RespondNow(Error("Invalid arguments."));
+  }
 
   chromeos::VpnService* service =
       chromeos::VpnServiceFactory::GetForBrowserContext(browser_context());
-  DCHECK(service);
+  if (!service) {
+    return RespondNow(Error("Invalid profile."));
+  }
 
   service->DestroyConfiguration(
       extension_id(), params->handle,
@@ -148,11 +156,15 @@ VpnProviderSetParametersFunction::~VpnProviderSetParametersFunction() {
 ExtensionFunction::ResponseAction VpnProviderSetParametersFunction::Run() {
   scoped_ptr<api_vpn::SetParameters::Params> params(
       api_vpn::SetParameters::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params) {
+    return RespondNow(Error("Invalid arguments."));
+  }
 
   chromeos::VpnService* service =
       chromeos::VpnServiceFactory::GetForBrowserContext(browser_context());
-  DCHECK(service);
+  if (!service) {
+    return RespondNow(Error("Invalid profile."));
+  }
 
   base::DictionaryValue parameter_value;
   std::string error;
@@ -178,11 +190,15 @@ VpnProviderSendPacketFunction::~VpnProviderSendPacketFunction() {
 ExtensionFunction::ResponseAction VpnProviderSendPacketFunction::Run() {
   scoped_ptr<api_vpn::SendPacket::Params> params(
       api_vpn::SendPacket::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params) {
+    return RespondNow(Error("Invalid arguments."));
+  }
 
   chromeos::VpnService* service =
       chromeos::VpnServiceFactory::GetForBrowserContext(browser_context());
-  DCHECK(service);
+  if (!service) {
+    return RespondNow(Error("Invalid profile."));
+  }
 
   service->SendPacket(
       extension_id(), params->handle, params->data,
@@ -203,11 +219,15 @@ ExtensionFunction::ResponseAction
 VpnProviderNotifyConnectionStateChangedFunction::Run() {
   scoped_ptr<api_vpn::NotifyConnectionStateChanged::Params> params(
       api_vpn::NotifyConnectionStateChanged::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params) {
+    return RespondNow(Error("Invalid arguments."));
+  }
 
   chromeos::VpnService* service =
       chromeos::VpnServiceFactory::GetForBrowserContext(browser_context());
-  DCHECK(service);
+  if (!service) {
+    return RespondNow(Error("Invalid profile."));
+  }
 
   service->NotifyConnectionStateChanged(
       extension_id(), params->handle, params->state,
