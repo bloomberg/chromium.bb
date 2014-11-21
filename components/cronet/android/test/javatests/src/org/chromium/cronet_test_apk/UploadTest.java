@@ -262,10 +262,16 @@ public class UploadTest extends CronetTestBase {
                 }
             };
             Executors.newCachedThreadPool().execute(cancelTask);
-            request.appendChunk(byteBuffer, false);
-            request.appendChunk(byteBuffer, false);
-            request.appendChunk(byteBuffer, false);
-            request.appendChunk(byteBuffer, true);
+            try {
+                request.appendChunk(byteBuffer, false);
+                request.appendChunk(byteBuffer, false);
+                request.appendChunk(byteBuffer, false);
+                request.appendChunk(byteBuffer, true);
+                // IOException may be thrown if appendChunk detects that request
+                // is already destroyed.
+            } catch (IOException e) {
+                assertEquals("Native peer destroyed.", e.getMessage());
+            }
             listener.blockForComplete();
         }
     }
