@@ -35,6 +35,11 @@ SearchResultTileItemListView::~SearchResultTileItemListView() {
 }
 
 void SearchResultTileItemListView::OnContainerSelected(bool from_bottom) {
+  if (num_results() == 0)
+    return;
+
+  // TODO(calamity): come in from the back when tab navigating backwards.
+  SetSelectedIndex(0);
 }
 
 int SearchResultTileItemListView::Update() {
@@ -51,7 +56,39 @@ int SearchResultTileItemListView::Update() {
 
 void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
                                                        int new_selected) {
-  // TODO(calamity): implement selection for the tile item list.
+  if (old_selected >= 0) {
+    tile_views_[old_selected]->set_background(nullptr);
+    tile_views_[old_selected]->SchedulePaint();
+  }
+
+  if (new_selected >= 0) {
+    tile_views_[new_selected]->set_background(
+        views::Background::CreateSolidBackground(kSelectedColor));
+    tile_views_[new_selected]->SchedulePaint();
+  }
+}
+
+bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (selected_index() >= 0 && child_at(selected_index())->OnKeyPressed(event))
+    return true;
+
+  int selection_index = -1;
+  switch (event.key_code()) {
+    case ui::VKEY_TAB:
+      if (event.IsShiftDown())
+        selection_index = selected_index() - 1;
+      else
+        selection_index = selected_index() + 1;
+      break;
+    default:
+      break;
+  }
+  if (IsValidSelectionIndex(selection_index)) {
+    SetSelectedIndex(selection_index);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace app_list

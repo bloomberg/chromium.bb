@@ -48,6 +48,15 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   item_->Open(event.flags());
 }
 
+bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_RETURN) {
+    item_->Open(event.flags());
+    return true;
+  }
+
+  return false;
+}
+
 void SearchResultTileItemView::OnIconChanged() {
   SetIcon(item_->icon());
 }

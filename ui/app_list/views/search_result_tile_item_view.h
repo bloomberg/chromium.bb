@@ -23,6 +23,7 @@ class APP_LIST_EXPORT SearchResultTileItemView : public TileItemView,
 
   // Overridden from TileItemView:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // Overridden from SearchResultObserver:
   void OnIconChanged() override;
