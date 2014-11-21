@@ -190,11 +190,12 @@ def RunChromeProxyTests(options):
   RunCmd(['tools/chrome_proxy/run_tests'] + args)
 
 
-def RunTelemetryTests(options, run_tests_path):
+def RunTelemetryTests(options, step_name, run_tests_path):
   """Runs either telemetry_perf_unittests or telemetry_unittests.
 
   Args:
     options: options object.
+    step_name: either 'telemetry_unittests' or 'telemetry_perf_unittests'
     run_tests_path: path to run_tests script (tools/perf/run_tests for
                     perf_unittests and tools/telemetry/run_tests for
                     telemetry_unittests)
@@ -204,7 +205,7 @@ def RunTelemetryTests(options, run_tests_path):
   devices = android_commands.GetAttachedDevices()
   if devices:
     args = args + ['--device', devices[0]]
-  bb_annotations.PrintNamedStep('telemetry_perf_unittests')
+  bb_annotations.PrintNamedStep(step_name)
   RunCmd([run_tests_path] + args)
 
 
@@ -476,11 +477,12 @@ def RunUnitTests(options):
 
 
 def RunTelemetryUnitTests(options):
-  RunTelemetryTests(options, 'tools/telemetry/run_tests')
+  RunTelemetryTests(options, 'telemetry_unittests', 'tools/telemetry/run_tests')
 
 
 def RunTelemetryPerfUnitTests(options):
-  RunTelemetryTests(options, 'tools/perf/run_tests')
+  RunTelemetryTests(options, 'telemetry_perf_unittests', 'tools/perf/run_tests')
+
 
 def RunInstrumentationTests(options):
   for test in INSTRUMENTATION_TESTS.itervalues():
