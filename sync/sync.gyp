@@ -63,6 +63,8 @@
         'api/attachments/attachment.h',
         'api/attachments/attachment_id.cc',
         'api/attachments/attachment_id.h',
+        'api/attachments/attachment_metadata.cc',
+        'api/attachments/attachment_metadata.h',
         'api/attachments/attachment_store.cc',
         'api/attachments/attachment_store.h',
         'api/string_ordinal.h',

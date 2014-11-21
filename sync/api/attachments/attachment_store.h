@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"
+#include "sync/api/attachments/attachment_metadata.h"
 #include "sync/base/sync_export.h"
 
 namespace base {
@@ -42,6 +43,9 @@ class SYNC_EXPORT AttachmentStoreBase {
                               scoped_ptr<AttachmentIdList>)> ReadCallback;
   typedef base::Callback<void(const Result&)> WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
+  typedef base::Callback<void(const Result&,
+                              scoped_ptr<AttachmentMetadataList>)>
+      ReadMetadataCallback;
 
   AttachmentStoreBase();
   virtual ~AttachmentStoreBase();
@@ -84,6 +88,21 @@ class SYNC_EXPORT AttachmentStoreBase {
   // successfully.
   virtual void Drop(const AttachmentIdList& ids,
                     const DropCallback& callback) = 0;
+
+  // Asynchronously reads metadata for the attachments identified by |ids|.
+  //
+  // |callback| will be invoked when finished. AttachmentStore will attempt to
+  // read metadata for all attachments specified in ids. If any of the
+  // metadata entries do not exist or could not be read, |callback|'s Result
+  // will be UNSPECIFIED_ERROR.
+  virtual void ReadMetadata(const AttachmentIdList& ids,
+                            const ReadMetadataCallback& callback) = 0;
+
+  // Asynchronously reads metadata for all attachments in the store.
+  //
+  // |callback| will be invoked when finished. If any of the metadata entries
+  // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
+  virtual void ReadAllMetadata(const ReadMetadataCallback& callback) = 0;
 };
 
 // AttachmentStore is an interface exposed to data type and AttachmentService

@@ -41,6 +41,15 @@ class MockAttachmentStore : public AttachmentStore,
     NOTREACHED();
   }
 
+  void ReadMetadata(const AttachmentIdList& ids,
+                    const ReadMetadataCallback& callback) override {
+    NOTREACHED();
+  }
+
+  void ReadAllMetadata(const ReadMetadataCallback& callback) override {
+    NOTREACHED();
+  }
+
   // Respond to Read request. Attachments found in local_attachments should be
   // returned, everything else should be reported unavailable.
   void RespondToRead(const AttachmentIdSet& local_attachments) {

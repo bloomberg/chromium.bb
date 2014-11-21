@@ -77,4 +77,17 @@ void InMemoryAttachmentStore::Drop(const AttachmentIdList& ids,
   callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
+void InMemoryAttachmentStore::ReadMetadata(
+    const AttachmentIdList& ids,
+    const ReadMetadataCallback& callback) {
+  // TODO(stanisc): implement this.
+  NOTIMPLEMENTED();
+}
+
+void InMemoryAttachmentStore::ReadAllMetadata(
+    const ReadMetadataCallback& callback) {
+  // TODO(stanisc): implement this.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace syncer

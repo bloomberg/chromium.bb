@@ -18,6 +18,8 @@ source_set("sync_core") {
     "api/attachments/attachment.h",
     "api/attachments/attachment_id.cc",
     "api/attachments/attachment_id.h",
+    "api/attachments/attachment_metadata.cc",
+    "api/attachments/attachment_metadata.h",
     "api/attachments/attachment_store.cc",
     "api/attachments/attachment_store.h",
     "api/string_ordinal.h",
@@ -548,6 +550,7 @@ static_library("test_support_sync_api") {
 test("sync_unit_tests") {
   sources = [
     "api/attachments/attachment_id_unittest.cc",
+    "api/attachments/attachment_metadata_unittest.cc",
     "api/attachments/attachment_unittest.cc",
     "api/sync_change_unittest.cc",
     "api/sync_data_unittest.cc",

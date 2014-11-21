@@ -41,6 +41,9 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
   void Write(const AttachmentList& attachments,
              const WriteCallback& callback) override;
   void Drop(const AttachmentIdList& ids, const DropCallback& callback) override;
+  void ReadMetadata(const AttachmentIdList& ids,
+                    const ReadMetadataCallback& callback) override;
+  void ReadAllMetadata(const ReadMetadataCallback& callback) override;
 
   // Opens leveldb database at |path|. It will create directory and database if
   // it doesn't exist.

@@ -157,6 +157,18 @@ void OnDiskAttachmentStore::Drop(const AttachmentIdList& ids,
   callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
 }
 
+void OnDiskAttachmentStore::ReadMetadata(const AttachmentIdList& ids,
+                                         const ReadMetadataCallback& callback) {
+  // TODO(stanisc): implement this.
+  NOTIMPLEMENTED();
+}
+
+void OnDiskAttachmentStore::ReadAllMetadata(
+    const ReadMetadataCallback& callback) {
+  // TODO(stanisc): implement this.
+  NOTIMPLEMENTED();
+}
+
 AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
     const base::FilePath& path) {
   DCHECK(CalledOnValidThread());

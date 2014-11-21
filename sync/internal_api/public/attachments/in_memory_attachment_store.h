@@ -30,6 +30,9 @@ class SYNC_EXPORT InMemoryAttachmentStore : public AttachmentStoreBase,
   void Write(const AttachmentList& attachments,
              const WriteCallback& callback) override;
   void Drop(const AttachmentIdList& ids, const DropCallback& callback) override;
+  void ReadMetadata(const AttachmentIdList& ids,
+                    const ReadMetadataCallback& callback) override;
+  void ReadAllMetadata(const ReadMetadataCallback& callback) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;

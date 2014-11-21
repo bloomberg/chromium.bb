@@ -45,6 +45,9 @@ class SYNC_EXPORT AttachmentStoreHandle : public AttachmentStore,
   void Write(const AttachmentList& attachments,
              const WriteCallback& callback) override;
   void Drop(const AttachmentIdList& id, const DropCallback& callback) override;
+  void ReadMetadata(const AttachmentIdList& ids,
+                    const ReadMetadataCallback& callback) override;
+  void ReadAllMetadata(const ReadMetadataCallback& callback) override;
 
  private:
   ~AttachmentStoreHandle() override;
