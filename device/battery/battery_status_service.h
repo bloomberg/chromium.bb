@@ -45,6 +45,7 @@ class DEVICE_BATTERY_EXPORT BatteryStatusService {
 
  private:
   friend struct DefaultSingletonTraits<BatteryStatusService>;
+  friend class BatteryStatusServiceTest;
 
   BatteryStatusService();
   virtual ~BatteryStatusService();

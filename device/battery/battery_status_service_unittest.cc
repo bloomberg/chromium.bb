@@ -43,14 +43,14 @@ class FakeBatteryManager : public BatteryStatusManager {
   DISALLOW_COPY_AND_ASSIGN(FakeBatteryManager);
 };
 
+}  // namespace
+
 class BatteryStatusServiceTest : public testing::Test {
  public:
-    BatteryStatusServiceTest()
-        : battery_service_(NULL),
-          battery_manager_(NULL),
-          callback1_invoked_count_(0),
-          callback2_invoked_count_(0) {
-    }
+  BatteryStatusServiceTest()
+      : battery_manager_(nullptr),
+        callback1_invoked_count_(0),
+        callback2_invoked_count_(0) {}
     ~BatteryStatusServiceTest() override {}
 
  protected:
@@ -61,21 +61,18 @@ class BatteryStatusServiceTest : public testing::Test {
                             base::Unretained(this));
     callback2_ = base::Bind(&BatteryStatusServiceTest::Callback2,
                             base::Unretained(this));
-    battery_service_ = BatteryStatusService::GetInstance();
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.
-    scoped_ptr<FakeBatteryManager> battery_manager(new FakeBatteryManager(
-        battery_service_->GetUpdateCallbackForTesting()));
+    scoped_ptr<FakeBatteryManager> battery_manager(
+        new FakeBatteryManager(battery_service_.GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
-    battery_service_->SetBatteryManagerForTesting(battery_manager.Pass());
+    battery_service_.SetBatteryManagerForTesting(battery_manager.Pass());
   }
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    battery_service_->SetBatteryManagerForTesting(
-        scoped_ptr<BatteryStatusManager>());
   }
 
   FakeBatteryManager* battery_manager() {
@@ -84,7 +81,7 @@ class BatteryStatusServiceTest : public testing::Test {
 
   scoped_ptr<BatterySubscription> AddCallback(
       const BatteryStatusService::BatteryUpdateCallback& callback) {
-    return battery_service_->AddCallback(callback);
+    return battery_service_.AddCallback(callback);
   }
 
   int callback1_invoked_count() const {
@@ -119,7 +116,7 @@ class BatteryStatusServiceTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  BatteryStatusService* battery_service_;
+  BatteryStatusService battery_service_;
   FakeBatteryManager* battery_manager_;
   BatteryStatusService::BatteryUpdateCallback callback1_;
   BatteryStatusService::BatteryUpdateCallback callback2_;
@@ -139,13 +136,7 @@ TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
   EXPECT_EQ(1, battery_manager()->stop_invoked_count());
 }
 
-// Fails on Windows. http://crbug.com/429942.
-#if defined(OS_WIN)
-#define MAYBE_AddCallbackAfterUpdate DISABLED_AddCallbackAfterUpdate
-#else
-#define MAYBE_AddCallbackAfterUpdate AddCallbackAfterUpdate
-#endif
-TEST_F(BatteryStatusServiceTest, MAYBE_AddCallbackAfterUpdate) {
+TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
@@ -158,13 +149,7 @@ TEST_F(BatteryStatusServiceTest, MAYBE_AddCallbackAfterUpdate) {
   EXPECT_EQ(1, callback2_invoked_count());
 }
 
-// Fails on Windows. http://crbug.com/429942.
-#if defined(OS_WIN)
-#define MAYBE_TwoCallbacksUpdate DISABLED_TwoCallbacksUpdate
-#else
-#define MAYBE_TwoCallbacksUpdate TwoCallbacksUpdate
-#endif
-TEST_F(BatteryStatusServiceTest, MAYBE_TwoCallbacksUpdate) {
+TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
@@ -184,13 +169,7 @@ TEST_F(BatteryStatusServiceTest, MAYBE_TwoCallbacksUpdate) {
   EXPECT_EQ(status.level, battery_status().level);
 }
 
-// Fails on Windows. http://crbug.com/429942.
-#if defined(OS_WIN)
-#define MAYBE_RemoveOneCallback DISABLED_RemoveOneCallback
-#else
-#define MAYBE_RemoveOneCallback RemoveOneCallback
-#endif
-TEST_F(BatteryStatusServiceTest, MAYBE_RemoveOneCallback) {
+TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
@@ -206,7 +185,5 @@ TEST_F(BatteryStatusServiceTest, MAYBE_RemoveOneCallback) {
   EXPECT_EQ(1, callback1_invoked_count());
   EXPECT_EQ(2, callback2_invoked_count());
 }
-
-}  // namespace
 
 }  // namespace device
