@@ -61,6 +61,13 @@ void SearchIPCRouter::SendChromeIdentityCheckResult(
                                                    identity_match));
 }
 
+void SearchIPCRouter::SendHistorySyncCheckResult(bool sync_history) {
+  if (!policy_->ShouldProcessHistorySyncCheck())
+    return;
+
+  Send(new ChromeViewMsg_HistorySyncCheckResult(routing_id(), sync_history));
+}
+
 void SearchIPCRouter::SetPromoInformation(bool is_app_launcher_enabled) {
   if (!policy_->ShouldSendSetPromoInformation())
     return;
@@ -180,6 +187,8 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
                         OnLogMostVisitedNavigation);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
                         OnPasteAndOpenDropDown);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_HistorySyncCheck,
+                        OnHistorySyncCheck);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ChromeIdentityCheck,
                         OnChromeIdentityCheck);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -331,6 +340,17 @@ void SearchIPCRouter::OnChromeIdentityCheck(
     return;
 
   delegate_->OnChromeIdentityCheck(identity);
+}
+
+void SearchIPCRouter::OnHistorySyncCheck(int page_seq_no) const {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessHistorySyncCheck())
+    return;
+
+  delegate_->OnHistorySyncCheck();
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {

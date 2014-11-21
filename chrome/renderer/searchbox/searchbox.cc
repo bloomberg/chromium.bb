@@ -177,6 +177,11 @@ void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
       render_view()->GetRoutingID(), page_seq_no_, identity));
 }
 
+void SearchBox::CheckIsUserSyncingHistory() {
+  render_view()->Send(new ChromeViewHostMsg_HistorySyncCheck(
+      render_view()->GetRoutingID(), page_seq_no_));
+}
+
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
@@ -296,6 +301,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnChromeIdentityCheckResult)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_HistorySyncCheckResult,
+                        OnHistorySyncCheckResult)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMarginChange, OnMarginChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
@@ -370,6 +377,13 @@ void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
       extensions_v8::SearchBoxExtension::DispatchFocusChange(
           render_view()->GetWebView()->mainFrame());
     }
+  }
+}
+
+void SearchBox::OnHistorySyncCheckResult(bool sync_history) {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchHistorySyncCheckResult(
+        render_view()->GetWebView()->mainFrame(), sync_history);
   }
 }
 

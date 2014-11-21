@@ -30,6 +30,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessLogEvent() override;
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
   bool ShouldProcessChromeIdentityCheck() override;
+  bool ShouldProcessHistorySyncCheck() override;
   bool ShouldSendSetPromoInformation() override;
   bool ShouldSendSetDisplayInstantResults() override;
   bool ShouldSendSetSuggestionToPrefetch() override;

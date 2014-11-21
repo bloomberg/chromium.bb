@@ -119,7 +119,11 @@ class SearchTabHelper : public content::WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckSignedOutMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckMatchNotSyncing);
+                           OnHistorySyncCheckSyncInactive);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnHistorySyncCheckSyncing);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnHistorySyncCheckNotSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
                            OnProvisionalLoadFailRedirectNTPToLocal);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
@@ -175,6 +179,7 @@ class SearchTabHelper : public content::WebContentsObserver,
                                   const base::string16& provider) override;
   void PasteIntoOmnibox(const base::string16& text) override;
   void OnChromeIdentityCheck(const base::string16& identity) override;
+  void OnHistorySyncCheck() override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;

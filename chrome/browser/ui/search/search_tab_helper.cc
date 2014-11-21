@@ -565,12 +565,14 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   if (manager) {
     const base::string16 username =
         base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
-    // The identity check only passes if the user is syncing their history.
-    // TODO(beaudoin): Change this function name and related APIs now that it's
-    // checking both the identity and the user's sync state.
-    bool matches = IsHistorySyncEnabled(profile()) && identity == username;
-    ipc_router_.SendChromeIdentityCheckResult(identity, matches);
+    ipc_router_.SendChromeIdentityCheckResult(identity, identity == username);
+  } else {
+    ipc_router_.SendChromeIdentityCheckResult(identity, false);
   }
+}
+
+void SearchTabHelper::OnHistorySyncCheck() {
+  ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {

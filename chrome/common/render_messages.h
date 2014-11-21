@@ -282,6 +282,9 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxSubmit,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_HistorySyncCheckResult,
+                    bool /* sync_history */)
+
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
                     base::string16 /* identity */,
                     bool /* identity_match */)
@@ -600,6 +603,10 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedNavigation,
                     int /* page_seq_no */,
                     int /* position */,
                     base::string16 /* provider */)
+
+// The Instant page asks whether the user syncs its history.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_HistorySyncCheck,
+                    int /* page_seq_no */)
 
 // The Instant page asks for Chrome identity check against |identity|.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ChromeIdentityCheck,

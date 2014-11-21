@@ -59,6 +59,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessChromeIdentityCheck() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessHistorySyncCheck() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendSetPromoInformation() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }

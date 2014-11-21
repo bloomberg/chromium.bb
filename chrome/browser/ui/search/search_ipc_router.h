@@ -77,11 +77,15 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called when the SearchBox wants to verify the signed-in Chrome identity
     // against the provided |identity|. Will make a round-trip to the browser
     // and eventually return the result through SendChromeIdentityCheckResult.
-    // Calls SendChromeIdentityCheckResult with true if both the identity
-    // matches and the user syncs their history.
-    // TODO(beaudoin): Change this function name and related APIs now that it's
-    // checking both the identity and the user's sync state.
+    // Calls SendChromeIdentityCheckResult with true if the identity matches.
     virtual void OnChromeIdentityCheck(const base::string16& identity) = 0;
+
+    // Called when the SearchBox wants to verify the signed-in Chrome identity
+    // against the provided |identity|. Will make a round-trip to the browser
+    // and eventually return the result through SendHistorySyncCheckResult.
+    // Calls SendHistorySyncCheckResult with true if the user syncs their
+    // history.
+    virtual void OnHistorySyncCheck() = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -102,6 +106,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
+    virtual bool ShouldProcessHistorySyncCheck() = 0;
     virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
@@ -129,6 +134,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Tells the renderer about the result of the Chrome identity check.
   void SendChromeIdentityCheckResult(const base::string16& identity,
                                      bool identity_match);
+
+  // Tells the renderer whether the user syncs history.
+  void SendHistorySyncCheckResult(bool sync_history);
 
   // Tells the renderer information it needs to display promos.
   void SetPromoInformation(bool is_app_launcher_enabled);
@@ -209,6 +217,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
                               const base::string16& text) const;
   void OnChromeIdentityCheck(int page_seq_no,
                              const base::string16& identity) const;
+  void OnHistorySyncCheck(int page_seq_no) const;
 
   // Used by unit tests to set a fake delegate.
   void set_delegate_for_testing(Delegate* delegate);

@@ -222,7 +222,6 @@ static const char kDispatchChromeIdentityCheckResult[] =
     "  true;"
     "}";
 
-
 static const char kDispatchFocusChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -231,6 +230,17 @@ static const char kDispatchFocusChangedScript[] =
     "    typeof window.chrome.embeddedSearch.searchBox.onfocuschange =="
     "         'function') {"
     "  window.chrome.embeddedSearch.searchBox.onfocuschange();"
+    "  true;"
+    "}";
+
+static const char kDispatchHistorySyncCheckResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage"
+    "        .onhistorysynccheckdone === 'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone(%s);"
     "  true;"
     "}";
 
@@ -350,6 +360,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Sends a Chrome identity check to the browser.
   static void CheckIsUserSignedInToChromeAs(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Checks whether the user sync his history.
+  static void CheckIsUserSyncingHistory(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Deletes a Most Visited item.
@@ -491,6 +505,16 @@ void SearchBoxExtension::DispatchFocusChange(blink::WebFrame* frame) {
 }
 
 // static
+void SearchBoxExtension::DispatchHistorySyncCheckResult(
+    blink::WebFrame* frame,
+    bool sync_history) {
+  blink::WebString script(base::UTF8ToUTF16(base::StringPrintf(
+      kDispatchHistorySyncCheckResult,
+      sync_history ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
 void SearchBoxExtension::DispatchInputCancel(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchInputCancelScript);
 }
@@ -549,6 +573,9 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
   if (name->Equals(
           v8::String::NewFromUtf8(isolate, "CheckIsUserSignedInToChromeAs")))
     return v8::FunctionTemplate::New(isolate, CheckIsUserSignedInToChromeAs);
+  if (name->Equals(
+          v8::String::NewFromUtf8(isolate, "CheckIsUserSyncingHistory")))
+    return v8::FunctionTemplate::New(isolate, CheckIsUserSyncingHistory);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "DeleteMostVisitedItem")))
     return v8::FunctionTemplate::New(isolate, DeleteMostVisitedItem);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "Focus")))
@@ -633,6 +660,16 @@ void SearchBoxExtensionWrapper::CheckIsUserSignedInToChromeAs(
 
   SearchBox::Get(render_view)->CheckIsUserSignedInToChromeAs(
       V8ValueToUTF16(args[0]));
+}
+
+// static
+void SearchBoxExtensionWrapper::CheckIsUserSyncingHistory(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return;
+
+  DVLOG(1) << render_view << " CheckIsUserSyncingHistory";
+  SearchBox::Get(render_view)->CheckIsUserSyncingHistory();
 }
 
 // static

@@ -35,6 +35,8 @@ class SearchBoxExtension {
                                                 const base::string16& identity,
                                                 bool identity_match);
   static void DispatchFocusChange(blink::WebFrame* frame);
+  static void DispatchHistorySyncCheckResult(blink::WebFrame* frame,
+                                             bool sync_history);
   static void DispatchInputCancel(blink::WebFrame* frame);
   static void DispatchInputStart(blink::WebFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebFrame* frame);
