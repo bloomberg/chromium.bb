@@ -252,7 +252,6 @@ void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
 void EdgeEffectL::SetParent(cc::Layer* parent) {
   if (glow_->parent() != parent)
     parent->AddChild(glow_);
-  glow_->SetUIResourceId(resource_manager_->GetUIResourceId(kResourceType));
 }
 
 // static

@@ -68,8 +68,6 @@ class EdgeEffect::EffectLayer {
   void SetParent(cc::Layer* parent) {
     if (ui_resource_layer_->parent() != parent)
       parent->AddChild(ui_resource_layer_);
-    ui_resource_layer_->SetUIResourceId(
-        resource_manager_->GetUIResourceId(resource_type_));
   }
 
   void Disable() { ui_resource_layer_->SetIsDrawable(false); }
