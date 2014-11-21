@@ -146,8 +146,6 @@ bool IndexedDBTransactionCoordinator::CanStartTransaction(
       return true;
 
     case blink::WebIDBTransactionModeReadOnly:
-      return true;
-
     case blink::WebIDBTransactionModeReadWrite:
       return !DoSetsIntersect(transaction->scope(), locked_scope);
   }
