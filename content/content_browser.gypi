@@ -1679,6 +1679,9 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
       ],
+      'export_dependent_settings': [
+        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+      ],
     }],
     ['enable_basic_printing==1 or enable_print_preview==1', {
       'dependencies': [

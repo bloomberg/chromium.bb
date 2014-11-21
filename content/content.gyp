@@ -268,6 +268,9 @@
                 'content_common',
                 'content_resources',
               ],
+              'export_dependent_settings': [
+                'content_common',
+              ],
               'conditions': [
                 ['chromium_enable_vtune_jit_for_v8==1', {
                   'dependencies': [
@@ -402,6 +405,7 @@
           'target_name': 'content_renderer',
           'type': 'none',
           'dependencies': ['content'],
+          'export_dependent_settings': ['content'],
         },
         {
           # GN version: //content/utility

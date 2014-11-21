@@ -578,6 +578,9 @@
         '../ui/gl/gl.gyp:gl',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
       ],
+      'export_dependent_settings' : [
+        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+      ],
       'actions': [
         {
           'action_name': 'generate_webkit_version',

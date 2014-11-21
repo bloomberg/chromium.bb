@@ -180,6 +180,7 @@
         ['OS!="ios"', {
           # layouttest_support_content is not supported nor required on iOS.
           'dependencies': [
+            'content.gyp:content_renderer',
             'test_support_content',
             '../skia/skia.gyp:skia',
             '../ui/accessibility/accessibility.gyp:ax_gen',
@@ -217,6 +218,9 @@
         'content.gyp:content_app_both',
         'content.gyp:content_browser',
         'content.gyp:content_common',
+      ],
+      'export_dependent_settings': [
+        'content.gyp:content_browser',
       ],
       'include_dirs': [
         '..',
