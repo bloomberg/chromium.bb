@@ -41,13 +41,14 @@ class WebDialogWebContentsDelegateViews
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override {
-    // Forward shortcut keys in dialog to the browser. http://crbug.com/104586
+    // Forward shortcut keys in dialog to our initiator's delegate.
+    // http://crbug.com/104586
     // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
-    Browser* current_browser = chrome::FindBrowserWithWebContents(initiator_);
-    if (!current_browser)
+    auto delegate = initiator_->GetDelegate();
+    if (!delegate)
       return;
-    current_browser->window()->HandleKeyboardEvent(event);
+    delegate->HandleKeyboardEvent(initiator_, event);
 #endif
   }
 
