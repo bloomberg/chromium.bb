@@ -83,8 +83,8 @@ static RenderObject* firstRenderObjectForDirectionalityDetermination(
 TextDirection determinePlaintextDirectionality(RenderObject* root,
     RenderObject* current = 0, unsigned pos = 0)
 {
-    InlineIterator iter(root,
-        firstRenderObjectForDirectionalityDetermination(root, current), pos);
+    RenderObject* firstRenderObject = firstRenderObjectForDirectionalityDetermination(root, current);
+    InlineIterator iter(root, firstRenderObject, firstRenderObject == current ? pos : 0);
     InlineBidiResolver observer;
     observer.setStatus(BidiStatus(root->style()->direction(),
         isOverride(root->style()->unicodeBidi())));
