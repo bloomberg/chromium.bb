@@ -1226,6 +1226,15 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   EXPECT_NE(0u, mask_resource_id);
   EXPECT_EQ(mask_texture_size, active_layer_->bounds());
 
+  // Drop resources and recreate them, still the same.
+  old_pending_layer_->ReleaseResources();
+  active_layer_->ReleaseResources();
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  active_layer_->HighResTiling()->CreateAllTilesForTesting();
+  EXPECT_EQ(1u, active_layer_->HighResTiling()->AllTilesForTesting().size());
+  EXPECT_NE(0u, mask_resource_id);
+  EXPECT_EQ(mask_texture_size, active_layer_->bounds());
+
   // Resize larger than the max texture size.
   int max_texture_size = host_impl_.GetRendererCapabilities().max_texture_size;
   scoped_refptr<FakePicturePileImpl> huge_pile =
@@ -1247,6 +1256,15 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   // Mask layers have a tiling, but there should be no tiles in it.
   EXPECT_EQ(0u, active_layer_->HighResTiling()->AllTilesForTesting().size());
   // The mask resource is empty.
+  active_layer_->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  EXPECT_EQ(0u, mask_resource_id);
+
+  // Drop resources and recreate them, still the same.
+  old_pending_layer_->ReleaseResources();
+  active_layer_->ReleaseResources();
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  active_layer_->HighResTiling()->CreateAllTilesForTesting();
+  EXPECT_EQ(0u, active_layer_->HighResTiling()->AllTilesForTesting().size());
   active_layer_->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
   EXPECT_EQ(0u, mask_resource_id);
 }

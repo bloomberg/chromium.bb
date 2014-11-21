@@ -125,6 +125,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   twin_layer_ = layer_impl;
   layer_impl->twin_layer_ = this;
 
+  layer_impl->set_is_mask(is_mask_);
   layer_impl->UpdateRasterSource(raster_source_);
 
   DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
