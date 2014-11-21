@@ -41,6 +41,12 @@ component("events_ozone") {
   }
 }
 
+config("evdev_gestures") {
+  defines = [
+    "USE_EVDEV_GESTURES"
+  ]
+}
+
 component("events_ozone_evdev") {
   sources = [
     "evdev/event_converter_evdev.cc",
@@ -74,12 +80,6 @@ component("events_ozone_evdev") {
     "//ui/gfx",
   ]
 
-  if (use_ozone_evdev) {
-    defines += [
-      "USE_OZONE_EVDEV=1"
-    ]
-  }
-
   if (use_ozone_evdev && use_evdev_gestures) {
     sources += [
       "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
@@ -94,8 +94,8 @@ component("events_ozone_evdev") {
       "evdev/libgestures_glue/gesture_timer_provider.h",
     ]
 
-    defines += [
-      "USE_EVDEV_GESTURES",
+    public_configs = [
+      ":evdev_gestures",
     ]
 
     configs += [

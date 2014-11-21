@@ -92,6 +92,11 @@
         'defines': [
           'USE_EVDEV_GESTURES',
         ],
+        'direct_dependent_settings': {
+          'defines': [
+            'USE_EVDEV_GESTURES',
+          ],
+        },
       }, {
         'sources/': [
           ['exclude', '^evdev/libgestures_glue/'],
