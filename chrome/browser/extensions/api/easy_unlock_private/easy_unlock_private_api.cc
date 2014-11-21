@@ -606,15 +606,25 @@ EasyUnlockPrivateGetSignInChallengeFunction::
     ~EasyUnlockPrivateGetSignInChallengeFunction() {
 }
 
-bool EasyUnlockPrivateGetSignInChallengeFunction::RunSync() {
+bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
+  scoped_ptr<easy_unlock_private::GetSignInChallenge::Params> params(
+      easy_unlock_private::GetSignInChallenge::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string challenge =
       EasyUnlockService::Get(profile)->GetChallenge();
-  if (!challenge.empty()) {
-    results_ =
-        easy_unlock_private::GetSignInChallenge::Results::Create(challenge);
-  }
+  // TODO(tbarzic): Implement nonce signing.
+  OnDone(challenge, std::string() /* signed_nonce */);
   return true;
+}
+
+void EasyUnlockPrivateGetSignInChallengeFunction::OnDone(
+    const std::string& challenge,
+    const std::string& signed_nonce) {
+  results_ = easy_unlock_private::GetSignInChallenge::Results::Create(
+      challenge, signed_nonce);
+  SendResponse(true);
 }
 
 EasyUnlockPrivateTrySignInSecretFunction::
