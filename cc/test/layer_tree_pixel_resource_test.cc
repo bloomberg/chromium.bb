@@ -25,14 +25,13 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
     case GL_GPU_RASTER_2D_DRAW:
     case GL_ZERO_COPY_2D_DRAW:
     case GL_ZERO_COPY_RECT_DRAW:
+    case GL_ONE_COPY_2D_STAGING_2D_DRAW:
+    case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
     case GL_ASYNC_UPLOAD_2D_DRAW:
       return true;
     case GL_ZERO_COPY_EXTERNAL_DRAW:
-    case GL_ONE_COPY_2D_STAGING_2D_DRAW:
-    case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
       // These should all be enabled in practice.
-      // TODO(reveman): one copy not supported in unit tests yet.
       // TODO(enne): look into getting texture external oes enabled.
       return false;
   }
@@ -76,7 +75,7 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
       staging_texture_target_ = GL_TEXTURE_RECTANGLE_ARB;
-      draw_texture_target_ = GL_TEXTURE_RECTANGLE_ARB;
+      draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = ONE_COPY_RASTER_WORKER_POOL;
       return;
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
