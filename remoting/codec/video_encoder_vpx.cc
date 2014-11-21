@@ -56,6 +56,9 @@ void SetCommonCodecParameters(const webrtc::DesktopSize& size,
   // Start emitting packets immediately.
   config->g_lag_in_frames = 0;
 
+  // Since the transport layer is reliable, keyframes aren't necessary.
+  config->kf_mode = VPX_KF_DISABLED;
+
   // Using 2 threads gives a great boost in performance for most systems with
   // adequate processing power. NB: Going to multiple threads on low end
   // windows systems can really hurt performance.
