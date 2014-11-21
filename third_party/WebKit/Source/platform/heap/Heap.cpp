@@ -1065,17 +1065,14 @@ void ThreadHeap<Header>::freeLargeObject(LargeHeapObject<Header>* object, LargeH
 
     if (object->terminating()) {
         ASSERT(ThreadState::current()->isTerminating());
-        // The thread is shutting down so this object is being removed as part
-        // of a thread local GC. In that case the object could be traced in the
-        // next global GC either due to a dead object being traced via a
-        // conservative pointer or due to a programming error where an object
-        // in another thread heap keeps a dangling pointer to this object.
-        // To guard against this we put the large object memory in the
-        // orphanedPagePool to ensure it is still reachable. After the next global
-        // GC it can be released assuming no rogue/dangling pointers refer to
-        // it.
-        // NOTE: large objects are not moved to the free page pool as it is
-        // unlikely they can be reused due to their individual sizes.
+        // The thread is shutting down and this page is being removed as a part
+        // of the thread local GC. In that case the object could be traced in
+        // the next global GC if there is a dangling pointer from a live thread
+        // heap to this dead thread heap. To guard against this, we put the page
+        // into the orphaned page pool and zap the page memory. This ensures
+        // that tracing the dangling pointer in the next global GC just
+        // crashes instead of causing use-after-frees. After the next global GC,
+        // the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(m_index, object);
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
@@ -1139,7 +1136,6 @@ BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadStat
     , m_gcInfo(gcInfo)
     , m_threadState(state)
     , m_terminating(false)
-    , m_tracedAfterOrphaned(false)
 {
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
@@ -1149,7 +1145,6 @@ void BaseHeapPage::markOrphaned()
     m_threadState = 0;
     m_gcInfo = 0;
     m_terminating = false;
-    m_tracedAfterOrphaned = false;
     // Since we zap the page payload for orphaned pages we need to mark it as
     // unused so a conservative pointer won't interpret the object headers.
     storage()->markUnused();
@@ -1192,21 +1187,9 @@ void OrphanedPagePool::decommitOrphanedPages()
         PoolEntry** prevNext = &m_pool[index];
         while (entry) {
             BaseHeapPage* page = entry->data;
-            if (page->tracedAfterOrphaned()) {
-                // If the orphaned page was traced in the last GC it is not
-                // decommited. We only decommit a page, ie. put it in the
-                // memory pool, when the page has no objects pointing to it.
-                // We remark the page as orphaned to clear the tracedAfterOrphaned
-                // flag and any object trace bits that were set during tracing.
-                page->markOrphaned();
-                prevNext = &entry->next;
-                entry = entry->next;
-                continue;
-            }
-
-            // Page was not traced. Check if we should reuse the memory or just
-            // free it. Large object memory is not reused, but freed, normal
-            // blink heap pages are reused.
+            // Check if we should reuse the memory or just free it.
+            // Large object memory is not reused but freed, normal blink heap
+            // pages are reused.
             // NOTE: We call the destructor before freeing or adding to the
             // free page pool.
             PageMemory* memory = page->storage();
@@ -1215,8 +1198,6 @@ void OrphanedPagePool::decommitOrphanedPages()
                 delete memory;
             } else {
                 page->~BaseHeapPage();
-                // Clear out the page's memory before adding it to the free page
-                // pool to ensure it is zero filled when being reused.
                 clearMemory(memory);
                 Heap::freePagePool()->addFreePage(index, memory);
             }
@@ -1281,15 +1262,14 @@ void ThreadHeap<Header>::removePageFromHeap(HeapPage<Header>* page)
     Heap::decreaseAllocatedSpace(blinkPageSize);
 
     if (page->terminating()) {
-        // The thread is shutting down so this page is being removed as part
-        // of a thread local GC. In that case the page could be accessed in the
-        // next global GC either due to a dead object being traced via a
-        // conservative pointer or due to a programming error where an object
-        // in another thread heap keeps a dangling pointer to this object.
-        // To guard against this we put the page in the orphanedPagePool to
-        // ensure it is still reachable. After the next global GC it can be
-        // decommitted and moved to the page pool assuming no rogue/dangling
-        // pointers refer to it.
+        // The thread is shutting down and this page is being removed as a part
+        // of the thread local GC. In that case the object could be traced in
+        // the next global GC if there is a dangling pointer from a live thread
+        // heap to this dead thread heap. To guard against this, we put the page
+        // into the orphaned page pool and zap the page memory. This ensures
+        // that tracing the dangling pointer in the next global GC just
+        // crashes instead of causing use-after-frees. After the next global GC,
+        // the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(m_index, page);
     } else {
         PageMemory* memory = page->storage();
@@ -2252,6 +2232,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 
     if (BaseHeapPage* page = lookup(address)) {
         ASSERT(page->contains(address));
+        ASSERT(!page->orphaned());
         ASSERT(!s_heapDoesNotContainCache->lookup(address));
         page->checkAndMarkPointer(visitor, address);
         // FIXME: We only need to set the conservative flag if checkAndMarkPointer actually marked the pointer.
@@ -2334,23 +2315,27 @@ bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
     CallbackStack::Item* item = stack->pop();
     if (!item)
         return false;
-    // If the object being traced is located on a page which is dead don't
-    // trace it. This can happen when a conservative GC kept a dead object
-    // alive which pointed to a (now gone) object on the cleaned up page.
-    // Also, if doing a thread local GC, don't trace objects that are located
-    // on other thread's heaps, ie, pages where the terminating flag is not set.
-    BaseHeapPage* heapPage = pageHeaderFromObject(item->object());
-    if (Mode == GlobalMarking && heapPage->orphaned()) {
-        // When doing a global GC we should only get a trace callback to an orphaned
-        // page if the GC is conservative. If it is not conservative there is
-        // a bug in the code where we have a dangling pointer to a page
-        // on the dead thread.
-        RELEASE_ASSERT(Heap::lastGCWasConservative());
-        heapPage->setTracedAfterOrphaned();
-        return true;
+#if ENABLE(ASSERT)
+    if (Mode == GlobalMarking) {
+        BaseHeapPage* heapPage = pageHeaderFromObject(item->object());
+        // If you hit this ASSERT, it means that there is a dangling pointer
+        // from a live thread heap to a dead thread heap. We must eliminate
+        // the dangling pointer.
+        // Release builds don't have the ASSERT, but it is OK because
+        // release builds will crash at the following item->call
+        // because all the entries of the orphaned heaps are zeroed out and
+        // thus the item does not have a valid vtable.
+        ASSERT(!heapPage->orphaned());
     }
-    if (Mode == ThreadLocalMarking && (heapPage->orphaned() || !heapPage->terminating()))
-        return true;
+#endif
+    if (Mode == ThreadLocalMarking) {
+        BaseHeapPage* heapPage = pageHeaderFromObject(item->object());
+        ASSERT(!heapPage->orphaned());
+        // When doing a thread local GC, don't trace an object located in
+        // a heap of another thread.
+        if (!heapPage->terminating())
+            return true;
+    }
 
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(item->object(), classOf(item->object()));
@@ -2493,13 +2478,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     postMarkingProcessing();
     globalWeakProcessing();
 
-    // After a global marking we know that any orphaned page that was not reached
-    // cannot be reached in a subsequent GC. This is due to a thread either having
-    // swept its heap or having done a "poor mans sweep" in prepareForGC which marks
-    // objects that are dead, but not swept in the previous GC as dead. In this GC's
-    // marking we check that any object marked as dead is not traced. E.g. via a
-    // conservatively found pointer or a programming error with an object containing
-    // a dangling pointer.
+    // Now we can delete all orphaned pages because there are no dangling
+    // pointers to the orphaned pages. (If we have such dangling pointers,
+    // we should have crashed during marking before getting here.)
     orphanedPagePool()->decommitOrphanedPages();
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -2745,8 +2726,10 @@ BaseHeapPage* Heap::lookup(Address address)
     ASSERT(ThreadState::isAnyThreadInGC());
     if (!s_regionTree)
         return 0;
-    if (PageMemoryRegion* region = s_regionTree->lookup(address))
-        return region->pageFromAddress(address);
+    if (PageMemoryRegion* region = s_regionTree->lookup(address)) {
+        BaseHeapPage* page = region->pageFromAddress(address);
+        return page && !page->orphaned() ? page : 0;
+    }
     return 0;
 }
 
@@ -2807,7 +2790,7 @@ void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
     ASSERT(context);
     Address base = region->base();
     RegionTree* current = *context;
-    for ( ; current; current = *context) {
+    for (; current; current = *context) {
         if (region == current->m_region)
             break;
         context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;

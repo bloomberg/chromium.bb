@@ -893,8 +893,6 @@ public:
     bool orphaned() { return !m_threadState; }
     bool terminating() { return m_terminating; }
     void setTerminating() { m_terminating = true; }
-    bool tracedAfterOrphaned() { return m_tracedAfterOrphaned; }
-    void setTracedAfterOrphaned() { m_tracedAfterOrphaned = true; }
     size_t promptlyFreedSize() { return m_promptlyFreedSize; }
     void resetPromptlyFreedSize() { m_promptlyFreedSize = 0; }
     void addToPromptlyFreedSize(size_t size) { m_promptlyFreedSize += size; }
@@ -908,7 +906,6 @@ private:
     // whether the page is part of a terminting thread or
     // if the page is traced after being terminated (orphaned).
     uintptr_t m_terminating : 1;
-    uintptr_t m_tracedAfterOrphaned : 1;
     uintptr_t m_promptlyFreedSize : 17; // == blinkPageSizeLog2
 };
 

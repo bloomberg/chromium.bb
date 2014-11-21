@@ -521,14 +521,14 @@ public:
         if (!self)
             return;
 
-        // Before doing adjustAndMark we need to check if the page is orphaned
-        // since we cannot call adjustAndMark if so, as there will be no vtable.
-        // If orphaned just mark the page as traced.
-        BaseHeapPage* heapPage = pageHeaderFromObject(self);
-        if (heapPage->orphaned()) {
-            heapPage->setTracedAfterOrphaned();
-            return;
-        }
+        // If you hit this ASSERT, it means that there is a dangling pointer
+        // from a live thread heap to a dead thread heap. We must eliminate
+        // the dangling pointer.
+        // Release builds don't have the ASSERT, but it is OK because
+        // release builds will crash at the following self->adjustAndMark
+        // because all the entries of the orphaned heaps are zeroed out and
+        // thus the item does not have a valid vtable.
+        ASSERT(!pageHeaderFromObject(self)->orphaned());
         self->adjustAndMark(visitor);
     }
 

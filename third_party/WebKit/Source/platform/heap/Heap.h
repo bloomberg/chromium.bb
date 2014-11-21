@@ -177,7 +177,7 @@ PLATFORM_EXPORT inline BaseHeapPage* pageHeaderFromObject(const void* object)
 //
 // | BaseHeapPage | next pointer | FinalizedHeapObjectHeader or HeapObjectHeader | payload |
 template<typename Header>
-class LargeHeapObject : public BaseHeapPage {
+class LargeHeapObject final : public BaseHeapPage {
 public:
     LargeHeapObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
     {
@@ -251,7 +251,7 @@ public:
     void mark(Visitor*);
     void finalize();
     void setDeadMark();
-    virtual void markOrphaned()
+    virtual void markOrphaned() override
     {
         // Zap the payload with a recognizable value to detect any incorrect
         // cross thread pointer usage.
@@ -488,7 +488,7 @@ private:
 // each object. In that case objects have only a HeapObjectHeader and
 // not a FinalizedHeapObjectHeader saving a word per object.
 template<typename Header>
-class HeapPage : public BaseHeapPage {
+class HeapPage final : public BaseHeapPage {
 public:
     HeapPage(PageMemory*, ThreadHeap<Header>*, const GCInfo*);
 
@@ -538,7 +538,7 @@ public:
     void poisonUnmarkedObjects();
 #endif
     NO_SANITIZE_ADDRESS
-    virtual void markOrphaned()
+    virtual void markOrphaned() override
     {
         // Zap the payload with a recognizable value to detect any incorrect
         // cross thread pointer usage.
