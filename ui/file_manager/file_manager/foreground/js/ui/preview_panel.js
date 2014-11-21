@@ -9,13 +9,15 @@
  *     visibility type.
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!importer.HistoryLoader} historyLoader
  * @constructor
  * @extends {cr.EventTarget}
  */
 var PreviewPanel = function(element,
                             visibilityType,
                             metadataCache,
-                            volumeManager) {
+                            volumeManager,
+                            historyLoader) {
   /**
    * The cached height of preview panel.
    * @type {number}
@@ -50,7 +52,8 @@ var PreviewPanel = function(element,
   this.thumbnails = new PreviewPanel.Thumbnails(
       element.querySelector('.preview-thumbnails'),
       metadataCache,
-      volumeManager);
+      volumeManager,
+      historyLoader);
 
   /**
    * @type {Element}
@@ -379,13 +382,27 @@ PreviewPanel.CalculatingSizeLabel.prototype.onStep_ = function() {
  * @param {Element} element DOM Element of thumbnail container.
  * @param {MetadataCache} metadataCache MetadataCache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!importer.HistoryLoader} historyLoader
  * @constructor
  */
-PreviewPanel.Thumbnails = function(element, metadataCache, volumeManager) {
+PreviewPanel.Thumbnails = function(
+    element, metadataCache, volumeManager, historyLoader) {
+
+  /** @private {Element} */
   this.element_ = element;
+
+  /** @private {MetadataCache} */
   this.metadataCache_ = metadataCache;
+
+  /** @private {VolumeManagerWrapper} */
   this.volumeManager_ = volumeManager;
+
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
+
+  /** @private {string} */
   this.lastEntriesHash_ = '';
+
   Object.seal(this);
 };
 
@@ -459,6 +476,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
           entries[i],
           this.metadataCache_,
           this.volumeManager_,
+          this.historyLoader_,
           ThumbnailLoader.FillMode.FILL,
           FileGrid.ThumbnailQuality.LOW,
           /* animation */ true,

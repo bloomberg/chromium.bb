@@ -379,7 +379,7 @@ FileManager.prototype = /** @struct */ {
     return this.volumeManager_;
   },
   /**
-   * @return {VolumeManagerWrapper}
+   * @return {importer.HistoryLoader}
    */
   get historyLoader() {
     return this.historyLoader_;
@@ -943,6 +943,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initAdditionalUI_ = function(callback) {
     assert(this.metadataCache_);
     assert(this.volumeManager_);
+    assert(this.historyLoader_);
 
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
@@ -974,7 +975,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                 PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
                 PreviewPanel.VisibilityType.AUTO,
             this.metadataCache_,
-            this.volumeManager_),
+            this.volumeManager_,
+            this.historyLoader_),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
             queryRequiredElement(dom, '#location-volume-icon'),

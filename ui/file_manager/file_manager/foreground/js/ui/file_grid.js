@@ -212,7 +212,10 @@ FileGrid.decorateThumbnailBox = function(
 
   if (importer.isEligibleEntry(entry, volumeManager)) {
     historyLoader.getHistory().then(
-      FileGrid.applyHistoryBadges_.bind(null, entry, box));
+        FileGrid.applyHistoryBadges_.bind(
+            null,
+            /** @type {!FileEntry} */ (entry),
+            box));
   }
 
   if (entry.isDirectory) {
@@ -269,7 +272,7 @@ FileGrid.decorateThumbnailBox = function(
 /**
  * Applies cloud import history badges as appropriate for the Entry.
  *
- * @param {Entry} entry
+ * @param {!FileEntry} entry
  * @param {Element} box Box to decorate.
  * @param {!importer.ImportHistory} history
  *
