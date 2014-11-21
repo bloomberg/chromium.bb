@@ -266,7 +266,8 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
+  TestRequestAllowedNotifier* test_notifier =
+      new TestRequestAllowedNotifier(&prefs);
   TestVariationsService test_service(test_notifier, &prefs);
 
   // Force the notifier to initially disallow requests.
@@ -287,7 +288,8 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  TestRequestAllowedNotifier* test_notifier = new TestRequestAllowedNotifier;
+  TestRequestAllowedNotifier* test_notifier =
+      new TestRequestAllowedNotifier(&prefs);
   TestVariationsService test_service(test_notifier, &prefs);
 
   test_notifier->SetRequestsAllowedOverride(true);
@@ -302,7 +304,7 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  TestVariationsService service(new TestRequestAllowedNotifier, &prefs);
+  TestVariationsService service(new TestRequestAllowedNotifier(&prefs), &prefs);
   const GURL url = VariationsService::GetVariationsServerURL(&prefs);
   service.variations_server_url_ = url;
   service.set_intercepts_fetch(false);
@@ -334,7 +336,8 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
+  VariationsService service(new TestRequestAllowedNotifier(&prefs), &prefs,
+                            NULL);
   const GURL url = VariationsService::GetVariationsServerURL(&prefs);
   service.variations_server_url_ = url;
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
@@ -358,7 +361,8 @@ TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   net::TestURLFetcherFactory factory;
-  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
+  VariationsService service(new TestRequestAllowedNotifier(&prefs), &prefs,
+                            NULL);
   const GURL url = VariationsService::GetVariationsServerURL(&prefs);
   service.variations_server_url_ = url;
   service.DoActualFetch();
@@ -375,7 +379,8 @@ TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
 TEST_F(VariationsServiceTest, Observer) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
-  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
+  VariationsService service(new TestRequestAllowedNotifier(&prefs), &prefs,
+                            NULL);
 
   struct {
     int normal_count;

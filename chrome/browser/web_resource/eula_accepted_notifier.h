@@ -33,7 +33,7 @@ class EulaAcceptedNotifier {
   virtual bool IsEulaAccepted();
 
   // Factory method for this class.
-  static EulaAcceptedNotifier* Create();
+  static EulaAcceptedNotifier* Create(PrefService* local_state);
 
  protected:
   // Notifies the observer that the EULA has been updated, made protected for

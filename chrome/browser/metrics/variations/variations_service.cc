@@ -489,8 +489,9 @@ scoped_ptr<VariationsService> VariationsService::Create(
     return result.Pass();
   }
 #endif
-  result.reset(new VariationsService(
-      new ResourceRequestAllowedNotifier, local_state, state_manager));
+  result.reset(
+      new VariationsService(new ResourceRequestAllowedNotifier(local_state),
+                            local_state, state_manager));
   return result.Pass();
 }
 

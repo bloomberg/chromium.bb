@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 
 EulaAcceptedNotifier::EulaAcceptedNotifier(PrefService* local_state)
@@ -37,12 +36,11 @@ bool EulaAcceptedNotifier::IsEulaAccepted() {
 }
 
 // static
-EulaAcceptedNotifier* EulaAcceptedNotifier::Create() {
+EulaAcceptedNotifier* EulaAcceptedNotifier::Create(PrefService* local_state) {
   // First run EULA only exists on ChromeOS, Android and iOS. On ChromeOS, it is
   // only shown in official builds.
 #if (defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)) || \
     defined(OS_ANDROID) || defined(OS_IOS)
-  PrefService* local_state = g_browser_process->local_state();
   // Tests that use higher-level classes that use EulaAcceptNotifier may not
   // have local state or may not register this pref. Return NULL to indicate not
   // needing to check the EULA.

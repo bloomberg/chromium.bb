@@ -4,8 +4,9 @@
 
 #include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
 
-TestRequestAllowedNotifier::TestRequestAllowedNotifier()
-    : override_requests_allowed_(false),
+TestRequestAllowedNotifier::TestRequestAllowedNotifier(PrefService* local_state)
+    : ResourceRequestAllowedNotifier(local_state),
+      override_requests_allowed_(false),
       requests_allowed_(true) {
 }
 

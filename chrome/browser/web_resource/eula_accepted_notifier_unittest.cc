@@ -5,9 +5,8 @@
 #include "chrome/browser/web_resource/eula_accepted_notifier.h"
 
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class EulaAcceptedNotifierTest : public testing::Test,

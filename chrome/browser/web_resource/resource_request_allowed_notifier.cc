@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 
-ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier()
-    : observer_requested_permission_(false),
+ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier(
+    PrefService* local_state)
+    : local_state_(local_state),
+      observer_requested_permission_(false),
       waiting_for_network_(false),
       waiting_for_user_to_accept_eula_(false),
       observer_(NULL) {
@@ -85,7 +87,7 @@ void ResourceRequestAllowedNotifier::MaybeNotifyObserver() {
 }
 
 EulaAcceptedNotifier* ResourceRequestAllowedNotifier::CreateEulaNotifier() {
-  return EulaAcceptedNotifier::Create();
+  return EulaAcceptedNotifier::Create(local_state_);
 }
 
 void ResourceRequestAllowedNotifier::OnEulaAccepted() {

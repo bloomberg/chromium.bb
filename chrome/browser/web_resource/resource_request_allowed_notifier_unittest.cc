@@ -3,12 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/web_resource/eula_accepted_notifier.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Override NetworkChangeNotifier to simulate connection type changes for tests.
@@ -75,9 +71,9 @@ class ResourceRequestAllowedNotifierTest
       public ResourceRequestAllowedNotifier::Observer {
  public:
   ResourceRequestAllowedNotifierTest()
-    : ui_thread(content::BrowserThread::UI, &message_loop),
-      eula_notifier_(new TestEulaAcceptedNotifier),
-      was_notified_(false) {
+      : resource_request_allowed_notifier_(&prefs_),
+        eula_notifier_(new TestEulaAcceptedNotifier),
+        was_notified_(false) {
     resource_request_allowed_notifier_.InitWithEulaAcceptNotifier(
         this, scoped_ptr<EulaAcceptedNotifier>(eula_notifier_));
   }
@@ -139,8 +135,8 @@ class ResourceRequestAllowedNotifierTest
 
  private:
   base::MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread;
   TestNetworkChangeNotifier network_notifier;
+  TestingPrefServiceSimple prefs_;
   TestRequestAllowedNotifier resource_request_allowed_notifier_;
   TestEulaAcceptedNotifier* eula_notifier_;  // Weak, owned by RRAN.
   bool was_notified_;

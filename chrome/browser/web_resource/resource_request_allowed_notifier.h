@@ -8,6 +8,8 @@
 #include "chrome/browser/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
 
+class PrefService;
+
 // This class informs an interested observer when resource requests over the
 // network are permitted.
 //
@@ -46,7 +48,7 @@ class ResourceRequestAllowedNotifier
     DISALLOWED_COMMAND_LINE_DISABLED,
   };
 
-  ResourceRequestAllowedNotifier();
+  explicit ResourceRequestAllowedNotifier(PrefService* local_state);
   ~ResourceRequestAllowedNotifier() override;
 
   // Sets |observer| as the service to be notified by this instance, and
@@ -86,6 +88,9 @@ class ResourceRequestAllowedNotifier
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // The local state this class is observing.
+  PrefService* local_state_;
 
   // Tracks whether or not the observer/service depending on this class actually
   // requested permission to make a request or not. If it did not, then this

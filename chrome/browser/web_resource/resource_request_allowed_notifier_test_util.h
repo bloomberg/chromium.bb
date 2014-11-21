@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 #define CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
+
+class PrefService;
 
 // A subclass of ResourceRequestAllowedNotifier used to expose some
 // functionality for testing.
@@ -18,7 +21,7 @@
 // it to return.
 class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
  public:
-  TestRequestAllowedNotifier();
+  explicit TestRequestAllowedNotifier(PrefService* local_state);
   ~TestRequestAllowedNotifier() override;
 
   // A version of |Init()| that accepts a custom EulaAcceptedNotifier.

@@ -19,14 +19,14 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-WebResourceService::WebResourceService(
-    PrefService* prefs,
-    const GURL& web_resource_server,
-    bool apply_locale_to_url,
-    const char* last_update_time_pref_name,
-    int start_fetch_delay_ms,
-    int cache_update_delay_ms)
+WebResourceService::WebResourceService(PrefService* prefs,
+                                       const GURL& web_resource_server,
+                                       bool apply_locale_to_url,
+                                       const char* last_update_time_pref_name,
+                                       int start_fetch_delay_ms,
+                                       int cache_update_delay_ms)
     : prefs_(prefs),
+      resource_request_allowed_notifier_(prefs),
       json_unpacker_(NULL),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
