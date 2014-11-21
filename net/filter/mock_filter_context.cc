@@ -11,7 +11,6 @@ namespace net {
 MockFilterContext::MockFilterContext()
     : is_cached_content_(false),
       is_download_(false),
-      is_sdch_response_(false),
       ok_to_call_get_url_(true),
       response_code_(-1),
       context_(new URLRequestContext()) {
@@ -54,8 +53,9 @@ bool MockFilterContext::IsCachedContent() const { return is_cached_content_; }
 
 bool MockFilterContext::IsDownload() const { return is_download_; }
 
-bool MockFilterContext::SdchResponseExpected() const {
-  return is_sdch_response_;
+SdchManager::DictionarySet*
+MockFilterContext::SdchDictionariesAdvertised() const {
+  return dictionaries_handle_.get();
 }
 
 int64 MockFilterContext::GetByteReadCount() const { return 0; }

@@ -15,6 +15,7 @@
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_store.h"
 #include "net/filter/filter.h"
 #include "net/http/http_request_info.h"
@@ -32,7 +33,7 @@ class ProxyInfo;
 class UploadDataStream;
 class URLRequestContext;
 
-// A URLRequestJob subclass that is built on top of HttpTransaction.  It
+// A URLRequestJob subclass that is built on top of HttpTransaction. It
 // provides an implementation for both HTTP and HTTPS.
 class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
  public:
@@ -194,17 +195,15 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   scoped_ptr<HttpTransaction> transaction_;
 
   // This is used to supervise traffic and enforce exponential
-  // back-off.  May be NULL.
+  // back-off. May be NULL.
   scoped_refptr<URLRequestThrottlerEntryInterface> throttling_entry_;
 
-  // Indicated if an SDCH dictionary was advertised, and hence an SDCH
-  // compressed response is expected.  We use this to help detect (accidental?)
-  // proxy corruption of a response, which sometimes marks SDCH content as
-  // having no content encoding <oops>.
-  bool sdch_dictionary_advertised_;
+  // A handle to the SDCH dictionaries that were advertised in this request.
+  // May be null.
+  scoped_ptr<SdchManager::DictionarySet> dictionaries_advertised_;
 
   // For SDCH latency experiments, when we are able to do SDCH, we may enable
-  // either an SDCH latency test xor a pass through test.  The following bools
+  // either an SDCH latency test xor a pass through test. The following bools
   // indicate what we decided on for this instance.
   bool sdch_test_activated_;  // Advertising a dictionary for sdch.
   bool sdch_test_control_;    // Not even accepting-content sdch.
@@ -219,7 +218,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   //
   // TODO(jar): improve the quality of the gathered info by gathering most times
   // at a lower point in the network stack, assuring we have actual packet
-  // boundaries, rather than approximations.  Also note that input byte count
+  // boundaries, rather than approximations. Also note that input byte count
   // as gathered here is post-SSL, and post-cache-fetch, and does not reflect
   // true packet arrival times in such cases.
 

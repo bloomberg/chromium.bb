@@ -24,9 +24,6 @@ class PassThroughFilter : public Filter {
 
 }  // namespace
 
-class FilterTest : public testing::Test {
-};
-
 TEST(FilterTest, ContentTypeId) {
   // Check for basic translation of Content-Encoding, including case variations.
   EXPECT_EQ(Filter::FILTER_TYPE_DEFLATE,
@@ -54,7 +51,7 @@ TEST(FilterTest, ContentTypeId) {
 // Check various fixups that modify content encoding lists.
 TEST(FilterTest, ApacheGzip) {
   MockFilterContext filter_context;
-  filter_context.SetSdchResponse(false);
+  filter_context.SetSdchResponse(NULL);
 
   // Check that redundant gzip mime type removes only solo gzip encoding.
   const std::string kGzipMime1("application/x-gzip");
@@ -100,7 +97,7 @@ TEST(FilterTest, ApacheGzip) {
 
 TEST(FilterTest, GzipContentDispositionFilename) {
   MockFilterContext filter_context;
-  filter_context.SetSdchResponse(false);
+  filter_context.SetSdchResponse(NULL);
 
   const std::string kGzipMime("application/x-tar");
   const std::string kContentDisposition("attachment; filename=\"foo.tgz\"");
@@ -119,7 +116,9 @@ TEST(FilterTest, SdchEncoding) {
   // Handle content encodings including SDCH.
   const std::string kTextHtmlMime("text/html");
   MockFilterContext filter_context;
-  filter_context.SetSdchResponse(true);
+  // Empty handle indicates to filter that SDCH is active.
+  filter_context.SetSdchResponse(
+      SdchManager::CreateEmptyDictionarySetForTesting().Pass());
 
   std::vector<Filter::FilterType> encoding_types;
 
@@ -156,7 +155,8 @@ TEST(FilterTest, MissingSdchEncoding) {
   // Handle interesting case where entire SDCH encoding assertion "got lost."
   const std::string kTextHtmlMime("text/html");
   MockFilterContext filter_context;
-  filter_context.SetSdchResponse(true);
+  filter_context.SetSdchResponse(
+      SdchManager::CreateEmptyDictionarySetForTesting().Pass());
 
   std::vector<Filter::FilterType> encoding_types;
 
@@ -169,7 +169,7 @@ TEST(FilterTest, MissingSdchEncoding) {
   EXPECT_EQ(Filter::FILTER_TYPE_GZIP_HELPING_SDCH, encoding_types[1]);
 
   // Loss of encoding, but it was an SDCH response with a prefix that says it
-  // was an html type.  Note that it *should* be the case that a precise match
+  // was an html type. Note that it *should* be the case that a precise match
   // with "text/html" we be collected by GetMimeType() and passed in, but we
   // coded the fixup defensively (scanning for a prefix of "text/html", so this
   // is an example which could survive such confusion in the caller).

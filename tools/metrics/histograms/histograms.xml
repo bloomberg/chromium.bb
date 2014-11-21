@@ -54026,6 +54026,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="40" label="ATTEMPT_TO_DECODE_NON_HTTP_DATA"/>
   <int value="50" label="MULTIENCODING_FOR_NON_SDCH_REQUEST"/>
   <int value="51" label="SDCH_CONTENT_ENCODE_FOR_NON_SDCH_REQUEST"/>
+  <int value="52" label="UNADVERTISED_DICTIONARY_USED"/>
+  <int value="53" label="UNADVERTISED_DICTIONARY_USED_CACHED"/>
   <int value="61" label="DOMAIN_BLACKLIST_INCLUDES_TARGET"/>
   <int value="70" label="META_REFRESH_RECOVERY"/>
   <int value="71" label="defunct">

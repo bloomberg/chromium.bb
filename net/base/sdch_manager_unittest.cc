@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "net/base/net_log.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_observer.h"
@@ -199,12 +201,9 @@ TEST_F(SdchManagerTest, CanAdvertiseDictionaryOverHTTP) {
   EXPECT_TRUE(AddSdchDictionary(dictionary_text,
                                 GURL("http://" + dictionary_domain)));
 
-  std::string dictionary_list;
   // HTTP target URL can advertise dictionary.
-  sdch_manager()->GetAvailDictionaryList(
-      GURL("http://" + dictionary_domain + "/test"),
-      &dictionary_list);
-  EXPECT_FALSE(dictionary_list.empty());
+  EXPECT_TRUE(sdch_manager()->GetDictionarySet(
+      GURL("http://" + dictionary_domain + "/test")));
 }
 
 TEST_F(SdchManagerTest, CanNotAdvertiseDictionaryOverHTTPS) {
@@ -214,12 +213,9 @@ TEST_F(SdchManagerTest, CanNotAdvertiseDictionaryOverHTTPS) {
   EXPECT_TRUE(AddSdchDictionary(dictionary_text,
                                 GURL("http://" + dictionary_domain)));
 
-  std::string dictionary_list;
   // HTTPS target URL should NOT advertise dictionary.
-  sdch_manager()->GetAvailDictionaryList(
-      GURL("https://" + dictionary_domain + "/test"),
-      &dictionary_list);
-  EXPECT_TRUE(dictionary_list.empty());
+  EXPECT_FALSE(sdch_manager()->GetDictionarySet(
+      GURL("https://" + dictionary_domain + "/test")));
 }
 
 TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
@@ -234,20 +230,21 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
                                 GURL("https://" + dictionary_domain)));
 
   GURL target_url("https://" + dictionary_domain + "/test");
-  std::string dictionary_list;
   // HTTPS target URL should advertise dictionary if secure scheme support is
   // enabled.
-  sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
-  EXPECT_FALSE(dictionary_list.empty());
+  EXPECT_TRUE(sdch_manager()->GetDictionarySet(target_url));
 
   // Dictionary should be available.
-  scoped_refptr<SdchManager::Dictionary> dictionary;
   std::string client_hash;
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
-  EXPECT_EQ(SDCH_OK, sdch_manager()->GetVcdiffDictionary(
-                         server_hash, target_url, &dictionary));
-  EXPECT_TRUE(dictionary.get() != NULL);
+  SdchProblemCode problem_code;
+  scoped_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(
+          target_url, server_hash, &problem_code));
+  EXPECT_EQ(SDCH_OK, problem_code);
+  EXPECT_TRUE(dict_set.get());
+  EXPECT_TRUE(dict_set->GetDictionary(server_hash));
 }
 
 TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
@@ -258,21 +255,20 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
                                 GURL("http://" + dictionary_domain)));
 
   GURL target_url("https://" + dictionary_domain + "/test");
-  std::string dictionary_list;
   // HTTPS target URL should not advertise dictionary acquired over HTTP even if
   // secure scheme support is enabled.
   SdchManager::EnableSecureSchemeSupport(true);
-  sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
-  EXPECT_TRUE(dictionary_list.empty());
+  EXPECT_FALSE(sdch_manager()->GetDictionarySet(target_url));
 
-  scoped_refptr<SdchManager::Dictionary> dictionary;
   std::string client_hash;
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
-  EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME,
-            sdch_manager()->GetVcdiffDictionary(server_hash, target_url,
-                                                &dictionary));
-  EXPECT_TRUE(dictionary.get() == NULL);
+  SdchProblemCode problem_code;
+  scoped_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(
+          target_url, server_hash, &problem_code));
+  EXPECT_FALSE(dict_set.get());
+  EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME, problem_code);
 }
 
 TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
@@ -284,20 +280,19 @@ TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
                                 GURL("https://" + dictionary_domain)));
 
   GURL target_url("http://" + dictionary_domain + "/test");
-  std::string dictionary_list;
   // HTTP target URL should not advertise dictionary acquired over HTTPS even if
   // secure scheme support is enabled.
-  sdch_manager()->GetAvailDictionaryList(target_url, &dictionary_list);
-  EXPECT_TRUE(dictionary_list.empty());
+  EXPECT_FALSE(sdch_manager()->GetDictionarySet(target_url));
 
-  scoped_refptr<SdchManager::Dictionary> dictionary;
   std::string client_hash;
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
-  EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME,
-            sdch_manager()->GetVcdiffDictionary(server_hash, target_url,
-                                                &dictionary));
-  EXPECT_TRUE(dictionary.get() == NULL);
+  SdchProblemCode problem_code;
+  scoped_ptr<SdchManager::DictionarySet> dict_set(
+      sdch_manager()->GetDictionarySetByHash(
+          target_url, server_hash, &problem_code));
+  EXPECT_FALSE(dict_set.get());
+  EXPECT_EQ(SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME, problem_code);
 }
 
 TEST_F(SdchManagerTest, FailToSetDomainMismatchDictionary) {
@@ -438,7 +433,7 @@ TEST_F(SdchManagerTest, PathMatch) {
   EXPECT_TRUE(PathMatch("/search/", "/search/"));
 
   // Prefix only works if last character of restriction is a slash, or first
-  // character in path after a match is a slash.  Validate each case separately.
+  // character in path after a match is a slash. Validate each case separately.
 
   // Rely on the slash in the path (not at the end of the restriction).
   EXPECT_TRUE(PathMatch("/search/something", "/search"));
@@ -519,34 +514,36 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
   // can't get them from the other.
   EXPECT_TRUE(AddSdchDictionary(dictionary_text_1,
                                 GURL("http://" + dictionary_domain_1)));
-  scoped_refptr<SdchManager::Dictionary> dictionary;
-  EXPECT_EQ(SDCH_OK, sdch_manager()->GetVcdiffDictionary(
-                         server_hash_1,
-                         GURL("http://" + dictionary_domain_1 + "/random_url"),
-                         &dictionary));
-  EXPECT_TRUE(dictionary.get());
+  scoped_ptr<SdchManager::DictionarySet> dict_set;
+
+  SdchProblemCode problem_code;
+  dict_set = sdch_manager()->GetDictionarySetByHash(
+      GURL("http://" + dictionary_domain_1 + "/random_url"),
+      server_hash_1, &problem_code);
+  EXPECT_TRUE(dict_set);
+  EXPECT_TRUE(dict_set->GetDictionary(server_hash_1));
+  EXPECT_EQ(SDCH_OK, problem_code);
 
   second_manager.AddSdchDictionary(
       dictionary_text_2, GURL("http://" + dictionary_domain_2));
-  second_manager.GetVcdiffDictionary(
-      server_hash_2,
+  dict_set = second_manager.GetDictionarySetByHash(
       GURL("http://" + dictionary_domain_2 + "/random_url"),
-      &dictionary);
-  EXPECT_TRUE(dictionary.get());
+      server_hash_2, &problem_code);
+  EXPECT_TRUE(dict_set);
+  EXPECT_TRUE(dict_set->GetDictionary(server_hash_2));
+  EXPECT_EQ(SDCH_OK, problem_code);
 
-  EXPECT_EQ(
-      SDCH_DICTIONARY_HASH_NOT_FOUND,
-      sdch_manager()->GetVcdiffDictionary(
-          server_hash_2, GURL("http://" + dictionary_domain_2 + "/random_url"),
-          &dictionary));
-  EXPECT_FALSE(dictionary.get());
+  dict_set = sdch_manager()->GetDictionarySetByHash(
+      GURL("http://" + dictionary_domain_2 + "/random_url"),
+      server_hash_2, &problem_code);
+  EXPECT_FALSE(dict_set);
+  EXPECT_EQ(SDCH_DICTIONARY_HASH_NOT_FOUND, problem_code);
 
-  EXPECT_EQ(
-      SDCH_DICTIONARY_HASH_NOT_FOUND,
-      second_manager.GetVcdiffDictionary(
-          server_hash_1, GURL("http://" + dictionary_domain_1 + "/random_url"),
-          &dictionary));
-  EXPECT_FALSE(dictionary.get());
+  dict_set = second_manager.GetDictionarySetByHash(
+      GURL("http://" + dictionary_domain_1 + "/random_url"),
+      server_hash_1, &problem_code);
+  EXPECT_FALSE(dict_set);
+  EXPECT_EQ(SDCH_DICTIONARY_HASH_NOT_FOUND, problem_code);
 }
 
 TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
@@ -578,12 +575,16 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
 
   EXPECT_TRUE(AddSdchDictionary(dictionary_text,
                                 GURL("http://" + dictionary_domain)));
-  scoped_refptr<SdchManager::Dictionary> dictionary;
-  EXPECT_EQ(SDCH_OK, sdch_manager()->GetVcdiffDictionary(
-                         server_hash,
-                         GURL("http://" + dictionary_domain + "/random_url"),
-                         &dictionary));
-  EXPECT_TRUE(dictionary.get());
+
+  scoped_ptr<SdchManager::DictionarySet> dict_set;
+
+  SdchProblemCode problem_code;
+  dict_set = sdch_manager()->GetDictionarySetByHash(
+      GURL("http://" + dictionary_domain + "/random_url"),
+      server_hash, &problem_code);
+  EXPECT_TRUE(dict_set);
+  EXPECT_TRUE(dict_set->GetDictionary(server_hash));
+  EXPECT_EQ(SDCH_OK, problem_code);
 
   sdch_manager()->BlacklistDomain(GURL(blacklist_url), SDCH_OK);
   EXPECT_EQ(SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET,
@@ -591,13 +592,11 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
 
   sdch_manager()->ClearData();
 
-  dictionary = NULL;
-  EXPECT_EQ(
-      SDCH_DICTIONARY_HASH_NOT_FOUND,
-      sdch_manager()->GetVcdiffDictionary(
-          server_hash, GURL("http://" + dictionary_domain + "/random_url"),
-          &dictionary));
-  EXPECT_FALSE(dictionary.get());
+  dict_set = sdch_manager()->GetDictionarySetByHash(
+      GURL("http://" + dictionary_domain + "/random_url"),
+      server_hash, &problem_code);
+  EXPECT_FALSE(dict_set);
+  EXPECT_EQ(SDCH_DICTIONARY_HASH_NOT_FOUND, problem_code);
   EXPECT_EQ(SDCH_OK, sdch_manager()->IsInSupportedDomain(blacklist_url));
 }
 
@@ -618,6 +617,41 @@ TEST_F(SdchManagerTest, GetDictionaryNotification) {
   EXPECT_EQ(1, observer.get_dictionary_notifications());
   EXPECT_EQ(test_request_gurl, observer.last_dictionary_request_url());
   EXPECT_EQ(test_dictionary_gurl, observer.last_dictionary_url());
+}
+
+TEST_F(SdchManagerTest, ExpirationCheckedProperly) {
+  // Create an SDCH dictionary with an expiration time in the past.
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(base::StringPrintf(
+      "Domain: %s\nMax-age: 0\n\n", dictionary_domain.c_str()));
+  dictionary_text.append(
+      kTestVcdiffDictionary, sizeof(kTestVcdiffDictionary) - 1);
+  std::string client_hash;
+  std::string server_hash;
+  SdchManager::GenerateHash(dictionary_text, &client_hash, &server_hash);
+  GURL target_gurl("http://" + dictionary_domain);
+  AddSdchDictionary(dictionary_text, target_gurl);
+
+  // It should be visible if looked up by hash whether expired or not.
+  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  clock->SetNow(base::Time::Now());
+  clock->Advance(base::TimeDelta::FromMinutes(5));
+  SdchProblemCode problem_code;
+  scoped_ptr<SdchManager::DictionarySet> hash_set(
+      sdch_manager()->GetDictionarySetByHash(
+          target_gurl, server_hash, &problem_code).Pass());
+  ASSERT_TRUE(hash_set);
+  ASSERT_EQ(SDCH_OK, problem_code);
+  const_cast<SdchManager::Dictionary*>(
+      hash_set->GetDictionary(server_hash))->SetClockForTesting(
+      clock.Pass());
+
+  // Make sure it's not visible for advertisement, but is visible
+  // if looked up by hash.
+  EXPECT_FALSE(sdch_manager()->GetDictionarySet(target_gurl));
+  EXPECT_TRUE(sdch_manager()->GetDictionarySetByHash(
+      target_gurl, server_hash, &problem_code));
+  EXPECT_EQ(SDCH_OK, problem_code);
 }
 
 }  // namespace net

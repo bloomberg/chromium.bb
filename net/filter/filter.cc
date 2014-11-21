@@ -3,20 +3,20 @@
 // found in the LICENSE file.
 
 // The basic usage of the Filter interface is described in the comment at
-// the beginning of filter.h.  If Filter::Factory is passed a vector of
+// the beginning of filter.h. If Filter::Factory is passed a vector of
 // size greater than 1, that interface is implemented by a series of filters
-// connected in a chain.  In such a case the first filter
+// connected in a chain. In such a case the first filter
 // in the chain proxies calls to ReadData() so that its return values
 // apply to the entire chain.
 //
 // In a filter chain, the data flows from first filter (held by the
-// caller) down the chain.  When ReadData() is called on any filter
+// caller) down the chain. When ReadData() is called on any filter
 // except for the last filter, it proxies the call down the chain,
 // filling in the input buffers of subsequent filters if needed (==
 // that filter's last_status() value is FILTER_NEED_MORE_DATA) and
-// available (== the current filter has data it can output).  The last
+// available (== the current filter has data it can output). The last
 // Filter will then output data if possible, and return
-// FILTER_NEED_MORE_DATA if not.  Because the indirection pushes
+// FILTER_NEED_MORE_DATA if not. Because the indirection pushes
 // data along the filter chain at each level if it's available and the
 // next filter needs it, a return value of FILTER_NEED_MORE_DATA from the
 // final filter will apply to the entire chain.
@@ -43,8 +43,8 @@ const char kDeflate[]      = "deflate";
 const char kGZip[]         = "gzip";
 const char kXGZip[]        = "x-gzip";
 const char kSdch[]         = "sdch";
-// compress and x-compress are currently not supported.  If we decide to support
-// them, we'll need the same mime type compatibility hack we have for gzip.  For
+// compress and x-compress are currently not supported. If we decide to support
+// them, we'll need the same mime type compatibility hack we have for gzip. For
 // more information, see Firefox's nsHttpChannel::ProcessNormal.
 
 // Mime types:
@@ -153,9 +153,9 @@ Filter::FilterStatus Filter::ReadData(char* dest_buffer, int* dest_len) {
     // In the case where this filter has data internally, and is indicating such
     // with a last_status_ of FILTER_OK, but at the same time the next filter in
     // the chain indicated it FILTER_NEED_MORE_DATA, we have to be cautious
-    // about confusing the caller.  The API confusion can appear if we return
+    // about confusing the caller. The API confusion can appear if we return
     // FILTER_OK (suggesting we have more data in aggregate), but yet we don't
-    // populate our output buffer.  When that is the case, we need to
+    // populate our output buffer. When that is the case, we need to
     // alternately call our filter element, and the next_filter element until we
     // get out of this state (by pumping data into the next filter until it
     // outputs data, or it runs out of data and reports that it NEED_MORE_DATA.)
@@ -217,8 +217,8 @@ void Filter::FixupEncodingTypes(
         LowerCaseEqualsASCII(mime_type, kApplicationGzip) ||
         LowerCaseEqualsASCII(mime_type, kApplicationXGunzip))
       // The server has told us that it sent us gziped content with a gzip
-      // content encoding.  Sadly, Apache mistakenly sets these headers for all
-      // .gz files.  We match Firefox's nsHttpChannel::ProcessNormal and ignore
+      // content encoding. Sadly, Apache mistakenly sets these headers for all
+      // .gz files. We match Firefox's nsHttpChannel::ProcessNormal and ignore
       // the Content-Encoding here.
       encoding_types->clear();
 
@@ -256,7 +256,7 @@ void Filter::FixupEncodingTypes(
   }
 
   // If the request was for SDCH content, then we might need additional fixups.
-  if (!filter_context.SdchResponseExpected()) {
+  if (!filter_context.SdchDictionariesAdvertised()) {
     // It was not an SDCH request, so we'll just record stats.
     if (1 < encoding_types->size()) {
       // Multiple filters were intended to only be used for SDCH (thus far!)
@@ -271,7 +271,7 @@ void Filter::FixupEncodingTypes(
   }
 
   // The request was tagged as an SDCH request, which means the server supplied
-  // a dictionary, and we advertised it in the request.  Some proxies will do
+  // a dictionary, and we advertised it in the request. Some proxies will do
   // very strange things to the request, or the response, so we have to handle
   // them gracefully.
 
@@ -280,7 +280,7 @@ void Filter::FixupEncodingTypes(
       (FILTER_TYPE_SDCH == encoding_types->front())) {
     // Some proxies (found currently in Argentina) strip the Content-Encoding
     // text from "sdch,gzip" to a mere "sdch" without modifying the compressed
-    // payload.   To handle this gracefully, we simulate the "probably" deleted
+    // payload.  To handle this gracefully, we simulate the "probably" deleted
     // ",gzip" by appending a tentative gzip decode, which will default to a
     // no-op pass through filter if it doesn't get gzip headers where expected.
     if (1 == encoding_types->size()) {
@@ -290,20 +290,20 @@ void Filter::FixupEncodingTypes(
     return;
   }
 
-  // There are now several cases to handle for an SDCH request.  Foremost, if
+  // There are now several cases to handle for an SDCH request. Foremost, if
   // the outbound request was stripped so as not to advertise support for
   // encodings, we might get back content with no encoding, or (for example)
-  // just gzip.  We have to be sure that any changes we make allow for such
-  // minimal coding to work.  That issue is why we use TENTATIVE filters if we
+  // just gzip. We have to be sure that any changes we make allow for such
+  // minimal coding to work. That issue is why we use TENTATIVE filters if we
   // add any, as those filters sniff the content, and act as pass-through
   // filters if headers are not found.
 
   // If the outbound GET is not modified, then the server will generally try to
-  // send us SDCH encoded content.  As that content returns, there are several
+  // send us SDCH encoded content. As that content returns, there are several
   // corruptions of the header "content-encoding" that proxies may perform (and
-  // have been detected in the wild).  We already dealt with the a honest
+  // have been detected in the wild). We already dealt with the a honest
   // content encoding of "sdch,gzip" being corrupted into "sdch" with on change
-  // of the actual content.  Another common corruption is to either disscard
+  // of the actual content. Another common corruption is to either disscard
   // the accurate content encoding, or to replace it with gzip only (again, with
   // no change in actual content). The last observed corruption it to actually
   // change the content, such as by re-gzipping it, and that may happen along
@@ -328,7 +328,7 @@ void Filter::FixupEncodingTypes(
   } else {
     // Remarkable case!?!  We advertised an SDCH dictionary, content-encoding
     // was not marked for SDCH processing: Why did the server suggest an SDCH
-    // dictionary in the first place??.  Also, the content isn't
+    // dictionary in the first place??. Also, the content isn't
     // tagged as HTML, despite the fact that SDCH encoding is mostly likely for
     // HTML: Did some anti-virus system strip this tag (sometimes they strip
     // accept-encoding headers on the request)??  Does the content encoding not
@@ -344,9 +344,9 @@ void Filter::FixupEncodingTypes(
   }
 
   // Leave the existing encoding type to be processed first, and add our
-  // tentative decodings to be done afterwards.  Vodaphone UK reportedyl will
+  // tentative decodings to be done afterwards. Vodaphone UK reportedyl will
   // perform a second layer of gzip encoding atop the server's sdch,gzip
-  // encoding, and then claim that the content encoding is a mere gzip.  As a
+  // encoding, and then claim that the content encoding is a mere gzip. As a
   // result we'll need (in that case) to do the gunzip, plus our tentative
   // gunzip and tentative SDCH decoding.
   // This approach nicely handles the empty() list as well, and should work with

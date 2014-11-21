@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
+#include "net/base/sdch_problem_codes.h"
 #include "net/url_request/url_request_context.h"
 
 #include "sdch/open-vcdiff/src/google/vcdecoder.h"
@@ -251,12 +252,12 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
       // advertisement (so that we are sure we're not hurting anything).
       //
       // Watch out for an error page inserted by the proxy as part of a 40x
-      // error response.  When we see such content molestation, we certainly
+      // error response. When we see such content molestation, we certainly
       // need to fall into the meta-refresh case.
       ResponseCorruptionDetectionCause cause = RESPONSE_NONE;
       if (filter_context_.GetResponseCode() == 404) {
         // We could be more generous, but for now, only a "NOT FOUND" code will
-        // cause a pass through.  All other bad codes will fall into a
+        // cause a pass through. All other bad codes will fall into a
         // meta-refresh.
         LogSdchProblem(SDCH_PASS_THROUGH_404_CODE);
         cause = RESPONSE_404;
@@ -276,13 +277,13 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         // error. We were just overly cautious when we added a TENTATIVE_SDCH.
         // We added the sdch coding tag, and it should not have been added.
         // This can happen in server experiments, where the server decides
-        // not to use sdch, even though there is a dictionary.  To be
+        // not to use sdch, even though there is a dictionary. To be
         // conservative, we locally added the tentative sdch (fearing that a
         // proxy stripped it!) and we must now recant (pass through).
         //
         // However.... just to be sure we don't get burned by proxies that
         // re-compress with gzip or other system, we can sniff to see if this
-        // is compressed data etc.  For now, we do nothing, which gets us into
+        // is compressed data etc. For now, we do nothing, which gets us into
         // the meta-refresh result.
         // TODO(jar): Improve robustness by sniffing for valid text that we can
         // actual use re: decoding_status_ = PASS_THROUGH;
@@ -292,8 +293,8 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         // The common cause is a restart of the browser, where we try to render
         // cached content that was saved when we had a dictionary.
         cause = RESPONSE_NO_DICTIONARY;
-      } else if (filter_context_.SdchResponseExpected()) {
-        // This is a very corrupt SDCH request response.  We can't decode it.
+      } else if (filter_context_.SdchDictionariesAdvertised()) {
+        // This is a very corrupt SDCH request response. We can't decode it.
         // We'll use a meta-refresh, and get content without asking for SDCH.
         // This will also progressively disable SDCH for this domain.
         cause = RESPONSE_CORRUPT_SDCH;
@@ -377,7 +378,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
 
   if (decoding_status_ != DECODING_IN_PROGRESS) {
     if (META_REFRESH_RECOVERY == decoding_status_) {
-      // Absorb all input data.  We've already output page reload HTML.
+      // Absorb all input data. We've already output page reload HTML.
       next_stream_data_ = NULL;
       stream_data_len_ = 0;
       return FILTER_NEED_MORE_DATA;
@@ -441,25 +442,52 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   else
     next_stream_data_ = NULL;
 
-  DCHECK(!dictionary_.get());
+  DCHECK(!dictionary_);
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
   SdchProblemCode rv = SDCH_OK;
   if ('\0' == dictionary_hash_[kServerIdLength - 1]) {
-    SdchManager* manager(url_request_context_->sdch_manager());
-    rv = manager->GetVcdiffDictionary(
-        std::string(dictionary_hash_, 0, kServerIdLength - 1), url_,
-        &dictionary_);
-    if (rv == SDCH_DICTIONARY_HASH_NOT_FOUND) {
-      DCHECK(dictionary_hash_.size() == kServerIdLength);
-      // Since dictionary was not found, check to see if hash was even
-      // plausible.
-      for (size_t i = 0; i < kServerIdLength - 1; ++i) {
-        char base64_char = dictionary_hash_[i];
-        if (!isalnum(base64_char) && '-' != base64_char && '_' != base64_char) {
-          rv = SDCH_DICTIONARY_HASH_MALFORMED;
-          dictionary_hash_is_plausible_ = false;
-          break;
+    std::string server_hash(dictionary_hash_, 0, kServerIdLength - 1);
+    SdchManager::DictionarySet* handle =
+        filter_context_.SdchDictionariesAdvertised();
+    if (handle)
+      dictionary_ = handle->GetDictionary(server_hash);
+    if (!dictionary_) {
+      // This is a hack. Naively, the dictionaries available for
+      // decoding should be only the ones advertised. However, there are
+      // cases, specifically resources encoded with old dictionaries living
+      // in the cache, that mean the full set of dictionaries should be made
+      // available for decoding. It's not known how often this happens;
+      // if it happens rarely enough, this code can be removed.
+      //
+      // TODO(rdsmith): Long-term, a better solution is necessary, since
+      // an entry in the cache being encoded with the dictionary doesn't
+      // guarantee that the dictionary is present. That solution probably
+      // involves storing unencoded resources in the cache, but might
+      // involve evicting encoded resources on dictionary removal.
+      // See http://crbug.com/383405.
+      unexpected_dictionary_handle_ =
+          url_request_context_->sdch_manager()->GetDictionarySetByHash(
+              url_, server_hash, &rv);
+      if (unexpected_dictionary_handle_) {
+        dictionary_ = unexpected_dictionary_handle_->GetDictionary(server_hash);
+        // Override SDCH_OK rv; this is still worth logging.
+        rv = (filter_context_.IsCachedContent() ?
+              SDCH_UNADVERTISED_DICTIONARY_USED_CACHED :
+              SDCH_UNADVERTISED_DICTIONARY_USED);
+      } else {
+        // Since dictionary was not found, check to see if hash was
+        // even plausible.
+        DCHECK(dictionary_hash_.size() == kServerIdLength);
+        rv = SDCH_DICTIONARY_HASH_NOT_FOUND;
+        for (size_t i = 0; i < kServerIdLength - 1; ++i) {
+          char base64_char = dictionary_hash_[i];
+          if (!isalnum(base64_char) &&
+              '-' != base64_char && '_' != base64_char) {
+            dictionary_hash_is_plausible_ = false;
+            rv = SDCH_DICTIONARY_HASH_MALFORMED;
+            break;
+          }
         }
       }
     }
@@ -467,12 +495,15 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
     dictionary_hash_is_plausible_ = false;
     rv = SDCH_DICTIONARY_HASH_MALFORMED;
   }
-  if (rv != SDCH_OK) {
+
+  if (rv != SDCH_OK)
     LogSdchProblem(rv);
+
+  if (!dictionary_) {
     decoding_status_ = DECODING_ERROR;
     return FILTER_ERROR;
   }
-  DCHECK(dictionary_.get());
+
   vcdiff_streaming_decoder_.reset(new open_vcdiff::VCDiffStreamingDecoder);
   vcdiff_streaming_decoder_->SetAllowVcdTarget(false);
   vcdiff_streaming_decoder_->StartDecoding(dictionary_->text().data(),

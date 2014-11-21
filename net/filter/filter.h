@@ -20,22 +20,22 @@
 // through its accessor and fills in stream_buffer_ with pre-filter data, next
 // calls FlushStreamBuffer to notify Filter, then calls ReadFilteredData
 // repeatedly to get all the filtered data. After all data have been filtered
-// and read out, the caller may fill in stream_buffer_ again.  This
+// and read out, the caller may fill in stream_buffer_ again. This
 // WriteBuffer-Flush-Read cycle is repeated until reaching the end of data
 // stream.
 //
 // A return of FILTER_OK from ReadData() means that more data is
 // available to a future ReadData() call and data may not be written
-// into stream_buffer().  A return of FILTER_NEED_MORE_DATA from ReadData()
+// into stream_buffer(). A return of FILTER_NEED_MORE_DATA from ReadData()
 // indicates that no data will be forthcoming from the filter until
 // it receives more input data, and that the buffer at
 // stream_buffer() may be written to.
 //
 // The filter being complete (no more data to provide) may be indicated
 // by either returning FILTER_DONE or by returning FILTER_OK and indicating
-// zero bytes output; consumers understand both those signals.  Consumers
+// zero bytes output; consumers understand both those signals. Consumers
 // are responsible for not calling ReadData() on a filter after one of these
-// signals have been returned.  Note that some filters may never signal that
+// signals have been returned. Note that some filters may never signal that
 // they are done (e.g. a pass-through filter will always
 // say FILTER_NEED_MORE_DATA), so the consumer will also need to
 // recognize the state of |no_more_input_data_available &&
@@ -55,6 +55,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/sdch_manager.h"
 
 class GURL;
 
@@ -66,11 +67,19 @@ class URLRequestContext;
 
 //------------------------------------------------------------------------------
 // Define an interface class that allows access to contextual information
-// supplied by the owner of this filter.  In the case where there are a chain of
+// supplied by the owner of this filter. In the case where there are a chain of
 // filters, there is only one owner of all the chained filters, and that context
-// is passed to the constructor of all those filters.  To be clear, the context
+// is passed to the constructor of all those filters. To be clear, the context
 // does NOT reflect the position in a chain, or the fact that there are prior
 // or later filters in a chain.
+//
+// TODO(rdsmith): FilterContext is a grab-bag of methods which may or may
+// not be relevant for any particular filter, and it's getting worse over
+// time. In addition, it only supports two filters, SDCH and gzip.
+// It would make more sense to implement FilterContext as a
+// base::SupportsUserData structure to which filter-specific information
+// could be added by whatever the ultimate consumer of the filter chain is,
+// and a particular filter (if included) could access that information.
 class NET_EXPORT_PRIVATE FilterContext {
  public:
   // Enum to control what histograms are emitted near end-of-life of this
@@ -107,14 +116,14 @@ class NET_EXPORT_PRIVATE FilterContext {
   virtual bool IsDownload() const = 0;
 
   // Was this data flagged as a response to a request with an SDCH dictionary?
-  virtual bool SdchResponseExpected() const = 0;
+  virtual SdchManager::DictionarySet* SdchDictionariesAdvertised() const = 0;
 
   // How many bytes were read from the net or cache so far (and potentially
   // pushed into a filter for processing)?
   virtual int64 GetByteReadCount() const = 0;
 
   // What response code was received with the associated network transaction?
-  // For example: 200 is ok.   4xx are error codes. etc.
+  // For example: 200 is ok.  4xx are error codes. etc.
   virtual int GetResponseCode() const = 0;
 
   // The URLRequestContext associated with the request.
@@ -137,7 +146,7 @@ class NET_EXPORT_PRIVATE Filter {
     FILTER_OK,
     // Read filtered data successfully, and the data in the buffer has been
     // consumed by the filter, but more data is needed in order to continue
-    // filtering.  At this point, the caller is free to reuse the filter
+    // filtering. At this point, the caller is free to reuse the filter
     // buffer to provide more data.
     FILTER_NEED_MORE_DATA,
     // Read filtered data successfully, and filter reaches the end of the data
@@ -169,7 +178,7 @@ class NET_EXPORT_PRIVATE Filter {
   //
   // Note: filter_types is an array of filter types (content encoding types as
   // provided in an HTTP header), which will be chained together serially to do
-  // successive filtering of data.  The types in the vector are ordered based on
+  // successive filtering of data. The types in the vector are ordered based on
   // encoding order, and the filters are chained to operate in the reverse
   // (decoding) order. For example, types[0] = FILTER_TYPE_SDCH,
   // types[1] = FILTER_TYPE_GZIP will cause data to first be gunzip filtered,
@@ -182,7 +191,7 @@ class NET_EXPORT_PRIVATE Filter {
   // initialized.
   static Filter* GZipFactory();
 
-  // External call to obtain data from this filter chain.  If ther is no
+  // External call to obtain data from this filter chain. If ther is no
   // next_filter_, then it obtains data from this specific filter.
   FilterStatus ReadData(char* dest_buffer, int* dest_len);
 
@@ -216,10 +225,10 @@ class NET_EXPORT_PRIVATE Filter {
   static FilterType ConvertEncodingToType(const std::string& filter_type);
 
   // Given a array of encoding_types, try to do some error recovery adjustment
-  // to the list.  This includes handling known bugs in the Apache server (where
+  // to the list. This includes handling known bugs in the Apache server (where
   // redundant gzip encoding is specified), as well as issues regarding SDCH
   // encoding, where various proxies and anti-virus products modify or strip the
-  // encodings.  These fixups require context, which includes whether this
+  // encodings. These fixups require context, which includes whether this
   // response was made to an SDCH request (i.e., an available dictionary was
   // advertised in the GET), as well as the mime type of the content.
   static void FixupEncodingTypes(const FilterContext& filter_context,
@@ -270,8 +279,8 @@ class NET_EXPORT_PRIVATE Filter {
   void InitBuffer(int size);
 
   // A factory helper for creating filters for within a chain of potentially
-  // multiple encodings.  If a chain of filters is created, then this may be
-  // called multiple times during the filter creation process.  In most simple
+  // multiple encodings. If a chain of filters is created, then this may be
+  // called multiple times during the filter creation process. In most simple
   // cases, this is only called once. Returns NULL and cleans up (deleting
   // filter_list) if a new filter can't be constructed.
   static Filter* PrependNewFilter(FilterType type_id,
