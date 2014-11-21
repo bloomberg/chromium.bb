@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -197,6 +198,14 @@ TEST(ProcMapsTest, ReadProcMaps) {
   bool found_exe = false;
   bool found_stack = false;
   bool found_address = false;
+
+  // Valgrind uses its own allocated stacks instead of the kernel-provided stack
+  // without letting the kernel know via prctl(PR_SET_MM_START_STACK). This
+  // causes the kernel to use [stack:TID] format. See http://crbug.com/431702
+  // for details.
+  std::string stack_with_tid =
+      StringPrintf("[stack:%d]", PlatformThread::CurrentId());
+
   for (size_t i = 0; i < regions.size(); ++i) {
     if (regions[i].path == exe_path.value()) {
       // It's OK to find the executable mapped multiple times as there'll be
@@ -204,17 +213,23 @@ TEST(ProcMapsTest, ReadProcMaps) {
       found_exe = true;
     }
 
+    bool is_correct_stack = false;
     if (regions[i].path == "[stack]") {
-      // Only check if |address| lies within the real stack when not running
-      // Valgrind, otherwise |address| will be on a stack that Valgrind creates.
-      if (!RunningOnValgrind()) {
-        EXPECT_GE(address, regions[i].start);
-        EXPECT_LT(address, regions[i].end);
-      }
+      is_correct_stack = true;
+      EXPECT_FALSE(RunningOnValgrind());
+      EXPECT_GE(address, regions[i].start);
+      EXPECT_LT(address, regions[i].end);
+    } else if (regions[i].path == stack_with_tid) {
+      is_correct_stack = true;
+      EXPECT_TRUE(RunningOnValgrind());
+    }
 
+    if (is_correct_stack) {
+      // Note that the stack is executable when it is created by Valgrind.
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::READ);
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::WRITE);
-      EXPECT_FALSE(regions[i].permissions & MappedMemoryRegion::EXECUTE);
+      EXPECT_EQ(RunningOnValgrind(),
+                (regions[i].permissions & MappedMemoryRegion::EXECUTE) != 0);
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::PRIVATE);
       EXPECT_FALSE(found_stack) << "Found duplicate stacks";
       found_stack = true;
