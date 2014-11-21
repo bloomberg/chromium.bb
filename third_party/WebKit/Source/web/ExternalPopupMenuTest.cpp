@@ -6,7 +6,10 @@
 #include "web/ExternalPopupMenu.h"
 
 #include "core/HTMLNames.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/PinchViewport.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/PopupMenu.h"
@@ -15,6 +18,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebExternalPopupMenu.h"
 #include "public/web/WebPopupMenuInfo.h"
+#include "public/web/WebSettings.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
@@ -108,11 +112,28 @@ public:
     {
         return &m_mockWebExternalPopupMenu;
     }
+    WebRect shownBounds() const
+    {
+        return m_mockWebExternalPopupMenu.shownBounds();
+    }
 private:
     class MockWebExternalPopupMenu : public WebExternalPopupMenu {
-        virtual void show(const WebRect& bounds) override { }
+        virtual void show(const WebRect& bounds) override
+        {
+            m_shownBounds = bounds;
+        }
         virtual void close() override { }
+
+    public:
+        WebRect shownBounds() const
+        {
+            return m_shownBounds;
+        }
+
+    private:
+        WebRect m_shownBounds;
     };
+    WebRect m_shownBounds;
     MockWebExternalPopupMenu m_mockWebExternalPopupMenu;
 };
 
@@ -123,7 +144,7 @@ public:
 protected:
     virtual void SetUp() override
     {
-        m_helper.initialize(false, &m_webFrameClient, &m_webViewClient);
+        m_helper.initialize(false, &m_webFrameClient, &m_webViewClient, &configureSettings);
         webView()->setUseExternalPopupMenus(true);
     }
     virtual void TearDown() override
@@ -142,14 +163,46 @@ protected:
     }
 
     WebViewImpl* webView() const { return m_helper.webViewImpl(); }
+    const ExternalPopupMenuWebFrameClient& client() const { return m_webFrameClient; }
     WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
 
 private:
+    static void configureSettings(WebSettings* settings)
+    {
+        settings->setPinchVirtualViewportEnabled(true);
+    }
+
     std::string m_baseURL;
     FrameTestHelpers::TestWebViewClient m_webViewClient;
     ExternalPopupMenuWebFrameClient m_webFrameClient;
     FrameTestHelpers::WebViewHelper m_helper;
 };
+
+TEST_F(ExternalPopupMenuTest, PopupAccountsForPinchViewportOffset)
+{
+    registerMockedURLLoad("select_mid_screen.html");
+    loadFrame("select_mid_screen.html");
+
+    webView()->resize(WebSize(100, 100));
+    webView()->layout();
+
+    HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
+    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    ASSERT_TRUE(menuList);
+
+    PinchViewport& pinchViewport = webView()->page()->frameHost().pinchViewport();
+
+    IntRect rectInDocument = menuList->absoluteBoundingBoxRect();
+
+    webView()->setPageScaleFactor(2);
+    IntPoint scrollDelta(20, 30);
+    pinchViewport.move(scrollDelta);
+
+    menuList->showPopup();
+
+    EXPECT_EQ(rectInDocument.x() - scrollDelta.x(), client().shownBounds().x);
+    EXPECT_EQ(rectInDocument.y() - scrollDelta.y(), client().shownBounds().y);
+}
 
 TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
 {
