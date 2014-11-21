@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
@@ -80,10 +81,23 @@ class AutoEnrollmentController {
   // Sets |state_| and notifies |progress_callbacks_|.
   void UpdateState(policy::AutoEnrollmentState state);
 
+  // Handles timeout of the safeguard timer and stops waiting for a result.
+  void Timeout();
+
   policy::AutoEnrollmentState state_;
   ProgressCallbackList progress_callbacks_;
 
   scoped_ptr<policy::AutoEnrollmentClient> client_;
+
+  // This timer acts as a belt-and-suspenders safety for the case where one of
+  // the asynchronous steps required to make the auto-enrollment decision
+  // doesn't come back. Even though in theory they should all terminate, better
+  // safe than sorry: There are DBus interactions, an entire network stack etc.
+  // - just too many moving pieces to be confident there are no bugs. If
+  // something goes wrong, the timer will ensure that a decision gets made
+  // eventually, which is crucial to not block OOBE forever. See
+  // http://crbug.com/433634 for background.
+  base::Timer safeguard_timer_;
 
   base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_;
 

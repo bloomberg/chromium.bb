@@ -22,6 +22,9 @@ namespace chromeos {
 
 namespace {
 
+// Maximum time to wait before forcing a decision.
+const int kSafeguardTimeoutSeconds = 30;
+
 // Returns the int value of the |switch_name| argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.
 int GetSanitizedArg(const std::string& switch_name) {
@@ -95,6 +98,7 @@ AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
 
 AutoEnrollmentController::AutoEnrollmentController()
     : state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
+      safeguard_timer_(false, false),
       client_start_weak_factory_(this) {}
 
 AutoEnrollmentController::~AutoEnrollmentController() {}
@@ -129,6 +133,11 @@ void AutoEnrollmentController::Start() {
   if (client_start_weak_factory_.HasWeakPtrs() || client_)
     return;
 
+  // Arm the belts-and-suspenders timer to avoid hangs.
+  safeguard_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kSafeguardTimeoutSeconds),
+      base::Bind(&AutoEnrollmentController::Timeout, base::Unretained(this)));
+
   // Start by checking if the device has already been owned.
   UpdateState(policy::AUTO_ENROLLMENT_STATE_PENDING);
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
@@ -145,6 +154,8 @@ void AutoEnrollmentController::Cancel() {
 
   // Make sure to nuke pending |client_| start sequences.
   client_start_weak_factory_.InvalidateWeakPtrs();
+
+  safeguard_timer_.Stop();
 }
 
 void AutoEnrollmentController::Retry() {
@@ -226,7 +237,42 @@ void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
   VLOG(1) << "New state: " << new_state << ".";
   state_ = new_state;
+
+  // Stop the safeguard timer once a result comes in.
+  switch (state_) {
+    case policy::AUTO_ENROLLMENT_STATE_IDLE:
+    case policy::AUTO_ENROLLMENT_STATE_PENDING:
+      break;
+    case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
+    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+      safeguard_timer_.Stop();
+      break;
+  }
+
   progress_callbacks_.Notify(state_);
+}
+
+void AutoEnrollmentController::Timeout() {
+  // TODO(mnissler): Add UMA to track results of auto-enrollment checks.
+  if (client_start_weak_factory_.HasWeakPtrs()) {
+    // If the callbacks to check ownership status or state keys are still
+    // pending, there's a bug in the code running on the device. No use in
+    // retrying anything, need to fix that bug.
+    LOG(ERROR) << "Failed to start auto-enrollment check, fix the code!";
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+  } else {
+    // If the AutoEnrollmentClient didn't manage to come back with a result in
+    // time, blame it on the network. This can actually happen in some cases,
+    // for example when the server just doesn't reply and keeps the connection
+    // open.
+    LOG(ERROR) << "AutoEnrollmentClient didn't complete within time limit.";
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+  }
+
+  // Reset state.
+  Cancel();
 }
 
 }  // namespace chromeos
