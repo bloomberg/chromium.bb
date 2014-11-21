@@ -360,8 +360,8 @@ void VolumeMountWatcherWin::Init() {
   // When VolumeMountWatcherWin is created, the message pumps are not running
   // so a posted task from the constructor would never run. Therefore, do all
   // the initializations here.
-  base::PostTaskAndReplyWithResult(task_runner_, FROM_HERE,
-      GetAttachedDevicesCallback(),
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, GetAttachedDevicesCallback(),
       base::Bind(&VolumeMountWatcherWin::AddDevicesOnUIThread,
                  weak_factory_.GetWeakPtr()));
 }

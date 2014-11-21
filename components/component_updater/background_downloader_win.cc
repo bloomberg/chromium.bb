@@ -154,7 +154,7 @@ HRESULT GetFilesInJob(IBackgroundCopyJob* job,
 
   for (ULONG i = 0; i != num_files; ++i) {
     ScopedComPtr<IBackgroundCopyFile> file;
-    if (enum_files->Next(1, file.Receive(), NULL) == S_OK && file)
+    if (enum_files->Next(1, file.Receive(), NULL) == S_OK && file.get())
       files->push_back(file);
   }
 
@@ -275,9 +275,9 @@ HRESULT FindBitsJobIf(Predicate pred,
   for (ULONG i = 0; i != job_count; ++i) {
     ScopedComPtr<IBackgroundCopyJob> current_job;
     if (enum_jobs->Next(1, current_job.Receive(), NULL) == S_OK &&
-        pred(current_job)) {
+        pred(current_job.get())) {
       base::string16 job_description;
-      hr = GetJobDescription(current_job, &job_description);
+      hr = GetJobDescription(current_job.get(), &job_description);
       if (job_description.compare(kJobDescription) == 0)
         jobs->push_back(current_job);
     }
@@ -349,7 +349,7 @@ void CleanupJobFiles(IBackgroundCopyJob* job) {
     return;
   for (size_t i = 0; i != files.size(); ++i) {
     base::string16 local_name;
-    HRESULT hr(GetJobFileProperties(files[i], &local_name, NULL, NULL));
+    HRESULT hr(GetJobFileProperties(files[i].get(), &local_name, NULL, NULL));
     if (SUCCEEDED(hr))
       DeleteFileAndEmptyParentDirectory(base::FilePath(local_name));
   }
@@ -358,7 +358,7 @@ void CleanupJobFiles(IBackgroundCopyJob* job) {
 // Cleans up incompleted jobs that are too old.
 HRESULT CleanupStaleJobs(
     base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager) {
-  if (!bits_manager)
+  if (!bits_manager.get())
     return E_FAIL;
 
   static base::Time last_sweep;
@@ -374,14 +374,13 @@ HRESULT CleanupStaleJobs(
   std::vector<ScopedComPtr<IBackgroundCopyJob> > jobs;
   HRESULT hr = FindBitsJobIf(
       std::bind2nd(JobCreationOlderThanDays(), kPurgeStaleJobsAfterDays),
-      bits_manager,
-      &jobs);
+      bits_manager.get(), &jobs);
   if (FAILED(hr))
     return hr;
 
   for (size_t i = 0; i != jobs.size(); ++i) {
     jobs[i]->Cancel();
-    CleanupJobFiles(jobs[i]);
+    CleanupJobFiles(jobs[i].get());
   }
 
   return S_OK;
@@ -455,7 +454,7 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 void BackgroundDownloader::OnDownloading() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  DCHECK(job_);
+  DCHECK(job_.get());
 
   DCHECK(!is_completed_);
   if (is_completed_)
@@ -524,11 +523,11 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 
   int64_t downloaded_bytes = -1;
   int64_t total_bytes = -1;
-  GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
+  GetJobByteCount(job_.get(), &downloaded_bytes, &total_bytes);
 
-  if (FAILED(error) && job_) {
+  if (FAILED(error) && job_.get()) {
     job_->Cancel();
-    CleanupJobFiles(job_);
+    CleanupJobFiles(job_.get());
   }
 
   job_ = NULL;
@@ -581,7 +580,7 @@ void BackgroundDownloader::OnStateTransferred() {
 // be made. Cancels this job and removes it from the BITS queue.
 void BackgroundDownloader::OnStateError() {
   HRESULT error_code = S_OK;
-  HRESULT hr = GetJobError(job_, &error_code);
+  HRESULT hr = GetJobError(job_.get(), &error_code);
   if (FAILED(hr))
     error_code = hr;
   DCHECK(FAILED(error_code));
@@ -601,7 +600,7 @@ void BackgroundDownloader::OnStateTransientError() {
 
   // Don't retry at all if the transient error was a 5xx.
   HRESULT error_code = S_OK;
-  HRESULT hr = GetJobError(job_, &error_code);
+  HRESULT hr = GetJobError(job_.get(), &error_code);
   if (SUCCEEDED(hr) &&
       IsHttpServerError(GetHttpStatusFromBitsError(error_code))) {
     OnStateError();
@@ -621,7 +620,7 @@ void BackgroundDownloader::OnStateTransferring() {
 
   int64_t downloaded_bytes = -1;
   int64_t total_bytes = -1;
-  HRESULT hr = GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
+  HRESULT hr = GetJobByteCount(job_.get(), &downloaded_bytes, &total_bytes);
   if (FAILED(hr))
     return;
 
@@ -653,7 +652,7 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   HRESULT hr = S_OK;
-  if (bits_manager_ == NULL) {
+  if (bits_manager_.get() == NULL) {
     hr = GetBitsManager(bits_manager_.Receive());
     if (FAILED(hr))
       return hr;
@@ -676,8 +675,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url) {
   std::vector<ScopedComPtr<IBackgroundCopyJob> > jobs;
   HRESULT hr = FindBitsJobIf(
       std::bind2nd(JobFileUrlEqual(), base::SysUTF8ToWide(url.spec())),
-      bits_manager_,
-      &jobs);
+      bits_manager_.get(), &jobs);
   if (SUCCEEDED(hr) && !jobs.empty()) {
     job_ = jobs.front();
     return S_FALSE;
@@ -745,7 +743,7 @@ HRESULT BackgroundDownloader::CompleteJob() {
     return hr;
 
   std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
-  hr = GetFilesInJob(job_, &files);
+  hr = GetFilesInJob(job_.get(), &files);
   if (FAILED(hr))
     return hr;
 
@@ -754,7 +752,7 @@ HRESULT BackgroundDownloader::CompleteJob() {
 
   base::string16 local_name;
   BG_FILE_PROGRESS progress = {0};
-  hr = GetJobFileProperties(files.front(), &local_name, NULL, &progress);
+  hr = GetJobFileProperties(files.front().get(), &local_name, NULL, &progress);
   if (FAILED(hr))
     return hr;
 
