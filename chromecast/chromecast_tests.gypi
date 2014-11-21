@@ -42,7 +42,6 @@
         ['OS!="android"', {
           'dependencies': [
             'cast_shell_browser_test',
-            'cast_shell_unittests',
           ],
         }],
       ],
@@ -182,28 +181,6 @@
             'browser/test/chromecast_shell_browser_test.cc',
           ],
         },
-        {
-          'target_name': 'cast_shell_unittests',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            'cast_shell_core',
-            '../base/base.gyp:base_prefs_test_support',
-            '../base/base.gyp:run_all_unittests',
-            '../base/base.gyp:test_support_base',
-            '../components/components.gyp:component_metrics_proto',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'sources': [
-            'browser/metrics/cast_metrics_service_client_unittest.cc',
-          ],
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ]
-        },  # end of target 'cast_shell_unittests'
       ],  # end of targets
     }],
   ],  # end of conditions
