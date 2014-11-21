@@ -1402,7 +1402,7 @@ def _CreateBaseConfigs():
     if board in _minimal_profile_boards:
       base.update(profile='minimal')
     if board in _freon_boards:
-      base.update(vm_tests=[], hw_tests=[])
+      base.update(vm_tests=[])
     _base_configs[board] = base.derive(boards=[board])
 
 _CreateBaseConfigs()
@@ -2385,7 +2385,6 @@ _release_freon.add_config('link_freon-release',
   _base_configs['link_freon'],
   boards=['link_freon'],
   useflags=_release['useflags'] + ['highdpi'],
-  hw_tests=[],
   important=True,
 )
 
