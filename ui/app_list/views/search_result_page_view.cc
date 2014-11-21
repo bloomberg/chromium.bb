@@ -44,20 +44,21 @@ class SearchCardView : public views::View {
 
 }  // namespace
 
-SearchResultPageView::SearchResultPageView(AppListMainView* app_list_main_view,
-                                           AppListViewDelegate* view_delegate)
-    : selected_index_(0) {
+SearchResultPageView::SearchResultPageView() : selected_index_(0) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kExperimentalWindowPadding, kTopPadding,
                                         kGroupSpacing));
-
-  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
-  AddSearchResultContainerView(
-      results, new SearchResultListView(app_list_main_view, view_delegate));
-  AddSearchResultContainerView(results, new SearchResultTileItemListView());
 }
 
 SearchResultPageView::~SearchResultPageView() {
+}
+
+void SearchResultPageView::AddSearchResultContainerView(
+    AppListModel::SearchResults* results_model,
+    SearchResultContainerView* result_container) {
+  AddChildView(new SearchCardView(result_container));
+  result_container_views_.push_back(result_container);
+  result_container->SetResults(results_model);
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -113,14 +114,6 @@ void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   DCHECK(!result_container_views_.empty());
   Layout();
   SetSelectedIndex(0);
-}
-
-void SearchResultPageView::AddSearchResultContainerView(
-    AppListModel::SearchResults* results_model,
-    SearchResultContainerView* result_container) {
-  AddChildView(new SearchCardView(result_container));
-  result_container_views_.push_back(result_container);
-  result_container->SetResults(results_model);
 }
 
 }  // namespace app_list

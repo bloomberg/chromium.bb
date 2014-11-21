@@ -20,9 +20,14 @@ class SearchResultContainerView;
 // The start page for the experimental app list.
 class APP_LIST_EXPORT SearchResultPageView : public views::View {
  public:
-  SearchResultPageView(AppListMainView* app_list_main_view,
-                       AppListViewDelegate* view_delegate);
+  SearchResultPageView();
   ~SearchResultPageView() override;
+
+  int selected_index() { return selected_index_; }
+
+  void AddSearchResultContainerView(
+      AppListModel::SearchResults* result_model,
+      SearchResultContainerView* result_container);
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -31,10 +36,6 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
  private:
   void SetSelectedIndex(int index);
   bool IsValidSelectionIndex(int index);
-
-  void AddSearchResultContainerView(
-      AppListModel::SearchResults* result_model,
-      SearchResultContainerView* result_container);
 
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.

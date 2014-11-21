@@ -20,6 +20,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
+#include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -73,12 +74,20 @@ void ContentsView::Init(AppListModel* model) {
       }
     }
 
+    // Start page.
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
     AddLauncherPage(
         start_page_view_, IDR_APP_LIST_SEARCH_ICON, AppListModel::STATE_START);
 
-    search_results_page_view_ =
-        new SearchResultPageView(app_list_main_view_, view_delegate);
+    // Search results UI.
+    search_results_page_view_ = new SearchResultPageView();
+
+    AppListModel::SearchResults* results = view_delegate->GetModel()->results();
+    search_results_page_view_->AddSearchResultContainerView(
+        results, new SearchResultListView(app_list_main_view_, view_delegate));
+    search_results_page_view_->AddSearchResultContainerView(
+        results, new SearchResultTileItemListView());
+
     AddLauncherPage(search_results_page_view_, 0,
                     AppListModel::STATE_SEARCH_RESULTS);
   } else {
