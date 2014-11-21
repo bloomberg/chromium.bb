@@ -100,10 +100,8 @@ bool AccountMapping::ParseFromString(const std::string& value) {
   if (!StringToStatus(values[kStatusIndex], &temp_status))
     return false;
 
-  if (values.size() == kSizeWithNoMessage &&
-      (temp_status == REMOVING || temp_status == ADDING)) {
+  if (values.size() == kSizeWithNoMessage && temp_status == ADDING)
     return false;
-  }
 
   int64 status_change_ts_internal = 0LL;
   if (!base::StringToInt64(values[kStatusChangeTimestampIndex],
