@@ -106,7 +106,7 @@ class _DromaeoBenchmark(benchmark.Benchmark):
     ps = page_set.PageSet(
         make_javascript_deterministic=False,
         archive_data_file=archive_data_file,
-        file_path=os.path.abspath(__file__))
+        file_path=os.path.abspath(__file__), bucket=page_set.PUBLIC_BUCKET)
     url = 'http://dromaeo.com?%s' % self.query_param
     ps.AddPageWithDefaultRunNavigate(url)
     return ps
