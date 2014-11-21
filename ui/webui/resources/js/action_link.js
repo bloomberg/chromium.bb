@@ -52,6 +52,18 @@ var ActionLink = document.registerElement('action-link', {
           window.setTimeout(this.click.bind(this), 0);
         }
       });
+
+      this.addEventListener('mousedown', function(e) {
+        // This handlers strives to match the behavior of <a href="...">.
+
+        // tabindex="0" makes an element receive focus when the mouse is
+        // pressed. <a href> doesn't do this, so prevent this behavior.
+        e.preventDefault();
+
+        // A mouse press on <a href> blurs any other currently focused element.
+        if (document.activeElement != this)
+          document.activeElement.blur();
+      });
     },
   },
   extends: 'a',
