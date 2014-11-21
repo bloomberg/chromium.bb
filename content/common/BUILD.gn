@@ -33,6 +33,32 @@ if (is_chromeos && use_x11 && cpu_arch != "arm") {
   }
 }
 
+if (is_mac) {
+  action("libvt_generate_stubs") {
+    extra_header = "gpu/media/vt_stubs_header.fragment"
+
+    script = "../../tools/generate_stubs/generate_stubs.py"
+    sources = [ "gpu/media/vt.sig" ]
+    inputs = [ extra_header ]
+    stubs_filename_root = "vt_stubs"
+
+    outputs = [
+      "$target_gen_dir/gpu/media/$stubs_filename_root.cc",
+      "$target_gen_dir/gpu/media/$stubs_filename_root.h",
+    ]
+    args = [
+      "-i", rebase_path("$target_gen_dir/gpu/media", root_build_dir),
+      "-o", rebase_path("$target_gen_dir/gpu/media", root_build_dir),
+      "-t", "posix_stubs",
+      "-e", rebase_path(extra_header, root_build_dir),
+      "-s", stubs_filename_root,
+      "-p", "content/common/gpu/media",
+    ]
+
+    args += rebase_path(sources, root_build_dir)
+  }
+}
+
 source_set("common") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -115,12 +141,14 @@ source_set("common") {
     sources += [
       "gpu/client/gpu_memory_buffer_impl_io_surface.cc",
       "gpu/client/gpu_memory_buffer_impl_io_surface.h",
-    ]
+    ] + get_target_outputs(":libvt_generate_stubs") 
+
     sources -= [
       "plugin_list_posix.cc",
     ]
 
     deps += [
+      ":libvt_generate_stubs",
       "//content/app/resources",
       "//content:resources",
       "//third_party/WebKit/public:resources",

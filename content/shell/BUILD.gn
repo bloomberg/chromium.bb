@@ -459,7 +459,8 @@ repack("pak") {
 }
 
 # TODO(GYP): Figure out what this should be on android
-if (!is_android) {
+# and make linking this work on the Mac.
+if (!is_android && !is_mac) {
 
 executable("content_shell") {
   testonly = true

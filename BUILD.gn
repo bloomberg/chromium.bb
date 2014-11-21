@@ -273,25 +273,6 @@ group("root") {
   #
 
   if (is_mac) {
-    # TODO(dpranke): These need a webrtc fix in order to build.
-    deps -= [
-      "//jingle:notifier",
-      "//third_party/libjingle",
-      "//third_party/webrtc",
-    ]
-
-    # TODO(dpranke): These depend on Blink and need Blink fixes to build.
-    deps -= [
-      "//cc/blink",
-      "//content",
-      "//content/test:test_support",
-      "//media/blink",
-      "//pdf",
-      "//ppapi:ppapi_c",
-      "//third_party/WebKit/public:all_blink",
-      "//ui/app_list",
-    ]
-
     # TODO(dpranke): These are as-yet untriaged but need at least the above.
     deps -= [
       "//apps",
@@ -311,6 +292,7 @@ group("root") {
       "//extensions/renderer",
       "//remoting/client/plugin",
       "//third_party/usrsctp",
+      "//ui/app_list",
       "//ui/aura",
       "//ui/keyboard",
       "//ui/views",
