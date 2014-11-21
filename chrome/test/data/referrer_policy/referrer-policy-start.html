@@ -18,26 +18,32 @@ function run() {
     return;
   }
 
-  var meta = document.createElement("meta");
-  meta.name = "referrer";
-  meta.content = matches[kPolicy];
-  document.head.appendChild(meta);
+  if (matches[kPolicy] != "no-meta") {
+    var meta = document.createElement("meta");
+    meta.name = "referrer";
+    meta.content = matches[kPolicy];
+    document.head.appendChild(meta);
+  }
 
   var destination;
 
-  if (matches[kRedirect] == "false") {
+  if (matches[kRedirect] == "none") {
     destination = "http://127.0.0.1:" + matches[kPort] +
                   "/files/referrer-policy-log.html";
-  } else if (matches[kRedirect] == "http") {
+  } else if (matches[kRedirect] == "http2http") {
     destination = "http://127.0.0.1:" + matches[kPort] +
+                  "/server-redirect?http://127.0.0.1:" + matches[kPort] +
+                  "/files/referrer-policy-log.html";
+  } else if (matches[kRedirect] == "http2https") {
+    destination = "http://127.0.0.1:" + matches[kPort] +
+                  "/server-redirect?https://127.0.0.1:" + matches[kSslPort] +
+                  "/files/referrer-policy-log.html";
+  } else if (matches[kRedirect] == "https2http") {
+    destination = "https://127.0.0.1:" + matches[kSslPort] +
                   "/server-redirect?http://127.0.0.1:" + matches[kPort] +
                   "/files/referrer-policy-log.html";
   } else if (matches[kRedirect] == "echoheader") {
     destination = "http://127.0.0.1:" + matches[kPort] + "/echoheader?Referer";
-  } else {
-    destination = "https://127.0.0.1:" + matches[kSslPort] +
-                  "/server-redirect?http://127.0.0.1:" + matches[kPort] +
-                  "/files/referrer-policy-log.html";
   }
 
   if (matches[kLink] == "true") {

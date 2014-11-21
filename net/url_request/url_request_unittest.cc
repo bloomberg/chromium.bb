@@ -3913,32 +3913,6 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
   }
 }
 
-TEST_F(URLRequestTestHTTP, HTTPSToHTTPRedirectNoRefererTest) {
-  ASSERT_TRUE(test_server_.Start());
-
-  SpawnedTestServer https_test_server(
-      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(https_test_server.Start());
-
-  // An https server is sent a request with an https referer,
-  // and responds with a redirect to an http url. The http
-  // server should not be sent the referer.
-  GURL http_destination = test_server_.GetURL(std::string());
-  TestDelegate d;
-  scoped_ptr<URLRequest> req(default_context_.CreateRequest(
-      https_test_server.GetURL("server-redirect?" + http_destination.spec()),
-      DEFAULT_PRIORITY, &d, NULL));
-  req->SetReferrer("https://www.referrer.com/");
-  req->Start();
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.response_started_count());
-  EXPECT_EQ(1, d.received_redirect_count());
-  EXPECT_EQ(http_destination, req->url());
-  EXPECT_EQ(std::string(), req->referrer());
-}
-
 TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
   ASSERT_TRUE(test_server_.Start());
 
@@ -6725,6 +6699,219 @@ TEST_F(URLRequestInterceptorTestHTTP,
   EXPECT_EQ(1, default_network_delegate()->created_requests());
   EXPECT_EQ(2, default_network_delegate()->before_send_headers_count());
   EXPECT_EQ(2, default_network_delegate()->headers_received_count());
+}
+
+class URLRequestTestReferrerPolicy : public URLRequestTest {
+ public:
+  URLRequestTestReferrerPolicy() {}
+
+  void InstantiateSameOriginServers(SpawnedTestServer::Type origin_type) {
+    origin_server_.reset(new SpawnedTestServer(
+        origin_type, SpawnedTestServer::kLocalhost,
+        origin_type == SpawnedTestServer::TYPE_HTTPS
+            ? base::FilePath(FILE_PATH_LITERAL("net/data/ssl"))
+            : base::FilePath(
+                  FILE_PATH_LITERAL("net/data/url_request_unittest"))));
+    ASSERT_TRUE(origin_server_->Start());
+  }
+
+  void InstantiateCrossOriginServers(SpawnedTestServer::Type origin_type,
+                                     SpawnedTestServer::Type destination_type) {
+    origin_server_.reset(new SpawnedTestServer(
+        origin_type, SpawnedTestServer::kLocalhost,
+        origin_type == SpawnedTestServer::TYPE_HTTPS
+            ? base::FilePath(FILE_PATH_LITERAL("net/data/ssl"))
+            : base::FilePath(
+                  FILE_PATH_LITERAL("net/data/url_request_unittest"))));
+    ASSERT_TRUE(origin_server_->Start());
+
+    destination_server_.reset(new SpawnedTestServer(
+        destination_type, SpawnedTestServer::kLocalhost,
+        destination_type == SpawnedTestServer::TYPE_HTTPS
+            ? base::FilePath(FILE_PATH_LITERAL("net/data/ssl"))
+            : base::FilePath(
+                  FILE_PATH_LITERAL("net/data/url_request_unittest"))));
+    ASSERT_TRUE(destination_server_->Start());
+  }
+
+  void VerifyReferrerAfterRedirect(URLRequest::ReferrerPolicy policy,
+                                   const GURL& referrer,
+                                   const GURL& expected) {
+    // Create and execute the request: we'll only have a |destination_server_|
+    // if the origins are meant to be distinct. Otherwise, we'll use the
+    // |origin_server_| for both endpoints.
+    GURL destination_url =
+        destination_server_ ? destination_server_->GetURL("echoheader?Referer")
+                            : origin_server_->GetURL("echoheader?Referer");
+    GURL origin_url =
+        origin_server_->GetURL("server-redirect?" + destination_url.spec());
+
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(
+        default_context_.CreateRequest(origin_url, DEFAULT_PRIORITY, &d, NULL));
+    req->set_referrer_policy(policy);
+    req->SetReferrer(referrer.spec());
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(destination_url, req->url());
+    EXPECT_TRUE(req->status().is_success());
+    EXPECT_EQ(200, req->response_headers()->response_code());
+
+    EXPECT_EQ(expected.spec(), req->referrer());
+    if (expected.is_empty())
+      EXPECT_EQ("None", d.data_received());
+    else
+      EXPECT_EQ(expected.spec(), d.data_received());
+  }
+
+  SpawnedTestServer* origin_server() const { return origin_server_.get(); }
+
+ private:
+  scoped_ptr<SpawnedTestServer> origin_server_;
+  scoped_ptr<SpawnedTestServer> destination_server_;
+};
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPToSameOriginHTTP) {
+  InstantiateSameOriginServers(SpawnedTestServer::TYPE_HTTP);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
+}
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
+  InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTP,
+                                SpawnedTestServer::TYPE_HTTP);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
+}
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPSToSameOriginHTTPS) {
+  InstantiateSameOriginServers(SpawnedTestServer::TYPE_HTTPS);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
+}
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
+  InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::TYPE_HTTPS);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
+}
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
+  InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTP,
+                                SpawnedTestServer::TYPE_HTTPS);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL("path/to/file.html"));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
+}
+
+TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
+  InstantiateCrossOriginServers(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::TYPE_HTTP);
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      origin_server()->GetURL("path/to/file.html"), GURL());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"), GURL());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      origin_server()->GetURL("path/to/file.html"),
+      origin_server()->GetURL(std::string()));
+
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
+                              origin_server()->GetURL("path/to/file.html"),
+                              origin_server()->GetURL("path/to/file.html"));
 }
 
 class HTTPSRequestTest : public testing::Test {

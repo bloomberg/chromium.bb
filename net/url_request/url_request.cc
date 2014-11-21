@@ -650,12 +650,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   response_info_.was_cached = false;
 
-  // If the referrer is secure, but the requested URL is not, the referrer
-  // policy should be something non-default. If you hit this, please file a
-  // bug.
-  if (referrer_policy_ ==
-          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
-      GURL(referrer_).SchemeIsSecure() && !url().SchemeIsSecure()) {
+  if (GURL(referrer_) != URLRequestJob::ComputeReferrerForRedirect(
+                             referrer_policy_, referrer_, url())) {
     if (!network_delegate_ ||
         !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
             *this, url(), GURL(referrer_))) {

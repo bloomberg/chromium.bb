@@ -7,7 +7,6 @@ MultiThreadedCertVerifierTest.CancelRequest
 SSLServerSocketTest.Handshake
 
 PythonUtils.PythonRunTime
-URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/0
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/1
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/2
@@ -26,6 +25,13 @@ VerifyMixed/CertVerifyProcWeakDigestTest.Verify/2
 VerifyRoot/CertVerifyProcWeakDigestTest.Verify/0
 VerifyRoot/CertVerifyProcWeakDigestTest.Verify/1
 VerifyRoot/CertVerifyProcWeakDigestTest.Verify/2
+
+# Can't spin up more than one SpawnedTestServer on Android.
+URLRequestTestReferrerPolicy.HTTPToCrossOriginHTTP
+URLRequestTestReferrerPolicy.HTTPSToCrossOriginHTTPS
+URLRequestTestReferrerPolicy.HTTPToHTTPS
+URLRequestTestReferrerPolicy.HTTPSToHTTP
+
 # Fail only on bots.
 HttpCache.RangeGET_Cancel
 HttpCache.RangeGET_Cancel2

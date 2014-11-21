@@ -20,6 +20,7 @@
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -36,7 +37,6 @@ struct LoadTimingInfo;
 class NetworkDelegate;
 class SSLCertRequestInfo;
 class SSLInfo;
-class URLRequest;
 class UploadDataStream;
 class URLRequestStatus;
 class X509Certificate;
@@ -226,6 +226,12 @@ class NET_EXPORT URLRequestJob
   // exist at destruction time of the URLRequestJob, unless they have been
   // canceled by an explicit NetworkDelegate::NotifyURLRequestDestroyed() call.
   virtual void NotifyURLRequestDestroyed();
+
+  // Given |policy|, |referrer|, and |redirect_destination|, returns the
+  // referrer URL mandated by |request|'s referrer policy.
+  static GURL ComputeReferrerForRedirect(URLRequest::ReferrerPolicy policy,
+                                         const std::string& referrer,
+                                         const GURL& redirect_destination);
 
  protected:
   friend class base::RefCounted<URLRequestJob>;

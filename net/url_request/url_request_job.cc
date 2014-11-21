@@ -20,7 +20,6 @@
 #include "net/base/network_delegate.h"
 #include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 
 namespace {
 
@@ -253,6 +252,42 @@ void URLRequestJob::OnSuspend() {
 }
 
 void URLRequestJob::NotifyURLRequestDestroyed() {
+}
+
+// static
+GURL URLRequestJob::ComputeReferrerForRedirect(
+    URLRequest::ReferrerPolicy policy,
+    const std::string& referrer,
+    const GURL& redirect_destination) {
+  GURL original_referrer(referrer);
+  bool secure_referrer_but_insecure_destination =
+      original_referrer.SchemeIsSecure() &&
+      !redirect_destination.SchemeIsSecure();
+  bool same_origin =
+      original_referrer.GetOrigin() == redirect_destination.GetOrigin();
+  switch (policy) {
+    case URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      return secure_referrer_but_insecure_destination ? GURL()
+                                                      : original_referrer;
+
+    case URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+      if (same_origin) {
+        return original_referrer;
+      } else if (secure_referrer_but_insecure_destination) {
+        return GURL();
+      } else {
+        return original_referrer.GetOrigin();
+      }
+
+    case URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+      return same_origin ? original_referrer : original_referrer.GetOrigin();
+
+    case URLRequest::NEVER_CLEAR_REFERRER:
+      return original_referrer;
+  }
+
+  NOTREACHED();
+  return GURL();
 }
 
 URLRequestJob::~URLRequestJob() {
@@ -863,15 +898,11 @@ RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
         request_->first_party_for_cookies();
   }
 
-  // Suppress the referrer if we're redirecting out of https.
-  if (request_->referrer_policy() ==
-          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
-      GURL(request_->referrer()).SchemeIsSecure() &&
-      !redirect_info.new_url.SchemeIsSecure()) {
-    redirect_info.new_referrer.clear();
-  } else {
-    redirect_info.new_referrer = request_->referrer();
-  }
+  // Alter the referrer if redirecting cross-origin (especially HTTP->HTTPS).
+  redirect_info.new_referrer =
+      ComputeReferrerForRedirect(request_->referrer_policy(),
+                                 request_->referrer(),
+                                 redirect_info.new_url).spec();
 
   return redirect_info;
 }
