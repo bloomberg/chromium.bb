@@ -3162,6 +3162,8 @@ void Document::processReferrerPolicy(const String& policy)
         setReferrerPolicy(ReferrerPolicyAlways);
     } else if (equalIgnoringCase(policy, "origin")) {
         setReferrerPolicy(ReferrerPolicyOrigin);
+    } else if (equalIgnoringCase(policy, "origin-when-crossorigin")) {
+        setReferrerPolicy(ReferrerPolicyOriginWhenCrossOrigin);
     } else if (equalIgnoringCase(policy, "no-referrer-when-downgrade") || equalIgnoringCase(policy, "default")) {
         setReferrerPolicy(ReferrerPolicyNoReferrerWhenDowngrade);
     } else {

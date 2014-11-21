@@ -35,13 +35,18 @@
 namespace blink {
 
 enum ReferrerPolicy {
+    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-unsafe-url
     ReferrerPolicyAlways,
+    // The default policy, if no policy is explicitly set by the page.
     ReferrerPolicyDefault,
+    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer-when-downgrade
     ReferrerPolicyNoReferrerWhenDowngrade,
+    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer
     ReferrerPolicyNever,
-    // Same as ReferrerPolicyAlways, except that only the origin of the
-    // referring URL is send.
+    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin
     ReferrerPolicyOrigin,
+    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin-when-cross-origin
+    ReferrerPolicyOriginWhenCrossOrigin,
 };
 
 }
