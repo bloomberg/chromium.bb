@@ -337,8 +337,7 @@ apply_opaque_region(struct wl_shm_buffer *buffer,
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 			int i = y * stride / 4 + x;
-			pixman_box32_t box;
-			if (pixman_region32_contains_point (opaque_region, x, y, &box)) {
+			if (pixman_region32_contains_point (opaque_region, x, y, NULL)) {
 				dst[i] = src[i] | 0xff000000;
 			} else {
 				dst[i] = src[i];
