@@ -183,7 +183,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
 
     v8::Local<v8::Value> result;
     {
-        V8CacheOptions v8CacheOptions(V8CacheOptionsOff);
+        V8CacheOptions v8CacheOptions(V8CacheOptionsDefault);
         if (m_frame->settings())
             v8CacheOptions = m_frame->settings()->v8CacheOptions();
 

@@ -44,8 +44,8 @@ class V8ScriptRunner {
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
-    static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
-    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, ScriptStreamer*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
+    static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
+    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, ScriptStreamer*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
     static v8::Local<v8::Value> runCompiledScript(v8::Isolate*, v8::Handle<v8::Script>, ExecutionContext*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::Local<v8::Value> runCompiledInternalScript(v8::Isolate*, v8::Handle<v8::Script>);

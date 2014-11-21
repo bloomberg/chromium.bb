@@ -54,11 +54,11 @@ public:
     }
     unsigned tagForParserCache() const
     {
-        return StringHash::hash(v8::V8::GetVersion()) * 2;
+        return V8ScriptRunner::tagForParserCache();
     }
     unsigned tagForCodeCache() const
     {
-        return tagForParserCache() + 1;
+        return V8ScriptRunner::tagForCodeCache();
     }
 
     bool compileScript(V8CacheOptions cacheOptions)
@@ -93,7 +93,8 @@ int V8ScriptRunnerTest::counter = 0;
 
 TEST_F(V8ScriptRunnerTest, resourcelessShouldPass)
 {
-    EXPECT_TRUE(compileScript(V8CacheOptionsOff));
+    EXPECT_TRUE(compileScript(V8CacheOptionsNone));
+    EXPECT_TRUE(compileScript(V8CacheOptionsParseMemory));
     EXPECT_TRUE(compileScript(V8CacheOptionsParse));
     EXPECT_TRUE(compileScript(V8CacheOptionsCode));
 }
@@ -101,7 +102,7 @@ TEST_F(V8ScriptRunnerTest, resourcelessShouldPass)
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNothing)
 {
     setEmptyResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsOff));
+    EXPECT_TRUE(compileScript(V8CacheOptionsDefault));
     EXPECT_FALSE(m_resource->cachedMetadata(tagForParserCache()));
     EXPECT_FALSE(m_resource->cachedMetadata(tagForCodeCache()));
 
@@ -114,15 +115,15 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNothing)
     EXPECT_FALSE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 
-TEST_F(V8ScriptRunnerTest, defaultOptions)
+TEST_F(V8ScriptRunnerTest, parseMemoryOption)
 {
     setResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsOff));
+    EXPECT_TRUE(compileScript(V8CacheOptionsParseMemory));
     EXPECT_TRUE(m_resource->cachedMetadata(tagForParserCache()));
     EXPECT_FALSE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 
-TEST_F(V8ScriptRunnerTest, parseOptions)
+TEST_F(V8ScriptRunnerTest, parseOption)
 {
     setResource();
     EXPECT_TRUE(compileScript(V8CacheOptionsParse));
@@ -130,15 +131,12 @@ TEST_F(V8ScriptRunnerTest, parseOptions)
     EXPECT_FALSE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 
-TEST_F(V8ScriptRunnerTest, codeOptions)
+TEST_F(V8ScriptRunnerTest, codeOption)
 {
     setResource();
     EXPECT_TRUE(compileScript(V8CacheOptionsCode));
     EXPECT_FALSE(m_resource->cachedMetadata(tagForParserCache()));
-
-    // FIXME: Code caching is presently still disabled.
-    //        Enable EXPECT when code caching lands.
-    // EXPECT_TRUE(m_resource->cachedMetadata(tagForCodeCache(false)));
+    EXPECT_TRUE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 
 TEST_F(V8ScriptRunnerTest, codeCompressedOptions)
@@ -146,10 +144,7 @@ TEST_F(V8ScriptRunnerTest, codeCompressedOptions)
     setResource();
     EXPECT_TRUE(compileScript(V8CacheOptionsCodeCompressed));
     EXPECT_FALSE(m_resource->cachedMetadata(tagForParserCache()));
-
-    // FIXME: Code caching is presently still disabled.
-    //        Enable EXPECT when code caching lands.
-    // EXPECT_TRUE(m_resource->cachedMetadata(tagForCodeCache()));
+    EXPECT_FALSE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 
 } // namespace

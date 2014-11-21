@@ -637,10 +637,14 @@ COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::Caret, CompositedSelectionBound:
 COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionLeft, CompositedSelectionBound::SelectionLeft);
 COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionRight, CompositedSelectionBound::SelectionRight);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsOff, V8CacheOptionsOff);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsDefault, V8CacheOptionsDefault);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCodeCompressed, V8CacheOptionsCodeCompressed);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParseMemory, V8CacheOptionsParseMemory);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristics, V8CacheOptionsHeuristics);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristicsMobile, V8CacheOptionsHeuristicsMobile);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeNone, PointerTypeNone);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeCoarse, PointerTypeCoarse);

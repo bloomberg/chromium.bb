@@ -287,7 +287,7 @@ maxBeaconTransmission type=int, initial=65536
 fullscreenSupported initial=true
 
 # V8 supports different types of caching. Used by V8 bindings.
-v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsOff
+v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsDefault
 
 v8ScriptStreamingEnabled initial=false
 v8ScriptStreamingMode type=ScriptStreamingMode, initial=ScriptStreamingModeAll

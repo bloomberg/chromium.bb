@@ -65,38 +65,17 @@ v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
     return result;
 }
 
-void writeToCache(ScriptResource* resource, unsigned cacheTag, Resource::MetadataCacheType cacheType, const v8::ScriptCompiler::CachedData* cachedData, bool compressed)
-{
-    const char* data = reinterpret_cast<const char*>(cachedData->data);
-    int length = cachedData->length;
-    std::string compressedOutput;
-    if (compressed) {
-        snappy::Compress(data, length, &compressedOutput);
-        data = compressedOutput.data();
-        length = compressedOutput.length();
-    }
-    resource->clearCachedMetadata();
-    resource->setCachedMetadata(
-        cacheTag,
-        data,
-        length,
-        cacheType);
-}
-
-v8::Local<v8::Script> compileAndProduceCache(v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin, ScriptResource* resource, v8::ScriptCompiler::CompileOptions options, unsigned cacheTag, Resource::MetadataCacheType cacheType, bool compressed)
+// Compile a script without any caching or compile options.
+v8::Local<v8::Script> compileWithoutOptions(v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     v8::ScriptCompiler::Source source(code, origin);
-    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, options);
-    const v8::ScriptCompiler::CachedData* cachedData = source.GetCachedData();
-    if (resource && cachedData)
-        writeToCache(resource, cacheTag, cacheType, cachedData, compressed);
-    return script;
+    return v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
 }
 
-v8::Local<v8::Script> compileAndConsumeCache(v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin, ScriptResource* resource, v8::ScriptCompiler::CompileOptions options, unsigned cacheTag, bool compressed)
+// Compile a script, and consume a V8 cache that was generated previously.
+v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
-    // Consume existing cache data:
-    CachedMetadata* cachedMetadata = resource->cachedMetadata(cacheTag);
+    CachedMetadata* cachedMetadata = resource->cachedMetadata(tag);
     const char* data = cachedMetadata->data();
     int length = cachedMetadata->size();
     std::string uncompressedOutput;
@@ -106,13 +85,172 @@ v8::Local<v8::Script> compileAndConsumeCache(v8::Isolate* isolate, v8::Handle<v8
         length = uncompressedOutput.length();
     }
     v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
-        reinterpret_cast<const uint8_t*>(data),
-        length,
-        v8::ScriptCompiler::CachedData::BufferNotOwned);
+        reinterpret_cast<const uint8_t*>(data), length, v8::ScriptCompiler::CachedData::BufferNotOwned);
     v8::ScriptCompiler::Source source(code, origin, cachedData);
-    return v8::ScriptCompiler::Compile(isolate, &source, options);
+    return v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
 }
 
+// Compile a script, and produce a V8 cache for future use.
+v8::Local<v8::Script> compileAndProduceCache(ScriptResource* resource, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, Resource::MetadataCacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+{
+    v8::ScriptCompiler::Source source(code, origin);
+    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
+    const v8::ScriptCompiler::CachedData* cachedData = source.GetCachedData();
+    if (cachedData) {
+        const char* data = reinterpret_cast<const char*>(cachedData->data);
+        int length = cachedData->length;
+        std::string compressedOutput;
+        if (compressed) {
+            snappy::Compress(data, length, &compressedOutput);
+            data = compressedOutput.data();
+            length = compressedOutput.length();
+        }
+        resource->clearCachedMetadata();
+        resource->setCachedMetadata(tag, data, length, cacheType);
+    }
+    return script;
+}
+
+// Compile a script, and consume or produce a V8 Cache, depending on whether the
+// given resource already has cached data available.
+v8::Local<v8::Script> compileAndConsumeOrProduce(ScriptResource* resource, unsigned tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, bool compressed, Resource::MetadataCacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+{
+    return resource->cachedMetadata(tag)
+        ? compileAndConsumeCache(resource, tag, consumeOptions, compressed, isolate, code, origin)
+        : compileAndProduceCache(resource, tag, produceOptions, compressed, cacheType, isolate, code, origin);
+}
+
+// Final compile call for a streamed compilation. Most decisions have already
+// been made, but we need to write back data into the cache.
+v8::Local<v8::Script> postStreamCompile(ScriptResource* resource, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+{
+    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
+
+    // Whether to produce the cached data or not is decided when the
+    // streamer is started. Here we only need to get the data out.
+    const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
+    if (newCachedData) {
+        resource->clearCachedMetadata();
+        resource->setCachedMetadata(streamer->cachedDataType(), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length, Resource::CacheLocally);
+    }
+
+    return script;
+}
+
+enum CacheTagKind {
+    CacheTagParser = 0,
+    CacheTagCode = 1,
+    CacheTagCodeCompressed = 2,
+
+    CacheTagLast
+};
+
+static const int kCacheTagKindSize = 2;
+
+unsigned cacheTag(CacheTagKind kind)
+{
+    COMPILE_ASSERT((1 << kCacheTagKindSize) >= CacheTagLast, Cache_tag_Last_must_be_large_enough);
+
+    static unsigned v8CacheDataVersion = v8::ScriptCompiler::CachedDataVersionTag() << kCacheTagKindSize;
+    return v8CacheDataVersion | kind;
+}
+
+typedef Function<v8::Local<v8::Script>(v8::Isolate*, v8::Handle<v8::String>, v8::ScriptOrigin)> CompileFn;
+
+// A notation convenience: WTF::bind<...> needs to be given the right argument
+// types. We have an awful lot of bind calls below, all with the same types, so
+// this local bind lets WTF::bind to all the work, but 'knows' the right
+// parameter types.
+// This version isn't quite as smart as the real WTF::bind, though, so you
+// sometimes may still have to call the original.
+template<typename... A>
+PassOwnPtr<CompileFn> bind(const A&... args)
+{
+    return WTF::bind<v8::Isolate*, v8::Handle<v8::String>, v8::ScriptOrigin>(args...);
+}
+
+// Select a compile function from any of the above, mainly depending on
+// cacheOptions.
+PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, v8::Handle<v8::String> code)
+{
+    static const int minimalCodeLength = 1024;
+    static const int mediumCodeLength = 30000;
+
+    if (cacheOptions == V8CacheOptionsNone
+        || !resource
+        || !resource->url().protocolIsInHTTPFamily()
+        || code->Length() < minimalCodeLength) {
+        // Never generate or use the cache in these circumstances.
+        return bind(compileWithoutOptions);
+    }
+
+    // The cacheOptions will guide our strategy:
+    switch (cacheOptions) {
+    case V8CacheOptionsDefault:
+    case V8CacheOptionsParseMemory:
+        // Use parser-cache; in-memory only.
+        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::CacheLocally);
+        break;
+
+    case V8CacheOptionsParse:
+        // Use parser-cache.
+        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagParser), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, Resource::SendToPlatform);
+        break;
+
+    case V8CacheOptionsCode:
+        // Always use code caching.
+        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagCode), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, false, Resource::SendToPlatform);
+        break;
+
+    case V8CacheOptionsCodeCompressed:
+        // Always use code caching. Compress depending on cacheOptions.
+        return bind(compileAndConsumeOrProduce, resource, cacheTag(CacheTagCodeCompressed), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, true, Resource::SendToPlatform);
+        break;
+
+    case V8CacheOptionsHeuristics:
+    case V8CacheOptionsHeuristicsMobile: {
+        // We expect compression to win on mobile devices, due to relatively
+        // slow storage.
+        bool compress = cacheOptions == V8CacheOptionsHeuristicsMobile;
+        CacheTagKind codeTag = compress ? CacheTagCodeCompressed : CacheTagCode;
+
+        // Either code or parser caching, depending on code size and what we
+        // already have in the cache.
+        if (resource->cachedMetadata(cacheTag(codeTag)))
+            return bind(compileAndConsumeCache, resource, cacheTag(codeTag), v8::ScriptCompiler::kConsumeCodeCache, compress);
+        if (code->Length() < mediumCodeLength)
+            return bind(compileAndProduceCache, resource, cacheTag(codeTag), v8::ScriptCompiler::kProduceCodeCache, compress, Resource::SendToPlatform);
+        if (resource->cachedMetadata(cacheTag(CacheTagParser)))
+            return bind(compileAndConsumeCache, resource, cacheTag(CacheTagParser), v8::ScriptCompiler::kConsumeParserCache, false);
+        return bind(compileAndProduceCache, resource, cacheTag(CacheTagParser), v8::ScriptCompiler::kProduceParserCache, false, Resource::SendToPlatform);
+        break;
+    }
+
+    case V8CacheOptionsNone:
+        // Shouldn't happen, as this is handled above.
+        // Case is here so that compiler can check all cases are handles.
+        ASSERT_NOT_REACHED();
+        return bind(compileWithoutOptions);
+        break;
+    }
+
+    // All switch branches should return and we should never get here.
+    // But some compilers aren't sure, hence this default.
+    ASSERT_NOT_REACHED();
+    return bind(compileWithoutOptions);
+}
+
+// Select a compile function for a streaming compile.
+PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStreamer* streamer)
+{
+    // We don't stream scripts which don't have a Resource.
+    ASSERT(resource);
+    // Failed resources should never get this far.
+    ASSERT(!resource->errorOccurred());
+    ASSERT(streamer->isFinished());
+    ASSERT(!streamer->streamingSuppressed());
+    return WTF::bind<v8::Isolate*, v8::Handle<v8::String>, v8::ScriptOrigin>(postStreamCompile, resource, streamer);
+}
 } // namespace
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
@@ -127,61 +265,17 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
 
     // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
     // 1, whereas v8 starts at 0.
-    v8::Handle<v8::String> name = v8String(isolate, fileName);
-    v8::Handle<v8::Integer> line = v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt());
-    v8::Handle<v8::Integer> column = v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt());
-    v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True(isolate) : v8::False(isolate);
-    v8::ScriptOrigin origin(name, line, column, isSharedCrossOrigin);
+    v8::ScriptOrigin origin(
+        v8String(isolate, fileName),
+        v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt()),
+        v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt()),
+        v8Boolean(corsStatus == SharableCrossOrigin, isolate));
 
-    v8::Local<v8::Script> script;
-    unsigned cacheTag = 0;
-    bool compressed = cacheOptions == V8CacheOptionsCodeCompressed;
-    if (streamer) {
-        // We don't stream scripts which don't have a Resource.
-        ASSERT(resource);
-        // Failed resources should never get this far.
-        ASSERT(!resource->errorOccurred());
-        ASSERT(streamer->isFinished());
-        ASSERT(!streamer->streamingSuppressed());
-        script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
-        // Whether to produce the cached data or not is decided when the
-        // streamer is started. Here we only need to get the data out.
-        const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
-        if (newCachedData) {
-            // TODO(yangguo,vogelheim): code cache should use Resource::SendToPlatform.
-            writeToCache(resource, streamer->cachedDataType(), Resource::CacheLocally, newCachedData, compressed);
-        }
-    } else if (!resource || !resource->url().protocolIsInHTTPFamily() || code->Length() < 1024) {
-        v8::ScriptCompiler::Source source(code, origin);
-        script = v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
-    } else {
-        Resource::MetadataCacheType cacheType = Resource::CacheLocally;
-        v8::ScriptCompiler::CompileOptions consumeOption = v8::ScriptCompiler::kConsumeParserCache;
-        v8::ScriptCompiler::CompileOptions produceOption = v8::ScriptCompiler::kProduceParserCache;
-        switch (cacheOptions) {
-        case V8CacheOptionsOff:
-            // Use default.
-            cacheTag = tagForParserCache();
-            break;
-        case V8CacheOptionsParse:
-            cacheTag = tagForParserCache();
-            cacheType = Resource::SendToPlatform;
-            consumeOption = v8::ScriptCompiler::kConsumeParserCache;
-            produceOption = v8::ScriptCompiler::kProduceParserCache;
-            break;
-        case V8CacheOptionsCodeCompressed:
-        case V8CacheOptionsCode:
-            cacheTag = tagForCodeCache();
-            cacheType = Resource::SendToPlatform;
-            consumeOption = v8::ScriptCompiler::kConsumeCodeCache;
-            produceOption = v8::ScriptCompiler::kProduceCodeCache;
-            break;
-        }
-        script = resource->cachedMetadata(cacheTag)
-            ? compileAndConsumeCache(isolate, code, origin, resource, consumeOption, cacheTag, compressed)
-            : compileAndProduceCache(isolate, code, origin, resource, produceOption, cacheTag, cacheType, compressed);
-    }
-    return script;
+    OwnPtr<CompileFn> compileFn = streamer
+        ? selectCompileFunction(resource, streamer)
+        : selectCompileFunction(cacheOptions, resource, code);
+
+    return (*compileFn)(isolate, code, origin);
 }
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8::Handle<v8::Script> script, ExecutionContext* context)
@@ -311,12 +405,12 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* i
 
 unsigned V8ScriptRunner::tagForParserCache()
 {
-    return StringHash::hash(v8::V8::GetVersion()) * 2;
+    return cacheTag(CacheTagParser);
 }
 
 unsigned V8ScriptRunner::tagForCodeCache()
 {
-    return StringHash::hash(v8::V8::GetVersion()) * 2 + 1;
+    return cacheTag(CacheTagCode);
 }
 
 } // namespace blink

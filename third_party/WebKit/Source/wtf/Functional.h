@@ -272,6 +272,35 @@ private:
     typename ParamStorageTraits<P5>::StorageType m_p5;
 };
 
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename... P>
+class PartBoundFunctionImpl<6, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+public:
+    PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6)
+        : m_functionWrapper(functionWrapper)
+        , m_p1(ParamStorageTraits<P1>::wrap(p1))
+        , m_p2(ParamStorageTraits<P2>::wrap(p2))
+        , m_p3(ParamStorageTraits<P3>::wrap(p3))
+        , m_p4(ParamStorageTraits<P4>::wrap(p4))
+        , m_p5(ParamStorageTraits<P5>::wrap(p5))
+        , m_p6(ParamStorageTraits<P6>::wrap(p6))
+    {
+    }
+
+    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    {
+        return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, m_p5, m_p6, params...);
+    }
+
+private:
+    FunctionWrapper m_functionWrapper;
+    typename ParamStorageTraits<P1>::StorageType m_p1;
+    typename ParamStorageTraits<P2>::StorageType m_p2;
+    typename ParamStorageTraits<P3>::StorageType m_p3;
+    typename ParamStorageTraits<P4>::StorageType m_p4;
+    typename ParamStorageTraits<P5>::StorageType m_p5;
+    typename ParamStorageTraits<P6>::StorageType m_p6;
+};
+
 template<typename FunctionWrapper, typename FunctionType>
 class BoundFunctionImpl;
 
