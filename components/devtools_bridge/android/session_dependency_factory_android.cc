@@ -146,8 +146,8 @@ SessionDependencyFactoryAndroid::~SessionDependencyFactoryAndroid() {
 }
 
 // static
-void SessionDependencyFactoryAndroid::RegisterNatives(JNIEnv* env) {
-  RegisterNativesImpl(env);
+bool SessionDependencyFactoryAndroid::RegisterNatives(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 scoped_ptr<AbstractPeerConnection>
