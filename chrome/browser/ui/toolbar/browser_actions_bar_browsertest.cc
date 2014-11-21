@@ -151,3 +151,96 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
+  LoadExtensions();
+
+  // Change container to show only one action, rest in overflow: A, [B, C].
+  browser_actions_bar()->SetIconVisibilityCount(1);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+
+  // Disable extension A (should disappear). State becomes: B [C].
+  DisableExtension(extension_a()->id());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Enable A again. A should get its spot in the same location and the bar
+  // should not grow (chevron is showing). For details: http://crbug.com/35349.
+  // State becomes: A, [B, C].
+  EnableExtension(extension_a()->id());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Disable C (in overflow). State becomes: A, [B].
+  DisableExtension(extension_c()->id());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Enable C again. State becomes: A, [B, C].
+  EnableExtension(extension_c()->id());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Now we have 3 extensions. Make sure they are all visible. State: A, B, C.
+  browser_actions_bar()->SetIconVisibilityCount(3);
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+
+  // Disable extension A (should disappear). State becomes: B, C.
+  DisableExtension(extension_a()->id());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Disable extension B (should disappear). State becomes: C.
+  DisableExtension(extension_b()->id());
+  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Enable B. State becomes: B, C.
+  EnableExtension(extension_b()->id());
+  EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Enable A. State becomes: A, B, C.
+  EnableExtension(extension_a()->id());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+
+  // Shrink the browser actions bar to zero visible icons.
+  // No icons should be visible, but we *should* show the chevron and have a
+  // non-empty size.
+  browser_actions_bar()->SetIconVisibilityCount(0);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+
+  // Reset visibility count to 2. State should be A, B, [C], and the chevron
+  // should be visible.
+  browser_actions_bar()->SetIconVisibilityCount(2);
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+
+  // Disable C (the overflowed extension). State should now be A, B, and the
+  // chevron should be hidden.
+  DisableExtension(extension_c()->id());
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_FALSE(browser_actions_bar()->IsChevronShowing());
+
+  // Re-enable C. We should still only have 2 visible icons, and the chevron
+  // should be visible.
+  EnableExtension(extension_c()->id());
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+}

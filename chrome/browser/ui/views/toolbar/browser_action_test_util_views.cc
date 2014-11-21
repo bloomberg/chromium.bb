@@ -38,6 +38,16 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return GetContainer(browser_)->VisibleBrowserActions();
 }
 
+bool BrowserActionTestUtil::IsChevronShowing() {
+  BrowserActionsContainer* container = GetContainer(browser_);
+  gfx::Size visible_size = container->GetVisibleBounds().size();
+  return container->chevron() &&
+      container->chevron()->visible() &&
+      visible_size.width() >=
+          container->chevron()->GetPreferredSize().width() &&
+      !visible_size.IsEmpty();
+}
+
 void BrowserActionTestUtil::InspectPopup(int index) {
   ToolbarActionView* view =
       GetContainer(browser_)->GetToolbarActionViewAt(index);

@@ -6,12 +6,14 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -40,6 +42,13 @@ int BrowserActionTestUtil::NumberOfBrowserActions() {
 
 int BrowserActionTestUtil::VisibleBrowserActions() {
   return [GetController(browser_) visibleButtonCount];
+}
+
+bool BrowserActionTestUtil::IsChevronShowing() {
+  BrowserActionsController* controller = GetController(browser_);
+  // The magic "18" comes from kChevronWidth in browser_actions_controller.mm.
+  return ![controller chevronIsHidden] &&
+         NSWidth([[controller containerView] animationEndFrame]) >= 18;
 }
 
 void BrowserActionTestUtil::InspectPopup(int index) {
@@ -84,6 +93,11 @@ bool BrowserActionTestUtil::HasPopup() {
 gfx::Size BrowserActionTestUtil::GetPopupSize() {
   NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
   return gfx::Size(NSSizeToCGSize(bounds.size));
+}
+
+void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
+  extensions::ExtensionToolbarModel::Get(browser_->profile())->
+      SetVisibleIconCount(icons);
 }
 
 bool BrowserActionTestUtil::HidePopup() {
