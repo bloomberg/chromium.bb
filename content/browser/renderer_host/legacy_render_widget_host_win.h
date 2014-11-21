@@ -92,7 +92,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   void UpdateParent(HWND parent);
   HWND GetParent();
 
-  IAccessible* window_accessible() { return window_accessible_; }
+  IAccessible* window_accessible() { return window_accessible_.get(); }
 
   // Functions to show and hide the window.
   void Show();

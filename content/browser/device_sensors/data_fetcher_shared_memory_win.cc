@@ -310,14 +310,14 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 
   base::win::ScopedComPtr<ISensorManager> sensor_manager;
   HRESULT hr = sensor_manager.CreateInstance(CLSID_SensorManager);
-  if (FAILED(hr) || !sensor_manager)
+  if (FAILED(hr) || !sensor_manager.get())
     return false;
 
   base::win::ScopedComPtr<ISensorCollection> sensor_collection;
   hr = sensor_manager->GetSensorsByType(
       sensor_type, sensor_collection.Receive());
 
-  if (FAILED(hr) || !sensor_collection)
+  if (FAILED(hr) || !sensor_collection.get())
     return false;
 
   ULONG count = 0;
@@ -342,10 +342,10 @@ bool DataFetcherSharedMemory::RegisterForSensor(
   base::win::ScopedComPtr<ISensorEvents> sensor_events;
   hr = event_sink->QueryInterface(
       __uuidof(ISensorEvents), sensor_events.ReceiveVoid());
-  if (FAILED(hr) || !sensor_events)
+  if (FAILED(hr) || !sensor_events.get())
     return false;
 
-  hr = (*sensor)->SetEventSink(sensor_events);
+  hr = (*sensor)->SetEventSink(sensor_events.get());
   if (FAILED(hr))
     return false;
 
@@ -355,17 +355,17 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
   switch(consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
-      if (sensor_inclinometer_) {
+      if (sensor_inclinometer_.get()) {
         sensor_inclinometer_->SetEventSink(NULL);
         sensor_inclinometer_.Release();
       }
       break;
     case CONSUMER_TYPE_MOTION:
-      if (sensor_accelerometer_) {
+      if (sensor_accelerometer_.get()) {
         sensor_accelerometer_->SetEventSink(NULL);
         sensor_accelerometer_.Release();
       }
-      if (sensor_gyrometer_) {
+      if (sensor_gyrometer_.get()) {
         sensor_gyrometer_->SetEventSink(NULL);
         sensor_gyrometer_.Release();
       }

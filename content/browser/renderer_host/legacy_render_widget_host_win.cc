@@ -162,7 +162,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
 
   base::win::ScopedComPtr<IAccessible> native_accessible(
       delegate_->GetNativeViewAccessible());
-  if (!native_accessible)
+  if (!native_accessible.get())
     return static_cast<LRESULT>(0L);
 
   return LresultFromObject(IID_IAccessible, w_param,
