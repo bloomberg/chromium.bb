@@ -4,6 +4,10 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y texinfo
+install: 
+  - wget http://ftp.gnu.org/gnu/texinfo/texinfo-5.2.tar.xz
+  - tar -xJvf texinfo-5.2.tar.xz
+  - cd texinfo-5.2 && ./configure --prefix=/usr && make && sudo make install
 env:
   - ENABLE_UCS4=
   - ENABLE_UCS4=--enable-ucs4
