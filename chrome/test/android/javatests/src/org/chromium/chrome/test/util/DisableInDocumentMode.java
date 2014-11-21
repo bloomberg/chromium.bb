@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.test.util;
 
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
  * This annotation can be used to mark a test that should be disabled in Document mode.
  */
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DisableInDocumentMode {
-};
-
+}
