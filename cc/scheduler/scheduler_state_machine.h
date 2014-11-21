@@ -247,8 +247,14 @@ class CC_EXPORT SchedulerStateMachine {
   // We should remove it afterwards.
   std::string GetStatesForDebugging() const;
 
+  void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
+  bool children_need_begin_frames() const {
+    return children_need_begin_frames_;
+  }
+
  protected:
   bool BeginFrameNeededToAnimateOrDraw() const;
+  bool BeginFrameNeededForChildren() const;
   bool ProactiveBeginFrameWanted() const;
 
   // True if we need to force activations to make forward progress.
@@ -316,6 +322,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
   bool impl_latency_takes_priority_on_battery_;
+  bool children_need_begin_frames_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

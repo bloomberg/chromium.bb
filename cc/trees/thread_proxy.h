@@ -175,6 +175,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetDebugState(const LayerTreeDebugState& debug_state) override;
   void AsValueInto(base::debug::TracedValue* value) const override;
   bool MainFrameWillHappenForTesting() override;
+  void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;
@@ -222,6 +223,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
   base::TimeDelta CommitToActivateDurationEstimate() override;
   void DidBeginImplFrameDeadline() override;
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
 
   // ResourceUpdateControllerClient implementation
   void ReadyToFinalizeTextureUpdates() override;

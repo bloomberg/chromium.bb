@@ -88,6 +88,7 @@ class FakeSchedulerClient : public SchedulerClient {
 
   FakeSchedulerClient()
       : automatic_swap_ack_(true),
+        begin_frame_is_sent_to_children_(false),
         now_src_(TestNowSource::Create()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_, true)),
         fake_external_begin_frame_source_(nullptr),
@@ -109,6 +110,7 @@ class FakeSchedulerClient : public SchedulerClient {
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
     log_anticipated_draw_time_change_ = false;
+    begin_frame_is_sent_to_children_ = false;
   }
 
   TestScheduler* CreateScheduler(const SchedulerSettings& settings) {
@@ -266,10 +268,18 @@ class FakeSchedulerClient : public SchedulerClient {
 
   void DidBeginImplFrameDeadline() override {}
 
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
+    begin_frame_is_sent_to_children_ = true;
+  }
+
   base::Callback<bool(void)> ImplFrameDeadlinePending(bool state) {
     return base::Bind(&FakeSchedulerClient::ImplFrameDeadlinePendingCallback,
                       base::Unretained(this),
                       state);
+  }
+
+  bool begin_frame_is_sent_to_children() const {
+    return begin_frame_is_sent_to_children_;
   }
 
  protected:
@@ -282,6 +292,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool automatic_swap_ack_;
   int num_draws_;
   bool log_anticipated_draw_time_change_;
+  bool begin_frame_is_sent_to_children_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   std::vector<scoped_refptr<base::debug::ConvertableToTraceFormat>> states_;
@@ -341,6 +352,36 @@ TEST(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
   client.Reset();
   scheduler->DidCreateAndInitializeOutputSurface();
   EXPECT_NO_ACTION(client);
+}
+
+TEST(SchedulerTest, SendBeginFramesToChildren) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  scheduler_settings.forward_begin_frames_to_children = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  client.Reset();
+  EXPECT_FALSE(client.begin_frame_is_sent_to_children());
+  scheduler->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
+  client.Reset();
+
+  scheduler->SetChildrenNeedBeginFrames(true);
+
+  client.AdvanceFrame();
+  EXPECT_TRUE(client.begin_frame_is_sent_to_children());
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
+  EXPECT_TRUE(client.needs_begin_frames());
+  client.Reset();
 }
 
 TEST(SchedulerTest, RequestCommit) {

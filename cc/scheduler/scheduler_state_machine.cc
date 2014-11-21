@@ -47,7 +47,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
-      impl_latency_takes_priority_on_battery_(false) {
+      impl_latency_takes_priority_on_battery_(false),
+      children_need_begin_frames_(false) {
 }
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
@@ -234,6 +235,7 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
   state->SetBoolean("continuous_painting", continuous_painting_);
   state->SetBoolean("impl_latency_takes_priority_on_battery",
                     impl_latency_takes_priority_on_battery_);
+  state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
   state->EndDictionary();
 }
 
@@ -672,16 +674,28 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
   skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
+bool SchedulerStateMachine::BeginFrameNeededForChildren() const {
+  if (HasInitializedOutputSurface())
+    return children_need_begin_frames_;
+
+  return false;
+}
+
 bool SchedulerStateMachine::BeginFrameNeeded() const {
+  if (SupportsProactiveBeginFrame()) {
+    return (BeginFrameNeededToAnimateOrDraw() ||
+            BeginFrameNeededForChildren() ||
+            ProactiveBeginFrameWanted());
+  }
+
   // Proactive BeginFrames are bad for the synchronous compositor because we
   // have to draw when we get the BeginFrame and could end up drawing many
   // duplicate frames if our new frame isn't ready in time.
   // To poll for state with the synchronous compositor without having to draw,
   // we rely on ShouldPollForAnticipatedDrawTriggers instead.
-  if (!SupportsProactiveBeginFrame())
-    return BeginFrameNeededToAnimateOrDraw();
-
-  return BeginFrameNeededToAnimateOrDraw() || ProactiveBeginFrameWanted();
+  // Synchronous compositor doesn't have a browser.
+  DCHECK(!children_need_begin_frames_);
+  return BeginFrameNeededToAnimateOrDraw();
 }
 
 bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
@@ -705,6 +719,12 @@ bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
   // using a synchronous compositor because we *must* draw for every
   // BeginFrame, which could cause duplicate draws.
   return !settings_.using_synchronous_renderer_compositor;
+}
+
+void SchedulerStateMachine::SetChildrenNeedBeginFrames(
+    bool children_need_begin_frames) {
+  DCHECK(settings_.forward_begin_frames_to_children);
+  children_need_begin_frames_ = children_need_begin_frames;
 }
 
 // These are the cases where we definitely (or almost definitely) have a

@@ -89,6 +89,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
   virtual void ScheduleComposite() {}
+  virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}
 
   // Hooks for SchedulerClient.
   virtual void ScheduledActionWillSendBeginMainFrame() {}

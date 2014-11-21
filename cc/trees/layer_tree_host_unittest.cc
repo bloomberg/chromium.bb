@@ -5221,6 +5221,82 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousPainting);
 
+class LayerTreeHostTestSendBeginFramesToChildren : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestSendBeginFramesToChildren()
+      : begin_frame_sent_to_children_(false) {
+  }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->forward_begin_frames_to_children = true;
+  }
+
+  void BeginTest() override {
+    // Kick off the test with a commit.
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
+    begin_frame_sent_to_children_ = true;
+    EndTest();
+  }
+
+  void DidBeginMainFrame() override {
+    // Children requested BeginFrames.
+    layer_tree_host()->SetChildrenNeedBeginFrames(true);
+  }
+
+  void AfterTest() override {
+    // Ensure that BeginFrame message is sent to children during parent
+    // scheduler handles its BeginFrame.
+    EXPECT_TRUE(begin_frame_sent_to_children_);
+  }
+
+ private:
+  bool begin_frame_sent_to_children_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestSendBeginFramesToChildren);
+
+class LayerTreeHostTestSendBeginFramesToChildrenWithExternalBFS
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestSendBeginFramesToChildrenWithExternalBFS()
+      : begin_frame_sent_to_children_(false) {
+  }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->use_external_begin_frame_source = true;
+    settings->forward_begin_frames_to_children = true;
+  }
+
+  void BeginTest() override {
+    // Kick off the test with a commit.
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
+    begin_frame_sent_to_children_ = true;
+    EndTest();
+  }
+
+  void DidBeginMainFrame() override {
+    // Children requested BeginFrames.
+    layer_tree_host()->SetChildrenNeedBeginFrames(true);
+  }
+
+  void AfterTest() override {
+    // Ensure that BeginFrame message is sent to children during parent
+    // scheduler handles its BeginFrame.
+    EXPECT_TRUE(begin_frame_sent_to_children_);
+  }
+
+ private:
+  bool begin_frame_sent_to_children_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestSendBeginFramesToChildrenWithExternalBFS);
+
 class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
  public:
   LayerTreeHostTestActivateOnInvisible()

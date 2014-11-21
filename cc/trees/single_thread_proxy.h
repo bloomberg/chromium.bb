@@ -59,6 +59,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool SupportsImplScrolling() const override;
   void AsValueInto(base::debug::TracedValue* state) const override;
   bool MainFrameWillHappenForTesting() override;
+  void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -75,6 +76,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
   base::TimeDelta CommitToActivateDurationEstimate() override;
   void DidBeginImplFrameDeadline() override;
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;

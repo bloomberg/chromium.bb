@@ -314,6 +314,9 @@ class CC_EXPORT LayerTreeHost {
   void set_surface_id_namespace(uint32_t id_namespace);
   SurfaceSequence CreateSurfaceSequence();
 
+  void SetChildrenNeedBeginFrames(bool children_need_begin_frames) const;
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) const;
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,

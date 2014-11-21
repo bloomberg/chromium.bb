@@ -48,6 +48,7 @@ class SchedulerClient {
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
   virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
   virtual void DidBeginImplFrameDeadline() = 0;
+  virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -92,6 +93,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   }
 
   ~Scheduler() override;
+
+  // BeginFrameObserverMixin
+  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
 
   // base::PowerObserver method.
   void OnPowerStateChange(bool on_battery_power) override;
@@ -164,8 +168,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
     state_machine_.SetContinuousPainting(continuous_painting);
   }
 
-  // BeginFrameObserverMixin
-  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
+  void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
 
  protected:
   Scheduler(SchedulerClient* client,

@@ -380,6 +380,10 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidInitializeOutputSurface();
   }
 
+  void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
+    test_hooks_->SendBeginFramesToChildren(args);
+  }
+
   void DidFailToInitializeOutputSurface() override {
     test_hooks_->DidFailToInitializeOutputSurface();
   }

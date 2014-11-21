@@ -1823,5 +1823,20 @@ TEST(SchedulerStateMachineTest, TestSetNeedsAnimateAfterAnimate) {
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 }
 
+TEST(SchedulerStateMachineTest, TestForwardBeginFramesToChildren) {
+  SchedulerSettings settings;
+  settings.forward_begin_frames_to_children = true;
+  StateMachine state(settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  EXPECT_FALSE(state.BeginFrameNeeded());
+  state.SetChildrenNeedBeginFrames(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+}
+
 }  // namespace
 }  // namespace cc

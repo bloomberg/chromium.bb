@@ -633,6 +633,12 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return false;
 }
 
+void SingleThreadProxy::SetChildrenNeedBeginFrames(
+    bool children_need_begin_frames) {
+  scheduler_on_impl_thread_->SetChildrenNeedBeginFrames(
+      children_need_begin_frames);
+}
+
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
   layer_tree_host_impl_->WillBeginImplFrame(args);
 }
@@ -789,6 +795,10 @@ base::TimeDelta SingleThreadProxy::CommitToActivateDurationEstimate() {
 
 void SingleThreadProxy::DidBeginImplFrameDeadline() {
   layer_tree_host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+}
+
+void SingleThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
+  layer_tree_host_->SendBeginFramesToChildren(args);
 }
 
 }  // namespace cc

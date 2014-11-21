@@ -104,6 +104,8 @@ class CC_EXPORT Proxy {
 
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) = 0;
 
+  virtual void SetChildrenNeedBeginFrames(bool children_need_begin_frames) = 0;
+
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 

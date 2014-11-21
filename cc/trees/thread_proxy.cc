@@ -1095,6 +1095,10 @@ void ThreadProxy::DidBeginImplFrameDeadline() {
   impl().layer_tree_host_impl->ResetCurrentBeginFrameArgsForNextFrame();
 }
 
+void ThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
+  NOTREACHED() << "Only used by SingleThreadProxy";
+}
+
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {
   DCHECK(IsImplThread());
   impl().scheduler->NotifyReadyToCommit();
@@ -1248,6 +1252,10 @@ bool ThreadProxy::MainFrameWillHappenForTesting() {
     completion.Wait();
   }
   return main_frame_will_happen;
+}
+
+void ThreadProxy::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
+  NOTREACHED() << "Only used by SingleThreadProxy";
 }
 
 void ThreadProxy::MainFrameWillHappenOnImplThreadForTesting(

@@ -393,6 +393,21 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
 bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", args.AsValue());
 
+  // Deliver BeginFrames to children.
+  if (settings_.forward_begin_frames_to_children &&
+      state_machine_.children_need_begin_frames()) {
+    BeginFrameArgs adjusted_args_for_children(args);
+    // Adjust a deadline for child schedulers.
+    // TODO(simonhong): Once we have commitless update, we can get rid of
+    // BeginMainFrameToCommitDurationEstimate() +
+    // CommitToActivateDurationEstimate().
+    adjusted_args_for_children.deadline -=
+        (client_->BeginMainFrameToCommitDurationEstimate() +
+         client_->CommitToActivateDurationEstimate() +
+         client_->DrawDurationEstimate() + EstimatedParentDrawTime());
+    client_->SendBeginFramesToChildren(adjusted_args_for_children);
+  }
+
   // We have just called SetNeedsBeginFrame(true) and the BeginFrameSource has
   // sent us the last BeginFrame we have missed. As we might not be able to
   // actually make rendering for this call, handle it like a "retro frame".
@@ -426,6 +441,12 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
     BeginImplFrame(adjusted_args);
   }
   return true;
+}
+
+void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
+  DCHECK(settings_.forward_begin_frames_to_children);
+  state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
+  DCHECK_EQ(state_machine_.NextAction(), SchedulerStateMachine::ACTION_NONE);
 }
 
 // BeginRetroFrame is called for BeginFrames that we've deferred because
