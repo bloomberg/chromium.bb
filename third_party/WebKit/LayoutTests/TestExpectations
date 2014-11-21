@@ -595,6 +595,12 @@ crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
 
 crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Pass Timeout ]
 
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/435286 [ Mac ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
