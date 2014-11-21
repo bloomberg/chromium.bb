@@ -972,7 +972,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
-        if (Base::expandBuffer(newCapacity))
+        // The Allocator::isGarbageCollected check is not needed.
+        // The check is just a static hint for a compiler to indicate that
+        // Base::expandBuffer returns false if Allocator is a DefaultAllocator.
+        if (Allocator::isGarbageCollected && Base::expandBuffer(newCapacity))
             return;
         Base::allocateBuffer(newCapacity);
         TypeOperations::move(oldBuffer, oldEnd, begin());
