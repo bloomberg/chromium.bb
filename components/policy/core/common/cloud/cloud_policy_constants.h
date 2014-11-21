@@ -20,6 +20,7 @@ POLICY_EXPORT extern const char kParamAgent[];
 POLICY_EXPORT extern const char kParamAppType[];
 POLICY_EXPORT extern const char kParamDeviceID[];
 POLICY_EXPORT extern const char kParamDeviceType[];
+POLICY_EXPORT extern const char kParamOAuthToken[];
 POLICY_EXPORT extern const char kParamPlatform[];
 POLICY_EXPORT extern const char kParamRequest[];
 POLICY_EXPORT extern const char kParamUserAffiliation[];

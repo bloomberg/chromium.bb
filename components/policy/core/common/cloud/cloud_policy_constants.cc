@@ -18,6 +18,7 @@ const char kParamAgent[] = "agent";
 const char kParamAppType[] = "apptype";
 const char kParamDeviceID[] = "deviceid";
 const char kParamDeviceType[] = "devicetype";
+const char kParamOAuthToken[] = "oauth_token";
 const char kParamPlatform[] = "platform";
 const char kParamRequest[] = "request";
 const char kParamUserAffiliation[] = "user_affiliation";
