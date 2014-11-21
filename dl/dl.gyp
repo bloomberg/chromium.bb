@@ -10,6 +10,7 @@
   'variables' : {
     # Override this value to build with small float FFT tables
     'big_float_fft%' : 1,
+    'use_lto%': 0,
   },
   'target_defaults': {
     'include_dirs': [
@@ -151,6 +152,16 @@
                 'sp/src/arm/neon/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S',
                 'sp/src/arm/neon/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S',
                 'sp/src/arm/neon/omxSP_FFTInv_CCSToR_F32_Sfs_s.S',
+              ],
+              'conditions': [
+                # Disable LTO due to Neon issues
+                # crbug.com/408997
+                ['use_lto==1', {
+                  'cflags!': [
+                    '-flto',
+                    '-ffat-lto-objects',
+                  ],
+                }],
               ],
             }],
           ],
