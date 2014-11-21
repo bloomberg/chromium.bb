@@ -106,9 +106,15 @@ def load_tests(_, _2, _3):
     # test from the class. We should probably discover all of the tests
     # in a class, and then throw the ones we don't need away instead.
     if hasattr(benchmark, '_enabled_strings'):
-      method._enabled_strings = benchmark._enabled_strings
+      if hasattr(method, '_enabled_strings'):
+        method._enabled_strings += benchmark._enabled_strings
+      else:
+        method._enabled_strings = benchmark._enabled_strings
     if hasattr(benchmark, '_disabled_strings'):
-      method._disabled_strings = benchmark._disabled_strings
+      if hasattr(method, '_disabled_strings'):
+        method._disabled_strings += benchmark._disabled_strings
+      else:
+        method._disabled_strings = benchmark._disabled_strings
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 
     suite.addTest(BenchmarkSmokeTest(benchmark.Name()))
