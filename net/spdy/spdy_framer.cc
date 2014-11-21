@@ -1991,7 +1991,8 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
       DCHECK(successful_read);
       if (SpdyConstants::IsValidRstStreamStatus(protocol_version(),
                                                 status_raw)) {
-        status = static_cast<SpdyRstStreamStatus>(status_raw);
+        status =
+            SpdyConstants::ParseRstStreamStatus(protocol_version(), status_raw);
       } else {
         if (protocol_version() > SPDY3) {
           // Treat unrecognized status codes as INTERNAL_ERROR as
@@ -2484,7 +2485,8 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
     builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
   }
 
-  builder.WriteUInt32(rst_stream.status());
+  builder.WriteUInt32(SpdyConstants::SerializeRstStreamStatus(
+      protocol_version(), rst_stream.status()));
 
   // In SPDY4 and up, RST_STREAM frames may also specify opaque data.
   if (protocol_version() > SPDY3 && rst_stream.description().size() > 0) {
