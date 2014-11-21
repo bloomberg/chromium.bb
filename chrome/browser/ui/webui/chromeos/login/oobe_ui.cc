@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -280,6 +282,15 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
   AddScreenHandler(error_screen_handler_);
+
+  // Initialize ErrorScreen if it hasn't initialized.
+  if (WizardController::default_controller()) {
+    BaseScreen* screen = WizardController::default_controller()->GetScreen(
+        WizardController::kErrorScreenName);
+    CHECK(screen);
+  } else {
+    error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
+  }
 
   EnrollmentScreenHandler* enrollment_screen_handler =
       new EnrollmentScreenHandler(network_state_informer_,

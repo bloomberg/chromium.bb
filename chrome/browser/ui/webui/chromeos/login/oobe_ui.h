@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -25,7 +26,9 @@ class AppLaunchSplashScreenActor;
 class BaseScreenHandler;
 class ControllerPairingScreenActor;
 class DeviceDisabledScreenActor;
+class ErrorScreen;
 class ErrorScreenHandler;
+class GaiaScreenHandler;
 class HostPairingScreenActor;
 class KioskAppMenuHandler;
 class KioskEnableScreenActor;
@@ -33,7 +36,6 @@ class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkDropdownHandler;
 class NetworkStateInformer;
-class GaiaScreenHandler;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class UpdateScreenHandler;
@@ -223,6 +225,8 @@ class OobeUI : public OobeDisplay,
   std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.
 
   KioskAppMenuHandler* kiosk_app_menu_handler_;  // Non-owning pointers.
+
+  scoped_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
   Screen current_screen_;
