@@ -128,10 +128,15 @@
                 },
                 "description": "The message data."
               },
+              "from": {
+                "type": "string",
+                "optional": true,
+                "description": "The sender who issued the message."
+              },
               "collapseKey": {
                 "type": "string",
                 "optional": true,
-                "desctription": "The collapse key of a message. See <a href='cloudMessaging#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
+                "description": "The collapse key of a message. See <a href='cloudMessaging#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
               }
             }
           }

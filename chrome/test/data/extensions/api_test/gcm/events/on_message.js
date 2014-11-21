@@ -5,20 +5,37 @@
 onload = function() {
   chrome.test.runTests([
     function onMessage() {
-      var expectedCalls = 2;
+      var expectedCalls = 4;
+      var fromAndCollapseKeyTested = false;
+      var fromTested = false;
       var collapseKeyTested = false;
       var regularMessageTested = false;
       var eventHandler = function(message) {
-        // Test with and without a collapse key.
+        var hasFrom = false;
+        var hasCollapseKey = false;
+        if (message.hasOwnProperty('from')) {
+          // Test with from.
+          chrome.test.assertEq('12345678', message.from);
+          hasFrom = true;
+        }
         if (message.hasOwnProperty('collapseKey')) {
+          // Test with a collapse key.
           chrome.test.assertEq('collapseKeyValue', message.collapseKey);
+          hasCollapseKey = true;
+        }
+
+        if (hasFrom && hasCollapseKey) {
+          fromAndCollapseKeyTested = true;
+        } else if (hasFrom) {
+          fromTested = true;
+        } else if (hasCollapseKey) {
           collapseKeyTested = true;
         } else {
-          chrome.test.assertFalse(message.hasOwnProperty('collapseKey'));
           regularMessageTested = true;
         }
 
-        // The message is expected to carry data regardless of collapse key.
+        // The message is expected to carry data regardless of other optional
+        // fields.
         chrome.test.assertEq(2, Object.keys(message.data).length);
         chrome.test.assertTrue(message.data.hasOwnProperty('property1'));
         chrome.test.assertTrue(message.data.hasOwnProperty('property2'));
@@ -28,7 +45,8 @@ onload = function() {
         --expectedCalls;
         if (expectedCalls == 0) {
           chrome.gcm.onMessage.removeListener(eventHandler);
-          if (collapseKeyTested && regularMessageTested) {
+          if (fromAndCollapseKeyTested && fromTested && collapseKeyTested &&
+              regularMessageTested) {
             chrome.test.succeed();
           } else {
             chrome.test.fail();

@@ -213,6 +213,8 @@ void GcmJsEventRouter::OnMessage(
     const gcm::GCMClient::IncomingMessage& message) {
   api::gcm::OnMessage::Message message_arg;
   message_arg.data.additional_properties = message.data;
+  if (!message.sender_id.empty())
+    message_arg.from.reset(new std::string(message.sender_id));
   if (!message.collapse_key.empty())
     message_arg.collapse_key.reset(new std::string(message.collapse_key));
 
