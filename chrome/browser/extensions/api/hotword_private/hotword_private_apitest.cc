@@ -190,6 +190,10 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableFalse) {
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, AlwaysOnEnabled) {
+  // Bypass the hotword hardware check.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalHotwordHardware);
+
   {
     ExtensionTestMessageListener listener("alwaysOnEnabled: false",
                                           false);

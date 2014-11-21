@@ -207,9 +207,10 @@ bool StartPageService::HotwordEnabled() {
 #if defined(OS_CHROMEOS)
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
     auto prefs = profile_->GetPrefs();
+    HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
     return HotwordServiceFactory::IsServiceAvailable(profile_) &&
         (prefs->GetBoolean(prefs::kHotwordSearchEnabled) ||
-         prefs->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled));
+         (service && service->IsAlwaysOnEnabled()));
   }
   return HotwordServiceFactory::IsServiceAvailable(profile_) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);
