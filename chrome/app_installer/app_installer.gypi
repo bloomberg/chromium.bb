@@ -17,6 +17,7 @@
             'common_constants.gyp:common_constants',
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
+            '../net/net.gyp:net',
             '../third_party/omaha/omaha.gyp:omaha_extractor',
           ],
           'include_dirs': [

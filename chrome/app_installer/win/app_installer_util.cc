@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -21,13 +22,17 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_util.h"
 #include "chrome/installer/util/html_dialog.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "net/base/escape.h"
 #include "third_party/omaha/src/omaha/base/extractor.h"
 
 namespace app_installer {
@@ -35,6 +40,12 @@ namespace app_installer {
 const char kInstallChromeApp[] = "install-chrome-app";
 
 namespace {
+
+// Copied from google_chrome_distribution.cc.
+const char kBrowserAppGuid[] = "{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+
+// Copied frome google_chrome_sxs_distribution.cc.
+const char kSxSBrowserAppGuid[] = "{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
 
 const int kMaxTagLength = 4096;
 
@@ -315,11 +326,54 @@ ExitCode GetChrome(bool is_canary, const std::string& inline_install_json) {
     return FAILED_TO_DOWNLOAD_CHROME_SETUP;
   }
 
+  // Construct the command line to pass to the installer so that it will not
+  // launch Chrome upon completion.
+  base::DictionaryValue installerdata_dict;
+  base::DictionaryValue* distribution = new base::DictionaryValue();
+  installerdata_dict.Set("distribution", distribution);
+  distribution->SetBoolean(
+      installer::master_preferences::kCreateAllShortcuts, false);
+  distribution->SetBoolean(
+      installer::master_preferences::kDoNotCreateDesktopShortcut, true);
+  distribution->SetBoolean(
+      installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true);
+  distribution->SetBoolean(
+      installer::master_preferences::kDoNotCreateTaskbarShortcut, true);
+  distribution->SetBoolean(
+      installer::master_preferences::kDoNotLaunchChrome, true);
+  distribution->SetBoolean(
+      installer::master_preferences::kDoNotRegisterForUpdateLaunch, true);
+  distribution->SetBoolean(
+      installer::master_preferences::kDistroImportHistoryPref, false);
+  distribution->SetBoolean(
+      installer::master_preferences::kDistroImportSearchPref, false);
+  distribution->SetBoolean(
+      installer::master_preferences::kMakeChromeDefault, false);
+  distribution->SetBoolean(
+      installer::master_preferences::kSuppressFirstRunDefaultBrowserPrompt,
+      true);
+  std::string installerdata;
+  JSONStringValueSerializer serializer(&installerdata);
+  bool serialize_success = serializer.Serialize(installerdata_dict);
+  DCHECK(serialize_success);
+  std::string installerdata_url_encoded =
+      net::EscapeQueryParamValue(installerdata, false);
+  std::string appargs =
+      base::StringPrintf("appguid=%s&installerdata=%s",
+                         is_canary ? kSxSBrowserAppGuid : kBrowserAppGuid,
+                         installerdata_url_encoded.c_str());
+  base::CommandLine command_line(setup_file);
+  command_line.AppendArg("/appargs");
+  command_line.AppendArg(appargs);
+  command_line.AppendArg("/install");  // Must be last.
+
+  DVLOG(1) << "Chrome installer command line: "
+           << command_line.GetCommandLineString();
+
   // Install Chrome. Wait for the installer to finish before returning.
   base::LaunchOptions options;
   options.wait = true;
-  bool launch_success =
-      base::LaunchProcess(base::CommandLine(setup_file), options, NULL);
+  bool launch_success = base::LaunchProcess(command_line, options, NULL);
   base::DeleteFile(setup_file, false);
   return launch_success ? SUCCESS : FAILED_TO_LAUNCH_CHROME_SETUP;
 }
