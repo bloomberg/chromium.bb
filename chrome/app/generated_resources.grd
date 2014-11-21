@@ -506,6 +506,15 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
       </message>
+      <message name="IDS_HISTORY_SEARCH_RESULT" desc="Used when a single result is found.">
+        search result
+      </message>
+      <message name="IDS_HISTORY_SEARCH_RESULTS" desc="Used when plural/multiple results are found.">
+        search results
+      </message>
+      <message name="IDS_HISTORY_FOUND_SEARCH_RESULTS" desc="Message shown when zero or multiple search results are found.">
+        Found <ph name="NUMBER_OF_RESULTS">$1</ph> <ph name="SEARCH_RESULTS"><ex>search results</ex>$2</ph> for '<ph name="SEARCH_STRING">$3</ph>'.
+      </message>
       <message name="IDS_HISTORY_BROWSERESULTS" desc="Title of browsing results page">
         History
       </message>

@@ -130,6 +130,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("newer", IDS_HISTORY_NEWER);
   source->AddLocalizedString("older", IDS_HISTORY_OLDER);
   source->AddLocalizedString("searchResultsFor", IDS_HISTORY_SEARCHRESULTSFOR);
+  source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
+  source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
+  source->AddLocalizedString("foundSearchResults",
+                             IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
   source->AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
   source->AddLocalizedString("searchButton", IDS_HISTORY_SEARCH_BUTTON);

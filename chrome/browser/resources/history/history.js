@@ -1311,7 +1311,11 @@ HistoryView.prototype.clear_ = function() {
   if (alertOverlay && alertOverlay.classList.contains('showing'))
     hideConfirmationOverlay();
 
-  this.resultDiv_.textContent = '';
+  // Remove everything but <h3 id="results-header"> (the first child).
+  while (this.resultDiv_.children.length > 1) {
+    this.resultDiv_.removeChild(this.resultDiv_.lastElementChild);
+  }
+  $('results-header').textContent = '';
 
   this.currentVisits_.forEach(function(visit) {
     visit.isRendered = false;
@@ -1573,13 +1577,19 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
   var groupByDomain = this.model_.getGroupByDomain();
 
   if (searchText) {
-    // Add a header for the search results, if there isn't already one.
-    if (!this.resultDiv_.querySelector('h3')) {
-      var header = document.createElement('h3');
-      header.textContent = loadTimeData.getStringF('searchResultsFor',
-                                                   searchText);
-      this.resultDiv_.appendChild(header);
+    var headerText;
+    if (!doneLoading) {
+      headerText = loadTimeData.getStringF('searchResultsFor', searchText);
+    } else if (results.length == 0) {
+      headerText = loadTimeData.getString('noSearchResults');
+    } else {
+      var resultId = results.length == 1 ? 'searchResult' : 'searchResults';
+      headerText = loadTimeData.getStringF('foundSearchResults',
+                                           results.length,
+                                           loadTimeData.getString(resultId),
+                                           searchText);
     }
+    $('results-header').textContent = headerText;
 
     this.addTimeframeInterval_(this.resultDiv_);
 
@@ -1589,11 +1599,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
     if (!this.model_.editingEntriesAllowed)
       searchResults.classList.add('no-checkboxes');
 
-    if (results.length == 0 && doneLoading) {
-      var noSearchResults = searchResults.appendChild(
-          createElementWithClassName('div', 'no-results-message'));
-      noSearchResults.textContent = loadTimeData.getString('noSearchResults');
-    } else {
+    if (doneLoading) {
       for (var i = 0, visit; visit = results[i]; i++) {
         if (!visit.isRendered) {
           searchResults.appendChild(visit.getResultDOM({
@@ -1610,13 +1616,12 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 
     this.addTimeframeInterval_(resultsFragment);
 
-    if (results.length == 0 && doneLoading) {
-      var noResults = resultsFragment.appendChild(
-          createElementWithClassName('div', 'no-results-message'));
-      noResults.textContent = loadTimeData.getString('noResults');
-      this.resultDiv_.appendChild(resultsFragment);
+    var noResults = results.length == 0 && doneLoading;
+    $('results-header').textContent = noResults ?
+        loadTimeData.getString('noResults') : '';
+
+    if (noResults)
       return;
-    }
 
     if (this.getRangeInDays() == HistoryModel.Range.MONTH &&
         groupByDomain) {

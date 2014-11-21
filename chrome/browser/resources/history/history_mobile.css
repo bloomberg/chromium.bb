@@ -82,10 +82,6 @@ html[dir='rtl'] #search-field {
   background-position: right 16px center;
 }
 
-.no-results-message {
-  padding: 24px 16px;
-}
-
 #notification-bar.alone {
   float: none;
   font-size: 75%;
@@ -302,8 +298,7 @@ input {
 
   h1,
   #notification-bar,
-  #loading-spinner,
-  .no-results-message {
+  #loading-spinner {
     padding-left: 0;
     padding-right: 0;
   }
