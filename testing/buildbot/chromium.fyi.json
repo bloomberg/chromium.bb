@@ -353,6 +353,12 @@
       { "test": "content_browsertests", "args": ["--site-per-process", "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.SupportCrossProcessPostMessage:*.DontSwapProcessWithOnlyTargetBlank:*.DisownOpener:*.NavigateWithLeftoverFrames:*.DontPreemptNavigationWithFrameTreeUpdate:*.ProcessExitWithSwappedOutViews:*.SupportCrossProcessPostMessageWithMessagePort:*.AllowTargetedNavigationsInOpenerAfterSwap"] }
     ]
   },
+  "Browser Side Navigation Linux": {
+    "gtest_tests": [
+      { "test": "content_unittests", "args": ["--enable-browser-side-navigation"] },
+      { "test": "content_browsertests", "args": ["--enable-browser-side-navigation"] }
+    ]
+  },
   "Linux ChromeOS MSan Tests": {
     "gtest_tests": [
       "accessibility_unittests",
