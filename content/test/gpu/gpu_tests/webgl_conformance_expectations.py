@@ -76,6 +76,12 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
 
+    # Win / AMD failures
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['win', 'amd'], bug=839) # angle bug ID
+    self.Fail('conformance/extensions/webgl-depth-texture.html',
+        ['win', 'amd'], bug=839) # angle bug ID
+
     # Mac / Intel failures
     # Radar 13499466
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
