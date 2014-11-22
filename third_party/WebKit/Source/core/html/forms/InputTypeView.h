@@ -119,6 +119,9 @@ public:
     virtual void updateClearButtonVisibility();
     virtual void updatePlaceholderText();
     virtual AXObject* popupRootAXObject();
+    virtual void ensureFallbackContent() { };
+    virtual void ensurePrimaryContent() { };
+    virtual bool hasFallbackContent() const { return false; };
 
 protected:
     InputTypeView(HTMLInputElement& element) : m_element(&element) { }

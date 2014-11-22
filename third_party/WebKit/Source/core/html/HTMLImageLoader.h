@@ -41,7 +41,11 @@ public:
     virtual void notifyFinished(Resource*) override;
 
 private:
+    Timer<HTMLImageLoader> m_loadFallbackContentTimer;
+    void timerFired(Timer<HTMLImageLoader>*);
     explicit HTMLImageLoader(Element*);
+    virtual void noImageResourceToLoad() override;
+    void ensureFallbackContent();
 };
 
 }
