@@ -1311,7 +1311,7 @@ void ResourceFetcher::clearPreloads()
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
-    RefPtr<Document> protectDocument(m_document);
+    RefPtrWillBeRawPtr<Document> protectDocument(document());
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400 && document()) {
