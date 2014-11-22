@@ -18,7 +18,25 @@
  */
 
 body {
+  color: #333;
   cursor: default;
+  /* Note that the correct font-family and font-size are set in
+   * extension_fonts.css. */
+  /* This top margin of 14px matches the top padding on the h1 element on
+   * overlays (see the ".overlay .page h1" selector in overlay.css), which
+   * every dialogue has.
+   *
+   * Similarly, the bottom 14px margin matches the bottom padding of the area
+   * which hosts the buttons (see the ".overlay .page * .action-area" selector
+   * in overlay.css).
+   *
+   * Both have a padding left/right of 17px.
+   *
+   * Note that we're putting this here in the Extension content, rather than
+   * the WebUI element which contains the content, so that scrollbars in the
+   * Extension content don't get a 6px margin, which looks quite odd.
+   */
+  margin: 14px 17px;
 }
 
 p {
@@ -294,4 +312,38 @@ input:disabled:-webkit-any([type='password'],
    * This is particularly noticeable on mac. */
   border-color: rgb(77, 144, 254);
   outline: none;
+}
+
+/* Checkbox/radio helpers ******************************************************
+ *
+ * .checkbox and .radio classes wrap labels. Checkboxes and radios should use
+ * these classes with the markup structure:
+ *
+ *   <div class="checkbox">
+ *     <label>
+ *       <input type="checkbox"></input>
+ *       <span>
+ *     </label>
+ *   </div>
+ */
+
+:-webkit-any(.checkbox, .radio) label {
+  /* Don't expand horizontally: <http://crbug.com/112091>. */
+  display: -webkit-inline-box;
+  padding-bottom: 7px;
+  padding-top: 7px;
+}
+
+:-webkit-any(.checkbox, .radio) label input ~ span {
+  -webkit-margin-start: 0.6em;
+  /* Make sure long spans wrap at the same horizontal position they start. */
+  display: block;
+}
+
+:-webkit-any(.checkbox, .radio) label:hover {
+  color: black;
+}
+
+label > input:disabled:-webkit-any([type='checkbox'], [type='radio']) ~ span {
+  color: #999;
 }
