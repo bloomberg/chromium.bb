@@ -394,7 +394,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.container_culling_enabled =
       command_line.HasSwitch(switches::kEnableContainerCulling);
   prefs.text_blobs_enabled =
-      !command_line.HasSwitch(switches::kDisableTextBlobs);
+      command_line.HasSwitch(switches::kEnableTextBlobs);
   prefs.region_based_columns_enabled =
       command_line.HasSwitch(switches::kEnableRegionBasedColumns);
 
