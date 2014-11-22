@@ -196,8 +196,15 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   typedef base::hash_map<ChannelEndpointId, scoped_refptr<MessagePipe>>
       IdToMessagePipeMap;
-  // Map from local IDs to pending/incoming endpoints (i.e., those which do not
-  // yet have a dispatcher attached).
+  // Map from local IDs to pending/incoming message pipes (i.e., those which do
+  // not yet have a dispatcher attached).
+  // TODO(vtl): This is a layering violation, since |Channel| shouldn't know
+  // about |MessagePipe|. However, we can't just hang on to |ChannelEndpoint|s
+  // (even if they have a reference to the |MessagePipe|) since their lifetimes
+  // are tied to the "remote" side. When |ChannelEndpoint::DetachFromChannel()|
+  // (eventually) results in |ChannelEndpoint::DetachFromClient()| being called.
+  // We really need to hang on to the "local" side of the message pipe, to which
+  // dispatchers will be "attached".
   IdToMessagePipeMap incoming_message_pipes_;
   // TODO(vtl): We need to keep track of remote IDs (so that we don't collide
   // if/when we wrap).

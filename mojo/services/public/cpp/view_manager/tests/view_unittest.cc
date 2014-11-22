@@ -9,6 +9,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -100,6 +101,88 @@ TEST_F(ViewTest, DrawnAndVisible) {
   v1.RemoveChild(&v11);
   EXPECT_TRUE(v11.visible());
   EXPECT_FALSE(v11.IsDrawn());
+}
+
+namespace {
+DEFINE_VIEW_PROPERTY_KEY(int, kIntKey, -2);
+DEFINE_VIEW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
+}
+
+TEST_F(ViewTest, Property) {
+  TestView v;
+
+  // Non-existent properties should return the default values.
+  EXPECT_EQ(-2, v.GetLocalProperty(kIntKey));
+  EXPECT_EQ(std::string("squeamish"), v.GetLocalProperty(kStringKey));
+
+  // A set property value should be returned again (even if it's the default
+  // value).
+  v.SetLocalProperty(kIntKey, INT_MAX);
+  EXPECT_EQ(INT_MAX, v.GetLocalProperty(kIntKey));
+  v.SetLocalProperty(kIntKey, -2);
+  EXPECT_EQ(-2, v.GetLocalProperty(kIntKey));
+  v.SetLocalProperty(kIntKey, INT_MIN);
+  EXPECT_EQ(INT_MIN, v.GetLocalProperty(kIntKey));
+
+  v.SetLocalProperty(kStringKey, static_cast<const char*>(NULL));
+  EXPECT_EQ(NULL, v.GetLocalProperty(kStringKey));
+  v.SetLocalProperty(kStringKey, "squeamish");
+  EXPECT_EQ(std::string("squeamish"), v.GetLocalProperty(kStringKey));
+  v.SetLocalProperty(kStringKey, "ossifrage");
+  EXPECT_EQ(std::string("ossifrage"), v.GetLocalProperty(kStringKey));
+
+  // ClearProperty should restore the default value.
+  v.ClearLocalProperty(kIntKey);
+  EXPECT_EQ(-2, v.GetLocalProperty(kIntKey));
+  v.ClearLocalProperty(kStringKey);
+  EXPECT_EQ(std::string("squeamish"), v.GetLocalProperty(kStringKey));
+}
+
+namespace {
+
+class TestProperty {
+ public:
+  TestProperty() {}
+  virtual ~TestProperty() { last_deleted_ = this; }
+  static TestProperty* last_deleted() { return last_deleted_; }
+
+ private:
+  static TestProperty* last_deleted_;
+  DISALLOW_COPY_AND_ASSIGN(TestProperty);
+};
+
+TestProperty* TestProperty::last_deleted_ = NULL;
+
+DEFINE_OWNED_VIEW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
+
+}  // namespace
+
+TEST_F(ViewTest, OwnedProperty) {
+  TestProperty* p3 = NULL;
+  {
+    TestView v;
+    EXPECT_EQ(NULL, v.GetLocalProperty(kOwnedKey));
+    TestProperty* p1 = new TestProperty();
+    v.SetLocalProperty(kOwnedKey, p1);
+    EXPECT_EQ(p1, v.GetLocalProperty(kOwnedKey));
+    EXPECT_EQ(NULL, TestProperty::last_deleted());
+
+    TestProperty* p2 = new TestProperty();
+    v.SetLocalProperty(kOwnedKey, p2);
+    EXPECT_EQ(p2, v.GetLocalProperty(kOwnedKey));
+    EXPECT_EQ(p1, TestProperty::last_deleted());
+
+    v.ClearLocalProperty(kOwnedKey);
+    EXPECT_EQ(NULL, v.GetLocalProperty(kOwnedKey));
+    EXPECT_EQ(p2, TestProperty::last_deleted());
+
+    p3 = new TestProperty();
+    v.SetLocalProperty(kOwnedKey, p3);
+    EXPECT_EQ(p3, v.GetLocalProperty(kOwnedKey));
+    EXPECT_EQ(p2, TestProperty::last_deleted());
+  }
+
+  EXPECT_EQ(p3, TestProperty::last_deleted());
 }
 
 // ViewObserver --------------------------------------------------------
@@ -614,12 +697,12 @@ TEST_F(ViewObserverTest, SetVisible) {
 
 namespace {
 
-class PropertyChangeObserver : public ViewObserver {
+class SharedPropertyChangeObserver : public ViewObserver {
  public:
-  explicit PropertyChangeObserver(View* view) : view_(view) {
+  explicit SharedPropertyChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~PropertyChangeObserver() { view_->RemoveObserver(this); }
+  virtual ~SharedPropertyChangeObserver() { view_->RemoveObserver(this); }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -629,16 +712,15 @@ class PropertyChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  void OnViewPropertyChanged(View* view,
-                             const std::string& name,
-                             const std::vector<uint8_t>* old_data,
-                             const std::vector<uint8_t>* new_data) override {
+  void OnViewSharedPropertyChanged(
+      View* view,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override {
     changes_.push_back(base::StringPrintf(
-        "view=%s property changed key=%s old_value=%s new_value=%s",
-        ViewIdToString(view->id()).c_str(),
-        name.c_str(),
-        VectorToString(old_data).c_str(),
-        VectorToString(new_data).c_str()));
+        "view=%s shared property changed key=%s old_value=%s new_value=%s",
+        ViewIdToString(view->id()).c_str(), name.c_str(),
+        VectorToString(old_data).c_str(), VectorToString(new_data).c_str()));
   }
 
   std::string VectorToString(const std::vector<uint8_t>* data) {
@@ -653,50 +735,110 @@ class PropertyChangeObserver : public ViewObserver {
   View* view_;
   Changes changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(PropertyChangeObserver);
+  DISALLOW_COPY_AND_ASSIGN(SharedPropertyChangeObserver);
 };
 
 }  // namespace
 
-TEST_F(ViewObserverTest, SetProperty) {
+TEST_F(ViewObserverTest, SetLocalProperty) {
   TestView v1;
   std::vector<uint8_t> one(1, '1');
 
   {
     // Change visibility from true to false and make sure we get notifications.
-    PropertyChangeObserver observer(&v1);
-    v1.SetProperty("one", &one);
+    SharedPropertyChangeObserver observer(&v1);
+    v1.SetSharedProperty("one", &one);
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
-    EXPECT_EQ("view=0,1 property changed key=one old_value=NULL new_value=1",
-              changes[0]);
-    EXPECT_EQ(1U, v1.properties().size());
+    EXPECT_EQ(
+        "view=0,1 shared property changed key=one old_value=NULL new_value=1",
+        changes[0]);
+    EXPECT_EQ(1U, v1.shared_properties().size());
   }
   {
     // Set visible to existing value and verify no notifications.
-    PropertyChangeObserver observer(&v1);
-    v1.SetProperty("one", &one);
+    SharedPropertyChangeObserver observer(&v1);
+    v1.SetSharedProperty("one", &one);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
-    EXPECT_EQ(1U, v1.properties().size());
+    EXPECT_EQ(1U, v1.shared_properties().size());
   }
   {
     // Set the value to NULL to delete it.
     // Change visibility from true to false and make sure we get notifications.
-    PropertyChangeObserver observer(&v1);
-    v1.SetProperty("one", NULL);
+    SharedPropertyChangeObserver observer(&v1);
+    v1.SetSharedProperty("one", NULL);
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
-    EXPECT_EQ("view=0,1 property changed key=one old_value=1 new_value=NULL",
-              changes[0]);
-    EXPECT_EQ(0U, v1.properties().size());
+    EXPECT_EQ(
+        "view=0,1 shared property changed key=one old_value=1 new_value=NULL",
+        changes[0]);
+    EXPECT_EQ(0U, v1.shared_properties().size());
   }
   {
     // Setting a null property to null shouldn't update us.
-    PropertyChangeObserver observer(&v1);
-    v1.SetProperty("one", NULL);
+    SharedPropertyChangeObserver observer(&v1);
+    v1.SetSharedProperty("one", NULL);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
-    EXPECT_EQ(0U, v1.properties().size());
+    EXPECT_EQ(0U, v1.shared_properties().size());
   }
+}
+
+namespace {
+
+typedef std::pair<const void*, intptr_t> PropertyChangeInfo;
+
+class LocalPropertyChangeObserver : public ViewObserver {
+ public:
+  explicit LocalPropertyChangeObserver(View* view)
+      : view_(view),
+        property_key_(nullptr),
+        old_property_value_(-1) {
+    view_->AddObserver(this);
+  }
+  virtual ~LocalPropertyChangeObserver() { view_->RemoveObserver(this); }
+
+  PropertyChangeInfo PropertyChangeInfoAndClear() {
+    PropertyChangeInfo result(property_key_, old_property_value_);
+    property_key_ = NULL;
+    old_property_value_ = -3;
+    return result;
+  }
+
+ private:
+  void OnViewLocalPropertyChanged(View* window,
+                                  const void* key,
+                                  intptr_t old) override {
+    property_key_ = key;
+    old_property_value_ = old;
+  }
+
+  View* view_;
+  const void* property_key_;
+  intptr_t old_property_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalPropertyChangeObserver);
+};
+
+}  // namespace
+
+TEST_F(ViewObserverTest, LocalPropertyChanged) {
+  TestView v1;
+  LocalPropertyChangeObserver o(&v1);
+
+  static const ViewProperty<int> prop = {-2};
+
+  v1.SetLocalProperty(&prop, 1);
+  EXPECT_EQ(PropertyChangeInfo(&prop, -2), o.PropertyChangeInfoAndClear());
+  v1.SetLocalProperty(&prop, -2);
+  EXPECT_EQ(PropertyChangeInfo(&prop, 1), o.PropertyChangeInfoAndClear());
+  v1.SetLocalProperty(&prop, 3);
+  EXPECT_EQ(PropertyChangeInfo(&prop, -2), o.PropertyChangeInfoAndClear());
+  v1.ClearLocalProperty(&prop);
+  EXPECT_EQ(PropertyChangeInfo(&prop, 3), o.PropertyChangeInfoAndClear());
+
+  // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
+  EXPECT_EQ(PropertyChangeInfo(
+      reinterpret_cast<const void*>(NULL), -3), o.PropertyChangeInfoAndClear());
 }
 
 }  // namespace mojo

@@ -63,10 +63,26 @@ class ViewObserver {
   virtual void OnViewVisibilityChanging(View* view) {}
   virtual void OnViewVisibilityChanged(View* view) {}
 
-  virtual void OnViewPropertyChanged(View* view,
-                                     const std::string& name,
-                                     const std::vector<uint8_t>* old_data,
-                                     const std::vector<uint8_t>* new_data) {}
+  // Invoked when this View's shared properties have changed. This can either
+  // be caused by SetSharedProperty() being called locally, or by us receiving
+  // a mojo message that this property has changed. If this property has been
+  // added, |old_data| is null. If this property was removed, |new_data| is
+  // null.
+  virtual void OnViewSharedPropertyChanged(
+      View* view,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) {}
+
+  // Invoked when SetProperty() or ClearProperty() is called on the window.
+  // |key| is either a WindowProperty<T>* (SetProperty, ClearProperty). Either
+  // way, it can simply be compared for equality with the property
+  // constant. |old| is the old property value, which must be cast to the
+  // appropriate type before use.
+  virtual void OnViewLocalPropertyChanged(
+      View* view,
+      const void* key,
+      intptr_t old) {}
 
   virtual void OnViewEmbeddedAppDisconnected(View* view) {}
 

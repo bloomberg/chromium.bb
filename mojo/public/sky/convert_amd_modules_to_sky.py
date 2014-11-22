@@ -70,15 +70,15 @@ def Parse(amd_module):
         AddImportNames(module, m.group(1))
         state = "body"
         continue
-      raise Exception, "Unknown import declaration:" + line
+      raise Exception("Unknown import declaration:" + line)
     if state == "body":
       if end_body_regexp.search(line):
         module.body = "\n".join(body_lines)
         return module
       body_lines.append(line)
       continue
-    raise Exception, "Unknown parser state"
-  raise Exception, "End of file reached with finding a module"
+    raise Exception("Unknown parser state")
+  raise Exception("End of file reached with finding a module")
 
 def main():
   parser = argparse.ArgumentParser()

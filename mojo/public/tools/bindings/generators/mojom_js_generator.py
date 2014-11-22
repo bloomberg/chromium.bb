@@ -249,7 +249,6 @@ def TranslateConstants(token):
 def ExpressionToText(value):
   return TranslateConstants(value)
 
-
 def IsArrayPointerField(field):
   return mojom.IsArrayKind(field.kind)
 
@@ -264,6 +263,12 @@ def IsMapPointerField(field):
 
 def IsHandleField(field):
   return mojom.IsAnyHandleKind(field.kind)
+
+def IsInterfaceRequestParameter(parameter):
+  return mojom.IsInterfaceRequestKind(parameter.kind)
+
+def IsInterfaceParameter(parameter):
+  return mojom.IsInterfaceKind(parameter.kind)
 
 
 class Generator(generator.Generator):
@@ -282,6 +287,8 @@ class Generator(generator.Generator):
     "is_string_pointer_field": IsStringPointerField,
     "is_handle_field": IsHandleField,
     "js_type": JavaScriptType,
+    "is_interface_request_parameter": IsInterfaceRequestParameter,
+    "is_interface_parameter": IsInterfaceParameter,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_handle_params": JavaScriptValidateHandleParams,

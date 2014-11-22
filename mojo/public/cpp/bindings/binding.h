@@ -34,7 +34,6 @@ namespace mojo {
 //    private:
 //     Binding<Foo> binding_;
 //   };
-//
 template <typename Interface>
 class Binding : public ErrorHandler {
  public:
@@ -106,6 +105,11 @@ class Binding : public ErrorHandler {
     return internal_router_->WaitForIncomingMessage();
   }
 
+  void Close() {
+    MOJO_DCHECK(internal_router_);
+    internal_router_->CloseMessagePipe();
+  }
+
   void set_error_handler(ErrorHandler* error_handler) {
     error_handler_ = error_handler;
   }
@@ -118,6 +122,9 @@ class Binding : public ErrorHandler {
 
   Interface* impl() { return impl_; }
   Client* client() { return proxy_; }
+
+  bool is_bound() const { return !!internal_router_; }
+
   // Exposed for testing, should not generally be used.
   internal::Router* internal_router() { return internal_router_; }
 

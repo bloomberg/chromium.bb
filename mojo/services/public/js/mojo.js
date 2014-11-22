@@ -60,7 +60,7 @@ define("mojo/services/public/js/mojo", [
 
     var serviceConnection = new connection.Connection(
       serviceHandle,
-      provider.service.delegatingStubClass,
+      provider.service.stubClass,
       provider.service.client && provider.service.client.proxyClass);
 
     serviceConnection.local.connection$ = serviceConnection;
@@ -79,7 +79,7 @@ define("mojo/services/public/js/mojo", [
     this.handle_ = messagePipeHandle;
     this.connection_ =  new connection.Connection(
       this.handle_,
-      service.ServiceProvider.client.delegatingStubClass,
+      service.ServiceProvider.client.stubClass,
       service.ServiceProvider.proxyClass);
     this.connection_.local.delegate$ = {
       connectToService: connectToServiceImpl.bind(this)
@@ -113,7 +113,7 @@ define("mojo/services/public/js/mojo", [
 
     var pipe = core.createMessagePipe();
     this.connection_.remote.connectToService(service.name, pipe.handle1);
-    var clientClass = client && service.client.delegatingStubClass;
+    var clientClass = client && service.client.stubClass;
     var serviceConnection =
       new connection.Connection(pipe.handle0, clientClass, service.proxyClass);
     if (serviceConnection.local)

@@ -42,11 +42,11 @@ class MojoEnumType(type):
         raise ValueError('incorrect value: %r' % value)
     return type.__new__(mcs, name, bases, dictionary)
 
-  def __setattr__(mcs, key, value):
-    raise AttributeError, 'can\'t set attribute'
+  def __setattr__(cls, key, value):
+    raise AttributeError('can\'t set attribute')
 
-  def __delattr__(mcs, key):
-    raise AttributeError, 'can\'t delete attribute'
+  def __delattr__(cls, key):
+    raise AttributeError('can\'t delete attribute')
 
 
 class MojoStructType(type):
@@ -131,12 +131,12 @@ class MojoStructType(type):
     return type.__new__(mcs, name, bases, dictionary)
 
   # Prevent adding new attributes, or mutating constants.
-  def __setattr__(mcs, key, value):
-    raise AttributeError, 'can\'t set attribute'
+  def __setattr__(cls, key, value):
+    raise AttributeError('can\'t set attribute')
 
   # Prevent deleting constants.
-  def __delattr__(mcs, key):
-    raise AttributeError, 'can\'t delete attribute'
+  def __delattr__(cls, key):
+    raise AttributeError('can\'t delete attribute')
 
 
 class MojoInterfaceType(type):
@@ -195,16 +195,16 @@ class MojoInterfaceType(type):
     return interface_class
 
   @property
-  def manager(mcs):
-    return mcs._interface_manager
+  def manager(cls):
+    return cls._interface_manager
 
   # Prevent adding new attributes, or mutating constants.
-  def __setattr__(mcs, key, value):
-    raise AttributeError, 'can\'t set attribute'
+  def __setattr__(cls, key, value):
+    raise AttributeError('can\'t set attribute')
 
   # Prevent deleting constants.
-  def __delattr__(mcs, key):
-    raise AttributeError, 'can\'t delete attribute'
+  def __delattr__(cls, key):
+    raise AttributeError('can\'t delete attribute')
 
 
 class InterfaceProxy(object):

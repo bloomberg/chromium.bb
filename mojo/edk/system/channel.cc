@@ -75,7 +75,6 @@ void Channel::Shutdown() {
        it != to_destroy.end(); ++it) {
     if (it->second.get()) {
       num_live++;
-      it->second->OnDisconnect();
       it->second->DetachFromChannel();
     } else {
       num_zombies++;
@@ -475,7 +474,6 @@ bool Channel::OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
         static_cast<unsigned>(remote_id.value())));
   }
 
-  endpoint->OnDisconnect();
   return true;
 }
 

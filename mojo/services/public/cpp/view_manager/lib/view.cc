@@ -209,6 +209,9 @@ void View::SetBounds(const Rect& bounds) {
   if (!OwnsView(manager_, this))
     return;
 
+  if (bounds_.Equals(bounds))
+    return;
+
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
@@ -225,8 +228,8 @@ void View::SetVisible(bool value) {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(this));
 }
 
-void View::SetProperty(const std::string& name,
-                       const std::vector<uint8_t>* value) {
+void View::SetSharedProperty(const std::string& name,
+                             const std::vector<uint8_t>* value) {
   std::vector<uint8_t> old_value;
   std::vector<uint8_t>* old_value_ptr = nullptr;
   auto it = properties_.find(name);
@@ -248,8 +251,9 @@ void View::SetProperty(const std::string& name,
     properties_.erase(it);
   }
 
-  FOR_EACH_OBSERVER(ViewObserver, observers_,
-                    OnViewPropertyChanged(this, name, old_value_ptr, value));
+  FOR_EACH_OBSERVER(
+      ViewObserver, observers_,
+      OnViewSharedPropertyChanged(this, name, old_value_ptr, value));
 }
 
 bool View::IsDrawn() const {
@@ -264,6 +268,13 @@ void View::AddObserver(ViewObserver* observer) {
 
 void View::RemoveObserver(ViewObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+const View* View::GetRoot() const {
+  const View* root = this;
+  for (const View* parent = this; parent; parent = parent->parent())
+    root = parent;
+  return root;
 }
 
 void View::AddChild(View* child) {
@@ -382,10 +393,27 @@ View::~View() {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying(this));
   if (parent_)
     parent_->LocalRemoveChild(this);
+
+  // We may still have children. This can happen if the embedder destroys the
+  // root while we're still alive.
+  while (!children_.empty()) {
+    View* child = children_.front();
+    LocalRemoveChild(child);
+    DCHECK(children_.empty() || children_.front() != child);
+  }
+
   // TODO(beng): It'd be better to do this via a destruction observer in the
   //             ViewManagerClientImpl.
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->RemoveView(id_);
+
+  // Clear properties.
+  for (auto& pair : prop_map_) {
+    if (pair.second.deallocator)
+      (*pair.second.deallocator)(pair.second.value);
+  }
+  prop_map_.clear();
+
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
 }
 
@@ -396,8 +424,36 @@ View::View(ViewManager* manager)
     : manager_(manager),
       id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateView()),
       parent_(NULL),
-      visible_(true),
+      visible_(false),
       drawn_(false) {
+}
+
+int64 View::SetLocalPropertyInternal(const void* key,
+                                     const char* name,
+                                     PropertyDeallocator deallocator,
+                                     int64 value,
+                                     int64 default_value) {
+  int64 old = GetLocalPropertyInternal(key, default_value);
+  if (value == default_value) {
+    prop_map_.erase(key);
+  } else {
+    Value prop_value;
+    prop_value.name = name;
+    prop_value.value = value;
+    prop_value.deallocator = deallocator;
+    prop_map_[key] = prop_value;
+  }
+  FOR_EACH_OBSERVER(ViewObserver, observers_,
+                    OnViewLocalPropertyChanged(this, key, old));
+  return old;
+}
+
+int64 View::GetLocalPropertyInternal(const void* key,
+                                     int64 default_value) const {
+  std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
+  if (iter == prop_map_.end())
+    return default_value;
+  return iter->second.value;
 }
 
 void View::LocalDestroy() {

@@ -6,6 +6,10 @@
     this.receiver_ = receiver;
   }
 
+  {{interface.name}}Proxy.prototype.getConnection$ = function() {
+    return connection.getProxyConnection(this, {{interface.name}});
+  }
+
 {%- for method in interface.methods %}
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
 {%- for parameter in method.parameters -%}
@@ -14,7 +18,19 @@
 ) {
     var params = new {{interface.name}}_{{method.name}}_Params();
 {%- for parameter in method.parameters %}
+{%-   if parameter|is_interface_parameter %}
+    if ({{parameter.name}} instanceof {{parameter.kind|js_type}}.stubClass)
+      params.{{parameter.name}} = {{parameter.name}}.getConnection$().messagePipeHandle;
+    else
+      params.{{parameter.name}} = {{parameter.name}};
+{%-   elif parameter|is_interface_request_parameter %}
+    if ({{parameter.name}} instanceof {{parameter.kind.kind|js_type}}.proxyClass)
+      params.{{parameter.name}} = {{parameter.name}}.getConnection$().messagePipeHandle;
+    else
+      params.{{parameter.name}} = {{parameter.name}};
+{%-   else %}
     params.{{parameter.name}} = {{parameter.name}};
+{%-   endif %}
 {%- endfor %}
 
 {%- if method.response_parameters == None %}
@@ -45,8 +61,25 @@
   };
 {%- endfor %}
 
-  function {{interface.name}}Stub() {
+  function {{interface.name}}Stub(delegate) {
+      this.delegate$ = delegate;
   }
+
+  {{interface.name}}Stub.prototype.getConnection$ = function() {
+    return connection.getStubConnection(this, {{interface.name}});
+  }
+
+{%- for method in interface.methods %}
+{% macro stub_method_parameters() -%}
+{%- for parameter in method.parameters -%}
+  {{parameter.name}}{% if not loop.last %}, {% endif %}
+{%- endfor %}
+{%- endmacro %}
+  {{interface.name}}Stub.prototype.{{method.name|stylize_method}} = function({{stub_method_parameters()}}) {
+    if (this.delegate$.{{method.name|stylize_method}})
+      return this.delegate$.{{method.name|stylize_method}}({{stub_method_parameters()}});
+  }
+{%- endfor %}
 
   {{interface.name}}Stub.prototype.accept = function(message) {
     var reader = new codec.MessageReader(message);
@@ -57,7 +90,7 @@
       var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
       this.{{method.name|stylize_method}}(
 {%- for parameter in method.parameters -%}
-params.{{parameter.name}}{% if not loop.last %}, {% endif %}
+  params.{{parameter.name}}{% if not loop.last %}, {% endif %}
 {%- endfor %});
       return true;
 {%- endif %}
@@ -99,24 +132,6 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
       return Promise.reject(Error("Unhandled message: " + reader.messageName));
     }
   };
-
-  function {{interface.name}}DelegatingStub() {
-  }
-
-  {{interface.name}}DelegatingStub.prototype =
-      Object.create({{interface.name}}Stub.prototype);
-
-  {{interface.name}}DelegatingStub.prototype.callDelegateMethod$ = function(methodName, args) {
-    var method = this.delegate$ && this.delegate$[methodName];
-    return method && method.apply(this.delegate$, args);
-  }
-
-{%- for method in interface.methods %}
-{%-   set method_name = method.name|stylize_method %}
-  {{interface.name}}DelegatingStub.prototype.{{method_name}} = function() {
-    return this.callDelegateMethod$("{{method_name}}", arguments);
-  }
-{%- endfor %}
 
 {#--- Validation #}
 
@@ -171,7 +186,6 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
     name: '{{namespace|replace(".","::")}}::{{interface.name}}',
     proxyClass: {{interface.name}}Proxy,
     stubClass: {{interface.name}}Stub,
-    delegatingStubClass: {{interface.name}}DelegatingStub,
     validateRequest: validate{{interface.name}}Request,
 {%- if interface|has_callbacks %}
     validateResponse: validate{{interface.name}}Response,

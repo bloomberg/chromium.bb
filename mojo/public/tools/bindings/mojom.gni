@@ -47,6 +47,11 @@ template("mojom") {
     "$generator_root/generators/cpp_templates/struct_macros.tmpl",
     "$generator_root/generators/cpp_templates/wrapper_class_declaration.tmpl",
     "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
+    "$generator_root/generators/dart_templates/enum_definition.tmpl",
+    "$generator_root/generators/dart_templates/interface_definition.tmpl",
+    "$generator_root/generators/dart_templates/module.lib.tmpl",
+    "$generator_root/generators/dart_templates/module_definition.tmpl",
+    "$generator_root/generators/dart_templates/struct_definition.tmpl",
     "$generator_root/generators/java_templates/constant_definition.tmpl",
     "$generator_root/generators/java_templates/constants.java.tmpl",
     "$generator_root/generators/java_templates/enum.java.tmpl",
@@ -66,6 +71,7 @@ template("mojom") {
     "$generator_root/generators/python_templates/module_macros.tmpl",
     "$generator_root/generators/python_templates/module.py.tmpl",
     "$generator_root/generators/mojom_cpp_generator.py",
+    "$generator_root/generators/mojom_dart_generator.py",
     "$generator_root/generators/mojom_js_generator.py",
     "$generator_root/generators/mojom_java_generator.py",
     "$generator_root/generators/mojom_python_generator.py",
@@ -87,6 +93,9 @@ template("mojom") {
     "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
     "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
     "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
+  ]
+  generator_dart_outputs = [
+    "{{source_gen_dir}}/{{source_name_part}}.mojom.dart",
   ]
   generator_java_outputs = [
     "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar",
@@ -114,6 +123,7 @@ template("mojom") {
     inputs = generator_sources
     sources = invoker.sources
     outputs = generator_cpp_outputs +
+              generator_dart_outputs +
               generator_java_outputs +
               generator_js_outputs +
               generator_python_outputs

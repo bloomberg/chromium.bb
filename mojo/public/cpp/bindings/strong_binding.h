@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
+#include <assert.h>
+
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
@@ -25,8 +27,8 @@ namespace mojo {
 //
 //   class StronglyBound : public Foo {
 //    public:
-//     explicit StronglyBound(ScopedMessagePipeHandle handle)
-//         : binding_(this, handle.Pass()) {}
+//     explicit StronglyBound(InterfaceRequest<Foo> request)
+//         : binding_(this, request.Pass()) {}
 //
 //     // Foo implementation here
 //
@@ -66,6 +68,27 @@ class StrongBinding : public ErrorHandler {
   }
 
   ~StrongBinding() override {}
+
+  void Bind(
+      ScopedMessagePipeHandle handle,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    assert(!binding_.is_bound());
+    binding_.Bind(handle.Pass(), waiter);
+  }
+
+  void Bind(
+      InterfacePtr<Interface>* ptr,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    assert(!binding_.is_bound());
+    binding_.Bind(ptr, waiter);
+  }
+
+  void Bind(
+      InterfaceRequest<Interface> request,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    assert(!binding_.is_bound());
+    binding_.Bind(request.Pass(), waiter);
+  }
 
   bool WaitForIncomingMethodCall() {
     return binding_.WaitForIncomingMethodCall();

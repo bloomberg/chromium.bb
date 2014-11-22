@@ -128,9 +128,17 @@ def KindFromData(kinds, data, scope):
   elif data.startswith('r:'):
     kind = mojom.InterfaceRequest(KindFromData(kinds, data[2:], scope))
   elif data.startswith('m['):
-    # Isolate the two types from their brackets
-    first_kind = data[2:data.find(']')]
-    second_kind = data[data.rfind('[')+1:data.rfind(']')]
+    # Isolate the two types from their brackets.
+
+    # It is not allowed to use map as key, so there shouldn't be nested ']'s
+    # inside the key type spec.
+    key_end = data.find(']')
+    assert key_end != -1 and key_end < len(data) - 1
+    assert data[key_end+1] == '[' and data[-1] == ']'
+
+    first_kind = data[2:key_end]
+    second_kind = data[key_end+2:-1]
+
     kind = mojom.Map(KindFromData(kinds, first_kind, scope),
                      KindFromData(kinds, second_kind, scope))
   else:

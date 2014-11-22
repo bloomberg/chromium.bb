@@ -108,9 +108,9 @@ class ViewManagerClientImpl : public ViewManager,
   void OnViewDeleted(Id view_id) override;
   void OnViewVisibilityChanged(Id view_id, bool visible) override;
   void OnViewDrawnStateChanged(Id view_id, bool drawn) override;
-  void OnViewPropertyChanged(Id view_id,
-                             const String& name,
-                             Array<uint8_t> new_data) override;
+  void OnViewSharedPropertyChanged(Id view_id,
+                                   const String& name,
+                                   Array<uint8_t> new_data) override;
   void OnViewInputEvent(Id view_id,
                         EventPtr event,
                         const Callback<void()>& callback) override;

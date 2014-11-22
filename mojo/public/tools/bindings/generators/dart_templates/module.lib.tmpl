@@ -1,0 +1,15 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library {{module.name}};
+
+import 'dart:async';
+
+import 'package:mojo/public/dart/core.dart' as core;
+import 'package:mojo/public/dart/bindings.dart' as bindings;
+{%- for import in imports %}
+import 'package:{{import.module.path}}.dart' as {{import.unique_name}};
+{%- endfor %}
+
+{%- include "module_definition.tmpl" %}

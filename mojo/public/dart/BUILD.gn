@@ -54,10 +54,12 @@ copy("bindings") {
     "core.dart",
     "mojo_init.dart",
     "src/buffer.dart",
+    "src/client.dart",
     "src/codec.dart",
     "src/data_pipe.dart",
     "src/handle.dart",
     "src/handle_watcher.dart",
+    "src/interface.dart",
     "src/message_pipe.dart",
     "src/types.dart",
   ]

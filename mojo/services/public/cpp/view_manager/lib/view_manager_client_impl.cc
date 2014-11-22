@@ -341,7 +341,7 @@ void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
     ViewPrivate(view).LocalSetDrawn(drawn);
 }
 
-void ViewManagerClientImpl::OnViewPropertyChanged(
+void ViewManagerClientImpl::OnViewSharedPropertyChanged(
     Id view_id,
     const String& name,
     Array<uint8_t> new_data) {
@@ -354,7 +354,7 @@ void ViewManagerClientImpl::OnViewPropertyChanged(
       data_ptr = &data;
     }
 
-    view->SetProperty(name, data_ptr);
+    view->SetSharedProperty(name, data_ptr);
   }
 }
 

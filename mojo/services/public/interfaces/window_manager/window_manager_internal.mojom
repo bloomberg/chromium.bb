@@ -27,4 +27,11 @@ interface WindowManagerInternalClient {
 
   // Sets the native viewport size.
   SetViewportSize(mojo.Size size);
+
+  // Clones the tree rooted at |view_id|. When the animation completes the clone
+  // is destroyed.
+  // TODO(sky): add actual animation.
+  // TODO(sky): I think this only makes sense when destroying (view is
+  // already visible), should it be named to indicate this?
+  CloneAndAnimate(uint32 view_id);
 };

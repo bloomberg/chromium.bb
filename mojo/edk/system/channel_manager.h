@@ -32,15 +32,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   ChannelManager();
   ~ChannelManager();
 
-  // Gets the ID for a given channel.
-  //
-  // Note: This is currently a static method and thus may be called under
-  // |lock_|. If this is ever made non-static (i.e., made specific to a given
-  // |ChannelManager|), those call sites may have to changed.
-  static ChannelId GetChannelId(const Channel* channel) {
-    return reinterpret_cast<ChannelId>(channel);
-  }
-
   // Adds |channel| to the set of |Channel|s managed by this |ChannelManager|;
   // |channel_thread_task_runner| should be the task runner for |channel|'s
   // creation (a.k.a. I/O) thread. |channel| should either already be
@@ -65,6 +56,15 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   void ShutdownChannel(ChannelId channel_id);
 
  private:
+  // Gets the ID for a given channel.
+  //
+  // Note: This is currently a static method and thus may be called under
+  // |lock_|. If this is ever made non-static (i.e., made specific to a given
+  // |ChannelManager|), those call sites may have to changed.
+  static ChannelId GetChannelId(const Channel* channel) {
+    return reinterpret_cast<ChannelId>(channel);
+  }
+
   // Gets the |ChannelInfo| for the channel specified by the given ID. (This
   // should *not* be called under lock.)
   ChannelInfo GetChannelInfo(ChannelId channel_id);

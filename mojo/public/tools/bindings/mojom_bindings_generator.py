@@ -50,6 +50,9 @@ def LoadGenerators(generators_string):
     if generator_name.lower() == "c++":
       generator_name = os.path.join(script_dir, "generators",
                                     "mojom_cpp_generator.py")
+    if generator_name.lower() == "dart":
+      generator_name = os.path.join(script_dir, "generators",
+                                    "mojom_dart_generator.py")
     elif generator_name.lower() == "javascript":
       generator_name = os.path.join(script_dir, "generators",
                                     "mojom_js_generator.py")
@@ -170,7 +173,7 @@ def main():
                       help="output directory for generated files")
   parser.add_argument("-g", "--generators", dest="generators_string",
                       metavar="GENERATORS",
-                      default="c++,javascript,java,python",
+                      default="c++,dart,javascript,java,python",
                       help="comma-separated list of generators")
   parser.add_argument("--debug_print_intermediate", action="store_true",
                       help="print the intermediate representation")

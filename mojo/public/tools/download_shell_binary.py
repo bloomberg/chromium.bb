@@ -25,6 +25,7 @@ stamp_path = os.path.join(prebuilt_file_path, "VERSION")
 depot_tools_path = find_depot_tools.add_depot_tools_to_path()
 gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
 
+
 def download():
   version_path = os.path.join(current_path, "../VERSION")
   with open(version_path) as version_file:
@@ -38,17 +39,39 @@ def download():
   except IOError:
     pass  # If the stamp file does not exist we need to download a new binary.
 
-  platform = "linux-x64" # TODO: configurate
+  platform = "linux-x64"  # TODO: configurate
   basename = platform + ".zip"
 
   gs_path = "gs://mojo/shell/" + version + "/" + basename
 
   with tempfile.NamedTemporaryFile() as temp_zip_file:
-    subprocess.check_call([gsutil_exe, "--bypass_prodaccess",
-                           "cp", gs_path, temp_zip_file.name])
+    # We're downloading from a public bucket which does not need authentication,
+    # but the user might have busted credential files somewhere such as ~/.boto
+    # that the gsutil script will try (and fail) to use. Setting these
+    # environment variables convinces gsutil not to attempt to use these, but
+    # also generates a useless warning about failing to load the file. We want
+    # to discard this warning but still preserve all output in the case of an
+    # actual failure. So, we run the script and capture all output and then
+    # throw the output away if the script succeeds (return code 0).
+    env = os.environ.copy()
+    env["AWS_CREDENTIAL_FILE"] = ""
+    env["BOTO_CONFIG"] = ""
+    try:
+      subprocess.check_output(
+          [gsutil_exe,
+           "--bypass_prodaccess",
+           "cp",
+           gs_path,
+           temp_zip_file.name],
+          stderr=subprocess.STDOUT,
+          env=env)
+    except subprocess.CalledProcessError as e:
+      print e.output
+      sys.exit(1)
+
     with zipfile.ZipFile(temp_zip_file.name) as z:
       zi = z.getinfo("mojo_shell")
-      mode = zi.external_attr >> 16L
+      mode = zi.external_attr >> 16
       z.extract(zi, prebuilt_file_path)
       os.chmod(os.path.join(prebuilt_file_path, "mojo_shell"), mode)
 
@@ -56,9 +79,10 @@ def download():
     stamp_file.write(version)
   return 0
 
+
 def main():
   parser = argparse.ArgumentParser(description="Download mojo_shell binary "
-      "from google storage")
+                                   "from google storage")
   parser.parse_args()
   return download()
 

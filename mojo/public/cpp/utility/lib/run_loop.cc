@@ -219,7 +219,7 @@ bool RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
       handler->OnHandleError(wait_state.handles[i], result);
       return true;
     }
-    assert(MOJO_RESULT_DEADLINE_EXCEEDED == result);
+    assert(MOJO_RESULT_DEADLINE_EXCEEDED == result || MOJO_RESULT_OK == result);
   }
   return false;
 }

@@ -91,6 +91,30 @@ class MojoResult {
   bool get isDataLoss => (this == DATA_LOSS);
   bool get isBusy => (this == BUSY);
   bool get isShouldWait => (this == SHOULD_WAIT);
+
+  String toString() {
+    switch (value) {
+      case kOk: return "OK";
+      case kCancelled: return "CANCELLED";
+      case kUnknown: return "UNKNOWN";
+      case kInvalidArgument: return "INVALID_ARGUMENT";
+      case kDeadlineExceeded: return "DEADLINE_EXCEEDED";
+      case kNotFound: return "NOT_FOUND";
+      case kAlreadyExists: return "ALREADY_EXISTS";
+      case kPermissionDenied: return "PERMISSION_DENIED";
+      case kResourceExhausted: return "RESOURCE_EXHAUSTED";
+      case kFailedPrecondition: return "FAILED_PRECONDITION";
+      case kAborted: return "ABORTED";
+      case kOutOfRange: return "OUT_OF_RANGE";
+      case kUnimplemented: return "UNIMPLEMENTED";
+      case kInternal: return "INTERNAL";
+      case kUnavailable: return "UNAVAILABLE";
+      case kDataLoss: return "DATA_LOSS";
+      case kBusy: return "BUSY";
+      case kShouldWait: return "SHOULD_WAIT";
+      default: return "<invalid result>";
+    }
+  }
 }
 
 
@@ -100,6 +124,7 @@ class MojoHandleSignals {
   static const int WRITABLE = 1 << 1;
   static const int READWRITE = READABLE | WRITABLE;
 
+  static bool isNone(int mask) => mask == NONE;
   static bool isReadable(int mask) => (mask & READABLE) == READABLE;
   static bool isWritable(int mask) => (mask & WRITABLE) == WRITABLE;
   static bool isReadWrite(int mask) => (mask & READWRITE) == READWRITE;

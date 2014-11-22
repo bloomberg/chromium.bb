@@ -169,6 +169,7 @@
         'embedder/platform_channel_pair_posix_unittest.cc',
         'embedder/simple_platform_shared_buffer_unittest.cc',
         'system/channel_endpoint_id_unittest.cc',
+        'system/channel_manager_unittest.cc',
         'system/channel_unittest.cc',
         'system/core_unittest.cc',
         'system/core_test_base.cc',

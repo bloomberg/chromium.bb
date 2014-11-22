@@ -18,9 +18,9 @@ source_set("view_manager") {
     "view_manager_context.h",
     "view_manager_delegate.h",
     "view_observer.h",
+    "view_property.h",
     "view_tracker.cc",
     "view_tracker.h",
-    "window_manager_delegate.h",
   ]
 
   public_deps = [
@@ -29,6 +29,7 @@ source_set("view_manager") {
   deps = [
     "//base",
     "//mojo/public/c/gles2",
+    "//mojo/public/cpp/application",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/interfaces/geometry",
@@ -41,10 +42,6 @@ source_set("view_manager") {
 
 source_set("common") {
   sources = [
-    "ids.h",
     "types.h",
-  ]
-  public_deps = [
-    "//base",
   ]
 }

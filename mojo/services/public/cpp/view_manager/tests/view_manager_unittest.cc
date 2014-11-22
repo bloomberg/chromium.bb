@@ -63,12 +63,11 @@ class ConnectApplicationLoader : public ApplicationLoader,
   // Overridden from ApplicationLoader:
   void Load(ApplicationManager* manager,
             const GURL& url,
-            scoped_refptr<LoadCallbacks> callbacks) override {
-    ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-    if (!shell_handle.is_valid())
-      return;
-    scoped_ptr<ApplicationImpl> app(new ApplicationImpl(this,
-                                                        shell_handle.Pass()));
+            ScopedMessagePipeHandle shell_handle,
+            LoadCallback callback) override {
+    ASSERT_TRUE(shell_handle.is_valid());
+    scoped_ptr<ApplicationImpl> app(
+        new ApplicationImpl(this, shell_handle.Pass()));
     apps_.push_back(app.release());
   }
 
@@ -277,6 +276,7 @@ class ViewManagerTest : public testing::Test {
   View* CreateViewInParent(View* parent) {
     ViewManager* parent_manager = ViewPrivate(parent).view_manager();
     View* view = View::Create(parent_manager);
+    view->SetVisible(true);
     parent->AddChild(view);
     return view;
   }
@@ -348,6 +348,7 @@ TEST_F(ViewManagerTest, DISABLED_SetUp) {}
 
 TEST_F(ViewManagerTest, DISABLED_Embed) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
   EXPECT_TRUE(NULL != embedded);
@@ -362,8 +363,10 @@ TEST_F(ViewManagerTest, DISABLED_Embed) {
 // TODO(sky): Update client lib to match server.
 TEST_F(ViewManagerTest, DISABLED_EmbeddedDoesntSeeChild) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   View* nested = View::Create(window_manager());
+  nested->SetVisible(true);
   view->AddChild(nested);
 
   ViewManager* embedded = Embed(window_manager(), view);
@@ -376,6 +379,7 @@ TEST_F(ViewManagerTest, DISABLED_EmbeddedDoesntSeeChild) {
 // http://crbug.com/396300
 TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupView) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
 
@@ -406,6 +410,7 @@ TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupView) {
 // are reflected to another.
 TEST_F(ViewManagerTest, DISABLED_SetBounds) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
 
@@ -424,6 +429,7 @@ TEST_F(ViewManagerTest, DISABLED_SetBounds) {
 // connection are refused.
 TEST_F(ViewManagerTest, DISABLED_SetBoundsSecurity) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
 
@@ -444,6 +450,7 @@ TEST_F(ViewManagerTest, DISABLED_SetBoundsSecurity) {
 // Verifies that a view can only be destroyed by the connection that created it.
 TEST_F(ViewManagerTest, DISABLED_DestroySecurity) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
 
@@ -461,8 +468,10 @@ TEST_F(ViewManagerTest, DISABLED_DestroySecurity) {
 
 TEST_F(ViewManagerTest, DISABLED_MultiRoots) {
   View* view1 = View::Create(window_manager());
+  view1->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view1);
   View* view2 = View::Create(window_manager());
+  view2->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view2);
   ViewManager* embedded1 = Embed(window_manager(), view1);
   ViewManager* embedded2 = Embed(window_manager(), view2);
@@ -471,6 +480,7 @@ TEST_F(ViewManagerTest, DISABLED_MultiRoots) {
 
 TEST_F(ViewManagerTest, DISABLED_EmbeddingIdentity) {
   View* view = View::Create(window_manager());
+  view->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view);
   ViewManager* embedded = Embed(window_manager(), view);
   EXPECT_EQ(kWindowManagerURL, embedded->GetEmbedderURL());
@@ -478,13 +488,16 @@ TEST_F(ViewManagerTest, DISABLED_EmbeddingIdentity) {
 
 TEST_F(ViewManagerTest, DISABLED_Reorder) {
   View* view1 = View::Create(window_manager());
+  view1->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view1);
 
   ViewManager* embedded = Embed(window_manager(), view1);
 
   View* view11 = View::Create(embedded);
+  view11->SetVisible(true);
   embedded->GetRoots().front()->AddChild(view11);
   View* view12 = View::Create(embedded);
+  view12->SetVisible(true);
   embedded->GetRoots().front()->AddChild(view12);
 
   View* view1_in_wm = window_manager()->GetViewById(view1->id());
@@ -538,6 +551,7 @@ class VisibilityChangeObserver : public ViewObserver {
 
 TEST_F(ViewManagerTest, DISABLED_Visible) {
   View* view1 = View::Create(window_manager());
+  view1->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view1);
 
   // Embed another app and verify initial state.
@@ -600,6 +614,7 @@ class DrawnChangeObserver : public ViewObserver {
 
 TEST_F(ViewManagerTest, DISABLED_Drawn) {
   View* view1 = View::Create(window_manager());
+  view1->SetVisible(true);
   window_manager()->GetRoots().front()->AddChild(view1);
 
   // Embed another app and verify initial state.
@@ -631,5 +646,8 @@ TEST_F(ViewManagerTest, DISABLED_Drawn) {
 // - focus between two views known to a connection
 // - focus between views unknown to one of the connections.
 // - focus between views unknown to either connection.
+
+// TODO(sky): need test of root being destroyed with existing views. See
+// 434555 for specific case.
 
 }  // namespace mojo

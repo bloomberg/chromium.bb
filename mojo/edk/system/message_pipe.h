@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/system/channel_endpoint_client.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/memory.h"
@@ -34,8 +35,7 @@ class Waiter;
 // |MessagePipe| is the secondary object implementing a message pipe (see the
 // explanatory comment in core.cc). It is typically owned by the dispatcher(s)
 // corresponding to the local endpoints. This class is thread-safe.
-class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
-    : public base::RefCountedThreadSafe<MessagePipe> {
+class MOJO_SYSTEM_IMPL_EXPORT MessagePipe : public ChannelEndpointClient {
  public:
   // Creates a |MessagePipe| with two new |LocalMessagePipeEndpoint|s.
   static MessagePipe* CreateLocalLocal();
@@ -106,38 +106,30 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                     size_t* actual_size,
                     embedder::PlatformHandleVector* platform_handles);
 
-  // Used by |EndSerialize()|. TODO(vtl): Remove this (merge it into
-  // |EndSerialize()|).
-  scoped_refptr<ChannelEndpoint> ConvertLocalToProxy(unsigned port);
-
-  // This is used by |Channel| to enqueue messages (typically to a
-  // |LocalMessagePipeEndpoint|). Unlike |WriteMessage()|, |port| is the
-  // *destination* port.
-  MojoResult EnqueueMessage(unsigned port,
-                            scoped_ptr<MessageInTransit> message);
+  // |ChannelEndpointClient| methods:
+  bool OnReadMessage(unsigned port,
+                     scoped_ptr<MessageInTransit> message) override;
+  void OnDetachFromChannel(unsigned port) override;
 
  private:
   MessagePipe();
+  virtual ~MessagePipe();
 
-  friend class base::RefCountedThreadSafe<MessagePipe>;
-  ~MessagePipe();
-
-  // This is used internally by |WriteMessage()| and by |EnqueueMessage()|.
+  // This is used internally by |WriteMessage()| and by |OnReadMessage()|.
   // |transports| may be non-null only if it's nonempty and |message| has no
   // dispatchers attached.
-  MojoResult EnqueueMessageInternal(
-      unsigned port,
-      scoped_ptr<MessageInTransit> message,
-      std::vector<DispatcherTransport>* transports);
+  MojoResult EnqueueMessage(unsigned port,
+                            scoped_ptr<MessageInTransit> message,
+                            std::vector<DispatcherTransport>* transports);
 
-  // Helper for |EnqueueMessageInternal()|. Must be called with |lock_| held.
+  // Helper for |EnqueueMessage()|. Must be called with |lock_| held.
   MojoResult AttachTransportsNoLock(
       unsigned port,
       MessageInTransit* message,
       std::vector<DispatcherTransport>* transports);
 
-  // Used by |EnqueueMessageInternal()| to handle control messages that are
-  // actually meant for us.
+  // Used by |EnqueueMessage()| to handle control messages that are actually
+  // meant for us.
   MojoResult HandleControlMessage(unsigned port,
                                   scoped_ptr<MessageInTransit> message);
 

@@ -88,7 +88,7 @@ template("mojo_native_application") {
       check_includes = invoker.check_includes
     }
     if (defined(invoker.configs)) {
-      configs = invoker.configs
+      configs += invoker.configs
     }
     if (defined(invoker.data)) {
       data = invoker.data

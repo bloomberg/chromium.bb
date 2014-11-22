@@ -66,7 +66,7 @@ int getEncodedSize(Object typeOrInstance) {
 
 class MojoDecoder {
   ByteData buffer;
-  List<int> handles;
+  List<core.RawMojoHandle> handles;
   int base;
   int next;
 
@@ -151,7 +151,7 @@ class MojoDecoder {
     return new MojoDecoder(buffer, handles, offset);
   }
 
-  int decodeHandle() {
+  core.RawMojoHandle decodeHandle() {
     return handles[readUint32()];
   }
 
@@ -234,7 +234,7 @@ class MojoDecoder {
 
 class MojoEncoder {
   ByteData buffer;
-  List<int> handles;
+  List<core.RawMojoHandle> handles;
   int base;
   int next;
   int extent;
@@ -341,7 +341,7 @@ class MojoEncoder {
     return new MojoEncoder(buffer, handles, pointer, extent);
   }
 
-  void encodeHandle(int handle) {
+  void encodeHandle(core.RawMojoHandle handle) {
     handles.add(handle);
     writeUint32(handles.length - 1);
   }
@@ -456,7 +456,7 @@ const int kMessageIsResponse = 1 << 1;
 
 class Message {
   ByteData buffer;
-  List<int> handles;
+  List<core.RawMojoHandle> handles;
 
   Message(this.buffer, this.handles);
 
@@ -475,12 +475,14 @@ class Message {
 
 class MessageBuilder {
   MojoEncoder encoder;
-  List<int> handles;
+  List<core.RawMojoHandle> handles;
+
+  MessageBuilder._();
 
   MessageBuilder(int name, int payloadSize) {
     int numBytes = kMessageHeaderSize + payloadSize;
     var buffer = new ByteData(numBytes);
-    handles = [];
+    handles = <core.RawMojoHandle>[];
 
     encoder = new MojoEncoder(buffer, handles, 0, kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
@@ -517,20 +519,19 @@ class MessageBuilder {
 
 class MessageWithRequestIDBuilder extends MessageBuilder {
   MessageWithRequestIDBuilder(
-      int name, int payloadSize, int flags, int requestID) {
+      int name, int payloadSize, int requestID, [int flags = 0])
+      : super._() {
     int numBytes = kMessageWithRequestIDHeaderSize + payloadSize;
-    buffer = new ByteData(numBytes);
-    handles = [];
-    base = 0;
+    var buffer = new ByteData(numBytes);
+    handles = <core.RawMojoHandle>[];
 
-    encoder = createEncoder(0, kMessageWithRequestIDHeaderSize);
+    encoder = new MojoEncoder(
+        buffer, handles, 0, kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(3);  // num_fields.
     encoder.writeUint32(name);
     encoder.writeUint32(flags);
     encoder.writeUint64(requestID);
-    base = encoder.next;
-    buffer = encoder.buffer;
   }
 }
 
@@ -564,7 +565,7 @@ class MessageReader {
 
 abstract class MojoType<T> {
   static const int encodedSize = 0;
-  static T decode(MojoDecoder decoder) { return null }
+  static T decode(MojoDecoder decoder) { return null; }
   static void encode(MojoEncoder encoder, T val) {}
 }
 
@@ -704,7 +705,7 @@ class PointerTo {
 
 
 class NullablePointerTo extends PointerTo {
-  static const int encodedSize = PointerTo.encodedSize;
+  NullablePointerTo(Object val) : super(val);
 }
 
 
@@ -725,14 +726,14 @@ class ArrayOf {
 
 
 class NullableArrayOf extends ArrayOf {
-  static const int encodedSize = ArrayOf.encodedSize;
+  NullableArrayOf(Object val, [int length = 0]) : super(val, length);
 }
 
 
-class Handle implements MojoType<int> {
+class Handle implements MojoType<core.RawMojoHandle> {
   static const int encodedSize = 4;
-  static int decode(MojoDecoder decoder) => decoder.decodeHandle();
-  static void encode(MojoEncoder encoder, int val) {
+  static core.RawMojoHandle decode(MojoDecoder decoder) => decoder.decodeHandle();
+  static void encode(MojoEncoder encoder, core.RawMojoHandle val) {
     encoder.encodeHandle(val);
   }
 }

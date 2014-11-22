@@ -4,21 +4,22 @@
 
 define("mojo/public/js/connection", [
   "mojo/public/js/connector",
+  "mojo/public/js/core",
   "mojo/public/js/router",
-], function(connector, router) {
+], function(connector, core, routerModule) {
 
-  function Connection(
-      handle, localFactory, remoteFactory, routerFactory, connectorFactory) {
-    if (routerFactory === undefined)
-      routerFactory = router.Router;
-    this.router_ = new routerFactory(handle, connectorFactory);
-    this.remote = remoteFactory && new remoteFactory(this.router_);
-    this.local = localFactory && new localFactory(this.remote);
-    this.router_.setIncomingReceiver(this.local);
+  function BaseConnection(localStub, remoteProxy, router) {
+    this.router_ = router;
+    this.local = localStub;
+    this.remote = remoteProxy;
+
+    this.router_.setIncomingReceiver(localStub);
+    if (this.remote)
+      this.remote.receiver_ = router;
 
     // Validate incoming messages: remote responses and local requests.
-    var validateRequest = localFactory && localFactory.prototype.validator;
-    var validateResponse = remoteFactory.prototype.validator;
+    var validateRequest = localStub && localStub.validator;
+    var validateResponse = remoteProxy && remoteProxy.validator;
     var payloadValidators = [];
     if (validateRequest)
       payloadValidators.push(validateRequest);
@@ -27,16 +28,27 @@ define("mojo/public/js/connection", [
     this.router_.setPayloadValidators(payloadValidators);
   }
 
-  Connection.prototype.close = function() {
+  BaseConnection.prototype.close = function() {
     this.router_.close();
     this.router_ = null;
     this.local = null;
     this.remote = null;
   };
 
-  Connection.prototype.encounteredError = function() {
+  BaseConnection.prototype.encounteredError = function() {
     return this.router_.encounteredError();
   };
+
+  function Connection(
+      handle, localFactory, remoteFactory, routerFactory, connectorFactory) {
+    var routerClass = routerFactory || routerModule.Router;
+    var router = new routerClass(handle, connectorFactory);
+    var remoteProxy = remoteFactory && new remoteFactory(router);
+    var localStub = localFactory && new localFactory(remoteProxy);
+    BaseConnection.call(this, localStub, remoteProxy, router);
+  }
+
+  Connection.prototype = Object.create(BaseConnection.prototype);
 
   // The TestConnection subclass is only intended to be used in unit tests.
 
@@ -45,14 +57,42 @@ define("mojo/public/js/connection", [
                     handle,
                     localFactory,
                     remoteFactory,
-                    router.TestRouter,
+                    routerModule.TestRouter,
                     connector.TestConnector);
   }
 
   TestConnection.prototype = Object.create(Connection.prototype);
 
+  function createOpenConnection(stub, proxy) {
+    var messagePipe = core.createMessagePipe();
+    // TODO(hansmuller): Check messagePipe.result.
+    var router = new routerModule.Router(messagePipe.handle0);
+    var connection = new BaseConnection(stub, proxy, router);
+    connection.messagePipeHandle = messagePipe.handle1;
+    return connection;
+  }
+
+  function getProxyConnection(proxy, proxyInterface) {
+    if (!proxy.connection_) {
+      var stub = proxyInterface.client && new proxyInterface.client.stubClass;
+      proxy.connection_ = createOpenConnection(stub, proxy);
+    }
+    return proxy.connection_;
+  }
+
+  function getStubConnection(stub, proxyInterface) {
+    if (!stub.connection_) {
+      var proxy = proxyInterface.client && new proxyInterface.client.proxyClass;
+      stub.connection_ = createOpenConnection(stub, proxy);
+    }
+    return stub.connection_;
+  }
+
+
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
+  exports.getProxyConnection = getProxyConnection;
+  exports.getStubConnection = getStubConnection;
   return exports;
 });

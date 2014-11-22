@@ -17,6 +17,7 @@ component("system") {
     "channel.h",
     "channel_endpoint.cc",
     "channel_endpoint.h",
+    "channel_endpoint_client.h",
     "channel_endpoint_id.cc",
     "channel_endpoint_id.h",
     "channel_info.cc",
@@ -103,6 +104,7 @@ test("mojo_system_unittests") {
   sources = [
     "../test/multiprocess_test_helper_unittest.cc",
     "channel_endpoint_id_unittest.cc",
+    "channel_manager_unittest.cc",
     "channel_unittest.cc",
     "core_test_base.cc",
     "core_test_base.h",

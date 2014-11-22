@@ -17,3 +17,7 @@ Future<Isolate> mojoInit() {
   _mojoSystemThunksMake(core.mojoSystemThunksSet);
   return core.MojoHandleWatcher.Start();
 }
+
+void mojoShutdown() {
+  core.MojoHandleWatcher.Stop();
+}

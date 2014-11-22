@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <import src="/mojo/public/sky/codec.sky" as="codec" />
+<import src="/mojo/public/sky/connection.sky" as="connection" />
 <import src="/mojo/public/sky/validator.sky" as="validator" />
 {%- for import in imports %}
 <import src="/{{import.module.path}}.sky" as="{{import.unique_name}}" />

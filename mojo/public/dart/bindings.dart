@@ -4,10 +4,13 @@
 
 library bindings;
 
+import 'core.dart' as core;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:mirrors';
 import 'dart:typed_data';
 
+part 'src/client.dart';
 part 'src/codec.dart';
+part 'src/interface.dart';

@@ -1,0 +1,20 @@
+{#--- Constants #}
+{%-  for constant in module.constants %}
+final {{constant.name}} = {{constant.value|expression_to_text}};
+{%- endfor %}
+
+{#--- Enums #}
+{%- from "enum_definition.tmpl" import enum_def %}
+{%- for enum in enums %}
+{{ enum_def("", enum) }}
+{%-  endfor %}
+
+{#--- Struct definitions #}
+{%  for struct in structs %}
+{%-   include "struct_definition.tmpl" %}
+{%- endfor -%}
+
+{#--- Interface definitions #}
+{%- for interface in interfaces -%}
+{%-   include "interface_definition.tmpl" %}
+{%- endfor %}

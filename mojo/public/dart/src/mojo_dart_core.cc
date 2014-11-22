@@ -76,6 +76,73 @@ static void MojoSystemThunks_Set(Dart_NativeArguments arguments) {
 }
 
 
+struct CloserCallbackPeer {
+  MojoHandle handle;
+};
+
+
+static void MojoHandleCloserCallback(void* isolate_data,
+                                     Dart_WeakPersistentHandle handle,
+                                     void* peer) {
+  CloserCallbackPeer* callback_peer =
+      reinterpret_cast<CloserCallbackPeer*>(peer);
+  if (callback_peer->handle != MOJO_HANDLE_INVALID) {
+    MojoClose(callback_peer->handle);
+  }
+  delete callback_peer;
+}
+
+
+// Setup a weak persistent handle for a Dart MojoHandle that calls MojoClose
+// on the handle when the MojoHandle is GC'd or the VM is going down.
+static void MojoHandle_Register(Dart_NativeArguments arguments) {
+  // An instance of Dart class MojoHandle.
+  Dart_Handle mojo_handle_instance = Dart_GetNativeArgument(arguments, 0);
+  if (!Dart_IsInstance(mojo_handle_instance)) {
+    SetInvalidArgumentReturn(arguments);
+    return;
+  }
+  // TODO(zra): Here, we could check that mojo_handle_instance is really a
+  // MojoHandle instance, but with the Dart API it's not too easy to get a Type
+  // object from the class name outside of the root library. For now, we'll rely
+  // on the existence of the right fields to be sufficient.
+
+  Dart_Handle raw_mojo_handle_instance = Dart_GetField(
+      mojo_handle_instance, Dart_NewStringFromCString("_handle"));
+  if (Dart_IsError(raw_mojo_handle_instance)) {
+    SetInvalidArgumentReturn(arguments);
+    return;
+  }
+
+  Dart_Handle mojo_handle = Dart_GetField(
+      raw_mojo_handle_instance, Dart_NewStringFromCString("h"));
+  if (Dart_IsError(mojo_handle)) {
+    SetInvalidArgumentReturn(arguments);
+    return;
+  }
+
+  int64_t raw_handle = static_cast<int64_t>(MOJO_HANDLE_INVALID);
+  Dart_Handle result = Dart_IntegerToInt64(mojo_handle, &raw_handle);
+  if (Dart_IsError(result)) {
+    SetInvalidArgumentReturn(arguments);
+    return;
+  }
+
+  if (raw_handle == static_cast<int64_t>(MOJO_HANDLE_INVALID)) {
+    SetInvalidArgumentReturn(arguments);
+    return;
+  }
+
+  CloserCallbackPeer* callback_peer = new CloserCallbackPeer();
+  callback_peer->handle = static_cast<MojoHandle>(raw_handle);
+  Dart_NewWeakPersistentHandle(mojo_handle_instance,
+                               reinterpret_cast<void*>(callback_peer),
+                               sizeof(CloserCallbackPeer),
+                               MojoHandleCloserCallback);
+  Dart_SetIntegerReturnValue(arguments, static_cast<int64_t>(MOJO_RESULT_OK));
+}
+
+
 static void MojoHandle_Close(Dart_NativeArguments arguments) {
   int64_t handle;
   CHECK_INTEGER_ARGUMENT(arguments, 0, &handle, InvalidArgument);
@@ -613,8 +680,7 @@ static void MojoHandleWatcher_SendControlData(Dart_NativeArguments arguments) {
   cd.data = data;
   const void* bytes = reinterpret_cast<const void*>(&cd);
   MojoResult res = MojoWriteMessage(
-      control_handle, bytes,  sizeof(cd), NULL, 0, 0);
-
+      control_handle, bytes, sizeof(cd), NULL, 0, 0);
   Dart_SetIntegerReturnValue(arguments, static_cast<int64_t>(res));
 }
 
@@ -647,7 +713,7 @@ static void MojoHandleWatcher_SetControlHandle(Dart_NativeArguments arguments) {
   int64_t control_handle;
   CHECK_INTEGER_ARGUMENT(arguments, 0, &control_handle, InvalidArgument);
 
-  if (mojo_control_handle == MOJO_HANDLE_INVALID) {
+  if (mojo_control_handle == static_cast<int64_t>(MOJO_HANDLE_INVALID)) {
     mojo_control_handle = control_handle;
   }
 
@@ -674,6 +740,7 @@ static void MojoHandleWatcher_GetControlHandle(Dart_NativeArguments arguments) {
   V(MojoMessagePipe_Create)                                                    \
   V(MojoMessagePipe_Write)                                                     \
   V(MojoMessagePipe_Read)                                                      \
+  V(MojoHandle_Register)                                                       \
   V(MojoHandle_WaitMany)                                                       \
   V(MojoHandleWatcher_SendControlData)                                         \
   V(MojoHandleWatcher_RecvControlData)                                         \

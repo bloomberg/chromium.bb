@@ -52,10 +52,18 @@ struct MapSerializer<ScopedHandleBase<H>, H, true> {
   static size_t GetItemSize(const H& item) { return 0; }
 };
 
+// This template must only apply to pointer mojo entity (structs and arrays).
+// This is done by ensuring that WrapperTraits<S>::DataType is a pointer.
 template <typename S>
-struct MapSerializer<S, typename S::Data_*, true> {
+struct MapSerializer<
+    S,
+    typename EnableIf<IsPointer<typename WrapperTraits<S>::DataType>::value,
+                      typename WrapperTraits<S>::DataType>::type,
+    true> {
+  typedef
+      typename RemovePointer<typename WrapperTraits<S>::DataType>::type S_Data;
   static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(internal::StructPointer<typename S::Data_>);
+    return count * sizeof(StructPointer<S_Data>);
   }
   static size_t GetItemSize(const S& item) { return GetSerializedSize_(item); }
 };
@@ -63,7 +71,7 @@ struct MapSerializer<S, typename S::Data_*, true> {
 template <>
 struct MapSerializer<String, String_Data*, false> {
   static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(internal::StringPointer);
+    return count * sizeof(StringPointer);
   }
   static size_t GetItemSize(const String& item) {
     return GetSerializedSize_(item);

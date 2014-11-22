@@ -103,12 +103,6 @@ class MojoHandleWatcher {
         watcher._routeEvent(res);
         // Remove the handle from the list.
         watcher._removeHandle(handle);
-      } else if (res == MojoResult.kFailedPrecondition) {
-        // None of the handles can ever be satisfied, including the control
-        // handle. This probably means we are going down. Clean up and
-        // shutdown.
-        watcher._pruneClosedHandles();
-        watcher._shutdown = true;
       } else {
         // Some handle was closed, but not by us.
         // We have to go through the list and find it.
@@ -159,7 +153,7 @@ class MojoHandleWatcher {
         _close(result[0]);
         break;
       case SHUTDOWN:
-        _shutdown = true;
+        _shutdownHandleWatcher();
         break;
       default:
         throw new Exception("Invalid Command: $command");
@@ -204,7 +198,7 @@ class MojoHandleWatcher {
     }
   }
 
-  void _close(int mojoHandle) {
+  void _close(int mojoHandle, {bool pruning : false}) {
     int idx = _handleIndices[mojoHandle];
     if (idx == null) {
       throw new Exception("Close on a non-existent handle: idx = $idx.");
@@ -215,13 +209,19 @@ class MojoHandleWatcher {
     _tempHandle.h = _handles[idx];
     _tempHandle.close();
     _tempHandle.h = RawMojoHandle.INVALID;
+    if (pruning) {
+      // If this handle is being pruned, notify the application isolate
+      // by sending MojoHandleSignals.NONE.
+      _ports[idx].send(MojoHandleSignals.NONE);
+    }
     _removeHandle(mojoHandle);
   }
 
   void _toggleWrite(int mojoHandle) {
     int idx = _handleIndices[mojoHandle];
     if (idx == null) {
-      throw new Exception("Toggle write on a non-existent handle: idx = $idx.");
+      throw new Exception(
+          "Toggle write on a non-existent handle: $mojoHandle.");
     }
     if (idx == 0) {
       throw new Exception("The control handle (idx = 0) cannot be toggled.");
@@ -240,8 +240,15 @@ class MojoHandleWatcher {
       _tempHandle.h = RawMojoHandle.INVALID;
     }
     for (var h in closed) {
-      _close(h);
+      _close(h, pruning: true);
     }
+  }
+
+  void _shutdownHandleWatcher() {
+    _shutdown = true;
+    _tempHandle.h = _controlHandle;
+    _tempHandle.close();
+    _tempHandle.h = RawMojoHandle.INVALID;
   }
 
   static MojoResult _sendControlData(RawMojoHandle mojoHandle,
@@ -251,14 +258,17 @@ class MojoHandleWatcher {
     if (controlHandle == RawMojoHandle.INVALID) {
       throw new Exception("Found invalid control handle");
     }
+
+    int rawHandle = RawMojoHandle.INVALID;
+    if (mojoHandle != null) {
+      rawHandle = mojoHandle.h;
+    }
     var result = _MojoHandleWatcherNatives.sendControlData(
-        controlHandle, mojoHandle.h, port, data);
+        controlHandle, rawHandle, port, data);
     return new MojoResult(result);
   }
 
   static Future<Isolate> Start() {
-    // 5. Return Future<bool> giving true on success.
-
     // Make a control message pipe,
     MojoMessagePipe pipe = new MojoMessagePipe();
     int consumerHandle = pipe.endpoints[0].handle.h;
@@ -275,7 +285,13 @@ class MojoHandleWatcher {
   }
 
   static void Stop() {
-    _sendControlData(RawMojoHandle.INVALID, null, _encodeCommand(SHUTDOWN));
+    // Send the shutdown command.
+    _sendControlData(null, null, _encodeCommand(SHUTDOWN));
+
+    // Close the control handle.
+    int controlHandle = _MojoHandleWatcherNatives.getControlHandle();
+    var handle = new RawMojoHandle(controlHandle);
+    handle.close();
   }
 
   static MojoResult close(RawMojoHandle mojoHandle) {

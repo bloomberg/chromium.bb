@@ -4,6 +4,8 @@
 
 #include "mojo/edk/js/waiting_callback.h"
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "gin/per_context_data.h"
 #include "mojo/public/cpp/environment/environment.h"
 
@@ -50,7 +52,7 @@ void WaitingCallback::Cancel() {
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback,
                                  gin::Handle<HandleWrapper> handle_wrapper)
-    : wait_id_(0), handle_wrapper_(handle_wrapper.get()) {
+    : wait_id_(0), handle_wrapper_(handle_wrapper.get()), weak_factory_(this) {
   handle_wrapper_->AddCloseObserver(this);
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
@@ -66,10 +68,21 @@ void WaitingCallback::CallOnHandleReady(void* closure, MojoResult result) {
   static_cast<WaitingCallback*>(closure)->OnHandleReady(result);
 }
 
-void WaitingCallback::OnHandleReady(MojoResult result) {
+void WaitingCallback::ClearWaitId() {
   wait_id_ = 0;
   handle_wrapper_->RemoveCloseObserver(this);
-  handle_wrapper_ = NULL;
+  handle_wrapper_ = nullptr;
+}
+
+void WaitingCallback::OnHandleReady(MojoResult result) {
+  ClearWaitId();
+  CallCallback(result);
+}
+
+void WaitingCallback::CallCallback(MojoResult result) {
+  // ClearWaitId must already have been called.
+  DCHECK(!wait_id_);
+  DCHECK(!handle_wrapper_);
 
   if (!runner_)
     return;
@@ -88,7 +101,14 @@ void WaitingCallback::OnHandleReady(MojoResult result) {
 
 void WaitingCallback::OnWillCloseHandle() {
   Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
-  OnHandleReady(MOJO_RESULT_INVALID_ARGUMENT);
+
+  // This may be called from GC, so we can't execute Javascript now, call
+  // ClearWaitId explicitly, and CallCallback asynchronously.
+  ClearWaitId();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WaitingCallback::CallCallback, weak_factory_.GetWeakPtr(),
+                 MOJO_RESULT_INVALID_ARGUMENT));
 }
 
 }  // namespace js

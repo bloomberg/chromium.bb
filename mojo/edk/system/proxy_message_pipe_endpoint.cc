@@ -48,7 +48,7 @@ void ProxyMessagePipeEndpoint::Close() {
 
 void ProxyMessagePipeEndpoint::DetachIfNecessary() {
   if (channel_endpoint_.get()) {
-    channel_endpoint_->DetachFromMessagePipe();
+    channel_endpoint_->DetachFromClient();
     channel_endpoint_ = nullptr;
   }
 }

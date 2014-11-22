@@ -1,0 +1,107 @@
+{%- for method in interface.methods %}
+const int k{{interface.name}}_{{method.name}}_name = {{method.ordinal}};
+{%- endfor %}
+
+
+class {{interface.name}}Client extends bindings.Client {
+  {{interface.name}}Client(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+
+{%- for method in interface.methods %}
+{%- if method.response_parameters == None %}
+  void {{method.name|stylize_method}}(
+{%- for parameter in method.parameters -%}
+    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+{%- endfor -%}
+  ) {
+    assert(isOpen);
+    var params = new {{interface.name}}_{{method.name}}_Params();
+{%- for parameter in method.parameters %}
+    params.{{parameter.name}} = {{parameter.name}};
+{%- endfor %}
+    enqueueMessage({{interface.name}}_{{method.name}}_Params,
+                   k{{interface.name}}_{{method.name}}_name,
+                   params);
+  }
+{% else %}
+  Future<{{interface.name}}_{{method.name}}_ResponseParams> {{method.name|stylize_method}}(
+{%- for parameter in method.parameters -%}
+    {{parameter.kind|dart_decl_type}} {{parameter.name}}{% if not loop.last %}, {% endif %}
+{%- endfor -%}
+  ) {
+    assert(isOpen);
+    var params = new {{interface.name}}_{{method.name}}_Params();
+{%- for parameter in method.parameters %}
+    params.{{parameter.name}} = {{parameter.name}};
+{%- endfor %}
+    return enqueueMessageWithRequestID(
+        {{interface.name}}_{{method.name}}_Params,
+        k{{interface.name}}_{{method.name}}_name,
+        bindings.kMessageExpectsResponse,
+        params);
+  }
+{%- endif %}
+{%- endfor %}
+
+  void handleResponse(bindings.MessageReader reader) {
+    switch (reader.name) {
+{%- for method in interface.methods %}
+{%- if method.response_parameters != None %}
+      case k{{interface.name}}_{{method.name}}_name:
+        var r = reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
+        Completer c = completerQueue.removeAt(0);
+        c.complete(r);
+        break;
+{%- endif %}
+{%- endfor %}
+      default:
+        throw new Exception("Unexpected message name");
+        break;
+    }
+  }
+}
+
+
+class {{interface.name}}Interface extends bindings.Interface {
+  {{interface.name}}Interface(core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+
+  bindings.Message handleMessage(bindings.MessageReader reader,
+                                 Function messageHandler) {
+    switch (reader.name) {
+{%- for method in interface.methods %}
+      case k{{interface.name}}_{{method.name}}_name:
+        var params = reader.decodeStruct({{interface.name}}_{{method.name}}_Params);
+{%- if method.response_parameters == None %}
+        messageHandler(params);
+{%- else %}
+        var response = messageHandler(params);
+        return buildResponseWithID(
+            {{interface.name}}_{{method.name}}_ResponseParams,
+            k{{interface.name}}_{{method.name}}_name,
+            bindings.kMessageIsResponse,
+            response);
+{%- endif %}
+        break;
+{%- endfor %}
+      default:
+        throw new Exception("Unexpected message name");
+        break;
+    }
+    return null;
+  }
+}
+
+
+{#--- TODO(zra): Validation #}
+
+
+{#--- Interface Constants #}
+{% for constant in interface.constants %}
+final {{constant.name}} = {{constant.value|expression_to_text}};
+{%-   endfor %}
+
+
+{#--- Interface Enums #}
+{%- from "enum_definition.tmpl" import enum_def -%}
+{%- for enum in interface.enums %}
+  {{ enum_def("", enum) }}
+{%-  endfor %}

@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_TYPES_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_TYPES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.

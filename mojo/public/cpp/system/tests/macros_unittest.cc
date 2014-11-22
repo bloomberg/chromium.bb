@@ -67,6 +67,8 @@ static_assert(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
 
 TEST(MacrosCppTest, ArraySize) {
   double local_array[4] = {6.7, 7.8, 8.9, 9.0};
+  // MSVS considers this local variable unused since MOJO_ARRAYSIZE only takes
+  // the size of the type of the local and not the values itself.
   MOJO_ALLOW_UNUSED_LOCAL(local_array);
   EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
 }

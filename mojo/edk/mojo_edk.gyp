@@ -54,6 +54,7 @@
         'system/channel.h',
         'system/channel_endpoint.cc',
         'system/channel_endpoint.h',
+        'system/channel_endpoint_client.h',
         'system/channel_endpoint_id.cc',
         'system/channel_endpoint_id.h',
         'system/channel_info.cc',

@@ -136,4 +136,9 @@ struct MapValueTypes {
   map<string, array<string, 2>> f3;
   map<string, array<array<string, 2>?>> f4;
   map<string, array<array<string, 2>, 1>> f5;
+  map<string, Rect?> f6;
+  // TODO(hansmuller, yzshen): Uncomment these once the JavaScript bindings
+  // generator is fixed.
+  // map<string, map<string, string>> f7;
+  // map<string, array<map<string, string>>> f8;
 };
