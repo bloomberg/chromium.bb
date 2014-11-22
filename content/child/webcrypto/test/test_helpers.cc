@@ -690,6 +690,27 @@ std::vector<uint8_t> GetKeyDataFromJsonTestCase(
   return GetBytesFromHexString(test, "key");
 }
 
+blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
+    const base::DictionaryValue* dict,
+    const char* property_name) {
+  std::string curve_str;
+  if (!dict->GetString(property_name, &curve_str)) {
+    ADD_FAILURE() << "Missing " << property_name << " parameter";
+    return blink::WebCryptoNamedCurveP384;
+  }
+
+  if (curve_str == "P-256")
+    return blink::WebCryptoNamedCurveP256;
+  if (curve_str == "P-384")
+    return blink::WebCryptoNamedCurveP384;
+  if (curve_str == "P-521")
+    return blink::WebCryptoNamedCurveP521;
+  else
+    ADD_FAILURE() << "Unrecognized curve name: " << curve_str;
+
+  return blink::WebCryptoNamedCurveP384;
+}
+
 }  // namespace webcrypto
 
 }  // namesapce content

@@ -200,6 +200,12 @@ std::vector<uint8_t> GetKeyDataFromJsonTestCase(
     const base::DictionaryValue* test,
     blink::WebCryptoKeyFormat key_format);
 
+// Reads a named curve string from a JSON test case, and returns it as a
+// WebCryptoNamedCurve.
+blink::WebCryptoNamedCurve GetCurveNameFromDictionary(
+    const base::DictionaryValue* dict,
+    const char* property_name);
+
 }  // namespace webcrypto
 
 }  // namesapce content
