@@ -298,7 +298,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetBoolean("ext", false);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   dict.Set("key_ops", new base::ListValue);  // Takes ownership.
 
   EXPECT_EQ(
@@ -335,7 +335,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::Success(),
@@ -361,7 +361,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);  // Takes ownership.
 
@@ -407,7 +407,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkDuplicateKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   // key_ops will be owned by |dict|.
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);
@@ -428,7 +428,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkDuplicateUnrecognizedKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   // key_ops will be owned by |dict|.
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);
@@ -449,7 +449,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);  // Takes ownership.
 
@@ -469,7 +469,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   // Test JWK composite use 'enc' usage
   dict.SetString("alg", "A128CBC");
@@ -523,7 +523,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkIncorrectAlg) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("alg", "A127CBC");  // Not valid.
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::ErrorJwkAlgorithmInconsistent(),
@@ -540,7 +540,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInvalidKty) {
 
   base::DictionaryValue dict;
   dict.SetString("kty", "foo");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   EXPECT_EQ(
       Status::ErrorJwkUnexpectedKty("oct"),
       ImportKeyJwkFromDict(dict,
@@ -555,7 +555,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkMissingKty) {
   blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   EXPECT_EQ(
       Status::ErrorJwkMemberMissing("kty"),
       ImportKeyJwkFromDict(dict,
@@ -571,7 +571,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKtyWrongType) {
 
   base::DictionaryValue dict;
   dict.SetDouble("kty", 0.1);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::ErrorJwkMemberWrongType("kty", "string"),
@@ -589,7 +589,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedUse) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("use", "foo");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::ErrorJwkUnrecognizedUse(),
@@ -607,7 +607,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUseWrongType) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetBoolean("use", true);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::ErrorJwkMemberWrongType("use", "string"),
@@ -625,7 +625,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkExtWrongType) {
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetInteger("ext", 0);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   EXPECT_EQ(
       Status::ErrorJwkMemberWrongType("ext", "boolean"),
@@ -642,7 +642,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsWrongType) {
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   dict.SetBoolean("key_ops", true);
 
   EXPECT_EQ(
@@ -661,7 +661,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   base::ListValue* key_ops = new base::ListValue;
   // Note: the following call makes dict assume ownership of key_ops.
@@ -688,7 +688,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedKeyOps) {
   dict.SetString("alg", "A128CBC");
   dict.SetString("use", "enc");
   dict.SetBoolean("ext", false);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);
@@ -712,7 +712,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
   dict.SetString("alg", "A128CBC");
   dict.SetString("use", "enc");
   dict.SetBoolean("ext", false);
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);

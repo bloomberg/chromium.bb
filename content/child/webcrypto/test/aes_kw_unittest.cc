@@ -38,7 +38,7 @@ TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);  // Takes ownership.
 
@@ -520,11 +520,10 @@ TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
                       &wrapping_key));
 
   // The JWK plain text is:
-  //   {   "kty": "oct","alg": "HS256","k": "GADWrMRHwQfoNaXU5fZvTg=="}
+  //   {"kty":"oct","alg":"HS256","k":"GADWrMRHwQfoNaXU5fZvTg"}
   const char* kWrappedJwk =
-      "0AA245F17064FFB2A7A094436A39BEBFC962C627303D1327EA750CE9F917688C2782A943"
-      "7AE7586547AC490E8AE7D5B02D63868D5C3BB57D36C4C8C5BF3962ACEC6F42E767E5706"
-      "4";
+      "C2B7F19A32EE31372CD40C9C969B8CD67553E5AEA7FD1144874584E46ABCD79FDC308848"
+      "B2DD8BD36A2D61062B9C5B8B499B8D6EF8EB320D87A614952B4EE771";
 
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);

@@ -179,7 +179,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);  // Takes ownership.
 
@@ -213,7 +213,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops = new base::ListValue;
   dict.Set("key_ops", key_ops);  // Takes ownership.
 
@@ -236,7 +236,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkUseSig) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
-  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   dict.SetString("use", "sig");
   EXPECT_EQ(Status::Success(),

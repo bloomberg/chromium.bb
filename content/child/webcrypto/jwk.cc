@@ -681,8 +681,11 @@ const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
   }
 }
 
-// TODO(eroman): This accepts invalid inputs. http://crbug.com/378034
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
+  // The JSON web signature spec specifically says that padding is omitted.
+  if (input.find_first_of("+/=") != std::string::npos)
+    return false;
+
   std::string base64_encoded_text(input);
   std::replace(
       base64_encoded_text.begin(), base64_encoded_text.end(), '-', '+');
