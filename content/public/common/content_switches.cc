@@ -255,6 +255,9 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 // Disables SVG 1.1 DOM.
 const char kDisableSVG1DOM[]                = "disable-svg1dom";
 
+// Disable experimental text blob rendering.
+const char kDisableTextBlobs[]              = "disable-text-blobs";
+
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
@@ -462,9 +465,6 @@ const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
-
-// Enable experimental text blob rendering.
-const char kEnableTextBlobs[]               = "enable-text-blobs";
 
 // Enabled threaded compositing for layout tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
