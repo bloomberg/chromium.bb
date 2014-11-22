@@ -203,7 +203,8 @@ binding_key(struct weston_keyboard_grab *grab,
 				keyboard->grab = &keyboard->input_method_grab;
 			free(b);
 		}
-	} else if (!wl_list_empty(&keyboard->focus_resource_list)) {
+	}
+	if (!wl_list_empty(&keyboard->focus_resource_list)) {
 		serial = wl_display_next_serial(display);
 		wl_resource_for_each(resource, &keyboard->focus_resource_list) {
 			wl_keyboard_send_key(resource,
@@ -245,7 +246,8 @@ static const struct weston_keyboard_grab_interface binding_grab = {
 };
 
 static void
-install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key)
+install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key,
+                     struct weston_surface *focus)
 {
 	struct binding_keyboard_grab *grab;
 
@@ -253,6 +255,19 @@ install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key)
 	grab->key = key;
 	grab->grab.interface = &binding_grab;
 	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
+
+	/* Notify the surface which had the focus before this binding
+	 * triggered that we stole a keypress from under it, by forcing
+	 * a wl_keyboard leave/enter pair. The enter event will contain
+	 * the pressed key in the keys array, so the client will know
+	 * the exact state of the keyboard.
+	 * If the old focus surface is different than the new one it
+	 * means it was changed in the binding handler, so it received
+	 * the enter event already. */
+	if (focus && seat->keyboard->focus == focus) {
+		weston_keyboard_set_focus(seat->keyboard, NULL);
+		weston_keyboard_set_focus(seat->keyboard, focus);
+	}
 }
 
 WL_EXPORT void
@@ -262,6 +277,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  enum wl_keyboard_key_state state)
 {
 	struct weston_binding *b, *tmp;
+	struct weston_surface *focus;
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
 		return;
@@ -273,6 +289,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 	wl_list_for_each_safe(b, tmp, &compositor->key_binding_list, link) {
 		if (b->key == key && b->modifier == seat->modifier_state) {
 			weston_key_binding_handler_t handler = b->handler;
+			focus = seat->keyboard->focus;
 			handler(seat, time, key, b->data);
 
 			/* If this was a key binding and it didn't
@@ -280,7 +297,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 			 * swallow the key release. */
 			if (seat->keyboard->grab ==
 			    &seat->keyboard->default_grab)
-				install_binding_grab(seat, time, key);
+				install_binding_grab(seat, time, key, focus);
 		}
 	}
 }

@@ -753,14 +753,13 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 	wl_signal_emit(&keyboard->focus_signal, keyboard);
 }
 
+/* Users of this function must manually manage the keyboard focus */
 WL_EXPORT void
 weston_keyboard_start_grab(struct weston_keyboard *keyboard,
 			   struct weston_keyboard_grab *grab)
 {
 	keyboard->grab = grab;
 	grab->keyboard = keyboard;
-
-	/* XXX focus? */
 }
 
 WL_EXPORT void
