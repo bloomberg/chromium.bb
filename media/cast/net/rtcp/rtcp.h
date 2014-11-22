@@ -38,14 +38,12 @@ typedef std::pair<uint32, base::TimeTicks> RtcpSendTimePair;
 typedef std::map<uint32, base::TimeTicks> RtcpSendTimeMap;
 typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
 
-class RtpReceiverStatistics {
- public:
-  virtual void GetStatistics(uint8* fraction_lost,
-                             uint32* cumulative_lost,  // 24 bits valid.
-                             uint32* extended_high_sequence_number,
-                             uint32* jitter) = 0;
-
-  virtual ~RtpReceiverStatistics() {}
+struct RtpReceiverStatistics {
+  RtpReceiverStatistics();
+  uint8 fraction_lost;
+  uint32 cumulative_lost;  // 24 bits valid.
+  uint32 extended_high_sequence_number;
+  uint32 jitter;
 };
 
 // TODO(hclam): This should be renamed to RtcpSession.

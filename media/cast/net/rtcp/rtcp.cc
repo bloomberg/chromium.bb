@@ -53,6 +53,12 @@ std::pair<uint64, uint64> GetReceiverEventKey(
 
 }  // namespace
 
+RtpReceiverStatistics::RtpReceiverStatistics() :
+    fraction_lost(0),
+    cumulative_lost(0),
+    extended_high_sequence_number(0),
+    jitter(0) {
+}
 
 Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
            const RtcpRttCallback& rtt_callback,
@@ -209,10 +215,11 @@ void Rtcp::SendRtcpFromRtpReceiver(
   if (rtp_receiver_statistics) {
     report_block.remote_ssrc = 0;            // Not needed to set send side.
     report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
-    rtp_receiver_statistics->GetStatistics(
-        &report_block.fraction_lost, &report_block.cumulative_lost,
-        &report_block.extended_high_sequence_number, &report_block.jitter);
-
+    report_block.fraction_lost = rtp_receiver_statistics->fraction_lost;
+    report_block.cumulative_lost = rtp_receiver_statistics->cumulative_lost;
+    report_block.extended_high_sequence_number =
+        rtp_receiver_statistics->extended_high_sequence_number;
+    report_block.jitter = rtp_receiver_statistics->jitter;
     report_block.last_sr = last_report_truncated_ntp_;
     if (!time_last_report_received_.is_null()) {
       uint32 delay_seconds = 0;

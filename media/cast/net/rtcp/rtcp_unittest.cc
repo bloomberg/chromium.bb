@@ -55,25 +55,6 @@ class FakeRtcpTransport : public PacedPacketSender {
   DISALLOW_COPY_AND_ASSIGN(FakeRtcpTransport);
 };
 
-class FakeReceiverStats : public RtpReceiverStatistics {
- public:
-  FakeReceiverStats() {}
-  ~FakeReceiverStats() override {}
-
-  void GetStatistics(uint8* fraction_lost,
-                     uint32* cumulative_lost,
-                     uint32* extended_high_sequence_number,
-                     uint32* jitter) override {
-    *fraction_lost = 0;
-    *cumulative_lost = 0;
-    *extended_high_sequence_number = 0;
-    *jitter = 0;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeReceiverStats);
-};
-
 class MockFrameSender {
  public:
   MockFrameSender() {}
@@ -128,7 +109,6 @@ class RtcpTest : public ::testing::Test {
   MockFrameSender mock_frame_sender_;
   Rtcp rtcp_for_sender_;
   Rtcp rtcp_for_receiver_;
-  FakeReceiverStats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpTest);
 };
@@ -198,8 +178,9 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
 #endif
 
     // Receiver --> Sender
+    RtpReceiverStatistics stats;
     rtcp_for_receiver_.SendRtcpFromRtpReceiver(
-        NULL, base::TimeDelta(), NULL, &stats_);
+        NULL, base::TimeDelta(), NULL, &stats);
     expected_rtt_according_to_sender = one_way_trip_time * 2;
     EXPECT_EQ(expected_rtt_according_to_sender,
               rtcp_for_sender_.current_round_trip_time());

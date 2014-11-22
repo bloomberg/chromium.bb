@@ -22,15 +22,11 @@ ReceiverStats::ReceiverStats(base::TickClock* clock)
       interval_number_packets_(0),
       interval_wrap_count_(0) {}
 
-ReceiverStats::~ReceiverStats() {}
-
-void ReceiverStats::GetStatistics(uint8* fraction_lost,
-                                  uint32* cumulative_lost,
-                                  uint32* extended_high_sequence_number,
-                                  uint32* jitter) {
+RtpReceiverStatistics ReceiverStats::GetStatistics() {
+  RtpReceiverStatistics ret;
   // Compute losses.
   if (interval_number_packets_ == 0) {
-    *fraction_lost = 0;
+    ret.fraction_lost = 0;
   } else {
     int diff = 0;
     if (interval_wrap_count_ == 0) {
@@ -42,36 +38,38 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
     }
 
     if (diff < 1) {
-      *fraction_lost = 0;
+      ret.fraction_lost = 0;
     } else {
       float tmp_ratio =
           (1 - static_cast<float>(interval_number_packets_) / abs(diff));
-      *fraction_lost = static_cast<uint8>(256 * tmp_ratio);
+      ret.fraction_lost = static_cast<uint8>(256 * tmp_ratio);
     }
   }
 
   int expected_packets_num = max_sequence_number_ - min_sequence_number_ + 1;
   if (total_number_packets_ == 0) {
-    *cumulative_lost = 0;
+    ret.cumulative_lost = 0;
   } else if (sequence_number_cycles_ == 0) {
-    *cumulative_lost = expected_packets_num - total_number_packets_;
+    ret.cumulative_lost = expected_packets_num - total_number_packets_;
   } else {
-    *cumulative_lost =
+    ret.cumulative_lost =
         kMaxSequenceNumber * (sequence_number_cycles_ - 1) +
         (expected_packets_num - total_number_packets_ + kMaxSequenceNumber);
   }
 
   // Extended high sequence number consists of the highest seq number and the
   // number of cycles (wrap).
-  *extended_high_sequence_number =
+  ret.extended_high_sequence_number =
       (sequence_number_cycles_ << 16) + max_sequence_number_;
 
-  *jitter = static_cast<uint32>(std::abs(jitter_.InMillisecondsRoundedUp()));
+  ret.jitter = static_cast<uint32>(std::abs(jitter_.InMillisecondsRoundedUp()));
 
   // Reset interval values.
   interval_min_sequence_number_ = 0;
   interval_number_packets_ = 0;
   interval_wrap_count_ = 0;
+
+  return ret;
 }
 
 void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {

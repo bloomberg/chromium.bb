@@ -336,7 +336,8 @@ void FrameReceiver::ScheduleNextRtcpReport() {
 
 void FrameReceiver::SendNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_.SendRtcpFromRtpReceiver(NULL, base::TimeDelta(), NULL, &stats_);
+  RtpReceiverStatistics stats = stats_.GetStatistics();
+  rtcp_.SendRtcpFromRtpReceiver(NULL, base::TimeDelta(), NULL, &stats);
   ScheduleNextRtcpReport();
 }
 

@@ -13,15 +13,11 @@
 namespace media {
 namespace cast {
 
-class ReceiverStats : public RtpReceiverStatistics {
+class ReceiverStats {
  public:
   explicit ReceiverStats(base::TickClock* clock);
-  ~ReceiverStats() override;
 
-  void GetStatistics(uint8* fraction_lost,
-                     uint32* cumulative_lost,  // 24 bits valid.
-                     uint32* extended_high_sequence_number,
-                     uint32* jitter) override;
+  RtpReceiverStatistics GetStatistics();
   void UpdateStatistics(const RtpCastHeader& header);
 
  private:
