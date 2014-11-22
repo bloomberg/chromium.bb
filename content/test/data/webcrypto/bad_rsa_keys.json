@@ -5,7 +5,7 @@
 [
 
   // This is a valid key (ValidKey). It forms the basis for later manipulations
-  // so its validity is tested separately.
+  // so its validity is tested separatelty.
   {
     "key_format": "jwk",
     "key": {
@@ -250,61 +250,5 @@
     "key_format": "spki",
     "key": "30819F300D06092A864886F70D010101050003818D0030818902818100A56E4A0E701017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD991D8C51056FFEDB162B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5CD9508096D5B2B8B6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2D3F0CB35F29280E1386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A2137020301000100000000",
     "error": "DataError"
-  },
-
-  // Base64 padding was added to the "d" member (==).
-  {
-    "key_format": "jwk",
-    "key": {
-       "alg": "RS256",
-       "d": "ZmJJJ3PBfirgPEOb844fI_1_zXn3A09X9fkk-65xeTNo3JeigTPpuB54FC_GXUmqiXLVx5gynO6cwl9wjxVKYQ==",
-       "dp": "DOUuUiDhtjpnCuIjcGRWhQYok8NeUO5XV1Uwx1-DxtU",
-       "dq": "mKOBL1e74J8OuGtW1kc2-s4VEP5Eeiwe__TAeBm-roE",
-       "e": "AQAB",
-       "kty": "RSA",
-       "n": "tFJAFt_UiJsHlRavDgOxOnYKTHkV-cF1aTDtkzNg6WYt9geaPbAvFnR3FVO0BFsl8tzPzMOTkI_kbOfCfAw3FQ",
-       "p": "7kMQn01JVhyHM7B85hLUuNBDsXiboMc4Di81qmxX7r0",
-       "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
-       "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
-    },
-    "error": "DataError: The JWK property \"d\" could not be base64 decoded"
-  },
-
-  // A '/' was used in place of '_' in the "n" member. While this is valid for
-  // Base64, it is now for JWK's encoding scheme.
-  {
-    "key_format": "jwk",
-    "key": {
-       "alg": "RS256",
-       "d": "ZmJJJ3PBfirgPEOb844fI_1_zXn3A09X9fkk-65xeTNo3JeigTPpuB54FC_GXUmqiXLVx5gynO6cwl9wjxVKYQ",
-       "dp": "DOUuUiDhtjpnCuIjcGRWhQYok8NeUO5XV1Uwx1-DxtU",
-       "dq": "mKOBL1e74J8OuGtW1kc2-s4VEP5Eeiwe__TAeBm-roE",
-       "e": "AQAB",
-       "kty": "RSA",
-       "n": "tFJAFt_UiJsHlRavDgOxOnYKTHkV-cF1aTDtkzNg6WYt9geaPbAvFnR3FVO0BFsl8tzPzMOTkI/kbOfCfAw3FQ",
-       "p": "7kMQn01JVhyHM7B85hLUuNBDsXiboMc4Di81qmxX7r0",
-       "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
-       "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
-    },
-    "error": "DataError: The JWK property \"n\" could not be base64 decoded"
-  },
-
-  // A '+' was used in place of '-' in the "dq" member. While this is valid for
-  // Base64, it is now for JWK's encoding scheme.
-  {
-    "key_format": "jwk",
-    "key": {
-       "alg": "RS256",
-       "d": "ZmJJJ3PBfirgPEOb844fI_1_zXn3A09X9fkk-65xeTNo3JeigTPpuB54FC_GXUmqiXLVx5gynO6cwl9wjxVKYQ",
-       "dp": "DOUuUiDhtjpnCuIjcGRWhQYok8NeUO5XV1Uwx1-DxtU",
-       "dq": "mKOBL1e74J8OuGtW1kc2+s4VEP5Eeiwe__TAeBm-roE",
-       "e": "AQAB",
-       "kty": "RSA",
-       "n": "tFJAFt_UiJsHlRavDgOxOnYKTHkV-cF1aTDtkzNg6WYt9geaPbAvFnR3FVO0BFsl8tzPzMOTkI_kbOfCfAw3FQ",
-       "p": "7kMQn01JVhyHM7B85hLUuNBDsXiboMc4Di81qmxX7r0",
-       "q": "wb7rEiGxG4CrybVYns9voNQM2NPCuCEgWPLA_vCkuzk",
-       "qi": "6rrPQ4YaOLNGtG7TrLXUR_FSWpOFSUveHTHbFQU6iNU"
-    },
-    "error": "DataError: The JWK property \"dq\" could not be base64 decoded"
   }
 ]
