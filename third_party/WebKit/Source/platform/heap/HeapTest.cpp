@@ -805,7 +805,7 @@ public:
     static int s_destructorCalls;
 
 private:
-    static const size_t s_length = 1024*1024;
+    static const size_t s_length = 1024 * 1024;
     LargeObject()
     {
         m_intWrapper = IntWrapper::create(23);
@@ -1433,6 +1433,8 @@ public:
             *m_wrapper = IntWrapper::create(42);
         for (int i = 0; i < 512; ++i)
             new OneKiloByteObject();
+        for (int i = 0; i < 32; ++i)
+            LargeObject::create();
     }
 
     void trace(Visitor*) { }
@@ -3799,20 +3801,24 @@ TEST(HeapTest, AllocationDuringFinalization)
     clearOutOldGarbage();
     IntWrapper::s_destructorCalls = 0;
     OneKiloByteObject::s_destructorCalls = 0;
+    LargeObject::s_destructorCalls = 0;
 
     Persistent<IntWrapper> wrapper;
     new FinalizationAllocator(&wrapper);
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(0, OneKiloByteObject::s_destructorCalls);
+    EXPECT_EQ(0, LargeObject::s_destructorCalls);
     // Check that the wrapper allocated during finalization is not
     // swept away and zapped later in the same sweeping phase.
     EXPECT_EQ(42, wrapper->value());
 
     wrapper.clear();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(10, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(42, IntWrapper::s_destructorCalls);
     EXPECT_EQ(512, OneKiloByteObject::s_destructorCalls);
+    EXPECT_EQ(32, LargeObject::s_destructorCalls);
 }
 
 class SimpleClassWithDestructor {

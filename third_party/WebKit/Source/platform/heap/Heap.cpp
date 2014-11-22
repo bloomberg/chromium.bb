@@ -645,6 +645,8 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_firstLargeHeapObject(0)
     , m_firstPageAllocatedDuringSweeping(0)
     , m_lastPageAllocatedDuringSweeping(0)
+    , m_firstLargeHeapObjectAllocatedDuringSweeping(0)
+    , m_lastLargeHeapObjectAllocatedDuringSweeping(0)
     , m_threadState(state)
     , m_index(index)
     , m_numberOfNormalPages(0)
@@ -771,6 +773,10 @@ BaseHeapPage* ThreadHeap<Header>::heapPageFromAddress(Address address)
         // Check that large pages are blinkPageSize aligned (modulo the
         // osPageSize for the guard page).
         ASSERT(reinterpret_cast<Address>(current) - osPageSize() == roundToBlinkPageStart(reinterpret_cast<Address>(current)));
+        if (current->contains(address))
+            return current;
+    }
+    for (LargeHeapObject<Header>* current = m_firstLargeHeapObjectAllocatedDuringSweeping; current; current = current->next()) {
         if (current->contains(address))
             return current;
     }
@@ -1053,7 +1059,18 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     // Poison the object header and allocationGranularity bytes after the object
     ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
     ASAN_POISON_MEMORY_REGION(largeObject->address() + largeObject->size(), allocationGranularity);
-    largeObject->link(&m_firstLargeHeapObject);
+
+    // Use a separate list for large objects allocated during sweeping to make
+    // sure that we do not accidentally sweep objects that have been
+    // allocated during sweeping.
+    if (m_threadState->isSweepInProgress()) {
+        if (!m_lastLargeHeapObjectAllocatedDuringSweeping)
+            m_lastLargeHeapObjectAllocatedDuringSweeping = largeObject;
+        largeObject->link(&m_firstLargeHeapObjectAllocatedDuringSweeping);
+    } else {
+        largeObject->link(&m_firstLargeHeapObject);
+    }
+
     Heap::increaseAllocatedSpace(largeObject->size());
     Heap::increaseAllocatedObjectSize(largeObject->size());
     return result;
@@ -1320,7 +1337,7 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
         }
     }
     HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this, gcInfo);
-    Heap::increaseAllocatedSpace(blinkPageSize);
+
     // Use a separate list for pages allocated during sweeping to make
     // sure that we do not accidentally sweep objects that have been
     // allocated during sweeping.
@@ -1331,6 +1348,8 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
     } else {
         page->link(&m_firstPage);
     }
+
+    Heap::increaseAllocatedSpace(blinkPageSize);
     ++m_numberOfNormalPages;
     addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
 }
@@ -1361,6 +1380,7 @@ template<typename Header>
 size_t ThreadHeap<Header>::objectPayloadSizeForTesting()
 {
     ASSERT(!m_firstPageAllocatedDuringSweeping);
+    ASSERT(!m_firstLargeHeapObjectAllocatedDuringSweeping);
     size_t objectPayloadSize = 0;
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
         objectPayloadSize += page->objectPayloadSizeForTesting();
@@ -1443,6 +1463,12 @@ void ThreadHeap<Header>::postSweepProcessing()
         m_firstPage = m_firstPageAllocatedDuringSweeping;
         m_lastPageAllocatedDuringSweeping = 0;
         m_firstPageAllocatedDuringSweeping = 0;
+    }
+    if (m_firstLargeHeapObjectAllocatedDuringSweeping) {
+        m_lastLargeHeapObjectAllocatedDuringSweeping->m_next = m_firstLargeHeapObject;
+        m_firstLargeHeapObject = m_firstLargeHeapObjectAllocatedDuringSweeping;
+        m_lastLargeHeapObjectAllocatedDuringSweeping = 0;
+        m_firstLargeHeapObjectAllocatedDuringSweeping = 0;
     }
 }
 

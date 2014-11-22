@@ -836,6 +836,9 @@ private:
     HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
     HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
 
+    LargeHeapObject<Header>* m_firstLargeHeapObjectAllocatedDuringSweeping;
+    LargeHeapObject<Header>* m_lastLargeHeapObjectAllocatedDuringSweeping;
+
     ThreadState* m_threadState;
 
     FreeList<Header> m_freeList;
