@@ -263,8 +263,10 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
     for (int j = 0; j < 16; ++j) {
       ASSERT_EQ(Status::Success(),
                 GenerateSecretKey(
-                    CreateAesCbcKeyGenAlgorithm(kKeyLength[key_length_i]), true,
-                    blink::WebCryptoKeyUsageEncrypt, &key));
+                    CreateAesCbcKeyGenAlgorithm(kKeyLength[key_length_i]),
+                    true,
+                    0,
+                    &key));
       EXPECT_TRUE(key.handle());
       EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
       ASSERT_EQ(Status::Success(),
@@ -960,14 +962,6 @@ TEST(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
   }
 }
 
-// Generate an AES-CBC key with no usages.
-TEST(WebCryptoAesCbcTest, GenerateKeyEmptyUsages) {
-  blink::WebCryptoKey key;
-
-  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
-            GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(128), true, 0, &key));
-}
-
 // Generate an AES-CBC key and an RSA key pair. Use the AES-CBC key to wrap the
 // key pair (using SPKI format for public key, PKCS8 format for private key).
 // Then unwrap the wrapped key pair and verify that the key data is the same.
@@ -994,8 +988,11 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
             GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
                                 blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                 blink::WebCryptoAlgorithmIdSha256,
-                                modulus_length, public_exponent),
-                            true, blink::WebCryptoKeyUsageSign, &public_key,
+                                modulus_length,
+                                public_exponent),
+                            true,
+                            0,
+                            &public_key,
                             &private_key));
 
   // Export key pair as SPKI + PKCS8
@@ -1049,11 +1046,15 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
 
   blink::WebCryptoKey unwrapped_private_key;
 
-  ASSERT_EQ(
-      Status::Success(),
-      UnwrapKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(wrapped_private_key),
-                wrapping_key, wrap_algorithm, rsa_import_algorithm, true,
-                blink::WebCryptoKeyUsageSign, &unwrapped_private_key));
+  ASSERT_EQ(Status::Success(),
+            UnwrapKey(blink::WebCryptoKeyFormatPkcs8,
+                      CryptoData(wrapped_private_key),
+                      wrapping_key,
+                      wrap_algorithm,
+                      rsa_import_algorithm,
+                      true,
+                      0,
+                      &unwrapped_private_key));
 
   // Export unwrapped key pair as SPKI + PKCS8
   std::vector<uint8_t> unwrapped_public_key_spki;

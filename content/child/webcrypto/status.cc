@@ -252,11 +252,6 @@ Status Status::ErrorCreateKeyBadUsages() {
                 "Cannot create a key using the specified key usages.");
 }
 
-Status Status::ErrorCreateKeyEmptyUsages() {
-  return Status(blink::WebCryptoErrorTypeSyntax,
-                "Usages cannot be empty when creating a key.");
-}
-
 Status Status::ErrorImportedEcKeyIncorrectCurve() {
   return Status(
       blink::WebCryptoErrorTypeData,
