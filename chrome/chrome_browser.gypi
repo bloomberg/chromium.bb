@@ -1161,6 +1161,8 @@
       'browser/metrics/thread_watcher.h',
       'browser/metrics/thread_watcher_android.cc',
       'browser/metrics/thread_watcher_android.h',
+      'browser/metrics/thread_watcher_report_hang.cc',
+      'browser/metrics/thread_watcher_report_hang.h',
       'browser/metrics/time_ticks_experiment_win.cc',
       'browser/metrics/time_ticks_experiment_win.h',
       'browser/metrics/variations/generated_resources_map.h',

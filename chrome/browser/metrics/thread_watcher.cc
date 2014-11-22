@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/debug/alias.h"
-#include "base/debug/debugger.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
@@ -20,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/metrics/thread_watcher_report_hang.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -30,98 +29,6 @@
 #endif
 
 using content::BrowserThread;
-
-namespace {
-
-// The following are unique function names for forcing the crash when a thread
-// is unresponsive. This makes it possible to tell from the callstack alone what
-// thread was unresponsive.
-//
-// We disable optimizations for this block of functions so the compiler doesn't
-// merge them all together.
-MSVC_DISABLE_OPTIMIZE()
-MSVC_PUSH_DISABLE_WARNING(4748)
-
-void ReportThreadHang() {
-#if defined(NDEBUG)
-  base::debug::DumpWithoutCrashing();
-#else
-  base::debug::BreakDebugger();
-#endif
-}
-
-#if !defined(OS_ANDROID) || !defined(NDEBUG)
-// TODO(rtenneti): Enabled crashing, after getting data.
-NOINLINE void StartupHang() {
-  ReportThreadHang();
-}
-#endif  // OS_ANDROID
-
-NOINLINE void ShutdownHang() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_UI() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_DB() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_FILE() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_CACHE() {
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_IO() {
-  ReportThreadHang();
-}
-
-void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
-  base::debug::Alias(&thread_id);
-
-  switch (thread_id) {
-    case BrowserThread::UI:
-      return ThreadUnresponsive_UI();
-    case BrowserThread::DB:
-      return ThreadUnresponsive_DB();
-    case BrowserThread::FILE:
-      return ThreadUnresponsive_FILE();
-    case BrowserThread::FILE_USER_BLOCKING:
-      return ThreadUnresponsive_FILE_USER_BLOCKING();
-    case BrowserThread::PROCESS_LAUNCHER:
-      return ThreadUnresponsive_PROCESS_LAUNCHER();
-    case BrowserThread::CACHE:
-      return ThreadUnresponsive_CACHE();
-    case BrowserThread::IO:
-      return ThreadUnresponsive_IO();
-    case BrowserThread::ID_COUNT:
-      CHECK(false);  // This shouldn't actually be reached!
-      break;
-
-    // Omission of the default hander is intentional -- that way the compiler
-    // should warn if our switch becomes outdated.
-  }
-
-  CHECK(false) << "Unknown thread was unresponsive.";  // Shouldn't be reached.
-}
-
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE();
-
-}  // namespace
 
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
@@ -396,7 +303,7 @@ void ThreadWatcher::GotNoResponse() {
     static bool crashed_once = false;
     if (!crashed_once) {
       crashed_once = true;
-      CrashBecauseThreadWasUnresponsive(thread_id_);
+      metrics::CrashBecauseThreadWasUnresponsive(thread_id_);
     }
   }
 
@@ -927,10 +834,10 @@ class StartupWatchDogThread : public base::Watchdog {
   // without crashing and in debug mode we break into the debugger.
   void Alarm() override {
 #if !defined(NDEBUG)
-    StartupHang();
+    metrics::StartupHang();
     return;
 #elif !defined(OS_ANDROID)
-    WatchDogThread::PostTask(FROM_HERE, base::Bind(&StartupHang));
+    WatchDogThread::PostTask(FROM_HERE, base::Bind(&metrics::StartupHang));
     return;
 #else
     // TODO(rtenneti): Enable crashing for Android.
@@ -954,7 +861,7 @@ class ShutdownWatchDogThread : public base::Watchdog {
 
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). We crash the browser if this method is called.
-  void Alarm() override { ShutdownHang(); }
+  void Alarm() override { metrics::ShutdownHang(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatchDogThread);
