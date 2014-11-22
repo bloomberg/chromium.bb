@@ -45,15 +45,6 @@ function testFillGradient(string)
     return pixel();
 }
 
-function testSetFillColor(arguments)
-{
-    clear();
-    context.fillStyle = "black";
-    eval("context.setFillColor(" + arguments + ")");
-    context.fillRect(0, 0, 1, 1);
-    return pixel();
-}
-
 function testStrokeStyle(string)
 {
     clear();
@@ -73,16 +64,6 @@ function testStrokeGradient(string)
     gradient.addColorStop(0, string);
     gradient.addColorStop(1, string);
     context.strokeStyle = gradient;
-    context.strokeRect(2, 2, 10, 10);
-    return pixel();
-}
-
-function testSetStrokeColor(arguments)
-{
-    clear();
-    context.lineWidth = 5;
-    context.strokeStyle = "black";
-    eval("context.setStrokeColor(" + arguments + ")");
     context.strokeRect(2, 2, 10, 10);
     return pixel();
 }
@@ -113,21 +94,6 @@ shouldBe("testFillGradient('rgb(255, 0, 0)')", "red");
 shouldBe("testFillGradient('rgba(255, 0, 0, 1)')", "red");
 shouldBe("testFillGradient('rgba(255, 0, 0, 0.8)')", "translucentRed");
 shouldBe("testFillGradient('rgba(255, 0, 0, 0)')", "transparent");
-shouldBe("testSetFillColor('\"blue\"')", "blue");
-shouldBe("testSetFillColor('\"#FF0000\"')", "red");
-shouldBe("testSetFillColor('\"#f00\"')", "red");
-shouldBe("testSetFillColor('\"rgb(255, 0, 0)\"')", "red");
-shouldBe("testSetFillColor('\"rgba(255, 0, 0, 1)\"')", "red");
-shouldBe("testSetFillColor('\"rgba(255, 0, 0, 0.8)\"')", "translucentRed");
-shouldBe("testSetFillColor('\"rgba(255, 0, 0, 0)\"')", "transparent");
-shouldBe("testSetFillColor('\"blue\", 0.8')", "translucentBlue");
-shouldBe("testSetFillColor('1')", "white");
-shouldBe("testSetFillColor('1, 0.8')", "translucentWhite");
-shouldBe("testSetFillColor('0, 1, 0, 1')", "green");
-shouldBe("testSetFillColor('0, 1, 0, 0.8')", "translucentGreen");
-shouldBe("testSetFillColor('0, 0, 0, 1, 1')", "'#1a1a1a'");                   // This test is expected to fail on older versions of Mac OS X.
-shouldBe("testSetFillColor('0, 0, 0, 1, 0.8')", "'rgba(25, 25, 25, 0.8)'");   // Ditto.
-shouldBe("testSetFillColor('0, 0, 0, 1, 0')", "transparent");
 shouldBe("testStrokeStyle('transparent')", "transparent");
 shouldBe("testStrokeStyle('blue')", "blue");
 shouldBe("testStrokeStyle('#FF0000')", "red");
@@ -144,18 +110,3 @@ shouldBe("testStrokeGradient('rgb(255, 0, 0)')", "red");
 shouldBe("testStrokeGradient('rgba(255, 0, 0, 1)')", "red");
 shouldBe("testStrokeGradient('rgba(255, 0, 0, 0.8)')", "translucentRed");
 shouldBe("testStrokeGradient('rgba(255, 0, 0, 0)')", "transparent");
-shouldBe("testSetStrokeColor('\"blue\"')", "blue");
-shouldBe("testSetStrokeColor('\"#FF0000\"')", "red");
-shouldBe("testSetStrokeColor('\"#f00\"')", "red");
-shouldBe("testSetStrokeColor('\"rgb(255, 0, 0)\"')", "red");
-shouldBe("testSetStrokeColor('\"rgba(255, 0, 0, 1)\"')", "red");
-shouldBe("testSetStrokeColor('\"rgba(255, 0, 0, 0.8)\"')", "translucentRed");
-shouldBe("testSetStrokeColor('\"rgba(255, 0, 0, 0)\"')", "transparent");
-shouldBe("testSetStrokeColor('\"blue\", 0.8')", "translucentBlue");
-shouldBe("testSetStrokeColor('1')", "white");
-shouldBe("testSetStrokeColor('1, 0.8')", "translucentWhite");
-shouldBe("testSetStrokeColor('0, 1, 0, 1')", "green");
-shouldBe("testSetStrokeColor('0, 1, 0, 0.8')", "translucentGreen");
-shouldBe("testSetStrokeColor('0, 0, 0, 1, 1')", "'#1a1a1a'");                  // This test is expected to fail on older versions of Mac OS X.
-shouldBe("testSetStrokeColor('0, 0, 0, 1, 0.8')", "'rgba(25, 25, 25, 0.8)'");  // Ditto.
-shouldBe("testSetStrokeColor('0, 0, 0, 1, 0')", "transparent");

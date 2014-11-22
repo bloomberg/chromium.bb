@@ -899,90 +899,6 @@ void CanvasRenderingContext2D::setTransform(float m11, float m12, float m21, flo
     transform(m11, m12, m21, m22, dx, dy);
 }
 
-void CanvasRenderingContext2D::setStrokeColor(const String& color)
-{
-    if (color == state().m_unparsedStrokeColor)
-        return;
-    realizeSaves(nullptr);
-    setStrokeStyle(CanvasStyle::createFromString(color));
-    modifiableState().m_unparsedStrokeColor = color;
-}
-
-void CanvasRenderingContext2D::setStrokeColor(float grayLevel)
-{
-    if (state().m_strokeStyle && state().m_strokeStyle->isEquivalentRGBA(grayLevel, grayLevel, grayLevel, 1.0f))
-        return;
-    setStrokeStyle(CanvasStyle::createFromGrayLevelWithAlpha(grayLevel, 1.0f));
-}
-
-void CanvasRenderingContext2D::setStrokeColor(const String& color, float alpha)
-{
-    setStrokeStyle(CanvasStyle::createFromStringWithOverrideAlpha(color, alpha));
-}
-
-void CanvasRenderingContext2D::setStrokeColor(float grayLevel, float alpha)
-{
-    if (state().m_strokeStyle && state().m_strokeStyle->isEquivalentRGBA(grayLevel, grayLevel, grayLevel, alpha))
-        return;
-    setStrokeStyle(CanvasStyle::createFromGrayLevelWithAlpha(grayLevel, alpha));
-}
-
-void CanvasRenderingContext2D::setStrokeColor(float r, float g, float b, float a)
-{
-    if (state().m_strokeStyle && state().m_strokeStyle->isEquivalentRGBA(r, g, b, a))
-        return;
-    setStrokeStyle(CanvasStyle::createFromRGBAChannels(r, g, b, a));
-}
-
-void CanvasRenderingContext2D::setStrokeColor(float c, float m, float y, float k, float a)
-{
-    if (state().m_strokeStyle && state().m_strokeStyle->isEquivalentCMYKA(c, m, y, k, a))
-        return;
-    setStrokeStyle(CanvasStyle::createFromCMYKAChannels(c, m, y, k, a));
-}
-
-void CanvasRenderingContext2D::setFillColor(const String& color)
-{
-    if (color == state().m_unparsedFillColor)
-        return;
-    realizeSaves(nullptr);
-    setFillStyle(CanvasStyle::createFromString(color));
-    modifiableState().m_unparsedFillColor = color;
-}
-
-void CanvasRenderingContext2D::setFillColor(float grayLevel)
-{
-    if (state().m_fillStyle && state().m_fillStyle->isEquivalentRGBA(grayLevel, grayLevel, grayLevel, 1.0f))
-        return;
-    setFillStyle(CanvasStyle::createFromGrayLevelWithAlpha(grayLevel, 1.0f));
-}
-
-void CanvasRenderingContext2D::setFillColor(const String& color, float alpha)
-{
-    setFillStyle(CanvasStyle::createFromStringWithOverrideAlpha(color, alpha));
-}
-
-void CanvasRenderingContext2D::setFillColor(float grayLevel, float alpha)
-{
-    if (state().m_fillStyle && state().m_fillStyle->isEquivalentRGBA(grayLevel, grayLevel, grayLevel, alpha))
-        return;
-    setFillStyle(CanvasStyle::createFromGrayLevelWithAlpha(grayLevel, alpha));
-}
-
-void CanvasRenderingContext2D::setFillColor(float r, float g, float b, float a)
-{
-    if (state().m_fillStyle && state().m_fillStyle->isEquivalentRGBA(r, g, b, a))
-        return;
-    setFillStyle(CanvasStyle::createFromRGBAChannels(r, g, b, a));
-}
-
-void CanvasRenderingContext2D::setFillColor(float c, float m, float y, float k, float a)
-{
-    if (state().m_fillStyle && state().m_fillStyle->isEquivalentCMYKA(c, m, y, k, a))
-        return;
-    setFillStyle(CanvasStyle::createFromCMYKAChannels(c, m, y, k, a));
-}
-
 void CanvasRenderingContext2D::beginPath()
 {
     m_path.clear();
@@ -1405,66 +1321,6 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     }
 }
 
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur)
-{
-    setShadow(FloatSize(width, height), blur, Color::transparent);
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, const String& color)
-{
-    RGBA32 rgba;
-    if (!parseColorOrCurrentColor(rgba, color, canvas()))
-        return;
-    setShadow(FloatSize(width, height), blur, rgba);
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, float grayLevel)
-{
-    setShadow(FloatSize(width, height), blur, makeRGBA32FromFloats(grayLevel, grayLevel, grayLevel, 1));
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, const String& color, float alpha)
-{
-    RGBA32 rgba;
-    if (!parseColorOrCurrentColor(rgba, color, canvas()))
-        return;
-    setShadow(FloatSize(width, height), blur, colorWithOverrideAlpha(rgba, alpha));
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, float grayLevel, float alpha)
-{
-    setShadow(FloatSize(width, height), blur, makeRGBA32FromFloats(grayLevel, grayLevel, grayLevel, alpha));
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, float r, float g, float b, float a)
-{
-    setShadow(FloatSize(width, height), blur, makeRGBA32FromFloats(r, g, b, a));
-}
-
-void CanvasRenderingContext2D::setShadow(float width, float height, float blur, float c, float m, float y, float k, float a)
-{
-    setShadow(FloatSize(width, height), blur, makeRGBAFromCMYKA(c, m, y, k, a));
-}
-
-void CanvasRenderingContext2D::clearShadow()
-{
-    setShadow(FloatSize(), 0, Color::transparent);
-}
-
-void CanvasRenderingContext2D::setShadow(const FloatSize& offset, float blur, RGBA32 color)
-{
-    if (state().m_shadowOffset == offset && state().m_shadowBlur == blur && state().m_shadowColor == color)
-        return;
-    bool wasDrawingShadows = shouldDrawShadows();
-    realizeSaves(nullptr);
-    modifiableState().m_shadowOffset = offset;
-    modifiableState().m_shadowBlur = blur;
-    modifiableState().m_shadowColor = color;
-    if (!wasDrawingShadows && !shouldDrawShadows())
-        return;
-    applyShadow();
-}
-
 void CanvasRenderingContext2D::applyShadow(ShadowMode shadowMode)
 {
     GraphicsContext* c = drawingContext();
@@ -1639,29 +1495,6 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
         canvas()->setOriginTainted();
-}
-
-void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
-    float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh,
-    const String& compositeOperation)
-{
-    if (!image)
-        return;
-    save();
-    setGlobalCompositeOperation(compositeOperation);
-    drawImageInternal(image, sx, sy, sw, sh, dx, dy, dw, dh, IGNORE_EXCEPTION);
-    restore();
-}
-
-void CanvasRenderingContext2D::setAlpha(float alpha)
-{
-    setGlobalAlpha(alpha);
-}
-
-void CanvasRenderingContext2D::setCompositeOperation(const String& operation)
-{
-    setGlobalCompositeOperation(operation);
 }
 
 void CanvasRenderingContext2D::clearCanvas()

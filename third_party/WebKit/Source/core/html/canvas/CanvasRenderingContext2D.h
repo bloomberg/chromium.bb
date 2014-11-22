@@ -139,20 +139,6 @@ public:
     void setTransform(float m11, float m12, float m21, float m22, float dx, float dy);
     void resetTransform();
 
-    void setStrokeColor(const String& color);
-    void setStrokeColor(float grayLevel);
-    void setStrokeColor(const String& color, float alpha);
-    void setStrokeColor(float grayLevel, float alpha);
-    void setStrokeColor(float r, float g, float b, float a);
-    void setStrokeColor(float c, float m, float y, float k, float a);
-
-    void setFillColor(const String& color);
-    void setFillColor(float grayLevel);
-    void setFillColor(const String& color, float alpha);
-    void setFillColor(float grayLevel, float alpha);
-    void setFillColor(float r, float g, float b, float a);
-    void setFillColor(float c, float m, float y, float k, float a);
-
     void beginPath();
 
     void fill(const String& winding = "nonzero");
@@ -174,26 +160,9 @@ public:
     void fillRect(float x, float y, float width, float height);
     void strokeRect(float x, float y, float width, float height);
 
-    void setShadow(float width, float height, float blur);
-    void setShadow(float width, float height, float blur, const String& color);
-    void setShadow(float width, float height, float blur, float grayLevel);
-    void setShadow(float width, float height, float blur, const String& color, float alpha);
-    void setShadow(float width, float height, float blur, float grayLevel, float alpha);
-    void setShadow(float width, float height, float blur, float r, float g, float b, float a);
-    void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
-
-    void clearShadow();
-
     void drawImage(const CanvasImageSourceUnion&, float x, float y, ExceptionState&);
     void drawImage(const CanvasImageSourceUnion&, float x, float y, float width, float height, ExceptionState&);
     void drawImage(const CanvasImageSourceUnion&, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-
-    void drawImageFromRect(HTMLImageElement*, float sx = 0, float sy = 0, float sw = 0, float sh = 0,
-                           float dx = 0, float dy = 0, float dw = 0, float dh = 0, const String& compositeOperation = emptyString());
-
-    void setAlpha(float);
-
-    void setCompositeOperation(const String&);
 
     PassRefPtrWillBeRawPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
     PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);

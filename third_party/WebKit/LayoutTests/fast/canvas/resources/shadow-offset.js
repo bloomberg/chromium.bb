@@ -12,7 +12,10 @@ test = function(setter) {
     for (var offsetY = -10; offsetY <= 10; offsetY++) {
         var x = 10;
         for (var offsetX = -10; offsetX <= 10; offsetX++) {
-            ctx.setShadow(0, 0, 0, "transparent");
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "transparent";
         
             ctx.fillStyle = 'red';
             ctx.fillRect(x + offsetX, y + offsetY, w, h);

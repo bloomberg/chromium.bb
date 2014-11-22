@@ -145,30 +145,6 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     attribute DOMString textBaseline; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
     [RuntimeEnabled=ExperimentalCanvasFeatures] attribute DOMString direction; // "inherit", "rtl", "ltr" (default: "inherit")
 
-    // Non-standard APIs. Candidates for deprecation
-    // https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D
-    [MeasureAs=CanvasRenderingContext2DSetAlpha] void setAlpha(unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetCompositeOperation] void setCompositeOperation(DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetLineWidth] void setLineWidth(unrestricted float width);
-    [MeasureAs=CanvasRenderingContext2DSetLineCap] void setLineCap(DOMString cap);
-    [MeasureAs=CanvasRenderingContext2DSetLineJoin] void setLineJoin(DOMString join);
-    [MeasureAs=CanvasRenderingContext2DSetMiterLimit] void setMiterLimit(unrestricted float limit);
-    [MeasureAs=CanvasRenderingContext2DClearShadow] void clearShadow();
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(DOMString color, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float grayLevel, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(DOMString color, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float grayLevel, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
-    [MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
-        HTMLImageElement? image, optional unrestricted float sx, optional unrestricted float sy, optional unrestricted float sw, optional unrestricted float sh,
-        optional unrestricted float dx, optional unrestricted float dy, optional unrestricted float dw, optional unrestricted float dh, optional DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, optional DOMString color, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float grayLevel, optional unrestricted float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
 };
 
 CanvasRenderingContext2D implements CanvasPathMethods;

@@ -78,7 +78,7 @@ void V8CanvasRenderingContext2D::strokeStyleAttributeSetterCustom(v8::Local<v8::
         impl->setStrokeStyle(canvasStyle);
     } else {
         TOSTRING_VOID(V8StringResource<>, colorString, value);
-        impl->setStrokeColor(colorString);
+        impl->setStrokeStyle(CanvasStyle::createFromString(colorString));
     }
 }
 
@@ -95,7 +95,7 @@ void V8CanvasRenderingContext2D::fillStyleAttributeSetterCustom(v8::Local<v8::Va
         impl->setFillStyle(canvasStyle);
     } else {
         TOSTRING_VOID(V8StringResource<>, colorString, value);
-        impl->setFillColor(colorString);
+        impl->setFillStyle(CanvasStyle::createFromString(colorString));
     }
 }
 
