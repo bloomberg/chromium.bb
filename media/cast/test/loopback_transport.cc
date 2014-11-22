@@ -64,9 +64,13 @@ void LoopBackTransport::Initialize(
     base::TickClock* clock) {
   scoped_ptr<test::PacketPipe> loopback_pipe(
       new LoopBackPacketPipe(packet_receiver));
-  // Append the loopback pipe to the end.
-  pipe->AppendToPipe(loopback_pipe.Pass());
-  packet_pipe_ = pipe.Pass();
+  if (pipe) {
+    // Append the loopback pipe to the end.
+    pipe->AppendToPipe(loopback_pipe.Pass());
+    packet_pipe_ = pipe.Pass();
+  } else {
+    packet_pipe_ = loopback_pipe.Pass();
+  }
   packet_pipe_->InitOnIOThread(task_runner, clock);
 }
 

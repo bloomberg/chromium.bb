@@ -22,6 +22,13 @@
 // --run-time=
 //   In seconds, how long the Cast session runs for.
 //   Optional; default is 180.
+// --metrics-output=
+//   File path to write PSNR and SSIM metrics between source frames and
+//   decoded frames. Assumes all encoded frames are decoded.
+// --yuv-output=
+//   File path to write YUV decoded frames in YUV4MPEG2 format.
+// --no-simulation
+//   Do not run network simulation.
 //
 // Output:
 // - Raw event log of the simulation session tagged with the unique test ID,
@@ -38,6 +45,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -77,15 +85,18 @@ using media::cast::proto::NetworkSimulationModelType;
 namespace media {
 namespace cast {
 namespace {
-const char kSourcePath[] = "source";
-const char kModelPath[] = "model";
-const char kOutputPath[] = "output";
-const char kSimulationId[] = "sim-id";
 const char kLibDir[] = "lib-dir";
-const char kTargetDelay[] = "target-delay-ms";
+const char kModelPath[] = "model";
+const char kMetricsOutputPath[] = "metrics-output";
+const char kOutputPath[] = "output";
 const char kMaxFrameRate[] = "max-frame-rate";
-const char kSourceFrameRate[] = "source-frame-rate";
+const char kNoSimulation[] = "no-simulation";
 const char kRunTime[] = "run-time";
+const char kSimulationId[] = "sim-id";
+const char kSourcePath[] = "source";
+const char kSourceFrameRate[] = "source-frame-rate";
+const char kTargetDelay[] = "target-delay-ms";
+const char kYuvOutputPath[] = "yuv-output";
 
 int GetIntegerSwitchValue(const char* switch_name, int default_value) {
   const std::string as_str =
@@ -149,15 +160,114 @@ void LogTransportEvents(const scoped_refptr<CastEnvironment>& env,
   }
 }
 
+// Maintains a queue of encoded video frames.
+// This works by tracking FRAME_CAPTURE_END and FRAME_ENCODED events.
+// If a video frame is detected to be encoded it transfers a frame
+// from FakeMediaSource to its internal queue. Otherwise it drops a
+// frame from FakeMediaSource.
+class EncodedVideoFrameTracker : public RawEventSubscriber {
+ public:
+  EncodedVideoFrameTracker(FakeMediaSource* media_source)
+      : media_source_(media_source),
+        last_frame_event_type_(UNKNOWN) {}
+  ~EncodedVideoFrameTracker() override {}
+
+  // RawEventSubscriber implementations.
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) override {
+    // This method only cares about video FRAME_CAPTURE_END and
+    // FRAME_ENCODED events.
+    if (frame_event.media_type != VIDEO_EVENT) {
+      return;
+    }
+    if (frame_event.type != FRAME_CAPTURE_END &&
+        frame_event.type != FRAME_ENCODED) {
+      return;
+    }
+    // If there are two consecutive FRAME_CAPTURE_END events that means
+    // a frame is dropped.
+    if (last_frame_event_type_ == FRAME_CAPTURE_END &&
+        frame_event.type == FRAME_CAPTURE_END) {
+      media_source_->PopOldestInsertedVideoFrame();
+    }
+    if (frame_event.type == FRAME_ENCODED) {
+      video_frames_.push(media_source_->PopOldestInsertedVideoFrame());
+    }
+    last_frame_event_type_ = frame_event.type;
+  }
+
+  void OnReceivePacketEvent(const PacketEvent& packet_event) override {
+    // Don't care.
+  }
+
+  scoped_refptr<media::VideoFrame> PopOldestEncodedFrame() {
+    CHECK(!video_frames_.empty());
+    scoped_refptr<media::VideoFrame> video_frame = video_frames_.front();
+    video_frames_.pop();
+    return video_frame;
+  }
+
+ private:
+  FakeMediaSource* media_source_;
+  CastLoggingEvent last_frame_event_type_;
+  std::queue<scoped_refptr<media::VideoFrame> > video_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(EncodedVideoFrameTracker);
+};
+
+// Appends a YUV frame in I420 format to the file located at |path|.
+void AppendYuvToFile(const base::FilePath& path,
+                     scoped_refptr<media::VideoFrame> frame) {
+  // Write YUV420 format to file.
+  std::string header = "FRAME\n";
+  AppendToFile(path, header.data(), header.size());
+  AppendToFile(path,
+      reinterpret_cast<char*>(frame->data(media::VideoFrame::kYPlane)),
+      frame->stride(media::VideoFrame::kYPlane) *
+          frame->rows(media::VideoFrame::kYPlane));
+  AppendToFile(path,
+      reinterpret_cast<char*>(frame->data(media::VideoFrame::kUPlane)),
+      frame->stride(media::VideoFrame::kUPlane) *
+          frame->rows(media::VideoFrame::kUPlane));
+  AppendToFile(path,
+      reinterpret_cast<char*>(frame->data(media::VideoFrame::kVPlane)),
+      frame->stride(media::VideoFrame::kVPlane) *
+          frame->rows(media::VideoFrame::kVPlane));
+}
+
+// A container to save output of GotVideoFrame() for computation based
+// on output frames.
+struct GotVideoFrameOutput {
+  GotVideoFrameOutput() : counter(0) {}
+  int counter;
+  std::vector<double> psnr;
+  std::vector<double> ssim;
+};
+
 void GotVideoFrame(
-    int* counter,
+    GotVideoFrameOutput* metrics_output,
+    const base::FilePath& yuv_output,
+    EncodedVideoFrameTracker* video_frame_tracker,
     CastReceiver* cast_receiver,
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& render_time,
     bool continuous) {
-  ++*counter;
+  ++metrics_output->counter;
   cast_receiver->RequestDecodedVideoFrame(
-      base::Bind(&GotVideoFrame, counter, cast_receiver));
+      base::Bind(&GotVideoFrame, metrics_output, yuv_output,
+                 video_frame_tracker, cast_receiver));
+
+  // If |video_frame_tracker| is available that means we're computing
+  // quality metrices.
+  if (video_frame_tracker) {
+    scoped_refptr<media::VideoFrame> src_frame =
+        video_frame_tracker->PopOldestEncodedFrame();
+    metrics_output->psnr.push_back(I420PSNR(src_frame, video_frame));
+    metrics_output->ssim.push_back(I420SSIM(src_frame, video_frame));
+  }
+
+  if (!yuv_output.empty()) {
+    AppendYuvToFile(yuv_output, video_frame);
+  }
 }
 
 void GotAudioFrame(
@@ -204,10 +314,12 @@ void AppendLogToFile(media::cast::proto::LogMetadata* metadata,
 
 // Run simulation once.
 //
-// |output_path| is the path to write serialized log.
+// |log_output_path| is the path to write serialized log.
 // |extra_data| is extra tagging information to write to log.
 void RunSimulation(const base::FilePath& source_path,
-                   const base::FilePath& output_path,
+                   const base::FilePath& log_output_path,
+                   const base::FilePath& metrics_output_path,
+                   const base::FilePath& yuv_output_path,
                    const std::string& extra_data,
                    const NetworkSimulationModel& model) {
   // Fake clock. Make sure start time is non zero.
@@ -297,41 +409,62 @@ void RunSimulation(const base::FilePath& source_path,
   scoped_ptr<CastSender> cast_sender(
       CastSender::Create(sender_env, transport_sender.get()));
 
-  // Build packet pipe.
-  if (model.type() != media::cast::proto::INTERRUPTED_POISSON_PROCESS) {
-    LOG(ERROR) << "Unknown model type " << model.type() << ".";
-    return;
+  // Initialize network simulation model.
+  const bool use_network_simulation =
+      model.type() == media::cast::proto::INTERRUPTED_POISSON_PROCESS;
+  scoped_ptr<test::InterruptedPoissonProcess> ipp;
+  if (use_network_simulation) {
+    LOG(INFO) << "Running Poisson based network simulation.";
+    const IPPModel& ipp_model = model.ipp();
+    std::vector<double> average_rates(ipp_model.average_rate_size());
+    std::copy(ipp_model.average_rate().begin(),
+              ipp_model.average_rate().end(),
+              average_rates.begin());
+    ipp.reset(new test::InterruptedPoissonProcess(
+        average_rates,
+        ipp_model.coef_burstiness(), ipp_model.coef_variance(), 0));
+    receiver_to_sender.Initialize(
+        ipp->NewBuffer(128 * 1024).Pass(),
+        transport_sender->PacketReceiverForTesting(),
+        task_runner, &testing_clock);
+    sender_to_receiver.Initialize(
+        ipp->NewBuffer(128 * 1024).Pass(),
+        cast_receiver->packet_receiver(), task_runner,
+        &testing_clock);
+  } else {
+    LOG(INFO) << "No network simulation.";
+    receiver_to_sender.Initialize(
+        scoped_ptr<test::PacketPipe>(),
+        transport_sender->PacketReceiverForTesting(),
+        task_runner, &testing_clock);
+    sender_to_receiver.Initialize(
+        scoped_ptr<test::PacketPipe>(),
+        cast_receiver->packet_receiver(), task_runner,
+        &testing_clock);
   }
 
-  const IPPModel& ipp_model = model.ipp();
+  // Initialize a fake media source and a tracker to encoded video frames.
+  const bool quality_test = !metrics_output_path.empty();
+  FakeMediaSource media_source(task_runner,
+                               &testing_clock,
+                               video_sender_config,
+                               quality_test);
+  scoped_ptr<EncodedVideoFrameTracker> video_frame_tracker;
+  if (quality_test) {
+    video_frame_tracker.reset(new EncodedVideoFrameTracker(&media_source));
+    sender_env->Logging()->AddRawEventSubscriber(video_frame_tracker.get());
+  }
 
-  std::vector<double> average_rates(ipp_model.average_rate_size());
-  std::copy(ipp_model.average_rate().begin(), ipp_model.average_rate().end(),
-      average_rates.begin());
-  test::InterruptedPoissonProcess ipp(average_rates,
-      ipp_model.coef_burstiness(), ipp_model.coef_variance(), 0);
-
-  // Connect sender to receiver. This initializes the pipe.
-  receiver_to_sender.Initialize(
-      ipp.NewBuffer(128 * 1024).Pass(),
-      transport_sender->PacketReceiverForTesting(),
-      task_runner, &testing_clock);
-  sender_to_receiver.Initialize(
-      ipp.NewBuffer(128 * 1024).Pass(),
-      cast_receiver->packet_receiver(), task_runner,
-      &testing_clock);
+  // Quality metrics computed for each frame decoded.
+  GotVideoFrameOutput metrics_output;
 
   // Start receiver.
   int audio_frame_count = 0;
-  int video_frame_count = 0;
   cast_receiver->RequestDecodedVideoFrame(
-      base::Bind(&GotVideoFrame, &video_frame_count, cast_receiver.get()));
+      base::Bind(&GotVideoFrame, &metrics_output, yuv_output_path,
+                 video_frame_tracker.get(), cast_receiver.get()));
   cast_receiver->RequestDecodedAudioFrame(
       base::Bind(&GotAudioFrame, &audio_frame_count, cast_receiver.get()));
-
-  FakeMediaSource media_source(task_runner,
-                               &testing_clock,
-                               video_sender_config);
 
   // Initializing audio and video senders.
   cast_sender->InitializeAudio(audio_sender_config,
@@ -342,6 +475,24 @@ void RunSimulation(const base::FilePath& source_path,
                                CreateDefaultVideoEncodeMemoryCallback());
   task_runner->RunTasks();
 
+  // Truncate YUV files to prepare for writing.
+  if (!yuv_output_path.empty()) {
+    base::ScopedFILE file(base::OpenFile(yuv_output_path, "wb"));
+    if (!file.get()) {
+      LOG(ERROR) << "Cannot save YUV output to file.";
+      return;
+    }
+    LOG(INFO) << "Writing YUV output to file: " << yuv_output_path.value();
+
+    // Write YUV4MPEG2 header.
+    std::string header;
+    base::StringAppendF(
+        &header, "YUV4MPEG2 W%d H%d F30000:1001 Ip A1:1 C420\n",
+        media_source.get_video_config().width,
+        media_source.get_video_config().height);
+    AppendToFile(yuv_output_path, header.data(), header.size());
+  }
+
   // Start sending.
   if (!source_path.empty()) {
     // 0 means using the FPS from the file.
@@ -351,7 +502,8 @@ void RunSimulation(const base::FilePath& source_path,
   media_source.Start(cast_sender->audio_frame_input(),
                      cast_sender->video_frame_input());
 
-  // Run for 3 minutes.
+  // By default runs simulation for 3 minutes or the desired duration
+  // by using --run-time= flag.
   base::TimeDelta elapsed_time;
   const base::TimeDelta desired_run_time =
       base::TimeDelta::FromSeconds(GetIntegerSwitchValue(kRunTime, 180));
@@ -422,8 +574,9 @@ void RunSimulation(const base::FilePath& source_path,
   LOG(INFO) << "Configured target playout delay (ms): "
             << video_receiver_config.rtp_max_delay_ms;
   LOG(INFO) << "Audio frame count: " << audio_frame_count;
-  LOG(INFO) << "Total video frames: " << total_video_frames;
-  LOG(INFO) << "Dropped video frames " << dropped_video_frames;
+  LOG(INFO) << "Inserted video frames: " << total_video_frames;
+  LOG(INFO) << "Decoded video frames: " << metrics_output.counter;
+  LOG(INFO) << "Dropped video frames: " << dropped_video_frames;
   LOG(INFO) << "Late video frames: " << late_video_frames
             << " (average lateness: "
             << (late_video_frames > 0 ?
@@ -433,20 +586,32 @@ void RunSimulation(const base::FilePath& source_path,
             << " ms)";
   LOG(INFO) << "Average encoded bitrate (kbps): " << avg_encoded_bitrate;
   LOG(INFO) << "Average target bitrate (kbps): " << avg_target_bitrate;
-  LOG(INFO) << "Writing log: " << output_path.value();
+  LOG(INFO) << "Writing log: " << log_output_path.value();
 
   // Truncate file and then write serialized log.
   {
-    base::ScopedFILE file(base::OpenFile(output_path, "wb"));
+    base::ScopedFILE file(base::OpenFile(log_output_path, "wb"));
     if (!file.get()) {
       LOG(INFO) << "Cannot write to log.";
       return;
     }
   }
   AppendLogToFile(&video_metadata, video_frame_events, video_packet_events,
-                  output_path);
+                  log_output_path);
   AppendLogToFile(&audio_metadata, audio_frame_events, audio_packet_events,
-                  output_path);
+                  log_output_path);
+
+  // Write quality metrics.
+  if (quality_test) {
+    LOG(INFO) << "Writing quality metrics: " << metrics_output_path.value();
+    std::string line;
+    for (size_t i = 0; i < metrics_output.psnr.size() &&
+             i < metrics_output.ssim.size(); ++i) {
+      base::StringAppendF(&line, "%f %f\n", metrics_output.psnr[i],
+                          metrics_output.ssim[i]);
+    }
+    WriteFile(metrics_output_path, line.data(), line.length());
+  }
 }
 
 NetworkSimulationModel DefaultModel() {
@@ -498,8 +663,13 @@ bool IsModelValid(const NetworkSimulationModel& model) {
 }
 
 NetworkSimulationModel LoadModel(const base::FilePath& model_path) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kNoSimulation)) {
+    NetworkSimulationModel model;
+    model.set_type(media::cast::proto::NO_SIMULATION);
+    return model;
+  }
   if (model_path.empty()) {
-    LOG(ERROR) << "Model path not set.";
+    LOG(ERROR) << "Model path not set; Using default model.";
     return DefaultModel();
   }
   std::string model_str;
@@ -546,12 +716,16 @@ int main(int argc, char** argv) {
 
   base::FilePath source_path = cmd->GetSwitchValuePath(
       media::cast::kSourcePath);
-  base::FilePath output_path = cmd->GetSwitchValuePath(
+  base::FilePath log_output_path = cmd->GetSwitchValuePath(
       media::cast::kOutputPath);
-  if (output_path.empty()) {
-    base::GetTempDir(&output_path);
-    output_path = output_path.AppendASCII("sim-events.gz");
+  if (log_output_path.empty()) {
+    base::GetTempDir(&log_output_path);
+    log_output_path = log_output_path.AppendASCII("sim-events.gz");
   }
+  base::FilePath metrics_output_path = cmd->GetSwitchValuePath(
+      media::cast::kMetricsOutputPath);
+  base::FilePath yuv_output_path = cmd->GetSwitchValuePath(
+      media::cast::kYuvOutputPath);
   std::string sim_id = cmd->GetSwitchValueASCII(media::cast::kSimulationId);
 
   NetworkSimulationModel model = media::cast::LoadModel(
@@ -565,6 +739,7 @@ int main(int argc, char** argv) {
   base::JSONWriter::Write(&values, &extra_data);
 
   // Run.
-  media::cast::RunSimulation(source_path, output_path, extra_data, model);
+  media::cast::RunSimulation(source_path, log_output_path, metrics_output_path,
+                             yuv_output_path, extra_data, model);
   return 0;
 }

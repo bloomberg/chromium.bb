@@ -303,7 +303,7 @@ int main(int argc, char** argv) {
   scoped_ptr<media::cast::FakeMediaSource> fake_media_source(
       new media::cast::FakeMediaSource(test_thread.message_loop_proxy(),
                                        cast_environment->Clock(),
-                                       video_config));
+                                       video_config, false));
 
   int override_fps = 0;
   if (!base::StringToInt(cmd->GetSwitchValueASCII(kSwitchFps),

@@ -46,9 +46,11 @@ class FakeMediaSource {
   // |task_runner| is to schedule decoding tasks.
   // |clock| is used by this source but is not owned.
   // |video_config| is the desired video config.
+  // |keep_frames| is true if all VideoFrames are saved in a queue.
   FakeMediaSource(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   base::TickClock* clock,
-                  const VideoSenderConfig& video_config);
+                  const VideoSenderConfig& video_config,
+                  bool keep_frames);
   ~FakeMediaSource();
 
   // Transcode this file as the source of video and audio frames.
@@ -59,6 +61,8 @@ class FakeMediaSource {
              scoped_refptr<VideoFrameInput> video_frame_input);
 
   const VideoSenderConfig& get_video_config() const { return video_config_; }
+
+  scoped_refptr<media::VideoFrame> PopOldestInsertedVideoFrame();
 
  private:
   bool is_transcoding_audio() const { return audio_stream_index_ >= 0; }
@@ -99,6 +103,7 @@ class FakeMediaSource {
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const VideoSenderConfig video_config_;
+  const bool keep_frames_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
   uint8 synthetic_count_;
@@ -135,6 +140,7 @@ class FakeMediaSource {
   scoped_ptr<media::AudioTimestampHelper> audio_sent_ts_;
 
   std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
+  std::queue<scoped_refptr<VideoFrame> > inserted_video_frame_queue_;
   int64 video_first_pts_;
   bool video_first_pts_set_;
   base::TimeDelta last_video_frame_timestamp_;

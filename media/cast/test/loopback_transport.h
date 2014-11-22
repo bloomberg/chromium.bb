@@ -35,8 +35,12 @@ class LoopBackTransport : public PacketSender {
 
   // Initiailize this loopback transport.
   // Establish a flow of packets from |pipe| to |packet_receiver|.
+  //
   // The data flow looks like:
   // SendPacket() -> |pipe| -> Fake loopback pipe -> |packet_receiver|.
+  //
+  // If |pipe| is NULL then the data flow looks like:
+  // SendPacket() -> Fake loopback pipe -> |packet_receiver|.
   void Initialize(
       scoped_ptr<test::PacketPipe> pipe,
       const PacketReceiverCallback& packet_receiver,

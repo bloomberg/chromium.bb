@@ -16,7 +16,11 @@ message NetworkSimulationModel {
 }
 
 enum NetworkSimulationModelType {
+  // Network simulation based on interrupted poisson process.
   INTERRUPTED_POISSON_PROCESS = 1;
+
+  // No network simulation.
+  NO_SIMULATION = 2;
 }
 
 message IPPModel {
@@ -24,4 +28,3 @@ message IPPModel {
   optional double coef_variance = 2;
   repeated double average_rate = 3;
 }
-

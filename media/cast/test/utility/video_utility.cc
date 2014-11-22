@@ -36,6 +36,28 @@ double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
                           frame1->coded_size().height());
 }
 
+double I420SSIM(const scoped_refptr<media::VideoFrame>& frame1,
+                const scoped_refptr<media::VideoFrame>& frame2) {
+  if (frame1->coded_size().width() != frame2->coded_size().width() ||
+      frame1->coded_size().height() != frame2->coded_size().height())
+    return -1;
+
+  return libyuv::I420Ssim(frame1->data(VideoFrame::kYPlane),
+                          frame1->stride(VideoFrame::kYPlane),
+                          frame1->data(VideoFrame::kUPlane),
+                          frame1->stride(VideoFrame::kUPlane),
+                          frame1->data(VideoFrame::kVPlane),
+                          frame1->stride(VideoFrame::kVPlane),
+                          frame2->data(VideoFrame::kYPlane),
+                          frame2->stride(VideoFrame::kYPlane),
+                          frame2->data(VideoFrame::kUPlane),
+                          frame2->stride(VideoFrame::kUPlane),
+                          frame2->data(VideoFrame::kVPlane),
+                          frame2->stride(VideoFrame::kVPlane),
+                          frame1->coded_size().width(),
+                          frame1->coded_size().height());
+}
+
 void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   int height = frame->coded_size().height();
   int stride_y = frame->stride(VideoFrame::kYPlane);
