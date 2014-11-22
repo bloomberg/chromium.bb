@@ -35202,6 +35202,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Stability.BrowserExitCodes" enum="WindowsExitCode">
+  <owner>siggi@chromium.org</owner>
+  <owner>erikwright@chromium.org</owner>
+  <summary>
+    Records the exit code of the browser process (on Windows) from the previous
+    launch. On crash, the exit code will indicate the exception code of the
+    crash. This is emitted in stability data with the first report on a
+    subsequent launch.
+  </summary>
+</histogram>
+
 <histogram name="Stars.Goog_Related" units="percent">
   <owner>yefim@chromium.org</owner>
   <summary>
@@ -56720,6 +56731,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Desktop"/>
   <int value="2" label="Metro Aura"/>
   <int value="3" label="Desktop Aura"/>
+</enum>
+
+<enum name="WindowsExitCode" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error"/>
+  <int value="3221225477" label="Access Violation"/>
+<!-- TODO(siggi): Add other values here at need. -->
+
 </enum>
 
 <enum name="WindowsVersion" type="int">
