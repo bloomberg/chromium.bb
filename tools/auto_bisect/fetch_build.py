@@ -16,6 +16,7 @@ Usage: fetch_build.py <type> <revision> <output_dir> [options]
 
 import argparse
 import errno
+import logging
 import os
 import shutil
 import sys
@@ -31,38 +32,27 @@ PERF_BUILDER = 'perf'
 FULL_BUILDER = 'full'
 
 
-def FetchBuild(builder_type, revision, output_dir, target_arch='ia32',
-               target_platform='chromium', deps_patch_sha=None):
-  """Downloads and extracts a build for a particular revision.
-
-  If the build is successfully downloaded and extracted to |output_dir|, the
-  downloaded archive file is also deleted.
+def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
+                           target_arch='ia32', target_platform='chromium',
+                           deps_patch_sha=None):
+  """Returns the location where a build archive is expected to be.
 
   Args:
     revision: Revision string, e.g. a git commit hash or SVN revision.
     builder_type: Type of build archive.
     target_arch: Architecture, e.g. "ia32".
     target_platform: Platform name, e.g. "chromium" or "android".
-    deps_patch_sha: SHA1 hash of a DEPS file, if we want to fetch a build for
-        a Chromium revision with custom dependencies.
+    deps_patch_sha: SHA1 hash which identifies a particular combination of
+        custom revisions for dependency repositories.
 
-  Raises:
-    IOError: Unzipping failed.
-    OSError: Directory creation or deletion failed.
+  Returns:
+    A pair of strings (bucket, path), where the archive is expected to be.
   """
   build_archive = BuildArchive.Create(
       builder_type, target_arch=target_arch, target_platform=target_platform)
   bucket = build_archive.BucketName()
   remote_path = build_archive.FilePath(revision, deps_patch_sha=deps_patch_sha)
-
-  filename = FetchFromCloudStorage(bucket, remote_path, output_dir)
-  if not filename:
-    raise RuntimeError('Failed to fetch gs://%s/%s.' % (bucket, remote_path))
-
-  Unzip(filename, output_dir)
-
-  if os.path.exists(filename):
-    os.remove(filename)
+  return bucket, remote_path
 
 
 class BuildArchive(object):
@@ -197,6 +187,17 @@ class FullBuildArchive(BuildArchive):
     return platform_to_directory.get(self._platform)
 
 
+def BuildIsAvailable(bucket_name, remote_path):
+  """Checks whether a build is currently archived at some place."""
+  logging.info('Checking existance: gs://%s/%s' % (bucket_name, remote_path))
+  try:
+    exists = cloud_storage.Exists(bucket_name, remote_path)
+    logging.info('Exists? %s' % exists)
+    return exists
+  except cloud_storage.CloudStorageError:
+    return False
+
+
 def FetchFromCloudStorage(bucket_name, source_path, destination_dir):
   """Fetches file(s) from the Google Cloud Storage.
 
@@ -216,26 +217,27 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_dir):
   gs_url = 'gs://%s/%s' % (bucket_name, source_path)
   try:
     if cloud_storage.Exists(bucket_name, source_path):
-      print 'Fetching file from %s...' % gs_url
+      logging.info('Fetching file from %s...', gs_url)
       cloud_storage.Get(bucket_name, source_path, target_file)
       if os.path.exists(target_file):
         return target_file
     else:
-      print 'File %s not found in cloud storage.' % gs_url
+      logging.info('File %s not found in cloud storage.', gs_url)
+      return None
   except Exception as e:
-    print 'Exception while fetching from cloud storage: %s' % e
+    logging.warn('Exception while fetching from cloud storage: %s', e)
     if os.path.exists(target_file):
       os.remove(target_file)
   return None
 
 
-def Unzip(filename, output_dir, verbose=True):
+def Unzip(file_path, output_dir, verbose=True):
   """Extracts a zip archive's contents into the given output directory.
 
   This was based on ExtractZip from build/scripts/common/chromium_utils.py.
 
   Args:
-    filename: Name of the zip file to extract.
+    file_path: Path of the zip file to extract.
     output_dir: Path to the destination directory.
     verbose: Whether to print out what is being extracted.
 
@@ -255,9 +257,9 @@ def Unzip(filename, output_dir, verbose=True):
   mac_zip_size_limit = 2 ** 32  # 4GB
   if (bisect_utils.IsLinuxHost() or
       (bisect_utils.IsMacHost()
-       and os.path.getsize(filename) < mac_zip_size_limit)):
+       and os.path.getsize(file_path) < mac_zip_size_limit)):
     unzip_command = ['unzip', '-o']
-    _UnzipUsingCommand(unzip_command, filename, output_dir)
+    _UnzipUsingCommand(unzip_command, file_path, output_dir)
     return
 
   # On Windows, try to use 7z if it is installed, otherwise fall back to the
@@ -266,24 +268,24 @@ def Unzip(filename, output_dir, verbose=True):
   sevenzip_path = r'C:\Program Files\7-Zip\7z.exe'
   if bisect_utils.IsWindowsHost() and os.path.exists(sevenzip_path):
     unzip_command = [sevenzip_path, 'x', '-y']
-    _UnzipUsingCommand(unzip_command, filename, output_dir)
+    _UnzipUsingCommand(unzip_command, file_path, output_dir)
     return
 
-  _UnzipUsingZipFile(filename, output_dir, verbose)
+  _UnzipUsingZipFile(file_path, output_dir, verbose)
 
 
-def _UnzipUsingCommand(unzip_command, filename, output_dir):
+def _UnzipUsingCommand(unzip_command, file_path, output_dir):
   """Extracts a zip file using an external command.
 
   Args:
     unzip_command: An unzipping command, as a string list, without the filename.
-    filename: Path to the zip file.
+    file_path: Path to the zip file.
     output_dir: The directory which the contents should be extracted to.
 
   Raises:
     IOError: The command had a non-zero exit code.
   """
-  absolute_filepath = os.path.abspath(filename)
+  absolute_filepath = os.path.abspath(file_path)
   command = unzip_command + [absolute_filepath]
   return_code = _RunCommandInDirectory(output_dir, command)
   if return_code:
@@ -300,10 +302,10 @@ def _RunCommandInDirectory(directory, command):
   return return_code
 
 
-def _UnzipUsingZipFile(filename, output_dir, verbose=True):
+def _UnzipUsingZipFile(file_path, output_dir, verbose=True):
   """Extracts a zip file using the Python zipfile module."""
   assert bisect_utils.IsWindowsHost() or bisect_utils.IsMacHost()
-  zf = zipfile.ZipFile(filename)
+  zf = zipfile.ZipFile(file_path)
   for name in zf.namelist():
     if verbose:
       print 'Extracting %s' % name
@@ -342,13 +344,18 @@ def Main(argv):
   parser.add_argument('--deps-patch-sha')
   args = parser.parse_args(argv[1:])
 
-  FetchBuild(
-      args.builder_type, args.revision, args.output_dir,
-      target_arch=args.target_arch, target_platform=args.target_platform,
+  bucket_name, remote_path = GetBucketAndRemotePath(
+      args.revision, args.builder_type, target_arch=args.target_arch,
+      target_platform=args.target_platform,
       deps_patch_sha=args.deps_patch_sha)
+  print 'Bucket name: %s, remote path: %s' % (bucket_name, remote_path)
 
+  if not BuildIsAvailable(bucket_name, remote_path):
+    print 'Build is not available.'
+    return 1
+
+  FetchFromCloudStorage(bucket_name, remote_path, args.output_dir)
   print 'Build has been downloaded to and extracted in %s.' % args.output_dir
-
   return 0
 
 

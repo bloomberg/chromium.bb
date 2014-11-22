@@ -44,7 +44,6 @@ import shutil
 import StringIO
 import sys
 import time
-import zipfile
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.path.pardir, 'telemetry'))
@@ -54,11 +53,11 @@ from bisect_results import BisectResults
 from bisect_state import BisectState
 import bisect_utils
 import builder
-import query_crbug
+import fetch_build
 import math_utils
+import query_crbug
 import request_build
 import source_control
-from telemetry.util import cloud_storage
 
 # The script is in chromium/src/tools/auto_bisect. Throughout this script,
 # we use paths to other things in the chromium/src repository.
@@ -120,6 +119,7 @@ BISECT_PATCH_FILE = 'deps_patch.txt'
 # SVN repo where the bisect try jobs are submitted.
 SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
 
+
 class RunGitError(Exception):
 
   def __str__(self):
@@ -129,130 +129,6 @@ class RunGitError(Exception):
 def GetSHA1HexDigest(contents):
   """Returns SHA1 hex digest of the given string."""
   return hashlib.sha1(contents).hexdigest()
-
-
-def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
-  """Gets the archive file name for the given revision."""
-  def PlatformName():
-    """Return a string to be used in paths for the platform."""
-    if bisect_utils.IsWindowsHost():
-      # Build archive for x64 is still stored with the "win32" suffix.
-      # See chromium_utils.PlatformName().
-      if bisect_utils.Is64BitWindows() and target_arch == 'x64':
-        return 'win32'
-      return 'win32'
-    if bisect_utils.IsLinuxHost():
-      # Android builds are also archived with the "full-build-linux prefix.
-      return 'linux'
-    if bisect_utils.IsMacHost():
-      return 'mac'
-    raise NotImplementedError('Unknown platform "%s".' % sys.platform)
-
-  base_name = 'full-build-%s' % PlatformName()
-  if not build_revision:
-    return base_name
-  if patch_sha:
-    build_revision = '%s_%s' % (build_revision, patch_sha)
-  return '%s_%s.zip' % (base_name, build_revision)
-
-
-def GetRemoteBuildPath(build_revision, target_platform='chromium',
-                       target_arch='ia32', patch_sha=None):
-  """Returns the URL to download the build from."""
-  def GetGSRootFolderName(target_platform):
-    """Returns the Google Cloud Storage root folder name."""
-    if bisect_utils.IsWindowsHost():
-      if bisect_utils.Is64BitWindows() and target_arch == 'x64':
-        return 'Win x64 Builder'
-      return 'Win Builder'
-    if bisect_utils.IsLinuxHost():
-      if target_platform == 'android':
-        return 'android_perf_rel'
-      return 'Linux Builder'
-    if bisect_utils.IsMacHost():
-      return 'Mac Builder'
-    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
-
-  base_filename = GetZipFileName(
-      build_revision, target_arch, patch_sha)
-  builder_folder = GetGSRootFolderName(target_platform)
-  return '%s/%s' % (builder_folder, base_filename)
-
-
-def FetchFromCloudStorage(bucket_name, source_path, destination_path):
-  """Fetches file(s) from the Google Cloud Storage.
-
-  Args:
-    bucket_name: Google Storage bucket name.
-    source_path: Source file path.
-    destination_path: Destination file path.
-
-  Returns:
-    Downloaded file path if exists, otherwise None.
-  """
-  target_file = os.path.join(destination_path, os.path.basename(source_path))
-  try:
-    if cloud_storage.Exists(bucket_name, source_path):
-      logging.info('Fetching file from gs//%s/%s ...',
-                   bucket_name, source_path)
-      cloud_storage.Get(bucket_name, source_path, destination_path)
-      if os.path.exists(target_file):
-        return target_file
-    else:
-      logging.info('File gs://%s/%s not found in cloud storage.',
-                    bucket_name, source_path)
-  except Exception as e:
-    logging.warn('Something went wrong while fetching file from cloud: %s', e)
-    if os.path.exists(target_file):
-      os.remove(target_file)
-  return None
-
-
-# This was copied from build/scripts/common/chromium_utils.py.
-def ExtractZip(filename, output_dir, verbose=True):
-  """ Extract the zip archive in the output directory."""
-  MaybeMakeDirectory(output_dir)
-
-  # On Linux and Mac, we use the unzip command as it will
-  # handle links and file bits (executable), which is much
-  # easier then trying to do that with ZipInfo options.
-  #
-  # The Mac Version of unzip unfortunately does not support Zip64, whereas
-  # the python module does, so we have to fall back to the python zip module
-  # on Mac if the file size is greater than 4GB.
-  #
-  # On Windows, try to use 7z if it is installed, otherwise fall back to python
-  # zip module and pray we don't have files larger than 512MB to unzip.
-  unzip_cmd = None
-  if ((bisect_utils.IsMacHost()
-       and os.path.getsize(filename) < 4 * 1024 * 1024 * 1024)
-      or bisect_utils.IsLinuxHost()):
-    unzip_cmd = ['unzip', '-o']
-  elif (bisect_utils.IsWindowsHost()
-        and os.path.exists('C:\\Program Files\\7-Zip\\7z.exe')):
-    unzip_cmd = ['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y']
-
-  if unzip_cmd:
-    # Make sure path is absolute before changing directories.
-    filepath = os.path.abspath(filename)
-    saved_dir = os.getcwd()
-    os.chdir(output_dir)
-    command = unzip_cmd + [filepath]
-    result = bisect_utils.RunProcess(command)
-    os.chdir(saved_dir)
-    if result:
-      raise IOError('unzip failed: %s => %s' % (str(command), result))
-  else:
-    assert bisect_utils.IsWindowsHost() or bisect_utils.IsMacHost()
-    zf = zipfile.ZipFile(filename)
-    for name in zf.namelist():
-      if verbose:
-        logging.info('Extracting %s', name)
-      zf.extract(name, output_dir)
-      if bisect_utils.IsMacHost():
-        # Restore permission bits.
-        os.chmod(os.path.join(output_dir, name),
-                 zf.getinfo(name).external_attr >> 16L)
 
 
 def WriteStringToFile(text, file_name):
@@ -312,13 +188,12 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
   return dict(re_results)
 
 
-def _WaitUntilBuildIsReady(
-    fetch_build, bot_name, builder_host, builder_port, build_request_id,
-    max_timeout):
+def _WaitUntilBuildIsReady(fetch_build_func, bot_name, builder_host,
+                           builder_port, build_request_id, max_timeout):
   """Waits until build is produced by bisect builder on try server.
 
   Args:
-    fetch_build: Function to check and download build from cloud storage.
+    fetch_build_func: Function to check and download build from cloud storage.
     bot_name: Builder bot name on try server.
     builder_host Try server host name.
     builder_port: Try server port.
@@ -338,7 +213,7 @@ def _WaitUntilBuildIsReady(
   start_time = time.time()
   while True:
     # Checks for build on gs://chrome-perf and download if exists.
-    res = fetch_build()
+    res = fetch_build_func()
     if res:
       return (res, 'Build successfully found')
     elapsed_status_check = time.time() - last_status_check
@@ -640,6 +515,7 @@ def _CheckRegressionConfidenceError(
         bad_sample_size=len(known_bad_value['values']))
   return error
 
+
 class DepotDirectoryRegistry(object):
 
   def __init__(self, src_cwd):
@@ -669,6 +545,7 @@ class DepotDirectoryRegistry(object):
       depot_name: The name of the depot (see DEPOT_NAMES).
     """
     os.chdir(self.GetDepotDir(depot_name))
+
 
 def _PrepareBisectBranch(parent_branch, new_branch):
   """Creates a new branch to submit bisect try job.
@@ -909,38 +786,6 @@ class BisectPerformanceMetrics(object):
       return destination_dir
     return None
 
-  def _GetBuildArchiveForRevision(self, revision, gs_bucket, target_arch,
-                                  patch_sha, out_dir):
-    """Checks and downloads build archive for a given revision.
-
-    Checks for build archive with Git hash or SVN revision. If either of the
-    file exists, then downloads the archive file.
-
-    Args:
-      revision: A git commit hash.
-      gs_bucket: Cloud storage bucket name.
-      target_arch: Architecture name string, e.g. "ia32" or "x64".
-      patch_sha: A SHA1 hex digest of a DEPS file patch, used while
-          bisecting 3rd party repositories.
-      out_dir: Build output directory where downloaded file is stored.
-
-    Returns:
-      Downloaded archive file path if exists, otherwise None.
-    """
-    # Source archive file path on cloud storage using Git revision.
-    source_file = GetRemoteBuildPath(
-        revision, self.opts.target_platform, target_arch, patch_sha)
-    downloaded_archive = FetchFromCloudStorage(gs_bucket, source_file, out_dir)
-    if not downloaded_archive:
-      # Get commit position for the given SHA.
-      commit_position = source_control.GetCommitPosition(revision)
-      if commit_position:
-        # Source archive file path on cloud storage using SVN revision.
-        source_file = GetRemoteBuildPath(
-            commit_position, self.opts.target_platform, target_arch, patch_sha)
-        return FetchFromCloudStorage(gs_bucket, source_file, out_dir)
-    return downloaded_archive
-
   def _DownloadAndUnzipBuild(self, revision, depot, build_type='Release'):
     """Downloads the build archive for the given revision.
 
@@ -991,73 +836,78 @@ class BisectPerformanceMetrics(object):
     Returns:
       File path of the downloaded file if successful, otherwise None.
     """
-    abs_build_dir = os.path.abspath(build_dir)
-    fetch_build_func = lambda: self._GetBuildArchiveForRevision(
-        revision, self.opts.gs_bucket, self.opts.target_arch,
-        deps_patch_sha, abs_build_dir)
+    bucket_name, remote_path = fetch_build.GetBucketAndRemotePath(
+        revision, target_arch=self.opts.target_arch,
+        target_platform=self.opts.target_platform,
+        deps_patch_sha=deps_patch_sha)
+    output_dir = os.path.abspath(build_dir)
+    fetch_build_func = lambda: fetch_build.FetchFromCloudStorage(
+        bucket_name, remote_path, output_dir)
 
-    # Downloaded archive file path, downloads build archive for given revision.
-    # This will be False if the build isn't yet available.
-    downloaded_file = fetch_build_func()
+    is_available = fetch_build.BuildIsAvailable(bucket_name, remote_path)
+    if is_available:
+      return fetch_build_func()
 
-    # When build archive doesn't exist, post a build request to try server
-    # and wait for the build to be produced.
-    if not downloaded_file:
-      downloaded_file = self._RequestBuildAndWait(
-          revision, fetch_build=fetch_build_func, patch=deps_patch)
-      if not downloaded_file:
-        return None
+    # When build archive doesn't exist, make a request and wait.
+    return self._RequestBuildAndWait(
+        revision, fetch_build_func, deps_patch=deps_patch)
 
-    return downloaded_file
-
-  def _RequestBuildAndWait(self, git_revision, fetch_build, patch=None):
+  def _RequestBuildAndWait(self, git_revision, fetch_build_func,
+                           deps_patch=None):
     """Triggers a try job for a build job.
 
-    This function prepares and starts a try job on the tryserver.chromium.perf
-    master, and waits for the binaries to be produced and archived in cloud
-    storage. Once the build is ready it's downloaded.
+    This function prepares and starts a try job for a builder, and waits for
+    the archive to be produced and archived. Once the build is ready it is
+    downloaded.
+
+    For performance tests, builders on the tryserver.chromium.perf are used.
+
+    TODO(qyearsley): Make this function take "builder_type" as a parameter
+    and make requests to different bot names based on that parameter.
 
     Args:
-      git_revision: A Git hash revision.
-      fetch_build: Function to check and download build from cloud storage.
-      patch: A DEPS patch (used while bisecting 3rd party repositories).
+      git_revision: A git commit hash.
+      fetch_build_func: Function to check and download build from cloud storage.
+      deps_patch: DEPS patch string, used when bisecting dependency repos.
 
     Returns:
       Downloaded archive file path when requested build exists and download is
       successful, otherwise None.
     """
-    if not fetch_build:
-      return False
+    if not fetch_build_func:
+      return None
 
     # Create a unique ID for each build request posted to try server builders.
     # This ID is added to "Reason" property of the build.
     build_request_id = GetSHA1HexDigest(
-        '%s-%s-%s' % (git_revision, patch, time.time()))
+        '%s-%s-%s' % (git_revision, deps_patch, time.time()))
 
-    # Reverts any changes to DEPS file.
+    # Revert any changes to DEPS file.
     source_control.CheckoutFileAtRevision(
-      bisect_utils.FILE_DEPS, git_revision, cwd=self.src_cwd)
+        bisect_utils.FILE_DEPS, git_revision, cwd=self.src_cwd)
 
     bot_name = self._GetBuilderName(self.opts.target_platform)
     build_timeout = self._GetBuilderBuildTime()
-    target_file = None
+
     try:
-      # Execute try job request to build revision with patch.
-      _BuilderTryjob(git_revision, bot_name, build_request_id, patch)
-      target_file, error_msg = _WaitUntilBuildIsReady(
-          fetch_build, bot_name, self.opts.builder_host,
-          self.opts.builder_port, build_request_id, build_timeout)
-      if not target_file:
-        logging.warn('%s [revision: %s]', error_msg, git_revision)
+      _BuilderTryjob(git_revision, bot_name, build_request_id, deps_patch)
     except RunGitError as e:
       logging.warn('Failed to post builder try job for revision: [%s].\n'
-             'Error: %s', git_revision, e)
+                   'Error: %s', git_revision, e)
+      return None
 
-    return target_file
+    archive_filename, error_msg = _WaitUntilBuildIsReady(
+        fetch_build_func, bot_name, self.opts.builder_host,
+        self.opts.builder_port, build_request_id, build_timeout)
+    if not archive_filename:
+      logging.warn('%s [revision: %s]', error_msg, git_revision)
+    return archive_filename
 
   @staticmethod
-  def _GetBuilderName(target_platform):
+  def _GetBuilderName(target_platform, builder_type=fetch_build.PERF_BUILDER):
     """Gets builder bot name and build time in seconds based on platform."""
+    if builder_type != fetch_build.PERF_BUILDER:
+      raise NotImplementedError('No builder names for non-perf builds yet.')
     if bisect_utils.IsWindowsHost():
       return 'win_perf_bisect_builder'
     if bisect_utils.IsLinuxHost():
@@ -1086,6 +936,8 @@ class BisectPerformanceMetrics(object):
     The build output directory is whereever the binaries are expected to
     be in order to start Chrome and run tests.
 
+    TODO: Simplify and clarify this method if possible.
+
     Args:
       downloaded_file: File path of the downloaded zip file.
       build_dir: Directory where the the zip file was downloaded to.
@@ -1095,15 +947,19 @@ class BisectPerformanceMetrics(object):
       True if successful, False otherwise.
     """
     abs_build_dir = os.path.abspath(build_dir)
-    output_dir = os.path.join(
-        abs_build_dir, GetZipFileName(target_arch=self.opts.target_arch))
+    output_dir = os.path.join(abs_build_dir, self.GetZipFileBuildDirName())
+    logging.info('EXPERIMENTAL RUN, _UnzipAndMoveBuildProducts locals %s',
+                 str(locals()))
 
     try:
       RemoveDirectoryTree(output_dir)
       self.BackupOrRestoreOutputDirectory(restore=False)
       # Build output directory based on target(e.g. out/Release, out/Debug).
       target_build_output_dir = os.path.join(abs_build_dir, build_type)
-      ExtractZip(downloaded_file, abs_build_dir)
+
+      logging.info('Extracting "%s" to "%s"', downloaded_file, abs_build_dir)
+      fetch_build.Unzip(downloaded_file, abs_build_dir)
+
       if not os.path.exists(output_dir):
         # Due to recipe changes, the builds extract folder contains
         # out/Release instead of full-build-<platform>/Release.
@@ -1128,10 +984,33 @@ class BisectPerformanceMetrics(object):
         os.remove(downloaded_file)
     return False
 
+  @staticmethod
+  def GetZipFileBuildDirName():
+    """Gets the base file name of the zip file.
+
+    After extracting the zip file, this is the name of the directory where
+    the build files are expected to be. Possibly.
+
+    TODO: Make sure that this returns the actual directory name where the
+    Release or Debug directory is inside of the zip files. This probably
+    depends on the builder recipe, and may depend on whether the builder is
+    a perf builder or full builder.
+
+    Returns:
+      The name of the directory inside a build archive which is expected to
+      contain a Release or Debug directory.
+    """
+    if bisect_utils.IsWindowsHost():
+      return 'full-build-win32'
+    if bisect_utils.IsLinuxHost():
+      return 'full-build-linux'
+    if bisect_utils.IsMacHost():
+      return 'full-build-mac'
+    raise NotImplementedError('Unknown platform "%s".' % sys.platform)
+
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
-    if (self.opts.target_platform in ['chromium', 'android'] and
-        self.opts.gs_bucket):
+    if self.opts.target_platform in ['chromium', 'android']:
       return (depot == 'chromium' or
               'chromium' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'] or
               'v8' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'])
@@ -1287,7 +1166,7 @@ class BisectPerformanceMetrics(object):
     if self.IsDownloadable(depot) and revision:
       build_success = self._DownloadAndUnzipBuild(revision, depot)
     else:
-      # These codes are executed when bisect bots builds binaries locally.
+      # Build locally.
       build_success = self.builder.Build(depot, self.opts)
     os.chdir(cwd)
     return build_success
@@ -2382,6 +2261,9 @@ def RemakeDirectoryTree(path_to_dir):
 
 def RemoveDirectoryTree(path_to_dir):
   """Removes a directory tree. Returns True if successful or False otherwise."""
+  if os.path.isfile(path_to_dir):
+    logging.info('REMOVING FILE %s' % path_to_dir)
+    os.remove(path_to_dir)
   try:
     if os.path.exists(path_to_dir):
       shutil.rmtree(path_to_dir)
@@ -2427,7 +2309,6 @@ class BisectOptions(object):
     self.debug_ignore_perf_test = None
     self.debug_ignore_regression_confidence = None
     self.debug_fake_first_test_mean = 0
-    self.gs_bucket = None
     self.target_arch = 'ia32'
     self.target_build_type = 'Release'
     self.builder_host = None
@@ -2525,9 +2406,6 @@ class BisectOptions(object):
                        help='Number of threads for goma, only if using goma.')
     group.add_argument('--output_buildbot_annotations', action='store_true',
                        help='Add extra annotation output for buildbot.')
-    group.add_argument('--gs_bucket', default='', dest='gs_bucket',
-                       help='Name of Google Storage bucket to upload or '
-                            'download build. e.g., chrome-perf')
     group.add_argument('--target_arch', default='ia32',
                        dest='target_arch', choices=['ia32', 'x64', 'arm'],
                        help='The target build architecture. Choices are "ia32" '
@@ -2588,16 +2466,6 @@ class BisectOptions(object):
       if (not opts.metric and
           opts.bisect_mode != bisect_utils.BISECT_MODE_RETURN_CODE):
         raise RuntimeError('missing required parameter: --metric')
-
-      if opts.gs_bucket:
-        if not cloud_storage.List(opts.gs_bucket):
-          raise RuntimeError('Invalid Google Storage: gs://%s' % opts.gs_bucket)
-        if not opts.builder_host:
-          raise RuntimeError('Must specify try server host name using '
-                             '--builder_host when gs_bucket is used.')
-        if not opts.builder_port:
-          raise RuntimeError('Must specify try server port number using '
-                             '--builder_port when gs_bucket is used.')
 
       if opts.bisect_mode != bisect_utils.BISECT_MODE_RETURN_CODE:
         metric_values = opts.metric.split('/')
