@@ -101,6 +101,8 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         return "default";
       case blink::WebReferrerPolicyOrigin:
         return "origin";
+      case blink::WebReferrerPolicyOriginWhenCrossOrigin:
+        return "origin-when-crossorigin";
       case blink::WebReferrerPolicyAlways:
         return "always";
       case blink::WebReferrerPolicyNever:
@@ -580,6 +582,29 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
   EXPECT_EQ("Referrer is " +
                 test_server_->GetURL("files/referrer-policy-log.html").spec(),
             title);
+}
+
+// Origin When Cross-Origin
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickHTTPSRedirectToHTTPOriginWhenCrossOrigin) {
+  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTPS,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP, CURRENT_TAB,
+                  blink::WebMouseEvent::ButtonLeft, EXPECT_ORIGIN_AS_REFERRER);
+}
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickRedirectToHTTPSOriginWhenCrossOrigin) {
+  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTPS, CURRENT_TAB,
+                  blink::WebMouseEvent::ButtonLeft, EXPECT_ORIGIN_AS_REFERRER);
+}
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickRedirectToHTTPOriginWhenCrossOrigin) {
+  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTP, CURRENT_TAB,
+                  blink::WebMouseEvent::ButtonLeft, EXPECT_FULL_REFERRER);
 }
 
 // Reduced 'referer' granularity flag tests.
