@@ -5,9 +5,8 @@
 #ifndef DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
 #define DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
 
-#include <libudev.h>
-
 #include "base/memory/scoped_ptr.h"
+#include "device/udev_linux/udev.h"
 
 #if !defined(USE_UDEV)
 #error "USE_UDEV not defined"

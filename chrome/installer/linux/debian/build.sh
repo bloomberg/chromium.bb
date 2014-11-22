@@ -299,11 +299,6 @@ DPKG_SHLIB_DEPS=$(sed \
     's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.9.5-0ubuntu0), /g' \
     <<< $DPKG_SHLIB_DEPS)
 
-# Fix-up libudev dependency because Ubuntu 13.04 has libudev1 instead of
-# libudev0.
-DPKG_SHLIB_DEPS=$(sed 's/\(libudev0 ([^)]*)\), /\1 | libudev1 (>= 198), /g' \
-                  <<< $DPKG_SHLIB_DEPS)
-
 COMMON_DEPS="${DPKG_SHLIB_DEPS}, ${ADDITION_DEPS}"
 COMMON_PREDEPS="dpkg (>= 1.14.0)"
 

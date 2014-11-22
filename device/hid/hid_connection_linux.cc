@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <libudev.h>
 #include <linux/hidraw.h>
 #include <sys/ioctl.h>
 

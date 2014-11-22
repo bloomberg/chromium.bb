@@ -63,11 +63,17 @@
         }],
         ['use_udev==1', {
           'sources': [
-            'src/libusb/os/linux_udev.c',
+            'src/libusb/os/linux_udev.cc',
           ],
           'defines': [
             'HAVE_LIBUDEV=1',
             'USE_UDEV=1',
+          ],
+          'dependencies': [
+            '../../device/udev_linux/udev.gyp:udev_linux',
+          ],
+          'include_dirs': [
+            '../..',
           ],
         }],
         ['OS=="linux" and use_udev==0', {

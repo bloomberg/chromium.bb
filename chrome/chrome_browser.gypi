@@ -3189,7 +3189,7 @@
         }],
         ['use_udev == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:udev',
+            '../device/udev_linux/udev.gyp:udev_linux',
           ],
         }],
         ['OS=="linux"', {

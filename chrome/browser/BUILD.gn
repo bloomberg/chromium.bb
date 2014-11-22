@@ -387,8 +387,10 @@ static_library("browser") {
   }
 
   if (is_linux) {
-    configs += [ "//build/config/linux:udev" ]
-    deps += [ "//device/media_transfer_protocol" ]
+    deps += [
+      "//device/media_transfer_protocol",
+      "//device/udev_linux"
+    ]
   }
   if (is_linux && !is_chromeos) {
     deps += [ "//third_party/speech-dispatcher" ]

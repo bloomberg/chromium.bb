@@ -39,7 +39,7 @@ source_set("usb") {
   ]
 
   if (is_linux) {
-    configs += [ "//build/config/linux:udev" ]
+    deps += [ "//device/udev_linux" ]
   }
 }
 

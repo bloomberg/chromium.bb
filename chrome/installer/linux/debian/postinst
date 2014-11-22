@@ -57,7 +57,6 @@ update-alternatives --install /usr/bin/google-chrome google-chrome \
 @@include@@../common/symlinks.include
 
 remove_udev_symlinks
-add_udev_symlinks
 
 ## MAIN ##
 if [ ! -e "$DEFAULTS_FILE" ]; then

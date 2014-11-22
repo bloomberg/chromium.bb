@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <libudev.h>
+#include "device/hid/input_service_linux.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "device/hid/input_service_linux.h"
+#include "device/udev_linux/udev.h"
 
 namespace device {
 

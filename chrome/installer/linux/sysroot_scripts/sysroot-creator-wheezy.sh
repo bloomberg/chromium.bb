@@ -116,8 +116,6 @@ DEBIAN_PACKAGES="\
   libstdc++6 \
   libstdc++6-4.6-dev \
   libtasn1-3 \
-  libudev0 \
-  libudev-dev \
   libx11-6 \
   libx11-dev \
   libx11-xcb1 \

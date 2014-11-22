@@ -4,11 +4,10 @@
 
 #include "device/hid/device_monitor_linux.h"
 
-#include <libudev.h>
-
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "device/udev_linux/udev.h"
 
 namespace device {
 

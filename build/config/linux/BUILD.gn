@@ -8,6 +8,12 @@ import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//tools/generate_library_loader/generate_library_loader.gni")
 
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../../linux/system.gyp") ],
+    "scope",
+    [ "../../linux/system.gyp" ])
+
 config("sdk") {
   if (sysroot != "") {
     cflags = [ "--sysroot=" + sysroot ]
@@ -45,10 +51,6 @@ pkg_config("pangocairo") {
 
 pkg_config("pangoft2") {
   packages = [ "pangoft2" ]
-}
-
-pkg_config("udev") {
-  packages = [ "libudev" ]
 }
 
 # Note: if your target also depends on //dbus, you don't need to add this
@@ -140,19 +142,7 @@ if (use_brlapi) {
     header = "<brlapi.h>"
     config = ":brlapi_config"
 
-    functions = [
-      "brlapi_getHandleSize",
-      "brlapi_error_location",
-      "brlapi_strerror",
-      "brlapi__acceptKeys",
-      "brlapi__openConnection",
-      "brlapi__closeConnection",
-      "brlapi__getDisplaySize",
-      "brlapi__enterTtyModeWithPath",
-      "brlapi__leaveTtyMode",
-      "brlapi__writeDots",
-      "brlapi__readKey",
-    ]
+    functions = gypi_values.libbrlapi_functions
   }
 }
 
@@ -166,7 +156,7 @@ pkg_config("gio_config") {
   # (saucy) and earlier. Update the code to use
   # g_settings_schema_source_list_schemas instead.
   defines = [ "USE_GIO", "GLIB_DISABLE_DEPRECATION_WARNINGS" ]
- 
+
   # TODO(brettw) Theoretically I think ignore_libs should be set so that we
   # don't link directly to GIO and use the loader generated below. But the gio
   # target in GYP doesn't make any sense to me and appears to link directly to
@@ -183,15 +173,7 @@ generate_library_loader("gio") {
   header = "<gio/gio.h>"
   config = ":gio_config"
 
-  functions = [
-    "g_settings_new",
-    "g_settings_get_child",
-    "g_settings_get_string",
-    "g_settings_get_boolean",
-    "g_settings_get_int",
-    "g_settings_get_strv",
-    "g_settings_list_schemas",
-  ]
+  functions = gypi_values.libgio_functions
 }
 
 # This generates a target named "libpci".
@@ -201,14 +183,34 @@ generate_library_loader("libpci") {
   output_cc = "libpci_loader.cc"
   header = "<pci/pci.h>"
 
-  functions = [
-    "pci_alloc",
-    "pci_init",
-    "pci_cleanup",
-    "pci_scan_bus",
-    "pci_fill_info",
-    "pci_lookup_name",
-  ]
+  functions = gypi_values.libpci_functions
 }
 
 # Looking for libspeechd? Use //third_party/speech-dispatcher
+
+# This generates a target named "udev0_loader".
+generate_library_loader("udev0_loader") {
+  name = "LibUdev0Loader"
+  output_h = "libudev0.h"
+  output_cc = "libudev0_loader.cc"
+  header = "\"third_party/libudev/libudev0.h\""
+
+  functions = gypi_values.libudev_functions
+}
+
+# This generates a target named "udev1_loader".
+generate_library_loader("udev1_loader") {
+  name = "LibUdev1Loader"
+  output_h = "libudev1.h"
+  output_cc = "libudev1_loader.cc"
+  header = "\"third_party/libudev/libudev1.h\""
+
+  functions = gypi_values.libudev_functions
+}
+
+group("udev") {
+  deps = [
+    ":udev0_loader",
+    ":udev1_loader",
+  ]
+}

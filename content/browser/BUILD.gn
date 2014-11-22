@@ -220,7 +220,7 @@ source_set("browser") {
   }
 
   if (use_udev) {
-    configs += [ "//build/config/linux:udev" ]
+    deps += [ "//device/udev_linux" ]
   } else {
     # Remove udev-specific sources.
     sources -= [

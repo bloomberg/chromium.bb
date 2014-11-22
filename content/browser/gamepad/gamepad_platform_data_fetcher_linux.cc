@@ -5,7 +5,6 @@
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_linux.h"
 
 #include <fcntl.h>
-#include <libudev.h>
 #include <linux/joystick.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -35,10 +34,10 @@ void CloseFileDescriptorIfValid(int fd) {
 }
 
 bool IsGamepad(udev_device* dev, int* index, std::string* path) {
-  if (!udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
+  if (!device::udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
     return false;
 
-  const char* node_path = udev_device_get_devnode(dev);
+  const char* node_path = device::udev_device_get_devnode(dev);
   if (!node_path)
     return false;
 
@@ -126,7 +125,7 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
     // joystick device. In order to get the information about the physical
     // hardware, get the parent device that is also in the "input" subsystem.
     // This function should just walk up the tree one level.
-    dev = udev_device_get_parent_with_subsystem_devtype(
+    dev = device::udev_device_get_parent_with_subsystem_devtype(
         dev, kInputSubsystem, NULL);
     if (!dev) {
       // Unable to get device information, don't use this device.
@@ -142,32 +141,36 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
       return;
     }
 
-    const char* vendor_id = udev_device_get_sysattr_value(dev, "id/vendor");
-    const char* product_id = udev_device_get_sysattr_value(dev, "id/product");
+    const char* vendor_id =
+        device::udev_device_get_sysattr_value(dev, "id/vendor");
+    const char* product_id =
+        device::udev_device_get_sysattr_value(dev, "id/product");
     mapper = GetGamepadStandardMappingFunction(vendor_id, product_id);
 
     // Driver returns utf-8 strings here, so combine in utf-8 first and
     // convert to WebUChar later once we've picked an id string.
-    const char* name = udev_device_get_sysattr_value(dev, "name");
+    const char* name = device::udev_device_get_sysattr_value(dev, "name");
     std::string name_string = base::StringPrintf("%s", name);
 
     // In many cases the information the input subsystem contains isn't
     // as good as the information that the device bus has, walk up further
     // to the subsystem/device type "usb"/"usb_device" and if this device
     // has the same vendor/product id, prefer the description from that.
-    struct udev_device* usb_dev = udev_device_get_parent_with_subsystem_devtype(
-        dev, kUsbSubsystem, kUsbDeviceType);
+    struct udev_device* usb_dev =
+        device::udev_device_get_parent_with_subsystem_devtype(
+            dev, kUsbSubsystem, kUsbDeviceType);
     if (usb_dev) {
       const char* usb_vendor_id =
-          udev_device_get_sysattr_value(usb_dev, "idVendor");
+          device::udev_device_get_sysattr_value(usb_dev, "idVendor");
       const char* usb_product_id =
-          udev_device_get_sysattr_value(usb_dev, "idProduct");
+          device::udev_device_get_sysattr_value(usb_dev, "idProduct");
 
       if (strcmp(vendor_id, usb_vendor_id) == 0 &&
           strcmp(product_id, usb_product_id) == 0) {
         const char* manufacturer =
-            udev_device_get_sysattr_value(usb_dev, "manufacturer");
-        const char* product = udev_device_get_sysattr_value(usb_dev, "product");
+            device::udev_device_get_sysattr_value(usb_dev, "manufacturer");
+        const char* product =
+            device::udev_device_get_sysattr_value(usb_dev, "product");
 
         // Replace the previous name string with one containing the better
         // information, again driver returns utf-8 strings here so combine
@@ -205,25 +208,26 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 
 void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
   device::ScopedUdevEnumeratePtr enumerate(
-      udev_enumerate_new(udev_->udev_handle()));
+      device::udev_enumerate_new(udev_->udev_handle()));
   if (!enumerate)
     return;
-  int ret =
-      udev_enumerate_add_match_subsystem(enumerate.get(), kInputSubsystem);
+  int ret = device::udev_enumerate_add_match_subsystem(enumerate.get(),
+                                                       kInputSubsystem);
   if (ret != 0)
     return;
-  ret = udev_enumerate_scan_devices(enumerate.get());
+  ret = device::udev_enumerate_scan_devices(enumerate.get());
   if (ret != 0)
     return;
 
-  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
+  udev_list_entry* devices =
+      device::udev_enumerate_get_list_entry(enumerate.get());
   for (udev_list_entry* dev_list_entry = devices; dev_list_entry != NULL;
-       dev_list_entry = udev_list_entry_get_next(dev_list_entry)) {
+       dev_list_entry = device::udev_list_entry_get_next(dev_list_entry)) {
     // Get the filename of the /sys entry for the device and create a
     // udev_device object (dev) representing it
-    const char* path = udev_list_entry_get_name(dev_list_entry);
+    const char* path = device::udev_list_entry_get_name(dev_list_entry);
     device::ScopedUdevDevicePtr dev(
-        udev_device_new_from_syspath(udev_->udev_handle(), path));
+        device::udev_device_new_from_syspath(udev_->udev_handle(), path));
     if (!dev)
       continue;
     RefreshDevice(dev.get());

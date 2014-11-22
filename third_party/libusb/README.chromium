@@ -17,3 +17,4 @@ Local Modifications:
 - windows-build.patch has been applied.
 - darwin-sigfpe.patch has been applied.
 - upstream-tick147.patch has been applied.
+- linux-udev.patch has been applied.

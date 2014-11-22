@@ -4,30 +4,28 @@
 
 #include "content/browser/udev_linux.h"
 
-#include <libudev.h>
-
 #include "base/message_loop/message_loop.h"
 
 namespace content {
 
 UdevLinux::UdevLinux(const std::vector<UdevMonitorFilter>& filters,
                      const UdevNotificationCallback& callback)
-    : udev_(udev_new()),
-      monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev")),
+    : udev_(device::udev_new()),
+      monitor_(device::udev_monitor_new_from_netlink(udev_.get(), "udev")),
       monitor_fd_(-1),
       callback_(callback) {
   CHECK(udev_);
   CHECK(monitor_);
 
   for (size_t i = 0; i < filters.size(); ++i) {
-    int ret = udev_monitor_filter_add_match_subsystem_devtype(
+    int ret = device::udev_monitor_filter_add_match_subsystem_devtype(
         monitor_.get(), filters[i].subsystem, filters[i].devtype);
     CHECK_EQ(0, ret);
   }
 
-  int ret = udev_monitor_enable_receiving(monitor_.get());
+  int ret = device::udev_monitor_enable_receiving(monitor_.get());
   CHECK_EQ(0, ret);
-  monitor_fd_ = udev_monitor_get_fd(monitor_.get());
+  monitor_fd_ = device::udev_monitor_get_fd(monitor_.get());
   CHECK_GE(monitor_fd_, 0);
 
   bool success = base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -53,7 +51,7 @@ void UdevLinux::OnFileCanReadWithoutBlocking(int fd) {
   // representing the device which changed and what type of change occured.
   DCHECK_EQ(monitor_fd_, fd);
   device::ScopedUdevDevicePtr dev(
-      udev_monitor_receive_device(monitor_.get()));
+      device::udev_monitor_receive_device(monitor_.get()));
   if (!dev)
     return;
 

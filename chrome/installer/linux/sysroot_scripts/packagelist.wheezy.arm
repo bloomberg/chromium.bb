@@ -140,8 +140,6 @@ main/p/pulseaudio/libpulse-mainloop-glib0_2.0-6.1_armhf.deb
 main/s/speech-dispatcher/libspeechd2_0.7.1-6.2_armhf.deb
 main/s/speech-dispatcher/libspeechd-dev_0.7.1-6.2_armhf.deb
 main/s/speech-dispatcher/speech-dispatcher_0.7.1-6.2_armhf.deb
-main/u/udev/libudev0_175-7.2_armhf.deb
-main/u/udev/libudev-dev_175-7.2_armhf.deb
 main/x/x11proto-composite/x11proto-composite-dev_0.4.2-2_all.deb
 main/x/x11proto-core/x11proto-core-dev_7.0.23-1_all.deb
 main/x/x11proto-damage/x11proto-damage-dev_1.2.1-2_all.deb

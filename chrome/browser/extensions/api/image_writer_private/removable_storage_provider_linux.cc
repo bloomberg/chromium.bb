@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <libudev.h>
-
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
@@ -44,34 +42,36 @@ static int get_device_blk_size(const std::string& path) {
 
 bool RemovableStorageProvider::PopulateDeviceList(
     scoped_refptr<StorageDeviceList> device_list) {
-  device::ScopedUdevPtr udev(udev_new());
+  device::ScopedUdevPtr udev(device::udev_new());
   if (!udev) {
     DLOG(ERROR) << "Can't create udev";
     return false;
   }
 
   /* Create a list of the devices in the 'block' subsystem. */
-  device::ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev.get()));
+  device::ScopedUdevEnumeratePtr enumerate(
+      device::udev_enumerate_new(udev.get()));
 
-  udev_enumerate_add_match_subsystem(enumerate.get(), "block");
-  udev_enumerate_scan_devices(enumerate.get());
-  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
+  device::udev_enumerate_add_match_subsystem(enumerate.get(), "block");
+  device::udev_enumerate_scan_devices(enumerate.get());
+  udev_list_entry* devices =
+      device::udev_enumerate_get_list_entry(enumerate.get());
 
   udev_list_entry* dev_list_entry;
   udev_list_entry_foreach(dev_list_entry, devices) {
-    const char* path = udev_list_entry_get_name(dev_list_entry);
+    const char* path = device::udev_list_entry_get_name(dev_list_entry);
     device::ScopedUdevDevicePtr cur_device(
-        udev_device_new_from_syspath(udev.get(), path));
+        device::udev_device_new_from_syspath(udev.get(), path));
 
     const char* partition =
-        udev_device_get_sysattr_value(cur_device.get(), "partition");
+        device::udev_device_get_sysattr_value(cur_device.get(), "partition");
     if (partition && get_int_attr(partition)) {
       // This is a partition of a device, not the device itself
       continue;
     }
 
     const char* removable =
-        udev_device_get_sysattr_value(cur_device.get(), "removable");
+        device::udev_device_get_sysattr_value(cur_device.get(), "removable");
     if (!removable || !get_int_attr(removable)) {
       // This is not a removable storage device.
       continue;
@@ -80,8 +80,9 @@ bool RemovableStorageProvider::PopulateDeviceList(
     /* Get the parent SCSI device that contains the model
        and manufacturer.  You can look at the hierarchy with
        udevadm info -a -n /dev/<device> */
-    udev_device* parent_device = udev_device_get_parent_with_subsystem_devtype(
-        cur_device.get(), "scsi", NULL);
+    udev_device* parent_device =
+        device::udev_device_get_parent_with_subsystem_devtype(
+            cur_device.get(), "scsi", NULL);
     if (!parent_device) {
       // this is not a usb device
       continue;
@@ -90,13 +91,15 @@ bool RemovableStorageProvider::PopulateDeviceList(
     linked_ptr<api::image_writer_private::RemovableStorageDevice> device_item(
         new api::image_writer_private::RemovableStorageDevice());
     device_item->vendor =
-        udev_device_get_sysattr_value(parent_device, "vendor");
-    device_item->model = udev_device_get_sysattr_value(parent_device, "model");
+        device::udev_device_get_sysattr_value(parent_device, "vendor");
+    device_item->model =
+        device::udev_device_get_sysattr_value(parent_device, "model");
     // TODO (smaskell): Don't expose raw device path
-    device_item->storage_unit_id = udev_device_get_devnode(cur_device.get());
-    device_item->capacity =
-        get_int_attr(udev_device_get_sysattr_value(cur_device.get(), "size")) *
-        get_device_blk_size(device_item->storage_unit_id);
+    device_item->storage_unit_id =
+        device::udev_device_get_devnode(cur_device.get());
+    device_item->capacity = get_int_attr(device::udev_device_get_sysattr_value(
+                                cur_device.get(), "size")) *
+                            get_device_blk_size(device_item->storage_unit_id);
     device_item->removable = removable;
 
     device_list->data.push_back(device_item);

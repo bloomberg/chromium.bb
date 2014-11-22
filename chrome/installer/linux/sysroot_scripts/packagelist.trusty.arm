@@ -143,8 +143,6 @@ main/p/pulseaudio/libpulse-mainloop-glib0_4.0-0ubuntu11_armhf.deb
 main/s/speech-dispatcher/libspeechd2_0.8-5ubuntu1_armhf.deb
 main/s/speech-dispatcher/libspeechd-dev_0.8-5ubuntu1_armhf.deb
 main/s/speech-dispatcher/speech-dispatcher_0.8-5ubuntu1_armhf.deb
-main/s/systemd/libudev1_204-5ubuntu20_armhf.deb
-main/s/systemd/libudev-dev_204-5ubuntu20_armhf.deb
 main/x/x11proto-composite/x11proto-composite-dev_0.4.2-2_all.deb
 main/x/x11proto-core/x11proto-core-dev_7.0.24-1_all.deb
 main/x/x11proto-damage/x11proto-damage-dev_1.2.1-2_all.deb

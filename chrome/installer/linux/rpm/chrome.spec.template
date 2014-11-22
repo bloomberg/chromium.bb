@@ -119,7 +119,6 @@ remove_nss_symlinks
 add_nss_symlinks
 
 remove_udev_symlinks
-add_udev_symlinks
 
 DEFAULTS_FILE="/etc/default/@@PACKAGE@@"
 if [ ! -e "$DEFAULTS_FILE" ]; then

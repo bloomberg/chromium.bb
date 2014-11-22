@@ -8,13 +8,18 @@ if (use_udev) {
   source_set("udev_linux") {
     sources = [
       "scoped_udev.h",
+      "udev.cc",
+      "udev.h",
+      "udev0_loader.cc",
+      "udev0_loader.h",
+      "udev1_loader.cc",
+      "udev1_loader.h",
+      "udev_loader.cc",
+      "udev_loader.h",
     ]
 
     deps = [
       "//base",
-    ]
-
-    configs += [
       "//build/config/linux:udev",
     ]
   }

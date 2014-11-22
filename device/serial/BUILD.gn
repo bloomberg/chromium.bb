@@ -41,13 +41,14 @@ static_library("serial") {
     "serial_service_impl.h",
   ]
 
-  if (is_linux) {
-    configs += [ "//build/config/linux:udev" ]
-  }
-
   public_deps = [
     ":serial_mojo",
   ]
+  deps = []
+
+  if (is_linux) {
+    deps += [ "//device/udev_linux" ]
+  }
 }
 
 # GYP version: device/serial/serial.gyp:device_serial_test_util

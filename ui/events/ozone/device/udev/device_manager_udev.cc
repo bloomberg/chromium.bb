@@ -4,8 +4,6 @@
 
 #include "ui/events/ozone/device/udev/device_manager_udev.h"
 
-#include <libudev.h>
-
 #include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -15,7 +13,7 @@ namespace ui {
 
 namespace {
 
-const char* kSubsystems[] = {
+const char* const kSubsystems[] = {
   "input",
   "drm",
 };
@@ -51,23 +49,24 @@ void UdevLog(struct udev* udev,
 
 // Create libudev context.
 device::ScopedUdevPtr UdevCreate() {
-  struct udev* udev = udev_new();
+  struct udev* udev = device::udev_new();
   if (udev) {
-    udev_set_log_fn(udev, UdevLog);
-    udev_set_log_priority(udev, SYS_LOG_DEBUG);
+    device::udev_set_log_fn(udev, UdevLog);
+    device::udev_set_log_priority(udev, SYS_LOG_DEBUG);
   }
   return device::ScopedUdevPtr(udev);
 }
 
 // Start monitoring input device changes.
 device::ScopedUdevMonitorPtr UdevCreateMonitor(struct udev* udev) {
-  struct udev_monitor* monitor = udev_monitor_new_from_netlink(udev, "udev");
+  struct udev_monitor* monitor =
+      device::udev_monitor_new_from_netlink(udev, "udev");
   if (monitor) {
     for (size_t i = 0; i < arraysize(kSubsystems); ++i)
-      udev_monitor_filter_add_match_subsystem_devtype(
+      device::udev_monitor_filter_add_match_subsystem_devtype(
           monitor, kSubsystems[i], NULL);
 
-    if (udev_monitor_enable_receiving(monitor))
+    if (device::udev_monitor_enable_receiving(monitor))
       LOG(ERROR) << "Failed to start receiving events from udev";
   } else {
     LOG(ERROR) << "Failed to create udev monitor";
@@ -89,7 +88,7 @@ void DeviceManagerUdev::CreateMonitor() {
     return;
   monitor_ = UdevCreateMonitor(udev_.get());
   if (monitor_) {
-    int fd = udev_monitor_get_fd(monitor_.get());
+    int fd = device::udev_monitor_get_fd(monitor_.get());
     CHECK_GT(fd, 0);
     base::MessageLoopForUI::current()->WatchFileDescriptor(
         fd, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
@@ -99,21 +98,22 @@ void DeviceManagerUdev::CreateMonitor() {
 void DeviceManagerUdev::ScanDevices(DeviceEventObserver* observer) {
   CreateMonitor();
 
-  device::ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
+  device::ScopedUdevEnumeratePtr enumerate(
+      device::udev_enumerate_new(udev_.get()));
   if (!enumerate)
     return;
 
   for (size_t i = 0; i < arraysize(kSubsystems); ++i)
-    udev_enumerate_add_match_subsystem(enumerate.get(), kSubsystems[i]);
-  udev_enumerate_scan_devices(enumerate.get());
+    device::udev_enumerate_add_match_subsystem(enumerate.get(), kSubsystems[i]);
+  device::udev_enumerate_scan_devices(enumerate.get());
 
   struct udev_list_entry* devices =
-      udev_enumerate_get_list_entry(enumerate.get());
+      device::udev_enumerate_get_list_entry(enumerate.get());
   struct udev_list_entry* entry;
 
   udev_list_entry_foreach(entry, devices) {
-    device::ScopedUdevDevicePtr device(udev_device_new_from_syspath(
-        udev_.get(), udev_list_entry_get_name(entry)));
+    device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
+        udev_.get(), device::udev_list_entry_get_name(entry)));
     if (!device)
       continue;
 
@@ -137,7 +137,7 @@ void DeviceManagerUdev::OnFileCanReadWithoutBlocking(int fd) {
   TRACE_EVENT1("ozone", "UdevDeviceChange", "socket", fd);
 
   device::ScopedUdevDevicePtr device(
-      udev_monitor_receive_device(monitor_.get()));
+      device::udev_monitor_receive_device(monitor_.get()));
   if (!device)
     return;
 
@@ -152,10 +152,12 @@ void DeviceManagerUdev::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
-  const char* path = udev_device_get_devnode(device);
-  const char* action = udev_device_get_action(device);
-  const char* hotplug = udev_device_get_property_value(device, "HOTPLUG");
-  const char* subsystem = udev_device_get_property_value(device, "SUBSYSTEM");
+  const char* path = device::udev_device_get_devnode(device);
+  const char* action = device::udev_device_get_action(device);
+  const char* hotplug =
+      device::udev_device_get_property_value(device, "HOTPLUG");
+  const char* subsystem =
+      device::udev_device_get_property_value(device, "SUBSYSTEM");
 
   if (!path || !subsystem)
     return scoped_ptr<DeviceEvent>();

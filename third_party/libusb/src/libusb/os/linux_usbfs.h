@@ -159,10 +159,20 @@ struct usbfs_disconnect_claim {
 extern usbi_mutex_static_t linux_hotplug_lock;
 
 #if defined(HAVE_LIBUDEV)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int linux_udev_start_event_monitor(void);
 int linux_udev_stop_event_monitor(void);
 int linux_udev_scan_devices(struct libusb_context *ctx);
 void linux_udev_hotplug_poll(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #else
 int linux_netlink_start_event_monitor(void);
 int linux_netlink_stop_event_monitor(void);
