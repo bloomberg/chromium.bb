@@ -39,7 +39,7 @@ cr.define('inline.login', function() {
 
   /** @override */
   GaiaAuthHostListener.prototype.onResize = function(url) {
-    chrome.send('switchToFullTab', url);
+    chrome.send('switchToFullTab', [url]);
   };
 
   /** @override */
