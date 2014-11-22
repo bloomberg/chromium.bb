@@ -34,6 +34,8 @@
 #include <string.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -58,6 +60,9 @@ struct cursor {
 #define MAX_CURSORS 8
 static struct cursor cursors[MAX_CURSORS];
 static int ncursors;
+
+static pthread_t cursor_thread;
+static int cursor_running;
 
 /*
  * Timer driven program loops through these steps to move/enable/disable
@@ -137,33 +142,29 @@ static struct cursor_step steps[] = {
 		{  set_cursor, 10,   0,  0 },  /* disable */
 };
 
-/*
- * Cursor API:
- */
-
-static void run_step(int sig)
+static void *cursor_thread_func(void *data)
 {
-	struct cursor_step *step = &steps[indx % ARRAY_SIZE(steps)];
-	struct itimerval itimer = {
-			.it_value.tv_usec = 1000 * step->msec,
-	};
-	int i;
+	while (cursor_running) {
+		struct cursor_step *step = &steps[indx % ARRAY_SIZE(steps)];
+		int i;
 
-	for (i = 0; i < ncursors; i++) {
-		struct cursor *cursor = &cursors[i];
-		step->run(cursor, step);
+		for (i = 0; i < ncursors; i++) {
+			struct cursor *cursor = &cursors[i];
+			step->run(cursor, step);
+		}
+
+		/* iterate to next count/step: */
+		if (count < step->repeat) {
+			count++;
+		} else {
+			count = 0;
+			indx++;
+		}
+
+		usleep(1000 * step->msec);
 	}
 
-	/* iterate to next count/step: */
-	if (count < step->repeat) {
-		count++;
-	} else {
-		count = 0;
-		indx++;
-	}
-
-	/* and lastly, setup timer for next step */
-	setitimer(ITIMER_REAL, &itimer, NULL);
+	return NULL;
 }
 
 int cursor_init(int fd, uint32_t bo_handle, uint32_t crtc_id,
@@ -194,16 +195,16 @@ int cursor_init(int fd, uint32_t bo_handle, uint32_t crtc_id,
 
 int cursor_start(void)
 {
-	/* setup signal handler to update cursor: */
-	signal(SIGALRM, run_step);
+	cursor_running = 1;
+	pthread_create(&cursor_thread, NULL, cursor_thread_func, NULL);
 	printf("starting cursor\n");
-	run_step(SIGALRM);
 	return 0;
 }
 
 int cursor_stop(void)
 {
-	signal(SIGALRM, NULL);
+	cursor_running = 0;
+	pthread_join(cursor_thread, NULL);
 	printf("cursor stopped\n");
 	return 0;
 }

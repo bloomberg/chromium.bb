@@ -19,7 +19,8 @@ modetest_SOURCES = $(MODETEST_FILES)
 
 modetest_LDADD = \
 	$(top_builddir)/libdrm.la \
-	$(top_builddir)/libkms/libkms.la
+	$(top_builddir)/libkms/libkms.la \
+	-lpthread
 
 if HAVE_CAIRO
 AM_CFLAGS += $(CAIRO_CFLAGS)
