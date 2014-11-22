@@ -100,8 +100,6 @@ ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     // Needed on i386 to set-up the custom segments.
     case __NR_modify_ldt:
 #endif
-    // NaClAddrSpaceBeforeAlloc needs prlimit64.
-    case __NR_prlimit64:
     // NaCl uses custom signal stacks.
     case __NR_sigaltstack:
     // Below is fairly similar to the policy for a Chromium renderer.
@@ -111,8 +109,6 @@ ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #endif
-    // NaCl runtime exposes clock_getres to untrusted code.
-    case __NR_clock_getres:
     // NaCl runtime uses flock to simulate POSIX behavior for pwrite.
     case __NR_flock:
     case __NR_pread64:
@@ -134,6 +130,12 @@ ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
       return sandbox::RestrictSchedTarget(policy_pid_, sysno);
+    // NaClAddrSpaceBeforeAlloc needs prlimit64.
+    case __NR_prlimit64:
+      return sandbox::RestrictPrlimit64(policy_pid_);
+    // NaCl runtime exposes clock_getres to untrusted code.
+    case __NR_clock_getres:
+      return sandbox::RestrictClockID();
     default:
       return baseline_policy_->EvaluateSyscall(sysno);
   }

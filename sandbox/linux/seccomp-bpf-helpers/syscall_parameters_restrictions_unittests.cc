@@ -6,7 +6,9 @@
 
 #include <errno.h>
 #include <sched.h>
+#include <sys/resource.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -207,6 +209,35 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   const pid_t kInitPID = 1;
   struct sched_param param;
   sched_getparam(kInitPID, &param);
+}
+
+class RestrictPrlimit64Policy : public bpf_dsl::Policy {
+ public:
+  RestrictPrlimit64Policy() {}
+  ~RestrictPrlimit64Policy() override {}
+
+  ResultExpr EvaluateSyscall(int sysno) const override {
+    switch (sysno) {
+      case __NR_prlimit64:
+        return RestrictPrlimit64(getpid());
+      default:
+        return Allow();
+    }
+  }
+};
+
+BPF_TEST_C(ParameterRestrictions, prlimit64_allowed, RestrictPrlimit64Policy) {
+  BPF_ASSERT_EQ(0, syscall(__NR_prlimit64, 0, RLIMIT_AS, NULL, NULL));
+  BPF_ASSERT_EQ(0, syscall(__NR_prlimit64, getpid(), RLIMIT_AS, NULL, NULL));
+}
+
+BPF_DEATH_TEST_C(ParameterRestrictions,
+                 prlimit64_crash_not_self,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 RestrictPrlimit64Policy) {
+  const pid_t kInitPID = 1;
+  BPF_ASSERT_NE(kInitPID, getpid());
+  syscall(__NR_prlimit64, kInitPID, RLIMIT_AS, NULL, NULL);
 }
 
 }  // namespace

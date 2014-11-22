@@ -87,6 +87,10 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictSchedTarget(pid_t target_pid,
                                                        int sysno);
 
+// Restricts the |pid| argument of prlimit64 to 0 (meaning the calling process)
+// or target_pid.
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPrlimit64(pid_t target_pid);
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_

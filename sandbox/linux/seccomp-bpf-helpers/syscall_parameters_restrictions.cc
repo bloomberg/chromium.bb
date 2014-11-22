@@ -286,5 +286,9 @@ ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
   }
 }
 
+ResultExpr RestrictPrlimit64(pid_t target_pid) {
+  const Arg<pid_t> pid(0);
+  return If(pid == 0 || pid == target_pid, Allow()).Else(CrashSIGSYS());
+}
 
 }  // namespace sandbox.
