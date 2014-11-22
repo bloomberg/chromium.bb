@@ -69,7 +69,7 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     content::WebContents* web_contents,
     const base::string16& domain,
     const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
-    : web_contents_(web_contents),
+    : content::WebContentsObserver(web_contents),
       domain_(domain),
       callback_(callback) {
   SetLayoutManager(new views::FillLayout());
@@ -128,14 +128,14 @@ gfx::Size PlatformVerificationDialog::GetPreferredSize() const {
 
 void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
                                                         int event_flags) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
 
-  // |web_contents_| might not be in a browser in case of v2 apps. In that case,
-  // open a new tab in the usual way.
+  // |web_contents()| might not be in a browser in case of v2 apps. In that
+  // case, open a new tab in the usual way.
   if (!browser) {
-    Profile* profile = Profile::FromBrowserContext(
-        web_contents_->GetBrowserContext());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     chrome::NavigateParams params(
         profile, learn_more_url, ui::PAGE_TRANSITION_LINK);
     params.disposition = SINGLETON_TAB;
@@ -143,6 +143,14 @@ void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
   } else {
     chrome::ShowSingletonTab(browser, learn_more_url);
   }
+}
+
+void PlatformVerificationDialog::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  views::Widget* widget = GetWidget();
+  if (widget)
+    widget->Close();
 }
 
 }  // namespace attestation
