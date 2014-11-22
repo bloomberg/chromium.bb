@@ -24,11 +24,9 @@ using password_manager::PasswordStoreDefault;
 // Handles requests to PasswordWebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
  public:
-  DBHandler(PasswordWebDataService* web_data_service,
+  DBHandler(const scoped_refptr<PasswordWebDataService>& web_data_service,
             PasswordStoreWin* password_store)
-      : web_data_service_(web_data_service),
-        password_store_(password_store) {
-  }
+      : web_data_service_(web_data_service), password_store_(password_store) {}
 
   ~DBHandler();
 
@@ -176,7 +174,7 @@ PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     password_manager::LoginDatabase* login_database,
-    PasswordWebDataService* web_data_service)
+    const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
                            login_database) {

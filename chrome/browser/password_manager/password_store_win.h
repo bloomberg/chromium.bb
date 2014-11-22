@@ -27,7 +27,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
       password_manager::LoginDatabase* login_database,
-      PasswordWebDataService* web_data_service);
+      const scoped_refptr<PasswordWebDataService>& web_data_service);
 
   // PasswordStore:
   virtual void Shutdown() override;
