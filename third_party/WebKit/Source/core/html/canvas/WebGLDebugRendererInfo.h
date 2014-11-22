@@ -26,13 +26,12 @@
 #ifndef WebGLDebugRendererInfo_h
 #define WebGLDebugRendererInfo_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class WebGLDebugRendererInfo final : public WebGLExtension, public ScriptWrappable {
+class WebGLDebugRendererInfo final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum EnumType {

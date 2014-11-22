@@ -5,13 +5,12 @@
 #ifndef EXTsRGB_h
 #define EXTsRGB_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class EXTsRGB final : public WebGLExtension, public ScriptWrappable {
+class EXTsRGB final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<EXTsRGB> create(WebGLRenderingContextBase*);
