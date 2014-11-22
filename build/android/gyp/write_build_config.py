@@ -78,6 +78,8 @@ def main(argv):
       help='Whether this library supports running on the Android platform.')
   parser.add_option('--requires-android', action='store_true',
       help='Whether this library requires running on the Android platform.')
+  parser.add_option('--bypass-platform-checks', action='store_true',
+      help='Bypass checks for support/require Android platform.')
 
   # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
@@ -149,14 +151,14 @@ def main(argv):
   deps_info = config['deps_info']
 
 
-  if options.type == 'java_library':
+  if options.type == 'java_library' and not options.bypass_platform_checks:
     deps_info['requires_android'] = options.requires_android
     deps_info['supports_android'] = options.supports_android
 
     deps_require_android = (all_resources_deps +
-        [d['name'] for d in direct_library_deps if d['requires_android']])
+        [d['name'] for d in all_library_deps if d['requires_android']])
     deps_not_support_android = (
-        [d['name'] for d in direct_library_deps if not d['supports_android']])
+        [d['name'] for d in all_library_deps if not d['supports_android']])
 
     if deps_require_android and not options.requires_android:
       raise Exception('Some deps require building for the Android platform: ' +

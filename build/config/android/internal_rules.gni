@@ -213,6 +213,10 @@ template("write_build_config") {
     if (requires_android) {
       args += [ "--requires-android" ]
     }
+    if (defined(invoker.bypass_platform_checks) &&
+        invoker.bypass_platform_checks) {
+      args += [ "--bypass-platform-checks" ]
+    }
 
     if (is_android_resources || is_apk) {
       assert(defined(invoker.resources_zip))
@@ -634,12 +638,6 @@ template("compile_java") {
       args += [ "--chromium-code=1" ]
     }
 
-    if (defined(invoker.main_class)) {
-      args += [
-        "--main-class", invoker.main_class
-      ]
-    }
-
     args += rebase_path(_java_files, root_build_dir)
   }
 
@@ -699,6 +697,8 @@ template("java_library_impl") {
       type = "java_library"
       supports_android = _supports_android
       requires_android = _requires_android
+      bypass_platform_checks = (defined(invoker.bypass_platform_checks) &&
+        invoker.bypass_platform_checks)
 
       deps = []
       if (defined(invoker.deps)) {
@@ -764,7 +764,6 @@ template("java_library_impl") {
     android = _requires_android
 
     if (defined(invoker.jar_excluded_patterns)) { jar_excluded_patterns = invoker.jar_excluded_patterns }
-    if (defined(invoker.main_class)) { main_class = invoker.main_class }
     if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
     if (defined(invoker.proguard_config)) { proguard_config = invoker.proguard_config }
     if (defined(invoker.dist_jar_path)) { dist_jar_path = invoker.dist_jar_path }

@@ -180,6 +180,9 @@ if (is_android) {
   }
 
   android_resources("android_addressinput_widget_resources") {
+    deps = [
+      ":libaddressinput_android_strings_grd",
+    ]
     custom_package = "com.android.i18n.addressinput"
     resource_dirs = [ "src/java/res" ]
     v14_verify_only = true
@@ -190,7 +193,6 @@ if (is_android) {
     DEPRECATED_java_in_dir = "src/java/src"
     deps = [
       ":android_addressinput_widget_resources",
-      ":libaddressinput_android_strings_grd",
     ]
   }
 } else {

@@ -655,6 +655,10 @@ template("java_strings_grd_prebuilt") {
 #   srcjars: List of srcjars to be included in this library, together with the
 #     ones obtained from srcjar_deps.
 #
+#   bypass_platform_checks: Disables checks about cross-platform (Java/Android)
+#     dependencies for this target. This will allow depending on an
+#     android_library target, for example.
+#
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #
 #   datadeps, testonly
@@ -676,6 +680,7 @@ template("java_binary") {
     if (defined(invoker.java_files)) { java_files = invoker.java_files }
     if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
     if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
+    if (defined(invoker.bypass_platform_checks)) { bypass_platform_checks = invoker.bypass_platform_checks }
     if (defined(invoker.testonly)) { testonly = invoker.testonly }
 
     main_class = invoker.main_class
@@ -709,10 +714,9 @@ template("java_binary") {
 #   supports_android: If true, Android targets (android_library, android_apk)
 #     may depend on this target. Note: if true, this target must only use the
 #     subset of Java available on Android.
-#   requires_android_platform: If true, this library may depend on
-#     android-specific targets. If this is the case, there should be some
-#     android-platform-like implementation available at runtime (Android,
-#     robolectric, etc).
+#   bypass_platform_checks: Disables checks about cross-platform (Java/Android)
+#     dependencies for this target. This will allow depending on an
+#     android_library target, for example.
 #
 #   datadeps, testonly
 #
@@ -745,16 +749,12 @@ template("java_library") {
     if (defined(invoker.proguard_preprocess)) { proguard_preprocess = invoker.proguard_preprocess }
     if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
     if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
+    if (defined(invoker.bypass_platform_checks)) { bypass_platform_checks = invoker.bypass_platform_checks }
     if (defined(invoker.testonly)) { testonly = invoker.testonly }
     if (defined(invoker.jar_path)) { jar_path = invoker.jar_path }
 
     if (defined(invoker.supports_android) && invoker.supports_android) {
       supports_android = true
-    }
-    if (defined(invoker.requires_android_platform)
-        && invoker.requires_android_platform) {
-      supports_android = true
-      requires_android = true
     }
   }
 }
