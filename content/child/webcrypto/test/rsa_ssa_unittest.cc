@@ -344,15 +344,18 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      modulus_length,
                                      public_exponent);
   bool extractable = true;
-  const blink::WebCryptoKeyUsageMask usages = 0;
+  const blink::WebCryptoKeyUsageMask public_usages =
+      blink::WebCryptoKeyUsageVerify;
+  const blink::WebCryptoKeyUsageMask private_usages =
+      blink::WebCryptoKeyUsageSign;
+  const blink::WebCryptoKeyUsageMask usages = public_usages | private_usages;
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey private_key;
 
-  EXPECT_EQ(Status::Success(),
-            GenerateKeyPair(
-                algorithm, extractable, usages, &public_key, &private_key));
-  EXPECT_FALSE(public_key.isNull());
-  EXPECT_FALSE(private_key.isNull());
+  EXPECT_EQ(Status::Success(), GenerateKeyPair(algorithm, extractable, usages,
+                                               &public_key, &private_key));
+  ASSERT_FALSE(public_key.isNull());
+  ASSERT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
   EXPECT_EQ(modulus_length,
@@ -365,8 +368,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
             private_key.algorithm().rsaHashedParams()->hash().id());
   EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
-  EXPECT_EQ(usages, public_key.usages());
-  EXPECT_EQ(usages, private_key.usages());
+  EXPECT_EQ(public_usages, public_key.usages());
+  EXPECT_EQ(private_usages, private_key.usages());
 
   // Try exporting the generated key pair, and then re-importing to verify that
   // the exported data was valid.
@@ -377,15 +380,13 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
 
   if (SupportsRsaPrivateKeyImport()) {
     public_key = blink::WebCryptoKey::createNull();
-    EXPECT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatSpki,
-                        CryptoData(public_key_spki),
-                        CreateRsaHashedImportAlgorithm(
-                            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                            blink::WebCryptoAlgorithmIdSha256),
-                        true,
-                        usages,
-                        &public_key));
+    ASSERT_EQ(
+        Status::Success(),
+        ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(public_key_spki),
+                  CreateRsaHashedImportAlgorithm(
+                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                      blink::WebCryptoAlgorithmIdSha256),
+                  true, public_usages, &public_key));
     EXPECT_EQ(modulus_length,
               public_key.algorithm().rsaHashedParams()->modulusLengthBits());
 
@@ -395,15 +396,13 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
         ExportKey(
             blink::WebCryptoKeyFormatPkcs8, private_key, &private_key_pkcs8));
     private_key = blink::WebCryptoKey::createNull();
-    EXPECT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatPkcs8,
-                        CryptoData(private_key_pkcs8),
-                        CreateRsaHashedImportAlgorithm(
-                            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                            blink::WebCryptoAlgorithmIdSha256),
-                        true,
-                        usages,
-                        &private_key));
+    ASSERT_EQ(
+        Status::Success(),
+        ImportKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(private_key_pkcs8),
+                  CreateRsaHashedImportAlgorithm(
+                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                      blink::WebCryptoAlgorithmIdSha256),
+                  true, private_usages, &private_key));
     EXPECT_EQ(modulus_length,
               private_key.algorithm().rsaHashedParams()->modulusLengthBits());
   }
@@ -461,17 +460,16 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      blink::WebCryptoAlgorithmIdSha256,
                                      modulus_length,
                                      exponent_with_leading_zeros);
-  EXPECT_EQ(Status::Success(),
-            GenerateKeyPair(
-                algorithm, extractable, usages, &public_key, &private_key));
+  EXPECT_EQ(Status::Success(), GenerateKeyPair(algorithm, extractable, usages,
+                                               &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
   EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
-  EXPECT_EQ(usages, public_key.usages());
-  EXPECT_EQ(usages, private_key.usages());
+  EXPECT_EQ(public_usages, public_key.usages());
+  EXPECT_EQ(private_usages, private_key.usages());
 
   // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation (sha1)
   algorithm =
@@ -498,8 +496,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
   // extractable.
   EXPECT_TRUE(public_key.extractable());
   EXPECT_FALSE(private_key.extractable());
-  EXPECT_EQ(usages, public_key.usages());
-  EXPECT_EQ(usages, private_key.usages());
+  EXPECT_EQ(public_usages, public_key.usages());
+  EXPECT_EQ(private_usages, private_key.usages());
 
   // Exporting a private key as SPKI format doesn't make sense. However this
   // will first fail because the key is not extractable.
@@ -509,9 +507,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
 
   // Re-generate an extractable private_key and try to export it as SPKI format.
   // This should fail since spki is for public keys.
-  EXPECT_EQ(
-      Status::Success(),
-      GenerateKeyPair(algorithm, true, usages, &public_key, &private_key));
+  EXPECT_EQ(Status::Success(), GenerateKeyPair(algorithm, true, usages,
+                                               &public_key, &private_key));
   EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
@@ -536,7 +533,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
         modulus_length_bits,
         public_exponent);
     bool extractable = true;
-    const blink::WebCryptoKeyUsageMask usages = 0;
+    const blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageSign;
     blink::WebCryptoKey public_key;
     blink::WebCryptoKey private_key;
 
@@ -571,7 +568,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
     blink::WebCryptoKey private_key;
 
     EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
-              GenerateKeyPair(algorithm, true, 0, &public_key, &private_key));
+              GenerateKeyPair(algorithm, true, blink::WebCryptoKeyUsageSign,
+                              &public_key, &private_key));
   }
 }
 
@@ -892,6 +890,21 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairIntersectUsages) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, private_key.usages());
 }
 
+TEST(WebCryptoRsaSsaTest, GenerateKeyPairEmptyUsages) {
+  const unsigned int modulus_length = 256;
+  const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
+
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
+
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
+                                blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                blink::WebCryptoAlgorithmIdSha256,
+                                modulus_length, public_exponent),
+                            true, 0, &public_key, &private_key));
+}
+
 TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
   struct TestCase {
     const blink::WebCryptoAlgorithmId hash;
@@ -1051,12 +1064,15 @@ TEST(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
     std::string test_error;
     ASSERT_TRUE(test->GetString("error", &test_error));
 
+    blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageSign;
+    if (key_format == blink::WebCryptoKeyFormatSpki)
+      usages = blink::WebCryptoKeyUsageVerify;
     blink::WebCryptoKey key;
     Status status = ImportKey(key_format, CryptoData(key_data),
                               CreateRsaHashedImportAlgorithm(
                                   blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                   blink::WebCryptoAlgorithmIdSha256),
-                              true, 0, &key);
+                              true, usages, &key);
     EXPECT_EQ(test_error, StatusToString(status));
   }
 }

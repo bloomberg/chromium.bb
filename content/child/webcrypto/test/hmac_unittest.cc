@@ -121,7 +121,9 @@ TEST(WebCryptoHmacTest, GenerateKeyIsRandom) {
     blink::WebCryptoKey key;
     blink::WebCryptoAlgorithm algorithm =
         CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 512);
-    ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
+    ASSERT_EQ(
+        Status::Success(),
+        GenerateSecretKey(algorithm, true, blink::WebCryptoKeyUsageSign, &key));
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
@@ -146,7 +148,9 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
-  ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
+  ASSERT_EQ(
+      Status::Success(),
+      GenerateSecretKey(algorithm, true, blink::WebCryptoKeyUsageSign, &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
@@ -164,7 +168,9 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
-  ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
+  ASSERT_EQ(
+      Status::Success(),
+      GenerateSecretKey(algorithm, true, blink::WebCryptoKeyUsageSign, &key));
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha512,
             key.algorithm().hmacParams()->hash().id());
@@ -173,6 +179,14 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   EXPECT_EQ(128U, raw_key.size());
+}
+
+TEST(WebCryptoHmacTest, GenerateKeyEmptyUsage) {
+  blink::WebCryptoKey key;
+  blink::WebCryptoAlgorithm algorithm =
+      CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            GenerateSecretKey(algorithm, true, 0, &key));
 }
 
 TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {

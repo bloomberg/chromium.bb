@@ -167,6 +167,9 @@ Status RsaHashedAlgorithm::GenerateKey(
   const blink::WebCryptoKeyUsageMask private_usages =
       combined_usages & all_private_key_usages_;
 
+  if (private_usages == 0)
+    return Status::ErrorCreateKeyEmptyUsages();
+
   const blink::WebCryptoRsaHashedKeyGenParams* params =
       algorithm.rsaHashedKeyGenParams();
 

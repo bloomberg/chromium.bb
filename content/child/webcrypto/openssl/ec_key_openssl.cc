@@ -218,6 +218,9 @@ Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   const blink::WebCryptoKeyUsageMask private_usages =
       combined_usages & all_private_key_usages_;
 
+  if (private_usages == 0)
+    return Status::ErrorCreateKeyEmptyUsages();
+
   const blink::WebCryptoEcKeyGenParams* params = algorithm.ecKeyGenParams();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
