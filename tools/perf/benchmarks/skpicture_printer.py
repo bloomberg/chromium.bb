@@ -21,20 +21,23 @@ def _MatchPageSetName(page_set_name, page_set_base_dir):
 
 @benchmark.Disabled
 class SkpicturePrinter(benchmark.Benchmark):
-  test = skpicture_printer.SkpicturePrinter
-
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--page-set-name',  action='store', type='string')
     parser.add_option('--page-set-base-dir', action='store', type='string')
-
+    parser.add_option('-s', '--skp-outdir',
+                      help='Output directory for the SKP files')
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
-    cls.PageTestClass().ProcessCommandLineArgs(parser, args)
     if not args.page_set_name:
       parser.error('Please specify --page-set-name')
     if not args.page_set_base_dir:
       parser.error('Please specify --page-set-base-dir')
+    if not args.skp_outdir:
+      parser.error('Please specify --skp-outdir')
+
+  def CreatePageTest(self, options):
+    return skpicture_printer.SkpicturePrinter(options.skp_outdir)
 
   def CreatePageSet(self, options):
     page_set_class = _MatchPageSetName(options.page_set_name,
