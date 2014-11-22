@@ -48,7 +48,7 @@ size_t SinkFilter::NoOfPins() {
 }
 
 IPin* SinkFilter::GetPin(int index) {
-  return index == 0 ? input_pin_ : NULL;
+  return index == 0 ? input_pin_.get() : NULL;
 }
 
 STDMETHODIMP SinkFilter::GetClassID(CLSID* clsid) {
