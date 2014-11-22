@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging_win.h"
+#include "base/template_util.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/watcher_main_api_win.h"
 
@@ -52,11 +53,6 @@ extern "C" int WatcherMain(const base::char16* registry_path) {
   return ret;
 }
 
-namespace {
-
-void CompileAsserts() {
-  // Make sure the exported function's type matches the typedef.
-  browser_watcher::WatcherMainFunction fn = &WatcherMain;
-}
-
-}  // namespace
+static_assert(base::is_same<decltype(&WatcherMain),
+                            browser_watcher::WatcherMainFunction>::value,
+              "WatcherMain() has wrong type");
