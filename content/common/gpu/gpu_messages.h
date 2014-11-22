@@ -301,6 +301,11 @@ IPC_MESSAGE_CONTROL0(GpuMsg_DisableWatchdog)
 // Tells the GPU process that the browser has seen a GPU switch.
 IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 
+// Tells the GPU process to delete the default_offscreen surface. It will also
+// close the display and any other resources when the last GL surface is
+// deleted. GPU process will respond with GphHosMsg_ResourcesRelinquished.
+IPC_MESSAGE_CONTROL0(GpuMsg_RelinquishResources)
+
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.
@@ -401,6 +406,9 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext,
 // Tells the browser about GPU memory usage statistics for UMA logging.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
                      content::GPUMemoryUmaStats /* GPU memory UMA stats */)
+
+// Response to GpuMsg_RelinquishResources.
+IPC_MESSAGE_CONTROL0(GpuHostMsg_ResourcesRelinquished)
 
 //------------------------------------------------------------------------------
 // GPU Channel Messages

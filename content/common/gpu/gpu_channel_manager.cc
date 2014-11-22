@@ -20,6 +20,10 @@
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
+#if defined(USE_OZONE)
+#include "ui/ozone/public/gpu_platform_support.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace content {
 
@@ -162,6 +166,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
+    IPC_MESSAGE_HANDLER(GpuMsg_RelinquishResources, OnRelinquishResources)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -321,6 +326,26 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
         gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
   }
   return default_offscreen_surface_.get();
+}
+
+void GpuChannelManager::OnRelinquishResources() {
+  if (default_offscreen_surface_.get()) {
+    default_offscreen_surface_->DestroyAndTerminateDisplay();
+    default_offscreen_surface_ = nullptr;
+  }
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupport()
+      ->RelinquishGpuResources(
+          base::Bind(&GpuChannelManager::OnResourcesRelinquished,
+                     weak_factory_.GetWeakPtr()));
+#else
+  OnResourcesRelinquished();
+#endif
+}
+
+void GpuChannelManager::OnResourcesRelinquished() {
+  Send(new GpuHostMsg_ResourcesRelinquished());
 }
 
 }  // namespace content

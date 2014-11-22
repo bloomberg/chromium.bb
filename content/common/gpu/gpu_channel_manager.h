@@ -134,6 +134,8 @@ class GpuChannelManager : public IPC::Listener,
                                 gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 int32 sync_point);
+  void OnRelinquishResources();
+  void OnResourcesRelinquished();
 
   void OnLoseAllContexts();
 

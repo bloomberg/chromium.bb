@@ -17,7 +17,13 @@ class StubGpuPlatformSupport : public GpuPlatformSupport {
   // GpuPlatformSupport:
   void OnChannelEstablished(IPC::Sender* sender) override {}
   bool OnMessageReceived(const IPC::Message&) override { return false; }
+  void RelinquishGpuResources(const base::Closure& callback) override;
 };
+
+void StubGpuPlatformSupport::RelinquishGpuResources(
+    const base::Closure& callback) {
+  callback.Run();
+}
 
 }  // namespace
 

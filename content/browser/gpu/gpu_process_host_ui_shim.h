@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -72,6 +72,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // actually received on the IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  CONTENT_EXPORT void RelinquishGpuResources(const base::Closure& callback);
   CONTENT_EXPORT void SimulateRemoveAllContext();
   CONTENT_EXPORT void SimulateCrash();
   CONTENT_EXPORT void SimulateHang();
@@ -93,9 +94,11 @@ class GpuProcessHostUIShim : public IPC::Listener,
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
+  void OnResourcesRelinquished();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
+  base::Closure relinquish_callback_;
 };
 
 }  // namespace content

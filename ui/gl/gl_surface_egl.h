@@ -29,6 +29,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurfaceEGL();
 
   // Implement GLSurface.
+  void DestroyAndTerminateDisplay() override;
   EGLDisplay GetDisplay() override;
 
   static bool InitializeOneOff();

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
@@ -188,6 +189,13 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
+void GpuProcessHostUIShim::RelinquishGpuResources(
+    const base::Closure& callback) {
+  DCHECK(relinquish_callback_.is_null());
+  relinquish_callback_ = callback;
+  Send(new GpuMsg_RelinquishResources());
+}
+
 void GpuProcessHostUIShim::SimulateRemoveAllContext() {
   Send(new GpuMsg_Clean());
 }
@@ -220,6 +228,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
                         OnVideoMemoryUsageStatsReceived);
+    IPC_MESSAGE_HANDLER(GpuHostMsg_ResourcesRelinquished,
+                        OnResourcesRelinquished)
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -288,6 +298,12 @@ void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
     const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
       video_memory_usage_stats);
+}
+
+void GpuProcessHostUIShim::OnResourcesRelinquished() {
+  if (!relinquish_callback_.is_null()) {
+    base::ResetAndReturn(&relinquish_callback_).Run();
+  }
 }
 
 }  // namespace content

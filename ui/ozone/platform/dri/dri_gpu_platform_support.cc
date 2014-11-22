@@ -198,4 +198,9 @@ void DriGpuPlatformSupport::OnRelinquishDisplayControl() {
   ndd_->RelinquishDisplayControl();
 }
 
+void DriGpuPlatformSupport::RelinquishGpuResources(
+    const base::Closure& callback) {
+  callback.Run();
+}
+
 }  // namespace ui

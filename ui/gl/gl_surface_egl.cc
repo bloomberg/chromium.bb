@@ -61,7 +61,16 @@ namespace {
 
 EGLConfig g_config;
 EGLDisplay g_display;
-EGLNativeDisplayType g_native_display;
+EGLNativeDisplayType g_native_display_type;
+
+// In the Cast environment, we need to destroy the EGLNativeDisplayType and
+// EGLDisplay returned by the GPU platform when we switch to an external app
+// which will temporarily own all screen and GPU resources.
+// Even though Chromium is still in the background.
+// As such, it must be reinitialized each time we come back to the foreground.
+bool g_initialized = false;
+int g_num_surfaces = 0;
+bool g_terminate_pending = false;
 
 const char* g_egl_extensions = NULL;
 bool g_egl_create_context_robustness_supported = false;
@@ -105,21 +114,34 @@ class EGLSyncControlVSyncProvider
   DISALLOW_COPY_AND_ASSIGN(EGLSyncControlVSyncProvider);
 };
 
+void DeinitializeEgl() {
+  if (g_initialized) {
+    g_initialized = false;
+    eglTerminate(g_display);
+  }
+}
+
 }  // namespace
 
-GLSurfaceEGL::GLSurfaceEGL() {}
+GLSurfaceEGL::GLSurfaceEGL() {
+  ++g_num_surfaces;
+  if (!g_initialized) {
+    bool result = GLSurfaceEGL::InitializeOneOff();
+    DCHECK(result);
+    DCHECK(g_initialized);
+  }
+}
 
 bool GLSurfaceEGL::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
+  if (g_initialized)
     return true;
 
-  g_native_display = GetPlatformDefaultEGLNativeDisplay();
+  g_native_display_type = GetPlatformDefaultEGLNativeDisplay();
 
 #if defined(OS_WIN)
-  g_display = GetPlatformDisplay(g_native_display);
+  g_display = GetPlatformDisplay(g_native_display_type);
 #else
-  g_display = eglGetDisplay(g_native_display);
+  g_display = eglGetDisplay(g_native_display_type);
 #endif
 
   if (!g_display) {
@@ -187,6 +209,12 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_egl_window_fixed_size_supported =
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
 
+  // We always succeed beyond this point so set g_initialized here to avoid
+  // infinite recursion through CreateGLContext and GetDisplay
+  // if g_egl_surfaceless_context_supported.
+  g_initialized = true;
+  g_terminate_pending = false;
+
   // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
   // workaround, since code written for Android WebView takes different paths
   // based on whether GL surface objects have underlying EGL surface handles,
@@ -216,24 +244,35 @@ bool GLSurfaceEGL::InitializeOneOff() {
   }
 #endif
 
-  initialized = true;
-
   return true;
 }
 
 EGLDisplay GLSurfaceEGL::GetDisplay() {
+  DCHECK(g_initialized);
   return g_display;
 }
 
+// static
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
+  if (!g_initialized) {
+    bool result = GLSurfaceEGL::InitializeOneOff();
+    DCHECK(result);
+  }
   return g_display;
 }
 
+// static
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
-  return g_native_display;
+  if (!g_initialized) {
+    bool result = GLSurfaceEGL::InitializeOneOff();
+    DCHECK(result);
+  }
+  return g_native_display_type;
 }
 
 const char* GLSurfaceEGL::GetEGLExtensions() {
+  // No need for InitializeOneOff. Assume that extensions will not change
+  // after the first initialization.
   return g_egl_extensions;
 }
 
@@ -249,7 +288,20 @@ bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
   return g_egl_surfaceless_context_supported;
 }
 
-GLSurfaceEGL::~GLSurfaceEGL() {}
+void GLSurfaceEGL::DestroyAndTerminateDisplay() {
+  DCHECK(g_initialized);
+  DCHECK_EQ(g_num_surfaces, 1);
+  Destroy();
+  g_terminate_pending = true;
+}
+
+GLSurfaceEGL::~GLSurfaceEGL() {
+  DCHECK_GT(g_num_surfaces, 0) << "Bad surface count";
+  if (--g_num_surfaces == 0 && g_terminate_pending) {
+    DeinitializeEgl();
+    g_terminate_pending = false;
+  }
+}
 
 #if defined(OS_WIN)
 static const EGLint kDisplayAttribsWarp[] {
