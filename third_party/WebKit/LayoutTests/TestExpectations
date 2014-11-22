@@ -573,7 +573,7 @@ crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.htm
 crbug.com/310323 [ Linux Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
-crbug.com/435391 http/tests/serviceworker/service-worker-csp.html [ Pass Timeout ]
+crbug.com/435391 http/tests/serviceworker/service-worker-csp.html [ Pass Timeout Missing ]
 
 crbug.com/234871 [ Win ] fast/scroll-behavior/listbox-scrollTop.html [ Failure Pass ]
 
