@@ -958,7 +958,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
         *static_cast<const WebKeyboardEvent*>(input_event);
     // Some keys are special and it's essential that no events get blocked.
     if (key_event.nativeKeyCode != AKEYCODE_TAB &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER)
+        key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_LEFT &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_RIGHT &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_UP &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN)
       ime_event_guard_maybe.reset(new ImeEventGuard(this));
   }
 #endif
