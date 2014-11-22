@@ -975,7 +975,7 @@ static LayoutUnit justifyContentSpaceBetweenChildren(LayoutUnit availableFreeSpa
     return 0;
 }
 
-void RenderFlexibleBox::setLogicalOverrideSize(RenderBox& child, LayoutUnit childPreferredSize)
+void RenderFlexibleBox::setOverrideMainAxisSizeForChild(RenderBox& child, LayoutUnit childPreferredSize)
 {
     if (hasOrthogonalFlow(child))
         child.setOverrideLogicalContentHeight(childPreferredSize - child.borderAndPaddingLogicalHeight());
@@ -1083,7 +1083,7 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         child->setMayNeedPaintInvalidation(true);
 
         LayoutUnit childPreferredSize = childSizes[i] + mainAxisBorderAndPaddingExtentForChild(*child);
-        setLogicalOverrideSize(*child, childPreferredSize);
+        setOverrideMainAxisSizeForChild(*child, childPreferredSize);
         if (childPreferredSize != mainAxisExtentForChild(*child)) {
             child->setChildNeedsLayout(MarkOnlyThis);
         } else {
