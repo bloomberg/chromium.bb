@@ -978,6 +978,8 @@ bool WebFormElementToFormData(
     const WebFormControlElement& control_element = control_elements[i];
     if (form_fields[field_idx]->label.empty())
       form_fields[field_idx]->label = InferLabelForElement(control_element);
+    form_fields[field_idx]->label =
+        form_fields[field_idx]->label.substr(0, kMaxDataLength);
 
     if (field && form_control_element == control_element)
       *field = *form_fields[field_idx];
