@@ -56,8 +56,7 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   void MoveBookmark(JNIEnv* env,
                     jobject obj,
                     jobject j_bookmark_id_obj,
-                    jobject j_parent_id_obj,
-                    jint index);
+                    jobject j_parent_id_obj);
 
   base::android::ScopedJavaLocalRef<jobject> AddBookmark(
       JNIEnv* env,

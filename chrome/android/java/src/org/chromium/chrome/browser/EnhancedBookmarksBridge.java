@@ -80,13 +80,12 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
-     * Moves a Bookmark in the EnhancedBookmarkModel
+     * Moves a bookmark to another folder, and append it at the end of the list of all children.
      * @param bookmarkId The item to be be moved
      * @param newParentId The new parent of the item
-     * @param index New position index of bookmark within the parent.
      */
-    public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId, int index) {
-        nativeMoveBookmark(mNativeEnhancedBookmarksBridge, bookmarkId, newParentId, index);
+    public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId) {
+        nativeMoveBookmark(mNativeEnhancedBookmarksBridge, bookmarkId, newParentId);
     }
 
     /**
@@ -232,7 +231,7 @@ public final class EnhancedBookmarksBridge {
     private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
             int index, String title);
     private native void nativeMoveBookmark(long nativeEnhancedBookmarksBridge,
-            BookmarkId bookmarkId, BookmarkId newParentId, int index);
+            BookmarkId bookmarkId, BookmarkId newParentId);
     private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
             BookmarkId parent, int index, String title, String url);
     private native void nativeSendSearchRequest(long nativeEnhancedBookmarksBridge, String query);

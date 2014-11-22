@@ -156,8 +156,7 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddFolder(JNIEnv* env,
 void EnhancedBookmarksBridge::MoveBookmark(JNIEnv* env,
                                            jobject obj,
                                            jobject j_bookmark_id_obj,
-                                           jobject j_parent_id_obj,
-                                           jint index) {
+                                           jobject j_parent_id_obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(enhanced_bookmark_model_->loaded());
 
@@ -173,7 +172,8 @@ void EnhancedBookmarksBridge::MoveBookmark(JNIEnv* env,
   const BookmarkNode* new_parent_node = bookmarks::GetBookmarkNodeByID(
       enhanced_bookmark_model_->bookmark_model(),
       static_cast<int64>(bookmark_id));
-  enhanced_bookmark_model_->Move(node, new_parent_node, index);
+  enhanced_bookmark_model_->Move(node, new_parent_node,
+                                 new_parent_node->child_count());
 }
 
 ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddBookmark(
