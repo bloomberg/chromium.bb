@@ -149,11 +149,12 @@ void Animation::applyEffects()
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
     // FIXME: Handle iteration values which overflow int.
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration());
+    m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
-    } else if (!interpolations->isEmpty()) {
+    } else if (interpolations && !interpolations->isEmpty()) {
         OwnPtrWillBeRawPtr<SampledEffect> sampledEffect = SampledEffect::create(this, interpolations.release());
         m_sampledEffect = sampledEffect.get();
         ensureAnimationStack(m_target).add(sampledEffect.release());

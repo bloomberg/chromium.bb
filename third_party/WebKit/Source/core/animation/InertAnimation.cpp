@@ -46,16 +46,18 @@ InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, c
 {
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > InertAnimation::sample(double inheritedTime)
+void InertAnimation::sample(double inheritedTime, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result)
 {
     updateInheritedTime(inheritedTime, TimingUpdateOnDemand);
-    if (!isInEffect())
-        return nullptr;
+    if (!isInEffect()) {
+        result.clear();
+        return;
+    }
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    return m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration());
+    return m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
 }
 
 double InertAnimation::calculateTimeToEffectChange(bool, double, double) const

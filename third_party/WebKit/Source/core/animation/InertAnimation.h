@@ -40,7 +40,7 @@ namespace blink {
 class InertAnimation final : public AnimationNode {
 public:
     static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused);
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(double inheritedTime);
+    void sample(double inheritedTime, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
     AnimationEffect* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 

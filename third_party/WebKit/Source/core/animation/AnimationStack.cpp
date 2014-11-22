@@ -59,10 +59,10 @@ bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnP
 void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
 {
     for (size_t i = 0; i < newAnimations.size(); ++i) {
-        OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = newAnimations[i]->sample(0);
-        if (sample) {
+        OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
+        newAnimations[i]->sample(0, sample);
+        if (sample)
             copyToActiveInterpolationMap(*sample, result);
-        }
     }
 }
 

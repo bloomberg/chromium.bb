@@ -86,7 +86,7 @@ public:
     }
 
     // AnimationEffect implementation.
-    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample(int iteration, double fraction, double iterationDuration) const override;
+    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const override;
 
     virtual bool isKeyframeEffectModel() const override { return true; }
 

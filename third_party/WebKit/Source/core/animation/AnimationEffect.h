@@ -52,7 +52,7 @@ public:
 
     AnimationEffect() { }
     virtual ~AnimationEffect() { }
-    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const = 0;
+    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const = 0;
 
     virtual bool affects(CSSPropertyID) { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }

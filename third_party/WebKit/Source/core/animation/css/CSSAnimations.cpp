@@ -389,8 +389,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
             newFrames[0]->clearPropertyValue(id);
             RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false);
-            OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = inertAnimationForSampling->sample(inheritedTime);
-            ASSERT(sample->size() == 1);
+            OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
+            inertAnimationForSampling->sample(inheritedTime, sample);
+            ASSERT(sample && sample->size() == 1);
             newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
 
             effect = AnimatableValueKeyframeEffectModel::create(newFrames);

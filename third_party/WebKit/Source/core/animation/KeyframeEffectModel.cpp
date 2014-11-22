@@ -49,14 +49,14 @@ PropertySet KeyframeEffectModelBase::properties() const
     return result;
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration) const
+void KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
     ensureKeyframeGroups();
     ensureInterpolationEffect();
 
-    return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration);
+    return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
 }
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)

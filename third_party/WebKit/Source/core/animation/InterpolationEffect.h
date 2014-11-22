@@ -14,9 +14,12 @@ namespace blink {
 
 class InterpolationEffect : public RefCountedWillBeGarbageCollected<InterpolationEffect> {
 public:
-    static PassRefPtrWillBeRawPtr<InterpolationEffect> create() { return adoptRefWillBeNoop(new InterpolationEffect()); }
+    static PassRefPtrWillBeRawPtr<InterpolationEffect> create()
+    {
+        return adoptRefWillBeNoop(new InterpolationEffect());
+    }
 
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > getActiveInterpolations(double fraction, double iterationDuration) const;
+    void getActiveInterpolations(double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const;
 
     void addInterpolation(PassRefPtrWillBeRawPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {
