@@ -70,14 +70,14 @@ function test()
                 view.performSearch({query: "@401", caseSensitive: false});
             }
 
-            function checkNodeIsSelected(constructorName, nodeId, onSuccess, callback, parentNode, node)
+            function checkNodeIsSelected(constructorName, nodeId, onSuccess, callback, node)
             {
                 if (!node) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
                     return next();
                 }
-                if (constructorName !== parentNode._name) {
-                    InspectorTest.addResult("FAIL: constructor name doesn't match. " + constructorName + " !== " + parentNode._name);
+                if (constructorName !== node.parent._name) {
+                    InspectorTest.addResult("FAIL: constructor name doesn't match. " + constructorName + " !== " + node.parent._name);
                     next();
                 }
                 if (nodeId != node.snapshotNodeId) {
