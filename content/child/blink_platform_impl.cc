@@ -239,8 +239,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_PLAY_BUTTON_HELP;
     case WebLocalizedString::AXMediaPauseButtonHelp:
       return IDS_AX_MEDIA_PAUSE_BUTTON_HELP;
-    case WebLocalizedString::AXMediaSliderHelp:
-      return IDS_AX_MEDIA_SLIDER_HELP;
+    case WebLocalizedString::AXMediaAudioSliderHelp:
+      return IDS_AX_MEDIA_AUDIO_SLIDER_HELP;
+    case WebLocalizedString::AXMediaVideoSliderHelp:
+      return IDS_AX_MEDIA_VIDEO_SLIDER_HELP;
     case WebLocalizedString::AXMediaSliderThumbHelp:
       return IDS_AX_MEDIA_SLIDER_THUMB_HELP;
     case WebLocalizedString::AXMediaCurrentTimeDisplayHelp:

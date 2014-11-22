@@ -532,7 +532,11 @@ below:
         pause playback
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER_HELP" desc="accessibility help description for timeline slider">
+      <message name="IDS_AX_MEDIA_AUDIO_SLIDER_HELP" desc="accessibility help description for audio timeline slider">
+        audio time scrubber
+      </message>
+
+      <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="accessibility help description for video timeline slider">
         movie time scrubber
       </message>
 
