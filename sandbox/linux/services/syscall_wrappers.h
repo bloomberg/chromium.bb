@@ -19,12 +19,14 @@ SANDBOX_EXPORT pid_t sys_getpid(void);
 
 SANDBOX_EXPORT pid_t sys_gettid(void);
 
-struct pt_regs;
+SANDBOX_EXPORT long sys_clone(unsigned long flags);
+
+// |regs| is not supported and must be passed as nullptr.
 SANDBOX_EXPORT long sys_clone(unsigned long flags,
                               void* child_stack,
-                              void* ptid,
-                              void* ctid,
-                              struct pt_regs* regs);
+                              pid_t* ptid,
+                              pid_t* ctid,
+                              decltype(nullptr) regs);
 
 SANDBOX_EXPORT void sys_exit_group(int status);
 

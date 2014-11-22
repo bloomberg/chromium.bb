@@ -34,32 +34,12 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
+#include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {
 
 namespace {
-
-// |pid| is the return value of a fork()-like call. This
-// makes sure that if fork() succeeded the child exits
-// and the parent waits for it.
-void HandlePostForkReturn(pid_t pid) {
-  const int kChildExitCode = 1;
-  if (pid > 0) {
-    int status = 0;
-    PCHECK(pid == HANDLE_EINTR(waitpid(pid, &status, 0)));
-    CHECK(WIFEXITED(status));
-    CHECK_EQ(kChildExitCode, WEXITSTATUS(status));
-  } else if (pid == 0) {
-    _exit(kChildExitCode);
-  }
-}
-
-// Check that HandlePostForkReturn works.
-TEST(BaselinePolicy, HandlePostForkReturn) {
-  pid_t pid = fork();
-  HandlePostForkReturn(pid);
-}
 
 // This also tests that read(), write() and fstat() are allowed.
 void TestPipeOrSocketPair(base::ScopedFD read_end, base::ScopedFD write_end) {
@@ -107,36 +87,39 @@ BPF_TEST_C(BaselinePolicy, ForkErrno, BaselinePolicy) {
   errno = 0;
   pid_t pid = fork();
   const int fork_errno = errno;
-  HandlePostForkReturn(pid);
+  TestUtils::HandlePostForkReturn(pid);
 
   BPF_ASSERT_EQ(-1, pid);
   BPF_ASSERT_EQ(EPERM, fork_errno);
 }
 
 pid_t ForkX86Glibc() {
-  return sys_clone(CLONE_PARENT_SETTID | SIGCHLD, 0, 0, 0, 0);
+  static pid_t ptid;
+  return sys_clone(CLONE_PARENT_SETTID | SIGCHLD, nullptr, &ptid, nullptr,
+                   nullptr);
 }
 
 BPF_TEST_C(BaselinePolicy, ForkX86Eperm, BaselinePolicy) {
   errno = 0;
   pid_t pid = ForkX86Glibc();
   const int fork_errno = errno;
-  HandlePostForkReturn(pid);
+  TestUtils::HandlePostForkReturn(pid);
 
   BPF_ASSERT_EQ(-1, pid);
   BPF_ASSERT_EQ(EPERM, fork_errno);
 }
 
 pid_t ForkARMGlibc() {
-  return sys_clone(CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD, 0, 0, 0,
-                   0);
+  static pid_t ctid;
+  return sys_clone(CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD, nullptr,
+                   nullptr, &ctid, nullptr);
 }
 
 BPF_TEST_C(BaselinePolicy, ForkArmEperm, BaselinePolicy) {
   errno = 0;
   pid_t pid = ForkARMGlibc();
   const int fork_errno = errno;
-  HandlePostForkReturn(pid);
+  TestUtils::HandlePostForkReturn(pid);
 
   BPF_ASSERT_EQ(-1, pid);
   BPF_ASSERT_EQ(EPERM, fork_errno);
@@ -151,8 +134,8 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DisallowedCloneFlagCrashes,
                  DEATH_SEGV_MESSAGE(GetCloneErrorMessageContentForTests()),
                  BaselinePolicy) {
-  pid_t pid = sys_clone(CLONE_THREAD | SIGCHLD, 0, 0, 0, 0);
-  HandlePostForkReturn(pid);
+  pid_t pid = sys_clone(CLONE_THREAD | SIGCHLD);
+  TestUtils::HandlePostForkReturn(pid);
 }
 
 BPF_DEATH_TEST_C(BaselinePolicy,

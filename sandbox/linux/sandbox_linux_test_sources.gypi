@@ -18,6 +18,7 @@
   ],
   'sources': [
     'services/scoped_process_unittest.cc',
+    'services/syscall_wrappers_unittest.cc',
     'services/thread_helpers_unittests.cc',
     'services/yama_unittests.cc',
     'syscall_broker/broker_process_unittest.cc',
@@ -25,6 +26,7 @@
     'tests/scoped_temporary_file.cc',
     'tests/scoped_temporary_file.h',
     'tests/scoped_temporary_file_unittest.cc',
+    'tests/test_utils_unittest.cc',
     'tests/unit_tests_unittest.cc',
   ],
   'conditions': [

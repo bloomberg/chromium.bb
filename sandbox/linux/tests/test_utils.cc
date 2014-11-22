@@ -28,4 +28,16 @@ bool TestUtils::CurrentProcessHasChildren() {
   }
 }
 
+void TestUtils::HandlePostForkReturn(pid_t pid) {
+  const int kChildExitCode = 1;
+  if (pid > 0) {
+    int status = 0;
+    PCHECK(pid == HANDLE_EINTR(waitpid(pid, &status, 0)));
+    CHECK(WIFEXITED(status));
+    CHECK_EQ(kChildExitCode, WEXITSTATUS(status));
+  } else if (pid == 0) {
+    _exit(kChildExitCode);
+  }
+}
+
 }  // namespace sandbox
