@@ -179,7 +179,7 @@ void RenderVideo::updatePlayer()
     if (!mediaPlayer)
         return;
 
-    if (!videoElement()->isActive())
+    if (!videoElement()->inActiveDocument())
         return;
 
     videoElement()->setNeedsCompositingUpdate();

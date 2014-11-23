@@ -102,8 +102,6 @@ public:
     };
     void scheduleDelayedAction(DelayedActionType);
 
-    bool isActive() const { return m_active; }
-
     bool hasRemoteRoutes() const { return m_remoteRoutesAvailable; }
     bool isPlayingRemotely() const { return m_playingRemotely; }
 
@@ -554,7 +552,6 @@ private:
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;
-    bool m_active : 1;
     bool m_autoplaying : 1;
     bool m_muted : 1;
     bool m_paused : 1;
