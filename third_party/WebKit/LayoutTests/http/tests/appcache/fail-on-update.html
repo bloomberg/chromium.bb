@@ -1,3 +1,4 @@
+<!DOCTYPE HTML>
 <html manifest="resources/fail-on-update.php">
 <script>
 if (window.testRunner) {
@@ -5,10 +6,14 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-function setManifestDeleted(state)
+function setManifestDeleted(state, callback)
 {
     var req = new XMLHttpRequest;
-    req.open("GET", "resources/fail-on-update.php?command=" + (state ? "delete" : "reset"), false);
+    req.onreadystatechange = function() {
+        if (req.readyState == 4)
+            callback();
+    }
+    req.open("GET", "resources/fail-on-update.php?command=" + (state ? "delete" : "reset"));
     req.send(null);
 }
 
@@ -16,12 +21,16 @@ function test()
 {
     clearTimeout(timeoutId);
 
-    setManifestDeleted(true);
-    applicationCache.update();
-    window.location = 'data:text/html,<p>SUCCESS: No crash.</p>' + 
-        '<script>' +
-            'if (window.testRunner) testRunner.notifyDone();' +
-        '</scri' + 'pt>';
+    setManifestDeleted(true, afterDelete);
+
+    function afterDelete()
+    {
+        applicationCache.update();
+        window.location = 'data:text/html,<p>SUCCESS: No crash.</p>' + 
+            '<script>' +
+                'if (window.testRunner) testRunner.notifyDone();' +
+            '</scri' + 'pt>';
+    }
 }
 
 function resetManifest()
@@ -31,8 +40,9 @@ function resetManifest()
         return;
     }
 
-    setManifestDeleted(false);
-    location.reload();
+    setManifestDeleted(false, function() {
+        location.reload();
+    });
 }
 
 applicationCache.addEventListener('noupdate', function() { setTimeout(test, 0) }, false);
