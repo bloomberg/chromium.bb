@@ -220,7 +220,7 @@ deps = {
    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'fed7b07985de8d293761040aa1edcdfd3c2579e4',
 
   'src/third_party/libjingle/source/talk':
-    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '370e75ccc6108edd2a81a052290c52e88b544bf4', # from svn revision 7731
+    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '107fe5cee7bca3dafa0b5219742a31dc3b1d7230', # from svn revision 7732
 
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/usrsctplib.git' + '@' + '190c8cbfcf8fd810aa09e0fab4ca62a8ce724e14',
