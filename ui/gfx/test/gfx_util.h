@@ -10,7 +10,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
