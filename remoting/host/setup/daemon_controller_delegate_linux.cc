@@ -29,7 +29,6 @@
 #include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/json_host_config.h"
 #include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
@@ -178,23 +177,22 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
 }
 
 scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
+  if (GetState() == DaemonController::STATE_NOT_IMPLEMENTED)
+    return nullptr;
+
+  scoped_ptr<base::DictionaryValue> config(
+      HostConfigFromJsonFile(GetConfigPath()));
+  if (!config)
+    return nullptr;
+
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-
-  if (GetState() != DaemonController::STATE_NOT_IMPLEMENTED) {
-    JsonHostConfig config(GetConfigPath());
-    if (config.Read()) {
-      std::string value;
-      if (config.GetString(kHostIdConfigPath, &value)) {
-        result->SetString(kHostIdConfigPath, value);
-      }
-      if (config.GetString(kXmppLoginConfigPath, &value)) {
-        result->SetString(kXmppLoginConfigPath, value);
-      }
-    } else {
-      result.reset();  // Return NULL in case of error.
-    }
+  std::string value;
+  if (config->GetString(kHostIdConfigPath, &value)) {
+    result->SetString(kHostIdConfigPath, value);
   }
-
+  if (config->GetString(kXmppLoginConfigPath, &value)) {
+    result->SetString(kXmppLoginConfigPath, value);
+  }
   return result.Pass();
 }
 
@@ -230,9 +228,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   }
 
   // Write config.
-  JsonHostConfig config_file(GetConfigPath());
-  if (!config_file.CopyFrom(config.get()) ||
-      !config_file.Save()) {
+  if (!HostConfigToJsonFile(*config, GetConfigPath())) {
     LOG(ERROR) << "Failed to update config file.";
     done.Run(DaemonController::RESULT_FAILED);
     return;
@@ -251,10 +247,11 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
 void DaemonControllerDelegateLinux::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
-  JsonHostConfig config_file(GetConfigPath());
-  if (!config_file.Read() ||
-      !config_file.CopyFrom(config.get()) ||
-      !config_file.Save()) {
+  scoped_ptr<base::DictionaryValue> new_config(
+      HostConfigFromJsonFile(GetConfigPath()));
+  if (new_config)
+    new_config->MergeDictionary(config.get());
+  if (!new_config || !HostConfigToJsonFile(*new_config, GetConfigPath())) {
     LOG(ERROR) << "Failed to update config file.";
     done.Run(DaemonController::RESULT_FAILED);
     return;

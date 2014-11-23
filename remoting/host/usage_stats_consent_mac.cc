@@ -9,8 +9,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "remoting/host/config_file_watcher.h"
-#include "remoting/host/json_host_config.h"
+#include "remoting/host/host_config.h"
 
 namespace remoting {
 
@@ -25,9 +27,10 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
     base::FilePath config_file_path =
         command_line->GetSwitchValuePath(kHostConfigSwitchName);
-    JsonHostConfig host_config(config_file_path);
-    if (host_config.Read()) {
-      return host_config.GetBoolean(kUsageStatsConsentConfigPath, allowed);
+    scoped_ptr<base::DictionaryValue> host_config(
+        HostConfigFromJsonFile(config_file_path));
+    if (host_config) {
+      return host_config->GetBoolean(kUsageStatsConsentConfigPath, allowed);
     }
   }
   return false;

@@ -207,7 +207,7 @@
             '../third_party/modp_b64/modp_b64.cc',
             'host/constants_mac.cc',
             'host/constants_mac.h',
-            'host/host_config.cc',
+            'host/host_config_constants.cc',
             'host/mac/me2me_preference_pane.h',
             'host/mac/me2me_preference_pane.mm',
             'host/mac/me2me_preference_pane_confirm_pin.h',

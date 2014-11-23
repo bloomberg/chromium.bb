@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
@@ -25,7 +24,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "remoting/host/constants_mac.h"
-#include "remoting/host/json_host_config.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
@@ -51,18 +50,17 @@ DaemonController::State DaemonControllerDelegateMac::GetState() {
 
 scoped_ptr<base::DictionaryValue> DaemonControllerDelegateMac::GetConfig() {
   base::FilePath config_path(kHostConfigFilePath);
-  JsonHostConfig host_config(config_path);
-  scoped_ptr<base::DictionaryValue> config;
+  scoped_ptr<base::DictionaryValue> host_config(
+      HostConfigFromJsonFile(config_path));
+  if (!host_config)
+    return nullptr;
 
-  if (host_config.Read()) {
-    config.reset(new base::DictionaryValue());
-    std::string value;
-    if (host_config.GetString(kHostIdConfigPath, &value))
-      config.get()->SetString(kHostIdConfigPath, value);
-    if (host_config.GetString(kXmppLoginConfigPath, &value))
-      config.get()->SetString(kXmppLoginConfigPath, value);
-  }
-
+  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue);
+  std::string value;
+  if (host_config->GetString(kHostIdConfigPath, &value))
+    config->SetString(kHostIdConfigPath, value);
+  if (host_config->GetString(kXmppLoginConfigPath, &value))
+    config->SetString(kXmppLoginConfigPath, value);
   return config.Pass();
 }
 
@@ -76,28 +74,22 @@ void DaemonControllerDelegateMac::SetConfigAndStart(
     bool consent,
     const DaemonController::CompletionCallback& done) {
   config->SetBoolean(kUsageStatsConsentConfigPath, consent);
-  std::string config_data;
-  base::JSONWriter::Write(config.get(), &config_data);
-  ShowPreferencePane(config_data, done);
+  ShowPreferencePane(HostConfigToJson(*config), done);
 }
 
 void DaemonControllerDelegateMac::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
   base::FilePath config_file_path(kHostConfigFilePath);
-  JsonHostConfig config_file(config_file_path);
-  if (!config_file.Read()) {
-    done.Run(DaemonController::RESULT_FAILED);
-    return;
-  }
-  if (!config_file.CopyFrom(config.get())) {
-    LOG(ERROR) << "Failed to update configuration.";
+  scoped_ptr<base::DictionaryValue> host_config(
+      HostConfigFromJsonFile(config_file_path));
+  if (!host_config) {
     done.Run(DaemonController::RESULT_FAILED);
     return;
   }
 
-  std::string config_data = config_file.GetSerializedData();
-  ShowPreferencePane(config_data, done);
+  host_config->MergeDictionary(config.get());
+  ShowPreferencePane(HostConfigToJson(*host_config), done);
 }
 
 void DaemonControllerDelegateMac::Stop(
@@ -143,9 +135,10 @@ DaemonControllerDelegateMac::GetUsageStatsConsent() {
   consent.set_by_policy = false;
 
   base::FilePath config_file_path(kHostConfigFilePath);
-  JsonHostConfig host_config(config_file_path);
-  if (host_config.Read()) {
-    host_config.GetBoolean(kUsageStatsConsentConfigPath, &consent.allowed);
+  scoped_ptr<base::DictionaryValue> host_config(
+      HostConfigFromJsonFile(config_file_path));
+  if (host_config) {
+    host_config->GetBoolean(kUsageStatsConsentConfigPath, &consent.allowed);
   }
 
   return consent;

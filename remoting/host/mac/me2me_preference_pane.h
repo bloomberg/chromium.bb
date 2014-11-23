@@ -17,7 +17,7 @@ namespace remoting {
 // the "base" target, so it can be built for 64-bit on Mac OS X.
 
 // TODO(lambroslambrou): Once the "base" target has 64-bit support, remove this
-// implementation and use the one in remoting/host/json_host_config.h - see
+// implementation and use the functions from remoting/host/host_config.h - see
 // http://crbug.com/128122.
 class JsonHostConfig {
  public:

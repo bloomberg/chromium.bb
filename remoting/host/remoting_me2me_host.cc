@@ -57,7 +57,6 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/ipc_host_event_logger.h"
-#include "remoting/host/json_host_config.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/me2me_desktop_environment.h"
 #include "remoting/host/pairing_registry_delegate.h"
@@ -229,7 +228,7 @@ class HostProcess
   void ShutdownOnUiThread();
 
   // Applies the host config, returning true if successful.
-  bool ApplyConfig(scoped_ptr<JsonHostConfig> config);
+  bool ApplyConfig(const base::DictionaryValue& config);
 
   // Handles policy updates, by calling On*PolicyUpdate methods.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
@@ -507,14 +506,15 @@ void HostProcess::OnConfigUpdated(
   HOST_LOG << "Processing new host configuration.";
 
   serialized_config_ = serialized_config;
-  scoped_ptr<JsonHostConfig> config(new JsonHostConfig(base::FilePath()));
-  if (!config->SetSerializedData(serialized_config)) {
+  scoped_ptr<base::DictionaryValue> config(
+      HostConfigFromJson(serialized_config));
+  if (!config) {
     LOG(ERROR) << "Invalid configuration.";
     ShutdownHost(kInvalidHostConfigurationExitCode);
     return;
   }
 
-  if (!ApplyConfig(config.Pass())) {
+  if (!ApplyConfig(*config)) {
     LOG(ERROR) << "Failed to apply the configuration.";
     ShutdownHost(kInvalidHostConfigurationExitCode);
     return;
@@ -809,16 +809,16 @@ void HostProcess::OnInitializePairingRegistry(
 }
 
 // Applies the host config, returning true if successful.
-bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
+bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!config->GetString(kHostIdConfigPath, &host_id_)) {
+  if (!config.GetString(kHostIdConfigPath, &host_id_)) {
     LOG(ERROR) << "host_id is not defined in the config.";
     return false;
   }
 
   std::string key_base64;
-  if (!config->GetString(kPrivateKeyConfigPath, &key_base64)) {
+  if (!config.GetString(kPrivateKeyConfigPath, &key_base64)) {
     LOG(ERROR) << "Private key couldn't be read from the config file.";
     return false;
   }
@@ -830,8 +830,8 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   }
 
   std::string host_secret_hash_string;
-  if (!config->GetString(kHostSecretHashConfigPath,
-                         &host_secret_hash_string)) {
+  if (!config.GetString(kHostSecretHashConfigPath,
+                        &host_secret_hash_string)) {
     host_secret_hash_string = "plain:";
   }
 
@@ -841,11 +841,11 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   }
 
   // Use an XMPP connection to the Talk network for session signalling.
-  if (!config->GetString(kXmppLoginConfigPath, &xmpp_server_config_.username) ||
-      !(config->GetString(kXmppAuthTokenConfigPath,
-                          &xmpp_server_config_.auth_token) ||
-        config->GetString(kOAuthRefreshTokenConfigPath,
-                          &oauth_refresh_token_))) {
+  if (!config.GetString(kXmppLoginConfigPath, &xmpp_server_config_.username) ||
+      !(config.GetString(kXmppAuthTokenConfigPath,
+                         &xmpp_server_config_.auth_token) ||
+        config.GetString(kOAuthRefreshTokenConfigPath,
+                         &oauth_refresh_token_))) {
     LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return false;
   }
@@ -854,15 +854,15 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     // SignalingConnector is responsible for getting OAuth token.
     xmpp_server_config_.auth_token = "";
     xmpp_server_config_.auth_service = "oauth2";
-  } else if (!config->GetString(kXmppAuthServiceConfigPath,
-                                &xmpp_server_config_.auth_service)) {
+  } else if (!config.GetString(kXmppAuthServiceConfigPath,
+                               &xmpp_server_config_.auth_service)) {
     // For the me2me host, we default to ClientLogin token for chromiumsync
     // because earlier versions of the host had no HTTP stack with which to
     // request an OAuth2 access token.
     xmpp_server_config_.auth_service = kChromotingTokenDefaultServiceName;
   }
 
-  if (config->GetString(kHostOwnerConfigPath, &host_owner_)) {
+  if (config.GetString(kHostOwnerConfigPath, &host_owner_)) {
     // Service account configs have a host_owner, different from the xmpp_login.
     use_service_account_ = true;
   } else {
@@ -874,7 +874,7 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   // For non-Gmail Google accounts, the owner base JID differs from the email.
   // host_owner_ contains the base JID (used for authenticating clients), while
   // host_owner_email contains the account's email (used for UI and logs).
-  if (!config->GetString(kHostOwnerEmailConfigPath, &host_owner_email_)) {
+  if (!config.GetString(kHostOwnerEmailConfigPath, &host_owner_email_)) {
     host_owner_email_ = host_owner_;
   }
 
@@ -882,25 +882,23 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
     enable_vp9_ = true;
   } else {
-    config->GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
+    config.GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
   }
 
   // Allow the command-line to override the size of the frame recorder buffer.
-  std::string frame_recorder_buffer_kb;
+  int frame_recorder_buffer_kb = 0;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           kFrameRecorderBufferKbName)) {
-    frame_recorder_buffer_kb =
+    std::string switch_value =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             kFrameRecorderBufferKbName);
+    base::StringToInt(switch_value, &frame_recorder_buffer_kb);
   } else {
-    config->GetString(kFrameRecorderBufferKbConfigPath,
+    config.GetInteger(kFrameRecorderBufferKbConfigPath,
                       &frame_recorder_buffer_kb);
   }
-  if (!frame_recorder_buffer_kb.empty()) {
-    int buffer_kb = 0;
-    if (base::StringToInt(frame_recorder_buffer_kb, &buffer_kb)) {
-      frame_recorder_buffer_size_ = 1024LL * buffer_kb;
-    }
+  if (frame_recorder_buffer_kb > 0) {
+    frame_recorder_buffer_size_ = 1024LL * frame_recorder_buffer_kb;
   }
 
   return true;
