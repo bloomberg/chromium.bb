@@ -1481,16 +1481,15 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
     // point.
     for (size_t i = 0; i < blinkPageSizeLog2; i++) {
         for (FreeListEntry* freeListEntry = m_freeList.m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
-            if (pagesToBeSweptContains(freeListEntry->address())) {
+            if (pagesToBeSweptContains(freeListEntry->address()))
                 return false;
-            }
             ASSERT(pagesAllocatedDuringSweepingContains(freeListEntry->address()));
         }
     }
     if (ownsNonEmptyAllocationArea()) {
-        ASSERT(pagesToBeSweptContains(currentAllocationPoint())
-            || pagesAllocatedDuringSweepingContains(currentAllocationPoint()));
-        return !pagesToBeSweptContains(currentAllocationPoint());
+        if (pagesToBeSweptContains(currentAllocationPoint()))
+            return false;
+        ASSERT(pagesAllocatedDuringSweepingContains(currentAllocationPoint()));
     }
     return true;
 }
