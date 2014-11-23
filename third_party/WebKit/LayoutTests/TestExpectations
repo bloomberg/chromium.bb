@@ -1443,6 +1443,8 @@ crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bid
 crbug.com/433146 fast/media/mq-hover.html [ Failure ]
 crbug.com/433146 fast/media/mq-pointer.html [ Failure ]
 
+crbug.com/435870 fast/loader/open-in-srcdoc-unload.html [ Pass Failure ]
+
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
