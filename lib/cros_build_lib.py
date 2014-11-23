@@ -306,7 +306,8 @@ def SudoRunCommand(cmd, user='root', **kwargs):
   return RunCommand(sudo_cmd, **kwargs)
 
 
-def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
+def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
+                      signum, frame):
   """Functor that when curried w/ the appropriate arguments, is used as a signal
   handler by RunCommand.
 
@@ -324,6 +325,10 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
   # the Popen instance was created, but no process was generated.
   if proc.returncode is None and proc.pid is not None:
     try:
+      while proc.poll() is None and int_timeout >= 0:
+        time.sleep(0.1)
+        int_timeout -= 0.1
+
       proc.terminate()
       while proc.poll() is None and kill_timeout >= 0:
         time.sleep(0.1)
@@ -397,8 +402,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                shell=False, env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=logging.INFO,
-               error_code_ok=False, kill_timeout=1, log_output=False,
-               stdout_to_pipe=False, capture_output=False, quiet=False):
+               error_code_ok=False, int_timeout=1, kill_timeout=1,
+               log_output=False, stdout_to_pipe=False, capture_output=False,
+               quiet=False):
   """Runs a command.
 
   Args:
@@ -438,9 +444,10 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                    exit code.  Instead, returns the CommandResult object
                    containing the exit code. Note: will still raise an
                    exception if the cmd file does not exist.
-    kill_timeout: If we're interrupted, how long should we give the invoked
-                  process to shutdown from a SIGTERM before we SIGKILL it.
-                  Specified in seconds.
+    int_timeout: If we're interrupted, how long (in seconds) should we give the
+      invoked process to clean up before we send a SIGTERM.
+    kill_timeout: If we're interrupted, how long (in seconds) should we give the
+      invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
     stdout_to_pipe: Redirect stdout to pipe.
     capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
@@ -561,13 +568,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       else:
         old_sigint = signal.getsignal(signal.SIGINT)
         signal.signal(signal.SIGINT,
-                      functools.partial(_KillChildProcess, proc, kill_timeout,
-                                        cmd, old_sigint))
+                      functools.partial(_KillChildProcess, proc, int_timeout,
+                                        kill_timeout, cmd, old_sigint))
 
       old_sigterm = signal.getsignal(signal.SIGTERM)
       signal.signal(signal.SIGTERM,
-                    functools.partial(_KillChildProcess, proc, kill_timeout,
-                                      cmd, old_sigterm))
+                    functools.partial(_KillChildProcess, proc, int_timeout,
+                                      kill_timeout, cmd, old_sigterm))
 
     try:
       (cmd_result.output, cmd_result.error) = proc.communicate(input)
@@ -608,7 +615,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   finally:
     if proc is not None:
       # Ensure the process is dead.
-      _KillChildProcess(proc, kill_timeout, cmd, None, None, None)
+      _KillChildProcess(proc, int_timeout, kill_timeout, cmd, None, None, None)
 
   return cmd_result
 
