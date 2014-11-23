@@ -19,16 +19,14 @@ import org.chromium.chrome.browser.UmaBridge;
  * Then this class will handle everything regarding showing app menu for you.
  */
 public class AppMenuButtonHelper implements OnTouchListener {
-    private final View mMenuButton;
     private final AppMenuHandler mMenuHandler;
     private Runnable mOnAppMenuShownListener;
+    private boolean mIsTouchEventsBeingProcessed;
 
     /**
-     * @param menuButton  Menu button instance that will trigger the app menu.
      * @param menuHandler MenuHandler implementation that can show and get the app menu.
      */
-    public AppMenuButtonHelper(View menuButton, AppMenuHandler menuHandler) {
-        mMenuButton = menuButton;
+    public AppMenuButtonHelper(AppMenuHandler menuHandler) {
         mMenuHandler = menuHandler;
     }
 
@@ -41,12 +39,13 @@ public class AppMenuButtonHelper implements OnTouchListener {
 
     /**
      * Shows the app menu if it is not already shown.
+     * @param view View that initiated showing this menu. Normally it is a menu button.
      * @param startDragging Whether dragging is started.
      * @return Whether or not if the app menu is successfully shown.
      */
-    private boolean showAppMenu(boolean startDragging) {
-        if (!mMenuHandler.isAppMenuShowing() &&
-                mMenuHandler.showAppMenu(mMenuButton, false, startDragging)) {
+    private boolean showAppMenu(View view, boolean startDragging) {
+        if (!mMenuHandler.isAppMenuShowing()
+                && mMenuHandler.showAppMenu(view, false, startDragging)) {
             // Initial start dragging can be canceled in case if it was just single tap.
             // So we only record non-dragging here, and will deal with those dragging cases in
             // AppMenuDragHelper class.
@@ -65,15 +64,16 @@ public class AppMenuButtonHelper implements OnTouchListener {
      *         touch events to prepare AppMenu showing.
      */
     public boolean isAppMenuActive() {
-        return mMenuButton.isPressed() || mMenuHandler.isAppMenuShowing();
+        return mIsTouchEventsBeingProcessed || mMenuHandler.isAppMenuShowing();
     }
 
     /**
      * Handle the key press event on a menu button.
+     * @param view View that received the enter key press event.
      * @return Whether the app menu was shown as a result of this action.
      */
-    public boolean onEnterKeyPress() {
-        return showAppMenu(false);
+    public boolean onEnterKeyPress(View view) {
+        return showAppMenu(view, false);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -83,14 +83,16 @@ public class AppMenuButtonHelper implements OnTouchListener {
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                mIsTouchEventsBeingProcessed = true;
                 isTouchEventConsumed |= true;
-                mMenuButton.setPressed(true);
-                showAppMenu(true);
+                view.setPressed(true);
+                showAppMenu(view, true);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                mIsTouchEventsBeingProcessed = false;
                 isTouchEventConsumed |= true;
-                mMenuButton.setPressed(false);
+                view.setPressed(false);
                 break;
             default:
         }
@@ -100,7 +102,7 @@ public class AppMenuButtonHelper implements OnTouchListener {
         // dragging correctly.
         AppMenuDragHelper dragHelper = mMenuHandler.getAppMenuDragHelper();
         if (dragHelper != null) {
-            isTouchEventConsumed |= dragHelper.handleDragging(event);
+            isTouchEventConsumed |= dragHelper.handleDragging(event, view);
         }
         return isTouchEventConsumed;
     }

@@ -9,10 +9,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
@@ -50,13 +49,15 @@ class AppMenuDragHelper {
     private volatile float mLastTouchX;
     private volatile float mLastTouchY;
     private final int mItemRowHeight;
-    private boolean mIsSingleTapUpHappened;
-    GestureDetector mGestureSingleTapDetector;
+    private boolean mIsSingleTapCanceled;
 
     // These are used in a function locally, but defined here to avoid heap allocation on every
     // touch event.
     private final Rect mScreenVisibleRect = new Rect();
     private final int[] mScreenVisiblePoint = new int[2];
+
+    private final int mTapTimeout;
+    private final int mScaledTouchSlop;
 
     AppMenuDragHelper(Activity activity, AppMenu appMenu, int itemRowHeight) {
         mActivity = activity;
@@ -88,13 +89,12 @@ class AppMenuDragHelper {
                 }
             }
         });
-        mGestureSingleTapDetector = new GestureDetector(activity, new SimpleOnGestureListener() {
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                mIsSingleTapUpHappened = true;
-                return true;
-            }
-        });
+
+        // We use medium timeout, the average of tap and long press timeouts. This is consistent
+        // with ListPopupWindow#ForwardingListener implementation.
+        mTapTimeout =
+                (ViewConfiguration.getTapTimeout() + ViewConfiguration.getLongPressTimeout()) / 2;
+        mScaledTouchSlop = ViewConfiguration.get(activity).getScaledTouchSlop();
     }
 
     /**
@@ -110,7 +110,7 @@ class AppMenuDragHelper {
         mDragScrollOffset = 0.0f;
         mDragScrollOffsetRounded = 0;
         mDragScrollingVelocity = 0.0f;
-        mIsSingleTapUpHappened = false;
+        mIsSingleTapCanceled = false;
 
         if (startDragging) mDragScrolling.start();
     }
@@ -131,9 +131,10 @@ class AppMenuDragHelper {
      * continue to get all the subsequent events.
      *
      * @param event Touch event to be processed.
+     * @param button Button that received the touch event.
      * @return Whether the event is handled.
      */
-    boolean handleDragging(MotionEvent event) {
+    boolean handleDragging(MotionEvent event, View button) {
         if (!mAppMenu.isShowing() || !mDragScrolling.isRunning()) return false;
 
         // We will only use the screen space coordinate (rawX, rawY) to reduce confusion.
@@ -155,12 +156,11 @@ class AppMenuDragHelper {
             return true;
         }
 
-        if (!mIsSingleTapUpHappened) {
-            mGestureSingleTapDetector.onTouchEvent(event);
-            if (mIsSingleTapUpHappened) {
-                UmaBridge.usingMenu(false, false);
-                finishDragging();
-            }
+        mIsSingleTapCanceled |= event.getEventTime() - event.getDownTime() > mTapTimeout;
+        mIsSingleTapCanceled |= !pointInView(button, event.getX(), event.getY(), mScaledTouchSlop);
+        if (!mIsSingleTapCanceled && eventActionMasked == MotionEvent.ACTION_UP) {
+            UmaBridge.usingMenu(false, false);
+            finishDragging();
         }
 
         // After this line, drag scrolling is happening.
@@ -209,6 +209,13 @@ class AppMenuDragHelper {
         return true;
     }
 
+    private boolean pointInView(View view, float x, float y, float slop) {
+        return x >= -slop
+                && y >= -slop
+                && x < (view.getWidth() + slop)
+                && y < (view.getHeight() + slop);
+    }
+
     /**
      * Performs the specified action on the menu item specified by the screen coordinate position.
      * @param screenX X in screen space coordinate.
@@ -236,8 +243,8 @@ class AppMenuDragHelper {
         for (int i = 0; i < itemViews.size(); ++i) {
             View itemView = itemViews.get(i);
 
-            boolean shouldPerform = itemView.isEnabled() && itemView.isShown() &&
-                    getScreenVisibleRect(itemView).contains(screenX, screenY);
+            boolean shouldPerform = itemView.isEnabled() && itemView.isShown()
+                    && getScreenVisibleRect(itemView).contains(screenX, screenY);
 
             switch (action) {
                 case ITEM_ACTION_HIGHLIGHT:
