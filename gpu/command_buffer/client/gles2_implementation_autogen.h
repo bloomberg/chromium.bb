@@ -164,6 +164,12 @@ void FramebufferTexture2D(GLenum target,
                           GLuint texture,
                           GLint level) override;
 
+void FramebufferTextureLayer(GLenum target,
+                             GLenum attachment,
+                             GLuint texture,
+                             GLint level,
+                             GLint layer) override;
+
 void FrontFace(GLenum mode) override;
 
 void GenBuffers(GLsizei n, GLuint* buffers) override;

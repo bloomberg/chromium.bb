@@ -798,6 +798,33 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleFramebufferTextureLayer(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::FramebufferTextureLayer& c =
+      *static_cast<const gles2::cmds::FramebufferTextureLayer*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum attachment = static_cast<GLenum>(c.attachment);
+  GLuint texture = c.texture;
+  GLint level = static_cast<GLint>(c.level);
+  GLint layer = static_cast<GLint>(c.layer);
+  if (!validators_->frame_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTextureLayer", target,
+                                    "target");
+    return error::kNoError;
+  }
+  if (!validators_->attachment.IsValid(attachment)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTextureLayer", attachment,
+                                    "attachment");
+    return error::kNoError;
+  }
+  DoFramebufferTextureLayer(target, attachment, texture, level, layer);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleFrontFace(uint32_t immediate_data_size,
                                                const void* cmd_data) {
   const gles2::cmds::FrontFace& c =

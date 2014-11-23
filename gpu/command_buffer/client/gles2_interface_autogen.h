@@ -120,6 +120,11 @@ virtual void FramebufferTexture2D(GLenum target,
                                   GLenum textarget,
                                   GLuint texture,
                                   GLint level) = 0;
+virtual void FramebufferTextureLayer(GLenum target,
+                                     GLenum attachment,
+                                     GLuint texture,
+                                     GLint level,
+                                     GLint layer) = 0;
 virtual void FrontFace(GLenum mode) = 0;
 virtual void GenBuffers(GLsizei n, GLuint* buffers) = 0;
 virtual void GenerateMipmap(GLenum target) = 0;

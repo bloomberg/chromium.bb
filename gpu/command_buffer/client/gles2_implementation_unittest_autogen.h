@@ -445,6 +445,17 @@ TEST_F(GLES2ImplementationTest, FramebufferTexture2DInvalidConstantArg4) {
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 }
 
+TEST_F(GLES2ImplementationTest, FramebufferTextureLayer) {
+  struct Cmds {
+    cmds::FramebufferTextureLayer cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 3, 4, 5);
+
+  gl_->FramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 3, 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, FrontFace) {
   struct Cmds {
     cmds::FrontFace cmd;

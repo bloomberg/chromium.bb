@@ -457,6 +457,18 @@ void FramebufferTexture2D(GLenum target,
   }
 }
 
+void FramebufferTextureLayer(GLenum target,
+                             GLenum attachment,
+                             GLuint texture,
+                             GLint level,
+                             GLint layer) {
+  gles2::cmds::FramebufferTextureLayer* c =
+      GetCmdSpace<gles2::cmds::FramebufferTextureLayer>();
+  if (c) {
+    c->Init(target, attachment, texture, level, layer);
+  }
+}
+
 void FrontFace(GLenum mode) {
   gles2::cmds::FrontFace* c = GetCmdSpace<gles2::cmds::FrontFace>();
   if (c) {

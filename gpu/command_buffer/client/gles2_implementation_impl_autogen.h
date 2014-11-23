@@ -474,6 +474,20 @@ void GLES2Implementation::FramebufferTexture2D(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::FramebufferTextureLayer(GLenum target,
+                                                  GLenum attachment,
+                                                  GLuint texture,
+                                                  GLint level,
+                                                  GLint layer) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFramebufferTextureLayer("
+                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringAttachment(attachment) << ", "
+                     << texture << ", " << level << ", " << layer << ")");
+  helper_->FramebufferTextureLayer(target, attachment, texture, level, layer);
+  CheckGLError();
+}
+
 void GLES2Implementation::FrontFace(GLenum mode) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFrontFace("

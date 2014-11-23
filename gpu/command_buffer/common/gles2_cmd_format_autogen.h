@@ -2150,6 +2150,65 @@ COMPILE_ASSERT(offsetof(FramebufferTexture2D, textarget) == 12,
 COMPILE_ASSERT(offsetof(FramebufferTexture2D, texture) == 16,
                OffsetOf_FramebufferTexture2D_texture_not_16);
 
+struct FramebufferTextureLayer {
+  typedef FramebufferTextureLayer ValueType;
+  static const CommandId kCmdId = kFramebufferTextureLayer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLuint _texture,
+            GLint _level,
+            GLint _layer) {
+    SetHeader();
+    target = _target;
+    attachment = _attachment;
+    texture = _texture;
+    level = _level;
+    layer = _layer;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLuint _texture,
+            GLint _level,
+            GLint _layer) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _attachment, _texture, _level, _layer);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t attachment;
+  uint32_t texture;
+  int32_t level;
+  int32_t layer;
+};
+
+COMPILE_ASSERT(sizeof(FramebufferTextureLayer) == 24,
+               Sizeof_FramebufferTextureLayer_is_not_24);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, header) == 0,
+               OffsetOf_FramebufferTextureLayer_header_not_0);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, target) == 4,
+               OffsetOf_FramebufferTextureLayer_target_not_4);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, attachment) == 8,
+               OffsetOf_FramebufferTextureLayer_attachment_not_8);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, texture) == 12,
+               OffsetOf_FramebufferTextureLayer_texture_not_12);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, level) == 16,
+               OffsetOf_FramebufferTextureLayer_level_not_16);
+COMPILE_ASSERT(offsetof(FramebufferTextureLayer, layer) == 20,
+               OffsetOf_FramebufferTextureLayer_layer_not_20);
+
 struct FrontFace {
   typedef FrontFace ValueType;
   static const CommandId kCmdId = kFrontFace;

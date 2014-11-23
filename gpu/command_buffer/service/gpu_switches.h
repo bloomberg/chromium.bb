@@ -27,6 +27,7 @@ GPU_EXPORT extern const char kGpuProgramCacheSizeKb[];
 GPU_EXPORT extern const char kDisableGpuShaderDiskCache[];
 GPU_EXPORT extern const char kEnableShareGroupAsyncTextureUpload[];
 GPU_EXPORT extern const char kEnableThreadedTextureMailboxes[];
+GPU_EXPORT extern const char kEnableUnsafeES3APIs[];
 
 GPU_EXPORT extern const char* kGpuSwitches[];
 GPU_EXPORT extern const int kNumGpuSwitches;

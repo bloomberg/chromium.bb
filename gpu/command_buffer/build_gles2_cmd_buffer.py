@@ -1347,6 +1347,8 @@ _PEPPER_INTERFACES = [
 #               the corresponding feature info flag is enabled. Implies
 #               'extension': True.
 # not_shared:   For GENn types, True if objects can't be shared between contexts
+# unsafe:       True = no validation is implemented on the service side and the
+#               command is only available with --enable-unsafe-es3-apis.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -1750,6 +1752,10 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension_flag': 'multisampled_render_to_texture',
     'trace_level': 1,
+  },
+  'FramebufferTextureLayer': {
+    'decoder_func': 'DoFramebufferTextureLayer',
+    'unsafe': True,
   },
   'GenerateMipmap': {
     'decoder_func': 'DoGenerateMipmap',
@@ -2978,7 +2984,12 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes function header for service implementation handlers."""
     file.Write("""error::Error GLES2DecoderImpl::Handle%(name)s(
         uint32_t immediate_data_size, const void* cmd_data) {
-      const gles2::cmds::%(name)s& c =
+      """ % {'name': func.name})
+    if func.IsUnsafe():
+      file.Write("""if (!unsafe_es3_apis_enabled())
+          return error::kUnknownCommand;
+        """)
+    file.Write("""const gles2::cmds::%(name)s& c =
           *static_cast<const gles2::cmds::%(name)s*>(cmd_data);
       (void)c;
       """ % {'name': func.name})
@@ -3140,29 +3151,32 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   SetupExpectationsForEnableDisable(%(gl_args)s, true);
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-"""
+  cmd.Init(%(args)s);"""
     elif func.name == 'Disable':
       valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   SetupExpectationsForEnableDisable(%(gl_args)s, false);
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-"""
+  cmd.Init(%(args)s);"""
     else:
       valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
+  cmd.Init(%(args)s);"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+"""
+    else:
+      valid_test += """
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -3174,7 +3188,17 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
+  cmd.Init(%(args)s);"""
+    if func.IsUnsafe():
+      invalid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+"""
+    else:
+      invalid_test += """
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
 """
@@ -6846,6 +6870,10 @@ class Function(object):
     """Returns whether the function is immediate data function or not."""
     return False
 
+  def IsUnsafe(self):
+    """Returns whether the function has service side validation or not."""
+    return self.GetInfo('unsafe', False)
+
   def GetInfo(self, name, default = None):
     """Returns a value from the function info for this function."""
     if name in self.info:
@@ -6874,7 +6902,8 @@ class Function(object):
 
   def IsCoreGLFunction(self):
     return (not self.IsExtension() and
-            not self.GetInfo('pepper_interface'))
+            not self.GetInfo('pepper_interface') and
+            not self.IsUnsafe())
 
   def InPepperInterface(self, interface):
     ext = self.GetInfo('pepper_interface')

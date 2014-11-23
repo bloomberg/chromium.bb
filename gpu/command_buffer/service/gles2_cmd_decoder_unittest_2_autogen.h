@@ -12,6 +12,15 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, SampleCoverageValidArgs) {
+  EXPECT_CALL(*gl_, SampleCoverage(1, true));
+  SpecializedSetup<cmds::SampleCoverage, 0>(true);
+  cmds::SampleCoverage cmd;
+  cmd.Init(1, true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest2, ScissorValidArgs) {
   EXPECT_CALL(*gl_, Scissor(1, 2, 3, 4));
   SpecializedSetup<cmds::Scissor, 0>(true);

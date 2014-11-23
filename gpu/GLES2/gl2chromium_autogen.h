@@ -61,6 +61,7 @@
 #define glFlush GLES2_GET_FUN(Flush)
 #define glFramebufferRenderbuffer GLES2_GET_FUN(FramebufferRenderbuffer)
 #define glFramebufferTexture2D GLES2_GET_FUN(FramebufferTexture2D)
+#define glFramebufferTextureLayer GLES2_GET_FUN(FramebufferTextureLayer)
 #define glFrontFace GLES2_GET_FUN(FrontFace)
 #define glGenBuffers GLES2_GET_FUN(GenBuffers)
 #define glGenerateMipmap GLES2_GET_FUN(GenerateMipmap)

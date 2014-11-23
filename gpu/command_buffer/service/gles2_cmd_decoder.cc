@@ -542,7 +542,8 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
 GLES2Decoder::GLES2Decoder()
     : initialized_(false),
       debug_(false),
-      log_commands_(false) {
+      log_commands_(false),
+      unsafe_es3_apis_enabled_(false) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -1365,6 +1366,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoFramebufferTexture2DCommon(const char* name,
       GLenum target, GLenum attachment, GLenum textarget,
       GLuint texture, GLint level, GLsizei samples);
+
+  // Wrapper for glFramebufferTextureLayer.
+  void DoFramebufferTextureLayer(
+      GLenum target, GLenum attachment, GLuint texture, GLint level,
+      GLint layer);
 
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
@@ -2427,9 +2433,13 @@ bool GLES2DecoderImpl::Initialize(
     set_log_commands(true);
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableUnsafeES3APIs)) {
+    set_unsafe_es3_apis_enabled(true);
+  }
+
   compile_shader_always_succeeds_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kCompileShaderAlwaysSucceeds);
-
 
   // Take ownership of the context and surface. The surface can be replaced with
   // SetSurface.
@@ -5362,6 +5372,25 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     DoDidUseTexImageIfNeeded(texture_ref->texture(), textarget);
 
   OnFboChanged();
+}
+
+void GLES2DecoderImpl::DoFramebufferTextureLayer(
+    GLenum target, GLenum attachment, GLuint client_texture_id,
+    GLint level, GLint layer) {
+  // TODO(zmo): Unsafe ES3 API, missing states update.
+  GLuint service_id = 0;
+  TextureRef* texture_ref = NULL;
+  if (client_texture_id) {
+    texture_ref = GetTexture(client_texture_id);
+    if (!texture_ref) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION,
+          "glFramebufferTextureLayer", "unknown texture_ref");
+      return;
+    }
+    service_id = texture_ref->service_id();
+  }
+  glFramebufferTextureLayer(target, attachment, service_id, level, layer);
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(

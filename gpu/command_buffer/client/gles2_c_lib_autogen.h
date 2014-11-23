@@ -219,6 +219,14 @@ void GLES2FramebufferTexture2D(GLenum target,
   gles2::GetGLContext()->FramebufferTexture2D(target, attachment, textarget,
                                               texture, level);
 }
+void GLES2FramebufferTextureLayer(GLenum target,
+                                  GLenum attachment,
+                                  GLuint texture,
+                                  GLint level,
+                                  GLint layer) {
+  gles2::GetGLContext()->FramebufferTextureLayer(target, attachment, texture,
+                                                 level, layer);
+}
 void GLES2FrontFace(GLenum mode) {
   gles2::GetGLContext()->FrontFace(mode);
 }
@@ -1152,6 +1160,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glFramebufferTexture2D",
      reinterpret_cast<GLES2FunctionPointer>(glFramebufferTexture2D),
+    },
+    {
+     "glFramebufferTextureLayer",
+     reinterpret_cast<GLES2FunctionPointer>(glFramebufferTextureLayer),
     },
     {
      "glFrontFace",

@@ -686,6 +686,23 @@ TEST_F(GLES2FormatTest, FramebufferTexture2D) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, FramebufferTextureLayer) {
+  cmds::FramebufferTextureLayer& cmd =
+      *GetBufferAs<cmds::FramebufferTextureLayer>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLenum>(12), static_cast<GLuint>(13),
+                           static_cast<GLint>(14), static_cast<GLint>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::FramebufferTextureLayer::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.attachment);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.texture);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.level);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.layer);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, FrontFace) {
   cmds::FrontFace& cmd = *GetBufferAs<cmds::FrontFace>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11));

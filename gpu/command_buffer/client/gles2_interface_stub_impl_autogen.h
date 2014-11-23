@@ -185,6 +185,12 @@ void GLES2InterfaceStub::FramebufferTexture2D(GLenum /* target */,
                                               GLuint /* texture */,
                                               GLint /* level */) {
 }
+void GLES2InterfaceStub::FramebufferTextureLayer(GLenum /* target */,
+                                                 GLenum /* attachment */,
+                                                 GLuint /* texture */,
+                                                 GLint /* level */,
+                                                 GLint /* layer */) {
+}
 void GLES2InterfaceStub::FrontFace(GLenum /* mode */) {
 }
 void GLES2InterfaceStub::GenBuffers(GLsizei /* n */, GLuint* /* buffers */) {

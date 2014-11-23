@@ -78,6 +78,14 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
     initialized_ = true;
   }
 
+  bool unsafe_es3_apis_enabled() const {
+    return unsafe_es3_apis_enabled_;
+  }
+
+  void set_unsafe_es3_apis_enabled(bool enabled) {
+    unsafe_es3_apis_enabled_ = enabled;
+  }
+
   bool debug() const {
     return debug_;
   }
@@ -251,6 +259,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   bool initialized_;
   bool debug_;
   bool log_commands_;
+  bool unsafe_es3_apis_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };

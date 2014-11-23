@@ -61,6 +61,9 @@ const char kEnableShareGroupAsyncTextureUpload[] =
 const char kEnableThreadedTextureMailboxes[] =
     "enable-threaded-texture-mailboxes";
 
+// Enable OpenGL ES 3 APIs without proper service side validation.
+const char kEnableUnsafeES3APIs[] = "enable-unsafe-es3-apis";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,
@@ -77,6 +80,7 @@ const char* kGpuSwitches[] = {
   kGpuProgramCacheSizeKb,
   kDisableGpuShaderDiskCache,
   kEnableShareGroupAsyncTextureUpload,
+  kEnableUnsafeES3APIs,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

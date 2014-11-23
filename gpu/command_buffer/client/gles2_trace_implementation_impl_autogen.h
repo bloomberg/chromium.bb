@@ -325,6 +325,15 @@ void GLES2TraceImplementation::FramebufferTexture2D(GLenum target,
   gl_->FramebufferTexture2D(target, attachment, textarget, texture, level);
 }
 
+void GLES2TraceImplementation::FramebufferTextureLayer(GLenum target,
+                                                       GLenum attachment,
+                                                       GLuint texture,
+                                                       GLint level,
+                                                       GLint layer) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FramebufferTextureLayer");
+  gl_->FramebufferTextureLayer(target, attachment, texture, level, layer);
+}
+
 void GLES2TraceImplementation::FrontFace(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FrontFace");
   gl_->FrontFace(mode);
