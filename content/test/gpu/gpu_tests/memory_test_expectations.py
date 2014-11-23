@@ -24,6 +24,6 @@ class MemoryTestExpectations(test_expectations.TestExpectations):
     # self.Fail('Memory.CSS3D',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    self.Fail('Memory.CSS3D', ['mac'], bug=368037)
+    self.Fail('Memory.CSS3D', bug=435899)
 
     pass
