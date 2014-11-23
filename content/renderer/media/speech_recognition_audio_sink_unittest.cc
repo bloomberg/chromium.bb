@@ -278,7 +278,8 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     blink::WebMediaStreamSource blink_audio_source;
     blink_audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
                                   blink::WebMediaStreamSource::TypeAudio,
-                                  base::UTF8ToUTF16("dummy_source_name"));
+                                  base::UTF8ToUTF16("dummy_source_name"),
+                                  false /* remote */, true /* readonly */);
     MediaStreamSource::SourceStoppedCallback cb;
     blink_audio_source.setExtraData(
         new MediaStreamAudioSource(-1, device_info, cb, NULL));

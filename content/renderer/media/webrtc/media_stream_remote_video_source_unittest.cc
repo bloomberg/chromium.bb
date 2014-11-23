@@ -50,7 +50,8 @@ class MediaStreamRemoteVideoSourceTest
         number_of_failed_constraints_applied_(0) {
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
-                              base::UTF8ToUTF16("dummy_source_name"));
+                              base::UTF8ToUTF16("dummy_source_name"),
+                              true /* remote */ , true /* readonly */);
     webkit_source_.setExtraData(remote_source_);
   }
 

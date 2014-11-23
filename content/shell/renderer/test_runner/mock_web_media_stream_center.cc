@@ -35,7 +35,8 @@ class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
     blink::WebMediaStreamTrack track;
     source.initialize("MagicVideoDevice#1",
                       blink::WebMediaStreamSource::TypeVideo,
-                      "Magic video track");
+                      "Magic video track",
+                      false /* remote */, true /* readonly */);
     track.initialize(source);
     stream_.addTrack(track);
   }

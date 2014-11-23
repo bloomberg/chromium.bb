@@ -170,7 +170,8 @@ void MockWebUserMediaClient::requestUserMedia(
       WebMediaStreamSource source;
       source.initialize("MockAudioDevice#1",
                         WebMediaStreamSource::TypeAudio,
-                        "Mock audio device");
+                        "Mock audio device",
+                        false /* remote */, true /* readonly */);
       audio_tracks[0].initialize(source);
     }
 
@@ -178,7 +179,8 @@ void MockWebUserMediaClient::requestUserMedia(
       WebMediaStreamSource source;
       source.initialize("MockVideoDevice#1",
                         WebMediaStreamSource::TypeVideo,
-                        "Mock video device");
+                        "Mock video device",
+                        false /* remote */, true /* readonly */);
       video_tracks[0].initialize(source);
     }
 

@@ -157,7 +157,8 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
                   media::CHANNEL_LAYOUT_STEREO, 2, 48000, 16, 480);
     MockMediaConstraintFactory constraint_factory;
     blink_source_.initialize("dummy", blink::WebMediaStreamSource::TypeAudio,
-                             "dummy");
+                             "dummy",
+                             false /* remote */, true /* readonly */);
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource();
     blink_source_.setExtraData(audio_source);
 

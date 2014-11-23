@@ -35,7 +35,8 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
   blink::WebMediaStreamSource blink_source;
   blink_source.initialize("mock video source id",
                           blink::WebMediaStreamSource::TypeVideo,
-                          "mock video source name");
+                          "mock video source name",
+                          false /* remote */, true /* readonly */);
   MockMediaStreamVideoSource* native_source =
       new MockMediaStreamVideoSource(false);
   blink_source.setExtraData(native_source);

@@ -33,8 +33,9 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
         mock_source_(new MockMediaStreamVideoSource(false)),
         source_started_(false) {
     blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              base::UTF8ToUTF16("dummy_source_name"));
+                             blink::WebMediaStreamSource::TypeVideo,
+                             base::UTF8ToUTF16("dummy_source_name"),
+                             false /* remote */, true /* readonly */);
     blink_source_.setExtraData(mock_source_);
   }
 

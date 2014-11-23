@@ -523,7 +523,8 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   blink::WebMediaStreamSource webkit_source;
   webkit_source.initialize(base::UTF8ToUTF16(source_id),
                            blink::WebMediaStreamSource::TypeVideo,
-                           base::UTF8ToUTF16(kPepperVideoSourceName));
+                           base::UTF8ToUTF16(kPepperVideoSourceName),
+                           false /* remote */, true /* readonly */);
   webkit_source.setExtraData(this);
 
   const bool enabled = true;

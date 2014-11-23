@@ -550,7 +550,8 @@ void UserMediaClientImpl::InitializeSourceObject(
   webkit_source->initialize(
       base::UTF8ToUTF16(device.device.id),
       type,
-      base::UTF8ToUTF16(device.device.name));
+      base::UTF8ToUTF16(device.device.name),
+      false /* remote */, true /* readonly */);
 
   DVLOG(1) << "Initialize source object :"
            << "id = " << webkit_source->id().utf8()
