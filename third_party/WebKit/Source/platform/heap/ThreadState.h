@@ -604,7 +604,7 @@ public:
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
-    BaseHeapPage* contains(Address address) { return heapPageFromAddress(address); }
+    BaseHeapPage* contains(Address address) { return pageFromAddress(address); }
     BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 
@@ -721,7 +721,7 @@ private:
     // corresponding to a given address. Return 0 if the address is
     // not contained in any of the pages. This does not consider
     // large objects.
-    BaseHeapPage* heapPageFromAddress(Address);
+    BaseHeapPage* pageFromAddress(Address);
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).

@@ -788,13 +788,13 @@ private:
     Member<IntWrapper> m_intWrapper;
 };
 
-class LargeObject : public GarbageCollectedFinalized<LargeObject> {
+class LargeHeapObject : public GarbageCollectedFinalized<LargeHeapObject> {
 public:
-    ~LargeObject()
+    ~LargeHeapObject()
     {
         s_destructorCalls++;
     }
-    static LargeObject* create() { return new LargeObject(); }
+    static LargeHeapObject* create() { return new LargeHeapObject(); }
     char get(size_t i) { return m_data[i]; }
     void set(size_t i, char c) { m_data[i] = c; }
     size_t length() { return s_length; }
@@ -806,7 +806,7 @@ public:
 
 private:
     static const size_t s_length = 1024 * 1024;
-    LargeObject()
+    LargeHeapObject()
     {
         m_intWrapper = IntWrapper::create(23);
     }
@@ -814,7 +814,7 @@ private:
     char m_data[s_length];
 };
 
-int LargeObject::s_destructorCalls = 0;
+int LargeHeapObject::s_destructorCalls = 0;
 
 class RefCountedAndGarbageCollected : public RefCountedGarbageCollected<RefCountedAndGarbageCollected> {
 public:
@@ -1434,7 +1434,7 @@ public:
         for (int i = 0; i < 512; ++i)
             new OneKiloByteObject();
         for (int i = 0; i < 32; ++i)
-            LargeObject::create();
+            LargeHeapObject::create();
     }
 
     void trace(Visitor*) { }
@@ -1708,8 +1708,8 @@ TEST(HeapTest, TypedHeapSanity)
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
     Persistent<Node> typedHeapObject = Node::create(0);
-    EXPECT_NE(pageHeaderFromObject(generalHeapObject.get()),
-        pageHeaderFromObject(typedHeapObject.get()));
+    EXPECT_NE(pageFromObject(generalHeapObject.get()),
+        pageFromObject(typedHeapObject.get()));
 }
 
 TEST(HeapTest, NoAllocation)
@@ -1916,23 +1916,23 @@ TEST(HeapTest, NestedAllocation)
     EXPECT_TRUE(initialObjectPayloadSize == afterFree);
 }
 
-TEST(HeapTest, LargeObjects)
+TEST(HeapTest, LargeHeapObjects)
 {
     clearOutOldGarbage();
     size_t initialObjectPayloadSize = objectPayloadSize();
     size_t initialAllocatedSpace = Heap::allocatedSpace();
     IntWrapper::s_destructorCalls = 0;
-    LargeObject::s_destructorCalls = 0;
+    LargeHeapObject::s_destructorCalls = 0;
     {
-        int slack = 8; // LargeObject points to an IntWrapper that is also allocated.
-        Persistent<LargeObject> object = LargeObject::create();
+        int slack = 8; // LargeHeapObject points to an IntWrapper that is also allocated.
+        Persistent<LargeHeapObject> object = LargeHeapObject::create();
         EXPECT_TRUE(ThreadState::current()->contains(object));
-        EXPECT_TRUE(ThreadState::current()->contains(reinterpret_cast<char*>(object.get()) + sizeof(LargeObject) - 1));
+        EXPECT_TRUE(ThreadState::current()->contains(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
 #if ENABLE(GC_PROFILE_MARKING)
         const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
         EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);
-        EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeObject) - 1));
-        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeObject)));
+        EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeHeapObject) - 1));
+        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeHeapObject)));
         EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) - 1));
 #endif
         clearOutOldGarbage();
@@ -1942,33 +1942,33 @@ TEST(HeapTest, LargeObjects)
             EXPECT_EQ('a', object->get(0));
             object->set(object->length() - 1, 'b');
             EXPECT_EQ('b', object->get(object->length() - 1));
-            size_t expectedObjectPayloadSize = sizeof(LargeObject) + sizeof(IntWrapper);
+            size_t expectedObjectPayloadSize = sizeof(LargeHeapObject) + sizeof(IntWrapper);
             size_t actualObjectPayloadSize = objectPayloadSize() - initialObjectPayloadSize;
             CheckWithSlack(expectedObjectPayloadSize, actualObjectPayloadSize, slack);
             // There is probably space for the IntWrapper in a heap page without
             // allocating extra pages. However, the IntWrapper allocation might cause
             // the addition of a heap page.
             size_t largeObjectAllocationSize =
-                sizeof(LargeObject) + sizeof(LargeHeapObject<FinalizedHeapObjectHeader>) + sizeof(FinalizedHeapObjectHeader);
+                sizeof(LargeHeapObject) + sizeof(LargeObject<FinalizedHeapObjectHeader>) + sizeof(FinalizedHeapObjectHeader);
             size_t allocatedSpaceLowerBound = initialAllocatedSpace + largeObjectAllocationSize;
             size_t allocatedSpaceUpperBound = allocatedSpaceLowerBound + slack + blinkPageSize;
             EXPECT_LE(allocatedSpaceLowerBound, afterAllocation);
             EXPECT_LE(afterAllocation, allocatedSpaceUpperBound);
             EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-            EXPECT_EQ(0, LargeObject::s_destructorCalls);
+            EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
             for (int i = 0; i < 10; i++)
-                object = LargeObject::create();
+                object = LargeHeapObject::create();
         }
         clearOutOldGarbage();
         EXPECT_TRUE(Heap::allocatedSpace() == afterAllocation);
         EXPECT_EQ(10, IntWrapper::s_destructorCalls);
-        EXPECT_EQ(10, LargeObject::s_destructorCalls);
+        EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
     }
     clearOutOldGarbage();
     EXPECT_TRUE(initialObjectPayloadSize == objectPayloadSize());
     EXPECT_TRUE(initialAllocatedSpace == Heap::allocatedSpace());
     EXPECT_EQ(11, IntWrapper::s_destructorCalls);
-    EXPECT_EQ(11, LargeObject::s_destructorCalls);
+    EXPECT_EQ(11, LargeHeapObject::s_destructorCalls);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 }
 
@@ -3339,9 +3339,9 @@ TEST(HeapTest, CheckAndMarkPointer)
         objectAddresses.append(objectAddress);
         endAddresses.append(objectAddress + sizeof(SimpleObject) - 1);
     }
-    LargeObject* largeObject = LargeObject::create();
+    LargeHeapObject* largeObject = LargeHeapObject::create();
     largeObjectAddress = reinterpret_cast<Address>(largeObject);
-    largeObjectEndAddress = largeObjectAddress + sizeof(LargeObject) - 1;
+    largeObjectEndAddress = largeObjectAddress + sizeof(LargeHeapObject) - 1;
 
     // This is a low-level test where we call checkAndMarkPointer. This method
     // causes the object start bitmap to be computed which requires the heap
@@ -3801,7 +3801,7 @@ TEST(HeapTest, AllocationDuringFinalization)
     clearOutOldGarbage();
     IntWrapper::s_destructorCalls = 0;
     OneKiloByteObject::s_destructorCalls = 0;
-    LargeObject::s_destructorCalls = 0;
+    LargeHeapObject::s_destructorCalls = 0;
 
     Persistent<IntWrapper> wrapper;
     new FinalizationAllocator(&wrapper);
@@ -3809,7 +3809,7 @@ TEST(HeapTest, AllocationDuringFinalization)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
     EXPECT_EQ(0, OneKiloByteObject::s_destructorCalls);
-    EXPECT_EQ(0, LargeObject::s_destructorCalls);
+    EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     // Check that the wrapper allocated during finalization is not
     // swept away and zapped later in the same sweeping phase.
     EXPECT_EQ(42, wrapper->value());
@@ -3818,7 +3818,7 @@ TEST(HeapTest, AllocationDuringFinalization)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(42, IntWrapper::s_destructorCalls);
     EXPECT_EQ(512, OneKiloByteObject::s_destructorCalls);
-    EXPECT_EQ(32, LargeObject::s_destructorCalls);
+    EXPECT_EQ(32, LargeHeapObject::s_destructorCalls);
 }
 
 class SimpleClassWithDestructor {

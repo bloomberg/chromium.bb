@@ -161,7 +161,7 @@ inline bool isPageHeaderAddress(Address address)
 // All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our typed heaps.
 // This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BaseHeapPage* pageHeaderFromObject(const void* object)
+PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
 {
     Address address = reinterpret_cast<Address>(const_cast<void*>(object));
     return reinterpret_cast<BaseHeapPage*>(blinkPageAddress(address) + osPageSize());
@@ -178,11 +178,11 @@ PLATFORM_EXPORT inline BaseHeapPage* pageHeaderFromObject(const void* object)
 //
 // | BaseHeapPage | next pointer | FinalizedHeapObjectHeader or HeapObjectHeader | payload |
 template<typename Header>
-class LargeHeapObject final : public BaseHeapPage {
+class LargeObject final : public BaseHeapPage {
 public:
-    LargeHeapObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
+    LargeObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
     {
-        COMPILE_ASSERT(!(sizeof(LargeHeapObject<Header>) & allocationMask), large_heap_object_header_misaligned);
+        COMPILE_ASSERT(!(sizeof(LargeObject<Header>) & allocationMask), large_heap_object_header_misaligned);
     }
 
     virtual void checkAndMarkPointer(Visitor*, Address) override;
@@ -201,18 +201,18 @@ public:
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
-    void link(LargeHeapObject<Header>** previousNext)
+    void link(LargeObject<Header>** previousNext)
     {
         m_next = *previousNext;
         *previousNext = this;
     }
 
-    void unlink(LargeHeapObject<Header>** previousNext)
+    void unlink(LargeObject<Header>** previousNext)
     {
         *previousNext = m_next;
     }
 
-    // The LargeHeapObject pseudo-page contains one actual object. Determine
+    // The LargeObject pseudo-page contains one actual object. Determine
     // whether the pointer is within that object.
     bool objectContains(Address object)
     {
@@ -227,14 +227,14 @@ public:
         return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
 
-    LargeHeapObject<Header>* next()
+    LargeObject<Header>* next()
     {
         return m_next;
     }
 
     size_t size()
     {
-        return heapObjectHeader()->size() + sizeof(LargeHeapObject<Header>) + headerPadding<Header>();
+        return heapObjectHeader()->size() + sizeof(LargeObject<Header>) + headerPadding<Header>();
     }
 
     Address payload() { return heapObjectHeader()->payload(); }
@@ -242,7 +242,7 @@ public:
 
     Header* heapObjectHeader()
     {
-        Address headerAddress = address() + sizeof(LargeHeapObject<Header>) + headerPadding<Header>();
+        Address headerAddress = address() + sizeof(LargeObject<Header>) + headerPadding<Header>();
         return reinterpret_cast<Header*>(headerAddress);
     }
 
@@ -263,7 +263,7 @@ public:
 private:
     friend class ThreadHeap<Header>;
 
-    LargeHeapObject<Header>* m_next;
+    LargeObject<Header>* m_next;
 };
 
 // The BasicObjectHeader is the minimal object header. It is used when
@@ -678,10 +678,10 @@ public:
     // Find the page in this thread heap containing the given
     // address. Returns 0 if the address is not contained in any
     // page in this thread heap.
-    virtual BaseHeapPage* heapPageFromAddress(Address) = 0;
+    virtual BaseHeapPage* pageFromAddress(Address) = 0;
 
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) = 0;
+    virtual const GCInfo* findGCInfoOfLargeObject(Address) = 0;
 #endif
 
 #if ENABLE(GC_PROFILE_HEAP)
@@ -749,9 +749,9 @@ public:
     virtual ~ThreadHeap();
     virtual void cleanupPages() override;
 
-    virtual BaseHeapPage* heapPageFromAddress(Address) override;
+    virtual BaseHeapPage* pageFromAddress(Address) override;
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) override;
+    virtual const GCInfo* findGCInfoOfLargeObject(Address) override;
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
@@ -775,8 +775,8 @@ public:
 
     void addToFreeList(Address address, size_t size)
     {
-        ASSERT(heapPageFromAddress(address));
-        ASSERT(heapPageFromAddress(address + size - 1));
+        ASSERT(pageFromAddress(address));
+        ASSERT(pageFromAddress(address + size - 1));
         m_freeList.addToFreeList(address, size);
     }
 
@@ -805,7 +805,7 @@ private:
     bool ownsNonEmptyAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
     void setAllocationPoint(Address point, size_t size)
     {
-        ASSERT(!point || heapPageFromAddress(point));
+        ASSERT(!point || pageFromAddress(point));
         ASSERT(size <= HeapPage<Header>::payloadSize());
         updateRemainingAllocationSize();
         m_currentAllocationPoint = point;
@@ -814,7 +814,7 @@ private:
     void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
-    void freeLargeObject(LargeHeapObject<Header>*, LargeHeapObject<Header>**);
+    void freeLargeObject(LargeObject<Header>*, LargeObject<Header>**);
     void allocatePage(const GCInfo*);
 
 #if ENABLE(ASSERT)
@@ -831,13 +831,13 @@ private:
     size_t m_lastRemainingAllocationSize;
 
     HeapPage<Header>* m_firstPage;
-    LargeHeapObject<Header>* m_firstLargeHeapObject;
+    LargeObject<Header>* m_firstLargeObject;
 
     HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
     HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
 
-    LargeHeapObject<Header>* m_firstLargeHeapObjectAllocatedDuringSweeping;
-    LargeHeapObject<Header>* m_lastLargeHeapObjectAllocatedDuringSweeping;
+    LargeObject<Header>* m_firstLargeObjectAllocatedDuringSweeping;
+    LargeObject<Header>* m_lastLargeObjectAllocatedDuringSweeping;
 
     ThreadState* m_threadState;
 
@@ -1286,7 +1286,7 @@ private:
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {
-    ASSERT(pageHeaderFromObject(this)->orphaned() || m_magic == magic);
+    ASSERT(pageFromObject(this)->orphaned() || m_magic == magic);
 }
 
 Address HeapObjectHeader::payload()
@@ -1354,7 +1354,7 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
         memset(result, 0, allocationSize - sizeof(Header));
 #endif
-        ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
+        ASSERT(pageFromAddress(headerAddress + allocationSize - 1));
         return result;
     }
     return outOfLineAllocate(size, allocationSize, gcInfo);

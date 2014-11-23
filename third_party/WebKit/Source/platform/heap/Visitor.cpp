@@ -43,7 +43,7 @@ void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
 #if !defined(COMPONENT_BUILD)
     // On component builds we cannot compare the gcInfos as they are statically
     // defined in each of the components and hence will not match.
-    BaseHeapPage* page = pageHeaderFromObject(payload);
+    BaseHeapPage* page = pageFromObject(payload);
     ASSERT(page->orphaned() || FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
 #endif
 }
@@ -53,7 +53,7 @@ void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
     {                                                                    \
         HeapObjectHeader::fromPayload(payload)->checkHeader();           \
         Type* object = const_cast<Type*>(payload);                       \
-        BaseHeapPage* page = pageHeaderFromObject(object);               \
+        BaseHeapPage* page = pageFromObject(object);                     \
         ASSERT(page->orphaned() || page->gcInfo() == gcInfo);            \
     }
 

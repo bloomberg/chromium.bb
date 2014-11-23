@@ -528,7 +528,7 @@ public:
         // release builds will crash at the following self->adjustAndMark
         // because all the entries of the orphaned heaps are zeroed out and
         // thus the item does not have a valid vtable.
-        ASSERT(!pageHeaderFromObject(self)->orphaned());
+        ASSERT(!pageFromObject(self)->orphaned());
         self->adjustAndMark(visitor);
     }
 

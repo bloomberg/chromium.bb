@@ -611,7 +611,7 @@ void ThreadState::visitPersistents(Visitor* visitor)
 #if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfo(Address address)
 {
-    BaseHeapPage* page = heapPageFromAddress(address);
+    BaseHeapPage* page = pageFromAddress(address);
     if (page) {
         return page->findGCInfo(address);
     }
@@ -892,10 +892,10 @@ void ThreadState::setupHeapsForTermination()
         m_heaps[i]->prepareHeapForTermination();
 }
 
-BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
+BaseHeapPage* ThreadState::pageFromAddress(Address address)
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
-        if (BaseHeapPage* page = m_heaps[i]->heapPageFromAddress(address))
+        if (BaseHeapPage* page = m_heaps[i]->pageFromAddress(address))
             return page;
     }
     return 0;
