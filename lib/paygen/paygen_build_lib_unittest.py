@@ -1177,7 +1177,8 @@ fsi_images: 2913.331.0,2465.105.0
     # Test default dir in /tmp.
     result = paygen_build_lib._FindControlFileDir(None)
     self.assertTrue(os.path.isdir(result))
-    self.assertTrue(result.startswith('/tmp/paygen_build-control_files'))
+    tempdir = tempfile.tempdir or '/tmp'
+    self.assertTrue(result.startswith(tempdir + '/'))
     shutil.rmtree(result)
 
     # Test in specified dir.

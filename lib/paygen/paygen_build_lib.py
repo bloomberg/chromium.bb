@@ -1227,10 +1227,10 @@ def _FindControlFileDir(work_dir):
   """Decide the directory for emitting control files.
 
   If a working directory is passed in, we create a unique directory inside
-  it; other use /tmp (Python's default).
+  it; otherwise we use Python's default tempdir.
 
   Args:
-    work_dir: Create the control file directory here (None for /tmp).
+    work_dir: Create the control file directory here (None for the default).
 
   Returns:
     Path to a unique directory that the caller is responsible for cleaning up.
