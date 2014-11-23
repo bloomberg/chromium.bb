@@ -31,7 +31,7 @@ cr.define('hotword', function() {
     updateListeners: function() {
       hotword.BaseSessionManager.prototype.updateListeners.call(this);
       if (this.enabled())
-        this.startSession_();
+        this.startSession();
     }
   };
 

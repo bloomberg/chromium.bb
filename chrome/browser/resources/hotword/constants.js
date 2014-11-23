@@ -69,6 +69,7 @@ var Error = {
 var Event = {
   READY: 'ready',
   TRIGGER: 'trigger',
+  SPEAKER_MODEL_SAVED: 'speaker model saved',
   ERROR: 'error',
 };
 
@@ -83,6 +84,10 @@ var NaClPlugin = {
   MODEL_PREFIX: 'm',
   STOP: 's',
   LOG: 'l',
+  BEGIN_SPEAKER_MODEL: 'b',
+  ADAPT_SPEAKER_MODEL: 'a',
+  FINISH_SPEAKER_MODEL: 'f',
+  SPEAKER_MODEL_SAVED: 'sm_saved',
   REQUEST_MODEL: 'model',
   MODEL_LOADED: 'model_loaded',
   READY_FOR_AUDIO: 'audio',
@@ -130,6 +135,16 @@ var SessionSource = {
   NTP: 'ntp',
   ALWAYS: 'always',
   TRAINING: 'training'
+};
+
+/**
+ * The mode to start the hotword recognizer in.
+ * @enum {string}
+ */
+var RecognizerStartMode = {
+  NORMAL: 'normal',
+  NEW_MODEL: 'new model',
+  ADAPT_MODEL: 'adapt model'
 };
 
 /**
@@ -228,6 +243,7 @@ return {
   Event: Event,
   File: File,
   NaClPlugin: NaClPlugin,
+  RecognizerStartMode: RecognizerStartMode,
   SessionSource: SessionSource,
   TimeoutMs: TimeoutMs,
   UmaMediaStreamOpenResult: UmaMediaStreamOpenResult,

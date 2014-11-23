@@ -39,7 +39,8 @@
     "idle",
     "management",
     "metricsPrivate",
-    "tabs"
+    "tabs",
+    "unlimitedStorage"
   ],
 
   "import": [

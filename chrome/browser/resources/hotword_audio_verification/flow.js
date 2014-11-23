@@ -83,11 +83,18 @@
     this.trainingPagePrefix_ = '';
 
     /**
-     * Chrome event listener. Saved so that it can be de-registered
-     * when training stops.
+     * Listener for the speakerModelSaved event.
      * @private {Function}
      */
-    this.hotwordTriggeredListener_ = this.handleHotwordTrigger_.bind(this);
+    this.speakerModelFinalizedListener_ =
+        this.onSpeakerModelFinalized_.bind(this);
+
+    /**
+     * Listener for the hotword trigger event.
+     * @private {Function}
+     */
+    this.hotwordTriggerListener_ =
+          this.handleHotwordTrigger_.bind(this);
   }
 
   /**
@@ -125,9 +132,9 @@
 
     if (chrome.hotwordPrivate.onHotwordTriggered &&
         !chrome.hotwordPrivate.onHotwordTriggered.hasListener(
-            this.hotwordTriggeredListener_)) {
+            this.hotwordTriggerListener_)) {
       chrome.hotwordPrivate.onHotwordTriggered.addListener(
-          this.hotwordTriggeredListener_);
+          this.hotwordTriggerListener_);
     }
 
     this.waitForHotwordTrigger_(0);
@@ -145,18 +152,32 @@
     this.training_ = false;
     if (chrome.hotwordPrivate.onHotwordTriggered) {
       chrome.hotwordPrivate.onHotwordTriggered.
-          removeListener(this.hotwordTriggeredListener_);
+          removeListener(this.hotwordTriggerListener_);
     }
     if (chrome.hotwordPrivate.stopTraining)
       chrome.hotwordPrivate.stopTraining();
   };
 
+  // ---- private methods:
+
   /**
    * Handles the speaker model finalized event.
+   * @private
    */
-  Flow.prototype.onSpeakerModelFinalized = function() {
+  Flow.prototype.onSpeakerModelFinalized_ = function() {
+    if (chrome.hotwordPrivate.onSpeakerModelSaved) {
+      chrome.hotwordPrivate.onSpeakerModelSaved.removeListener(
+          this.speakerModelFinalizedListener_);
+    }
     this.stopTraining();
+    setTimeout(this.finishFlow_.bind(this), 1000);
+  };
 
+  /**
+   * Completes the training process.
+   * @private
+   */
+  Flow.prototype.finishFlow_ = function() {
     if (chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled) {
       chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled(true,
           this.advanceStep.bind(this));
@@ -184,12 +205,16 @@
     if (!this.training_)
       return;
 
+    // Listen for the success event from the NaCl module.
+    if (chrome.hotwordPrivate.onSpeakerModelSaved &&
+        !chrome.hotwordPrivate.onSpeakerModelSaved.hasListener(
+            this.speakerModelFinalizedListener_)) {
+      chrome.hotwordPrivate.onSpeakerModelSaved.addListener(
+          this.speakerModelFinalizedListener_);
+    }
+
     if (chrome.hotwordPrivate.finalizeSpeakerModel)
       chrome.hotwordPrivate.finalizeSpeakerModel();
-
-    // TODO(kcarattini): Implement a notification that speaker model has been
-    // finalized instead of setting a timeout.
-    setTimeout(this.onSpeakerModelFinalized.bind(this), 2000);
   };
 
   /**
@@ -205,6 +230,7 @@
         $(this.trainingPagePrefix_ + '-training').querySelectorAll('.train');
     var curStep =
         $(this.trainingPagePrefix_ + '-training').querySelector('.listening');
+
     return {current: curStep,
             index: Array.prototype.indexOf.call(steps, curStep),
             steps: steps};

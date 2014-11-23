@@ -13,11 +13,13 @@ cr.define('hotword', function() {
    *     triggered.
    * @param {!function()} startedCb Callback invoked when the session has
    *     been started successfully.
+   * @param {function()=} opt_modelSavedCb Callback invoked when the speaker
+   *     model has been saved successfully.
    * @constructor
    * @struct
    * @private
    */
-  function Session_(source, triggerCb, startedCb) {
+  function Session_(source, triggerCb, startedCb, opt_modelSavedCb) {
     /**
      * Source of the hotword session request.
      * @private {!hotword.constants.SessionSource}
@@ -35,6 +37,12 @@ cr.define('hotword', function() {
      * @private {?function()}
      */
     this.startedCb_ = startedCb;
+
+    /**
+     * Callback invoked when the session has been started successfully.
+     * @private {?function()}
+     */
+    this.speakerModelSavedCb_ = opt_modelSavedCb;
   }
 
   /**
@@ -69,6 +77,12 @@ cr.define('hotword', function() {
     this.sessions_ = [];
 
     /**
+     * The mode to start the recognizer in.
+     * @private {!hotword.constants.RecognizerStartMode}
+     */
+    this.startMode_ = hotword.constants.RecognizerStartMode.NORMAL;
+
+    /**
      * Event that fires when the hotwording status has changed.
      * @type {!ChromeEvent}
      */
@@ -101,6 +115,14 @@ cr.define('hotword', function() {
      * @private {boolean}
      */
     this.loggingEnabled_ = false;
+
+    /**
+     * Current state of training.
+     * This is tracked separately from |hotwordStatus_| because we need to
+     * restart the hotword detector when this value changes.
+     * @private {!boolean}
+     */
+    this.trainingEnabled_ = false;
 
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
@@ -229,6 +251,12 @@ cr.define('hotword', function() {
           this.shutdownDetector_();
         this.loggingEnabled_ = this.hotwordStatus_.audioLoggingEnabled;
 
+        // If the training state has changed, we need to first shut down the
+        // detector so that we can restart in a different mode.
+        if (this.hotwordStatus_.trainingEnabled != this.trainingEnabled_)
+          this.shutdownDetector_();
+        this.trainingEnabled_ = this.hotwordStatus_.trainingEnabled;
+
         // Start the detector if there's a session and the user is unlocked, and
         // stops it otherwise.
         if (this.sessions_.length && !this.isLocked_)
@@ -270,6 +298,9 @@ cr.define('hotword', function() {
                                              this.onError_.bind(this));
         this.pluginManager_.addEventListener(hotword.constants.Event.TRIGGER,
                                              this.onTrigger_.bind(this));
+        this.pluginManager_.addEventListener(
+            hotword.constants.Event.SPEAKER_MODEL_SAVED,
+            this.onSpeakerModelSaved_.bind(this));
         chrome.runtime.getPlatformInfo(function(platform) {
           var naclArch = platform.nacl_arch;
 
@@ -320,7 +351,7 @@ cr.define('hotword', function() {
       assert(this.pluginManager_, 'No NaCl plugin loaded');
       if (this.state_ != State_.RUNNING) {
         this.state_ = State_.RUNNING;
-        this.pluginManager_.startRecognizer();
+        this.pluginManager_.startRecognizer(this.startMode_);
       }
       for (var i = 0; i < this.sessions_.length; i++) {
         var session = this.sessions_[i];
@@ -360,6 +391,20 @@ cr.define('hotword', function() {
     shutdownDetector_: function() {
       this.state_ = State_.STOPPED;
       this.shutdownPluginManager_();
+    },
+
+    /**
+     * Finalizes the speaker model. Assumes the plugin has been loaded and
+     * started.
+     */
+    finalizeSpeakerModel: function() {
+      assert(this.pluginManager_,
+             'Cannot finalize speaker model: No NaCl plugin loaded');
+      if (this.state_ != State_.RUNNING) {
+        hotword.debug('Cannot finalize speaker model: NaCl plugin not started');
+        return;
+      }
+      this.pluginManager_.finalizeSpeakerModel();
     },
 
     /**
@@ -416,6 +461,21 @@ cr.define('hotword', function() {
     },
 
     /**
+     * Handle speaker model saved.
+     * @private
+     */
+    onSpeakerModelSaved_: function() {
+      hotword.debug('Speaker model saved!');
+
+      if (this.sessions_.length) {
+        // Only call the callback of the the top session.
+        var session = this.sessions_[this.sessions_.length - 1];
+        if (session.speakerModelSavedCb_)
+          session.speakerModelSavedCb_();
+      }
+    },
+
+    /**
      * Remove a hotwording session from the given source.
      * @param {!hotword.constants.SessionSource} source Source of the hotword
      *     session request.
@@ -437,12 +497,22 @@ cr.define('hotword', function() {
      * @param {!function()} startedCb Callback invoked when the session has
      *     been started successfully.
      * @param {!function()} triggerCb Callback invoked when the hotword has
-     *     triggered.
+     * @param {function()=} modelSavedCb Callback invoked when the speaker model
+     *     has been saved.
+     * @param {hotword.constants.RecognizerStartMode=} opt_mode The mode to
+     *     start the recognizer in.
      */
-    startSession: function(source, startedCb, triggerCb) {
+    startSession: function(source, startedCb, triggerCb,
+                           opt_modelSavedCb, opt_mode) {
+      if (this.isTrainingEnabled() && opt_mode) {
+        this.startMode_ = opt_mode;
+      } else {
+        this.startMode_ = hotword.constants.RecognizerStartMode.NORMAL;
+      }
       hotword.debug('Starting session for source: ' + source);
       this.removeSession_(source);
-      this.sessions_.push(new Session_(source, triggerCb, startedCb));
+      this.sessions_.push(new Session_(source, triggerCb, startedCb,
+                                       opt_modelSavedCb));
       this.updateStateFromStatus_();
     },
 
@@ -454,6 +524,10 @@ cr.define('hotword', function() {
     stopSession: function(source) {
       hotword.debug('Stopping session for source: ' + source);
       this.removeSession_(source);
+      // If this is a training session then switch the start mode back to
+      // normal.
+      if (source == hotword.constants.SessionSource.TRAINING)
+        this.startMode_ = hotword.constants.RecognizerStartMode.NORMAL;
       this.updateStateFromStatus_();
     },
 

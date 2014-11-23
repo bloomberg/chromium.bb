@@ -58,6 +58,12 @@ function NaClManager(loggingEnabled) {
   this.stream_ = null;
 
   /**
+   * The mode to start the recognizer in.
+   * @private {?chrome.hotwordPrivate.RecognizerStartMode}
+   */
+  this.startMode_ = hotword.constants.RecognizerStartMode.NORMAL;
+
+  /**
    * Whether audio logging is enabled.
    * @private {boolean}
    */
@@ -151,12 +157,24 @@ NaClManager.prototype.clearTimeout_ = function() {
 
 /**
  * Starts a stopped or stopping hotword recognizer (NaCl plugin).
+ * @param {hotword.constants.RecognizerStartMode} mode The mode to start the
+ *     recognizer in.
  */
-NaClManager.prototype.startRecognizer = function() {
+NaClManager.prototype.startRecognizer = function(mode) {
+  this.startMode_ = mode;
   if (this.recognizerState_ == ManagerState_.STOPPED) {
     this.preambleLog_ = null;
     this.recognizerState_ = ManagerState_.STARTING;
-    this.sendDataToPlugin_(hotword.constants.NaClPlugin.RESTART);
+    if (mode == hotword.constants.RecognizerStartMode.NEW_MODEL) {
+      hotword.debug('Starting Recognizer in START training mode');
+      this.sendDataToPlugin_(hotword.constants.NaClPlugin.BEGIN_SPEAKER_MODEL);
+    } else if (mode == hotword.constants.RecognizerStartMode.ADAPT_MODEL) {
+      hotword.debug('Starting Recognizer in ADAPT training mode');
+      this.sendDataToPlugin_(hotword.constants.NaClPlugin.ADAPT_SPEAKER_MODEL);
+    } else {
+      hotword.debug('Starting Recognizer in NORMAL mode');
+      this.sendDataToPlugin_(hotword.constants.NaClPlugin.RESTART);
+    }
     this.waitForMessage_(hotword.constants.TimeoutMs.LONG,
                          hotword.constants.NaClPlugin.READY_FOR_AUDIO);
   } else if (this.recognizerState_ == ManagerState_.STOPPING) {
@@ -184,6 +202,19 @@ NaClManager.prototype.stopRecognizer = function() {
   this.recognizerState_ = ManagerState_.STOPPING;
   this.waitForMessage_(hotword.constants.TimeoutMs.NORMAL,
                        hotword.constants.NaClPlugin.STOPPED);
+};
+
+/**
+ * Saves the speaker model.
+ */
+NaClManager.prototype.finalizeSpeakerModel = function() {
+  if (this.recognizerState_ == ManagerState_.UNINITIALIZED ||
+      this.recognizerState_ == ManagerState_.ERROR ||
+      this.recognizerState_ == ManagerState_.SHUTDOWN ||
+      this.recognizerState_ == ManagerState_.LOADING) {
+    return;
+  }
+  this.sendDataToPlugin_(hotword.constants.NaClPlugin.FINISH_SPEAKER_MODEL);
 };
 
 /**
@@ -332,8 +363,8 @@ NaClManager.prototype.sendDataToPlugin_ = function(data) {
  * @private
  */
 NaClManager.prototype.waitForMessage_ = function(timeout, message) {
-  assert(this.expectingMessage_ == null,
-         'Already waiting for message ' + this.expectingMessage_);
+  assert(this.expectingMessage_ == null, 'Cannot wait for message: ' +
+      message + ', already waiting for message ' + this.expectingMessage_);
   this.setTimeout_(
       function() {
         this.recognizerState_ = ManagerState_.ERROR;
@@ -472,8 +503,17 @@ NaClManager.prototype.handleStopped_ = function() {
   this.recognizerState_ = ManagerState_.STOPPED;
   if (this.restartOnStop_) {
     this.restartOnStop_ = false;
-    this.startRecognizer();
+    this.startRecognizer(this.startMode_);
   }
+};
+
+/**
+ * Handle a SPEAKER_MODEL_SAVED message from the plugin.
+ * The plugin sends this message after writing the model to a file.
+ * @private
+ */
+NaClManager.prototype.handleSpeakerModelSaved_ = function() {
+  this.dispatchEvent(new Event(hotword.constants.Event.SPEAKER_MODEL_SAVED));
 };
 
 /**
@@ -508,6 +548,9 @@ NaClManager.prototype.handlePluginMessage_ = function(msg) {
         break;
       case hotword.constants.NaClPlugin.STOPPED:
         this.handleStopped_();
+        break;
+      case hotword.constants.NaClPlugin.SPEAKER_MODEL_SAVED:
+        this.handleSpeakerModelSaved_();
         break;
     }
   }

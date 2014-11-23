@@ -14,6 +14,14 @@ cr.define('hotword', function() {
    * @extends {hotword.BaseSessionManager}
    */
   function TrainingManager(stateManager) {
+    /**
+     * Chrome event listeners. Saved so that they can be de-registered when
+     * hotwording is disabled.
+     * @private
+     */
+    this.finalizedSpeakerModelListener_ =
+        this.handleFinalizeSpeakerModel_.bind(this);
+
     hotword.BaseSessionManager.call(this,
                                     stateManager,
                                     hotword.constants.SessionSource.TRAINING);
@@ -30,17 +38,59 @@ cr.define('hotword', function() {
     /** @override */
     updateListeners: function() {
       hotword.BaseSessionManager.prototype.updateListeners.call(this);
-      if (this.enabled())
-        this.startSession_();
+
+      if (this.enabled()) {
+        // Detect when the speaker model needs to be finalized.
+        if (!chrome.hotwordPrivate.onFinalizeSpeakerModel.hasListener(
+                this.finalizedSpeakerModelListener_)) {
+          chrome.hotwordPrivate.onFinalizeSpeakerModel.addListener(
+              this.finalizedSpeakerModelListener_);
+        }
+        this.startSession(hotword.constants.RecognizerStartMode.NEW_MODEL);
+      } else {
+        chrome.hotwordPrivate.onFinalizeSpeakerModel.removeListener(
+            this.finalizedSpeakerModelListener_);
+      }
     },
 
     /** @override */
-    handleHotwordTrigger: function() {
+    handleHotwordTrigger: function(log) {
       if (this.enabled()) {
-        hotword.BaseSessionManager.prototype.handleHotwordTrigger.call(this);
-        this.startSession_();
+        hotword.BaseSessionManager.prototype.handleHotwordTrigger.call(
+            this, log);
+        this.startSession(hotword.constants.RecognizerStartMode.ADAPT_MODEL);
       }
-    }
+    },
+
+    /** @override */
+    startSession: function(opt_mode) {
+      this.stateManager.startSession(
+          this.sessionSource_,
+          function() {
+            chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
+          },
+          this.handleHotwordTrigger.bind(this),
+          this.handleSpeakerModelSaved_.bind(this),
+          opt_mode);
+    },
+
+    /**
+     * Handles a hotwordPrivate.onFinalizeSpeakerModel event.
+     * @private
+     */
+    handleFinalizeSpeakerModel_: function() {
+      if (this.enabled())
+        this.stateManager.finalizeSpeakerModel();
+    },
+
+    /**
+     * Handles a hotwordPrivate.onFinalizeSpeakerModel event.
+     * @private
+     */
+    handleSpeakerModelSaved_: function() {
+      if (this.enabled())
+        chrome.hotwordPrivate.notifySpeakerModelSaved();
+    },
   };
 
   return {
