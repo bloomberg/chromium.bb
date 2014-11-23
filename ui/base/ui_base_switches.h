@@ -17,6 +17,7 @@ UI_BASE_EXPORT extern const char kDisableRemoteCoreAnimation[];
 #endif
 
 UI_BASE_EXPORT extern const char kDisableDwmComposition[];
+UI_BASE_EXPORT extern const char kDisableLinkDisambiguationPopup[];
 UI_BASE_EXPORT extern const char kDisableTextInputFocusManager[];
 UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];
 UI_BASE_EXPORT extern const char kDisableTouchDragDrop[];

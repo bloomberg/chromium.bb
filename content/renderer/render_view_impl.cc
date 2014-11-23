@@ -4051,6 +4051,9 @@ bool RenderViewImpl::didTapMultipleTargets(
     const WebSize& inner_viewport_offset,
     const WebRect& touch_rect,
     const WebVector<WebRect>& target_rects) {
+  if (!switches::IsLinkDisambiguationPopupEnabled())
+    return false;
+
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
   AccessibilityMode accessibility_mode =

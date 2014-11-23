@@ -9,6 +9,18 @@
 
 namespace switches {
 
+bool IsLinkDisambiguationPopupEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableLinkDisambiguationPopup)) {
+    return false;
+  }
+#if defined(OS_WIN) || defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool IsTextInputFocusManagerEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTextInputFocusManager);

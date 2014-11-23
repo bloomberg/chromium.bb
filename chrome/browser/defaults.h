@@ -33,12 +33,6 @@ const int kMiniTabWidth = 64;
 const int kMiniTabWidth = 56;
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-// Whether to show a Link Disambiguation Popup Bubble if the browser detects an
-// ambiguous touch event.
-extern const bool kShowLinkDisambiguationPopup;
-#endif
-
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 

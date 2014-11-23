@@ -15,6 +15,9 @@ const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 // Disables use of DWM composition for top level windows.
 const char kDisableDwmComposition[] = "disable-dwm-composition";
 
+const char kDisableLinkDisambiguationPopup[] =
+    "disable-link-disambiguation-popup";
+
 // Disables an experimental focus manager to track text input clients.
 const char kDisableTextInputFocusManager[] = "disable-text-input-focus-manager";
 

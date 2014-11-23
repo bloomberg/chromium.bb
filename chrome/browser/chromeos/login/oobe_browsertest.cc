@@ -8,16 +8,12 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -123,32 +119,6 @@ IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
                             true,    // alt
                             false);  // command
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(OobeTest, LinkDisambiguationDefaultRespected) {
-  chromeos::LoginDisplayHostImpl* display_host =
-      static_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host());
-  ASSERT_TRUE(display_host);
-  chromeos::WebUILoginView* login_view = display_host->GetWebUILoginView();
-  ASSERT_TRUE(login_view);
-  content::WebContents* web_contents = login_view->GetWebContents();
-  ASSERT_TRUE(web_contents);
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
-  ASSERT_TRUE(prefs);
-  // Per crbug/431163 the WiFi selection dropdown doesn't support the link
-  // disambiguation popup for gesture events, and this feature is disabled
-  // within ChromeOS. Ensure that the web preferences reflect the default.
-  if (browser_defaults::kShowLinkDisambiguationPopup) {
-    EXPECT_EQ(
-        content::TapMultipleTargetsStrategy::
-            TAP_MULTIPLE_TARGETS_STRATEGY_POPUP,
-        prefs->tap_multiple_targets_strategy);
-  } else {
-    EXPECT_EQ(
-        content::TapMultipleTargetsStrategy::TAP_MULTIPLE_TARGETS_STRATEGY_NONE,
-        prefs->tap_multiple_targets_strategy);
-  }
 }
 
 }  // namespace chromeos
