@@ -1214,6 +1214,7 @@ _arm_internal_release_boards = frozenset([
   'veyron_jerry',
   'veyron_mighty',
   'veyron_pinky',
+  'whirlwind',
 ])
 
 _arm_external_boards = frozenset([
@@ -1225,7 +1226,6 @@ _arm_external_boards = frozenset([
 # TODO(akeshet) eliminate the need for this.
 _arm_internal_non_release_boards = frozenset([
   'storm',
-  'whirlwind',
 ])
 
 _x86_internal_release_boards = frozenset([
@@ -2544,15 +2544,6 @@ _non_testable_brillo_release.add_config('urara-release',
   paygen=False,
   signer_tests=False,
   important=False,
-)
-
-_non_testable_brillo_release.add_config('whirlwind-release',
-  boards=['whirlwind'],
-
-  # Hw Lab can't test whirlwind, yet.
-  paygen_skip_testing=True,
-  important=False,
-  signer_tests=False,
 )
 
 _release.add_config('mipsel-o32-generic-release',
