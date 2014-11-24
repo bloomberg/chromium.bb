@@ -199,13 +199,6 @@ TEST(ProcMapsTest, ReadProcMaps) {
   bool found_stack = false;
   bool found_address = false;
 
-  // Valgrind uses its own allocated stacks instead of the kernel-provided stack
-  // without letting the kernel know via prctl(PR_SET_MM_START_STACK). This
-  // causes the kernel to use [stack:TID] format. See http://crbug.com/431702
-  // for details.
-  std::string stack_with_tid =
-      StringPrintf("[stack:%d]", PlatformThread::CurrentId());
-
   for (size_t i = 0; i < regions.size(); ++i) {
     if (regions[i].path == exe_path.value()) {
       // It's OK to find the executable mapped multiple times as there'll be
@@ -213,23 +206,28 @@ TEST(ProcMapsTest, ReadProcMaps) {
       found_exe = true;
     }
 
-    bool is_correct_stack = false;
-    if (regions[i].path == "[stack]") {
-      is_correct_stack = true;
-      EXPECT_FALSE(RunningOnValgrind());
+    // Valgrind uses its own allocated stacks instead of the kernel-provided
+    // stack without letting the kernel know via prctl(PR_SET_MM_START_STACK).
+    // Depending on which kernel you're running it'll impact the output of
+    // /proc/self/maps.
+    //
+    // Prior to version 3.4, the kernel completely ignores other stacks and
+    // always prints out the vma lying within mm->start_stack as [stack] even
+    // if the program was currently executing on a different stack.
+    //
+    // Starting in 3.4, the kernel will print out the vma containing the current
+    // stack pointer as [stack:TID] as long as that vma does not lie within
+    // mm->start_stack.
+    //
+    // Because this has gotten too complicated and brittle of a test, completely
+    // ignore checking for the stack and address when running under Valgrind.
+    // See http://crbug.com/431702 for more details.
+    if (!RunningOnValgrind() && regions[i].path == "[stack]") {
       EXPECT_GE(address, regions[i].start);
       EXPECT_LT(address, regions[i].end);
-    } else if (regions[i].path == stack_with_tid) {
-      is_correct_stack = true;
-      EXPECT_TRUE(RunningOnValgrind());
-    }
-
-    if (is_correct_stack) {
-      // Note that the stack is executable when it is created by Valgrind.
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::READ);
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::WRITE);
-      EXPECT_EQ(RunningOnValgrind(),
-                (regions[i].permissions & MappedMemoryRegion::EXECUTE) != 0);
+      EXPECT_FALSE(regions[i].permissions & MappedMemoryRegion::EXECUTE);
       EXPECT_TRUE(regions[i].permissions & MappedMemoryRegion::PRIVATE);
       EXPECT_FALSE(found_stack) << "Found duplicate stacks";
       found_stack = true;
@@ -242,8 +240,10 @@ TEST(ProcMapsTest, ReadProcMaps) {
   }
 
   EXPECT_TRUE(found_exe);
-  EXPECT_TRUE(found_stack);
-  EXPECT_TRUE(found_address);
+  if (!RunningOnValgrind()) {
+    EXPECT_TRUE(found_stack);
+    EXPECT_TRUE(found_address);
+  }
 }
 
 TEST(ProcMapsTest, ReadProcMapsNonEmptyString) {
