@@ -16,10 +16,12 @@ class PrefService;
 
 namespace data_reduction_proxy {
 class DataReductionProxyConfigurator;
+class DataReductionProxyEventStore;
 class DataReductionProxyParams;
 }
 
 namespace net {
+class NetLog;
 class URLRequestContextGetter;
 }
 
@@ -45,7 +47,9 @@ class DataReductionProxyChromeSettings
       data_reduction_proxy::DataReductionProxyConfigurator* configurator,
       PrefService* profile_prefs,
       PrefService* local_state_prefs,
-      net::URLRequestContextGetter* request_context);
+      net::URLRequestContextGetter* request_context,
+      net::NetLog* net_log,
+      data_reduction_proxy::DataReductionProxyEventStore* event_store);
 
   // Gets the client type for the data reduction proxy.
   static data_reduction_proxy::Client GetClient();

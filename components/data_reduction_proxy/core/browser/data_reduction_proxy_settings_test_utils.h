@@ -11,6 +11,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/net_util.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -167,6 +168,8 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   base::Time last_update_time_;
   bool proxy_enabled_;
   scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  net::CapturingNetLog net_log_;
+  scoped_ptr<DataReductionProxyEventStore> event_store_;
 };
 
 // Test implementations should be subclasses of an instantiation of this

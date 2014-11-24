@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -94,6 +95,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
       scoped_refptr<base::TestSimpleTaskRunner>(
           new base::TestSimpleTaskRunner()),
           base::TimeDelta()));
+  event_store_.reset(new DataReductionProxyEventStore(
+      scoped_refptr<base::TestSimpleTaskRunner>(
+          new base::TestSimpleTaskRunner())));
 
   //AddProxyToCommandLine();
   ResetSettings(true, true, false, true, false);
@@ -283,7 +287,9 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
 
   settings_->InitDataReductionProxySettings(
       &pref_service_,
-      request_context.get());
+      request_context.get(),
+      &net_log_,
+      event_store_.get());
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::
                  RegisterSyntheticFieldTrialCallback,

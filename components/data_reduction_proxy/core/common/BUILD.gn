@@ -6,6 +6,8 @@ import("//components/data_reduction_proxy/core/common/version.gni")
 
 static_library("common") {
   sources = [
+    "data_reduction_proxy_event_store.cc",
+    "data_reduction_proxy_event_store.h",
     "data_reduction_proxy_headers.cc",
     "data_reduction_proxy_headers.h",
     "data_reduction_proxy_params.cc",
@@ -42,6 +44,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "data_reduction_proxy_event_store_unittest.cc",
     "data_reduction_proxy_headers_unittest.cc",
     "data_reduction_proxy_params_unittest.cc",
   ]

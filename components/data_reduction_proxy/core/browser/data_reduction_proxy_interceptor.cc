@@ -19,9 +19,11 @@ namespace data_reduction_proxy {
 
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyParams* params,
-    DataReductionProxyUsageStats* stats)
+    DataReductionProxyUsageStats* stats,
+    DataReductionProxyEventStore* event_store)
     : params_(params),
-      usage_stats_(stats) {
+      usage_stats_(stats),
+      event_store_(event_store) {
 }
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {
@@ -40,7 +42,7 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
     return nullptr;
   DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
   bool should_retry = data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
-      params_, request, &bypass_type);
+      params_, request, &bypass_type, event_store_);
   if (usage_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
     usage_stats_->SetBypassType(bypass_type);
   if (!should_retry)

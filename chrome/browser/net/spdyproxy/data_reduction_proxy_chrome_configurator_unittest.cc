@@ -13,7 +13,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,9 +24,15 @@ class DataReductionProxyConfigTest : public testing::Test {
   void SetUp() override {
     PrefRegistrySimple* registry = pref_service_.registry();
     registry->RegisterDictionaryPref(prefs::kProxy);
+    net_log_.reset(new net::CapturingNetLog());
+    data_reduction_proxy_event_store_.reset(
+        new data_reduction_proxy::DataReductionProxyEventStore(
+            new base::TestSimpleTaskRunner()));
     config_.reset(new DataReductionProxyChromeConfigurator(
         &pref_service_,
-        new base::TestSimpleTaskRunner()));
+        new base::TestSimpleTaskRunner(),
+        net_log_.get(),
+        data_reduction_proxy_event_store_.get()));
   }
 
   void CheckProxyConfig(
@@ -47,6 +55,9 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   scoped_ptr<DataReductionProxyChromeConfigurator> config_;
   TestingPrefServiceSimple pref_service_;
+  scoped_ptr<net::NetLog> net_log_;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+      data_reduction_proxy_event_store_;
 };
 
 TEST_F(DataReductionProxyConfigTest, TestUnrestricted) {

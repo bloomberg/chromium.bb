@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
@@ -438,6 +439,18 @@ class ProfileIOData {
         data_reduction_proxy_auth_request_handler.Pass();
   }
 
+  data_reduction_proxy::DataReductionProxyEventStore*
+      data_reduction_proxy_event_store() const {
+    return data_reduction_proxy_event_store_.get();
+  }
+
+  void set_data_reduction_proxy_event_store(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+          data_reduction_proxy_event_store) const {
+    data_reduction_proxy_event_store_ =
+        data_reduction_proxy_event_store.Pass();
+  }
+
   ChromeNetworkDelegate* network_delegate() const {
     return network_delegate_.get();
   }
@@ -653,6 +666,8 @@ class ProfileIOData {
       data_reduction_proxy_chrome_configurator_;
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
       data_reduction_proxy_auth_request_handler_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+      data_reduction_proxy_event_store_;
 
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>

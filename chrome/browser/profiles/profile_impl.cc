@@ -38,6 +38,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -630,12 +631,15 @@ void ProfileImpl::DoFinalInit() {
     session_cookie_mode = content::CookieStoreConfig::RESTORED_SESSION_COOKIES;
   }
 
+  ChromeNetLog* const net_log = g_browser_process->io_thread()->net_log();
+
   base::Callback<void(bool)> data_reduction_proxy_unavailable;
   scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
       data_reduction_proxy_params;
   scoped_ptr<DataReductionProxyChromeConfigurator> chrome_configurator;
   scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
       data_reduction_proxy_statistics_prefs;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore> event_store;
   DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
   data_reduction_proxy_params =
@@ -644,6 +648,13 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(
           &data_reduction_proxy::DataReductionProxySettings::SetUnreachable,
           base::Unretained(data_reduction_proxy_chrome_settings));
+  // The event_store is used by DataReductionProxyChromeSettings, configurator,
+  // and ProfileIOData. Ownership is passed to the latter via
+  // ProfileIOData::Handle, which is only destroyed after
+  // BrowserContextKeyedServices, including DataReductionProxyChromeSettings
+  event_store.reset(
+      new data_reduction_proxy::DataReductionProxyEventStore(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   // The configurator is used by DataReductionProxyChromeSettings and
   // ProfileIOData. Ownership is passed to the latter via ProfileIOData::Handle,
   // which is only destroyed after BrowserContextKeyedServices,
@@ -651,7 +662,13 @@ void ProfileImpl::DoFinalInit() {
   chrome_configurator.reset(
       new DataReductionProxyChromeConfigurator(
           prefs_.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          net_log,
+          event_store.get()));
+  // Retain a raw pointer to use for initialization of data reduction proxy
+  // settings after ownership is passed
+  data_reduction_proxy::DataReductionProxyEventStore*
+      data_reduction_proxy_event_store = event_store.get();
   // Retain a raw pointer to use for initialization of data reduction proxy
   // settings after ownership is passed.
   DataReductionProxyChromeConfigurator*
@@ -689,12 +706,15 @@ void ProfileImpl::DoFinalInit() {
                 data_reduction_proxy_unavailable,
                 chrome_configurator.Pass(),
                 data_reduction_proxy_params.Pass(),
-                data_reduction_proxy_statistics_prefs.Pass());
+                data_reduction_proxy_statistics_prefs.Pass(),
+                event_store.Pass());
   data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
       data_reduction_proxy_chrome_configurator,
       prefs_.get(),
       g_browser_process->local_state(),
-      GetRequestContext());
+      GetRequestContext(),
+      net_log,
+      data_reduction_proxy_event_store);
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(

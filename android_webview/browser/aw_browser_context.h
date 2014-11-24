@@ -29,6 +29,7 @@ class WebContents;
 
 namespace data_reduction_proxy {
 class DataReductionProxyConfigurator;
+class DataReductionProxyEventStore;
 class DataReductionProxySettings;
 class DataReductionProxyStatisticsPrefs;
 }
@@ -88,6 +89,9 @@ class AwBrowserContext : public content::BrowserContext,
 
   data_reduction_proxy::DataReductionProxySettings*
       GetDataReductionProxySettings();
+
+  data_reduction_proxy::DataReductionProxyEventStore*
+      GetDataReductionProxyEventStore();
 
   AwURLRequestContextGetter* GetAwURLRequestContext();
 
@@ -149,6 +153,8 @@ class AwBrowserContext : public content::BrowserContext,
       data_reduction_proxy_statistics_;
   scoped_ptr<data_reduction_proxy::DataReductionProxySettings>
       data_reduction_proxy_settings_;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+      data_reduction_proxy_event_store_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

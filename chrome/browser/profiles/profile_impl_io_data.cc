@@ -142,7 +142,9 @@ void ProfileImplIOData::Handle::Init(
     scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
         data_reduction_proxy_params,
     scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-        data_reduction_proxy_statistics_prefs) {
+        data_reduction_proxy_statistics_prefs,
+    scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+        data_reduction_proxy_event_store) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_);
   DCHECK(predictor);
@@ -182,6 +184,8 @@ void ProfileImplIOData::Handle::Init(
   io_data_->set_data_reduction_proxy_params(data_reduction_proxy_params.Pass());
   io_data_->set_data_reduction_proxy_statistics_prefs(
       data_reduction_proxy_statistics_prefs.Pass());
+  io_data_->set_data_reduction_proxy_event_store(
+      data_reduction_proxy_event_store.Pass());
 }
 
 content::ResourceContext*
@@ -576,7 +580,8 @@ void ProfileImplIOData::InitializeInternal(
       request_interceptors.begin(),
       new data_reduction_proxy::DataReductionProxyInterceptor(
           data_reduction_proxy_params(),
-          data_reduction_proxy_usage_stats()));
+          data_reduction_proxy_usage_stats(),
+          data_reduction_proxy_event_store()));
   main_job_factory_ = SetUpJobFactoryDefaults(
       main_job_factory.Pass(),
       request_interceptors.Pass(),
@@ -736,7 +741,8 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
       request_interceptors.begin(),
       new data_reduction_proxy::DataReductionProxyInterceptor(
           data_reduction_proxy_params(),
-          data_reduction_proxy_usage_stats()));
+          data_reduction_proxy_usage_stats(),
+          data_reduction_proxy_event_store()));
   scoped_ptr<net::URLRequestJobFactory> top_job_factory(
       SetUpJobFactoryDefaults(job_factory.Pass(),
                               request_interceptors.Pass(),

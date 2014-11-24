@@ -8,6 +8,7 @@
 #include "net/url_request/url_request_interceptor.h"
 
 namespace data_reduction_proxy {
+class DataReductionProxyEventStore;
 class DataReductionProxyParams;
 class DataReductionProxyUsageStats;
 
@@ -17,10 +18,11 @@ class DataReductionProxyUsageStats;
 // without use of the proxy.
 class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
  public:
-  // Constructs the interceptor. |params| and |stats| must outlive |this|.
-  // |stats| may be NULL.
+  // Constructs the interceptor. |params|, |stats|, and |event_store| must
+  // outlive |this|. |stats| may be NULL.
   DataReductionProxyInterceptor(DataReductionProxyParams* params,
-                                DataReductionProxyUsageStats* stats);
+                                DataReductionProxyUsageStats* stats,
+                                DataReductionProxyEventStore* event_store);
 
   // Destroys the interceptor.
   ~DataReductionProxyInterceptor() override;
@@ -45,6 +47,9 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
 
   // Must outlive |this| if non-NULL.
   DataReductionProxyUsageStats* usage_stats_;
+
+  // Must outlive |this|.
+  DataReductionProxyEventStore* event_store_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyInterceptor);
 };

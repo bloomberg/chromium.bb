@@ -25,6 +25,7 @@ class GURL;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyEventStore;
 class DataReductionProxyParams;
 
 // Decides whether to mark the data reduction proxy as temporarily bad and
@@ -34,7 +35,8 @@ class DataReductionProxyParams;
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* params,
     net::URLRequest* request,
-    DataReductionProxyBypassType* proxy_bypass_type);
+    DataReductionProxyBypassType* proxy_bypass_type,
+    DataReductionProxyEventStore* event_store);
 
 // Adds data reduction proxies to |result|, where applicable, if result
 // otherwise uses a direct connection for |url|, the proxy service's effective

@@ -2418,3 +2418,64 @@ EVENT_TYPE(SDCH_DICTIONARY_FETCH)
 //     "net_error": <error created>
 //   }
 EVENT_TYPE(SDCH_DICTIONARY_FETCH_IMPLIED_ERROR)
+
+// -----------------------------------------------------------------------------
+// Data Reduction Proxy events.
+// -----------------------------------------------------------------------------
+
+// This event is created when the data reduction proxy has been turned on or
+// off. It always contains the parameter:
+//  {
+//    "enabled": <true if the proxy is enabled>
+//  }
+//
+// If it is enabled, it contains additional parameters:
+//  {
+//    "primary_restricted": <Whether the primary proxy is restricted or not>,
+//    "fallback_restricted": <Whether the fallback proxy is restricted or not>,
+//    "primary_origin": <The primary proxy origin address>,
+//    "fallback_origin": <The fallback proxy origin address>,
+//    "ssl_origin": <The SSL proxy origin address>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_ENABLED)
+
+// The start/end of a canary request is sent to the data reduction proxy.
+//
+// The BEGIN phase contains the following parameters:
+//  {
+//    "url": <The URL of the canary endpoint>,
+//  }
+//
+// The END phase contains the following parameters:
+//  {
+//    "net_error": <The net_error of the completion of the canary request>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_CANARY_REQUEST)
+
+// This event is created when a response to the canary request has been
+// received with the following parameters:
+//  {
+//    "headers": <The list of header:value pairs>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_CANARY_RESPONSE_RECEIVED)
+
+// This event is created when a bypass event takes place with the following
+// parameters:
+//  {
+//    "action": <For DRP proxy sourced bypasses in the chrome-proxy header,
+//               the bypass type>,
+//    "bypass_type": <For non-DRP proxy sourced bypasses, the bypass type>,
+//    "url": <The origin URL of the remote endpoint which resulted in the
+//            bypass>,
+//    "bypass_duration_seconds": <The length of time to be in a bypass state>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_BYPASS_REQUESTED)
+
+// This event is created when the data reduction proxy configuration changes
+// (i.e. a switch between primary and fallback) with the following parameters:
+//  {
+//    "proxy_server": <The URL of the proxy server no longer being used>,
+//    "net_error": <The net_error encountered when using the proxy server; this
+//                  can be 0 if the proxy server is explicitly skipped>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_FALLBACK)

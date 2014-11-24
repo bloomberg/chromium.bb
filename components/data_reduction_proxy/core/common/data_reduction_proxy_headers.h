@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "net/proxy/proxy_service.h"
 
+class GURL;
+
 namespace net {
 
 class HttpResponseHeaders;
@@ -18,6 +20,8 @@ class HttpResponseHeaders;
 }  // namespace net
 
 namespace data_reduction_proxy {
+
+class DataReductionProxyEventStore;
 
 // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback}
 // and DataReductionProxy.BlockType{Primary|Fallback} histograms.
@@ -86,7 +90,10 @@ struct DataReductionProxyInfo {
 // If all available data reduction proxies should by bypassed, |bypass_all| is
 // set to true. |proxy_info| must be non-NULL.
 bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
-                                 DataReductionProxyInfo* proxy_info);
+                                 const GURL& url,
+                                 const net::BoundNetLog& bound_net_log,
+                                 DataReductionProxyInfo* proxy_info,
+                                 DataReductionProxyEventStore* event_store);
 
 // Returns true if the response contains the data reduction proxy Via header
 // value. If non-NULL, sets |has_intermediary| to true if another server added
@@ -101,7 +108,11 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
 // applicable.
 DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
-    DataReductionProxyInfo* proxy_info);
+    const GURL& url,
+    const net::BoundNetLog& bound_net_log,
+    DataReductionProxyInfo* proxy_info,
+    DataReductionProxyEventStore* event_store,
+    bool* event_logged);
 
 // Searches for the specified Chrome-Proxy action, and if present saves its
 // value as a string in |action_value|. Only returns the first one and ignores

@@ -16,9 +16,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -94,6 +96,8 @@ DataReductionProxySettings::DataReductionProxySettings(
       unreachable_(false),
       prefs_(NULL),
       url_request_context_getter_(NULL),
+      net_log_(NULL),
+      event_store_(NULL),
       configurator_(NULL) {
   DCHECK(params);
   params_.reset(params);
@@ -122,12 +126,17 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
-    net::URLRequestContextGetter* url_request_context_getter) {
+    net::URLRequestContextGetter* url_request_context_getter,
+    net::NetLog* net_log,
+    DataReductionProxyEventStore* event_store) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
   DCHECK(url_request_context_getter);
+  DCHECK(event_store);
   prefs_ = prefs;
   url_request_context_getter_ = url_request_context_getter;
+  net_log_ = net_log;
+  event_store_ = event_store;
   InitPrefMembers();
   RecordDataReductionInit();
 
@@ -229,6 +238,11 @@ void DataReductionProxySettings::OnURLFetchComplete(
 
   DCHECK(source == fetcher_.get());
   net::URLRequestStatus status = source->GetStatus();
+
+  if (event_store_) {
+    event_store_->EndCanaryRequest(bound_net_log_, status.error());
+  }
+
   if (status.status() == net::URLRequestStatus::FAILED) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
       RecordProbeURLFetchResult(INTERNET_DISCONNECTED);
@@ -544,6 +558,14 @@ void DataReductionProxySettings::ProbeWhetherDataReductionProxyIsAvailable() {
   if (!fetcher)
     return;
   fetcher_.reset(fetcher);
+
+  bound_net_log_ = net::BoundNetLog::Make(
+      net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
+  if (event_store_) {
+    event_store_->BeginCanaryRequest(bound_net_log_,
+                                     fetcher_->GetOriginalURL());
+  }
+
   fetcher_->Start();
 }
 

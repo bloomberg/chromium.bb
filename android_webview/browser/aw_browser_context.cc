@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -36,6 +37,7 @@
 using base::FilePath;
 using content::BrowserThread;
 using data_reduction_proxy::DataReductionProxyConfigService;
+using data_reduction_proxy::DataReductionProxyEventStore;
 using data_reduction_proxy::DataReductionProxySettings;
 
 namespace android_webview {
@@ -137,6 +139,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       new DataReductionProxySettings(
           new data_reduction_proxy::DataReductionProxyParams(
               data_reduction_proxy::DataReductionProxyParams::kAllowed)));
+  data_reduction_proxy_event_store_.reset(
+      new DataReductionProxyEventStore(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   scoped_ptr<DataReductionProxyConfigService>
       data_reduction_proxy_config_service(
           new DataReductionProxyConfigService(
@@ -226,6 +231,11 @@ DataReductionProxySettings* AwBrowserContext::GetDataReductionProxySettings() {
   return data_reduction_proxy_settings_.get();
 }
 
+DataReductionProxyEventStore*
+    AwBrowserContext::GetDataReductionProxyEventStore() {
+  return data_reduction_proxy_event_store_.get();
+}
+
 AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
   return url_request_context_getter_.get();
 }
@@ -257,7 +267,9 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
   if (data_reduction_proxy_settings_.get()) {
     data_reduction_proxy_settings_->InitDataReductionProxySettings(
         user_pref_service_.get(),
-        GetRequestContext());
+        GetRequestContext(),
+        GetAwURLRequestContext()->GetNetLog(),
+        GetDataReductionProxyEventStore());
     data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
     SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);

@@ -5,9 +5,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -43,7 +45,8 @@ namespace data_reduction_proxy {
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* data_reduction_proxy_params,
     net::URLRequest* request,
-    DataReductionProxyBypassType* proxy_bypass_type) {
+    DataReductionProxyBypassType* proxy_bypass_type,
+    DataReductionProxyEventStore* event_store) {
   DCHECK(request);
   if (!data_reduction_proxy_params)
     return false;
@@ -80,10 +83,14 @@ bool MaybeBypassProxyAndPrepareToRetry(
       response_headers,
       data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure());
 
+  // GetDataReductionProxyBypassType will only log a net_log event if a bypass
+  // command was sent via the data reduction proxy headers
+  bool event_logged;
   DataReductionProxyInfo data_reduction_proxy_info;
   DataReductionProxyBypassType bypass_type =
-      GetDataReductionProxyBypassType(response_headers,
-                                      &data_reduction_proxy_info);
+      GetDataReductionProxyBypassType(
+          response_headers, request->url(), request->net_log(),
+          &data_reduction_proxy_info, event_store, &event_logged);
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&
       DataReductionProxyParams::
@@ -97,6 +104,12 @@ bool MaybeBypassProxyAndPrepareToRetry(
     *proxy_bypass_type = bypass_type;
   if (bypass_type == BYPASS_EVENT_TYPE_MAX)
     return false;
+
+  if (!event_logged) {
+    event_store->AddBypassTypeEvent(
+        request->net_log(), bypass_type, request->url(),
+        data_reduction_proxy_info.bypass_duration);
+  }
 
   DCHECK(request->context());
   DCHECK(request->context()->proxy_service());

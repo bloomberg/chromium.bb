@@ -259,7 +259,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   job_factory_.reset(new net::URLRequestInterceptingJobFactory(
       job_factory_.Pass(), make_scoped_ptr(
           new data_reduction_proxy::DataReductionProxyInterceptor(
-              data_reduction_proxy_settings->params(), NULL))));
+              data_reduction_proxy_settings->params(), NULL,
+              browser_context->GetDataReductionProxyEventStore()))));
   url_request_context_->set_job_factory(job_factory_.get());
 }
 

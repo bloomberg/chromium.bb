@@ -71,7 +71,9 @@ class ProfileImplIOData : public ProfileIOData {
         scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
             data_reduction_proxy_params,
         scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-            data_reduction_proxy_statistics_prefs);
+            data_reduction_proxy_statistics_prefs,
+        scoped_ptr<data_reduction_proxy::DataReductionProxyEventStore>
+            data_reduction_proxy_event_store);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the

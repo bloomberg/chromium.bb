@@ -8,11 +8,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -101,9 +104,12 @@ class DataReductionProxyProtocolTest : public testing::Test {
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     usage_stats_.reset(new DataReductionProxyUsageStats(
         proxy_params_.get(), base::MessageLoopProxy::current()));
+    event_store_.reset(new DataReductionProxyEventStore(
+        base::MessageLoopProxy::current()));
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(proxy_params_.get(),
-                                          usage_stats_.get());
+                                          usage_stats_.get(),
+                                          event_store_.get());
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
@@ -306,6 +312,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<TestDataReductionProxyParams> proxy_params_;
   scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
+  scoped_ptr<DataReductionProxyEventStore> event_store_;
   net::StaticHttpUserAgentSettings http_user_agent_settings_;
 
   scoped_ptr<net::URLRequestInterceptingJobFactory> job_factory_;

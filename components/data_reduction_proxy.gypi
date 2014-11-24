@@ -66,6 +66,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'data_reduction_proxy/core/common/data_reduction_proxy_event_store.cc',
+        'data_reduction_proxy/core/common/data_reduction_proxy_event_store.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_params.cc',

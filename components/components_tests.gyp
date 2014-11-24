@@ -103,6 +103,7 @@
             'data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats_unittest.cc',
+            'data_reduction_proxy/core/common/data_reduction_proxy_event_store_unittest.cc',
             'data_reduction_proxy/core/common/data_reduction_proxy_headers_unittest.cc',
             'data_reduction_proxy/core/common/data_reduction_proxy_params_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',

@@ -32,11 +32,15 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyConfigurator* configurator,
     PrefService* profile_prefs,
     PrefService* local_state_prefs,
-    net::URLRequestContextGetter* request_context) {
+    net::URLRequestContextGetter* request_context,
+    net::NetLog* net_log,
+    data_reduction_proxy::DataReductionProxyEventStore* event_store) {
   SetProxyConfigurator(configurator);
   DataReductionProxySettings::InitDataReductionProxySettings(
       profile_prefs,
-      request_context);
+      request_context,
+      net_log,
+      event_store);
   DataReductionProxySettings::SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
                  base::Unretained(this)));

@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -32,6 +33,8 @@ class URLRequestContextGetter;
 }
 
 namespace data_reduction_proxy {
+
+class DataReductionProxyEventStore;
 
 // The number of days of bandwidth usage statistics that are tracked.
 const unsigned int kNumDaysInHistory = 60;
@@ -104,7 +107,9 @@ class DataReductionProxySettings
   // |DataReductionProxySettings| instance.
   void InitDataReductionProxySettings(
       PrefService* prefs,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      net::NetLog* net_log,
+      DataReductionProxyEventStore* event_store);
 
   // Sets the |statistics_prefs_| to be used for data reduction proxy pref reads
   // and writes.
@@ -291,6 +296,10 @@ class DataReductionProxySettings
 
   scoped_ptr<net::URLFetcher> fetcher_;
 
+  // A new BoundNetLog is created for each canary check so that we can correlate
+  // the request begin/end phases.
+  net::BoundNetLog bound_net_log_;
+
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;
 
@@ -298,6 +307,14 @@ class DataReductionProxySettings
   DataReductionProxyStatisticsPrefs* statistics_prefs_;
 
   net::URLRequestContextGetter* url_request_context_getter_;
+
+  // The caller must ensure that the |net_log_|, if set, outlives this instance.
+  // It is used to create new instances of |bound_net_log_| on canary
+  // requests.
+  net::NetLog* net_log_;
+
+  // The caller must ensure that the |event_store_| outlives this instance.
+  DataReductionProxyEventStore* event_store_;
 
   base::Callback<void(bool)> on_data_reduction_proxy_enabled_;
 
