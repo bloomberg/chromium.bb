@@ -338,7 +338,7 @@ if [ -z "$PACKAGE_NAME" ]; then
 fi
 
 if [ -z "$NDK_DIR" ]; then
-  ANDROID_NDK_ROOT=$(PYTHONPATH=build/android python -c \
+  ANDROID_NDK_ROOT=$(PYTHONPATH=$CHROMIUM_SRC/build/android python -c \
 'from pylib.constants import ANDROID_NDK_ROOT; print ANDROID_NDK_ROOT,')
 else
   if [ ! -d "$NDK_DIR" ]; then
