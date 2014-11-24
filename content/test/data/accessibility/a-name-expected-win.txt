@@ -1,6 +1,5 @@
-#<skip -- bug 120946>
-ROLE_SYSTEM_DOCUMENT state=FOCUSED,READONLY,FOCUSABLE
-    ROLE_SYSTEM_LINK name='named anchor' state=SELECTABLE
-        ROLE_SYSTEM_TEXT name='named anchor' state=READONLY
-    ROLE_SYSTEM_LINK name='both a named anchor and a link' state=FOCUSABLE,SELECTABLE,LINKED
-        ROLE_SYSTEM_TEXT name='both a named anchor and a link' state=READONLY,LINKED
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION
+        ROLE_SYSTEM_STATICTEXT name='named anchor'
+    ROLE_SYSTEM_LINK name='both a named anchor and a link' FOCUSABLE LINKED
+        ROLE_SYSTEM_STATICTEXT name='both a named anchor and a link' LINKED
