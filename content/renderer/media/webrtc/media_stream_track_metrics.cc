@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/md5.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -20,37 +21,102 @@ using webrtc::PeerConnectionInterface;
 using webrtc::VideoTrackVector;
 
 namespace content {
+namespace {
+typedef std::set<std::string> IdSet;
 
-class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
+template <class T>
+IdSet GetTrackIds(const std::vector<rtc::scoped_refptr<T>>& tracks) {
+  IdSet track_ids;
+  for (const auto& track : tracks)
+    track_ids.insert(track->id());
+  return track_ids;
+}
+
+// TODO(tommi): Consolidate this and TrackObserver since these implementations
+// are fundamentally achieving the same thing (aside from specific logic inside
+// the OnChanged callbacks).
+class MediaStreamObserver
+    : public base::RefCountedThreadSafe<MediaStreamObserver>,
+      public webrtc::ObserverInterface {
+ public:
+  typedef base::Callback<
+      void(const IdSet& audio_track_ids, const IdSet& video_track_ids)>
+          OnChangedCallback;
+
+  MediaStreamObserver(
+      const OnChangedCallback& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      webrtc::MediaStreamInterface* stream)
+      : main_thread_(main_thread), stream_(stream), callback_(callback) {
+    signaling_thread_.DetachFromThread();
+    stream_->RegisterObserver(this);
+  }
+
+  const scoped_refptr<webrtc::MediaStreamInterface>& stream() const {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    return stream_;
+  }
+
+  void Unregister() {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    callback_.Reset();
+    stream_->UnregisterObserver(this);
+    stream_ = nullptr;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<MediaStreamObserver>;
+  ~MediaStreamObserver() override {
+    DCHECK(!stream_.get()) << "must have been unregistered before deleting";
+  }
+
+  // webrtc::ObserverInterface implementation.
+  void OnChanged() override {
+    DCHECK(signaling_thread_.CalledOnValidThread());
+    main_thread_->PostTask(FROM_HERE,
+        base::Bind(&MediaStreamObserver::OnChangedOnMainThread, this,
+                   GetTrackIds(stream_->GetAudioTracks()),
+                   GetTrackIds(stream_->GetVideoTracks())));
+  }
+
+  void OnChangedOnMainThread(const IdSet& audio_track_ids,
+                             const IdSet& video_track_ids) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    if (!callback_.is_null())
+      callback_.Run(audio_track_ids, video_track_ids);
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  scoped_refptr<webrtc::MediaStreamInterface> stream_;
+  OnChangedCallback callback_;  // Only touched on the main thread.
+  base::ThreadChecker signaling_thread_;
+};
+
+}  // namespace
+
+class MediaStreamTrackMetricsObserver {
  public:
   MediaStreamTrackMetricsObserver(
       MediaStreamTrackMetrics::StreamType stream_type,
       MediaStreamInterface* stream,
       MediaStreamTrackMetrics* owner);
-  ~MediaStreamTrackMetricsObserver() override;
+  ~MediaStreamTrackMetricsObserver();
 
   // Sends begin/end messages for all tracks currently tracked.
   void SendLifetimeMessages(MediaStreamTrackMetrics::LifetimeEvent event);
 
-  MediaStreamInterface* stream() { return stream_; }
-  MediaStreamTrackMetrics::StreamType stream_type() { return stream_type_; }
+  MediaStreamInterface* stream() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return observer_->stream().get();
+  }
+
+  MediaStreamTrackMetrics::StreamType stream_type() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return stream_type_;
+  }
 
  private:
-  typedef std::set<std::string> IdSet;
-
-  // webrtc::ObserverInterface implementation.
-  void OnChanged() override;
-
-  template <class T>
-  IdSet GetTrackIds(const std::vector<rtc::scoped_refptr<T> >& tracks) {
-    IdSet track_ids;
-    typename std::vector<rtc::scoped_refptr<T> >::const_iterator it =
-        tracks.begin();
-    for (; it != tracks.end(); ++it) {
-      track_ids.insert((*it)->id());
-    }
-    return track_ids;
-  }
+  void OnChanged(const IdSet& audio_track_ids, const IdSet& video_track_ids);
 
   void ReportAddedAndRemovedTracks(
       const IdSet& new_ids,
@@ -72,10 +138,11 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
   IdSet video_track_ids_;
 
   MediaStreamTrackMetrics::StreamType stream_type_;
-  rtc::scoped_refptr<MediaStreamInterface> stream_;
+  scoped_refptr<MediaStreamObserver> observer_;
 
   // Non-owning.
   MediaStreamTrackMetrics* owner_;
+  base::ThreadChecker thread_checker_;
 };
 
 namespace {
@@ -101,20 +168,26 @@ MediaStreamTrackMetricsObserver::MediaStreamTrackMetricsObserver(
     MediaStreamTrackMetrics* owner)
     : has_reported_start_(false),
       has_reported_end_(false),
+      audio_track_ids_(GetTrackIds(stream->GetAudioTracks())),
+      video_track_ids_(GetTrackIds(stream->GetVideoTracks())),
       stream_type_(stream_type),
-      stream_(stream),
+      observer_(new MediaStreamObserver(
+            base::Bind(&MediaStreamTrackMetricsObserver::OnChanged,
+                       base::Unretained(this)),
+            base::ThreadTaskRunnerHandle::Get(),
+            stream)),
       owner_(owner) {
-  OnChanged();  // To populate initial tracks.
-  stream_->RegisterObserver(this);
 }
 
 MediaStreamTrackMetricsObserver::~MediaStreamTrackMetricsObserver() {
-  stream_->UnregisterObserver(this);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_->Unregister();
   SendLifetimeMessages(MediaStreamTrackMetrics::DISCONNECTED);
 }
 
 void MediaStreamTrackMetricsObserver::SendLifetimeMessages(
     MediaStreamTrackMetrics::LifetimeEvent event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (event == MediaStreamTrackMetrics::CONNECTED) {
     // Both ICE CONNECTED and COMPLETED can trigger the first
     // start-of-life event, so we only report the first.
@@ -146,33 +219,31 @@ void MediaStreamTrackMetricsObserver::SendLifetimeMessages(
   }
 }
 
-void MediaStreamTrackMetricsObserver::OnChanged() {
-  AudioTrackVector all_audio_tracks = stream_->GetAudioTracks();
-  IdSet all_audio_track_ids = GetTrackIds(all_audio_tracks);
-
-  VideoTrackVector all_video_tracks = stream_->GetVideoTracks();
-  IdSet all_video_track_ids = GetTrackIds(all_video_tracks);
+void MediaStreamTrackMetricsObserver::OnChanged(
+    const IdSet& audio_track_ids, const IdSet& video_track_ids) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // We only report changes after our initial report, and never after
   // our last report.
   if (has_reported_start_ && !has_reported_end_) {
-    ReportAddedAndRemovedTracks(all_audio_track_ids,
+    ReportAddedAndRemovedTracks(audio_track_ids,
                                 audio_track_ids_,
                                 MediaStreamTrackMetrics::AUDIO_TRACK);
-    ReportAddedAndRemovedTracks(all_video_track_ids,
+    ReportAddedAndRemovedTracks(video_track_ids,
                                 video_track_ids_,
                                 MediaStreamTrackMetrics::VIDEO_TRACK);
   }
 
   // We always update our sets of tracks.
-  audio_track_ids_ = all_audio_track_ids;
-  video_track_ids_ = all_video_track_ids;
+  audio_track_ids_ = audio_track_ids;
+  video_track_ids_ = video_track_ids;
 }
 
 void MediaStreamTrackMetricsObserver::ReportAddedAndRemovedTracks(
     const IdSet& new_ids,
     const IdSet& old_ids,
     MediaStreamTrackMetrics::TrackType track_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_reported_start_ && !has_reported_end_);
 
   IdSet added_tracks = base::STLSetDifference<IdSet>(new_ids, old_ids);
@@ -187,6 +258,7 @@ void MediaStreamTrackMetricsObserver::ReportTracks(
     const IdSet& ids,
     MediaStreamTrackMetrics::TrackType track_type,
     MediaStreamTrackMetrics::LifetimeEvent event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (IdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
     owner_->SendLifetimeMessage(*it, track_type, event, stream_type_);
   }
