@@ -138,7 +138,6 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     frame->loader().client()->didDispatchPingLoader(request.url());
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 

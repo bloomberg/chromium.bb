@@ -7,10 +7,12 @@ EvaluateScript Properties:
     data : {
         frame : <string>
         lineNumber : <number>
+        stackTrace : <object>
         url : .../inspector/tracing/timeline-script-tag-2.js
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     thread : <string>
     type : "EvaluateScript"

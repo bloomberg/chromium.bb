@@ -8,6 +8,7 @@ ResourceSendRequest Properties:
         frame : <string>
         requestId : <string>
         requestMethod : "GET"
+        stackTrace : <object>
         url : .../inspector/tracing/timeline-network-resource.js
     }
     endTime : <number>

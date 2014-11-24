@@ -9,6 +9,7 @@ Paint Properties:
         frame : <string>
         layerId : <number>
         nodeId : <number>
+        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>

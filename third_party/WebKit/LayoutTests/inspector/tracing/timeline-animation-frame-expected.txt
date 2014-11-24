@@ -5,6 +5,7 @@ RequestAnimationFrame Properties:
     data : {
         frame : <string>
         id : <number>
+        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>
@@ -31,6 +32,7 @@ CancelAnimationFrame Properties:
     data : {
         frame : <string>
         id : <number>
+        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>

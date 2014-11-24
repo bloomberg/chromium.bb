@@ -896,7 +896,6 @@ void FrameView::layout(bool allowSubtree)
     RELEASE_ASSERT(!isPainting());
 
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "beginData", InspectorLayoutEvent::beginData(this));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willLayout(m_frame.get());
 
@@ -1774,8 +1773,7 @@ void FrameView::scheduleRelayout()
         return;
     if (!m_frame->document()->shouldScheduleLayout())
         return;
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get());
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get(), "data", InspectorInvalidateLayoutEvent::data());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 
@@ -1838,8 +1836,7 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         page()->animator().scheduleVisualUpdate();
         lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get());
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get(), "data", InspectorInvalidateLayoutEvent::data());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 }

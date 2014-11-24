@@ -13,10 +13,12 @@ EvaluateScript Properties:
     data : {
         frame : <string>
         lineNumber : <number>
+        stackTrace : <object>
         url : .../inspector/tracing/resources/timeline-iframe-data.html
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     thread : <string>
     type : "EvaluateScript"

@@ -157,7 +157,6 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
 v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate* isolate)
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(isolate, context, function));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::hasFrontends()) {
@@ -177,7 +176,6 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus, double* compilationFinishTime)
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(m_frame, source.url().string(), source.startLine()));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willEvaluateScript(m_frame, source.url().string(), source.startLine());
 

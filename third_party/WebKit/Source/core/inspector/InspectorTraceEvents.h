@@ -237,9 +237,14 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
 };
 
-class InspectorCallStackEvent {
+class InspectorInvalidateLayoutEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> currentCallStack();
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+};
+
+class InspectorRecalculateStylesEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
 };
 
 class InspectorEventDispatchEvent {

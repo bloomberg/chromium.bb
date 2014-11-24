@@ -78,7 +78,6 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(v8::
         return v8::Local<v8::Value>();
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devToolsTraceEventData(isolate(), scriptState()->executionContext(), handlerFunction));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::hasFrontends()) {

@@ -5,6 +5,7 @@ XHRReadyStateChange Properties:
     data : {
         frame : <string>
         readyState : 1
+        stackTrace : <object>
         url : .../inspector/tracing/network/resources/resource.php
     }
     endTime : <number>

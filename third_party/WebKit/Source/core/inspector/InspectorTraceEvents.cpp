@@ -38,25 +38,20 @@ static const unsigned maxInvalidationTrackingCallstackSize = 5;
 
 namespace {
 
-class JSCallStack : public TraceEvent::ConvertableToTraceFormat  {
-public:
-    explicit JSCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callstack)
-    {
-        m_serialized = callstack ? callstack->buildInspectorArray()->toJSONString() : "[]";
-        ASSERT(m_serialized.isSafeToSendToAnotherThread());
-    }
-    virtual String asTraceFormat() const
-    {
-        return m_serialized;
-    }
-
-private:
-    String m_serialized;
-};
-
 String toHexString(const void* p)
 {
     return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(p)));
+}
+
+void setCallStack(TracedValue* value)
+{
+    bool stacksEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), &stacksEnabled);
+    if (!stacksEnabled)
+        return;
+    RefPtr<ScriptCallStack> scriptCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+    if (scriptCallStack)
+        scriptCallStack->toTracedValue(value, "stackTrace");
 }
 
 void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = 0)
@@ -280,6 +275,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData
     value->setInteger("totalObjects", totalObjects);
     value->setBoolean("partialLayout", isPartial);
     value->setString("frame", toHexString(&frame));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -353,6 +349,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data
     value->setString("frame", toHexString(frame));
     value->setString("url", request.url().string());
     value->setString("requestMethod", request.httpMethod());
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -405,6 +402,7 @@ static PassRefPtr<TracedValue> genericTimerData(ExecutionContext* context, int t
     value->setInteger("timerId", timerId);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -431,6 +429,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::d
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("id", callbackId);
     value->setString("frame", toHexString(document->frame()));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -442,6 +441,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketCreateEvent::
     value->setString("frame", toHexString(document->frame()));
     if (!protocol.isNull())
         value->setString("webSocketProtocol", protocol);
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -450,6 +450,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketEvent::data(D
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
     value->setString("frame", toHexString(document->frame()));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -458,6 +459,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginD
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("startLine", startLine);
     value->setString("frame", toHexString(document->frame()));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -475,6 +477,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrReadyStateChangeEve
     value->setInteger("readyState", request->readyState());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -484,6 +487,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrLoadEvent::data(Exe
     value->setString("url", request->url().string());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -525,6 +529,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(Rende
     setGeneratingNodeInfo(value.get(), renderer, "nodeId");
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     value->setInteger("layerId", graphicsLayerId);
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -551,6 +556,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::d
     value->setString("frame", toHexString(frame));
     value->setString("url", url);
     value->setInteger("lineNumber", lineNumber);
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -562,6 +568,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::dat
     value->setInteger("scriptLine", scriptLine);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
+    setCallStack(value.get());
     return value.release();
 }
 
@@ -593,9 +600,18 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::d
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorCallStackEvent::currentCallStack()
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorInvalidateLayoutEvent::data()
 {
-    return adoptRef(new JSCallStack(createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true)));
+    RefPtr<TracedValue> value = TracedValue::create();
+    setCallStack(value.get());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorRecalculateStylesEvent::data()
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    setCallStack(value.get());
+    return value.release();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEventDispatchEvent::data(const Event& event)

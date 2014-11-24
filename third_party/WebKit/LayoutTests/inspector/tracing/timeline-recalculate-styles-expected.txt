@@ -4,6 +4,9 @@ Test data
 RecalculateStyles Properties:
 {
     data : {
+        beginData : {
+            stackTrace : <object>
+        }
         elementCount : 2
         frame : <string>
     }

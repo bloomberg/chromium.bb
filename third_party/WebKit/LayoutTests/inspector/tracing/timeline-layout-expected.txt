@@ -12,6 +12,7 @@ Layout Properties:
             dirtyObjects : 3
             frame : <string>
             partialLayout : true
+            stackTrace : <object>
             totalObjects : 8
         }
         endData : {
@@ -32,6 +33,7 @@ Layout Properties:
             dirtyObjects : 2
             frame : <string>
             partialLayout : true
+            stackTrace : <object>
             totalObjects : 11
         }
         endData : {

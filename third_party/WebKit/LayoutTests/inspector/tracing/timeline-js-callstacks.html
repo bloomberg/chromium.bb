@@ -52,25 +52,17 @@ function test()
         "tts": 5612442
     },
     {
-        "args": {},
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "JSSample",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 208000,
-        "tts": 1758056
-    },
-    {
         "args": {
-            "stack": [
-                { "functionName": "c", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "c", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
         "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
+        "name": "JSSample",
         "ph": "I",
         "pid": 17851,
         "tid": 23,
@@ -89,7 +81,15 @@ function test()
         "tts": 5612442
     },
     {
-        "args": {},
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "c", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
+        },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -100,22 +100,14 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "c", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "c", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 211000,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -126,23 +118,13 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "c", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 219875,
-        "tts": 1758056
-    },
-    {
-        "args": {
-            "frame": "0x2f7b63884000"
+            "frame": "0x2f7b63884000",
+            "data": {
+                "stackTrace": [
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "InvalidateLayout",
@@ -155,21 +137,14 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "c", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 220000,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -180,23 +155,15 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "c", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 220125,
-        "tts": 1758056
-    },
-    {
-        "args": {
-            "frame": "0x2f7b63884000"
+            "frame": "0x2f7b63884000",
+            "data": {
+                "stackTrace": [
+                    { "functionName": "e", "scriptId": 1 },
+                    { "functionName": "d", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
         "cat": "disabled-by-default-devtools.timeline",
         "name": "InvalidateLayout",
@@ -209,23 +176,15 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "e", "scriptId": 1 },
-                { "functionName": "d", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "g", "scriptId": 1 },
+                    { "functionName": "f", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 221000,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -236,23 +195,15 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "g", "scriptId": 1 },
-                { "functionName": "f", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "g", "scriptId": 1 },
+                    { "functionName": "e", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 222000,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -263,23 +214,15 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "g", "scriptId": 1 },
-                { "functionName": "e", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "g", "scriptId": 1 },
+                    { "functionName": "e", "scriptId": 1 },
+                    { "functionName": "b", "scriptId": 1 },
+                    { "functionName": "a", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 227125,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -290,23 +233,14 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "g", "scriptId": 1 },
-                { "functionName": "e", "scriptId": 1 },
-                { "functionName": "b", "scriptId": 1 },
-                { "functionName": "a", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "a", "scriptId": 1 },
+                    { "functionName": "l", "scriptId": 1 },
+                    { "functionName": "f", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 227250,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
@@ -317,40 +251,16 @@ function test()
     },
     {
         "args": {
-            "stack": [
-                { "functionName": "a", "scriptId": 1 },
-                { "functionName": "l", "scriptId": 1 },
-                { "functionName": "f", "scriptId": 1 }
-            ]
+            "data": {
+                "stackTrace": [
+                    { "functionName": "a", "scriptId": 1 },
+                    { "functionName": "l", "scriptId": 1 },
+                    { "functionName": "f", "scriptId": 1 }
+                ]
+            }
         },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 230000,
-        "tts": 1758056
-    },
-    {
-        "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 230125,
-        "tts": 1758056
-    },
-    {
-        "args": {
-            "stack": [
-                { "functionName": "a", "scriptId": 1 },
-                { "functionName": "l", "scriptId": 1 },
-                { "functionName": "f", "scriptId": 1 }
-            ]
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "CallStack",
         "ph": "I",
         "pid": 17851,
         "tid": 23,
@@ -373,9 +283,9 @@ function test()
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel, null);
     var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.inspectedTargetEvents());
-    events.map(function(e) {
-        return e.name + ": " + e.startTime + "(" + (e.duration || 0) + ") " + e.args.data.functionName;
-    }).forEach(InspectorTest.addResult);
+    events.forEach(function(e) {
+        InspectorTest.addResult(e.name + ": " + e.startTime + "(" + (e.duration || 0) + ") " + e.args.data.functionName);
+    });
     InspectorTest.completeTest();
 }
 

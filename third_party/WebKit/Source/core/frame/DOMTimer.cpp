@@ -72,7 +72,6 @@ int DOMTimer::install(ExecutionContext* context, PassOwnPtr<ScheduledAction> act
 {
     int timeoutID = context->installNewTimeout(action, timeout, singleShot);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerInstall", "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
     WTF_LOG(Timers, "DOMTimer::install: timeoutID = %d, timeout = %d, singleShot = %d", timeoutID, timeout, singleShot ? 1 : 0);
@@ -84,7 +83,6 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
     WTF_LOG(Timers, "DOMTimer::removeByID: timeoutID = %d", timeoutID);
     context->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerRemove", "data", InspectorTimerRemoveEvent::data(context, timeoutID));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
 }

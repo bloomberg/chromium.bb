@@ -5,6 +5,7 @@ TimerInstall Properties:
     data : {
         frame : <string>
         singleShot : true
+        stackTrace : <object>
         timeout : 10
         timerId : <number>
     }
@@ -20,6 +21,7 @@ TimerInstall Properties:
     data : {
         frame : <string>
         singleShot : false
+        stackTrace : <object>
         timeout : 20
         timerId : <number>
     }
@@ -73,6 +75,7 @@ TimerRemove Properties:
 {
     data : {
         frame : <string>
+        stackTrace : <object>
         timerId : <number>
     }
     endTime : <number>
@@ -104,9 +107,11 @@ FunctionCall Properties:
         scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
+        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     thread : <string>
     type : "FunctionCall"
@@ -119,9 +124,11 @@ FunctionCall Properties:
         scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
+        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     thread : <string>
     type : "FunctionCall"
@@ -131,10 +138,12 @@ EvaluateScript Properties:
     data : {
         frame : <string>
         lineNumber : <number>
+        stackTrace : <object>
         url : 
     }
     endTime : <number>
     frameId : <string>
+    stackTrace : <object>
     startTime : <number>
     thread : <string>
     type : "EvaluateScript"
