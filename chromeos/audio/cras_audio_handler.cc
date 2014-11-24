@@ -831,15 +831,28 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   if (input_devices_changed &&
       !NonActiveDeviceUnplugged(old_audio_devices_size,
                                 audio_devices_.size(),
-                                active_input_node_id_) &&
-      !input_devices_pq_.empty())
-    SwitchToDevice(input_devices_pq_.top(), true);
+                                active_input_node_id_)) {
+    // Some devices like chromeboxes don't have the internal audio input. In
+    // that case the active input node id should be reset.
+    if (input_devices_pq_.empty()) {
+      active_input_node_id_ = 0;
+      NotifyActiveNodeChanged(true);
+    } else {
+      SwitchToDevice(input_devices_pq_.top(), true);
+    }
+  }
   if (output_devices_changed &&
       !NonActiveDeviceUnplugged(old_audio_devices_size,
                                 audio_devices_.size(),
-                                active_output_node_id_) &&
-      !output_devices_pq_.empty()) {
-    SwitchToDevice(output_devices_pq_.top(), true);
+                                active_output_node_id_)) {
+    // This is really unlikely to happen because all ChromeOS devices have the
+    // internal audio output.
+    if (output_devices_pq_.empty()) {
+      active_output_node_id_ = 0;
+      NotifyActiveNodeChanged(false);
+    } else {
+      SwitchToDevice(output_devices_pq_.top(), true);
+    }
   }
 }
 

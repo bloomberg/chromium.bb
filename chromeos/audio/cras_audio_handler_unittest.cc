@@ -218,7 +218,7 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   }
 
   void reset_active_input_node_changed_count() {
-    active_output_node_changed_count_ = 0;
+    active_input_node_changed_count_ = 0;
   }
 
   int audio_nodes_changed_count() const {
@@ -2282,6 +2282,30 @@ TEST_F(CrasAudioHandlerTest,
   EXPECT_EQ(kHDMIOutput.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_EQ(kUSBJabraSpeakerInput1.id,
             cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
+TEST_F(CrasAudioHandlerTest, NoMoreAudioInputDevices) {
+  // Some device like chromebox does not have the internal input device. The
+  // active devices should be reset when the user plugs a device and then
+  // unplugs it to such device.
+
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  EXPECT_EQ(0ULL, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  audio_nodes.push_back(kMicJack);
+  ChangeAudioNodes(audio_nodes);
+
+  EXPECT_EQ(kMicJack.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_EQ(1, test_observer_->active_input_node_changed_count());
+  test_observer_->reset_active_input_node_changed_count();
+
+  audio_nodes.pop_back();
+  ChangeAudioNodes(audio_nodes);
+  EXPECT_EQ(0ULL, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_EQ(1, test_observer_->active_input_node_changed_count());
 }
 
 }  // namespace chromeos
