@@ -67,7 +67,7 @@ class WebCryptoImpl : public blink::WebCrypto {
                                unsigned int signature_size,
                                const unsigned char* data,
                                unsigned int data_size,
-                              blink::WebCryptoResult result);
+                               blink::WebCryptoResult result);
   virtual void wrapKey(blink::WebCryptoKeyFormat format,
                        const blink::WebCryptoKey& key,
                        const blink::WebCryptoKey& wrapping_key,

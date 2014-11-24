@@ -46,12 +46,9 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
   scoped_ptr<SymKeyNss> handle(new SymKeyNss(
       pk11_key.Pass(), CryptoData(key_data->data, key_data->len)));
 
-  result->AssignSecretKey(
-      blink::WebCryptoKey::create(handle.release(),
-                                  blink::WebCryptoKeyTypeSecret,
-                                  extractable,
-                                  algorithm,
-                                  usages));
+  result->AssignSecretKey(blink::WebCryptoKey::create(
+      handle.release(), blink::WebCryptoKeyTypeSecret, extractable, algorithm,
+      usages));
 
   return Status::Success();
 }
@@ -67,25 +64,17 @@ Status ImportKeyRawNss(const CryptoData& key_data,
   SECItem key_item = MakeSECItemForBuffer(key_data);
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
-  crypto::ScopedPK11SymKey pk11_sym_key(
-      PK11_ImportSymKeyWithFlags(slot.get(),
-                                 mechanism,
-                                 PK11_OriginUnwrap,
-                                 CKA_FLAGS_ONLY,
-                                 &key_item,
-                                 flags,
-                                 false,
-                                 NULL));
+  crypto::ScopedPK11SymKey pk11_sym_key(PK11_ImportSymKeyWithFlags(
+      slot.get(), mechanism, PK11_OriginUnwrap, CKA_FLAGS_ONLY, &key_item,
+      flags, false, NULL));
   if (!pk11_sym_key.get())
     return Status::OperationError();
 
   scoped_ptr<SymKeyNss> handle(new SymKeyNss(pk11_sym_key.Pass(), key_data));
 
   *key = blink::WebCryptoKey::create(handle.release(),
-                                     blink::WebCryptoKeyTypeSecret,
-                                     extractable,
-                                     algorithm,
-                                     usages);
+                                     blink::WebCryptoKeyTypeSecret, extractable,
+                                     algorithm, usages);
   return Status::Success();
 }
 

@@ -30,7 +30,8 @@ SECItem MakeSECItemForBuffer(const CryptoData& buffer) {
   SECItem item = {
       siBuffer,
       // NSS requires non-const data even though it is just for input.
-      const_cast<unsigned char*>(buffer.bytes()), buffer.byte_length()};
+      const_cast<unsigned char*>(buffer.bytes()),
+      buffer.byte_length()};
   return item;
 }
 

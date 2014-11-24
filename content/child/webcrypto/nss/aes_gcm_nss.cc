@@ -120,14 +120,9 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                         : NssRuntimeSupport::Get()->pk11_decrypt_func();
 
   unsigned int output_len = 0;
-  SECStatus result = encrypt_or_decrypt_func(sym_key,
-                                             CKM_AES_GCM,
-                                             &param,
-                                             buffer_data,
-                                             &output_len,
-                                             buffer->size(),
-                                             data.bytes(),
-                                             data.byte_length());
+  SECStatus result = encrypt_or_decrypt_func(
+      sym_key, CKM_AES_GCM, &param, buffer_data, &output_len, buffer->size(),
+      data.bytes(), data.byte_length());
 
   if (result != SECSuccess)
     return Status::OperationError();

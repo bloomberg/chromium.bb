@@ -76,19 +76,15 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   unsigned char* buffer_data = vector_as_array(buffer);
 
   int output_len;
-  if (SECSuccess != PK11_CipherOp(context.get(),
-                                  buffer_data,
-                                  &output_len,
-                                  buffer->size(),
-                                  data.bytes(),
+  if (SECSuccess != PK11_CipherOp(context.get(), buffer_data, &output_len,
+                                  buffer->size(), data.bytes(),
                                   data.byte_length())) {
     return Status::OperationError();
   }
 
   unsigned int final_output_chunk_len;
   if (SECSuccess !=
-      PK11_DigestFinal(context.get(),
-                       buffer_data + output_len,
+      PK11_DigestFinal(context.get(), buffer_data + output_len,
                        &final_output_chunk_len,
                        (output_max_len - output_len).ValueOrDie())) {
     return Status::OperationError();

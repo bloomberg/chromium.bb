@@ -135,8 +135,8 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
     case blink::WebCryptoKeyFormatSpki:
       return impl->ImportKeySpki(key_data, algorithm, extractable, usages, key);
     case blink::WebCryptoKeyFormatPkcs8:
-      return impl->ImportKeyPkcs8(
-          key_data, algorithm, extractable, usages, key);
+      return impl->ImportKeyPkcs8(key_data, algorithm, extractable, usages,
+                                  key);
     case blink::WebCryptoKeyFormatJwk:
       return impl->ImportKeyJwk(key_data, algorithm, extractable, usages, key);
     default:
@@ -199,8 +199,8 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
   Status status = ExportKey(format, key_to_wrap, &exported_data);
   if (status.IsError())
     return status;
-  return EncryptDontCheckUsage(
-      wrapping_algorithm, wrapping_key, CryptoData(exported_data), buffer);
+  return EncryptDontCheckUsage(wrapping_algorithm, wrapping_key,
+                               CryptoData(exported_data), buffer);
 }
 
 Status UnwrapKey(blink::WebCryptoKeyFormat format,
@@ -227,8 +227,8 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
     return status;
 
   std::vector<uint8_t> buffer;
-  status = DecryptDontCheckKeyUsage(
-      wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
+  status = DecryptDontCheckKeyUsage(wrapping_algorithm, wrapping_key,
+                                    wrapped_key_data, &buffer);
   if (status.IsError())
     return status;
 
@@ -237,8 +237,8 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   // key_ops). As long as the ImportKey error messages don't describe actual
   // key bytes however this should be OK. For more discussion see
   // http://crubg.com/372040
-  return ImportKey(
-      format, CryptoData(buffer), algorithm, extractable, usages, key);
+  return ImportKey(format, CryptoData(buffer), algorithm, extractable, usages,
+                   key);
 }
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(

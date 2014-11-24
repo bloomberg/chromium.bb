@@ -51,9 +51,7 @@ Status AesKwEncryptDecrypt(EncryptOrDecrypt mode,
   const std::vector<uint8_t>& raw_key =
       SymKeyOpenSsl::Cast(key)->raw_key_data();
 
-  return AeadEncryptDecrypt(mode,
-                            raw_key,
-                            data,
+  return AeadEncryptDecrypt(mode, raw_key, data,
                             8,             // tag_length_bytes
                             CryptoData(),  // iv
                             CryptoData(),  // additional_data

@@ -105,12 +105,9 @@ bool SupportsAesGcm() {
   std::vector<uint8_t> key_raw(16, 0);
 
   blink::WebCryptoKey key;
-  Status status = ImportKey(blink::WebCryptoKeyFormatRaw,
-                            CryptoData(key_raw),
+  Status status = ImportKey(blink::WebCryptoKeyFormatRaw, CryptoData(key_raw),
                             CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm),
-                            true,
-                            blink::WebCryptoKeyUsageEncrypt,
-                            &key);
+                            true, blink::WebCryptoKeyUsageEncrypt, &key);
 
   if (status.IsError())
     EXPECT_EQ(blink::WebCryptoErrorTypeNotSupported, status.error_type());
@@ -122,7 +119,7 @@ bool SupportsRsaOaep() {
   return true;
 #else
   crypto::EnsureNSSInit();
-  // TODO(eroman): Exclude version test for OS_CHROMEOS
+// TODO(eroman): Exclude version test for OS_CHROMEOS
 #if defined(USE_NSS)
   if (!NSS_VersionCheck("3.16.2"))
     return false;
@@ -154,10 +151,8 @@ blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       algorithm_id,
       new blink::WebCryptoRsaHashedKeyGenParams(
-          CreateAlgorithm(hash_id),
-          modulus_length,
-          vector_as_array(&public_exponent),
-          public_exponent.size()));
+          CreateAlgorithm(hash_id), modulus_length,
+          vector_as_array(&public_exponent), public_exponent.size()));
 }
 
 std::vector<uint8_t> Corrupted(const std::vector<uint8_t>& input) {
@@ -276,11 +271,11 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(const base::DictionaryValue* dict,
     const char* name;
     blink::WebCryptoAlgorithmId id;
   } kDigestNameToId[] = {
-        {"sha-1", blink::WebCryptoAlgorithmIdSha1},
-        {"sha-256", blink::WebCryptoAlgorithmIdSha256},
-        {"sha-384", blink::WebCryptoAlgorithmIdSha384},
-        {"sha-512", blink::WebCryptoAlgorithmIdSha512},
-    };
+      {"sha-1", blink::WebCryptoAlgorithmIdSha1},
+      {"sha-256", blink::WebCryptoAlgorithmIdSha256},
+      {"sha-384", blink::WebCryptoAlgorithmIdSha384},
+      {"sha-512", blink::WebCryptoAlgorithmIdSha512},
+  };
 
   for (size_t i = 0; i < arraysize(kDigestNameToId); ++i) {
     if (kDigestNameToId[i].name == algorithm_name)
@@ -293,23 +288,23 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(const base::DictionaryValue* dict,
 // Creates a comparator for |bufs| which operates on indices rather than values.
 class CompareUsingIndex {
  public:
-  explicit CompareUsingIndex(const std::vector<std::vector<uint8_t> >* bufs)
+  explicit CompareUsingIndex(const std::vector<std::vector<uint8_t>>* bufs)
       : bufs_(bufs) {}
 
   bool operator()(size_t i1, size_t i2) { return (*bufs_)[i1] < (*bufs_)[i2]; }
 
  private:
-  const std::vector<std::vector<uint8_t> >* bufs_;
+  const std::vector<std::vector<uint8_t>>* bufs_;
 };
 
-bool CopiesExist(const std::vector<std::vector<uint8_t> >& bufs) {
+bool CopiesExist(const std::vector<std::vector<uint8_t>>& bufs) {
   // Sort the indices of |bufs| into a separate vector. This reduces the amount
   // of data copied versus sorting |bufs| directly.
   std::vector<size_t> sorted_indices(bufs.size());
   for (size_t i = 0; i < sorted_indices.size(); ++i)
     sorted_indices[i] = i;
-  std::sort(
-      sorted_indices.begin(), sorted_indices.end(), CompareUsingIndex(&bufs));
+  std::sort(sorted_indices.begin(), sorted_indices.end(),
+            CompareUsingIndex(&bufs));
 
   // Scan for adjacent duplicates.
   for (size_t i = 1; i < sorted_indices.size(); ++i) {
@@ -376,12 +371,8 @@ blink::WebCryptoKey ImportSecretKeyFromRaw(
   blink::WebCryptoKey key;
   bool extractable = true;
   EXPECT_EQ(Status::Success(),
-            ImportKey(blink::WebCryptoKeyFormatRaw,
-                      CryptoData(key_raw),
-                      algorithm,
-                      extractable,
-                      usage,
-                      &key));
+            ImportKey(blink::WebCryptoKeyFormatRaw, CryptoData(key_raw),
+                      algorithm, extractable, usage, &key));
 
   EXPECT_FALSE(key.isNull());
   EXPECT_TRUE(key.handle());
@@ -401,12 +392,8 @@ void ImportRsaKeyPair(const std::vector<uint8_t>& spki_der,
                       blink::WebCryptoKey* public_key,
                       blink::WebCryptoKey* private_key) {
   ASSERT_EQ(Status::Success(),
-            ImportKey(blink::WebCryptoKeyFormatSpki,
-                      CryptoData(spki_der),
-                      algorithm,
-                      true,
-                      public_key_usages,
-                      public_key));
+            ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(spki_der),
+                      algorithm, true, public_key_usages, public_key));
   EXPECT_FALSE(public_key->isNull());
   EXPECT_TRUE(public_key->handle());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key->type());
@@ -415,12 +402,8 @@ void ImportRsaKeyPair(const std::vector<uint8_t>& spki_der,
   EXPECT_EQ(public_key_usages, public_key->usages());
 
   ASSERT_EQ(Status::Success(),
-            ImportKey(blink::WebCryptoKeyFormatPkcs8,
-                      CryptoData(pkcs8_der),
-                      algorithm,
-                      extractable,
-                      private_key_usages,
-                      private_key));
+            ImportKey(blink::WebCryptoKeyFormatPkcs8, CryptoData(pkcs8_der),
+                      algorithm, extractable, private_key_usages, private_key));
   EXPECT_FALSE(private_key->isNull());
   EXPECT_TRUE(private_key->handle());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key->type());
@@ -435,11 +418,8 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                             blink::WebCryptoKeyUsageMask usages,
                             blink::WebCryptoKey* key) {
   return ImportKey(blink::WebCryptoKeyFormatJwk,
-                   CryptoData(MakeJsonVector(dict)),
-                   algorithm,
-                   extractable,
-                   usages,
-                   key);
+                   CryptoData(MakeJsonVector(dict)), algorithm, extractable,
+                   usages, key);
 }
 
 scoped_ptr<base::DictionaryValue> GetJwkDictionary(
@@ -599,8 +579,8 @@ void ImportExportJwkSymmetricKey(
   }
 
   // Import a raw key.
-  blink::WebCryptoKey key = ImportSecretKeyFromRaw(
-      HexStringToBytes(key_hex), import_algorithm, usages);
+  blink::WebCryptoKey key = ImportSecretKeyFromRaw(HexStringToBytes(key_hex),
+                                                   import_algorithm, usages);
 
   // Export the key in JWK format and validate.
   ASSERT_EQ(Status::Success(),
@@ -609,12 +589,8 @@ void ImportExportJwkSymmetricKey(
 
   // Import the JWK-formatted key.
   ASSERT_EQ(Status::Success(),
-            ImportKey(blink::WebCryptoKeyFormatJwk,
-                      CryptoData(json),
-                      import_algorithm,
-                      true,
-                      usages,
-                      &key));
+            ImportKey(blink::WebCryptoKeyFormatJwk, CryptoData(json),
+                      import_algorithm, true, usages, &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   EXPECT_EQ(import_algorithm.id(), key.algorithm().id());

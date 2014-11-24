@@ -45,10 +45,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   return GenerateSecretKeyOpenSsl(
       blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable,
-      usages,
-      keylen_bits / 8,
-      result);
+      extractable, usages, keylen_bits / 8, result);
 }
 
 Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
@@ -76,12 +73,9 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
   // No possibility of overflow.
   unsigned int keylen_bits = keylen_bytes * 8;
 
-  return ImportKeyRawOpenSsl(
-      key_data,
-      blink::WebCryptoKeyAlgorithm::createAes(algorithm.id(), keylen_bits),
-      extractable,
-      usages,
-      key);
+  return ImportKeyRawOpenSsl(key_data, blink::WebCryptoKeyAlgorithm::createAes(
+                                           algorithm.id(), keylen_bits),
+                             extractable, usages, key);
 }
 
 Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
@@ -90,13 +84,13 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
                                   blink::WebCryptoKeyUsageMask usages,
                                   blink::WebCryptoKey* key) const {
   std::vector<uint8_t> raw_data;
-  Status status = ReadAesSecretKeyJwk(
-      key_data, jwk_suffix_, extractable, usages, &raw_data);
+  Status status = ReadAesSecretKeyJwk(key_data, jwk_suffix_, extractable,
+                                      usages, &raw_data);
   if (status.IsError())
     return status;
 
-  return ImportKeyRaw(
-      CryptoData(raw_data), algorithm, extractable, usages, key);
+  return ImportKeyRaw(CryptoData(raw_data), algorithm, extractable, usages,
+                      key);
 }
 
 Status AesAlgorithm::ExportKeyRaw(const blink::WebCryptoKey& key,
@@ -112,9 +106,7 @@ Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
 
   WriteSecretKeyJwk(CryptoData(raw_data),
                     MakeJwkAesAlgorithmName(jwk_suffix_, raw_data.size()),
-                    key.extractable(),
-                    key.usages(),
-                    buffer);
+                    key.extractable(), key.usages(), buffer);
 
   return Status::Success();
 }

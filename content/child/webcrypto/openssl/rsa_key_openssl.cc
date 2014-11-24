@@ -81,8 +81,8 @@ Status CreateWebCryptoRsaPublicKey(
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) {
   blink::WebCryptoKeyAlgorithm key_algorithm;
-  Status status = CreateRsaHashedKeyAlgorithm(
-      rsa_algorithm_id, hash.id(), public_key.get(), &key_algorithm);
+  Status status = CreateRsaHashedKeyAlgorithm(rsa_algorithm_id, hash.id(),
+                                              public_key.get(), &key_algorithm);
   if (status.IsError())
     return status;
 
@@ -187,8 +187,8 @@ Status RsaHashedAlgorithm::GenerateKey(
     return Status::OperationError();
   }
 
-  if (!RSA_generate_key_ex(
-          rsa_private_key.get(), modulus_length_bits, bn.get(), NULL)) {
+  if (!RSA_generate_key_ex(rsa_private_key.get(), modulus_length_bits, bn.get(),
+                           NULL)) {
     return Status::OperationError();
   }
 

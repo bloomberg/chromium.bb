@@ -56,26 +56,19 @@ Status AesCtrEncrypt128BitCounter(const EVP_CIPHER* cipher,
   if (!context.get())
     return Status::OperationError();
 
-  if (!EVP_CipherInit_ex(context.get(),
-                         cipher,
-                         NULL,
-                         raw_key.bytes(),
-                         counter.bytes(),
-                         ENCRYPT)) {
+  if (!EVP_CipherInit_ex(context.get(), cipher, NULL, raw_key.bytes(),
+                         counter.bytes(), ENCRYPT)) {
     return Status::OperationError();
   }
 
   int output_len = 0;
-  if (!EVP_CipherUpdate(context.get(),
-                        output,
-                        &output_len,
-                        input.bytes(),
+  if (!EVP_CipherUpdate(context.get(), output, &output_len, input.bytes(),
                         input.byte_length())) {
     return Status::OperationError();
   }
   int final_output_chunk_len = 0;
-  if (!EVP_CipherFinal_ex(
-          context.get(), output + output_len, &final_output_chunk_len)) {
+  if (!EVP_CipherFinal_ex(context.get(), output + output_len,
+                          &final_output_chunk_len)) {
     return Status::OperationError();
   }
 
@@ -103,8 +96,7 @@ crypto::ScopedBIGNUM GetCounter(const CryptoData& counter_block,
     unsigned int byte_length = counter_length_bits / 8;
     return crypto::ScopedBIGNUM(BN_bin2bn(
         counter_block.bytes() + counter_block.byte_length() - byte_length,
-        byte_length,
-        NULL));
+        byte_length, NULL));
   }
 
   // Otherwise make a copy of the counter and zero out the topmost bits so
@@ -209,8 +201,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   // reset the counter to zero.
   crypto::ScopedBIGNUM num_blocks_until_reset(BN_new());
 
-  if (!BN_sub(num_blocks_until_reset.get(),
-              num_counter_values.get(),
+  if (!BN_sub(num_blocks_until_reset.get(), num_counter_values.get(),
               current_counter.get())) {
     return Status::ErrorUnexpected();
   }
@@ -218,11 +209,8 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   // If the counter can be incremented for the entire input without
   // wrapping-around, do it as a single call into BoringSSL.
   if (BN_cmp(num_blocks_until_reset.get(), num_output_blocks.get()) >= 0) {
-    return AesCtrEncrypt128BitCounter(cipher,
-                                      CryptoData(raw_key),
-                                      data,
-                                      counter_block,
-                                      vector_as_array(buffer));
+    return AesCtrEncrypt128BitCounter(cipher, CryptoData(raw_key), data,
+                                      counter_block, vector_as_array(buffer));
   }
 
   // Otherwise the encryption needs to be done in 2 parts. The first part using
@@ -236,12 +224,9 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   DCHECK_LT(input_size_part1, data.byte_length());
 
   // Encrypt the first part (before wrap-around).
-  Status status =
-      AesCtrEncrypt128BitCounter(cipher,
-                                 CryptoData(raw_key),
-                                 CryptoData(data.bytes(), input_size_part1),
-                                 counter_block,
-                                 vector_as_array(buffer));
+  Status status = AesCtrEncrypt128BitCounter(
+      cipher, CryptoData(raw_key), CryptoData(data.bytes(), input_size_part1),
+      counter_block, vector_as_array(buffer));
   if (status.IsError())
     return status;
 
@@ -250,8 +235,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
       BlockWithZeroedCounter(counter_block, counter_length_bits);
 
   return AesCtrEncrypt128BitCounter(
-      cipher,
-      CryptoData(raw_key),
+      cipher, CryptoData(raw_key),
       CryptoData(data.bytes() + input_size_part1,
                  data.byte_length() - input_size_part1),
       CryptoData(counter_block_part2),

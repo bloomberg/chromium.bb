@@ -53,11 +53,8 @@ TEST(WebCryptoRsaPssTest, SignIsRandom) {
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
                                      blink::WebCryptoAlgorithmIdSha1),
-      true,
-      blink::WebCryptoKeyUsageVerify,
-      blink::WebCryptoKeyUsageSign,
-      &public_key,
-      &private_key);
+      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      &public_key, &private_key);
 
   // Use a 20-byte length salt.
   blink::WebCryptoAlgorithm params = CreateRsaPssAlgorithm(20);
@@ -81,28 +78,19 @@ TEST(WebCryptoRsaPssTest, SignIsRandom) {
   bool is_match = false;
 
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(signature1),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(signature1),
+                   CryptoData(message), &is_match));
   EXPECT_TRUE(is_match);
 
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(signature2),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(signature2),
+                   CryptoData(message), &is_match));
   EXPECT_TRUE(is_match);
 
   // Corrupt the signature and verification must fail.
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(Corrupted(signature2)),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(Corrupted(signature2)),
+                   CryptoData(message), &is_match));
   EXPECT_FALSE(is_match);
 }
 
@@ -123,11 +111,8 @@ TEST(WebCryptoRsaPssTest, SignVerifyNoSalt) {
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
                                      blink::WebCryptoAlgorithmIdSha1),
-      true,
-      blink::WebCryptoKeyUsageVerify,
-      blink::WebCryptoKeyUsageSign,
-      &public_key,
-      &private_key);
+      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      &public_key, &private_key);
 
   // Zero-length salt.
   blink::WebCryptoAlgorithm params = CreateRsaPssAlgorithm(0);
@@ -150,20 +135,14 @@ TEST(WebCryptoRsaPssTest, SignVerifyNoSalt) {
   // Make sure that verification works.
   bool is_match = false;
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(signature1),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(signature1),
+                   CryptoData(message), &is_match));
   EXPECT_TRUE(is_match);
 
   // Corrupt the signature and verification must fail.
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(Corrupted(signature2)),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(Corrupted(signature2)),
+                   CryptoData(message), &is_match));
   EXPECT_FALSE(is_match);
 }
 
@@ -182,11 +161,8 @@ TEST(WebCryptoRsaPssTest, SignEmptyMessage) {
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
                                      blink::WebCryptoAlgorithmIdSha1),
-      true,
-      blink::WebCryptoKeyUsageVerify,
-      blink::WebCryptoKeyUsageSign,
-      &public_key,
-      &private_key);
+      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      &public_key, &private_key);
 
   blink::WebCryptoAlgorithm params = CreateRsaPssAlgorithm(20);
   std::vector<uint8_t> message;  // Empty message.
@@ -197,21 +173,14 @@ TEST(WebCryptoRsaPssTest, SignEmptyMessage) {
 
   // Make sure that verification works.
   bool is_match = false;
-  ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(signature),
-                   CryptoData(message),
-                   &is_match));
+  ASSERT_EQ(Status::Success(), Verify(params, public_key, CryptoData(signature),
+                                      CryptoData(message), &is_match));
   EXPECT_TRUE(is_match);
 
   // Corrupt the signature and verification must fail.
   ASSERT_EQ(Status::Success(),
-            Verify(params,
-                   public_key,
-                   CryptoData(Corrupted(signature)),
-                   CryptoData(message),
-                   &is_match));
+            Verify(params, public_key, CryptoData(Corrupted(signature)),
+                   CryptoData(message), &is_match));
   EXPECT_FALSE(is_match);
 }
 
@@ -251,13 +220,10 @@ TEST(WebCryptoRsaPssTest, VerifyKnownAnswer) {
         GetBytesFromHexString(keys_dict, key_name);
 
     ASSERT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatSpki,
-                        CryptoData(spki_bytes),
+              ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(spki_bytes),
                         CreateRsaHashedImportAlgorithm(
                             blink::WebCryptoAlgorithmIdRsaPss, hash.id()),
-                        true,
-                        blink::WebCryptoKeyUsageVerify,
-                        &public_key));
+                        true, blink::WebCryptoKeyUsageVerify, &public_key));
 
     int saltLength;
     ASSERT_TRUE(test->GetInteger("saltLength", &saltLength));
@@ -268,28 +234,21 @@ TEST(WebCryptoRsaPssTest, VerifyKnownAnswer) {
     // Test that verification returns true when it should.
     bool is_match = false;
     ASSERT_EQ(Status::Success(),
-              Verify(CreateRsaPssAlgorithm(saltLength),
-                     public_key,
-                     CryptoData(signature),
-                     CryptoData(message),
-                     &is_match));
+              Verify(CreateRsaPssAlgorithm(saltLength), public_key,
+                     CryptoData(signature), CryptoData(message), &is_match));
     EXPECT_TRUE(is_match);
 
     // Corrupt the message and make sure that verification fails.
     ASSERT_EQ(Status::Success(),
-              Verify(CreateRsaPssAlgorithm(saltLength),
-                     public_key,
-                     CryptoData(signature),
-                     CryptoData(Corrupted(message)),
+              Verify(CreateRsaPssAlgorithm(saltLength), public_key,
+                     CryptoData(signature), CryptoData(Corrupted(message)),
                      &is_match));
     EXPECT_FALSE(is_match);
 
     // Corrupt the signature and make sure that verification fails.
     ASSERT_EQ(Status::Success(),
-              Verify(CreateRsaPssAlgorithm(saltLength),
-                     public_key,
-                     CryptoData(Corrupted(signature)),
-                     CryptoData(message),
+              Verify(CreateRsaPssAlgorithm(saltLength), public_key,
+                     CryptoData(Corrupted(signature)), CryptoData(message),
                      &is_match));
     EXPECT_FALSE(is_match);
   }

@@ -21,8 +21,8 @@ class Status;
 
 // Converts a JWK "key_ops" array to the corresponding WebCrypto usages.
 CONTENT_EXPORT Status
-    GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
-                                    blink::WebCryptoKeyUsageMask* usages);
+GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
+                                blink::WebCryptoKeyUsageMask* usages);
 
 // Composes a JWK key_ops array from a Web Crypto usage mask.
 base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(

@@ -32,12 +32,9 @@ Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
       return Status::OperationError();
   }
 
-  result->AssignSecretKey(
-      blink::WebCryptoKey::create(new SymKeyOpenSsl(CryptoData(random_bytes)),
-                                  blink::WebCryptoKeyTypeSecret,
-                                  extractable,
-                                  algorithm,
-                                  usages));
+  result->AssignSecretKey(blink::WebCryptoKey::create(
+      new SymKeyOpenSsl(CryptoData(random_bytes)),
+      blink::WebCryptoKeyTypeSecret, extractable, algorithm, usages));
 
   return Status::Success();
 }
@@ -48,10 +45,8 @@ Status ImportKeyRawOpenSsl(const CryptoData& key_data,
                            blink::WebCryptoKeyUsageMask usages,
                            blink::WebCryptoKey* key) {
   *key = blink::WebCryptoKey::create(new SymKeyOpenSsl(key_data),
-                                     blink::WebCryptoKeyTypeSecret,
-                                     extractable,
-                                     algorithm,
-                                     usages);
+                                     blink::WebCryptoKeyTypeSecret, extractable,
+                                     algorithm, usages);
   return Status::Success();
 }
 

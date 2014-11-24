@@ -25,8 +25,8 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
     const std::vector<uint8_t>& label) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
-      new blink::WebCryptoRsaOaepParams(
-          !label.empty(), vector_as_array(&label), label.size()));
+      new blink::WebCryptoRsaOaepParams(!label.empty(), vector_as_array(&label),
+                                        label.size()));
 }
 
 scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {
@@ -54,9 +54,7 @@ TEST(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
                       CreateRsaHashedImportAlgorithm(
                           blink::WebCryptoAlgorithmIdRsaOaep,
                           blink::WebCryptoAlgorithmIdSha1),
-                      true,
-                      blink::WebCryptoKeyUsageDecrypt,
-                      &private_key));
+                      true, blink::WebCryptoKeyUsageDecrypt, &private_key));
 }
 
 TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
@@ -68,14 +66,12 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
 
   blink::WebCryptoKey public_key;
-  ASSERT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep,
-                                     blink::WebCryptoAlgorithmIdSha1),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+  ASSERT_EQ(
+      Status::Success(),
+      ImportKeyJwkFromDict(*jwk.get(), CreateRsaHashedImportAlgorithm(
+                                           blink::WebCryptoAlgorithmIdRsaOaep,
+                                           blink::WebCryptoAlgorithmIdSha1),
+                           true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
 TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
@@ -88,14 +84,12 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
   jwk->SetString("alg", "RSA-OAEP");
 
   blink::WebCryptoKey public_key;
-  ASSERT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep,
-                                     blink::WebCryptoAlgorithmIdSha1),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+  ASSERT_EQ(
+      Status::Success(),
+      ImportKeyJwkFromDict(*jwk.get(), CreateRsaHashedImportAlgorithm(
+                                           blink::WebCryptoAlgorithmIdRsaOaep,
+                                           blink::WebCryptoAlgorithmIdSha1),
+                           true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
 TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
@@ -108,14 +102,12 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
   jwk->SetString("alg", "RSA-OAEP-512");
 
   blink::WebCryptoKey public_key;
-  ASSERT_EQ(Status::ErrorJwkAlgorithmInconsistent(),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep,
-                                     blink::WebCryptoAlgorithmIdSha1),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+  ASSERT_EQ(
+      Status::ErrorJwkAlgorithmInconsistent(),
+      ImportKeyJwkFromDict(*jwk.get(), CreateRsaHashedImportAlgorithm(
+                                           blink::WebCryptoAlgorithmIdRsaOaep,
+                                           blink::WebCryptoAlgorithmIdSha1),
+                           true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
 TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
@@ -129,14 +121,12 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   jwk->SetString("alg", "RSA-OAEP");
 
   blink::WebCryptoKey public_key;
-  ASSERT_EQ(Status::ErrorJwkUnexpectedKty("RSA"),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep,
-                                     blink::WebCryptoAlgorithmIdSha1),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+  ASSERT_EQ(
+      Status::ErrorJwkUnexpectedKty("RSA"),
+      ImportKeyJwkFromDict(*jwk.get(), CreateRsaHashedImportAlgorithm(
+                                           blink::WebCryptoAlgorithmIdRsaOaep,
+                                           blink::WebCryptoAlgorithmIdSha1),
+                           true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 }
 
 TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
@@ -166,18 +156,14 @@ TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
                   *jwk.get(),
                   CreateRsaHashedImportAlgorithm(
                       blink::WebCryptoAlgorithmIdRsaOaep, test_data.hash_alg),
-                  true,
-                  blink::WebCryptoKeyUsageEncrypt,
-                  &public_key));
+                  true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 
     // Now export the key as JWK and verify its contents
     std::vector<uint8_t> jwk_data;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatJwk, public_key, &jwk_data));
-    EXPECT_TRUE(VerifyPublicJwk(jwk_data,
-                                test_data.expected_jwk_alg,
-                                kPublicKeyModulusHex,
-                                kPublicKeyExponentHex,
+    EXPECT_TRUE(VerifyPublicJwk(jwk_data, test_data.expected_jwk_alg,
+                                kPublicKeyModulusHex, kPublicKeyExponentHex,
                                 blink::WebCryptoKeyUsageEncrypt));
   }
 }
@@ -213,33 +199,24 @@ TEST(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
     blink::WebCryptoKey public_key;
     blink::WebCryptoKey private_key;
 
-    ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(public_key_der,
-                                             private_key_der,
-                                             import_algorithm,
-                                             false,
-                                             blink::WebCryptoKeyUsageEncrypt,
-                                             blink::WebCryptoKeyUsageDecrypt,
-                                             &public_key,
-                                             &private_key));
+    ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
+        public_key_der, private_key_der, import_algorithm, false,
+        blink::WebCryptoKeyUsageEncrypt, blink::WebCryptoKeyUsageDecrypt,
+        &public_key, &private_key));
 
     blink::WebCryptoAlgorithm op_algorithm = CreateRsaOaepAlgorithm(label);
     std::vector<uint8_t> decrypted_data;
     ASSERT_EQ(Status::Success(),
-              Decrypt(op_algorithm,
-                      private_key,
-                      CryptoData(ciphertext),
+              Decrypt(op_algorithm, private_key, CryptoData(ciphertext),
                       &decrypted_data));
     EXPECT_BYTES_EQ(plaintext, decrypted_data);
     std::vector<uint8_t> encrypted_data;
-    ASSERT_EQ(
-        Status::Success(),
-        Encrypt(
-            op_algorithm, public_key, CryptoData(plaintext), &encrypted_data));
+    ASSERT_EQ(Status::Success(),
+              Encrypt(op_algorithm, public_key, CryptoData(plaintext),
+                      &encrypted_data));
     std::vector<uint8_t> redecrypted_data;
     ASSERT_EQ(Status::Success(),
-              Decrypt(op_algorithm,
-                      private_key,
-                      CryptoData(encrypted_data),
+              Decrypt(op_algorithm, private_key, CryptoData(encrypted_data),
                       &redecrypted_data));
     EXPECT_BYTES_EQ(plaintext, redecrypted_data);
   }
@@ -258,12 +235,10 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
 
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep, kHash),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+            ImportKeyJwkFromDict(
+                *jwk.get(), CreateRsaHashedImportAlgorithm(
+                                blink::WebCryptoAlgorithmIdRsaOaep, kHash),
+                true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 
   // The maximum size of an encrypted message is:
   //   modulus length
@@ -283,28 +258,23 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
   large_message.resize(kMaxMessageSize - 1, 'A');
 
   std::vector<uint8_t> ciphertext;
-  ASSERT_EQ(
-      Status::Success(),
-      Encrypt(
-          op_algorithm, public_key, CryptoData(large_message), &ciphertext));
+  ASSERT_EQ(Status::Success(), Encrypt(op_algorithm, public_key,
+                                       CryptoData(large_message), &ciphertext));
 
   // Test that a message at the boundary succeeds.
   large_message.resize(kMaxMessageSize, 'A');
   ciphertext.clear();
 
-  ASSERT_EQ(
-      Status::Success(),
-      Encrypt(
-          op_algorithm, public_key, CryptoData(large_message), &ciphertext));
+  ASSERT_EQ(Status::Success(), Encrypt(op_algorithm, public_key,
+                                       CryptoData(large_message), &ciphertext));
 
   // Test that a message greater than the largest size fails.
   large_message.resize(kMaxMessageSize + 1, 'A');
   ciphertext.clear();
 
-  ASSERT_EQ(
-      Status::OperationError(),
-      Encrypt(
-          op_algorithm, public_key, CryptoData(large_message), &ciphertext));
+  ASSERT_EQ(Status::OperationError(),
+            Encrypt(op_algorithm, public_key, CryptoData(large_message),
+                    &ciphertext));
 }
 
 // Ensures that if the selected hash algorithm for the RSA-OAEP message is too
@@ -325,12 +295,10 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
 
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(*jwk.get(),
-                                 CreateRsaHashedImportAlgorithm(
-                                     blink::WebCryptoAlgorithmIdRsaOaep, kHash),
-                                 true,
-                                 blink::WebCryptoKeyUsageEncrypt,
-                                 &public_key));
+            ImportKeyJwkFromDict(
+                *jwk.get(), CreateRsaHashedImportAlgorithm(
+                                blink::WebCryptoAlgorithmIdRsaOaep, kHash),
+                true, blink::WebCryptoKeyUsageEncrypt, &public_key));
 
   // The label has no influence on the maximum message size. For simplicity,
   // use the empty string.
@@ -341,10 +309,9 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
   std::vector<uint8_t> ciphertext;
   // This is an operation error, as the internal consistency checking of the
   // algorithm parameters is up to the implementation.
-  ASSERT_EQ(
-      Status::OperationError(),
-      Encrypt(
-          op_algorithm, public_key, CryptoData(small_message), &ciphertext));
+  ASSERT_EQ(Status::OperationError(),
+            Encrypt(op_algorithm, public_key, CryptoData(small_message),
+                    &ciphertext));
 }
 
 TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
@@ -360,9 +327,7 @@ TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
                       CreateRsaHashedImportAlgorithm(
                           blink::WebCryptoAlgorithmIdRsaOaep,
                           blink::WebCryptoAlgorithmIdSha1),
-                      true,
-                      blink::WebCryptoKeyUsageDecrypt,
-                      &private_key));
+                      true, blink::WebCryptoKeyUsageDecrypt, &private_key));
 
   // The label has no influence on the maximum message size. For simplicity,
   // use the empty string.
@@ -373,9 +338,7 @@ TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
   std::vector<uint8_t> plaintext;
 
   ASSERT_EQ(Status::OperationError(),
-            Decrypt(op_algorithm,
-                    private_key,
-                    CryptoData(large_dummy_message),
+            Decrypt(op_algorithm, private_key, CryptoData(large_dummy_message),
                     &plaintext));
 }
 
@@ -392,13 +355,10 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
 
   ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
       HexStringToBytes(kPublicKeySpkiDerHex),
-      HexStringToBytes(kPrivateKeyPkcs8DerHex),
-      import_algorithm,
-      false,
+      HexStringToBytes(kPrivateKeyPkcs8DerHex), import_algorithm, false,
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageWrapKey,
       blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageUnwrapKey,
-      &public_key,
-      &private_key));
+      &public_key, &private_key));
 
   std::vector<uint8_t> label;
   blink::WebCryptoAlgorithm wrapping_algorithm = CreateRsaOaepAlgorithm(label);
@@ -408,40 +368,29 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
 
   blink::WebCryptoKey key =
-      ImportSecretKeyFromRaw(HexStringToBytes(key_hex),
-                             key_algorithm,
+      ImportSecretKeyFromRaw(HexStringToBytes(key_hex), key_algorithm,
                              blink::WebCryptoKeyUsageEncrypt);
   ASSERT_FALSE(key.isNull());
 
   std::vector<uint8_t> wrapped_key;
   ASSERT_EQ(Status::Success(),
-            WrapKey(blink::WebCryptoKeyFormatRaw,
-                    key,
-                    public_key,
-                    wrapping_algorithm,
-                    &wrapped_key));
+            WrapKey(blink::WebCryptoKeyFormatRaw, key, public_key,
+                    wrapping_algorithm, &wrapped_key));
 
   // Verify that |wrapped_key| can be decrypted and yields the key data.
   // Because |private_key| supports both decrypt and unwrap, this is valid.
   std::vector<uint8_t> decrypted_key;
   ASSERT_EQ(Status::Success(),
-            Decrypt(wrapping_algorithm,
-                    private_key,
-                    CryptoData(wrapped_key),
+            Decrypt(wrapping_algorithm, private_key, CryptoData(wrapped_key),
                     &decrypted_key));
   EXPECT_BYTES_EQ_HEX(key_hex, decrypted_key);
 
   // Now attempt to unwrap the key, which should also decrypt the data.
   blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(Status::Success(),
-            UnwrapKey(blink::WebCryptoKeyFormatRaw,
-                      CryptoData(wrapped_key),
-                      private_key,
-                      wrapping_algorithm,
-                      key_algorithm,
-                      true,
-                      blink::WebCryptoKeyUsageEncrypt,
-                      &unwrapped_key));
+            UnwrapKey(blink::WebCryptoKeyFormatRaw, CryptoData(wrapped_key),
+                      private_key, wrapping_algorithm, key_algorithm, true,
+                      blink::WebCryptoKeyUsageEncrypt, &unwrapped_key));
   ASSERT_FALSE(unwrapped_key.isNull());
 
   std::vector<uint8_t> raw_key;
@@ -510,13 +459,10 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
 
   ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
       HexStringToBytes(kPublicKey2048SpkiDerHex),
-      HexStringToBytes(kPrivateKey2048Pkcs8DerHex),
-      import_algorithm,
-      false,
+      HexStringToBytes(kPrivateKey2048Pkcs8DerHex), import_algorithm, false,
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageWrapKey,
       blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageUnwrapKey,
-      &public_key,
-      &private_key));
+      &public_key, &private_key));
 
   std::vector<uint8_t> label;
   blink::WebCryptoAlgorithm wrapping_algorithm = CreateRsaOaepAlgorithm(label);
@@ -526,41 +472,30 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
 
   blink::WebCryptoKey key =
-      ImportSecretKeyFromRaw(HexStringToBytes(key_hex),
-                             key_algorithm,
+      ImportSecretKeyFromRaw(HexStringToBytes(key_hex), key_algorithm,
                              blink::WebCryptoKeyUsageEncrypt);
   ASSERT_FALSE(key.isNull());
 
   std::vector<uint8_t> wrapped_key;
   ASSERT_EQ(Status::Success(),
-            WrapKey(blink::WebCryptoKeyFormatJwk,
-                    key,
-                    public_key,
-                    wrapping_algorithm,
-                    &wrapped_key));
+            WrapKey(blink::WebCryptoKeyFormatJwk, key, public_key,
+                    wrapping_algorithm, &wrapped_key));
 
   // Verify that |wrapped_key| can be decrypted and yields a valid JWK object.
   // Because |private_key| supports both decrypt and unwrap, this is valid.
   std::vector<uint8_t> decrypted_jwk;
   ASSERT_EQ(Status::Success(),
-            Decrypt(wrapping_algorithm,
-                    private_key,
-                    CryptoData(wrapped_key),
+            Decrypt(wrapping_algorithm, private_key, CryptoData(wrapped_key),
                     &decrypted_jwk));
-  EXPECT_TRUE(VerifySecretJwk(
-      decrypted_jwk, "A128CBC", key_hex, blink::WebCryptoKeyUsageEncrypt));
+  EXPECT_TRUE(VerifySecretJwk(decrypted_jwk, "A128CBC", key_hex,
+                              blink::WebCryptoKeyUsageEncrypt));
 
   // Now attempt to unwrap the key, which should also decrypt the data.
   blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(Status::Success(),
-            UnwrapKey(blink::WebCryptoKeyFormatJwk,
-                      CryptoData(wrapped_key),
-                      private_key,
-                      wrapping_algorithm,
-                      key_algorithm,
-                      true,
-                      blink::WebCryptoKeyUsageEncrypt,
-                      &unwrapped_key));
+            UnwrapKey(blink::WebCryptoKeyFormatJwk, CryptoData(wrapped_key),
+                      private_key, wrapping_algorithm, key_algorithm, true,
+                      blink::WebCryptoKeyUsageEncrypt, &unwrapped_key));
   ASSERT_FALSE(unwrapped_key.isNull());
 
   std::vector<uint8_t> raw_key;
@@ -581,13 +516,17 @@ TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
     const char* const jwk_alg;
   };
   const TestCase kTests[] = {{blink::WebCryptoAlgorithmIdSha1,
-                              blink::WebCryptoKeyUsageEncrypt, "RSA-OAEP"},
+                              blink::WebCryptoKeyUsageEncrypt,
+                              "RSA-OAEP"},
                              {blink::WebCryptoAlgorithmIdSha256,
-                              blink::WebCryptoKeyUsageEncrypt, "RSA-OAEP-256"},
+                              blink::WebCryptoKeyUsageEncrypt,
+                              "RSA-OAEP-256"},
                              {blink::WebCryptoAlgorithmIdSha384,
-                              blink::WebCryptoKeyUsageEncrypt, "RSA-OAEP-384"},
+                              blink::WebCryptoKeyUsageEncrypt,
+                              "RSA-OAEP-384"},
                              {blink::WebCryptoAlgorithmIdSha512,
-                              blink::WebCryptoKeyUsageEncrypt, "RSA-OAEP-512"}};
+                              blink::WebCryptoKeyUsageEncrypt,
+                              "RSA-OAEP-512"}};
 
   for (size_t test_index = 0; test_index < arraysize(kTests); ++test_index) {
     SCOPED_TRACE(test_index);
@@ -602,30 +541,20 @@ TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
     ASSERT_EQ(Status::Success(),
               ImportKey(blink::WebCryptoKeyFormatSpki,
                         CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
-                        import_algorithm,
-                        true,
-                        test.usage,
-                        &public_key));
+                        import_algorithm, true, test.usage, &public_key));
 
     // Export the public key as JWK and verify its contents
     std::vector<uint8_t> jwk;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatJwk, public_key, &jwk));
-    EXPECT_TRUE(VerifyPublicJwk(jwk,
-                                test.jwk_alg,
-                                kPublicKeyModulusHex,
-                                kPublicKeyExponentHex,
-                                test.usage));
+    EXPECT_TRUE(VerifyPublicJwk(jwk, test.jwk_alg, kPublicKeyModulusHex,
+                                kPublicKeyExponentHex, test.usage));
 
     // Import the JWK back in to create a new key
     blink::WebCryptoKey public_key2;
     ASSERT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatJwk,
-                        CryptoData(jwk),
-                        import_algorithm,
-                        true,
-                        test.usage,
-                        &public_key2));
+              ImportKey(blink::WebCryptoKeyFormatJwk, CryptoData(jwk),
+                        import_algorithm, true, test.usage, &public_key2));
     ASSERT_TRUE(public_key2.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key2.type());
     EXPECT_TRUE(public_key2.extractable());

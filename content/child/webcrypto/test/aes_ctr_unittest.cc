@@ -31,8 +31,8 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
     uint8_t length_bits) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesCtr,
-      new blink::WebCryptoAesCtrParams(
-          length_bits, vector_as_array(&counter), counter.size()));
+      new blink::WebCryptoAesCtrParams(length_bits, vector_as_array(&counter),
+                                       counter.size()));
 }
 
 TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
@@ -60,8 +60,7 @@ TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
         GetBytesFromHexString(test, "cipher_text");
 
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
-        test_key,
-        CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCtr),
+        test_key, CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCtr),
         blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
 
     EXPECT_EQ(test_key.size() * 8, key.algorithm().aesParams()->lengthBits());
@@ -71,17 +70,13 @@ TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {
     // Test encryption.
     EXPECT_EQ(Status::Success(),
               Encrypt(CreateAesCtrAlgorithm(test_counter, counter_length_bits),
-                      key,
-                      CryptoData(test_plain_text),
-                      &output));
+                      key, CryptoData(test_plain_text), &output));
     EXPECT_BYTES_EQ(test_cipher_text, output);
 
     // Test decryption.
     EXPECT_EQ(Status::Success(),
               Decrypt(CreateAesCtrAlgorithm(test_counter, counter_length_bits),
-                      key,
-                      CryptoData(test_cipher_text),
-                      &output));
+                      key, CryptoData(test_cipher_text), &output));
     EXPECT_BYTES_EQ(test_plain_text, output);
   }
 }
@@ -107,16 +102,12 @@ TEST(WebCryptoAesCtrTest, InvalidCounterBlockLength) {
     std::vector<uint8_t> bad_counter(kBadCounterBlockLengthBytes[i]);
 
     EXPECT_EQ(Status::ErrorIncorrectSizeAesCtrCounter(),
-              Encrypt(CreateAesCtrAlgorithm(bad_counter, 128),
-                      key,
-                      CryptoData(input),
-                      &output));
+              Encrypt(CreateAesCtrAlgorithm(bad_counter, 128), key,
+                      CryptoData(input), &output));
 
     EXPECT_EQ(Status::ErrorIncorrectSizeAesCtrCounter(),
-              Decrypt(CreateAesCtrAlgorithm(bad_counter, 128),
-                      key,
-                      CryptoData(input),
-                      &output));
+              Decrypt(CreateAesCtrAlgorithm(bad_counter, 128), key,
+                      CryptoData(input), &output));
   }
 }
 
@@ -143,15 +134,11 @@ TEST(WebCryptoAesCtrTest, InvalidCounterLength) {
 
     EXPECT_EQ(Status::ErrorInvalidAesCtrCounterLength(),
               Encrypt(CreateAesCtrAlgorithm(counter, bad_counter_length_bits),
-                      key,
-                      CryptoData(input),
-                      &output));
+                      key, CryptoData(input), &output));
 
     EXPECT_EQ(Status::ErrorInvalidAesCtrCounterLength(),
               Decrypt(CreateAesCtrAlgorithm(counter, bad_counter_length_bits),
-                      key,
-                      CryptoData(input),
-                      &output));
+                      key, CryptoData(input), &output));
   }
 }
 
@@ -192,22 +179,16 @@ TEST(WebCryptoAesCtrTest, OverflowAndRepeatCounter) {
     // Baseline test: Encrypting 16 blocks should work (don't bother to check
     // output, the known answer tests already do that).
     EXPECT_EQ(Status::Success(),
-              Encrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits),
-                      key,
-                      input_16,
-                      &output));
+              Encrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits), key,
+                      input_16, &output));
 
     // Encrypting/Decrypting 17 however should fail.
     EXPECT_EQ(Status::ErrorAesCtrInputTooLongCounterRepeated(),
-              Encrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits),
-                      key,
-                      input_17,
-                      &output));
+              Encrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits), key,
+                      input_17, &output));
     EXPECT_EQ(Status::ErrorAesCtrInputTooLongCounterRepeated(),
-              Decrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits),
-                      key,
-                      input_17,
-                      &output));
+              Decrypt(CreateAesCtrAlgorithm(counter, kCounterLengthBits), key,
+                      input_17, &output));
   }
 }
 

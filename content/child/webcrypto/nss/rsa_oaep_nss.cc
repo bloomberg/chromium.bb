@@ -99,15 +99,10 @@ Status EncryptRsaOaep(SECKEYPublicKey* key,
   buffer->resize(SECKEY_PublicKeyStrength(key));
   unsigned char* buffer_data = vector_as_array(buffer);
   unsigned int output_len;
-  if (NssRuntimeSupport::Get()->pk11_pub_encrypt_func()(key,
-                                                        CKM_RSA_PKCS_OAEP,
-                                                        &param,
-                                                        buffer_data,
-                                                        &output_len,
-                                                        buffer->size(),
-                                                        data.bytes(),
-                                                        data.byte_length(),
-                                                        NULL) != SECSuccess) {
+  if (NssRuntimeSupport::Get()->pk11_pub_encrypt_func()(
+          key, CKM_RSA_PKCS_OAEP, &param, buffer_data, &output_len,
+          buffer->size(), data.bytes(), data.byte_length(),
+          NULL) != SECSuccess) {
     return Status::OperationError();
   }
 
@@ -142,15 +137,9 @@ Status DecryptRsaOaep(SECKEYPrivateKey* key,
 
   unsigned char* buffer_data = vector_as_array(buffer);
   unsigned int output_len;
-  if (NssRuntimeSupport::Get()->pk11_priv_decrypt_func()(key,
-                                                         CKM_RSA_PKCS_OAEP,
-                                                         &param,
-                                                         buffer_data,
-                                                         &output_len,
-                                                         buffer->size(),
-                                                         data.bytes(),
-                                                         data.byte_length()) !=
-      SECSuccess) {
+  if (NssRuntimeSupport::Get()->pk11_priv_decrypt_func()(
+          key, CKM_RSA_PKCS_OAEP, &param, buffer_data, &output_len,
+          buffer->size(), data.bytes(), data.byte_length()) != SECSuccess) {
     return Status::OperationError();
   }
 
@@ -175,8 +164,8 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
     Status status = NssSupportsRsaOaep();
     if (status.IsError())
       return status;
-    return RsaHashedAlgorithm::GenerateKey(
-        algorithm, extractable, usages, result);
+    return RsaHashedAlgorithm::GenerateKey(algorithm, extractable, usages,
+                                           result);
   }
 
   Status VerifyKeyUsagesBeforeImportKey(
@@ -214,9 +203,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
     return EncryptRsaOaep(
         PublicKeyNss::Cast(key)->key(),
         key.algorithm().rsaHashedParams()->hash(),
-        CryptoData(algorithm.rsaOaepParams()->optionalLabel()),
-        data,
-        buffer);
+        CryptoData(algorithm.rsaOaepParams()->optionalLabel()), data, buffer);
   }
 
   Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
@@ -229,9 +216,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
     return DecryptRsaOaep(
         PrivateKeyNss::Cast(key)->key(),
         key.algorithm().rsaHashedParams()->hash(),
-        CryptoData(algorithm.rsaOaepParams()->optionalLabel()),
-        data,
-        buffer);
+        CryptoData(algorithm.rsaOaepParams()->optionalLabel()), data, buffer);
   }
 };
 

@@ -248,8 +248,7 @@ Status GetRsaKeyGenParameters(
   }
 
   if (!BigIntegerToUint(params->publicExponent().data(),
-                        params->publicExponent().size(),
-                        public_exponent)) {
+                        params->publicExponent().size(), public_exponent)) {
     return Status::ErrorGenerateKeyPublicExponent();
   }
 

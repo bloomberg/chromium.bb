@@ -78,11 +78,7 @@ class HmacImplementation : public AlgorithmImplementation {
 
     return GenerateSecretKeyNss(
         blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bits),
-        extractable,
-        usages,
-        keylen_bits / 8,
-        mechanism,
-        result);
+        extractable, usages, keylen_bits / 8, mechanism, result);
   }
 
   Status VerifyKeyUsagesBeforeImportKey(
@@ -115,14 +111,10 @@ class HmacImplementation : public AlgorithmImplementation {
     if (!keylen_bits.IsValid())
       return Status::ErrorDataTooLarge();
 
-    return ImportKeyRawNss(key_data,
-                           blink::WebCryptoKeyAlgorithm::createHmac(
-                               hash.id(), keylen_bits.ValueOrDie()),
-                           extractable,
-                           usages,
-                           mechanism,
-                           CKF_SIGN | CKF_VERIFY,
-                           key);
+    return ImportKeyRawNss(key_data, blink::WebCryptoKeyAlgorithm::createHmac(
+                                         hash.id(), keylen_bits.ValueOrDie()),
+                           extractable, usages, mechanism,
+                           CKF_SIGN | CKF_VERIFY, key);
   }
 
   Status ImportKeyJwk(const CryptoData& key_data,
@@ -136,13 +128,13 @@ class HmacImplementation : public AlgorithmImplementation {
       return Status::ErrorUnexpected();
 
     std::vector<uint8_t> raw_data;
-    Status status = ReadSecretKeyJwk(
-        key_data, algorithm_name, extractable, usages, &raw_data);
+    Status status = ReadSecretKeyJwk(key_data, algorithm_name, extractable,
+                                     usages, &raw_data);
     if (status.IsError())
       return status;
 
-    return ImportKeyRaw(
-        CryptoData(raw_data), algorithm, extractable, usages, key);
+    return ImportKeyRaw(CryptoData(raw_data), algorithm, extractable, usages,
+                        key);
   }
 
   Status ExportKeyRaw(const blink::WebCryptoKey& key,
@@ -161,11 +153,8 @@ class HmacImplementation : public AlgorithmImplementation {
     if (!algorithm_name)
       return Status::ErrorUnexpected();
 
-    WriteSecretKeyJwk(CryptoData(raw_data),
-                      algorithm_name,
-                      key.extractable(),
-                      key.usages(),
-                      buffer);
+    WriteSecretKeyJwk(CryptoData(raw_data), algorithm_name, key.extractable(),
+                      key.usages(), buffer);
 
     return Status::Success();
   }
@@ -187,9 +176,8 @@ class HmacImplementation : public AlgorithmImplementation {
     // First call is to figure out the length.
     SECItem signature_item = {siBuffer, NULL, 0};
 
-    if (PK11_SignWithSymKey(
-            sym_key, mechanism, &param_item, &signature_item, &data_item) !=
-        SECSuccess) {
+    if (PK11_SignWithSymKey(sym_key, mechanism, &param_item, &signature_item,
+                            &data_item) != SECSuccess) {
       return Status::OperationError();
     }
 
@@ -198,9 +186,8 @@ class HmacImplementation : public AlgorithmImplementation {
     buffer->resize(signature_item.len);
     signature_item.data = vector_as_array(buffer);
 
-    if (PK11_SignWithSymKey(
-            sym_key, mechanism, &param_item, &signature_item, &data_item) !=
-        SECSuccess) {
+    if (PK11_SignWithSymKey(sym_key, mechanism, &param_item, &signature_item,
+                            &data_item) != SECSuccess) {
       return Status::OperationError();
     }
 
@@ -220,10 +207,10 @@ class HmacImplementation : public AlgorithmImplementation {
       return status;
 
     // Do not allow verification of truncated MACs.
-    *signature_match = result.size() == signature.byte_length() &&
-                       crypto::SecureMemEqual(vector_as_array(&result),
-                                              signature.bytes(),
-                                              signature.byte_length());
+    *signature_match =
+        result.size() == signature.byte_length() &&
+        crypto::SecureMemEqual(vector_as_array(&result), signature.bytes(),
+                               signature.byte_length());
 
     return Status::Success();
   }

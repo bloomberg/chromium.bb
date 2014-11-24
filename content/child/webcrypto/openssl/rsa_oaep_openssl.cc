@@ -68,26 +68,23 @@ Status CommonEncryptDecrypt(InitFunc init_func,
     label_copy.reset(static_cast<uint8_t*>(OPENSSL_malloc(label.size())));
     memcpy(label_copy.get(), label.data(), label.size());
 
-    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(
-                 ctx.get(), label_copy.release(), label.size())) {
+    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx.get(), label_copy.release(),
+                                              label.size())) {
       return Status::OperationError();
     }
   }
 
   // Determine the maximum length of the output.
   size_t outlen = 0;
-  if (!encrypt_decrypt_func(
-          ctx.get(), NULL, &outlen, data.bytes(), data.byte_length())) {
+  if (!encrypt_decrypt_func(ctx.get(), NULL, &outlen, data.bytes(),
+                            data.byte_length())) {
     return Status::OperationError();
   }
   buffer->resize(outlen);
 
   // Do the actual encryption/decryption.
-  if (!encrypt_decrypt_func(ctx.get(),
-                            vector_as_array(buffer),
-                            &outlen,
-                            data.bytes(),
-                            data.byte_length())) {
+  if (!encrypt_decrypt_func(ctx.get(), vector_as_array(buffer), &outlen,
+                            data.bytes(), data.byte_length())) {
     return Status::OperationError();
   }
   buffer->resize(outlen);
@@ -126,8 +123,8 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
     if (key.type() != blink::WebCryptoKeyTypePublic)
       return Status::ErrorUnexpectedKeyType();
 
-    return CommonEncryptDecrypt(
-        EVP_PKEY_encrypt_init, EVP_PKEY_encrypt, algorithm, key, data, buffer);
+    return CommonEncryptDecrypt(EVP_PKEY_encrypt_init, EVP_PKEY_encrypt,
+                                algorithm, key, data, buffer);
   }
 
   Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
@@ -137,8 +134,8 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
     if (key.type() != blink::WebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 
-    return CommonEncryptDecrypt(
-        EVP_PKEY_decrypt_init, EVP_PKEY_decrypt, algorithm, key, data, buffer);
+    return CommonEncryptDecrypt(EVP_PKEY_decrypt_init, EVP_PKEY_decrypt,
+                                algorithm, key, data, buffer);
   }
 };
 

@@ -462,10 +462,9 @@ void JwkWriter::SetString(const std::string& member_name,
 
 void JwkWriter::SetBytes(const std::string& member_name,
                          const CryptoData& value) {
-  dict_.SetString(
-      member_name,
-      Base64EncodeUrlSafe(base::StringPiece(
-          reinterpret_cast<const char*>(value.bytes()), value.byte_length())));
+  dict_.SetString(member_name, Base64EncodeUrlSafe(base::StringPiece(
+                                   reinterpret_cast<const char*>(value.bytes()),
+                                   value.byte_length())));
 }
 
 void JwkWriter::ToJson(std::vector<uint8_t>* utf8_bytes) const {
@@ -479,8 +478,8 @@ Status ReadSecretKeyNoExpectedAlg(const CryptoData& key_data,
                                   blink::WebCryptoKeyUsageMask expected_usages,
                                   std::vector<uint8_t>* raw_key_data,
                                   JwkReader* jwk) {
-  Status status = jwk->Init(
-      key_data, expected_extractable, expected_usages, "oct", std::string());
+  Status status = jwk->Init(key_data, expected_extractable, expected_usages,
+                            "oct", std::string());
   if (status.IsError())
     return status;
 
@@ -615,8 +614,8 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
                      blink::WebCryptoKeyUsageMask expected_usages,
                      JwkRsaInfo* result) {
   JwkReader jwk;
-  Status status = jwk.Init(
-      key_data, expected_extractable, expected_usages, "RSA", expected_alg);
+  Status status = jwk.Init(key_data, expected_extractable, expected_usages,
+                           "RSA", expected_alg);
   if (status.IsError())
     return status;
 
@@ -684,10 +683,10 @@ const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
 // TODO(eroman): This accepts invalid inputs. http://crbug.com/378034
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
   std::string base64_encoded_text(input);
-  std::replace(
-      base64_encoded_text.begin(), base64_encoded_text.end(), '-', '+');
-  std::replace(
-      base64_encoded_text.begin(), base64_encoded_text.end(), '_', '/');
+  std::replace(base64_encoded_text.begin(), base64_encoded_text.end(), '-',
+               '+');
+  std::replace(base64_encoded_text.begin(), base64_encoded_text.end(), '_',
+               '/');
   base64_encoded_text.append((4 - base64_encoded_text.size() % 4) % 4, '=');
   return base::Base64Decode(base64_encoded_text, output);
 }

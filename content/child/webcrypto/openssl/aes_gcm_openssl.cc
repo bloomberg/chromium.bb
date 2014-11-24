@@ -48,14 +48,10 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   if (status.IsError())
     return status;
 
-  return AeadEncryptDecrypt(mode,
-                            raw_key,
-                            data,
-                            tag_length_bits / 8,
-                            CryptoData(params->iv()),
-                            CryptoData(params->optionalAdditionalData()),
-                            GetAesGcmAlgorithmFromKeySize(raw_key.size()),
-                            buffer);
+  return AeadEncryptDecrypt(
+      mode, raw_key, data, tag_length_bits / 8, CryptoData(params->iv()),
+      CryptoData(params->optionalAdditionalData()),
+      GetAesGcmAlgorithmFromKeySize(raw_key.size()), buffer);
 }
 
 class AesGcmImplementation : public AesAlgorithm {
