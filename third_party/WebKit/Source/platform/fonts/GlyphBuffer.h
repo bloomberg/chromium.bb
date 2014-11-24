@@ -145,12 +145,10 @@ public:
         float x = totalWidth - m_offsets[0];
         for (unsigned i = 0; i + 1 < m_offsets.size(); ++i) {
             float advance = m_offsets[i + 1] - m_offsets[i];
-            ASSERT(advance >= 0);
             x -= advance;
             m_offsets[i] = x;
         }
         float lastAdvance = afterOffset - m_offsets.last();
-        ASSERT(lastAdvance >= 0);
         m_offsets.last() = x - lastAdvance;
 
         m_offsets.reverse();
