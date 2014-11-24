@@ -742,8 +742,6 @@
       'browser/accessibility/accessibility_extension_api.h',
       'browser/autocomplete/keyword_extensions_delegate_impl.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl.h',
-      'browser/content_settings/content_settings_custom_extension_provider.cc',
-      'browser/content_settings/content_settings_custom_extension_provider.h',
       'browser/content_settings/content_settings_internal_extension_provider.cc',
       'browser/content_settings/content_settings_internal_extension_provider.h',
       'browser/drive/drive_app_registry.cc',

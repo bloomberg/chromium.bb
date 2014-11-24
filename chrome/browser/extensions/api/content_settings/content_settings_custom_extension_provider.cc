@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"

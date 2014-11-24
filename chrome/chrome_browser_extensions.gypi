@@ -158,6 +158,8 @@
       'browser/extensions/api/content_settings/content_settings_api.h',
       'browser/extensions/api/content_settings/content_settings_api_constants.cc',
       'browser/extensions/api/content_settings/content_settings_api_constants.h',
+      'browser/extensions/api/content_settings/content_settings_custom_extension_provider.cc',
+      'browser/extensions/api/content_settings/content_settings_custom_extension_provider.h',
       'browser/extensions/api/content_settings/content_settings_helpers.cc',
       'browser/extensions/api/content_settings/content_settings_helpers.h',
       'browser/extensions/api/content_settings/content_settings_service.cc',
