@@ -75,12 +75,15 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
       env, notification.title());
   ScopedJavaLocalRef<jstring> body = ConvertUTF16ToJavaString(
       env, notification.message());
+  ScopedJavaLocalRef<jstring> origin = ConvertUTF8ToJavaString(
+      env, notification.origin_url().spec());
 
   SkBitmap icon_bitmap = notification.icon().AsBitmap();
   ScopedJavaLocalRef<jobject> icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   int platform_id = Java_NotificationUIManager_displayNotification(
-      env, java_object_.obj(), id.obj(), title.obj(), body.obj(), icon.obj());
+      env, java_object_.obj(), id.obj(), title.obj(), body.obj(), icon.obj(),
+      origin.obj());
 
   std::string notification_id = profile_notification->notification().id();
   platform_notifications_[notification_id] = platform_id;
