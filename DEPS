@@ -49,7 +49,7 @@ vars = {
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
   'v8_branch': 'trunk',
-  'v8_revision': '43c0584a4b83eefc27c519f577b62f3960a1772d',
+  'v8_revision': '230fa97a6f8231bf02fce1f4346ee3138bbab67b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
