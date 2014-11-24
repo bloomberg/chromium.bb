@@ -54,8 +54,6 @@ _NEGATIVE_FILTER = [
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=913
-    'ChromeDriverTest.testChromeDriverReceiveAndSendLargeData',
 ]
 _VERSION_SPECIFIC_FILTER['37'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=954
@@ -134,8 +132,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'PerfTest.testColdExecuteScript',
         # https://code.google.com/p/chromedriver/issues/detail?id=459
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
-        # https://code.google.com/p/chromedriver/issues/detail?id=913
-        'ChromeDriverTest.testChromeDriverReceiveAndSendLargeData',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -741,11 +737,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     script = 's = ""; for (i = 0; i < 10e6; i++) s += "0"; return s;'
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
-
-  def testChromeDriverReceiveAndSendLargeData(self):
-    lots_of_data = '1'.zfill(int(10e6))
-    result = self._driver.ExecuteScript('return "%s"' % lots_of_data)
-    self.assertEquals(lots_of_data, result)
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
