@@ -15,6 +15,8 @@ dictionary InternalDictionary {
     double doubleMember;
     DOMString stringMember;
     DOMString stringMemberWithDefault = "defaultStringValue";
+    ByteString byteStringMember;
+    USVString usvStringMember;
     sequence<DOMString> stringSequenceMember;
     sequence<DOMString>? stringSequenceOrNullMember;
     InternalEnum enumMember;

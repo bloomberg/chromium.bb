@@ -20,6 +20,8 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.doubleMember');
     shouldBeUndefined('dict.stringMember');
     shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
+    shouldBeUndefined('dict.byteStringMember');
+    shouldBeUndefined('dict.usvStringMember');
     shouldBeUndefined('dict.stringSequenceMember');
     shouldBeUndefined('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
@@ -42,6 +44,8 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.booleanMember');
     shouldBeUndefined('dict.doubleMember');
     shouldBeUndefined('dict.stringMember');
+    shouldBeUndefined('dict.byteStringMember');
+    shouldBeUndefined('dict.usvStringMember');
     shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.stringSequenceMember');
     shouldBeUndefined('dict.stringSequenceOrNullMember');
@@ -61,6 +65,8 @@ if (window.internals && internals.dictionaryTest) {
         longOrNullMemberWithDefault: 4,
         stringMember: 'modifiedString1',
         stringMemberWithDefault: 'modifiedString2',
+        byteStringMember: '\x00\x01\xFE\xFF',
+        usvStringMember: '!@#123ABCabc\xA0\uD800\uDC00',
         booleanMember: true,
         doubleMember: 3.14,
         stringSequenceMember: ['foo', 'bar', 'baz'],
@@ -81,6 +87,8 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.longOrNullMemberWithDefault', '4');
     shouldBeEqualToString('dict.stringMember', 'modifiedString1');
     shouldBeEqualToString('dict.stringMemberWithDefault', 'modifiedString2');
+    shouldBeEqualToString('dict.byteStringMember', '\x00\x01\xFE\xFF');
+    shouldBeEqualToString('dict.usvStringMember', '!@#123ABCabc\xA0\uD800\uDC00');
     shouldBeTrue('dict.booleanMember');
     shouldBe('dict.doubleMember', '3.14');
     shouldBe('dict.stringSequenceMember', '["foo", "bar", "baz"]');
@@ -149,6 +157,15 @@ if (window.internals && internals.dictionaryTest) {
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.invalidMember');
     debug('');
+
+    debug('Test for setting invalid ByteString value');
+    shouldThrow("dictionaryTest.set({byteStringMember: '\u0100'})");
+    debug('');
+
+    debug('Test for setting invalid USVString value');
+    dictionaryTest.set({usvStringMember: '_\uDC00_\uD800_\uDC00\uD800_'});
+    dict = dictionaryTest.get();
+    shouldBeEqualToString('dict.usvStringMember', '_\uFFFD_\uFFFD_\uFFFD\uFFFD_');
 
     debug('Test for setting invalid enum value');
     shouldThrow("dictionaryTest.set({enumMember: 'invalid'})");

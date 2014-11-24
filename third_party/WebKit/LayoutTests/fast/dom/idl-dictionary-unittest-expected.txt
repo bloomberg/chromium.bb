@@ -12,6 +12,8 @@ PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
 PASS dict.stringMember is undefined.
 PASS dict.stringMemberWithDefault is "defaultStringValue"
+PASS dict.byteStringMember is undefined.
+PASS dict.usvStringMember is undefined.
 PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceOrNullMember is undefined.
 PASS dict.elementMember is undefined.
@@ -31,6 +33,8 @@ PASS dict.longOrNullMemberWithDefault is null
 PASS dict.booleanMember is undefined.
 PASS dict.doubleMember is undefined.
 PASS dict.stringMember is undefined.
+PASS dict.byteStringMember is undefined.
+PASS dict.usvStringMember is undefined.
 PASS dict.stringMemberWithDefault is "defaultStringValue"
 PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceOrNullMember is undefined.
@@ -46,6 +50,8 @@ PASS dict.longOrNullMember is 3
 PASS dict.longOrNullMemberWithDefault is 4
 PASS dict.stringMember is "modifiedString1"
 PASS dict.stringMemberWithDefault is "modifiedString2"
+PASS dict.byteStringMember is "\u0000\u0001þÿ"
+PASS dict.usvStringMember is "!@#123ABCabc 𐀀"
 PASS dict.booleanMember is true
 PASS dict.doubleMember is 3.14
 PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
@@ -76,6 +82,11 @@ PASS dict.longOrNullMemberWithDefault is null
 Test for setting invalid member
 PASS dict.invalidMember is undefined.
 
+Test for setting invalid ByteString value
+PASS dictionaryTest.set({byteStringMember: 'Ā'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': Value is not a valid ByteString..
+
+Test for setting invalid USVString value
+PASS dict.usvStringMember is "_�_�_��_"
 Test for setting invalid enum value
 PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member enumMember ('invalid') is not a valid enum value..
 

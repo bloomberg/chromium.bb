@@ -40,6 +40,8 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
         m_doubleMember = testingDictionary.doubleMember();
     m_stringMember = testingDictionary.stringMember();
     m_stringMemberWithDefault = testingDictionary.stringMemberWithDefault();
+    m_byteStringMember = testingDictionary.byteStringMember();
+    m_usvStringMember = testingDictionary.usvStringMember();
     if (testingDictionary.hasStringSequenceMember())
         m_stringSequenceMember = testingDictionary.stringSequenceMember();
     if (testingDictionary.hasStringSequenceOrNullMember())
@@ -76,6 +78,8 @@ void DictionaryTest::get(InternalDictionary& result)
         result.setDoubleMember(m_doubleMember.get());
     result.setStringMember(m_stringMember);
     result.setStringMemberWithDefault(m_stringMemberWithDefault);
+    result.setByteStringMember(m_byteStringMember);
+    result.setUsvStringMember(m_usvStringMember);
     if (m_stringSequenceMember)
         result.setStringSequenceMember(m_stringSequenceMember.get());
     if (m_stringSequenceOrNullMember)

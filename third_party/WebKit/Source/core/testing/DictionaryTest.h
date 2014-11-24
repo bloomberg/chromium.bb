@@ -57,6 +57,8 @@ private:
     Nullable<double> m_doubleMember;
     String m_stringMember;
     String m_stringMemberWithDefault;
+    String m_byteStringMember;
+    String m_usvStringMember;
     Nullable<Vector<String> > m_stringSequenceMember;
     Nullable<Vector<String> > m_stringSequenceOrNullMember;
     String m_enumMember;
