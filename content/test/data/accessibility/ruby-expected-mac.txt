@@ -2,4 +2,6 @@ AXWebArea
     AXGroup
         AXUnknown
             AXUnknown
-                AXStaticText AXValue='1'
+                AXStaticText AXValue='ruby text'
+            AXGroup
+                AXStaticText AXValue='ruby base'
