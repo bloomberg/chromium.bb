@@ -432,9 +432,9 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
       DragUpdate(translated_target, *translated_event.get());
       break;
     case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
       Drop(translated_target, *translated_event.get());
       break;
-    case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_LONG_TAP:
       // Ideally we would want to just forward this long tap event to the
       // |drag_source_window_|. However, webkit does not accept events while a

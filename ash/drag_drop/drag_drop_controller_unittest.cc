@@ -22,6 +22,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
@@ -1067,6 +1068,53 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
        iter != root_windows.end(); ++iter) {
     aura::client::SetDragDropClient(*iter, NULL);
   }
+}
+
+TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(1);
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  ui::OSExchangeData data;
+  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
+
+  gfx::Point start = gfx::Rect(drag_view->bounds()).CenterPoint();
+  gfx::Point mid = start + gfx::Vector2d(drag_view->bounds().width() / 6, 0);
+  gfx::Point end = start + gfx::Vector2d(drag_view->bounds().width() / 3, 0);
+
+  base::TimeDelta timestamp = ui::EventTimeForNow();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, 0, timestamp);
+  generator.Dispatch(&press);
+
+  DispatchGesture(ui::ET_GESTURE_LONG_PRESS, start);
+  UpdateDragData(&data);
+  timestamp += base::TimeDelta::FromMilliseconds(10);
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, mid, 0, timestamp);
+  generator.Dispatch(&move1);
+  // Doing two moves instead of one will guarantee to generate a fling at the
+  // end.
+  timestamp += base::TimeDelta::FromMilliseconds(10);
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, end, 0, timestamp);
+  generator.Dispatch(&move2);
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, end, 0, timestamp);
+  generator.Dispatch(&release);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_FALSE(drag_drop_controller_->drag_canceled_);
+  EXPECT_EQ(2, drag_drop_controller_->num_drag_updates_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
+            drag_drop_controller_->drag_string_);
+  EXPECT_EQ(1, drag_view->num_drag_enters_);
+  EXPECT_EQ(2, drag_view->num_drag_updates_);
+  EXPECT_EQ(1, drag_view->num_drops_);
+  EXPECT_EQ(0, drag_view->num_drag_exits_);
+  EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
 }  // namespace test
