@@ -1598,7 +1598,6 @@ def GetDefaultTryConfigs(bots=None):
       'android_arm64_dbg_recipe': ['slave_steps'],
       'android_chromium_gn_compile_dbg': ['compile'],
       'android_chromium_gn_compile_rel': ['compile'],
-      'android_clang_dbg': ['slave_steps'],
       'android_clang_dbg_recipe': ['slave_steps'],
       'android_dbg_tests_recipe': ['slave_steps'],
       'cros_x86': ['defaulttests'],
@@ -1699,7 +1698,6 @@ def GetPreferredTryMasters(project, change):
   if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
-        'android_clang_dbg',
         'android_dbg_tests_recipe',
     ])
   if all(re.search(r'[\\\/_]ios[\\\/_.]', f) for f in files):
@@ -1709,7 +1707,6 @@ def GetPreferredTryMasters(project, change):
       'android_arm64_dbg_recipe',
       'android_chromium_gn_compile_rel',
       'android_chromium_gn_compile_dbg',
-      'android_clang_dbg',
       'android_clang_dbg_recipe',
       'android_dbg_tests_recipe',
       'ios_dbg_simulator',
