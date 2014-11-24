@@ -171,6 +171,8 @@ i18n.input.lang.InputToolCode = {
   KEYBOARD_ROMANIAN_SR13392_SECONDARY: 'ro-t-k0-extended',
   KEYBOARD_RUSSIAN: 'ru-t-k0-und',
   KEYBOARD_RUSSIAN_PHONETIC: 'ru-t-k0-qwerty',
+  KEYBOARD_RUSSIAN_PHONETIC_AATSEEL: 'ru-t-k0-aatseel',
+  KEYBOARD_RUSSIAN_PHONETIC_YAZHERT: 'ru-t-k0-yazhert',
   KEYBOARD_SANSKRIT_PHONETIC: 'sa-t-und-latn-k0-und',
   KEYBOARD_SENECA: 'see-t-k0-und',
   KEYBOARD_SERBIAN_CYRILLIC: 'sr-cyrl-t-k0-und',
@@ -222,6 +224,7 @@ i18n.input.lang.InputToolCode = {
   HANDWRIT_AFRIKAANS: 'af-t-i0-handwrit',
   HANDWRIT_ALBANIAN: 'sq-t-i0-handwrit',
   HANDWRIT_ARABIC: 'ar-t-i0-handwrit',
+  HANDWRIT_AZERBAIJANI: 'az-t-i0-handwrit',
   HANDWRIT_BASQUE: 'eu-t-i0-handwrit',
   HANDWRIT_BELARUSIAN: 'be-t-i0-handwrit',
   HANDWRIT_BOSNIAN: 'bs-t-i0-handwrit',
@@ -273,6 +276,7 @@ i18n.input.lang.InputToolCode = {
   HANDWRIT_MAORI: 'mi-t-i0-handwrit',
   HANDWRIT_MARATHI: 'mr-t-i0-handwrit',
   HANDWRIT_MONGOLIAN: 'mn-t-i0-handwrit',
+  HANDWRIT_MULTIPLE_LANGUAGES: 'mul-t-i0-handwrit',
   HANDWRIT_NEPALI: 'ne-t-i0-handwrit',
   HANDWRIT_NORWEGIAN: 'no-t-i0-handwrit',
   HANDWRIT_NORWEGIAN_BOKMAL: 'nb-t-i0-handwrit',
@@ -308,6 +312,8 @@ i18n.input.lang.InputToolCode = {
 
   // Voice
   VOICE_ENGLISH: 'en-t-i0-voice',
+  VOICE_CHINESE_SIMPLIFIED: 'zh-hans-t-i0-voice',
+  VOICE_CHINESE_TRADITIONAL: 'zh-hant-t-i0-voice',
 
   // XKB
   XKB_AM_PHONETIC_ARM: 'xkb:am:phonetic:arm',
@@ -348,6 +354,7 @@ i18n.input.lang.InputToolCode = {
   XKB_LT_LIT: 'xkb:lt::lit',
   XKB_LV_APOSTROPHE_LAV: 'xkb:lv:apostrophe:lav',
   XKB_MN_MON: 'xkb:mn::mon',
+  XKB_MT_MLT: 'xkb:mt::mlt',
   XKB_NO_NOB: 'xkb:no::nob',
   XKB_PL_POL: 'xkb:pl::pol',
   XKB_PT_POR: 'xkb:pt::por',

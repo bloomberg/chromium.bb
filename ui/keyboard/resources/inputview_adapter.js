@@ -314,6 +314,7 @@ if (!chrome.i18n) {
   }
 }
 
+
 /**
  * Trigger loading the virtual keyboard on completion of page load.
  */
@@ -337,6 +338,9 @@ window.onload = function() {
   overrideGetSpatialData();
   registerInputviewApi();
   i18n.input.chrome.inputview.Controller.DEV = true;
+  i18n.input.chrome.inputview.Adapter.prototype.isSwitching = function() {
+    return false;
+  };
 
   if (keyset != 'none') {
     window.initializeVirtualKeyboard(keyset, languageCode, passwordLayout,

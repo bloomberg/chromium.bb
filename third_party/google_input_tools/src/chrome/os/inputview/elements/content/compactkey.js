@@ -17,7 +17,6 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.MoreKeysShiftOperation');
@@ -27,7 +26,6 @@ goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
-goog.require('i18n.input.chrome.inputview.elements.content.GaussianEstimator');
 goog.require('i18n.input.chrome.message.ContextType');
 
 
@@ -147,15 +145,6 @@ CompactKey.prototype.resize = function(width, height) {
   }
 
   goog.base(this, 'resize', width, height);
-
-  this.topLeftCoordinate = goog.style.getClientPosition(elem);
-  this.centerCoordinate = new goog.math.Coordinate(
-      this.topLeftCoordinate.x + this.availableWidth / 2,
-      this.topLeftCoordinate.y + this.availableHeight / 2);
-  this.estimator = new i18n.input.chrome.inputview.elements.content.
-      GaussianEstimator(this.centerCoordinate,
-          this.stateManager_.covariance.getValue(this.type),
-          this.availableHeight / this.availableWidth);
 };
 
 

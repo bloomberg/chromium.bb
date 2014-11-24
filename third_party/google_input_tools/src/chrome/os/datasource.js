@@ -19,13 +19,19 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.functions');
 
 
+goog.scope(function() {
+var Event = goog.events.Event;
+var EventTarget = goog.events.EventTarget;
+
+
+
 /**
  * The data source.
  *
  * @param {number} numOfCanddiate The number of canddiate to fetch.
  * @param {function(string, !Array.<!Object>)} callback .
  * @constructor
- * @extends {goog.events.EventTarget}
+ * @extends {EventTarget}
  */
 i18n.input.chrome.DataSource = function(numOfCanddiate, callback) {
   goog.base(this);
@@ -40,11 +46,12 @@ i18n.input.chrome.DataSource = function(numOfCanddiate, callback) {
   /** @protected {function(string, !Array.<!Object>)} */
   this.callback = callback;
 };
-goog.inherits(i18n.input.chrome.DataSource, goog.events.EventTarget);
+var DataSource = i18n.input.chrome.DataSource;
+goog.inherits(DataSource, EventTarget);
 
 
 /** @type {boolean} */
-i18n.input.chrome.DataSource.prototype.ready = false;
+DataSource.prototype.ready = false;
 
 
 /**
@@ -52,7 +59,7 @@ i18n.input.chrome.DataSource.prototype.ready = false;
  *
  * @protected {number}
  */
-i18n.input.chrome.DataSource.prototype.correctionLevel = 0;
+DataSource.prototype.correctionLevel = 0;
 
 
 /**
@@ -61,7 +68,7 @@ i18n.input.chrome.DataSource.prototype.correctionLevel = 0;
  * @type {string}
  * @protected
  */
-i18n.input.chrome.DataSource.prototype.language;
+DataSource.prototype.language;
 
 
 /**
@@ -69,8 +76,7 @@ i18n.input.chrome.DataSource.prototype.language;
  *
  * @param {string} language The language code.
  */
-i18n.input.chrome.DataSource.prototype.setLanguage = function(
-    language) {
+DataSource.prototype.setLanguage = function(language) {
   this.language = language;
 };
 
@@ -80,7 +86,7 @@ i18n.input.chrome.DataSource.prototype.setLanguage = function(
  *
  * @return {boolean} .
  */
-i18n.input.chrome.DataSource.prototype.isReady = function() {
+DataSource.prototype.isReady = function() {
   return this.ready;
 };
 
@@ -91,8 +97,7 @@ i18n.input.chrome.DataSource.prototype.isReady = function() {
  * @return {!Object} The payload.
  * @protected
  */
-i18n.input.chrome.DataSource.prototype.createCommonPayload =
-    function() {
+DataSource.prototype.createCommonPayload = function() {
   return {
     'itc': this.getInputToolCode(),
     'num': this.numOfCandidate
@@ -105,7 +110,7 @@ i18n.input.chrome.DataSource.prototype.createCommonPayload =
  *
  * @return {string} .
  */
-i18n.input.chrome.DataSource.prototype.getInputToolCode = function() {
+DataSource.prototype.getInputToolCode = function() {
   return this.language + '-t-i0-und';
 };
 
@@ -117,8 +122,17 @@ i18n.input.chrome.DataSource.prototype.getInputToolCode = function() {
  * @param {string} context The context .
  * @param {!Object=} opt_spatialData .
  */
-i18n.input.chrome.DataSource.prototype.sendCompletionRequest =
-    goog.functions.NULL;
+DataSource.prototype.sendCompletionRequest = goog.functions.NULL;
+
+
+/**
+ * Enables/disables user dictionary.
+ *
+ * @param {boolean} enabled
+ */
+DataSource.prototype.setUserDictEnabled = function(enabled) {
+  this.userDictEnabled = enabled;
+};
 
 
 /**
@@ -126,8 +140,7 @@ i18n.input.chrome.DataSource.prototype.sendCompletionRequest =
  *
  * @param {string} context The context.
  */
-i18n.input.chrome.DataSource.prototype.sendPredictionRequest =
-    goog.functions.NULL;
+DataSource.prototype.sendPredictionRequest = goog.functions.NULL;
 
 
 /**
@@ -135,7 +148,7 @@ i18n.input.chrome.DataSource.prototype.sendPredictionRequest =
  *
  * @param {number} level .
  */
-i18n.input.chrome.DataSource.prototype.setCorrectionLevel = function(level) {
+DataSource.prototype.setCorrectionLevel = function(level) {
   this.correctionLevel = level;
 };
 
@@ -143,7 +156,7 @@ i18n.input.chrome.DataSource.prototype.setCorrectionLevel = function(level) {
 /**
  * Clears the data source.
  */
-i18n.input.chrome.DataSource.prototype.clear = goog.functions.NULL;
+DataSource.prototype.clear = goog.functions.NULL;
 
 
 /**
@@ -151,11 +164,10 @@ i18n.input.chrome.DataSource.prototype.clear = goog.functions.NULL;
  *
  * @enum {string}
  */
-i18n.input.chrome.DataSource.EventType = {
+DataSource.EventType = {
   CANDIDATES_BACK: goog.events.getUniqueId('cb'),
   READY: goog.events.getUniqueId('r')
 };
-
 
 
 /**
@@ -164,11 +176,11 @@ i18n.input.chrome.DataSource.EventType = {
  * @param {string} source The source.
  * @param {!Array.<!Object>} candidates The candidates.
  * @constructor
- * @extends {goog.events.Event}
+ * @extends {Event}
  */
-i18n.input.chrome.DataSource.CandidatesBackEvent =
-    function(source, candidates) {
-  goog.base(this, i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK);
+DataSource.CandidatesBackEvent = function(source, candidates) {
+  DataSource.CandidatesBackEvent.base(
+      this, 'constructor', DataSource.EventType.CANDIDATES_BACK);
 
   /**
    * The source.
@@ -184,6 +196,6 @@ i18n.input.chrome.DataSource.CandidatesBackEvent =
    */
   this.candidates = candidates;
 };
-goog.inherits(i18n.input.chrome.DataSource.CandidatesBackEvent,
-    goog.events.Event);
+goog.inherits(DataSource.CandidatesBackEvent, Event);
 
+});  // goog.scope

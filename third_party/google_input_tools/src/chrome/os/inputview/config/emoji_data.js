@@ -21,7 +21,6 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
   var viewIdPrefix = 'emoji-k-';
   var emojiKeyAmount = 27;
-  var emoticonType = 3;
   var util = i18n.input.chrome.inputview.content.util;
   var ElementType = i18n.input.chrome.inputview.elements.ElementType;
   var EmojiType = i18n.input.chrome.inputview.EmojiType;
@@ -32,7 +31,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
     // Recent
     [''],
 
-    // Favorits
+    // Hot
     ['\u2665', '\ud83d\ude02', '\u263a',
       '\u2764', '\ud83d\ude12', '\ud83d\ude0d',
       '\ud83d\udc4c', '\ud83d\ude18', '\ud83d\ude0a',
@@ -61,7 +60,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
       '\ud83d\ude30', '\u270a', '\ud83d\udca9',
       '\ud83d\udc98', '\u261d'],
 
-    // Faces
+    // Emotion
     ['\u263a', '\ud83d\ude0a', '\ud83d\ude00',
      '\ud83d\ude01', '\ud83d\ude02', '\ud83d\ude03',
      '\ud83d\ude04', '\ud83d\ude05', '\ud83d\ude06',
@@ -114,118 +113,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
      '\ud83d\udc47', '\ud83d\udc48', '\ud83d\udc49',
      '\ud83d\udc4b', '\ud83d\udc4f', '\ud83d\udc50'],
 
-    // Emoticon
-    [':)',
-     ';-)',
-     ':-D',
-     ':P',
-     ':-(',
-     ':\'(',
-     ':-)',
-     ':-*',
-     ':-$',
-     ':-\\',
-     ':-[',
-     ':-!',
-     ':S',
-     ':O',
-     ':-O',
-     'B-)',
-     'o_O',
-     'O_o',
-     '^O^',
-     '-.-',
-     '^_^',
-     '^﹏^',
-     '^m^',
-     '^/^',
-     '~_~',
-     '-_-',
-     '-_-||',
-     '>_<',
-     '><',
-     '>﹏<',
-     '_#',
-     '\#_#',
-     '*-*',
-     '(^^)',
-     '(^_^)',
-     '(^.^)',
-     '(^!^)',
-     '(^J^)',
-     '(^m^)',
-     '(^\'^)',
-     '(^_-)',
-     '(^O^)',
-     '(^o^)',
-     '(^q^)',
-     '(^○^)',
-     '(^O^;)',
-     '(^m^;)',
-     '(^Q^)',
-     '!(^^)!',
-     'T_T',
-     '(ToT)',
-     '(T_T)',
-     '\@_\@',
-     '=.=',
-     '=.=!',
-     '=_=',
-     '╰_╯',
-     '-_-z',
-     '^_-',
-     '囧rz',
-     'Orz',
-     '→_→',
-     '←_←',
-     '≧◇≦',
-     '(x_x)',
-     '(′o`)',
-     '(′ェ`)',
-     '(?_?)',
-     '(′θ`)',
-     '(*_*)',
-     '(@@)',
-     '⊙▽⊙',
-     '⊙△⊙',
-     '⊙_⊙',
-     '⊙﹏⊙',
-     '◑﹏◐',
-     '◑︿◐',
-     '◑__◐',
-     '∩__∩',
-     '∩﹏∩',
-     '（ˇˍˇ）',
-     '(′▽`〃)',
-     '(′0ノ`*)',
-     '(^_^;)',
-     '(@_@)',
-     '(*^^*)',
-     '(´・ω・`)',
-     '(=θωθ=)',
-     '（°ο°）',
-     '^(oo)^',
-     '(#^.^#)',
-     '（*^_^*）',
-     '(¯(●●)¯)',
-     '>"<|||',
-     '(′～`；)',
-     '(=′?`=)',
-     '(○’ω’○)',
-     'o(≧o≦)o',
-     '(??_??)?',
-     '└(^o^)┘',
-     '(︶^︶)',
-     '(>.<*)',
-     '(⊙ｏ⊙)',
-     '(⊙﹏⊙)',
-     '=^_^=',
-     '::>_<::',
-     '↖(^ω^)↗',
-     '~w_w~'],
-
-
-    // Objects
+    // Items
     ['\ud83d\udd30', '\ud83d\udc84', '\ud83d\udc5e',
      '\ud83d\udc5f', '\ud83d\udc51', '\ud83d\udc52',
      '\ud83c\udfa9', '\ud83c\udf93', '\ud83d\udc53',
@@ -343,7 +231,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
      '\ud83c\udf0e', '\ud83c\udf0f', '\ud83c\udf0d',
      '\ud83c\udf10'],
 
-    // Places
+    // Places of interests
     ['\ud83c\udfe0', '\ud83c\udfe1', '\ud83c\udfe2',
      '\ud83c\udfe3', '\ud83c\udfe4', '\ud83c\udfe5',
      '\ud83c\udfe6', '\ud83c\udfe7', '\ud83c\udfe8',
@@ -384,7 +272,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
      '\u2668', '\ud83d\udc8c', '\ud83d\udc8d',
      '\ud83d\udc8e', '\ud83d\udc90', '\ud83d\udc92'],
 
-    // Symbols
+    // Special characters
     ['\ud83d\udd1d', '\ud83d\udd19', '\ud83d\udd1b',
      '\ud83d\udd1c', '\ud83d\udd1a', '\u23f3',
      '\u231b', '\u23f0', '\u2648',
@@ -455,27 +343,137 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
      '\ud83d\udd00', '\ud83d\udd01', '\ud83d\udd02',
      '\ud83d\udd04', '\ud83d\udce7', '\ud83d\udd05',
      '\ud83d\udd06', '\ud83d\udd07', '\ud83d\udd08',
-     '\ud83d\udd09', '\ud83d\udd0a']
-  ];
+     '\ud83d\udd09', '\ud83d\udd0a'],
 
+    // Emoticon
+    [':)',
+     ';-)',
+     ':-D',
+     ':P',
+     ':-(',
+     ':\'(',
+     ':-)',
+     ':-*',
+     ':-$',
+     ':-\\',
+     ':-[',
+     ':-!',
+     ':S',
+     ':O',
+     ':-O',
+     'B-)',
+     'o_O',
+     'O_o',
+     '^O^',
+     '-.-',
+     '^_^',
+     '^﹏^',
+     '^m^',
+     '^/^',
+     '~_~',
+     '-_-',
+     '-_-||',
+     '>_<',
+     '><',
+     '>﹏<',
+     '_#',
+     '\#_#',
+     '*-*',
+     '(^^)',
+     '(^_^)',
+     '(^.^)',
+     '(^!^)',
+     '(^J^)',
+     '(^m^)',
+     '(^\'^)',
+     '(^_-)',
+     '(^O^)',
+     '(^o^)',
+     '(^q^)',
+     '(^○^)',
+     '(^O^;)',
+     '(^m^;)',
+     '(^Q^)',
+     '!(^^)!',
+     'T_T',
+     '(ToT)',
+     '(T_T)',
+     '\@_\@',
+     '=.=',
+     '=.=!',
+     '=_=',
+     '╰_╯',
+     '-_-z',
+     '^_-',
+     '囧rz',
+     'Orz',
+     '→_→',
+     '←_←',
+     '≧◇≦',
+     '(x_x)',
+     '(′o`)',
+     '(′ェ`)',
+     '(?_?)',
+     '(′θ`)',
+     '(*_*)',
+     '(@@)',
+     '⊙▽⊙',
+     '⊙△⊙',
+     '⊙_⊙',
+     '⊙﹏⊙',
+     '◑﹏◐',
+     '◑︿◐',
+     '◑__◐',
+     '∩__∩',
+     '∩﹏∩',
+     '（ˇˍˇ）',
+     '(′▽`〃)',
+     '(′0ノ`*)',
+     '(^_^;)',
+     '(@_@)',
+     '(*^^*)',
+     '(´・ω・`)',
+     '(=θωθ=)',
+     '（°ο°）',
+     '^(oo)^',
+     '(#^.^#)',
+     '（*^_^*）',
+     '(¯(●●)¯)',
+     '>"<|||',
+     '(′～`；)',
+     '(=′?`=)',
+     '(○’ω’○)',
+     'o(≧o≦)o',
+     '(??_??)?',
+     '└(^o^)┘',
+     '(︶^︶)',
+     '(>.<*)',
+     '(⊙ｏ⊙)',
+     '(⊙﹏⊙)',
+     '=^_^=',
+     '::>_<::',
+     '↖(^ω^)↗',
+     '~w_w~']
+  ];
   var keyList = [];
   var mapping = {};
   keyList.push(util.createTabBarKey('Tabbar0', EmojiType.RECENT,
-      Css.EMOJI_SWITCH_RECENT));
-  keyList.push(util.createTabBarKey('Tabbar1', EmojiType.FAVORITS,
-      Css.EMOJI_SWITCH_FAVORITS));
-  keyList.push(util.createTabBarKey('Tabbar2', EmojiType.FACES,
-      Css.EMOJI_SWITCH_EMOJI));
-  keyList.push(util.createTabBarKey('Tabbar3', EmojiType.EMOTICON,
-      Css.EMOJI_SWITCH_EMOTICON));
-  keyList.push(util.createTabBarKey('Tabbar4', EmojiType.SYMBOL,
-      Css.EMOJI_SWITCH_SPECIAL));
-  keyList.push(util.createTabBarKey('Tabbar5', EmojiType.NATURE,
-      Css.EMOJI_SWITCH_FLOWER));
-  keyList.push(util.createTabBarKey('Tabbar6', EmojiType.PLACES,
-      Css.EMOJI_SWITCH_CAR));
-  keyList.push(util.createTabBarKey('Tabbar7', EmojiType.OBJECTS,
-      Css.EMOJI_SWITCH_TRIANGLE));
+      Css.EMOJI_TABBAR_RECENT));
+  keyList.push(util.createTabBarKey('Tabbar1', EmojiType.HOT,
+      Css.EMOJI_TABBAR_HOT));
+  keyList.push(util.createTabBarKey('Tabbar2', EmojiType.EMOTION,
+      Css.EMOJI_TABBAR_EMOTION));
+  keyList.push(util.createTabBarKey('Tabbar3', EmojiType.ITEMS,
+      Css.EMOJI_TABBAR_ITEMS));
+  keyList.push(util.createTabBarKey('Tabbar4', EmojiType.NATURE,
+      Css.EMOJI_TABBAR_NATURE));
+  keyList.push(util.createTabBarKey('Tabbar5', EmojiType.PLACES_OF_INTERESTS,
+      Css.EMOJI_TABBAR_PLACES_OF_INTERESTS));
+  keyList.push(util.createTabBarKey('Tabbar6',
+      EmojiType.SPECIAL_CHARACTERS,
+      Css.EMOJI_TABBAR_SPECIAL_CHARACTERS));
+  keyList.push(util.createTabBarKey('Tabbar7', EmojiType.EMOTICON,
+      Css.EMOJI_TABBAR_EMOTICON));
   keyList.push(util.createBackKey());
 
   var amount = 0;
@@ -486,11 +484,9 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
     for (var j = 0, lenJ = keyCharacters[i].length; j < lenJ; j++) {
       var spec = {};
       spec[SpecNodeName.ID] = 'emojikey' + amount;
-      spec[SpecNodeName.ICON_CSS_CLASS] =
-          i18n.input.chrome.inputview.Css.EMOJI_TEXT;
       spec[SpecNodeName.TYPE] = ElementType.EMOJI_KEY;
       spec[SpecNodeName.TEXT] = keyCharacters[i][j];
-      spec[SpecNodeName.IS_EMOTICON] = (i == emoticonType);
+      spec[SpecNodeName.IS_EMOTICON] = (i == EmojiType.EMOTICON);
       var key = i18n.input.chrome.inputview.content.util.createKey(spec);
       keyList.push(key);
       amount++;
@@ -498,19 +494,17 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
     for (var j = keyCharacters[i].length; j < acturalLength; j++) {
       var spec = {};
       spec[SpecNodeName.ID] = 'emojikey' + amount;
-      spec[SpecNodeName.ICON_CSS_CLASS] =
-          i18n.input.chrome.inputview.Css.EMOJI_TEXT;
       spec[SpecNodeName.TYPE] = ElementType.EMOJI_KEY;
       spec[SpecNodeName.TEXT] = '';
-      spec[SpecNodeName.IS_EMOTICON] = (i == emoticonType);
+      spec[SpecNodeName.IS_EMOTICON] = (i == EmojiType.EMOTICON);
       var key = i18n.input.chrome.inputview.content.util.createKey(spec);
       keyList.push(key);
       amount++;
     }
   }
-  keyList.push(util.createPageIndicator('indicator-background'));
   keyList.push(util.createBackspaceKey());
   keyList.push(util.createEnterKey());
+  keyList.push(util.createHideKeyboardKey());
 
   var tabbarLength = 1 + keyCharacters.length;
   var key = [];
@@ -533,7 +527,8 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
         emojiKeyAmount;
     for (var j = 0, lenJ = acturalLength; j < lenJ; j++) {
       key = keyList[amount + tabbarLength];
-      mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + (amount + offset);
+      mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + (amount +
+          offset);
       amount++;
     }
   }

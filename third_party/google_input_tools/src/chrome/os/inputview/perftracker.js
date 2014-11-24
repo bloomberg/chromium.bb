@@ -36,7 +36,8 @@ i18n.input.chrome.inputview.PerfTracker = function(
   this.startInMs_ = new Date().getTime();
 
   this.tick(htmlLoadedTickName,
-      window['InputViewPageStartLoading']);
+      window['InputViewPageStartLoading'],
+      'Time elapsed before 0');
 };
 var PerfTracker = i18n.input.chrome.inputview.PerfTracker;
 
@@ -85,15 +86,21 @@ PerfTracker.prototype.stop = function() {
  * @param {PerfTracker.TickName} tickName .
  * @param {number=} opt_startInMs The timestamp used as start, if not
  *     specified, use this.startInMs_.
+ * @param {string=} opt_msg Extra log message to describe the logging in more
+ *     detail.
  */
-PerfTracker.prototype.tick = function(tickName, opt_startInMs) {
+PerfTracker.prototype.tick = function(tickName, opt_startInMs, opt_msg) {
   if (this.stopped_) {
     return;
   }
 
   var startInMs = opt_startInMs || this.startInMs_;
   var cost = new Date().getTime() - startInMs;
-  console.log(tickName + '  -  ' + cost);
+  var msg = tickName + '  -  ' + cost;
+  if (opt_msg) {
+    msg += '  -  ' + opt_msg;
+  }
+  console.log(msg);
   i18n.input.chrome.Statistics.getInstance().recordLatency(
       'InputMethod.VirtualKeyboard.InitLatency.' + tickName, cost);
 };

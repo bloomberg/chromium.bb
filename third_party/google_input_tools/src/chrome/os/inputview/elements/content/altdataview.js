@@ -17,6 +17,7 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('goog.math.Box');
 goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Accents');
@@ -69,7 +70,7 @@ i18n.input.chrome.inputview.elements.content.AltDataView = function(
   /**
    * The window that shows accented characters.
    *
-   * @type {Object}
+   * @type {chrome.app.window.AppWindow}
    * @private
    */
   this.altdataWindow_ = null;
@@ -190,9 +191,7 @@ AltDataView.prototype.enterDocument = function() {
 AltDataView.prototype.show = function(key, isRTL, enableIMEWindow) {
   this.triggeredBy = key;
   this.enableIMEWindow_ = enableIMEWindow;
-  var coordinate = goog.style.getClientPosition(key.getElement());
-  var x = coordinate.x;
-  var y = coordinate.y;
+  var parentKeyLeftTop = goog.style.getClientPosition(key.getElement());
   var width = key.availableWidth;
   var height = key.availableHeight;
   var characters;
@@ -214,46 +213,76 @@ AltDataView.prototype.show = function(key, isRTL, enableIMEWindow) {
 
   goog.style.setElementShown(this.getElement(), true);
   this.getDomHelper().removeChildren(this.getElement());
-  // The total width of the characters + the separators, every separator has
-  // width = 1.
-  var altDataWidth = width * characters.length;
-
-  var left = coordinate.x;
-  if ((left + altDataWidth) > screen.width) {
-    // If no enough space at the right, then make it to the left.
-    left = coordinate.x + width - altDataWidth;
-    characters.reverse();
-  }
-
-  var elemTop = coordinate.y - height - AltDataView.PADDING_;
 
   if (this.enableIMEWindow_) {
-    var screenCoordinate = convertToScreenCoordinate(
-        new goog.math.Coordinate(left, elemTop));
-    if (this.altdataWindow_)
+    if (this.altdataWindow_) {
       this.altdataWindow_.close();
+    }
+
+    // TODO(bshe): For easier review, hardcode maxColumns to 3 here. A follow up
+    // CL will remove this hack.
+    var maxColumns = 3;
+    var numOfKeys = characters.length;
+    var numOfColumns = Math.min(numOfKeys, maxColumns);
+    var numOfRows = Math.ceil(numOfKeys / numOfColumns);
+    var startKeyIndex = this.getStartKeyIndex_(parentKeyLeftTop.x, numOfColumns,
+        width, screen.width);
+
+    var altDataWindowWidth = numOfColumns * width;
+    var altDataWindowHeight = numOfRows * height;
+    var windowTop = parentKeyLeftTop.y - altDataWindowHeight -
+        AltDataView.PADDING_;
+    var windowLeft = parentKeyLeftTop.x - startKeyIndex * width;
+    var screenCoordinate = convertToScreenCoordinate(
+        new goog.math.Coordinate(windowLeft, windowTop));
+    var windowBounds = goog.object.create('left', screenCoordinate.x,
+        'top', screenCoordinate.y, 'width', altDataWindowWidth,
+        'height', altDataWindowHeight);
     var self = this;
-    var screenBounds = goog.object.create('left', screenCoordinate.x,
-        'top', screenCoordinate.y, 'width', altDataWidth, 'height', height);
     inputview.createWindow(
         chrome.runtime.getURL(AltDataView.ACCENTS_WINDOW_URL_),
-        goog.object.create('outerBounds', screenBounds, 'frame', 'none',
-            'hidden', true),
+        goog.object.create('outerBounds', windowBounds, 'frame', 'none',
+            'hidden', true, 'alphaEnabled', true),
         function(newWindow) {
           self.altdataWindow_ = newWindow;
           var contentWindow = self.altdataWindow_.contentWindow;
           contentWindow.addEventListener('load', function() {
-            contentWindow.accents.setAccents(characters);
+            contentWindow.accents.setAccents(characters, numOfColumns,
+                numOfRows, width, height, startKeyIndex);
             contentWindow.accents.highlightItem(
-                Math.ceil(coordinate.x + width / 2),
-                Math.ceil(coordinate.y + height / 2));
+                Math.ceil(parentKeyLeftTop.x + width / 2),
+                Math.ceil(parentKeyLeftTop.y + height / 2),
+                AltDataView.FINGER_DISTANCE_TO_CANCEL_ALTDATA_);
+            var marginBox = goog.style.getMarginBox(
+                contentWindow.document.body);
+            // Adjust the window bounds to compensate body's margin. The margin
+            // box is used to display shadow.
+            var outerBounds = self.altdataWindow_.outerBounds;
+            outerBounds.left -= marginBox.left;
+            outerBounds.top -= marginBox.top;
+            outerBounds.width += (marginBox.left + marginBox.right);
+            outerBounds.height += (marginBox.top + marginBox.bottom);
+            self.altdataWindow_.outerBounds = outerBounds;
             self.altdataWindow_.show();
           });
         });
   } else {
+    // The total width of the characters + the separators, every separator has
+    // width = 1.
+    var altDataWindowWidth = width * characters.length;
+    var altDataWindowHeight = height;
+    var left = parentKeyLeftTop.x;
+
+    if ((left + altDataWindowWidth) > screen.width) {
+      // If no enough space at the right, then make it to the left.
+      left = parentKeyLeftTop.x + width - altDataWindowWidth;
+      characters.reverse();
+    }
+    var elemTop = parentKeyLeftTop.y - altDataWindowHeight -
+        AltDataView.PADDING_;
     if (elemTop < 0) {
       // If no enough top space, then display below the key.
-      elemTop = coordinate.y + height + AltDataView.PADDING_;
+      elemTop = parentKeyLeftTop.y + height + AltDataView.PADDING_;
     }
 
     for (var i = 0; i < characters.length; i++) {
@@ -265,12 +294,47 @@ AltDataView.prototype.show = function(key, isRTL, enableIMEWindow) {
       }
     }
     goog.style.setPosition(this.getElement(), left, elemTop);
-    this.highlightItem(Math.ceil(coordinate.x + width / 2),
-                       Math.ceil(coordinate.y + height / 2));
+    this.highlightItem(Math.ceil(parentKeyLeftTop.x + width / 2),
+                       Math.ceil(parentKeyLeftTop.y + height / 2));
   }
 
   goog.style.setElementShown(this.coverElement_, true);
   this.triggeredBy.setHighlighted(true);
+};
+
+
+/**
+ * Gets the index of the start key in bottom row. The start key is the key which
+ * is displayed above the parent key and should have default focus. Normally,
+ * the start key is the middle key(skewed to the right if even number of keys).
+ * If the space on the left or right side is not enough to display all keys,
+ * move the index to right or left accrodingly.
+ * @param {number} parentKeyLeft The x coordinate of parent key in screen
+ *     coordinate system.
+ * @param {number} numOfColumns .
+ * @param {number} width .
+ * @param {number} screenWidth The width of the screen.
+ * @return {number} The index of the key which posistioned above parent key.
+ * @private
+ */
+AltDataView.prototype.getStartKeyIndex_ = function(parentKeyLeft, numOfColumns,
+    width, screenWidth) {
+  var startKeyIndex = Math.floor((numOfColumns - 1) / 2);
+  // Number of keys on the left side of the start key.
+  var numOfLeftKeys = startKeyIndex;
+  // Number of keys on the right side of the start key, including the start key.
+  var numOfRightKeys = numOfColumns - startKeyIndex;
+  var maxLeftKeys = Math.floor(parentKeyLeft / width);
+  var maxRightKeys = Math.floor((screenWidth - parentKeyLeft) / width);
+
+  if (maxLeftKeys + maxRightKeys < numOfColumns) {
+    console.error('There are too many keys in a row.');
+  } else if (numOfLeftKeys > maxLeftKeys) {
+    startKeyIndex = maxLeftKeys;
+  } else if (numOfRightKeys > maxRightKeys) {
+    startKeyIndex = numOfColumns - maxRightKeys;
+  }
+  return startKeyIndex;
 };
 
 
@@ -303,7 +367,8 @@ AltDataView.prototype.highlightItem = function(x, y) {
       var screenCoordinate = convertToScreenCoordinate(
           new goog.math.Coordinate(x, y));
       this.altdataWindow_.contentWindow.accents.highlightItem(
-          screenCoordinate.x, screenCoordinate.y);
+          screenCoordinate.x, screenCoordinate.y,
+          AltDataView.FINGER_DISTANCE_TO_CANCEL_ALTDATA_);
     }
   } else {
     for (var i = 0; i < this.altdataElements_.length; i++) {

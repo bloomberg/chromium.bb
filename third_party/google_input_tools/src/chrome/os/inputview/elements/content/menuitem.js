@@ -13,6 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.MenuItem');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -34,12 +36,13 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
  * @param {Object} item The list time to be added.
  * @param {i18n.input.chrome.inputview.elements.content.MenuItem.Type}
  *     menuItemType .
+ * @param {string} ariaLabel The aria label associated with this item.
  * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.MenuItem = function(id, item,
-    menuItemType, opt_eventTarget) {
+    menuItemType, ariaLabel, opt_eventTarget) {
   goog.base(this, id, ElementType.MENU_ITEM, opt_eventTarget);
 
   /**
@@ -53,6 +56,8 @@ i18n.input.chrome.inputview.elements.content.MenuItem = function(id, item,
    * @private
    */
   this.menuItemType_ = menuItemType;
+
+  this.ariaLabel_ = ariaLabel;
 
   this.pointerConfig.stopEventPropagation = false;
   this.pointerConfig.preventDefault = false;
@@ -87,10 +92,14 @@ MenuItem.prototype.createDom = function() {
       if (this.item_['iconURL']) {
         indicatorDiv.style.backgroundImage =
             'url(' + this.item_['iconURL'] + ')';
+        goog.a11y.aria.setState(indicatorDiv, goog.a11y.aria.State.LABEL,
+            this.ariaLabel_);
       } else {
         var indicatorTextDiv = dom.createDom(goog.dom.TagName.DIV,
             i18n.input.chrome.inputview.Css.MENU_LIST_INDICATOR_NAME);
         indicatorTextDiv.textContent = this.item_['indicator'];
+        goog.a11y.aria.setState(indicatorTextDiv, goog.a11y.aria.State.LABEL,
+            this.ariaLabel_);
         dom.appendChild(indicatorDiv, indicatorTextDiv);
       }
       dom.appendChild(elem, indicatorDiv);
@@ -99,6 +108,8 @@ MenuItem.prototype.createDom = function() {
           i18n.input.chrome.inputview.Css.MENU_LIST_NAME);
       var nameText = dom.createDom(goog.dom.TagName.DIV);
       nameText.innerText = this.item_['name'];
+      goog.a11y.aria.setState(nameText, goog.a11y.aria.State.LABEL,
+          this.ariaLabel_);
       dom.appendChild(nameDiv, nameText);
       dom.appendChild(elem, nameDiv);
       break;
@@ -106,6 +117,8 @@ MenuItem.prototype.createDom = function() {
       goog.dom.classlist.add(elem,
           i18n.input.chrome.inputview.Css.MENU_FOOTER_ITEM);
       goog.dom.classlist.add(elem, this.item_['iconCssClass']);
+      goog.a11y.aria.setState(/** @type {!Element} **/(elem),
+          goog.a11y.aria.State.LABEL, this.ariaLabel_);
   }
 };
 

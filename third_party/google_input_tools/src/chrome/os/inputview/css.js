@@ -36,6 +36,8 @@ i18n.input.chrome.inputview.Css = {
   CANDIDATE_DEFAULT: goog.getCssName('inputview-candidate-default'),
   CANDIDATE_HIGHLIGHT: goog.getCssName('inputview-candidate-highlight'),
   CANDIDATE_INTER_CONTAINER: goog.getCssName('inputview-candiate-ic'),
+  CANDIDATE_INTERNAL_WRAPPER: goog.getCssName(
+      'inputview-candidate-internal-wrapper'),
   CANDIDATE_SEPARATOR: goog.getCssName('inputview-candidate-separator'),
   CANDIDATE_VIEW: goog.getCssName('inputview-candidate-view'),
   CANDIDATE_VIEW_DISABLED: goog.getCssName('candidate-view-disabled'),
@@ -59,33 +61,30 @@ i18n.input.chrome.inputview.Css = {
   EMOJI_BACK: goog.getCssName('inputview-emoji-back'),
   EMOJI_FONT: goog.getCssName('inputview-emoji-font'),
   EMOJI_KEY: goog.getCssName('inputview-emoji-key'),
-  EMOJI_KEY_HIGHLIGHT: goog.getCssName('inputview-emoji-key-highlight'),
   EMOJI_SWITCH: goog.getCssName('inputview-emoji-switch'),
-  EMOJI_SWITCH_CAR:
-      goog.getCssName('inputview-emoji-switch-car'),
-  EMOJI_SWITCH_EMOJI:
-      goog.getCssName('inputview-emoji-switch-emoji'),
-  EMOJI_SWITCH_EMOTICON:
+  EMOJI_TABBAR_PLACES_OF_INTERESTS:
+      goog.getCssName('inputview-emoji-switch-poi'),
+  EMOJI_TABBAR_EMOTION:
+      goog.getCssName('inputview-emoji-switch-emotion'),
+  EMOJI_TABBAR_EMOTICON:
       goog.getCssName('inputview-emoji-switch-emoticon'),
-  EMOJI_SWITCH_FAVORITS:
-      goog.getCssName('inputview-emoji-switch-favorits'),
-  EMOJI_SWITCH_FLOWER:
-      goog.getCssName('inputview-emoji-switch-flower'),
+  EMOJI_TABBAR_HOT:
+      goog.getCssName('inputview-emoji-switch-hot'),
+  EMOJI_TABBAR_NATURE:
+      goog.getCssName('inputview-emoji-switch-nature'),
   EMOJI_SWITCH_HIGHLIGHT:
       goog.getCssName('inputview-emoji-switch-highlight'),
-  EMOJI_SWITCH_RECENT:
+  EMOJI_TABBAR_RECENT:
       goog.getCssName('inputview-emoji-switch-recent'),
-  EMOJI_SWITCH_SPECIAL:
-      goog.getCssName('inputview-emoji-switch-special'),
-  EMOJI_SWITCH_SYMBOL:
-      goog.getCssName('inputview-emoji-switch-symbol'),
-  EMOJI_SWITCH_TRIANGLE:
-      goog.getCssName('inputview-emoji-switch-triangle'),
+  EMOJI_TABBAR_SPECIAL_CHARACTERS:
+      goog.getCssName('inputview-emoji-switch-special-characters'),
+  EMOJI_TABBAR_ITEMS:
+      goog.getCssName('inputview-emoji-switch-items'),
   EMOJI_TABBAR_KEY: goog.getCssName('inputview-emoji-tabbar-key'),
   EMOJI_TABBAR_KEY_HIGHLIGHT:
       goog.getCssName('inputview-emoji-tabbar-key-highlight'),
   EMOJI_TABBAR_SK: goog.getCssName('inputview-emoji-tabbar-sk'),
-  EMOJI_TEXT: goog.getCssName('inputview-emoji-text'),
+  EMOTICON: goog.getCssName('inputview-emoticon'),
   ENTER_ICON: goog.getCssName('inputview-enter-icon'),
   EN_SWITCHER_DEFAULT: goog.getCssName('inputview-en-switcher-default'),
   EN_SWITCHER_ENGLISH: goog.getCssName('inputview-en-switcher-english'),

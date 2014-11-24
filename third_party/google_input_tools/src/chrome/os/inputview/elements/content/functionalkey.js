@@ -176,6 +176,8 @@ FunctionalKey.prototype.getChromeVoxMessage = function() {
       return chrome.i18n.getMessage('HIDE_KEYBOARD');
     case ElementType.GLOBE_KEY:
       return chrome.i18n.getMessage('GLOBE');
+    case ElementType.MENU_KEY:
+      return chrome.i18n.getMessage('MENU_KEY');
   }
   return '';
 };

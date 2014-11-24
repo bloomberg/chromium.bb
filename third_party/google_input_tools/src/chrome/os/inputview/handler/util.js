@@ -11,30 +11,33 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.message.Event');
+goog.provide('i18n.input.chrome.inputview.handler.Util');
 
-goog.require('goog.events.Event');
+goog.require('goog.dom');
+
+
+goog.scope(function() {
+var Util = i18n.input.chrome.inputview.handler.Util;
 
 
 
 /**
- * The message event.
+ * Gets the view.
  *
- * @param {i18n.input.chrome.message.Type} type .
- * @param {*} msg .
- * @param {Function=} opt_sendResponse .
- * @constructor
- * @extends {goog.events.Event}
+ * @param {Node} target .
+ * @return {i18n.input.chrome.inputview.elements.Element} .
  */
-i18n.input.chrome.message.Event = function(type, msg, opt_sendResponse) {
-  goog.base(this, type);
-
-  /** @type {*} */
-  this.msg = msg;
-
-  /** @type {Function} */
-  this.sendResponse = opt_sendResponse || null;
+Util.getView = function(target) {
+  if (!target) {
+    return null;
+  }
+  var element = /** @type {!Element} */ (target);
+  var view = element['view'];
+  while (!view && element) {
+    view = element['view'];
+    element = goog.dom.getParentElement(element);
+  }
+  return view;
 };
-goog.inherits(i18n.input.chrome.message.Event,
-    goog.events.Event);
 
+});  // goog.scope

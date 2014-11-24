@@ -46,17 +46,6 @@ i18n.input.chrome.inputview.elements.content.MenuKey = function(id, type,
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.MenuKey,
     i18n.input.chrome.inputview.elements.content.FunctionalKey);
-var MenuKey = i18n.input.chrome.inputview.elements.content.MenuKey;
-
-
-/** @override */
-MenuKey.prototype.resize = function(width,
-    height) {
-  goog.base(this, 'resize', width, height);
-
-  // TODO: override width to remove space between menu key and the
-  // following key.
-};
 
 
 

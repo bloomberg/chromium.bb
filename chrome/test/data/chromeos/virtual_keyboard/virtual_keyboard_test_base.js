@@ -108,6 +108,31 @@ function mockExtensionApis(mockController) {
 }
 
 /**
+ * Adjust the size and position of the keyboard for testing.
+ */
+function adjustScreenForTesting() {
+  var style = document.body.style;
+  style.left = 0;
+  style.top = 0;
+  style.bottom = 0;
+  style.right = 0;
+  style.background = 'transparent';
+  style.position = 'absolute';
+
+  // Adjust positioning for testing in a non-fullscreen display.
+  Object.defineProperty(window.screen, 'width', {
+    get: function() {
+      return document.body.clientWidth;
+    }
+  });
+  Object.defineProperty(window.screen, 'height', {
+    get: function() {
+      return document.body.clientHeight;
+    }
+  });
+}
+
+/**
  * Create mocks for the virtualKeyboardPrivate API. Any tests that trigger API
  * calls must set expectations for call signatures.
  */
@@ -120,6 +145,8 @@ function setUp() {
   // completion of the test.
 
   mockExtensionApis(mockController);
+
+  adjustScreenForTesting();
 
   var validateSendCall = function(index, expected, observed) {
     // Only consider the first argument (VirtualKeyEvent) for the validation of
@@ -187,7 +214,6 @@ function tearDown() {
 
 // ------------------- Helper Functions -------------------------
 
-
 /**
  * Runs a test asynchronously once keyboard loading is complete.
  * @param {Function} runTestCallback Asynchronous test function.
@@ -213,34 +239,29 @@ function onKeyboardReady(runTestCallback, opt_config) {
 }
 
 /**
- * Defers continuation of a test until a keyset is loaded.
- * @param {string} keyset Name of the target keyset.
+ * Defers continuation of a test until one or more keysets are loaded.
+ * @param {string|Array.<string>} keyset Name of the target keyset or list of
+ *     keysets.
  * @param {Function} continueTestCallback Callback function to invoke in order
  *     to resume the test.
  */
-function onKeysetReady(keyset, continueTestCallback) {
-  if (keyset in controller.keysetDataMap_) {
+function onKeysetsReady(keyset, continueTestCallback) {
+  if (keyset instanceof Array) {
+    var blocked = false;
+    keyset.forEach(function(id) {
+      if (!(id in controller.container_.keysetViewMap))
+        blocked = true;
+    });
+    if (!blocked) {
+      continueTestCallback();
+      return;
+    }
+  } else if (keyset in controller.container_.keysetViewMap) {
     continueTestCallback();
     return;
   }
   setTimeout(function() {
-    onKeysetReady(keyset, continueTestCallback);
-  }, 100);
-}
-
-/**
- * Defers continuation of a test until a layout is loaded.
- * @param {string} layout Name of the target layout.
- * @param {Function} continueTestCallback Callback function to invoke in order
- *     to resume the test.
- */
-function onLayoutReady(layout, continueTestCallback) {
-  if (layout in controller.layoutDataMap_) {
-    continueTestCallback();
-    return;
-  }
-  setTimeout(function() {
-    onLayoutReady(layout, continueTestCallback);
+    onKeysetsReady(keyset, continueTestCallback);
   }, 100);
 }
 
@@ -250,10 +271,13 @@ function onLayoutReady(layout, continueTestCallback) {
  * @param {string} eventType .
  */
 function mockTouchEvent(key, eventType) {
-  var e = new Event(eventType, {
-    bubbles: true,
-    cancelable: true
-  });
+  var rect = key.getBoundingClientRect();
+  var x = rect.left + rect.width/2;
+  var y = rect.top + rect.height/2;
+  var e = document.createEvent('UIEvent');
+  e.initUIEvent(eventType, true, true);
+  e.touches = [{pageX: x, pageY: y}];
+  e.target = key;
   return key.dispatchEvent(e);
 }
 
@@ -314,7 +338,7 @@ function findKey(label, opt_rowId) {
     candidates = view.querySelectorAll('.inputview-special-key-name');
   for (var i = 0; i < candidates.length; i++) {
     if (candidates[i].textContent == label)
-      return getSoftKeyView(candidates[i]);
+      return candidates[i];
   }
   assertTrue(false, 'Cannot find key labeled \'' + label + '\'');
 }

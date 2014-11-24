@@ -264,7 +264,7 @@ ExpandedCandidateView.prototype.showCandidates = function(candidates,
   for (i = start; i < candidates.length; i++) {
     var candidate = candidates[i];
     var candidateElem = new Candidate(String(i), candidate, Type.CANDIDATE,
-        this.heightPerCell_, false, undefined, this);
+        this.heightPerCell_, false, false, undefined, this);
     candidateElem.render(line);
     var size = goog.style.getSize(candidateElem.getElement());
     var cells = Math.ceil(size.width / this.widthPerCell_);

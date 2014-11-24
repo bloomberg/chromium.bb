@@ -16,6 +16,7 @@ function verifyLayout(rows) {
     var first = sequence[0];
     var key = findKey(first, rowId);
     assertTrue(!!key, 'Unable to find "' + first + '" in "' + rowId + '"');
+    key = getSoftKeyView(key);
     for (var i = 1; i < sequence.length; i++) {
       var next = key.nextSibling;
       assertTrue(!!next,
@@ -95,13 +96,30 @@ function testCompactQwertyLayoutAsync(testDoneCallback) {
     verifyLayout(lowercase);
     mockTap(findKeyById('ShiftLeft'));
     verifyLayout(uppercase);
-    mockTap(findKey('?123'));
-    verifyLayout(symbol);
-    mockTap(findKey('~[<'));
-    verifyLayout(more);
-    mockTap(findKey('abc'));
-    verifyLayout(lowercase);
-    testDoneCallback();
+    // Keyset views for symbol and more on the compact layout are lazy
+    // initialized. Wait for view creation to complete before continuing the
+    // test.
+    onKeysetsReady(['us.compact.symbol', 'us.compact.more'], function() {
+      onSwitchToKeyset('us.compact.symbol', function() {
+        assertEquals('us-compact-symbol', getActiveView().id,
+                     'Expecting symbol layout');
+        verifyLayout(symbol);
+        onSwitchToKeyset('us.compact.more', function() {
+          assertEquals('us-compact-more', getActiveView().id,
+                       'Expecting more symbols layout');
+          verifyLayout(more);
+          onSwitchToKeyset('us.compact.qwerty', function() {
+            assertEquals('us-compact-qwerty', getActiveView().id,
+                         'Expecting compact text layout');
+            verifyLayout(lowercase);
+            testDoneCallback();
+          });
+          mockTap(findKey('abc'));
+        });
+        mockTap(findKey('~[<'));
+      });
+      mockTap(findKey('?123'));
+    });
   };
   var config = {
     keyset: 'us.compact.qwerty',
@@ -136,40 +154,47 @@ function testHandwritingSupportAsync(testDoneCallback) {
  * the IME-VKs since the codebase is shared.
  */
 function testHandwritingLayoutAsync(testDoneCallback) {
+  var compactKeysets = [
+    'us.compact.qwerty',
+    'us.compact.symbol',
+    'us.compact.more',
+    'us.compact.numberpad'
+  ];
   var testCallback = function () {
-    var menu = document.querySelector('.inputview-menu-view');
-    assertEquals('none', getComputedStyle(menu).display,
-                 'Menu should be hidden initially');
-    mockTap(findKeyById('Menu'));
-    assertFalse(menu.hidden,
-                'Menu should be visible after tapping menu toggle button');
-    var hwtSelect = menu.querySelector('#handwriting');
-    assertTrue(!!hwtSelect, 'Handwriting should be available for testing');
-    // Keysets such as hwt and emoji lazy load in order to reduce latency before
+    // Non-active keysets are lazy loaded in order to reduce latency before
     // the virtual keyboard is shown. Wait until the load is complete to
     // continue testing.
-    onKeysetReady('hwt', function() {
-      onLayoutReady('handwriting', function() {
-        // Tapping the handwriting selector button triggers loading of the
-        // handwriting canvas. Wait for keyset switch before continuing the
-        // test.
-        onSwitchToKeyset('hwt', function() {
-          var view = getActiveView();
-          assertEquals('hwt', view.id, 'Handwriting layout is not active.');
-          var hwtCanvasView = view.querySelector('#canvasView');
-          assertTrue(!!hwtCanvasView, 'Unable to find canvas view');
-          var candidateView = document.getElementById('candidateView');
-          assertTrue(!!candidateView, 'Unable to find candidate view');
-          var backButton = candidateView.querySelector(
-              '.inputview-candidate-button');
-          assertEquals('HANDWRITING_BACK', backButton.textContent);
-          mockTap(backButton);
-          assertEquals('us-compact-qwerty', getActiveView().id,
-                       'compact layout is not active.');
-          testDoneCallback();
-        });
-        mockTap(hwtSelect);
+    onKeysetsReady(compactKeysets, function() {
+      var menu = document.querySelector('.inputview-menu-view');
+      assertEquals('none', getComputedStyle(menu).display,
+                   'Menu should be hidden initially');
+      mockTap(findKeyById('Menu'));
+      assertFalse(menu.hidden,
+                  'Menu should be visible after tapping menu toggle button');
+      var menuBounds = menu.getBoundingClientRect();
+      assertTrue(menuBounds.width > 0 && menuBounds.height > 0,
+                 'Expect non-zero menu bounds.');
+      var hwtSelect = menu.querySelector('#handwriting');
+      assertTrue(!!hwtSelect, 'Handwriting should be available for testing');
+      var hwtSelectBounds = hwtSelect.getBoundingClientRect();
+      assertTrue(hwtSelectBounds.width > 0 && hwtSelectBounds.height > 0,
+                 'Expect non-zero size for hwt select button.');
+      onSwitchToKeyset('hwt', function() {
+        var view = getActiveView();
+        assertEquals('hwt', view.id, 'Handwriting layout is not active.');
+        var hwtCanvasView = view.querySelector('#canvasView');
+        assertTrue(!!hwtCanvasView, 'Unable to find canvas view');
+        var candidateView = document.getElementById('candidateView');
+        assertTrue(!!candidateView, 'Unable to find candidate view');
+        var backButton = candidateView.querySelector(
+            '.inputview-candidate-button');
+        assertEquals('HANDWRITING_BACK', backButton.textContent);
+        mockTap(backButton);
+        assertEquals('us-compact-qwerty', getActiveView().id,
+                     'compact layout is not active.');
+        testDoneCallback();
       });
+      mockTap(hwtSelect);
     });
   };
   var config = {

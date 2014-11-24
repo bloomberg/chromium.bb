@@ -36,13 +36,16 @@ var Name = i18n.input.chrome.message.Name;
  *     candidateType .
  * @param {number} height .
  * @param {boolean} isDefault .
+ * @param {boolean} autoFit True if this candidate will adapt to the width
+ *     automatically.
  * @param {number=} opt_width .
  * @param {goog.events.EventTarget=} opt_eventTarget .
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
 i18n.input.chrome.inputview.elements.content.Candidate = function(id,
-    candidate, candidateType, height, isDefault, opt_width, opt_eventTarget) {
+    candidate, candidateType, height, isDefault, autoFit, opt_width,
+    opt_eventTarget) {
   goog.base(this, id, ElementType.CANDIDATE, opt_eventTarget);
 
   /** @type {!Object} */
@@ -59,6 +62,9 @@ i18n.input.chrome.inputview.elements.content.Candidate = function(id,
 
   /** @type {boolean} */
   this.isDefault = isDefault;
+
+  /** @type {boolean} */
+  this.autoFit = autoFit;
 };
 var Candidate = i18n.input.chrome.inputview.elements.content.Candidate;
 goog.inherits(Candidate, i18n.input.chrome.inputview.elements.Element);
@@ -85,7 +91,15 @@ Candidate.prototype.createDom = function() {
   if (this.candidate['isEmoji']) {
     goog.dom.classlist.add(elem, Css.EMOJI_FONT);
   }
-  dom.setTextContent(elem, this.candidate[Name.CANDIDATE]);
+  if (this.autoFit) {
+    var wrapper = dom.createDom('div', {
+      'class': Css.CANDIDATE_INTERNAL_WRAPPER
+    }, this.candidate[Name.CANDIDATE]);
+    wrapper.style.width = this.width + 'px';
+    dom.appendChild(elem, wrapper);
+  } else {
+    dom.setTextContent(elem, this.candidate[Name.CANDIDATE]);
+  }
   elem.style.height = this.height + 'px';
   if (this.width > 0) {
     elem.style.width = this.width + 'px';

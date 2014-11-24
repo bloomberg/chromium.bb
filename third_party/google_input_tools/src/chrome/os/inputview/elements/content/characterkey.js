@@ -14,13 +14,11 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.CharacterKey');
 
 goog.require('goog.array');
-goog.require('goog.math.Coordinate');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Character');
 goog.require('i18n.input.chrome.inputview.elements.content.CharacterModel');
-goog.require('i18n.input.chrome.inputview.elements.content.GaussianEstimator');
 goog.require('i18n.input.chrome.inputview.elements.content.SoftKey');
 
 
@@ -189,16 +187,6 @@ CharacterKey.prototype.resize = function(width,
         this.getChildAt(i));
     child.resize(this.availableWidth, this.availableHeight);
   }
-
-  var elem = this.getElement();
-  this.topLeftCoordinate = goog.style.getClientPosition(elem);
-  this.centerCoordinate = new goog.math.Coordinate(
-      this.topLeftCoordinate.x + this.availableWidth / 2,
-      this.topLeftCoordinate.y + this.availableHeight / 2);
-  this.estimator = new i18n.input.chrome.inputview.elements.content.
-      GaussianEstimator(this.centerCoordinate,
-          this.stateManager_.covariance.getValue(this.type),
-          this.availableHeight / this.availableWidth);
 };
 
 

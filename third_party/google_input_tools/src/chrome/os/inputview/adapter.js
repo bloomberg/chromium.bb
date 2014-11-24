@@ -23,6 +23,7 @@ goog.require('i18n.input.chrome.inputview.ReadyState');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.events.EventType');
 goog.require('i18n.input.chrome.inputview.events.SurroundingTextChangedEvent');
+goog.require('i18n.input.chrome.message');
 goog.require('i18n.input.chrome.message.ContextType');
 goog.require('i18n.input.chrome.message.Event');
 goog.require('i18n.input.chrome.message.Name');
@@ -92,7 +93,7 @@ Adapter.prototype.isExperimental = false;
 Adapter.prototype.showGlobeKey = false;
 
 
-/** @protected {string} */
+/** @type {string} */
 Adapter.prototype.contextType = ContextType.DEFAULT;
 
 
@@ -109,14 +110,25 @@ Adapter.prototype.textBeforeCursor = '';
 
 
 /**
+  * Whether the background controller is on switching.
+  *
+  * @private {boolean}
+  */
+Adapter.prototype.isBgControllerSwitching_ = false;
+
+
+/**
  * Callback for updating settings.
  *
  * @param {!Object} message .
  * @private
  */
 Adapter.prototype.onUpdateSettings_ = function(message) {
-  this.contextType = message['contextType'];
-  this.screen = message['screen'];
+  this.screen = message[Name.SCREEN];
+  this.contextType = /** @type {string} */ (message[Name.CONTEXT_TYPE]);
+  // Resets the flag, since when inputview receive the update setting response,
+  // it means the background switching is done.
+  this.isBgControllerSwitching_ = false;
   this.dispatchEvent(new i18n.input.chrome.message.Event(Type.UPDATE_SETTINGS,
       message));
 };
@@ -267,16 +279,6 @@ Adapter.prototype.getContext = function() {
 
 
 /**
- * Gets the context type.
- *
- * @return {string} .
- */
-Adapter.prototype.getContextType = function() {
-  return this.contextType || ContextType.DEFAULT;
-};
-
-
-/**
  * Sends request for handwriting.
  *
  * @param {!Object} payload .
@@ -313,13 +315,13 @@ Adapter.prototype.onContextBlur_ = function() {
 /**
  * Callback when focus on a context.
  *
- * @param {string} contextType .
+ * @param {!Object<string, *>} message .
  * @private
  */
-Adapter.prototype.onContextFocus_ = function(contextType) {
-  this.contextType = contextType;
-  this.dispatchEvent(new goog.events.Event(i18n.input.chrome.inputview.events.
-      EventType.CONTEXT_FOCUS));
+Adapter.prototype.onContextFocus_ = function(message) {
+  this.contextType = /** @type {string} */ (message[Name.CONTEXT_TYPE]);
+  this.dispatchEvent(new goog.events.Event(
+      i18n.input.chrome.inputview.events.EventType.CONTEXT_FOCUS));
 };
 
 
@@ -331,6 +333,7 @@ Adapter.prototype.onContextFocus_ = function(contextType) {
  */
 Adapter.prototype.initBackground_ = function(languageCode) {
   chrome.runtime.getBackgroundPage((function() {
+    this.isBgControllerSwitching_ = true;
     chrome.runtime.sendMessage(
         goog.object.create(Name.TYPE, Type.CONNECT));
     chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
@@ -533,21 +536,6 @@ Adapter.prototype.hideKeyboard = function() {
 
 
 /**
- * Sends Input Tool code to background.
- *
- * @param {string} inputToolCode .
- */
-Adapter.prototype.setInputToolCode = function(inputToolCode) {
-  chrome.runtime.sendMessage(
-      goog.object.create(
-          Name.TYPE,
-          Type.HWT_SET_INPUTTOOL,
-          Name.MSG,
-          inputToolCode));
-};
-
-
-/**
  * Sends DOUBLE_CLICK_ON_SPACE_KEY message.
  */
 Adapter.prototype.doubleClickOnSpaceKey = function() {
@@ -555,18 +543,6 @@ Adapter.prototype.doubleClickOnSpaceKey = function() {
       goog.object.create(
           Name.TYPE,
           Type.DOUBLE_CLICK_ON_SPACE_KEY));
-};
-
-
-/**
- * Sends message to the background when switch to emoji.
- *
- */
-Adapter.prototype.setEmojiInputToolCode = function() {
-  chrome.runtime.sendMessage(
-      goog.object.create(
-          Name.TYPE,
-          Type.EMOJI_SET_INPUTTOOL));
 };
 
 
@@ -586,29 +562,6 @@ Adapter.prototype.toggleLanguageState = function(inputToolValue) {
 
 
 /**
- * Sends unset Input Tool code to background.
- */
-Adapter.prototype.unsetInputToolCode = function() {
-  chrome.runtime.sendMessage(
-      goog.object.create(
-          Name.TYPE,
-          Type.HWT_UNSET_INPUTTOOL));
-};
-
-
-/**
- * Sends message to the background when switch to other mode from emoji.
- *
- */
-Adapter.prototype.unsetEmojiInputToolCode = function() {
-  chrome.runtime.sendMessage(
-      goog.object.create(
-          Name.TYPE,
-          Type.EMOJI_UNSET_INPUTTOOL));
-};
-
-
-/**
  * Processes incoming message from option page or inputview window.
  *
  * @param {*} request Message from option page or inputview window.
@@ -622,12 +575,15 @@ Adapter.prototype.unsetEmojiInputToolCode = function() {
 Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
   var type = request[Name.TYPE];
   var msg = request[Name.MSG];
+  if (!i18n.input.chrome.message.isFromBackground(type)) {
+    return;
+  }
   switch (type) {
     case Type.CANDIDATES_BACK:
       this.onCandidatesBack_(msg);
       break;
     case Type.CONTEXT_FOCUS:
-      this.onContextFocus_(request[Name.CONTEXT_TYPE]);
+      this.onContextFocus_(msg);
       break;
     case Type.CONTEXT_BLUR:
       this.onContextBlur_();
@@ -640,6 +596,7 @@ Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
       break;
     case Type.HWT_NETWORK_ERROR:
     case Type.HWT_PRIVACY_INFO:
+    case Type.FRONT_TOGGLE_LANGUAGE_STATE:
       this.dispatchEvent(new i18n.input.chrome.message.Event(type, msg));
       break;
   }
@@ -662,6 +619,43 @@ Adapter.prototype.disposeInternal = function() {
   goog.dispose(this.handler_);
 
   goog.base(this, 'disposeInternal');
+};
+
+
+/**
+ * Return the background IME switching state.
+ *
+ * @return {boolean}
+ */
+Adapter.prototype.isSwitching = function() {
+  return this.isBgControllerSwitching_;
+};
+
+
+/**
+ * Set the inputtool.
+ *
+ * @param {string} keyset The keyset.
+ * @param {string} languageCode The language code.
+ */
+Adapter.prototype.setController = function(keyset, languageCode) {
+  chrome.runtime.sendMessage(
+      goog.object.create(
+          Name.TYPE,
+          Type.SET_CONTROLLER,
+          Name.MSG,
+          {'rawkeyset': keyset, 'languageCode': languageCode}));
+};
+
+
+/**
+ * Unset the inputtool
+ */
+Adapter.prototype.unsetController = function() {
+  chrome.runtime.sendMessage(
+      goog.object.create(
+          Name.TYPE,
+          Type.UNSET_CONTROLLER));
 };
 });  // goog.scope
 

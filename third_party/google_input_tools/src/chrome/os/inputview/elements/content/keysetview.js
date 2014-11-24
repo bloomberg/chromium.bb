@@ -262,7 +262,7 @@ KeysetView.prototype.createDom = function() {
   goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.VIEW);
   if (this.disableCandidateView) {
     goog.dom.classlist.add(
-      elem, i18n.input.chrome.inputview.Css.CANDIDATE_VIEW_DISABLED);
+        elem, i18n.input.chrome.inputview.Css.CANDIDATE_VIEW_DISABLED);
   }
 
   var children = this.layoutData_['children'];
@@ -402,6 +402,10 @@ KeysetView.prototype.applyConditions = function(conditions) {
  * @param {boolean} value .
  */
 KeysetView.prototype.updateCondition = function(name, value) {
+  if (this.conditions_[name] === value) {
+    // No need to update.
+    return;
+  }
   for (var id in this.softKeyViewMap_) {
     var skv = this.softKeyViewMap_[id];
     skv.dynamicaGrantedWeight = 0;
@@ -512,7 +516,7 @@ KeysetView.prototype.createLayoutElement_ = function(spec,
  * Checks if there is altgr character.
  *
  * @param {!Array.<!Object>} keySpecs The list of key specs.
- * @return {[boolean, boolean]} A list with two boolean values, the first is
+ * @return {!Array<boolean>} A list with two boolean values, the first is
  *    for whether there is altgr character of letter keys, the second is for
  *    symbol keys.
  * @private
@@ -706,6 +710,16 @@ KeysetView.prototype.isHandwriting = function() {
 
 
 /**
+ * True if the keyset is tab style.
+ *
+ * @return {boolean} .
+ */
+KeysetView.prototype.isTabStyle = function() {
+  return this.keyboardCode_ == 'hwt' || this.keyboardCode_ == 'emoji';
+};
+
+
+/**
  * Get the subview of the keysetview according to the id.
  *
  * @param {string} id The id.
@@ -729,6 +743,11 @@ KeysetView.prototype.activate = function(rawKeyset) {
     goog.dom.classlist.add(this.getElement(), Css.PINYIN);
   } else {
     goog.dom.classlist.remove(this.getElement(), Css.PINYIN);
+  }
+  // Switches between compact zhuyin and zhuyin needs to change the controlelr,
+  // since they use different background controllers.
+  if (rawKeyset.indexOf('zhuyin') != -1) {
+    this.adapter.setController(rawKeyset, this.languageCode);
   }
 };
 

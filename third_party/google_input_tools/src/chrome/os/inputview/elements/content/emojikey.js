@@ -12,6 +12,8 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.EmojiKey');
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -48,16 +50,12 @@ i18n.input.chrome.inputview.elements.content.EmojiKey = function(id, type,
   /**
    * Wether it is an emoticon.
    *
-   * @private {boolean}
+   * @type {boolean}
    */
-  this.isEmoticon_ = isEmoticon;
+  this.isEmoticon = isEmoticon;
 
   this.pointerConfig.stopEventPropagation = false;
-
   this.pointerConfig.dblClick = true;
-  this.pointerConfig.longPressWithPointerUp = true;
-  this.pointerConfig.longPressDelay = 200;
-
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.EmojiKey,
     i18n.input.chrome.inputview.elements.content.FunctionalKey);
@@ -74,27 +72,34 @@ EmojiKey.prototype.createDom = function() {
         i18n.input.chrome.inputview.Css.SPECIAL_KEY_NAME, this.text);
     dom.appendChild(this.tableCell, this.textElem);
   }
-  // Special size for emojitcon.
-  if (this.isEmoticon_) {
-    this.textElem.style.fontSize = '20px';
-  }
-  goog.dom.classlist.remove(elem, i18n.input.chrome.inputview.Css.SOFT_KEY);
-  goog.dom.classlist.remove(this.bgElem,
-      i18n.input.chrome.inputview.Css.SPECIAL_KEY_BG);
-  goog.dom.classlist.add(this.bgElem,
+  goog.dom.classlist.add(elem,
       i18n.input.chrome.inputview.Css.EMOJI_KEY);
+  var emojiName = this.getLocalizedName();
+  if (emojiName) {
+    goog.a11y.aria.setState(/** @type {!Element} */ (elem),
+        goog.a11y.aria.State.LABEL, emojiName);
+  }
+
+  this.updateText(this.text, this.isEmoticon);
 };
 
 
-/** @override */
-EmojiKey.prototype.setHighlighted = function(highlight) {
-  if (highlight) {
-    goog.dom.classlist.add(this.bgElem,
-        i18n.input.chrome.inputview.Css.EMOJI_KEY_HIGHLIGHT);
-  } else {
-    goog.dom.classlist.remove(this.bgElem,
-        i18n.input.chrome.inputview.Css.EMOJI_KEY_HIGHLIGHT);
+/**
+ * Gets the localized name for the emoji.
+ *
+ * @return {string} .
+ */
+EmojiKey.prototype.getLocalizedName = function() {
+  var lead = this.text.charCodeAt(0);
+  if (!lead) {
+    return '';
   }
+  var trail = this.text.charCodeAt(1);
+  var msgName = lead.toString(16);
+  if (!!trail) {
+    msgName += '_' + trail.toString(16);
+  }
+  return chrome.i18n.getMessage(msgName.toLowerCase());
 };
 
 
@@ -109,9 +114,17 @@ EmojiKey.prototype.update = function() {
  * Update the emoji's text
  *
  * @param {string} text The new text.
+ * @param {boolean} isEmoticon .
  */
-EmojiKey.prototype.updateText = function(text) {
+EmojiKey.prototype.updateText = function(text, isEmoticon) {
   this.text = text;
+  this.isEmoticon = isEmoticon;
   goog.dom.setTextContent(this.textElem, text);
+  var elem = this.getElement();
+  if (isEmoticon) {
+    goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.EMOTICON);
+  } else {
+    goog.dom.classlist.remove(elem, i18n.input.chrome.inputview.Css.EMOTICON);
+  }
 };
 });  // goog.scope

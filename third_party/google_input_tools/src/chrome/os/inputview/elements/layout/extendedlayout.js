@@ -152,9 +152,8 @@ ExtendedLayout.prototype.calculate_ = function() {
  * Switch to a page of the emojiSlider.
  *
  * @param {number} pageNum The page to switch to.
- * @private
  */
-ExtendedLayout.prototype.gotoPage_ = function(pageNum) {
+ExtendedLayout.prototype.gotoPage = function(pageNum) {
   var width = goog.style.getSize(this.getElement()).width;
   var childNum = this.getChildCount();
   this.elem.style.marginLeft = 0 - width / childNum * pageNum;
@@ -212,7 +211,7 @@ ExtendedLayout.prototype.adjustMarginLeft = function(opt_distance) {
     this.elem.style.transition = 'margin-left ' +
         transitionDuration + 's ease-in';
   }
-  this.gotoPage_(pageNum);
+  this.gotoPage(pageNum);
   return pageNum;
 };
 
@@ -224,6 +223,6 @@ ExtendedLayout.prototype.adjustMarginLeft = function(opt_distance) {
  */
 ExtendedLayout.prototype.updateCategory = function(pageNum) {
   this.elem.style.transition = '';
-  this.gotoPage_(pageNum);
+  this.gotoPage(pageNum);
 };
 });  // goog.scope

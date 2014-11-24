@@ -175,10 +175,6 @@ CandidateView.prototype.createDom = function() {
     button.render(elem);
     button.setVisible(false);
   }
-
-  // CandidateView is a container which doesn't handle any event and could be
-  // taken as a empty area, so don't attach the view.
-  elem['view'] = null;
 };
 
 
@@ -205,10 +201,11 @@ CandidateView.prototype.showNumberRow = function() {
   for (var i = 0; i < 10; i++) {
     var candidateElem = new Candidate(String(i), goog.object.create(
         Name.CANDIDATE, String((i + 1) % 10)),
-        Type.NUMBER, this.height, false, numberWidth, this);
+        Type.NUMBER, this.height, false, false, numberWidth, this);
     candidateElem.render(this.interContainer_);
   }
   this.showingNumberRow = true;
+  this.showingCandidates = false;
 };
 
 
@@ -234,6 +231,7 @@ CandidateView.prototype.showCandidates = function(candidates,
       }
     }
     this.showingCandidates = true;
+    this.showingNumberRow = false;
   }
 };
 
@@ -251,7 +249,7 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
   var dom = this.getDomHelper();
   for (var i = 0; i < num; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
-        this.height, i == 1 || num == 1, CandidateView.
+        this.height, i == 1 || num == 1, true, CandidateView.
         WIDTH_FOR_THREE_CANDIDATES_, this);
     candidateElem.render(this.interContainer_);
   }
@@ -286,7 +284,7 @@ CandidateView.prototype.addFullCandidates_ = function(candidates) {
   var i;
   for (i = 0; i < candidates.length; i++) {
     var candidateElem = new Candidate(String(i), candidates[i], Type.CANDIDATE,
-        this.height, false, undefined, this);
+        this.height, false, false, undefined, this);
     candidateElem.render(this.interContainer_);
     var size = goog.style.getSize(candidateElem.getElement());
     var candidateWidth = size.width + CandidateView.PADDING_ * 2;

@@ -160,10 +160,13 @@ Character.prototype.resize = function(width, height) {
 
 /** @override */
 Character.prototype.update = function() {
-  this.highlight();
-  this.reposition_();
-  this.updateContent();
-  this.setVisible(this.characterModel_.isVisible());
+  var visible = this.characterModel_.isVisible();
+  this.setVisible(visible);
+  if (visible) {
+    this.highlight();
+    this.updateContent();
+    this.reposition_();
+  }
 };
 
 

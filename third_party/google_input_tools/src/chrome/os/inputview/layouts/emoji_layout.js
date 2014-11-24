@@ -89,16 +89,10 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
     'widthInWeight': 1,
     'heightInWeight': 1
   };
-  var indicatorKey = util.createKeySequence(keySpec, 1);
-  var indicator = util.createLinearLayout({
-    'id': 'indicatorlayout',
-    'children': [indicatorKey]
-  });
-
 
   var emojiSlider = util.createVerticalLayout({
     'id': 'emojiSlider',
-    'children': [emojiRows, indicator]
+    'children': [emojiRows]
   });
 
   keySpec = {

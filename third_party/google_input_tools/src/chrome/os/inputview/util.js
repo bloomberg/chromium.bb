@@ -305,7 +305,7 @@ util.supportDeadKey = function(character) {
  * @return {boolean} .
  */
 util.needAutoCap = function(text) {
-  if (goog.string.isEmpty(text)) {
+  if (goog.string.isEmptyOrWhitespace(text)) {
     return false;
   } else {
     return util.END_SENTENCE_REGEX_.test(text);

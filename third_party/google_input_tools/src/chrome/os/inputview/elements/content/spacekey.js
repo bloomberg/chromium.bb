@@ -76,6 +76,8 @@ SpaceKey.prototype.createDom = function() {
 
   goog.dom.classlist.remove(this.bgElem,
       i18n.input.chrome.inputview.Css.SPECIAL_KEY_BG);
+
+  this.setAriaLabel(this.getChromeVoxMessage());
 };
 
 
@@ -115,6 +117,12 @@ SpaceKey.prototype.updateTitle = function(title, visible) {
     goog.dom.classlist.add(this.textElem,
         i18n.input.chrome.inputview.Css.TITLE);
   }
+};
+
+
+/** @override */
+SpaceKey.prototype.getChromeVoxMessage = function() {
+  return chrome.i18n.getMessage('SPACE');
 };
 
 });  // goog.scope

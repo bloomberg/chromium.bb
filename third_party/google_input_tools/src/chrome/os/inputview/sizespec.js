@@ -45,25 +45,25 @@ SizeSpec.NON_A11Y_CANDIDATE_VIEW_HEIGHT = 45;
 
 
 /**
- * The width percent of a11y keyboard in horizontal mode or vertical mode.
+ * The width percent of a11y keyboard in landscape mode or portrait mode.
  *
  * @enum {number}
  */
 SizeSpec.A11Y_WIDTH_PERCENT = {
-  HORIZONTAL: 0.74,
-  VERTICAL: 0.88
+  LANDSCAPE: 0.74,
+  PORTRAIT: 1.0
 };
 
 
 /**
- * The width percent of non-a11y keyboard in horizontal mode or vertical mode.
+ * The width percent of non-a11y keyboard in landscape mode or portrait mode.
  *
  * @enum {number}
  */
 SizeSpec.NON_A11Y_WIDTH_PERCENT = {
-  HORIZONTAL: 0.84,
-  HORIZONTAL_WIDE_SCREEN: 0.788,
-  VERTICAL: 0.88
+  LANDSCAPE: 0.84,
+  LANDSCAPE_WIDE_SCREEN: 0.788,
+  PORTRAIT: 1.0
 };
 
 });  // goog.scope

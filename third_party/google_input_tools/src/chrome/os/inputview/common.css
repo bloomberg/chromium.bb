@@ -2,12 +2,6 @@
   position: relative;
   -webkit-user-select: none;
 }
-#emoji.candidate-view-disabled .inputview-layoutview {
-  margin-top: 22px;
-}
-.candidate-view-disabled .inputview-layoutview {
-  margin-top: 8px;
-}
 .inputview-canvasview,
 .inputview-skv {
   display: inline-block;
@@ -134,6 +128,9 @@
 }
 .inputview-emoji-font {
   font-family: Noto Color Emoji, Noto Sans Emoji, Droid Emoji;
+}
+.inputview-emoticon {
+  font-family: Noto Sans Emoji, Droid Emoji;
 }
 .inputview-modifier {
   display: table-cell;
@@ -277,6 +274,7 @@
   color: #555555;
   vertical-align: middle;
   text-align: center;
+  text-overflow: ellipsis;
 }
 .inputview-a11y .inputview-candidate {
   font-size: 12px;
@@ -375,7 +373,8 @@
   background-color: #dddddd;
 }
 .inputview-menu-footer-item.inputview-element-highlight,
-.inputview-special-key-highlight {
+.inputview-view .inputview-special-key-highlight,
+.inputview-view .inputview-special-key-bg.inputview-special-key-highlight {
   background-color: #cccccc;
 }
 .inputview-backspace-icon {
@@ -563,10 +562,6 @@
   background-color: #E9E9E9;
 }
 
-.inputview-handwriting .inputview-special-key-highlight {
-  background-color: #cccccc;
-}
-
 .inputview-handwriting #candidateView {
   background-color: #ffffff;
   border-bottom: 1px #cfcfcf solid;
@@ -639,4 +634,11 @@
   background-size: 40px 16px;
   height: 16px;
   width: 40px;
+}
+.inputview-candidate-internal-wrapper {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  padding: 6px;
 }

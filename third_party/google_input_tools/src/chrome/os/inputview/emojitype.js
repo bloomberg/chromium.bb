@@ -21,13 +21,13 @@ goog.provide('i18n.input.chrome.inputview.EmojiType');
  */
 i18n.input.chrome.inputview.EmojiType = {
   RECENT: 0,
-  FAVORITS: 1,
-  FACES: 2,
-  EMOTICON: 3,
-  SYMBOL: 4,
-  NATURE: 5,
-  PLACES: 6,
-  OBJECTS: 7
+  HOT: 1,
+  EMOTION: 2,
+  ITEMS: 3,
+  NATURE: 4,
+  PLACES_OF_INTERESTS: 5,
+  SPECIAL_CHARACTERS: 6,
+  EMOTICON: 7
 };
 
 

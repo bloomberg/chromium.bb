@@ -1,1 +1,3275 @@
-{"chos_inputtool_title":{"message":"C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google"},"chos_inputtool_description":{"message":"C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google d\u00e0nh cho Chrome OS cho ph\u00e9p b\u1ea1n nh\u1eadp b\u1eb1ng ng\u00f4n ng\u1eef mong mu\u1ed1n c\u1ee7a m\u00ecnh tr\u00ean Chrome OS."},"pinyin_settings_page":{"message":"Pinyin Settings Page"},"zhuyin_settings_page":{"message":"Zhuyin Settings Page"},"fuzzy_pinyin":{"message":"B\u1eadt ch\u1ebf \u0111\u1ed9 Fuzzy-Pinyin"},"user_dict":{"message":"B\u1eadt t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"},"move_page_key_above":{"message":"S\u1eed d\u1ee5ng c\u00e1c ph\u00edm - v\u00e0 = \u0111\u1ec3 \u0111\u00e1nh s\u1ed1 trang danh s\u00e1ch \u1ee9ng vi\u00ean"},"move_page_key_below":{"message":"S\u1eed d\u1ee5ng c\u00e1c ph\u00edm , v\u00e0 . \u0111\u1ec3 \u0111\u00e1nh s\u1ed1 trang danh s\u00e1ch \u1ee9ng vi\u00ean"},"init_lang":{"message":"Ng\u00f4n ng\u1eef nh\u1eadp v\u00e0o ban \u0111\u1ea7u l\u00e0 ti\u1ebfng Trung"},"init_punc":{"message":"\u0110\u1ed9 r\u1ed9ng d\u1ea5u c\u00e2u ban \u0111\u1ea7u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"},"init_sbc":{"message":"\u0110\u1ed9 r\u1ed9ng k\u00fd t\u1ef1 ban \u0111\u1ea7u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"},"current_lang":{"message":"Ng\u00f4n ng\u1eef nh\u1eadp l\u00e0 ti\u1ebfng Trung"},"current_punc":{"message":"\u0110\u1ed9 r\u1ed9ng d\u1ea5u c\u00e2u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"},"current_sbc":{"message":"\u0110\u1ed9 r\u1ed9ng k\u00fd t\u1ef1 l\u00e0 \u0110\u1ea7y \u0111\u1ee7"},"zhuyin_keyboard_layout":{"message":"Lo\u1ea1i b\u00e0n ph\u00edm"},"zhuyin_select_keys":{"message":"Ph\u00edm ch\u1ecdn"},"zhuyin_page_size":{"message":"S\u1ed1 l\u01b0\u1ee3ng \u1ee9ng vi\u00ean \u0111\u1ec3 hi\u1ec3n th\u1ecb tr\u00ean m\u1ed7i trang"},"keyboard_none":{"message":"B\u00e0n ph\u00edm"},"keyboard_phonetic":{"message":"B\u00e0n ph\u00edm (Ng\u1eef \u00e2m)"},"keyboard_inscript":{"message":"B\u00e0n ph\u00edm (InScript)"},"keyboard_tamil99":{"message":"B\u00e0n ph\u00edm (Tamil99)"},"keyboard_typewriter":{"message":"B\u00e0n ph\u00edm (M\u00e1y \u0111\u00e1nh ch\u1eef)"},"keyboard_itrans":{"message":"B\u00e0n ph\u00edm (itrans)"},"keyboard_kedmanee":{"message":"B\u00e0n ph\u00edm (Kedmanee)"},"keyboard_pattachote":{"message":"B\u00e0n ph\u00edm (Pattachote)"},"keyboard_tis":{"message":"B\u00e0n ph\u00edm (TIS 820-2531)"},"keyboard_tcvn":{"message":"B\u00e0n ph\u00edm (TCVN)"},"keyboard_telex":{"message":"B\u00e0n ph\u00edm (Telex)"},"keyboard_vni":{"message":"B\u00e0n ph\u00edm (VNI)"},"keyboard_viqr":{"message":"B\u00e0n ph\u00edm (VIQR)"},"basic":{"message":"C\u01a1 b\u1ea3n"},"advanced":{"message":"N\u00e2ng cao"},"inputmethod_pinyin":{"message":"Pinyin input method"},"inputmethod_traditional_pinyin":{"message":"Pinyin input method for traditional Chinese"},"inputmethod_zhuyin":{"message":"Zhuyin input method"},"inputmethod_wubi":{"message":"Wubi input method"},"inputmethod_cangjie":{"message":"Cangjie input method"},"inputmethod_array":{"message":"Array input method"},"inputmethod_dayi":{"message":"Dayi input method"},"inputmethod_quick":{"message":"Quick input method"},"keyboard_bengali_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Bengali (Ng\u1eef \u00e2m)"},"keyboard_gujarati_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Gujarati (Ng\u1eef \u00e2m)"},"keyboard_devanagari_phonetic":{"message":"B\u00e0n ph\u00edm Devanagari (Ng\u1eef \u00e2m)"},"keyboard_kannada_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Kannada (Ng\u1eef \u00e2m)"},"keyboard_malayalam_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Malayalam (Ng\u1eef \u00e2m)"},"keyboard_tamil_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Tamil (Ng\u1eef \u00e2m)"},"keyboard_tamil_inscript":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Tamil (InScript)"},"keyboard_tamil_tamil99":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Tamil (Tamil99)"},"keyboard_tamil_typewriter":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Tamil (M\u00e1y \u0111\u00e1nh ch\u1eef)"},"keyboard_tamil_itrans":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Tamil (itrans)"},"keyboard_telugu_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Telugu (Ng\u1eef \u00e2m)"},"keyboard_ethiopic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Ethiopic"},"keyboard_thai_kedmanee":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (Kedmanee)"},"keyboard_thai_pattachote":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (Pattachote)"},"keyboard_thai_tis":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (TIS 820-2531)"},"keyboard_persian":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Ba T\u01b0"},"keyboard_vietnamese_tcvn":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (TCVN)"},"keyboard_vietnamese_telex":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (Telex)"},"keyboard_vietnamese_vni":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (VNI)"},"keyboard_vietnamese_viqr":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (VIQR)"},"keyboard_arabic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng \u1ea2 R\u1eadp"},"keyboard_lao":{"message":"B\u00e0n ph\u00edm ti\u1ebfng L\u00e0o"},"keyboard_nepali_inscript":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Nepal (InScript)"},"keyboard_nepali_phonetic":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Nepal (Ng\u1eef \u00e2m)"},"keyboard_khmer":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Khmer"},"keyboard_myanmar":{"message":"B\u00e0n ph\u00edm Myanmar MM3"},"keyboard_sinhala":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Sinhala"},"keyboard_us":{"message":"US keyboard"},"keyboard_us_international":{"message":"US international keyboard"},"keyboard_us_extended":{"message":"US extended keyboard"},"keyboard_us_dvorak":{"message":"US Dvorak keyboard"},"keyboard_us_colemak":{"message":"US Colemak keyboard"},"keyboard_belgian":{"message":"Belgian keyboard"},"keyboard_french":{"message":"French keyboard"},"keyboard_canadian_french":{"message":"Canadian French keyboard"},"keyboard_swiss_french":{"message":"Swiss French keyboard"},"keyboard_canadian_multilingual":{"message":"Canadian Multilingual keyboard"},"keyboard_german":{"message":"German keyboard"},"keyboard_german_neo_2":{"message":"German Neo 2 keyboard"},"keyboard_swiss":{"message":"Swiss keyboard"},"keyboard_japanese":{"message":"Japanese keyboard"},"keyboard_russian":{"message":"Russian keyboard"},"keyboard_russian_phonetic":{"message":"Russian phonetic keyboard"},"keyboard_brazilian":{"message":"Brazilian keyboard"},"keyboard_bulgarian":{"message":"Bulgarian keyboard"},"keyboard_bulgarian_phonetic":{"message":"Bulgarian phonetic keyboard"},"keyboard_canadian_english":{"message":"Canadian English keyboard"},"keyboard_czech":{"message":"Czech keyboard"},"keyboard_czech_qwerty":{"message":"Czech QWERTY keyboard"},"keyboard_estonian":{"message":"Estonian keyboard"},"keyboard_spanish":{"message":"Spanish keyboard"},"keyboard_catalan":{"message":"Catalan keyboard"},"keyboard_danish":{"message":"Danish keyboard"},"keyboard_greek":{"message":"Greek keyboard"},"keyboard_hebrew":{"message":"Hebrew keyboard"},"keyboard_latin_american":{"message":"Latin American keyboard"},"keyboard_lithuanian":{"message":"Lithuanian keyboard"},"keyboard_latvian":{"message":"Latvian keyboard"},"keyboard_croatian":{"message":"Croatian keyboard"},"keyboard_uk":{"message":"UK keyboard"},"keyboard_uk_dvorak":{"message":"UK Dvorak keyboard"},"keyboard_finnish":{"message":"Finnish keyboard"},"keyboard_hungarian":{"message":"Hungarian keyboard"},"keyboard_italian":{"message":"Italian keyboard"},"keyboard_icelandic":{"message":"Icelandic keyboard"},"keyboard_norwegian":{"message":"Norwegian keyboard"},"keyboard_polish":{"message":"Polish keyboard"},"keyboard_portuguese":{"message":"Portuguese keyboard"},"keyboard_romanian":{"message":"Romanian keyboard"},"keyboard_swedish":{"message":"Swedish keyboard"},"keyboard_slovakian":{"message":"Slovakian keyboard"},"keyboard_slovenian":{"message":"Slovenian keyboard"},"keyboard_serbian":{"message":"Serbian keyboard"},"keyboard_turkish":{"message":"Turkish keyboard"},"keyboard_ukrainian":{"message":"Ukrainian keyboard"},"keyboard_belarusian":{"message":"Belarusian keyboard"},"keyboard_armenian_phonetic":{"message":"Armenian Phonetic keyboard"},"keyboard_georgian":{"message":"Georgian keyboard"},"keyboard_mongolian":{"message":"Mongolian keyboard"},"keyboard_irish":{"message":"Irish keyboard"},"keyboard_soranikurdish_en":{"message":"Sorani Kurdish English-based keyboard"},"keyboard_soranikurdish_ar":{"message":"Sorani Kurdish Arabic-based keyboard"},"keyboard_myanmar_myansan":{"message":"B\u00e0n ph\u00edm ti\u1ebfng Myansan c\u1ee7a Myanmar"},"transliteration_am":{"message":"Chuy\u1ec3n ng\u1eef (salam \u2192 \u1230\u120b\u121d)"},"transliteration_ar":{"message":"Chuy\u1ec3n ng\u1eef (marhaban \u2190 \u0645\u0631\u062d\u0628\u0627)"},"transliteration_be":{"message":"Chuy\u1ec3n ng\u1eef (pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435)"},"transliteration_bg":{"message":"Chuy\u1ec3n ng\u1eef (zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438)"},"transliteration_bn":{"message":"Chuy\u1ec3n ng\u1eef (namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0)"},"transliteration_el":{"message":"Chuy\u1ec3n ng\u1eef (geia \u2192 \u03b3\u03b5\u03b9\u03b1)"},"transliteration_fa":{"message":"Chuy\u1ec3n ng\u1eef (salam \u2190 \u0633\u0644\u0627\u0645)"},"transliteration_gu":{"message":"Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7)"},"transliteration_he":{"message":"Chuy\u1ec3n ng\u1eef (shalom \u2190 \u05e9\u05dc\u05d5\u05dd)"},"transliteration_hi":{"message":"Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_kn":{"message":"Chuy\u1ec3n ng\u1eef (namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0)"},"transliteration_ml":{"message":"Chuy\u1ec3n ng\u1eef (namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02)"},"transliteration_mr":{"message":"Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930)"},"transliteration_ne":{"message":"Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_or":{"message":"Chuy\u1ec3n ng\u1eef (mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47)"},"transliteration_pa":{"message":"Chuy\u1ec3n ng\u1eef (mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e)"},"transliteration_ru":{"message":"Chuy\u1ec3n ng\u1eef (privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442)"},"transliteration_sa":{"message":"Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_sr":{"message":"Chuy\u1ec3n ng\u1eef (zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e)"},"transliteration_si":{"message":"Chuy\u1ec3n ng\u1eef (halo \u2192 \u0dc4\u0dbd\u0ddd)"},"transliteration_ta":{"message":"Chuy\u1ec3n ng\u1eef (vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd)"},"transliteration_te":{"message":"Chuy\u1ec3n ng\u1eef (emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40)"},"transliteration_ti":{"message":"Chuy\u1ec3n ng\u1eef (selam \u2192 \u1230\u120b\u121d)"},"transliteration_uk":{"message":"Chuy\u1ec3n ng\u1eef (pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442)"},"transliteration_ur":{"message":"Chuy\u1ec3n ng\u1eef (salam \u2190 \u0633\u0644\u0627\u0645)"},"transliteration_vi":{"message":"Chuy\u1ec3n ng\u1eef (chao \u2192 ch\u00e0o)"},"appnamejpkeyboard":{"message":"Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Nh\u1eadt)"},"appnameuskeyboard":{"message":"Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Hoa K\u1ef3)"},"compositionmodehiragana":{"message":"Hiragana"},"compositionmodefullkatakana":{"message":"Katakana"},"compositionmodefullascii":{"message":"Wide Latin"},"compositionmodehalfkatakana":{"message":"Katakana n\u1eeda chi\u1ec1u r\u1ed9ng"},"compositionmodehalfascii":{"message":"Latinh"},"compositionmodedirect":{"message":"Nh\u1eadp tr\u1ef1c ti\u1ebfp"},"configpunctuationmethod":{"message":"Ki\u1ec3u d\u1ea5u ch\u1ea5m c\u00e2u:"},"configpreeditmethod":{"message":"Ch\u1ebf \u0111\u1ed9 nh\u1eadp:"},"configpreeditmethodromaji":{"message":"Romaji"},"configpreeditmethodkana":{"message":"Kana"},"configsymbolmethod":{"message":"Ki\u1ec3u bi\u1ec3u t\u01b0\u1ee3ng:"},"configspacecharacterform":{"message":"Ki\u1ec3u nh\u1eadp d\u1ea5u c\u00e1ch:"},"configspacecharacterformfollow":{"message":"Tu\u00e2n theo ch\u1ebf \u0111\u1ed9 nh\u1eadp"},"configspacecharacterformfull":{"message":"\u0110\u1ed9 r\u1ed9ng t\u1ed1i \u0111a"},"configspacecharacterformhalf":{"message":"N\u1eeda \u0111\u1ed9 r\u1ed9ng"},"configselectionshortcut":{"message":"Ph\u00edm t\u1eaft ch\u1ecdn:"},"configselectionshortcutno":{"message":"Kh\u00f4ng c\u00f3 ph\u00edm t\u1eaft"},"configshiftkeymodeswitch":{"message":"Chuy\u1ec3n ch\u1ebf \u0111\u1ed9 ph\u00edm shift:"},"configshiftkeymodeswitchoff":{"message":"T\u1eaft"},"configshiftkeymodeswitchalphanumeric":{"message":"Ch\u1eef v\u00e0 s\u1ed1"},"configshiftkeymodeswitchkatakana":{"message":"Katakana"},"configsessionkeymap":{"message":"Ki\u1ec3u s\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm:"},"configsessionkeymapatok":{"message":"ATOK"},"configsessionkeymapchromeos":{"message":"Chrome OS"},"configsessionkeymapmsime":{"message":"MS-IME"},"configsessionkeymapkotoeri":{"message":"Kotoeri"},"configsessionkeymapcustom":{"message":"S\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm t\u00f9y ch\u1ec9nh"},"configincognitomode":{"message":"T\u1eaft chuy\u1ec3n \u0111\u1ed5i v\u00e0 \u0111\u1ec1 xu\u1ea5t \u0111\u01b0\u1ee3c c\u00e1 nh\u00e2n h\u00f3a c\u0169ng nh\u01b0 t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"},"configuseautoimeturnoff":{"message":"T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n sang n\u1eeda \u0111\u1ed9 r\u1ed9ng"},"configusehistorysuggest":{"message":"S\u1eed d\u1ee5ng l\u1ecbch s\u1eed nh\u1eadp"},"configusedictionarysuggest":{"message":"S\u1eed d\u1ee5ng t\u1eeb \u0111i\u1ec3n c\u1ee7a h\u1ec7 th\u1ed1ng"},"configsuggestionssize":{"message":"S\u1ed1 \u0111\u1ec1 xu\u1ea5t:"},"configsettingstitle":{"message":"C\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp ti\u1ebfng Nh\u1eadt"},"configbasicstitle":{"message":"C\u01a1 b\u1ea3n"},"configinputassistancetitle":{"message":"H\u1ed7 tr\u1ee3 nh\u1eadp"},"configsuggesttitle":{"message":"\u0110\u1ec1 xu\u1ea5t"},"configprivacytitle":{"message":"B\u1ea3o m\u1eadt"},"configclearhistory":{"message":"X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a..."},"configclearhistorytitle":{"message":"X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"},"configclearhistorymessage":{"message":"X\u00f3a s\u1ea1ch c\u00e1c m\u1ee5c sau:"},"configclearhistoryconversionhistory":{"message":"L\u1ecbch s\u1eed chuy\u1ec3n \u0111\u1ed5i"},"configclearhistorysuggestionhistory":{"message":"L\u1ecbch s\u1eed \u0111\u1ec1 xu\u1ea5t"},"configclearhistoryokbutton":{"message":"X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"},"configclearhistorycancelbutton":{"message":"H\u1ee7y"},"configcreditsdescription":{"message":"B\u1ea3n quy\u1ec1n \u00a9 2013 Google Inc. M\u1ecdi quy\u1ec1n \u0111\u01b0\u1ee3c b\u1ea3o l\u01b0u."},"configosscreditsdescription":{"message":"Ph\u1ea7n m\u1ec1m n\u00e0y \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1edfi <a href=\"./credits_en.html\">ph\u1ea7n m\u1ec1m ngu\u1ed3n m\u1edf</a>."},"configdialogcancel":{"message":"H\u1ee7y"},"configdialogok":{"message":"OK"},"configdictionarytooltitle":{"message":"T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"},"configdictionarytooldescription":{"message":"Th\u00eam t\u1eeb c\u1ee7a ch\u00ednh b\u1ea1n v\u00e0o t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng \u0111\u1ec3 t\u00f9y ch\u1ec9nh c\u00e1c \u0111\u1ec1 xu\u1ea5t chuy\u1ec3n \u0111\u1ed5i."},"configdictionarytoolbutton":{"message":"Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng..."},"dictionarytoolpagetitle":{"message":"T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"},"dictionarytooldictionarylisttitle":{"message":"T\u1eeb \u0111i\u1ec3n"},"dictionarytoolreadingtitle":{"message":"Ki\u1ec3u \u0111\u1ecdc"},"dictionarytoolwordtitle":{"message":"T\u1eeb"},"dictionarytoolcategorytitle":{"message":"Lo\u1ea1i"},"dictionarytoolcommenttitle":{"message":"Nh\u1eadn x\u00e9t"},"dictionarytoolmenutitle":{"message":"Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n"},"dictionarytoolexportbutton":{"message":"Xu\u00e2\u0301t"},"dictionarytoolimportbutton":{"message":"Nh\u1eadp..."},"dictionarytooldonebutton":{"message":"Ho\u00e0n t\u1ea5t"},"dictionarytoolreadingnewinput":{"message":"Ki\u1ec3u \u0111\u1ecdc m\u1edbi"},"dictionarytoolwordnewinput":{"message":"T\u1eeb m\u1edbi"},"dictionarytoolcommentnewinput":{"message":"Nh\u1eadn x\u00e9t"},"dictionarytooldeletedictionarytitle":{"message":"X\u00f3a t\u1eeb \u0111i\u1ec3n"},"dictionarytooldictionaryname":{"message":"T\u00ean t\u1eeb \u0111i\u1ec3n"},"dictionarytoolnewdictionarynameplaceholder":{"message":"T\u1eeb \u0111i\u1ec3n m\u1edbi"},"dictionarytooldeletedictionaryconfirm":{"message":"B\u1ea1n c\u00f3 mu\u1ed1n x\u00f3a [object Object] kh\u00f4ng?"},"dictionarytoolstatuserrorgeneral":{"message":"Thao t\u00e1c b\u1ecb l\u1ed7i."},"dictionarytoolstatuserrorfilenotfound":{"message":"Kh\u00f4ng th\u1ec3 m\u1edf t\u1ec7p."},"dictionarytoolstatuserrorinvalidfileformat":{"message":"Kh\u00f4ng th\u1ec3 \u0111\u1ecdc t\u1ec7p."},"dictionarytoolstatuserroremptyfile":{"message":"T\u1ec7p b\u1ecb tr\u1ed1ng."},"dictionarytoolstatuserrorfilesizelimitexceeded":{"message":"K\u00edch th\u01b0\u1edbc d\u1eef li\u1ec7u v\u01b0\u1ee3t qu\u00e1 gi\u1edbi h\u1ea1n k\u00edch th\u01b0\u1edbc t\u1ec7p."},"dictionarytoolstatuserrordictionarysizelimitexceeded":{"message":"Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 t\u1eeb \u0111i\u1ec3n n\u00e0o kh\u00e1c."},"dictionarytoolstatuserrorentrysizelimitexceeded":{"message":"Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 m\u1ee5c nh\u1eadp n\u00e0o kh\u00e1c trong t\u1eeb \u0111i\u1ec3n n\u00e0y."},"dictionarytoolstatuserrordictionarynameempty":{"message":"Vui l\u00f2ng nh\u1eadp t\u00ean t\u1eeb \u0111i\u1ec3n."},"dictionarytoolstatuserrordictionarynametoolong":{"message":"T\u00ean qu\u00e1 d\u00e0i."},"dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter":{"message":"T\u00ean ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."},"dictionarytoolstatuserrordictionarynameduplicated":{"message":"T\u00ean \u0111\u00e3 t\u1ed3n t\u1ea1i."},"dictionarytoolstatuserrorreadingempty":{"message":"Vui l\u00f2ng nh\u1eadp ki\u1ec3u \u0111\u1ecdc."},"dictionarytoolstatuserrorreadingtoolong":{"message":"Ki\u1ec3u \u0111\u1ecdc qu\u00e1 d\u00e0i."},"dictionarytoolstatuserrorreadingcontainsinvalidcharacter":{"message":"Ki\u1ec3u \u0111\u1ecdc ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7. B\u1ea1n c\u00f3 th\u1ec3 s\u1eed d\u1ee5ng k\u00fd t\u1ef1 ASCII, Hiragana, d\u1ea5u \u00e2m k\u00eau (\u309b), d\u1ea5u \u00e2m n\u1eeda k\u00eau (\u309c), ch\u1ea5m gi\u1eefa (\u30fb), d\u1ea5u \u00e2m k\u00e9o d\u00e0i (\u30fc), d\u1ea5u ph\u1ea9y ti\u1ebfng Nh\u1eadt (\u3001), d\u1ea5u ch\u1ea5m c\u00e2u ti\u1ebfng Nh\u1eadt (\u3002), d\u1ea5u ngo\u1eb7c vu\u00f4ng ti\u1ebfng Nh\u1eadt (\u300c\u300d\u300e\u300f) v\u00e0 d\u1ea5u g\u1ea1ch s\u00f3ng ti\u1ebfng Nh\u1eadt (\u301c) trong ki\u1ec3u \u0111\u1ecdc."},"dictionarytoolstatuserrorwordempty":{"message":"Vui l\u00f2ng nh\u1eadp t\u1eeb."},"dictionarytoolstatuserrorwordtoolong":{"message":"T\u1eeb qu\u00e1 d\u00e0i."},"dictionarytoolstatuserrorwordcontainsinvalidcharacter":{"message":"T\u1eeb ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."},"dictionarytoolstatuserrorimporttoomanywords":{"message":"Ngu\u1ed3n nh\u1eadp ch\u1ee9a qu\u00e1 nhi\u1ec1u t\u1eeb."},"dictionarytoolstatuserrorimportinvalidentries":{"message":"Kh\u00f4ng th\u1ec3 nh\u1eadp m\u1ed9t s\u1ed1 t\u1eeb."},"dictionarytoolstatuserrornoundohistory":{"message":"Kh\u00f4ng c\u00f2n thao t\u00e1c n\u00e0o c\u00f3 th\u1ec3 ho\u00e0n t\u00e1c."},"dictionarytoolstatuserrortitlecreatedictionary":{"message":"L\u1ed7i t\u1ea1o t\u1eeb \u0111i\u1ec3n"},"dictionarytoolstatuserrortitledeletedictionary":{"message":"L\u1ed7i x\u00f3a t\u1eeb \u0111i\u1ec3n"},"dictionarytoolstatuserrortitlerenamedictionary":{"message":"L\u1ed7i \u0111\u1ed5i t\u00ean t\u1eeb \u0111i\u1ec3n"},"dictionarytoolstatuserrortitleeditentry":{"message":"L\u1ed7i ch\u1ec9nh s\u1eeda m\u1ee5c nh\u1eadp"},"dictionarytoolstatuserrortitledeleteentry":{"message":"L\u1ed7i x\u00f3a m\u1ee5c nh\u1eadp"},"dictionarytoolstatuserrortitleaddentry":{"message":"L\u1ed7i th\u00eam m\u1ee5c nh\u1eadp"},"dictionarytoolstatuserrortitleimportdata":{"message":"L\u1ed7i nh\u1eadp"},"configuploadusagestats":{"message":"T\u1ef1 \u0111\u1ed9ng g\u1eedi s\u1ed1 li\u1ec7u th\u1ed1ng k\u00ea v\u1ec1 vi\u1ec7c s\u1eed d\u1ee5ng v\u00e0 b\u00e1o c\u00e1o s\u1ef1 c\u1ed1 cho Google"},"handwriting_back":{"message":"Quay l\u1ea1i"},"handwriting_netowrk_error":{"message":"R\u1ea5t ti\u1ebfc, b\u1ea1n kh\u00f4ng th\u1ec3 s\u1eed d\u1ee5ng ch\u1eef vi\u1ebft tay v\u00ec kh\u00f4ng c\u00f3 m\u1ea1ng."},"handwriting_privacy_info":{"message":"Your input will be sent to a Google server to recognize text"},"capital":{"message":"ch\u1eef vi\u1ebft hoa"},"backspace":{"message":"ph\u00edm x\u00f3a l\u00f9i"},"tab":{"message":"tab"},"enter":{"message":"enter"},"space":{"message":"d\u1ea5u c\u00e1ch"},"shift":{"message":"shift"},"ctrl":{"message":"ctrl"},"alt":{"message":"alt"},"altgr":{"message":"Alt Graphic"},"capslock":{"message":"capslock"},"shift_lock":{"message":"Kh\u00f3a ph\u00edm shift"},"left_arrow":{"message":"m\u0169i t\u00ean tr\u00e1i"},"right_arrow":{"message":"m\u0169i t\u00ean ph\u1ea3i"},"up_arrow":{"message":"m\u0169i t\u00ean l\u00ean"},"down_arrow":{"message":"m\u0169i t\u00ean xu\u1ed1ng"},"hide_keyboard":{"message":"\u1ea9n b\u00e0n ph\u00edm"},"globe":{"message":"chuy\u1ec3n sang b\u00e0n ph\u00edm tr\u01b0\u1edbc"},"switch_to":{"message":"chuy\u1ec3n sang "},"switched_to":{"message":"\u0111\u00e3 chuy\u1ec3n sang "},"got_it":{"message":"OK"},"never_auto_correct":{"message":"Off"},"sometimes_auto_correct":{"message":"Modest"},"always_auto_correct":{"message":"Aggressive"},"show_candidates_backspace":{"message":"Show suggestion dropdown by Backspace"},"show_candidates_500":{"message":"Show suggestion dropdown after 500ms"},"show_candidates_1000":{"message":"Show suggestion dropdown after 1s"},"show_candidates_2000":{"message":"Show suggestion dropdown after 2s"},"show_candidates_5000":{"message":"Show suggestion dropdown after 5s"},"latin_settings_page":{"message":"Settings"},"auto_correction_level":{"message":"Auto-correction"},"enable_capitalization":{"message":"Auto-capitalization"},"show_candidate_mode":{"message":"Delay of suggestion dropdown"},"enable_prediction":{"message":"Enable next word prediction"},"am_phonetic_arm_settings_page":{"message":"Armenian Phonetic Keyboard Settings Page"},"be_fra_settings_page":{"message":"Belgian Keyboard (French) Settings Page"},"be_ger_settings_page":{"message":"Belgian Keyboard (German) Settings Page"},"be_nld_settings_page":{"message":"Belgian Keyboard (Dutch) Settings Page"},"bg_bul_settings_page":{"message":"Bulgarian Keyboard Settings Page"},"bg_phonetic_bul_settings_page":{"message":"Bulgarian Phonetic Keyboard Settings Page"},"br_por_settings_page":{"message":"Brazilian Keyboard (Brazilian Portuguese) Settings Page"},"by_bel_settings_page":{"message":"Belarusian Keyboard Settings Page"},"ca_fra_settings_page":{"message":"Canadian French Keyboard (French) Settings Page"},"ca_eng_eng_settings_page":{"message":"Canadian English Keyboard (English) Settings Page"},"ca_multix_fra_settings_page":{"message":"Canadian Multilingual Keyboard (French) Settings Page"},"ch_ger_settings_page":{"message":"Swiss Keyboard (German) Settings Page"},"ch_fr_fra_settings_page":{"message":"Swiss French Keyboard (French) Settings Page"},"cz_cze_settings_page":{"message":"Czech Keyboard Settings Page"},"cz_qwerty_cze_settings_page":{"message":"Czech Qwerty Keyboard Settings Page"},"de_ger_settings_page":{"message":"German Keyboard Settings Page"},"de_neo_ger_settings_page":{"message":"German Neo 2 Keyboard Settings Page"},"dk_dan_settings_page":{"message":"Danish Keyboard Settings Page"},"ee_est_settings_page":{"message":"Estonian Keyboard Settings Page"},"es_spa_settings_page":{"message":"Spanish Keyboard Settings Page"},"es_cat_cat_settings_page":{"message":"Catalan Keyboard Settings Page"},"fi_fin_settings_page":{"message":"Finnish Keyboard Settings Page"},"fr_fra_settings_page":{"message":"French Keyboard Settings Page"},"gb_dvorak_eng_settings_page":{"message":"Uk Dvorak Keyboard (English) Settings Page"},"gb_extd_eng_settings_page":{"message":"Uk Keyboard (English) Settings Page"},"ge_geo_settings_page":{"message":"Georgian Keyboard Settings Page"},"gr_gre_settings_page":{"message":"Greek Keyboard Settings Page"},"hr_scr_settings_page":{"message":"Croatian Keyboard Settings Page"},"hu_hun_settings_page":{"message":"Hungarian Keyboard Settings Page"},"ie_ga_settings_page":{"message":"Irish Keyboard Settings Page"},"il_heb_settings_page":{"message":"Hebrew Keyboard Settings Page"},"is_ice_settings_page":{"message":"Icelandic Keyboard Settings Page"},"it_ita_settings_page":{"message":"Italian Keyboard Settings Page"},"jp_jpn_settings_page":{"message":"Japanese Keyboard Settings Page"},"latam_spa_settings_page":{"message":"Latin American Keyboard (Spanish) Settings Page"},"lt_lit_settings_page":{"message":"Lithuanian Keyboard Settings Page"},"lv_apostrophe_lav_settings_page":{"message":"Latvian Keyboard (Latvian, Lettish) Settings Page"},"mn_mon_settings_page":{"message":"Mongolian Keyboard Settings Page"},"no_nob_settings_page":{"message":"Norwegian Keyboard Settings Page"},"pl_pol_settings_page":{"message":"Polish Keyboard Settings Page"},"pt_por_settings_page":{"message":"Portuguese Keyboard Settings Page"},"ro_rum_settings_page":{"message":"Romanian Keyboard Settings Page"},"rs_srp_settings_page":{"message":"Serbian Keyboard Settings Page"},"ru_rus_settings_page":{"message":"Russian Keyboard Settings Page"},"ru_phonetic_rus_settings_page":{"message":"Russian Phonetic Keyboard Settings Page"},"se_swe_settings_page":{"message":"Swedish Keyboard Settings Page"},"si_slv_settings_page":{"message":"Slovenian Keyboard Settings Page"},"sk_slo_settings_page":{"message":"Slovakian Keyboard Settings Page"},"tr_tur_settings_page":{"message":"Turkish Keyboard Settings Page"},"ua_ukr_settings_page":{"message":"Ukrainian Keyboard Settings Page"},"us_eng_settings_page":{"message":"US Keyboard (English) Settings Page"},"us_fil_settings_page":{"message":"US Keyboard (Filipino) Settings Page"},"us_ind_settings_page":{"message":"US Keyboard (Indonesian) Settings Page"},"us_msa_settings_page":{"message":"US Keyboard (Malay) Settings Page"},"us_altgr_intl_eng_settings_page":{"message":"US Extended Keyboard (English) Settings Page"},"us_colemak_eng_settings_page":{"message":"US Colemak Keyboard (English) Settings Page"},"us_dvorak_eng_settings_page":{"message":"US Dvorak Keyboard (English) Settings Page"},"us_intl_eng_settings_page":{"message":"US International Keyboard (English) Settings Page"},"us_intl_nld_settings_page":{"message":"US International Keyboard (Dutch) Settings Page"},"us_intl_por_settings_page":{"message":"US International Keyboard (Brazilian Portuguese) Settings Page"},"touch_keyboard":{"message":"Touch Keyboard"},"sound_on_keypress":{"message":"Sound on keypress"},"double_space_period":{"message":"Double-space to type period"},"enable_completion":{"message":"Enable completion"},"korean_settings_page":{"message":"Korean Settings Page"},"switch_to_compact_layout":{"message":"Switch to compact layout"},"switch_to_full_layout":{"message":"Switch to full layout"},"pause":{"message":"Pause"},"wait":{"message":"Wait"}}
+{
+  "advanced": {
+    "message": "N\u00e2ng cao"
+  },
+  "alt": {
+    "message": "alt"
+  },
+  "altgr": {
+    "message": "Alt Graphic"
+  },
+  "always_auto_correct": {
+    "message": "Hung h\u0103ng"
+  },
+  "am_phonetic_arm_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ng\u1eef \u00e2m Armenia"
+  },
+  "appnamejpkeyboard": {
+    "message": "Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Nh\u1eadt)"
+  },
+  "appnameuskeyboard": {
+    "message": "Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Hoa K\u1ef3)"
+  },
+  "auto_correction_level": {
+    "message": "T\u1ef1 \u0111\u1ed9ng s\u1eeda"
+  },
+  "backspace": {
+    "message": "ph\u00edm x\u00f3a l\u00f9i"
+  },
+  "basic": {
+    "message": "C\u01a1 b\u1ea3n"
+  },
+  "be_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng B\u1ec9 (Ph\u00e1p)"
+  },
+  "be_ger_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng B\u1ec9 (\u0110\u1ee9c)"
+  },
+  "be_nld_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng B\u1ec9 (H\u00e0 Lan)"
+  },
+  "bg_bul_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Bungari"
+  },
+  "bg_phonetic_bul_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ng\u1eef \u00e2m ti\u1ebfng Bungari"
+  },
+  "br_por_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Braxin (ti\u1ebfng B\u1ed3 \u0110\u00e0o Nha \u1edf Braxin)"
+  },
+  "by_bel_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Belarus"
+  },
+  "ca_eng_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Anh \u1edf Canada (ti\u1ebfng Anh)"
+  },
+  "ca_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p \u1edf Canada (ti\u1ebfng Ph\u00e1p)"
+  },
+  "ca_multix_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm \u0111a ng\u00f4n ng\u1eef c\u1ee7a Canada (ti\u1ebfng Ph\u00e1p)"
+  },
+  "capital": {
+    "message": "ch\u1eef vi\u1ebft hoa"
+  },
+  "capslock": {
+    "message": "capslock"
+  },
+  "ch_fr_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p \u1edf Th\u1ee5y S\u0129 (ti\u1ebfng Ph\u00e1p)"
+  },
+  "ch_ger_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y S\u0129 (ti\u1ebfng \u0110\u1ee9c)"
+  },
+  "chos_inputtool_description": {
+    "message": "C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google d\u00e0nh cho Chrome OS cho ph\u00e9p b\u1ea1n nh\u1eadp b\u1eb1ng ng\u00f4n ng\u1eef mong mu\u1ed1n c\u1ee7a m\u00ecnh tr\u00ean Chrome OS."
+  },
+  "chos_inputtool_title": {
+    "message": "C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google"
+  },
+  "compositionmodedirect": {
+    "message": "Nh\u1eadp tr\u1ef1c ti\u1ebfp"
+  },
+  "compositionmodefullascii": {
+    "message": "Wide Latin"
+  },
+  "compositionmodefullkatakana": {
+    "message": "Katakana"
+  },
+  "compositionmodehalfascii": {
+    "message": "Latinh"
+  },
+  "compositionmodehalfkatakana": {
+    "message": "Katakana n\u1eeda chi\u1ec1u r\u1ed9ng"
+  },
+  "compositionmodehiragana": {
+    "message": "Hiragana"
+  },
+  "configbasicstitle": {
+    "message": "C\u01a1 b\u1ea3n"
+  },
+  "configclearhistory": {
+    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a..."
+  },
+  "configclearhistorycancelbutton": {
+    "message": "H\u1ee7y"
+  },
+  "configclearhistoryconversionhistory": {
+    "message": "L\u1ecbch s\u1eed chuy\u1ec3n \u0111\u1ed5i"
+  },
+  "configclearhistorymessage": {
+    "message": "X\u00f3a s\u1ea1ch c\u00e1c m\u1ee5c sau:"
+  },
+  "configclearhistoryokbutton": {
+    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"
+  },
+  "configclearhistorysuggestionhistory": {
+    "message": "L\u1ecbch s\u1eed \u0111\u1ec1 xu\u1ea5t"
+  },
+  "configclearhistorytitle": {
+    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"
+  },
+  "configcreditsdescription": {
+    "message": "B\u1ea3n quy\u1ec1n \u00a9 2013 Google Inc. M\u1ecdi quy\u1ec1n \u0111\u01b0\u1ee3c b\u1ea3o l\u01b0u."
+  },
+  "configdialogcancel": {
+    "message": "H\u1ee7y"
+  },
+  "configdialogok": {
+    "message": "OK"
+  },
+  "configdictionarytoolbutton": {
+    "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng..."
+  },
+  "configdictionarytooldescription": {
+    "message": "Th\u00eam t\u1eeb c\u1ee7a ch\u00ednh b\u1ea1n v\u00e0o t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng \u0111\u1ec3 t\u00f9y ch\u1ec9nh c\u00e1c \u0111\u1ec1 xu\u1ea5t chuy\u1ec3n \u0111\u1ed5i."
+  },
+  "configdictionarytooltitle": {
+    "message": "T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+  },
+  "configincognitomode": {
+    "message": "T\u1eaft chuy\u1ec3n \u0111\u1ed5i v\u00e0 \u0111\u1ec1 xu\u1ea5t \u0111\u01b0\u1ee3c c\u00e1 nh\u00e2n h\u00f3a c\u0169ng nh\u01b0 t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+  },
+  "configinputassistancetitle": {
+    "message": "H\u1ed7 tr\u1ee3 nh\u1eadp"
+  },
+  "configosscreditsdescription": {
+    "message": "Ph\u1ea7n m\u1ec1m n\u00e0y \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1edfi <a href=\"./credits_en.html\">ph\u1ea7n m\u1ec1m ngu\u1ed3n m\u1edf</a>."
+  },
+  "configpreeditmethod": {
+    "message": "Ch\u1ebf \u0111\u1ed9 nh\u1eadp:"
+  },
+  "configpreeditmethodkana": {
+    "message": "Kana"
+  },
+  "configpreeditmethodromaji": {
+    "message": "Romaji"
+  },
+  "configprivacytitle": {
+    "message": "B\u1ea3o m\u1eadt"
+  },
+  "configpunctuationmethod": {
+    "message": "Ki\u1ec3u d\u1ea5u ch\u1ea5m c\u00e2u:"
+  },
+  "configselectionshortcut": {
+    "message": "Ph\u00edm t\u1eaft ch\u1ecdn:"
+  },
+  "configselectionshortcutno": {
+    "message": "Kh\u00f4ng c\u00f3 ph\u00edm t\u1eaft"
+  },
+  "configsessionkeymap": {
+    "message": "Ki\u1ec3u s\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm:"
+  },
+  "configsessionkeymapatok": {
+    "message": "ATOK"
+  },
+  "configsessionkeymapchromeos": {
+    "message": "Chrome OS"
+  },
+  "configsessionkeymapcustom": {
+    "message": "S\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm t\u00f9y ch\u1ec9nh"
+  },
+  "configsessionkeymapkotoeri": {
+    "message": "Kotoeri"
+  },
+  "configsessionkeymapmsime": {
+    "message": "MS-IME"
+  },
+  "configsettingstitle": {
+    "message": "C\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp ti\u1ebfng Nh\u1eadt"
+  },
+  "configshiftkeymodeswitch": {
+    "message": "Chuy\u1ec3n ch\u1ebf \u0111\u1ed9 ph\u00edm shift:"
+  },
+  "configshiftkeymodeswitchalphanumeric": {
+    "message": "Ch\u1eef v\u00e0 s\u1ed1"
+  },
+  "configshiftkeymodeswitchkatakana": {
+    "message": "Katakana"
+  },
+  "configshiftkeymodeswitchoff": {
+    "message": "T\u1eaft"
+  },
+  "configspacecharacterform": {
+    "message": "Ki\u1ec3u nh\u1eadp d\u1ea5u c\u00e1ch:"
+  },
+  "configspacecharacterformfollow": {
+    "message": "Tu\u00e2n theo ch\u1ebf \u0111\u1ed9 nh\u1eadp"
+  },
+  "configspacecharacterformfull": {
+    "message": "\u0110\u1ed9 r\u1ed9ng t\u1ed1i \u0111a"
+  },
+  "configspacecharacterformhalf": {
+    "message": "N\u1eeda \u0111\u1ed9 r\u1ed9ng"
+  },
+  "configsuggestionssize": {
+    "message": "S\u1ed1 \u0111\u1ec1 xu\u1ea5t:"
+  },
+  "configsuggesttitle": {
+    "message": "\u0110\u1ec1 xu\u1ea5t"
+  },
+  "configsymbolmethod": {
+    "message": "Ki\u1ec3u bi\u1ec3u t\u01b0\u1ee3ng:"
+  },
+  "configuploadusagestats": {
+    "message": "T\u1ef1 \u0111\u1ed9ng g\u1eedi s\u1ed1 li\u1ec7u th\u1ed1ng k\u00ea v\u1ec1 vi\u1ec7c s\u1eed d\u1ee5ng v\u00e0 b\u00e1o c\u00e1o s\u1ef1 c\u1ed1 cho Google"
+  },
+  "configuseautoimeturnoff": {
+    "message": "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n sang n\u1eeda \u0111\u1ed9 r\u1ed9ng"
+  },
+  "configusedictionarysuggest": {
+    "message": "S\u1eed d\u1ee5ng t\u1eeb \u0111i\u1ec3n c\u1ee7a h\u1ec7 th\u1ed1ng"
+  },
+  "configusehistorysuggest": {
+    "message": "S\u1eed d\u1ee5ng l\u1ecbch s\u1eed nh\u1eadp"
+  },
+  "ctrl": {
+    "message": "ctrl"
+  },
+  "current_lang": {
+    "message": "Ng\u00f4n ng\u1eef nh\u1eadp l\u00e0 ti\u1ebfng Trung"
+  },
+  "current_punc": {
+    "message": "\u0110\u1ed9 r\u1ed9ng d\u1ea5u c\u00e2u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"
+  },
+  "current_sbc": {
+    "message": "\u0110\u1ed9 r\u1ed9ng k\u00fd t\u1ef1 l\u00e0 \u0110\u1ea7y \u0111\u1ee7"
+  },
+  "cz_cze_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng S\u00e9c"
+  },
+  "cz_qwerty_cze_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Qwerty c\u1ee7a S\u00e9c"
+  },
+  "d83c_dc04": {
+    "message": "x\u1ebfp t\u1ea7ng Mahjong"
+  },
+  "d83c_dccf": {
+    "message": "B\u00e0i ph\u0103ng teo"
+  },
+  "d83c_dd70": {
+    "message": "nh\u00f3m m\u00e1u A"
+  },
+  "d83c_dd71": {
+    "message": "nh\u00f3m m\u00e1u B"
+  },
+  "d83c_dd7e": {
+    "message": "nh\u00f3m m\u00e1u O"
+  },
+  "d83c_dd7f": {
+    "message": "b\u00e3i \u0111\u1ed7 xe"
+  },
+  "d83c_dd8e": {
+    "message": "nh\u00f3m m\u00e1u AB"
+  },
+  "d83c_dd91": {
+    "message": "CL"
+  },
+  "d83c_dd92": {
+    "message": "th\u1edd \u01a1"
+  },
+  "d83c_dd93": {
+    "message": "mi\u1ec5n ph\u00ed"
+  },
+  "d83c_dd94": {
+    "message": "ID"
+  },
+  "d83c_dd95": {
+    "message": "M\u1edbi"
+  },
+  "d83c_dd96": {
+    "message": "NG"
+  },
+  "d83c_dd97": {
+    "message": "OK"
+  },
+  "d83c_dd98": {
+    "message": "SOS"
+  },
+  "d83c_dd99": {
+    "message": "CAO H\u01a0N!"
+  },
+  "d83c_dd9a": {
+    "message": "so v\u1edbi"
+  },
+  "d83c_de01": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+  },
+  "d83c_de02": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+  },
+  "d83c_de1a": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'mi\u1ec5n ph\u00ed'"
+  },
+  "d83c_de2f": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'd\u00e0nh ri\u00eang'"
+  },
+  "d83c_de32": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+  },
+  "d83c_de33": {
+    "message": "T\u1eeb ti\u1ebfng Trung 'kh\u00f4ng gian c\u00f3 s\u1eb5n'"
+  },
+  "d83c_de34": {
+    "message": "T\u1eeb ti\u1ebfng Trung 'qua'"
+  },
+  "d83c_de35": {
+    "message": "T\u1eeb ti\u1ebfng Trung '\u0111\u1ea7y \u0111\u1ee7'"
+  },
+  "d83c_de36": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'ph\u00ed'"
+  },
+  "d83c_de37": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'h\u00e0ng th\u00e1ng'"
+  },
+  "d83c_de38": {
+    "message": "T\u1eeb ti\u1ebfng Trung '\u1ee9ng d\u1ee5ng'"
+  },
+  "d83c_de39": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'gi\u1ea3m gi\u00e1'"
+  },
+  "d83c_de3a": {
+    "message": "T\u1eeb ti\u1ebfng Trung 'kinh doanh'"
+  },
+  "d83c_de50": {
+    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'l\u1ee3i th\u1ebf'"
+  },
+  "d83c_de51": {
+    "message": "T\u1eeb ti\u1ebfng Trung '\u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t'"
+  },
+  "d83c_df00": {
+    "message": "l\u1ed1c xo\u00e1y"
+  },
+  "d83c_df01": {
+    "message": "c\u00f3 s\u01b0\u01a1ng m\u00f9"
+  },
+  "d83c_df02": {
+    "message": "\u00f4"
+  },
+  "d83c_df03": {
+    "message": "sao \u0111\u00eam"
+  },
+  "d83c_df04": {
+    "message": "b\u00ecnh minh tr\u00ean n\u00fai"
+  },
+  "d83c_df05": {
+    "message": "b\u00ecnh minh"
+  },
+  "d83c_df06": {
+    "message": "th\u00e0nh ph\u1ed1 l\u00fac ho\u00e0ng h\u00f4n"
+  },
+  "d83c_df07": {
+    "message": "ho\u00e0ng h\u00f4n"
+  },
+  "d83c_df08": {
+    "message": "c\u1ea7u v\u1ed3ng"
+  },
+  "d83c_df09": {
+    "message": "c\u1ea7u v\u00e0o ban \u0111\u00eam"
+  },
+  "d83c_df0a": {
+    "message": "s\u00f3ng"
+  },
+  "d83c_df0b": {
+    "message": "n\u00fai l\u1eeda"
+  },
+  "d83c_df0c": {
+    "message": "Ng\u00e2n h\u00e0"
+  },
+  "d83c_df0d": {
+    "message": "ch\u00e2u \u00c2u-Ch\u00e2u Phi tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+  },
+  "d83c_df0e": {
+    "message": "ch\u00e2u M\u1ef9 tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+  },
+  "d83c_df0f": {
+    "message": "ch\u00e2u \u00c1-ch\u00e2u \u00dac tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+  },
+  "d83c_df10": {
+    "message": "qu\u1ea3 \u0111\u1ecba c\u1ea7u c\u00f3 kinh tuy\u1ebfn"
+  },
+  "d83c_df11": {
+    "message": "tr\u0103ng non"
+  },
+  "d83c_df12": {
+    "message": "tr\u0103ng l\u01b0\u1ee1i li\u1ec1m"
+  },
+  "d83c_df13": {
+    "message": "tr\u0103ng th\u01b0\u1ee3ng tu\u1ea7n"
+  },
+  "d83c_df14": {
+    "message": "tr\u0103ng khuy\u1ebft"
+  },
+  "d83c_df15": {
+    "message": "tr\u0103ng tr\u00f2n"
+  },
+  "d83c_df16": {
+    "message": "tr\u0103ng cu\u1ed1i th\u00e1ng"
+  },
+  "d83c_df17": {
+    "message": "tr\u0103ng h\u1ea1 tu\u1ea7n"
+  },
+  "d83c_df18": {
+    "message": "tr\u0103ng khuy\u1ebft cu\u1ed1i th\u00e1ng"
+  },
+  "d83c_df19": {
+    "message": "tr\u0103ng l\u01b0\u1ee1i li\u1ec1m"
+  },
+  "d83c_df1a": {
+    "message": "m\u1eb7t h\u00ecnh tr\u0103ng non"
+  },
+  "d83c_df1b": {
+    "message": "m\u1eb7t h\u00ecnh tr\u0103ng th\u01b0\u1ee3ng tu\u1ea7n"
+  },
+  "d83c_df1c": {
+    "message": "m\u1eb7t h\u00ecnh tr\u0103ng h\u1ea1 tu\u1ea7n"
+  },
+  "d83c_df1d": {
+    "message": "m\u1eb7t h\u00ecnh tr\u0103ng tr\u00f2n"
+  },
+  "d83c_df1e": {
+    "message": "m\u1eb7t h\u00ecnh m\u1eb7t tr\u1eddi"
+  },
+  "d83c_df1f": {
+    "message": "sao l\u1ea5p l\u00e1nh"
+  },
+  "d83c_df20": {
+    "message": "sao b\u0103ng"
+  },
+  "d83c_df30": {
+    "message": "h\u1ea1t d\u1ebb"
+  },
+  "d83c_df31": {
+    "message": "c\u00e2y non"
+  },
+  "d83c_df32": {
+    "message": "c\u00e2y th\u01b0\u1eddng xanh"
+  },
+  "d83c_df33": {
+    "message": "c\u00e2y \u0111\u1ed5"
+  },
+  "d83c_df34": {
+    "message": "c\u00e2y c\u1ecd"
+  },
+  "d83c_df35": {
+    "message": "c\u00e2y x\u01b0\u01a1ng r\u1ed3ng"
+  },
+  "d83c_df37": {
+    "message": "hoa tulip"
+  },
+  "d83c_df38": {
+    "message": "hoa anh \u0111\u00e0o n\u1edf"
+  },
+  "d83c_df39": {
+    "message": "hoa h\u1ed3ng"
+  },
+  "d83c_df3a": {
+    "message": "d\u00e2m b\u1ee5t"
+  },
+  "d83c_df3b": {
+    "message": "h\u01b0\u1edbng d\u01b0\u01a1ng"
+  },
+  "d83c_df3c": {
+    "message": "hoa"
+  },
+  "d83c_df3d": {
+    "message": "ng\u00f4"
+  },
+  "d83c_df3e": {
+    "message": "c\u00e2y l\u00faa"
+  },
+  "d83c_df3f": {
+    "message": "th\u1ea3o m\u1ed9c"
+  },
+  "d83c_df40": {
+    "message": "c\u1ecf b\u1ed1n l\u00e1"
+  },
+  "d83c_df41": {
+    "message": "l\u00e1 phong \u0111\u1ecf"
+  },
+  "d83c_df42": {
+    "message": "l\u00e1 r\u01a1i"
+  },
+  "d83c_df43": {
+    "message": "l\u00e1 bay trong gi\u00f3"
+  },
+  "d83c_df44": {
+    "message": "n\u1ea5m"
+  },
+  "d83c_df45": {
+    "message": "c\u00e0 chua"
+  },
+  "d83c_df46": {
+    "message": "c\u00e0 t\u00edm"
+  },
+  "d83c_df47": {
+    "message": "nho"
+  },
+  "d83c_df48": {
+    "message": "qu\u1ea3 d\u01b0a"
+  },
+  "d83c_df49": {
+    "message": "d\u01b0a h\u1ea5u"
+  },
+  "d83c_df4a": {
+    "message": "qu\u00fdt"
+  },
+  "d83c_df4b": {
+    "message": "chanh"
+  },
+  "d83c_df4c": {
+    "message": "chu\u1ed1i"
+  },
+  "d83c_df4d": {
+    "message": "d\u1ee9a"
+  },
+  "d83c_df4e": {
+    "message": "t\u00e1o \u0111\u1ecf"
+  },
+  "d83c_df4f": {
+    "message": "t\u00e1o xanh"
+  },
+  "d83c_df50": {
+    "message": "l\u00ea"
+  },
+  "d83c_df51": {
+    "message": "\u0111\u00e0o"
+  },
+  "d83c_df52": {
+    "message": "qu\u1ea3 anh \u0111\u00e0o"
+  },
+  "d83c_df53": {
+    "message": "d\u00e2u t\u00e2y"
+  },
+  "d83c_df54": {
+    "message": "b\u00e1nh hamburger"
+  },
+  "d83c_df55": {
+    "message": "l\u00e1t pizza"
+  },
+  "d83c_df56": {
+    "message": "th\u1ecbt"
+  },
+  "d83c_df57": {
+    "message": "ch\u00e2n g\u00e0"
+  },
+  "d83c_df58": {
+    "message": "b\u00e1nh g\u1ea1o"
+  },
+  "d83c_df59": {
+    "message": "n\u1eafm c\u01a1m"
+  },
+  "d83c_df5a": {
+    "message": "c\u01a1m"
+  },
+  "d83c_df5b": {
+    "message": "m\u00f3n ca ri v\u00e0 c\u01a1m"
+  },
+  "d83c_df5c": {
+    "message": "m\u1ef3 t\u00f4m"
+  },
+  "d83c_df5d": {
+    "message": "m\u00ec \u1ed1ng"
+  },
+  "d83c_df5e": {
+    "message": "b\u00e1nh m\u00ec"
+  },
+  "d83c_df5f": {
+    "message": "khoai t\u00e2y chi\u00ean"
+  },
+  "d83c_df60": {
+    "message": "khoai t\u00e2y n\u01b0\u1edbng"
+  },
+  "d83c_df61": {
+    "message": "mochi"
+  },
+  "d83c_df62": {
+    "message": "oden"
+  },
+  "d83c_df63": {
+    "message": "sushi"
+  },
+  "d83c_df64": {
+    "message": "t\u00f4m chi\u00ean"
+  },
+  "d83c_df65": {
+    "message": "vi\u00ean c\u00e1 b\u0103m"
+  },
+  "d83c_df66": {
+    "message": "kem m\u1ec1m"
+  },
+  "d83c_df67": {
+    "message": "\u0111\u00e1 b\u00e0o"
+  },
+  "d83c_df68": {
+    "message": "kem"
+  },
+  "d83c_df69": {
+    "message": "b\u00e1nh r\u00e1n"
+  },
+  "d83c_df6a": {
+    "message": "b\u00e1nh quy"
+  },
+  "d83c_df6b": {
+    "message": "s\u00f4c\u00f4la"
+  },
+  "d83c_df6c": {
+    "message": "k\u1eb9o"
+  },
+  "d83c_df6d": {
+    "message": "k\u1eb9o que"
+  },
+  "d83c_df6e": {
+    "message": "m\u00f3n s\u1eefa tr\u1ee9ng"
+  },
+  "d83c_df6f": {
+    "message": "b\u00ecnh \u0111\u1ef1ng m\u1eadt ong"
+  },
+  "d83c_df70": {
+    "message": "b\u00e1nh b\u01a1 gi\u00f2n"
+  },
+  "d83c_df71": {
+    "message": "bento"
+  },
+  "d83c_df72": {
+    "message": "m\u00f3n th\u1ecbt h\u1ea7m"
+  },
+  "d83c_df73": {
+    "message": "ch\u1ea3o r\u00e1n"
+  },
+  "d83c_df74": {
+    "message": "dao v\u00e0 n\u0129a"
+  },
+  "d83c_df75": {
+    "message": "t\u00e1ch tr\u00e0"
+  },
+  "d83c_df76": {
+    "message": "r\u01b0\u1ee3u sak\u00ea"
+  },
+  "d83c_df77": {
+    "message": "r\u01b0\u1ee3u vang"
+  },
+  "d83c_df78": {
+    "message": "cocktail"
+  },
+  "d83c_df79": {
+    "message": "\u0111\u1ed3 u\u1ed1ng ki\u1ec3u nhi\u1ec7t \u0111\u1edbi"
+  },
+  "d83c_df7a": {
+    "message": "bia"
+  },
+  "d83c_df7b": {
+    "message": "c\u1ed1c bia"
+  },
+  "d83c_df7c": {
+    "message": "chai nh\u1ecf"
+  },
+  "d83c_df80": {
+    "message": "d\u1ea3i b\u0103ng"
+  },
+  "d83c_df81": {
+    "message": "qu\u00e0 t\u1eb7ng"
+  },
+  "d83c_df82": {
+    "message": "b\u00e1nh sinh nh\u1eadt"
+  },
+  "d83c_df83": {
+    "message": "\u0111\u00e8n ma"
+  },
+  "d83c_df84": {
+    "message": "c\u00e2y th\u00f4ng Noel"
+  },
+  "d83c_df85": {
+    "message": "\u00f4ng gi\u00e0 Noel"
+  },
+  "d83c_df86": {
+    "message": "ph\u00e1o hoa"
+  },
+  "d83c_df87": {
+    "message": "tia l\u1eeda"
+  },
+  "d83c_df88": {
+    "message": "kh\u00ed c\u1ea7u"
+  },
+  "d83c_df89": {
+    "message": "ph\u00e1o hoa kim tuy\u1ebfn"
+  },
+  "d83c_df8a": {
+    "message": "hoa gi\u1ea5y"
+  },
+  "d83c_df8b": {
+    "message": "c\u00e2y v\u00e0 m\u1ea3nh gi\u1ea5y"
+  },
+  "d83c_df8c": {
+    "message": "c\u1edd \u0111an ch\u00e9o"
+  },
+  "d83c_df8d": {
+    "message": "trang tr\u00ed c\u00e2y th\u00f4ng"
+  },
+  "d83c_df8e": {
+    "message": "b\u00fap b\u00ea"
+  },
+  "d83c_df8f": {
+    "message": "c\u1edd c\u00e1 ch\u00e9p"
+  },
+  "d83c_df90": {
+    "message": "chu\u00f4ng gi\u00f3"
+  },
+  "d83c_df91": {
+    "message": "xem tr\u0103ng"
+  },
+  "d83c_df92": {
+    "message": "c\u1eb7p s\u00e1ch"
+  },
+  "d83c_df93": {
+    "message": "m\u0169 t\u1ed1t nghi\u1ec7p"
+  },
+  "d83c_dfa0": {
+    "message": "b\u0103ng chuy\u1ec1n"
+  },
+  "d83c_dfa1": {
+    "message": "v\u00f2ng \u0111u quay"
+  },
+  "d83c_dfa2": {
+    "message": "\u0111\u01b0\u1eddng s\u1eaft cho t\u00e0u tr\u01b0\u1ee3t"
+  },
+  "d83c_dfa3": {
+    "message": "c\u00e2u ca\u0301"
+  },
+  "d83c_dfa4": {
+    "message": "micr\u00f4"
+  },
+  "d83c_dfa5": {
+    "message": "m\u00e1y quay phim"
+  },
+  "d83c_dfa6": {
+    "message": "phim"
+  },
+  "d83c_dfa7": {
+    "message": "tai nghe"
+  },
+  "d83c_dfa8": {
+    "message": "b\u1ea3ng m\u00e0u s\u01a1n"
+  },
+  "d83c_dfa9": {
+    "message": "m\u0169 ch\u00f3p cao"
+  },
+  "d83c_dfaa": {
+    "message": "r\u1ea1p xi\u1ebfc"
+  },
+  "d83c_dfab": {
+    "message": "v\u00e9"
+  },
+  "d83c_dfac": {
+    "message": "b\u1ea3ng ph\u00e2n c\u1ea3nh"
+  },
+  "d83c_dfad": {
+    "message": "m\u1eb7t n\u1ea1"
+  },
+  "d83c_dfae": {
+    "message": "tr\u00f2 ch\u01a1i \u0111i\u1ec7n t\u1eed"
+  },
+  "d83c_dfaf": {
+    "message": "\u0111i\u1ec3m \u0111en"
+  },
+  "d83c_dfb0": {
+    "message": "m\u00e1y b\u00e1n h\u00e0ng t\u1ef1 \u0111\u1ed9ng"
+  },
+  "d83c_dfb1": {
+    "message": "bi-a"
+  },
+  "d83c_dfb2": {
+    "message": "x\u00fac x\u1eafc"
+  },
+  "d83c_dfb3": {
+    "message": "tr\u00f2 ch\u01a1i l\u0103n b\u00f3ng g\u1ed7"
+  },
+  "d83c_dfb4": {
+    "message": "ch\u01a1i b\u00e0i"
+  },
+  "d83c_dfb5": {
+    "message": "n\u1ed1t nh\u1ea1c"
+  },
+  "d83c_dfb6": {
+    "message": "nh\u1eefng n\u1ed1t nh\u1ea1c"
+  },
+  "d83c_dfb7": {
+    "message": "k\u00e8n sax"
+  },
+  "d83c_dfb8": {
+    "message": "\u0111\u00e0n ghi ta"
+  },
+  "d83c_dfb9": {
+    "message": "piano"
+  },
+  "d83c_dfba": {
+    "message": "k\u00e8n trumpet"
+  },
+  "d83c_dfbb": {
+    "message": "vi\u00f4l\u00f4ng"
+  },
+  "d83c_dfbc": {
+    "message": "b\u1ea3ng t\u1ed5ng ph\u1ed5 nh\u1ea1c"
+  },
+  "d83c_dfbd": {
+    "message": "\u00e1o thun"
+  },
+  "d83c_dfbe": {
+    "message": "tr\u00f2 ch\u01a1i qu\u1ea7n v\u1ee3t"
+  },
+  "d83c_dfbf": {
+    "message": "tr\u01b0\u1ee3t tuy\u1ebft"
+  },
+  "d83c_dfc0": {
+    "message": "tr\u00f2 ch\u01a1i b\u00f3ng r\u1ed5"
+  },
+  "d83c_dfc1": {
+    "message": "tr\u00f2 ch\u01a1i c\u1edd ca r\u00f4"
+  },
+  "d83c_dfc2": {
+    "message": "tr\u01b0\u1ee3t v\u00e1n"
+  },
+  "d83c_dfc3": {
+    "message": "ng\u01b0\u1eddi ch\u1ea1y"
+  },
+  "d83c_dfc4": {
+    "message": "l\u01b0\u1edbt s\u00f3ng"
+  },
+  "d83c_dfc6": {
+    "message": "c\u00fap"
+  },
+  "d83c_dfc7": {
+    "message": "\u0111ua ng\u1ef1a"
+  },
+  "d83c_dfc8": {
+    "message": "B\u00f3ng \u0111\u00e1 M\u1ef9"
+  },
+  "d83c_dfc9": {
+    "message": "b\u00f3ng \u0111\u00e1"
+  },
+  "d83c_dfca": {
+    "message": "ng\u01b0\u1eddi b\u01a1i"
+  },
+  "d83c_dfe0": {
+    "message": "ng\u00f4i nh\u00e0"
+  },
+  "d83c_dfe1": {
+    "message": "nh\u00e0 ri\u00eang"
+  },
+  "d83c_dfe2": {
+    "message": "t\u00f2a nh\u00e0 v\u0103n ph\u00f2ng"
+  },
+  "d83c_dfe3": {
+    "message": "B\u01b0u \u0111i\u1ec7n Nh\u1eadt B\u1ea3n"
+  },
+  "d83c_dfe4": {
+    "message": "B\u01b0u \u0111i\u1ec7n ch\u00e2u \u00c2u"
+  },
+  "d83c_dfe5": {
+    "message": "b\u1ec7nh vi\u1ec7n"
+  },
+  "d83c_dfe6": {
+    "message": "ng\u00e2n h\u00e0ng"
+  },
+  "d83c_dfe7": {
+    "message": "ATM"
+  },
+  "d83c_dfe8": {
+    "message": "kh\u00e1ch s\u1ea1n"
+  },
+  "d83c_dfe9": {
+    "message": "kh\u00e1ch s\u1ea1n t\u00ecnh y\u00eau"
+  },
+  "d83c_dfea": {
+    "message": "c\u1eeda h\u00e0ng ti\u1ec7n \u00edch"
+  },
+  "d83c_dfeb": {
+    "message": "tr\u01b0\u1eddng h\u1ecdc"
+  },
+  "d83c_dfec": {
+    "message": "c\u1eeda h\u00e0ng b\u00e1ch h\u00f3a"
+  },
+  "d83c_dfed": {
+    "message": "nh\u00e0 m\u00e1y"
+  },
+  "d83c_dfee": {
+    "message": "\u0111\u00e8n l\u1ed3ng \u0111\u1ecf"
+  },
+  "d83c_dfef": {
+    "message": "L\u00e2u \u0111\u00e0i Nh\u1eadt B\u1ea3n"
+  },
+  "d83c_dff0": {
+    "message": "L\u00e2u \u0111\u00e0i ch\u00e2u \u00c2u"
+  },
+  "d83d_dc00": {
+    "message": "Chu\u1ed9t c\u1ed1ng"
+  },
+  "d83d_dc01": {
+    "message": "Chu\u1ed9t"
+  },
+  "d83d_dc02": {
+    "message": "B\u00f2 \u0111\u1ef1c"
+  },
+  "d83d_dc03": {
+    "message": "tr\u00e2u n\u01b0\u1edbc"
+  },
+  "d83d_dc04": {
+    "message": "b\u00f2 c\u00e1i"
+  },
+  "d83d_dc06": {
+    "message": "con b\u00e1o"
+  },
+  "d83d_dc07": {
+    "message": "th\u1ecf"
+  },
+  "d83d_dc08": {
+    "message": "m\u00e8o"
+  },
+  "d83d_dc09": {
+    "message": "r\u1ed3ng"
+  },
+  "d83d_dc0a": {
+    "message": "c\u00e1 s\u1ea5u"
+  },
+  "d83d_dc0b": {
+    "message": "c\u00e1 voi"
+  },
+  "d83d_dc0c": {
+    "message": "\u1ed1c"
+  },
+  "d83d_dc0d": {
+    "message": "r\u1eafn"
+  },
+  "d83d_dc0e": {
+    "message": "ng\u1ef1a"
+  },
+  "d83d_dc0f": {
+    "message": "c\u1eebu \u0111\u1ef1c"
+  },
+  "d83d_dc10": {
+    "message": "d\u00ea"
+  },
+  "d83d_dc11": {
+    "message": "c\u1eebu"
+  },
+  "d83d_dc12": {
+    "message": "kh\u1ec9"
+  },
+  "d83d_dc13": {
+    "message": "g\u00e0 tr\u1ed1ng"
+  },
+  "d83d_dc14": {
+    "message": "g\u00e0"
+  },
+  "d83d_dc15": {
+    "message": "c\u00fan"
+  },
+  "d83d_dc16": {
+    "message": "l\u1ee3n"
+  },
+  "d83d_dc17": {
+    "message": "l\u1ee3n r\u1eebng"
+  },
+  "d83d_dc18": {
+    "message": "voi"
+  },
+  "d83d_dc19": {
+    "message": "b\u1ea1ch tu\u1ed9c"
+  },
+  "d83d_dc1a": {
+    "message": "v\u1ecf s\u00f2"
+  },
+  "d83d_dc1b": {
+    "message": "b\u1ecd"
+  },
+  "d83d_dc1c": {
+    "message": "ki\u1ebfn"
+  },
+  "d83d_dc1d": {
+    "message": "ong m\u1eadt"
+  },
+  "d83d_dc1e": {
+    "message": "b\u1ecd r\u00f9a"
+  },
+  "d83d_dc1f": {
+    "message": "c\u00e1"
+  },
+  "d83d_dc20": {
+    "message": "c\u00e1 nhi\u1ec7t \u0111\u1edbi"
+  },
+  "d83d_dc21": {
+    "message": "c\u00e1 n\u00f3c"
+  },
+  "d83d_dc22": {
+    "message": "r\u00f9a"
+  },
+  "d83d_dc23": {
+    "message": "g\u00e0 \u1ea5p tr\u1ee9ng"
+  },
+  "d83d_dc24": {
+    "message": "m\u1eb7t g\u00e0 con"
+  },
+  "d83d_dc25": {
+    "message": "g\u00e0 con"
+  },
+  "d83d_dc26": {
+    "message": "chim"
+  },
+  "d83d_dc27": {
+    "message": "chim c\u00e1nh c\u1ee5t"
+  },
+  "d83d_dc28": {
+    "message": "g\u1ea5u t\u00fai"
+  },
+  "d83d_dc29": {
+    "message": "ch\u00f3 x\u00f9"
+  },
+  "d83d_dc2a": {
+    "message": "l\u1ea1c \u0111\u00e0 m\u1ed9t b\u01b0\u1edbu"
+  },
+  "d83d_dc2b": {
+    "message": "l\u1ea1c \u0111\u00e0 hai b\u01b0\u1edbu"
+  },
+  "d83d_dc2c": {
+    "message": "c\u00e1 heo"
+  },
+  "d83d_dc2d": {
+    "message": "m\u1eb7t chu\u1ed9t"
+  },
+  "d83d_dc2e": {
+    "message": "m\u1eb7t b\u00f2 c\u00e1i"
+  },
+  "d83d_dc2f": {
+    "message": "m\u1eb7t h\u1ed5"
+  },
+  "d83d_dc30": {
+    "message": "m\u1eb7t th\u1ecf"
+  },
+  "d83d_dc31": {
+    "message": "m\u1eb7t m\u00e8o"
+  },
+  "d83d_dc32": {
+    "message": "m\u1eb7t r\u1ed3ng"
+  },
+  "d83d_dc33": {
+    "message": "c\u00e1 voi phun n\u01b0\u1edbc"
+  },
+  "d83d_dc34": {
+    "message": "m\u1eb7t ng\u1ef1a"
+  },
+  "d83d_dc35": {
+    "message": "m\u1eb7t kh\u1ec9"
+  },
+  "d83d_dc36": {
+    "message": "m\u1eb7t c\u00fan"
+  },
+  "d83d_dc37": {
+    "message": "m\u1eb7t l\u1ee3n"
+  },
+  "d83d_dc38": {
+    "message": "m\u1eb7t \u1ebfch"
+  },
+  "d83d_dc39": {
+    "message": "m\u1eb7t chu\u1ed9t \u0111\u1ed3ng"
+  },
+  "d83d_dc3a": {
+    "message": "m\u1eb7t s\u00f3i"
+  },
+  "d83d_dc3b": {
+    "message": "m\u1eb7t g\u1ea5u"
+  },
+  "d83d_dc3c": {
+    "message": "m\u1eb7t g\u1ea5u tr\u00fac"
+  },
+  "d83d_dc3d": {
+    "message": "m\u0169i l\u1ee3n"
+  },
+  "d83d_dc3e": {
+    "message": "m\u00f3ng"
+  },
+  "d83d_dc40": {
+    "message": "m\u1eaft"
+  },
+  "d83d_dc42": {
+    "message": "tai"
+  },
+  "d83d_dc43": {
+    "message": "m\u0169i"
+  },
+  "d83d_dc44": {
+    "message": "mi\u1ec7ng"
+  },
+  "d83d_dc45": {
+    "message": "l\u01b0\u1ee1i"
+  },
+  "d83d_dc46": {
+    "message": "gi\u01a1 ng\u00f3n tay l\u00ean"
+  },
+  "d83d_dc47": {
+    "message": "gi\u01a1 ng\u00f3n tay xu\u1ed1ng"
+  },
+  "d83d_dc48": {
+    "message": "ng\u00f3n tay tr\u00e1i"
+  },
+  "d83d_dc49": {
+    "message": "ng\u00f3n tay ph\u1ea3i"
+  },
+  "d83d_dc4a": {
+    "message": "tay n\u1eafm ch\u1eb7t"
+  },
+  "d83d_dc4b": {
+    "message": "v\u1eaby tay"
+  },
+  "d83d_dc4c": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng b\u00e0n tay ra d\u1ea5u Ok"
+  },
+  "d83d_dc4d": {
+    "message": "ng\u00f3n tay c\u00e1i gi\u01a1 l\u00ean"
+  },
+  "d83d_dc4e": {
+    "message": "ng\u00f3n tay c\u00e1i quay xu\u1ed1ng"
+  },
+  "d83d_dc4f": {
+    "message": "v\u1ed7 tay"
+  },
+  "d83d_dc50": {
+    "message": "\u0111\u00f4i b\u00e0n tay m\u1edf"
+  },
+  "d83d_dc51": {
+    "message": "v\u01b0\u01a1ng mi\u1ec7n"
+  },
+  "d83d_dc52": {
+    "message": "m\u0169 n\u1eef"
+  },
+  "d83d_dc53": {
+    "message": "k\u00ednh m\u1eaft"
+  },
+  "d83d_dc54": {
+    "message": "ca v\u00e1t"
+  },
+  "d83d_dc55": {
+    "message": "\u00c1o s\u01a1 mi"
+  },
+  "d83d_dc56": {
+    "message": "qu\u1ea7n"
+  },
+  "d83d_dc57": {
+    "message": "\u0111\u1ea7m"
+  },
+  "d83d_dc58": {
+    "message": "kimono"
+  },
+  "d83d_dc59": {
+    "message": "b\u1ed9 bikini"
+  },
+  "d83d_dc5a": {
+    "message": "qu\u1ea7n \u00e1o n\u1eef"
+  },
+  "d83d_dc5b": {
+    "message": "c\u00e1i v\u00ed"
+  },
+  "d83d_dc5c": {
+    "message": "t\u00fai x\u00e1ch"
+  },
+  "d83d_dc5d": {
+    "message": "t\u00fai nh\u1ecf"
+  },
+  "d83d_dc5e": {
+    "message": "gi\u00e0y nam"
+  },
+  "d83d_dc5f": {
+    "message": "gi\u00e0y th\u1ec3 thao"
+  },
+  "d83d_dc60": {
+    "message": "cao g\u00f3t"
+  },
+  "d83d_dc61": {
+    "message": "x\u0103ng \u0111an n\u1eef"
+  },
+  "d83d_dc62": {
+    "message": "gi\u00e0y \u1ed1ng n\u1eef"
+  },
+  "d83d_dc63": {
+    "message": "d\u1ea5u ch\u00e2n"
+  },
+  "d83d_dc64": {
+    "message": "h\u00ecnh b\u00f3ng n\u1eeda ng\u01b0\u1eddi"
+  },
+  "d83d_dc65": {
+    "message": "h\u00ecnh b\u00f3ng n\u1eeda ng\u01b0\u1eddi"
+  },
+  "d83d_dc66": {
+    "message": "con trai"
+  },
+  "d83d_dc67": {
+    "message": "con g\u00e1i"
+  },
+  "d83d_dc68": {
+    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng"
+  },
+  "d83d_dc69": {
+    "message": "ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+  },
+  "d83d_dc6a": {
+    "message": "gia \u0111\u00ecnh"
+  },
+  "d83d_dc6b": {
+    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng v\u00e0 ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+  },
+  "d83d_dc6c": {
+    "message": "hai ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng"
+  },
+  "d83d_dc6d": {
+    "message": "hai ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+  },
+  "d83d_dc6e": {
+    "message": "c\u1ea3nh s\u00e1t"
+  },
+  "d83d_dc6f": {
+    "message": "c\u00f4 g\u00e1i m\u1eb7c b\u1ed9 qu\u1ea7n \u00e1o c\u00f3 tai th\u1ecf v\u00e0 \u0111u\u00f4i th\u1ecf gi\u1ea3"
+  },
+  "d83d_dc70": {
+    "message": "c\u00f4 d\u00e2u"
+  },
+  "d83d_dc71": {
+    "message": "ng\u01b0\u1eddi c\u00f3 t\u00f3c v\u00e0ng"
+  },
+  "d83d_dc72": {
+    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng \u0111\u1ed9i m\u0169 gua pi mao"
+  },
+  "d83d_dc73": {
+    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng \u0111\u1ed9i kh\u0103n x\u1ebfp"
+  },
+  "d83d_dc74": {
+    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng l\u1edbn tu\u1ed5i"
+  },
+  "d83d_dc75": {
+    "message": "ng\u01b0\u1eddi ph\u1ee5 n\u1eef l\u1edbn tu\u1ed5i"
+  },
+  "d83d_dc76": {
+    "message": "em b\u00e9"
+  },
+  "d83d_dc77": {
+    "message": "c\u00f4ng nh\u00e2n x\u00e2y d\u1ef1ng"
+  },
+  "d83d_dc78": {
+    "message": "c\u00f4ng ch\u00faa"
+  },
+  "d83d_dc79": {
+    "message": "y\u00eau qu\u00e1i"
+  },
+  "d83d_dc7a": {
+    "message": "y\u00eau tinh"
+  },
+  "d83d_dc7b": {
+    "message": "ma"
+  },
+  "d83d_dc7c": {
+    "message": "thi\u00ean th\u1ea7n nh\u1ecf"
+  },
+  "d83d_dc7d": {
+    "message": "ng\u01b0\u1eddi ngo\u00e0i h\u00e0nh tinh"
+  },
+  "d83d_dc7e": {
+    "message": "qu\u00e1i v\u1eadt ngo\u00e0i h\u00e0nh tinh"
+  },
+  "d83d_dc7f": {
+    "message": "ti\u1ec3u qu\u1ef7"
+  },
+  "d83d_dc80": {
+    "message": "\u0111\u1ea7u l\u00e2u"
+  },
+  "d83d_dc81": {
+    "message": "b\u00e0n h\u01b0\u1edbng d\u1eabn"
+  },
+  "d83d_dc82": {
+    "message": "nh\u00e2n vi\u00ean b\u1ea3o v\u1ec7"
+  },
+  "d83d_dc83": {
+    "message": "v\u0169 c\u00f4ng"
+  },
+  "d83d_dc84": {
+    "message": "son m\u00f4i"
+  },
+  "d83d_dc85": {
+    "message": "ch\u0103m s\u00f3c m\u00f3ng tay"
+  },
+  "d83d_dc86": {
+    "message": "xoa b\u00f3p m\u1eb7t"
+  },
+  "d83d_dc87": {
+    "message": "c\u1eaft t\u00f3c"
+  },
+  "d83d_dc88": {
+    "message": "ti\u1ec7m c\u1eaft t\u00f3c"
+  },
+  "d83d_dc89": {
+    "message": "b\u1eafn"
+  },
+  "d83d_dc8a": {
+    "message": "vi\u00ean thu\u1ed1c"
+  },
+  "d83d_dc8b": {
+    "message": "d\u1ea5u h\u00f4n"
+  },
+  "d83d_dc8c": {
+    "message": "b\u1ee9c th\u01b0 t\u00ecnh"
+  },
+  "d83d_dc8d": {
+    "message": "nh\u1eabn"
+  },
+  "d83d_dc8e": {
+    "message": "ng\u1ecdc"
+  },
+  "d83d_dc8f": {
+    "message": "h\u00f4n"
+  },
+  "d83d_dc90": {
+    "message": "b\u00f3 hoa"
+  },
+  "d83d_dc91": {
+    "message": "c\u1eb7p \u0111\u00f4i"
+  },
+  "d83d_dc92": {
+    "message": "t\u1ed5 ch\u1ee9c ti\u1ec7c c\u01b0\u1edbi"
+  },
+  "d83d_dc93": {
+    "message": "tr\u00e1i tim rung \u0111\u1ed9ng"
+  },
+  "d83d_dc94": {
+    "message": "tim v\u1ee1"
+  },
+  "d83d_dc95": {
+    "message": "hai tr\u00e1i tim"
+  },
+  "d83d_dc96": {
+    "message": "tr\u00e1i tim l\u1ea5p l\u00e1nh"
+  },
+  "d83d_dc97": {
+    "message": "tr\u00e1i t\u00edm l\u1edbn d\u1ea7n"
+  },
+  "d83d_dc98": {
+    "message": "tr\u00e1i tim v\u00e0 m\u0169i t\u00ean"
+  },
+  "d83d_dc99": {
+    "message": "tr\u00e1i tim m\u00e0u xanh lam"
+  },
+  "d83d_dc9a": {
+    "message": "tr\u00e1i tim m\u00e0u xanh l\u1ee5c"
+  },
+  "d83d_dc9b": {
+    "message": "tr\u00e1i tim m\u00e0u v\u00e0ng"
+  },
+  "d83d_dc9c": {
+    "message": "tr\u00e1i tim m\u00e0u t\u00edm"
+  },
+  "d83d_dc9d": {
+    "message": "tr\u00e1i tim c\u00f3 d\u1ea3i b\u0103ng"
+  },
+  "d83d_dc9e": {
+    "message": "tr\u00e1i tim xoay v\u00f2ng"
+  },
+  "d83d_dc9f": {
+    "message": "trang tr\u00ed tr\u00e1i tim"
+  },
+  "d83d_dca0": {
+    "message": "c\u00e1nh hoa"
+  },
+  "d83d_dca1": {
+    "message": "b\u00f3ng \u0111\u00e8n"
+  },
+  "d83d_dca2": {
+    "message": "ph\u1eabn n\u1ed9"
+  },
+  "d83d_dca3": {
+    "message": "bom"
+  },
+  "d83d_dca4": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng bu\u1ed3n ng\u1ee7"
+  },
+  "d83d_dca5": {
+    "message": "hai xe va ch\u1ea1m"
+  },
+  "d83d_dca6": {
+    "message": "m\u1ed3 h\u00f4i t\u00faa ra"
+  },
+  "d83d_dca7": {
+    "message": "to\u00e1t m\u1ed3 h\u00f4i"
+  },
+  "d83d_dca8": {
+    "message": "r\u01b0\u1ee3t \u0111u\u1ed5i"
+  },
+  "d83d_dca9": {
+    "message": "kh\u1edd kh\u1ea1o"
+  },
+  "d83d_dcaa": {
+    "message": "b\u1eafp tay"
+  },
+  "d83d_dcab": {
+    "message": "ch\u00f3ng m\u1eb7t"
+  },
+  "d83d_dcac": {
+    "message": "h\u1ed9p ch\u00fa gi\u1ea3i l\u1eddi n\u00f3i"
+  },
+  "d83d_dcad": {
+    "message": "h\u1ed9p ch\u00fa gi\u1ea3i suy ngh\u0129"
+  },
+  "d83d_dcae": {
+    "message": "tem hoa"
+  },
+  "d83d_dcaf": {
+    "message": "\u0111i\u1ec3m s\u1ed1 \u0111\u1ea7y \u0111\u1ee7"
+  },
+  "d83d_dcb0": {
+    "message": "t\u00fai ti\u1ec1n"
+  },
+  "d83d_dcb1": {
+    "message": "h\u1ed1i \u0111o\u00e1i"
+  },
+  "d83d_dcb2": {
+    "message": "k\u00fd hi\u1ec7u $"
+  },
+  "d83d_dcb3": {
+    "message": "th\u1ebb t\u00edn d\u1ee5ng"
+  },
+  "d83d_dcb4": {
+    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng Y\u00ean"
+  },
+  "d83d_dcb5": {
+    "message": "ghi ch\u00fa v\u1ec1 \u0111\u00f4 la"
+  },
+  "d83d_dcb6": {
+    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng Euro"
+  },
+  "d83d_dcb7": {
+    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng b\u1ea3ng Anh"
+  },
+  "d83d_dcb8": {
+    "message": "ti\u1ec1n bay"
+  },
+  "d83d_dcb9": {
+    "message": "th\u1ecb tr\u01b0\u1eddng t\u0103ng"
+  },
+  "d83d_dcba": {
+    "message": "gh\u1ebf"
+  },
+  "d83d_dcbb": {
+    "message": "PC"
+  },
+  "d83d_dcbc": {
+    "message": "c\u1eb7p t\u00e0i li\u1ec7u"
+  },
+  "d83d_dcbd": {
+    "message": "\u0111\u0129a mini"
+  },
+  "d83d_dcbe": {
+    "message": "\u0111\u0129a m\u1ec1m"
+  },
+  "d83d_dcbf": {
+    "message": "blu-ray"
+  },
+  "d83d_dcc0": {
+    "message": "DVD"
+  },
+  "d83d_dcc1": {
+    "message": "g\u1eedi th\u01b0 m\u1ee5c"
+  },
+  "d83d_dcc2": {
+    "message": "m\u1edf th\u01b0 m\u1ee5c"
+  },
+  "d83d_dcc3": {
+    "message": "t\u00e0i li\u1ec7u"
+  },
+  "d83d_dcc4": {
+    "message": "t\u00e0i li\u1ec7u"
+  },
+  "d83d_dcc5": {
+    "message": "l\u1ecbch"
+  },
+  "d83d_dcc6": {
+    "message": "l\u1ecbch x\u00e9"
+  },
+  "d83d_dcc7": {
+    "message": "ch\u1ec9 m\u1ee5c th\u1ebb"
+  },
+  "d83d_dcc8": {
+    "message": "xu h\u01b0\u1edbng \u0111i l\u00ean"
+  },
+  "d83d_dcc9": {
+    "message": "xu h\u01b0\u1edbng \u0111i xu\u1ed1ng"
+  },
+  "d83d_dcca": {
+    "message": "bi\u1ec3u \u0111\u1ed3 thanh"
+  },
+  "d83d_dccb": {
+    "message": "khay nh\u1edb t\u1ea1m"
+  },
+  "d83d_dccc": {
+    "message": "\u0111inh ghim"
+  },
+  "d83d_dccd": {
+    "message": "\u0111inh ghim tr\u00f2n"
+  },
+  "d83d_dcce": {
+    "message": "k\u1eb9p gi\u1ea5y"
+  },
+  "d83d_dccf": {
+    "message": "th\u01b0\u1edbc th\u1eb3ng"
+  },
+  "d83d_dcd0": {
+    "message": "th\u01b0\u1edbc tam gi\u00e1c"
+  },
+  "d83d_dcd1": {
+    "message": "tab d\u1ea5u trang"
+  },
+  "d83d_dcd2": {
+    "message": "s\u1ed5 c\u00e1i"
+  },
+  "d83d_dcd3": {
+    "message": "s\u1ed5 tay"
+  },
+  "d83d_dcd4": {
+    "message": "s\u1ed5 tay \u0111\u01b0\u1ee3c trang tr\u00ed"
+  },
+  "d83d_dcd5": {
+    "message": "s\u00e1ch \u0111\u00f3ng"
+  },
+  "d83d_dcd6": {
+    "message": "s\u00e1ch m\u1edf"
+  },
+  "d83d_dcd7": {
+    "message": "s\u00e1ch m\u00e0u xanh l\u1ee5c"
+  },
+  "d83d_dcd8": {
+    "message": "s\u00e1ch"
+  },
+  "d83d_dcd9": {
+    "message": "s\u00e1ch m\u00e0u cam"
+  },
+  "d83d_dcda": {
+    "message": "s\u00e1ch"
+  },
+  "d83d_dcdb": {
+    "message": "huy hi\u1ec7u t\u00ean"
+  },
+  "d83d_dcdc": {
+    "message": "cu\u1ed9n gi\u1ea5y"
+  },
+  "d83d_dcdd": {
+    "message": "ghi nh\u1edb"
+  },
+  "d83d_dcde": {
+    "message": "\u0111i\u1ec7n tho\u1ea1i"
+  },
+  "d83d_dcdf": {
+    "message": "s\u1ed1 m\u00e1y nh\u0103\u0301n tin"
+  },
+  "d83d_dce0": {
+    "message": "fax"
+  },
+  "d83d_dce1": {
+    "message": "\u0103ng ten ch\u1ea3o v\u1ec7 tinh"
+  },
+  "d83d_dce2": {
+    "message": "loa"
+  },
+  "d83d_dce3": {
+    "message": "loa"
+  },
+  "d83d_dce4": {
+    "message": "th\u01b0 \u0111\u00e3 g\u1eedi"
+  },
+  "d83d_dce5": {
+    "message": "H\u1ed9p th\u01b0 \u0111\u1ebfn"
+  },
+  "d83d_dce6": {
+    "message": "g\u00f3i"
+  },
+  "d83d_dce7": {
+    "message": "email"
+  },
+  "d83d_dce8": {
+    "message": "th\u01b0 \u0111\u1ebfn"
+  },
+  "d83d_dce9": {
+    "message": "th\u01b0 \u0111i"
+  },
+  "d83d_dcea": {
+    "message": "h\u1ed9p th\u01b0 \u0111\u00f3ng v\u1edbi c\u1edd \u0111\u01b0\u1ee3c h\u1ea1 xu\u1ed1ng"
+  },
+  "d83d_dceb": {
+    "message": "h\u1ed9p th\u01b0 \u0111\u00f3ng v\u1edbi c\u1edd \u0111\u01b0\u1ee3c d\u00e2ng cao"
+  },
+  "d83d_dcec": {
+    "message": "h\u1ed9p th\u01b0 m\u1edf v\u1edbi c\u1edd \u0111\u01b0\u1ee3c d\u00e2ng cao"
+  },
+  "d83d_dced": {
+    "message": "h\u1ed9p th\u01b0 m\u1edf v\u1edbi c\u1edd h\u1ea1 xu\u1ed1ng"
+  },
+  "d83d_dcee": {
+    "message": "h\u00f2m th\u01b0"
+  },
+  "d83d_dcef": {
+    "message": "c\u00f2i b\u01b0u ch\u00ednh"
+  },
+  "d83d_dcf0": {
+    "message": "b\u00e1o"
+  },
+  "d83d_dcf1": {
+    "message": "\u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng"
+  },
+  "d83d_dcf2": {
+    "message": "\u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng c\u00f3 m\u0169i t\u00ean"
+  },
+  "d83d_dcf3": {
+    "message": "ch\u1ebf \u0111\u1ed9 rung"
+  },
+  "d83d_dcf4": {
+    "message": "\u0111i\u1ec7n tho\u1ea1i t\u1eaft"
+  },
+  "d83d_dcf5": {
+    "message": "c\u1ea5m \u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng"
+  },
+  "d83d_dcf6": {
+    "message": "t\u00edn hi\u1ec7u thi\u1ebft b\u1ecb di \u0111\u1ed9ng"
+  },
+  "d83d_dcf7": {
+    "message": "m\u00e1y \u1ea3nh"
+  },
+  "d83d_dcf9": {
+    "message": "m\u00e1y quay video"
+  },
+  "d83d_dcfa": {
+    "message": "TV"
+  },
+  "d83d_dcfb": {
+    "message": "\u0111\u00e0i"
+  },
+  "d83d_dcfc": {
+    "message": "b\u0103ng video"
+  },
+  "d83d_dd00": {
+    "message": "m\u0169i t\u00ean b\u1eaft ch\u00e9o"
+  },
+  "d83d_dd01": {
+    "message": "m\u0169i t\u00ean theo chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+  },
+  "d83d_dd02": {
+    "message": "m\u0169i t\u00ean theo chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+  },
+  "d83d_dd03": {
+    "message": "t\u1ea3i l\u1ea1i"
+  },
+  "d83d_dd04": {
+    "message": "m\u0169i t\u00ean ng\u01b0\u1ee3c chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+  },
+  "d83d_dd05": {
+    "message": "\u0111\u1ed9 s\u00e1ng th\u1ea5p"
+  },
+  "d83d_dd06": {
+    "message": "\u0111\u1ed9 s\u00e1ng cao"
+  },
+  "d83d_dd07": {
+    "message": "c\u1ea5m n\u00f3i chuy\u1ec7n"
+  },
+  "d83d_dd08": {
+    "message": "loa"
+  },
+  "d83d_dd09": {
+    "message": "loa c\u00f3 \u00e2m l\u01b0\u1ee3ng th\u1ea5p"
+  },
+  "d83d_dd0a": {
+    "message": "loa c\u00f3 \u00e2m l\u01b0\u1ee3ng cao"
+  },
+  "d83d_dd0b": {
+    "message": "pin"
+  },
+  "d83d_dd0c": {
+    "message": "\u0111\u1ea7u c\u1eafm \u0111i\u1ec7n"
+  },
+  "d83d_dd0d": {
+    "message": "k\u00ednh l\u00fap nghi\u00eang sang tr\u00e1i"
+  },
+  "d83d_dd0e": {
+    "message": "k\u00ednh l\u00fap nghi\u00eang sang ph\u1ea3i"
+  },
+  "d83d_dd0f": {
+    "message": "kh\u00f3a c\u00f3 b\u00fat m\u1ef1c"
+  },
+  "d83d_dd10": {
+    "message": "kh\u00f3a \u0111\u00f3ng c\u00f3 ch\u00eca"
+  },
+  "d83d_dd11": {
+    "message": "ch\u00eca kh\u00f3a"
+  },
+  "d83d_dd12": {
+    "message": "kh\u00f3a \u0111\u00f3ng"
+  },
+  "d83d_dd13": {
+    "message": "kh\u00f3a m\u1edf"
+  },
+  "d83d_dd14": {
+    "message": "chu\u00f4ng"
+  },
+  "d83d_dd15": {
+    "message": "kh\u00f4ng c\u00f3 chu\u00f4ng"
+  },
+  "d83d_dd16": {
+    "message": "d\u1ea5u trang"
+  },
+  "d83d_dd17": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng li\u00ean k\u1ebft"
+  },
+  "d83d_dd18": {
+    "message": "n\u00fat radio"
+  },
+  "d83d_dd19": {
+    "message": "quay l\u1ea1i"
+  },
+  "d83d_dd1a": {
+    "message": "k\u1ebft th\u00fac"
+  },
+  "d83d_dd1b": {
+    "message": "M\u0169i t\u00ean TR\u00caN"
+  },
+  "d83d_dd1c": {
+    "message": "K\u00fd hi\u1ec7u s\u1edbm"
+  },
+  "d83d_dd1d": {
+    "message": "K\u00fd hi\u1ec7u h\u00e0ng \u0111\u1ea7u"
+  },
+  "d83d_dd1e": {
+    "message": "C\u1ea5m ng\u01b0\u1eddi d\u01b0\u1edbi 18 tu\u1ed5i"
+  },
+  "d83d_dd20": {
+    "message": "ch\u1eef hoa"
+  },
+  "d83d_dd21": {
+    "message": "ch\u1eef th\u01b0\u1eddng"
+  },
+  "d83d_dd22": {
+    "message": "s\u1ed1"
+  },
+  "d83d_dd23": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng"
+  },
+  "d83d_dd24": {
+    "message": "B\u1ea3ng ch\u1eef c\u00e1i Latinh"
+  },
+  "d83d_dd25": {
+    "message": "n\u00f3ng gi\u1eadn"
+  },
+  "d83d_dd26": {
+    "message": "\u0111\u00e8n pin"
+  },
+  "d83d_dd27": {
+    "message": "c\u1edd l\u00ea"
+  },
+  "d83d_dd28": {
+    "message": "b\u00faa"
+  },
+  "d83d_dd29": {
+    "message": "\u0111ai \u1ed1c v\u00e0 bu l\u00f4ng"
+  },
+  "d83d_dd2a": {
+    "message": "dao n\u1ea5u \u0103n"
+  },
+  "d83d_dd2b": {
+    "message": "s\u00fang"
+  },
+  "d83d_dd2c": {
+    "message": "k\u00ednh hi\u1ec3n vi"
+  },
+  "d83d_dd2d": {
+    "message": "k\u00ednh vi\u1ec5n v\u1ecdng"
+  },
+  "d83d_dd2e": {
+    "message": "qu\u1ea3 c\u1ea7u pha l\u00ea"
+  },
+  "d83d_dd2f": {
+    "message": "sao s\u00e1u c\u00e1nh"
+  },
+  "d83d_dd30": {
+    "message": "l\u00e1 c\u00e2y m\u00e0u xanh v\u00e0 m\u00e0u v\u00e0ng"
+  },
+  "d83d_dd31": {
+    "message": "k\u00fd hi\u1ec7u \u0111inh ba"
+  },
+  "d83d_dd32": {
+    "message": "n\u00fat h\u00ecnh vu\u00f4ng c\u00f3 khung c\u1ee9ng"
+  },
+  "d83d_dd33": {
+    "message": "n\u00fat h\u00ecnh vu\u00f4ng khung c\u00f3 vi\u1ec1n"
+  },
+  "d83d_dd34": {
+    "message": "h\u00ecnh tr\u00f2n m\u00e0u \u0111\u1ecf l\u1edbn"
+  },
+  "d83d_dd35": {
+    "message": "h\u00ecnh tr\u00f2n m\u00e0u lam l\u1edbn"
+  },
+  "d83d_dd36": {
+    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u cam l\u1edbn"
+  },
+  "d83d_dd37": {
+    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u lam l\u1edbn"
+  },
+  "d83d_dd38": {
+    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u cam nh\u1ecf"
+  },
+  "d83d_dd39": {
+    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u lam nh\u1ecf"
+  },
+  "d83d_dd3a": {
+    "message": "h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng l\u00ean"
+  },
+  "d83d_dd3b": {
+    "message": "h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng xu\u1ed1ng"
+  },
+  "d83d_dd3c": {
+    "message": "n\u00fat h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng l\u00ean"
+  },
+  "d83d_dd3d": {
+    "message": "n\u00fat h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng xu\u1ed1ng"
+  },
+  "d83d_dd50": {
+    "message": "1 gi\u1edd"
+  },
+  "d83d_dd51": {
+    "message": "2 gi\u1edd"
+  },
+  "d83d_dd52": {
+    "message": "3 gi\u1edd"
+  },
+  "d83d_dd53": {
+    "message": "4 gi\u1edd"
+  },
+  "d83d_dd54": {
+    "message": "5 gi\u1edd"
+  },
+  "d83d_dd55": {
+    "message": "6 gi\u1edd"
+  },
+  "d83d_dd56": {
+    "message": "7 gi\u1edd"
+  },
+  "d83d_dd57": {
+    "message": "8 gi\u1edd"
+  },
+  "d83d_dd58": {
+    "message": "9 gi\u1edd"
+  },
+  "d83d_dd59": {
+    "message": "10 gi\u1edd"
+  },
+  "d83d_dd5a": {
+    "message": "11 gi\u1edd"
+  },
+  "d83d_dd5b": {
+    "message": "12 gi\u1edd"
+  },
+  "d83d_dd5c": {
+    "message": "1 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd5d": {
+    "message": "2 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd5e": {
+    "message": "3 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd5f": {
+    "message": "4 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd60": {
+    "message": "5 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd61": {
+    "message": "6 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd62": {
+    "message": "7 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd63": {
+    "message": "8 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd64": {
+    "message": "9 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd65": {
+    "message": "10 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd66": {
+    "message": "11 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_dd67": {
+    "message": "12 gi\u1edd 30 ph\u00fat"
+  },
+  "d83d_ddfb": {
+    "message": "N\u00fai Ph\u00fa S\u0129"
+  },
+  "d83d_ddfc": {
+    "message": "Th\u00e1p Tokyo"
+  },
+  "d83d_ddfd": {
+    "message": "T\u01b0\u1ee3ng n\u1eef th\u1ea7n t\u1ef1 do"
+  },
+  "d83d_ddfe": {
+    "message": "B\u1ea3n \u0111\u1ed3 n\u01b0\u1edbc Nh\u1eadt"
+  },
+  "d83d_ddff": {
+    "message": "T\u01b0\u1ee3ng Moyai"
+  },
+  "d83d_de00": {
+    "message": "c\u01b0\u1eddi to\u00e9t mi\u1ec7ng"
+  },
+  "d83d_de01": {
+    "message": " c\u01b0\u1eddi toe to\u00e9t v\u1edbi \u0111\u00f4i m\u1eaft c\u01b0\u1eddi"
+  },
+  "d83d_de02": {
+    "message": "gi\u1ecdt n\u01b0\u1edbc m\u1eaft vui s\u01b0\u1edbng"
+  },
+  "d83d_de03": {
+    "message": "c\u01b0\u1eddi m\u1edf mi\u1ec7ng"
+  },
+  "d83d_de04": {
+    "message": "c\u01b0\u1eddi h\u00e1 mi\u1ec7ng v\u1edbi \u0111\u00f4i m\u1eaft c\u01b0\u1eddi"
+  },
+  "d83d_de05": {
+    "message": "c\u01b0\u1eddi to\u00e1t m\u1ed3 h\u00f4i"
+  },
+  "d83d_de06": {
+    "message": " c\u01b0\u1eddi h\u00e1 mi\u1ec7ng v\u1edbi \u0111\u00f4i m\u1eaft nh\u1eafm"
+  },
+  "d83d_de07": {
+    "message": "c\u01b0\u1eddi v\u1edbi v\u1ea7ng h\u00e0o quang"
+  },
+  "d83d_de08": {
+    "message": "c\u01b0\u1eddi c\u00f3 s\u1eebng"
+  },
+  "d83d_de09": {
+    "message": "m\u1eb7t nh\u00e1y m\u1eaft"
+  },
+  "d83d_de0a": {
+    "message": "c\u01b0\u1eddi"
+  },
+  "d83d_de0b": {
+    "message": "m\u1eb7t ngon mi\u1ec7ng"
+  },
+  "d83d_de0c": {
+    "message": "m\u1eb7t thanh th\u1ea3n"
+  },
+  "d83d_de0d": {
+    "message": "m\u1eb7t c\u01b0\u1eddi"
+  },
+  "d83d_de0e": {
+    "message": "th\u1edd \u01a1"
+  },
+  "d83d_de0f": {
+    "message": "c\u01b0\u1eddi gi\u1ea3 t\u1ea1o"
+  },
+  "d83d_de10": {
+    "message": "m\u1eb7t ng\u00e2y ng\u00f4"
+  },
+  "d83d_de11": {
+    "message": "v\u00f4 c\u1ea3m"
+  },
+  "d83d_de12": {
+    "message": "m\u1eb7t bu\u1ed3n r\u1ea7u"
+  },
+  "d83d_de13": {
+    "message": "to\u00e1t m\u1ed3 h\u00f4i"
+  },
+  "d83d_de14": {
+    "message": "m\u1eb7t tr\u1ea7m ng\u00e2m"
+  },
+  "d83d_de15": {
+    "message": "m\u1eb7t b\u1ed1i r\u1ed1i"
+  },
+  "d83d_de16": {
+    "message": "m\u1eb7t x\u1ea5u h\u1ed5"
+  },
+  "d83d_de17": {
+    "message": "m\u1eb7t h\u00f4n"
+  },
+  "d83d_de18": {
+    "message": "\u0111ang g\u1eedi n\u1ee5 h\u00f4n"
+  },
+  "d83d_de19": {
+    "message": "h\u00f4n v\u00e0 c\u01b0\u1eddi"
+  },
+  "d83d_de1a": {
+    "message": "h\u00f4n"
+  },
+  "d83d_de1b": {
+    "message": "l\u00e8 l\u01b0\u1ee1i"
+  },
+  "d83d_de1c": {
+    "message": "l\u00e8 l\u01b0\u1ee1i nh\u00e1y m\u1eaft"
+  },
+  "d83d_de1d": {
+    "message": "d\u1eef d\u1eb1n"
+  },
+  "d83d_de1e": {
+    "message": "th\u1ea5t v\u1ecdng"
+  },
+  "d83d_de1f": {
+    "message": "lo l\u1eafng"
+  },
+  "d83d_de20": {
+    "message": "t\u1ee9c gi\u1eadn"
+  },
+  "d83d_de21": {
+    "message": "h\u1eddn d\u1ed7i"
+  },
+  "d83d_de22": {
+    "message": "kh\u00f3c"
+  },
+  "d83d_de23": {
+    "message": "th\u1ed5i"
+  },
+  "d83d_de24": {
+    "message": "m\u1eb7t gi\u1eadn d\u1eef"
+  },
+  "d83d_de25": {
+    "message": "ph\u00f9!"
+  },
+  "d83d_de26": {
+    "message": "m\u1eb7t cau c\u00f3"
+  },
+  "d83d_de27": {
+    "message": "\u0111au kh\u1ed5"
+  },
+  "d83d_de28": {
+    "message": "s\u1ee3 h\u00e3i"
+  },
+  "d83d_de29": {
+    "message": "m\u1ec7t l\u1eed"
+  },
+  "d83d_de2a": {
+    "message": "bu\u1ed3n ng\u1ee7"
+  },
+  "d83d_de2b": {
+    "message": "m\u1ec7t m\u1ecfi"
+  },
+  "d83d_de2c": {
+    "message": "nh\u0103n nh\u00f3"
+  },
+  "d83d_de2d": {
+    "message": "kh\u00f3c \u00f2a"
+  },
+  "d83d_de2e": {
+    "message": "m\u1eb7t h\u00e1 mi\u1ec7ng"
+  },
+  "d83d_de2f": {
+    "message": "m\u1eb7t ng\u01a1 ng\u00e1c"
+  },
+  "d83d_de30": {
+    "message": "m\u1eb7t v\u1ed9i v\u00e3"
+  },
+  "d83d_de31": {
+    "message": "m\u1eb7t s\u1ee3 h\u00e3i"
+  },
+  "d83d_de32": {
+    "message": "m\u1eb7t ng\u1ea1c nhi\u00ean"
+  },
+  "d83d_de33": {
+    "message": "x\u00fac \u0111\u1ed9ng"
+  },
+  "d83d_de34": {
+    "message": "ng\u1ee7"
+  },
+  "d83d_de35": {
+    "message": "ch\u00f3ng m\u1eb7t"
+  },
+  "d83d_de36": {
+    "message": "m\u1eb7t kh\u00f4ng c\u00f3 mi\u1ec7ng"
+  },
+  "d83d_de37": {
+    "message": "m\u1eb7t c\u00f3 \u0111eo m\u1eb7t n\u1ea1"
+  },
+  "d83d_de38": {
+    "message": "m\u1eb7t m\u00e8o r\u1ea1ng r\u1ee1"
+  },
+  "d83d_de39": {
+    "message": "n\u01b0\u1edbc m\u1eaft tr\u00ean khu\u00f4n m\u1eb7t m\u00e8o vui s\u01b0\u1edbng"
+  },
+  "d83d_de3a": {
+    "message": "m\u1eb7t m\u00e8o c\u01b0\u1eddi"
+  },
+  "d83d_de3b": {
+    "message": "m\u1eb7t m\u00e8o c\u01b0\u1eddi"
+  },
+  "d83d_de3c": {
+    "message": "m\u1eb7t m\u00e8o ch\u1ebf gi\u1ec5u"
+  },
+  "d83d_de3d": {
+    "message": "m\u00e8o \u0111ang h\u00f4n"
+  },
+  "d83d_de3e": {
+    "message": "m\u1eb7t m\u00e8o h\u1eddn d\u1ed7i"
+  },
+  "d83d_de3f": {
+    "message": "m\u1eb7t m\u00e8o \u0111ang kh\u00f3c"
+  },
+  "d83d_de40": {
+    "message": "m\u1eb7t m\u00e8o m\u1ec7t l\u1eed"
+  },
+  "d83d_de45": {
+    "message": "C\u1eed ch\u1ec9 t\u1ed3i"
+  },
+  "d83d_de46": {
+    "message": "c\u1eed ch\u1ec9 t\u1ed1t"
+  },
+  "d83d_de47": {
+    "message": "ti\u1ebfc nu\u1ed1i"
+  },
+  "d83d_de48": {
+    "message": "che m\u1eaft"
+  },
+  "d83d_de49": {
+    "message": "b\u1ecbt tai"
+  },
+  "d83d_de4a": {
+    "message": "b\u1ecbt mi\u1ec7ng"
+  },
+  "d83d_de4b": {
+    "message": "ng\u01b0\u1eddi h\u1ea1nh ph\u00fac"
+  },
+  "d83d_de4c": {
+    "message": "hoan h\u00f4"
+  },
+  "d83d_de4d": {
+    "message": "ng\u01b0\u1eddi cau c\u00f3"
+  },
+  "d83d_de4e": {
+    "message": "h\u1eddn d\u1ed7i"
+  },
+  "d83d_de4f": {
+    "message": "ch\u1eafp tay"
+  },
+  "d83d_de80": {
+    "message": "t\u00ean l\u1eeda"
+  },
+  "d83d_de81": {
+    "message": "m\u00e1y bay tr\u1ef1c th\u0103ng"
+  },
+  "d83d_de82": {
+    "message": "\u0111\u1ea7u m\u00e1y h\u01a1i n\u01b0\u1edbc"
+  },
+  "d83d_de83": {
+    "message": "t\u00e0u"
+  },
+  "d83d_de84": {
+    "message": "t\u00e0u cao t\u1ed1c"
+  },
+  "d83d_de85": {
+    "message": "t\u00e0u cao t\u1ed1c c\u00f3 m\u0169i h\u00ecnh vi\u00ean \u0111\u1ea1n"
+  },
+  "d83d_de86": {
+    "message": "t\u00e0u"
+  },
+  "d83d_de87": {
+    "message": "xe \u0111i\u1ec7n ng\u1ea7m"
+  },
+  "d83d_de88": {
+    "message": "\u0111\u01b0\u1eddng s\u1eaft lo\u1ea1i nh\u1eb9"
+  },
+  "d83d_de89": {
+    "message": "nh\u00e0 ga"
+  },
+  "d83d_de8a": {
+    "message": "xe \u0111i\u1ec7n"
+  },
+  "d83d_de8b": {
+    "message": "t\u00e0u \u0111i\u1ec7n"
+  },
+  "d83d_de8c": {
+    "message": "xe bu\u00fdt"
+  },
+  "d83d_de8d": {
+    "message": "xe bu\u00fdt s\u1eafp \u0111\u1ebfn"
+  },
+  "d83d_de8e": {
+    "message": "\u00f4 t\u00f4 \u0111i\u1ec7n"
+  },
+  "d83d_de8f": {
+    "message": "b\u1ebfn xe bu\u00fdt"
+  },
+  "d83d_de90": {
+    "message": "xe bu\u00fdt nh\u1ecf"
+  },
+  "d83d_de91": {
+    "message": "xe c\u1ee9u th\u01b0\u01a1ng"
+  },
+  "d83d_de92": {
+    "message": "xe ch\u1eefa ch\u00e1y"
+  },
+  "d83d_de93": {
+    "message": "\u00f4 t\u00f4 c\u1ea3nh s\u00e1t"
+  },
+  "d83d_de94": {
+    "message": "\u00f4 t\u00f4 c\u1ea3nh s\u00e1t s\u1eafp \u0111\u1ebfn"
+  },
+  "d83d_de95": {
+    "message": "taxi"
+  },
+  "d83d_de96": {
+    "message": "taxi s\u1eafp \u0111\u1ebfn"
+  },
+  "d83d_de97": {
+    "message": "\u00f4 t\u00f4"
+  },
+  "d83d_de98": {
+    "message": "\u00f4 t\u00f4 s\u1eafp \u0111\u1ebfn"
+  },
+  "d83d_de99": {
+    "message": "Xe d\u00e3 ngo\u1ea1i"
+  },
+  "d83d_de9a": {
+    "message": "xe ch\u1edf h\u00e0ng"
+  },
+  "d83d_de9b": {
+    "message": "xe t\u1ea3i"
+  },
+  "d83d_de9c": {
+    "message": "m\u00e1y k\u00e9o"
+  },
+  "d83d_de9d": {
+    "message": "\u0111\u01b0\u1eddng m\u1ed9t ray"
+  },
+  "d83d_de9e": {
+    "message": "\u0111\u01b0\u1eddng xe l\u1eeda leo n\u00fai"
+  },
+  "d83d_de9f": {
+    "message": "\u0111\u01b0\u1eddng xe l\u1eeda tr\u00ean cao"
+  },
+  "d83d_dea0": {
+    "message": "\u0111\u01b0\u1eddng c\u00e1p qua n\u00fai"
+  },
+  "d83d_dea1": {
+    "message": "c\u00e1p treo"
+  },
+  "d83d_dea2": {
+    "message": "t\u00e0u"
+  },
+  "d83d_dea3": {
+    "message": "ch\u00e8o thuy\u1ec1n"
+  },
+  "d83d_dea4": {
+    "message": "thuy\u1ec1n t\u1ed1c \u0111\u1ed9"
+  },
+  "d83d_dea5": {
+    "message": "\u0111\u00e8n giao th\u00f4ng ngang"
+  },
+  "d83d_dea6": {
+    "message": "\u0111\u00e8n giao th\u00f4ng d\u1ecdc"
+  },
+  "d83d_dea7": {
+    "message": "\u0111ang x\u00e2y d\u1ef1ng"
+  },
+  "d83d_dea8": {
+    "message": "\u0111\u00e8n xoay"
+  },
+  "d83d_dea9": {
+    "message": "c\u1edd v\u1ecb tr\u00ed"
+  },
+  "d83d_deaa": {
+    "message": "c\u1eeda"
+  },
+  "d83d_deab": {
+    "message": "Bi\u1ec3u t\u01b0\u1ee3ng c\u1ea5m v\u00e0o"
+  },
+  "d83d_deac": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng h\u00fat thu\u1ed1c"
+  },
+  "d83d_dead": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng c\u1ea5m h\u00fat thu\u1ed1c"
+  },
+  "d83d_deae": {
+    "message": "k\u00fd hi\u1ec7u th\u00f9ng r\u00e1c"
+  },
+  "d83d_deaf": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng kh\u00f4ng x\u1ea3 r\u00e1c"
+  },
+  "d83d_deb0": {
+    "message": "n\u01b0\u1edbc u\u1ed1ng"
+  },
+  "d83d_deb1": {
+    "message": "n\u01b0\u1edbc kh\u00f4ng u\u1ed1ng \u0111\u01b0\u1ee3c"
+  },
+  "d83d_deb2": {
+    "message": "xe \u0111\u1ea1p"
+  },
+  "d83d_deb3": {
+    "message": "c\u1ea5m xe \u0111\u1ea1p"
+  },
+  "d83d_deb4": {
+    "message": "ng\u01b0\u1eddi \u0111i xe \u0111\u1ea1p"
+  },
+  "d83d_deb5": {
+    "message": "ng\u01b0\u1eddi \u0111i xe \u0111\u1ea1p leo n\u00fai"
+  },
+  "d83d_deb6": {
+    "message": "ng\u01b0\u1eddi \u0111i b\u1ed9"
+  },
+  "d83d_deb7": {
+    "message": "c\u1ea5m ng\u01b0\u1eddi \u0111i b\u1ed9"
+  },
+  "d83d_deb8": {
+    "message": "qua \u0111\u01b0\u1eddng cho tr\u1ebb em"
+  },
+  "d83d_deb9": {
+    "message": "Bi\u1ec3u t\u01b0\u1ee3ng nam"
+  },
+  "d83d_deba": {
+    "message": "Bi\u1ec3u t\u01b0\u1ee3ng n\u1eef"
+  },
+  "d83d_debb": {
+    "message": "k\u00fd hi\u1ec7u nh\u00e0 v\u1ec7 sinh"
+  },
+  "d83d_debc": {
+    "message": "bi\u1ec3u t\u01b0\u1ee3ng tr\u1ebb em"
+  },
+  "d83d_debd": {
+    "message": "ph\u00f2ng v\u1ec7 sinh"
+  },
+  "d83d_debe": {
+    "message": "nh\u00e0 v\u1ec7 sinh"
+  },
+  "d83d_debf": {
+    "message": "v\u00f2i hoa sen"
+  },
+  "d83d_dec0": {
+    "message": "ph\u00f2ng t\u1eafm"
+  },
+  "d83d_dec1": {
+    "message": "b\u1ed3n t\u1eafm"
+  },
+  "d83d_dec2": {
+    "message": "ki\u1ec3m tra h\u1ed9 chi\u1ebfu"
+  },
+  "d83d_dec3": {
+    "message": "h\u1ea3i quan"
+  },
+  "d83d_dec4": {
+    "message": "ch\u1ed7 nh\u1eadn h\u00e0nh l\u00fd"
+  },
+  "d83d_dec5": {
+    "message": "h\u00e0nh l\u00fd c\u00f2n l\u1ea1i"
+  },
+  "de_ger_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng \u0110\u1ee9c"
+  },
+  "de_neo_ger_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng \u0110\u1ee9c Neo 2"
+  },
+  "dictionarytoolcategorytitle": {
+    "message": "Lo\u1ea1i"
+  },
+  "dictionarytoolcommentnewinput": {
+    "message": "Nh\u1eadn x\u00e9t"
+  },
+  "dictionarytoolcommenttitle": {
+    "message": "Nh\u1eadn x\u00e9t"
+  },
+  "dictionarytooldeletedictionaryconfirm": {
+    "message": "B\u1ea1n c\u00f3 mu\u1ed1n x\u00f3a [object Object] kh\u00f4ng?"
+  },
+  "dictionarytooldeletedictionarytitle": {
+    "message": "X\u00f3a t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytooldictionarylisttitle": {
+    "message": "T\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytooldictionaryname": {
+    "message": "T\u00ean t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytooldonebutton": {
+    "message": "Ho\u00e0n t\u1ea5t"
+  },
+  "dictionarytoolexportbutton": {
+    "message": "Xu\u00e2\u0301t"
+  },
+  "dictionarytoolimportbutton": {
+    "message": "Nh\u1eadp..."
+  },
+  "dictionarytoolmenutitle": {
+    "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytoolnewdictionarynameplaceholder": {
+    "message": "T\u1eeb \u0111i\u1ec3n m\u1edbi"
+  },
+  "dictionarytoolpagetitle": {
+    "message": "T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+  },
+  "dictionarytoolreadingnewinput": {
+    "message": "Ki\u1ec3u \u0111\u1ecdc m\u1edbi"
+  },
+  "dictionarytoolreadingtitle": {
+    "message": "Ki\u1ec3u \u0111\u1ecdc"
+  },
+  "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
+    "message": "T\u00ean ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."
+  },
+  "dictionarytoolstatuserrordictionarynameduplicated": {
+    "message": "T\u00ean \u0111\u00e3 t\u1ed3n t\u1ea1i."
+  },
+  "dictionarytoolstatuserrordictionarynameempty": {
+    "message": "Vui l\u00f2ng nh\u1eadp t\u00ean t\u1eeb \u0111i\u1ec3n."
+  },
+  "dictionarytoolstatuserrordictionarynametoolong": {
+    "message": "T\u00ean qu\u00e1 d\u00e0i."
+  },
+  "dictionarytoolstatuserrordictionarysizelimitexceeded": {
+    "message": "Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 t\u1eeb \u0111i\u1ec3n n\u00e0o kh\u00e1c."
+  },
+  "dictionarytoolstatuserroremptyfile": {
+    "message": "T\u1ec7p b\u1ecb tr\u1ed1ng."
+  },
+  "dictionarytoolstatuserrorentrysizelimitexceeded": {
+    "message": "Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 m\u1ee5c nh\u1eadp n\u00e0o kh\u00e1c trong t\u1eeb \u0111i\u1ec3n n\u00e0y."
+  },
+  "dictionarytoolstatuserrorfilenotfound": {
+    "message": "Kh\u00f4ng th\u1ec3 m\u1edf t\u1ec7p."
+  },
+  "dictionarytoolstatuserrorfilesizelimitexceeded": {
+    "message": "K\u00edch th\u01b0\u1edbc d\u1eef li\u1ec7u v\u01b0\u1ee3t qu\u00e1 gi\u1edbi h\u1ea1n k\u00edch th\u01b0\u1edbc t\u1ec7p."
+  },
+  "dictionarytoolstatuserrorgeneral": {
+    "message": "Thao t\u00e1c b\u1ecb l\u1ed7i."
+  },
+  "dictionarytoolstatuserrorimportinvalidentries": {
+    "message": "Kh\u00f4ng th\u1ec3 nh\u1eadp m\u1ed9t s\u1ed1 t\u1eeb."
+  },
+  "dictionarytoolstatuserrorimporttoomanywords": {
+    "message": "Ngu\u1ed3n nh\u1eadp ch\u1ee9a qu\u00e1 nhi\u1ec1u t\u1eeb."
+  },
+  "dictionarytoolstatuserrorinvalidfileformat": {
+    "message": "Kh\u00f4ng th\u1ec3 \u0111\u1ecdc t\u1ec7p."
+  },
+  "dictionarytoolstatuserrornoundohistory": {
+    "message": "Kh\u00f4ng c\u00f2n thao t\u00e1c n\u00e0o c\u00f3 th\u1ec3 ho\u00e0n t\u00e1c."
+  },
+  "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
+    "message": "Ki\u1ec3u \u0111\u1ecdc ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7. B\u1ea1n c\u00f3 th\u1ec3 s\u1eed d\u1ee5ng k\u00fd t\u1ef1 ASCII, Hiragana, d\u1ea5u \u00e2m k\u00eau (\u309b), d\u1ea5u \u00e2m n\u1eeda k\u00eau (\u309c), ch\u1ea5m gi\u1eefa (\u30fb), d\u1ea5u \u00e2m k\u00e9o d\u00e0i (\u30fc), d\u1ea5u ph\u1ea9y ti\u1ebfng Nh\u1eadt (\u3001), d\u1ea5u ch\u1ea5m c\u00e2u ti\u1ebfng Nh\u1eadt (\u3002), d\u1ea5u ngo\u1eb7c vu\u00f4ng ti\u1ebfng Nh\u1eadt (\u300c\u300d\u300e\u300f) v\u00e0 d\u1ea5u g\u1ea1ch s\u00f3ng ti\u1ebfng Nh\u1eadt (\u301c) trong ki\u1ec3u \u0111\u1ecdc."
+  },
+  "dictionarytoolstatuserrorreadingempty": {
+    "message": "Vui l\u00f2ng nh\u1eadp ki\u1ec3u \u0111\u1ecdc."
+  },
+  "dictionarytoolstatuserrorreadingtoolong": {
+    "message": "Ki\u1ec3u \u0111\u1ecdc qu\u00e1 d\u00e0i."
+  },
+  "dictionarytoolstatuserrortitleaddentry": {
+    "message": "L\u1ed7i th\u00eam m\u1ee5c nh\u1eadp"
+  },
+  "dictionarytoolstatuserrortitlecreatedictionary": {
+    "message": "L\u1ed7i t\u1ea1o t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytoolstatuserrortitledeletedictionary": {
+    "message": "L\u1ed7i x\u00f3a t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytoolstatuserrortitledeleteentry": {
+    "message": "L\u1ed7i x\u00f3a m\u1ee5c nh\u1eadp"
+  },
+  "dictionarytoolstatuserrortitleeditentry": {
+    "message": "L\u1ed7i ch\u1ec9nh s\u1eeda m\u1ee5c nh\u1eadp"
+  },
+  "dictionarytoolstatuserrortitleimportdata": {
+    "message": "L\u1ed7i nh\u1eadp"
+  },
+  "dictionarytoolstatuserrortitlerenamedictionary": {
+    "message": "L\u1ed7i \u0111\u1ed5i t\u00ean t\u1eeb \u0111i\u1ec3n"
+  },
+  "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
+    "message": "T\u1eeb ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."
+  },
+  "dictionarytoolstatuserrorwordempty": {
+    "message": "Vui l\u00f2ng nh\u1eadp t\u1eeb."
+  },
+  "dictionarytoolstatuserrorwordtoolong": {
+    "message": "T\u1eeb qu\u00e1 d\u00e0i."
+  },
+  "dictionarytoolwordnewinput": {
+    "message": "T\u1eeb m\u1edbi"
+  },
+  "dictionarytoolwordtitle": {
+    "message": "T\u1eeb"
+  },
+  "dismiss_menu": {
+    "message": "\u0111\u00f3ng menu b\u00e0n ph\u00edm"
+  },
+  "dk_dan_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng \u0110an M\u1ea1ch"
+  },
+  "double_space_period": {
+    "message": "Hai d\u1ea5u c\u00e1ch \u0111\u1ec3 nh\u1eadp d\u1ea5u ch\u1ea5m c\u00e2u"
+  },
+  "down_arrow": {
+    "message": "m\u0169i t\u00ean xu\u1ed1ng"
+  },
+  "ee_est_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Estonia"
+  },
+  "emoji_tab_emoticon": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac"
+  },
+  "emoji_tab_face": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 khu\u00f4n m\u1eb7t"
+  },
+  "emoji_tab_hot": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac ph\u1ed5 bi\u1ebfn"
+  },
+  "emoji_tab_nature": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 thi\u00ean nhi\u00ean"
+  },
+  "emoji_tab_object": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 \u0111\u1ed1i t\u01b0\u1ee3ng"
+  },
+  "emoji_tab_place": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 \u0111\u1ecba \u0111i\u1ec3m"
+  },
+  "emoji_tab_recent": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac g\u1ea7n \u0111\u00e2y"
+  },
+  "emoji_tab_symbol": {
+    "message": "Danh m\u1ee5c bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac v\u1ec1 bi\u1ec3u t\u01b0\u1ee3ng"
+  },
+  "enable_capitalization": {
+    "message": "T\u1ef1 \u0111\u1ed9ng vi\u1ebft hoa"
+  },
+  "enable_completion": {
+    "message": "B\u1eadt T\u1ef1 \u0111\u1ed9ng \u0111i\u1ec1n"
+  },
+  "enable_prediction": {
+    "message": "B\u1eadt truy v\u1ea5n d\u1ef1 \u0111o\u00e1n t\u1eeb ti\u1ebfp theo"
+  },
+  "enter": {
+    "message": "enter"
+  },
+  "es_cat_cat_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Catalan"
+  },
+  "es_spa_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng T\u00e2y Ban Nha"
+  },
+  "fi_fin_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u1ea7n Lan"
+  },
+  "footer_emoji_button": {
+    "message": "chuy\u1ec3n sang bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac"
+  },
+  "footer_handwriting_button": {
+    "message": "chuy\u1ec3n sang ch\u1eef vi\u1ebft tay"
+  },
+  "footer_settings_button": {
+    "message": "m\u1edf c\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp"
+  },
+  "fr_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p"
+  },
+  "fuzzy_pinyin": {
+    "message": "B\u1eadt ch\u1ebf \u0111\u1ed9 Fuzzy-Pinyin"
+  },
+  "gb_dvorak_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Dvorak V\u01b0\u01a1ng qu\u1ed1c Anh (ti\u1ebfng Anh)"
+  },
+  "gb_extd_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm V\u01b0\u01a1ng qu\u1ed1c Anh (ti\u1ebfng Anh)"
+  },
+  "ge_geo_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Georgia"
+  },
+  "globe": {
+    "message": "chuy\u1ec3n sang b\u00e0n ph\u00edm tr\u01b0\u1edbc"
+  },
+  "got_it": {
+    "message": "OK"
+  },
+  "gr_gre_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Hy L\u1ea1p"
+  },
+  "handwriting_back": {
+    "message": "Quay l\u1ea1i"
+  },
+  "handwriting_netowrk_error": {
+    "message": "R\u1ea5t ti\u1ebfc, b\u1ea1n kh\u00f4ng th\u1ec3 s\u1eed d\u1ee5ng ch\u1eef vi\u1ebft tay v\u00ec kh\u00f4ng c\u00f3 m\u1ea1ng."
+  },
+  "handwriting_privacy_info": {
+    "message": "D\u1eef li\u1ec7u b\u1ea1n nh\u1eadp s\u1ebd \u0111\u01b0\u1ee3c g\u1eedi t\u1edbi m\u00e1y ch\u1ee7 c\u1ee7a Google \u0111\u1ec3 nh\u1eadn d\u1ea1ng v\u0103n b\u1ea3n"
+  },
+  "hide_keyboard": {
+    "message": "\u1ea9n b\u00e0n ph\u00edm"
+  },
+  "hr_scr_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Croatia"
+  },
+  "hu_hun_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Hungary"
+  },
+  "ie_ga_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ai-len"
+  },
+  "il_heb_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
+  },
+  "init_lang": {
+    "message": "Ng\u00f4n ng\u1eef nh\u1eadp v\u00e0o ban \u0111\u1ea7u l\u00e0 ti\u1ebfng Trung"
+  },
+  "init_punc": {
+    "message": "\u0110\u1ed9 r\u1ed9ng d\u1ea5u c\u00e2u ban \u0111\u1ea7u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"
+  },
+  "init_sbc": {
+    "message": "\u0110\u1ed9 r\u1ed9ng k\u00fd t\u1ef1 ban \u0111\u1ea7u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"
+  },
+  "input_hangul": {
+    "message": "Ch\u1ebf \u0111\u1ed9 Hangul"
+  },
+  "input_hanja": {
+    "message": "Ch\u1ebf \u0111\u1ed9 Hanja"
+  },
+  "inputmethod_array": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp m\u1ea3ng"
+  },
+  "inputmethod_cangjie": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Th\u01b0\u01a1ng hi\u1ec7t"
+  },
+  "inputmethod_dayi": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Dayi"
+  },
+  "inputmethod_pinyin": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp B\u00ednh \u00e2m"
+  },
+  "inputmethod_quick": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp nhanh"
+  },
+  "inputmethod_traditional_pinyin": {
+    "message": "Ph\u01b0\u01a1ng ph\u00e1p nh\u1eadp B\u00ednh \u00e2m cho ti\u1ebfng Trung ph\u1ed3n th\u1ec3"
+  },
+  "inputmethod_wubi": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Ng\u0169 b\u00fat"
+  },
+  "inputmethod_zhuyin": {
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Ch\u00fa \u00e2m"
+  },
+  "is_ice_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Iceland"
+  },
+  "it_ita_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Italy"
+  },
+  "jp_jpn_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Nh\u1eadt"
+  },
+  "keyboard_arabic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng \u1ea2 R\u1eadp"
+  },
+  "keyboard_armenian_phonetic": {
+    "message": "B\u00e0n ph\u00edm ng\u1eef \u00e2m Armenia"
+  },
+  "keyboard_belarusian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Belarus"
+  },
+  "keyboard_belgian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng B\u1ec9"
+  },
+  "keyboard_bengali_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Bengali (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_brazilian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Braxin"
+  },
+  "keyboard_bulgarian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Bungari"
+  },
+  "keyboard_bulgarian_phonetic": {
+    "message": "B\u00e0n ph\u00edm ng\u1eef \u00e2m Bungari"
+  },
+  "keyboard_canadian_english": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Anh \u1edf Canada"
+  },
+  "keyboard_canadian_french": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p \u1edf Canada"
+  },
+  "keyboard_canadian_multilingual": {
+    "message": "B\u00e0n ph\u00edm \u0111a ng\u00f4n ng\u1eef c\u1ee7a Canada"
+  },
+  "keyboard_catalan": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Catalan"
+  },
+  "keyboard_croatian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Croatia"
+  },
+  "keyboard_czech": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng S\u00e9c"
+  },
+  "keyboard_czech_qwerty": {
+    "message": "B\u00e0n ph\u00edm QWERTY c\u1ee7a S\u00e9c"
+  },
+  "keyboard_danish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng \u0110an M\u1ea1ch"
+  },
+  "keyboard_devanagari_phonetic": {
+    "message": "B\u00e0n ph\u00edm Devanagari (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_estonian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Estonia"
+  },
+  "keyboard_ethiopic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ethiopic"
+  },
+  "keyboard_finnish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u1ea7n Lan"
+  },
+  "keyboard_french": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p"
+  },
+  "keyboard_georgian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Georgia"
+  },
+  "keyboard_german": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng \u0110\u1ee9c"
+  },
+  "keyboard_german_neo_2": {
+    "message": "B\u00e0n ph\u00edm Neo 2 ti\u1ebfng \u0110\u1ee9c"
+  },
+  "keyboard_greek": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Hy L\u1ea1p"
+  },
+  "keyboard_gujarati_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Gujarati (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_hebrew": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
+  },
+  "keyboard_hungarian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Hungari"
+  },
+  "keyboard_icelandic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Iceland"
+  },
+  "keyboard_inscript": {
+    "message": "B\u00e0n ph\u00edm (InScript)"
+  },
+  "keyboard_irish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ai-len"
+  },
+  "keyboard_italian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng \u00dd"
+  },
+  "keyboard_itrans": {
+    "message": "B\u00e0n ph\u00edm (itrans)"
+  },
+  "keyboard_japanese": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Nh\u1eadt"
+  },
+  "keyboard_kannada_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Kannada (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_kedmanee": {
+    "message": "B\u00e0n ph\u00edm (Kedmanee)"
+  },
+  "keyboard_khmer": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Khmer"
+  },
+  "keyboard_lao": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng L\u00e0o"
+  },
+  "keyboard_latin_american": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng M\u1ef9 Latinh"
+  },
+  "keyboard_latvian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Latvia"
+  },
+  "keyboard_lithuanian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Lithuania"
+  },
+  "keyboard_malayalam_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Malayalam (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_maltese": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Malta"
+  },
+  "keyboard_mongolian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng M\u00f4ng C\u1ed5"
+  },
+  "keyboard_myanmar": {
+    "message": "B\u00e0n ph\u00edm Myanmar MM3"
+  },
+  "keyboard_myanmar_myansan": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Myansan c\u1ee7a Myanmar"
+  },
+  "keyboard_nepali_inscript": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Nepal (InScript)"
+  },
+  "keyboard_nepali_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Nepal (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_none": {
+    "message": "B\u00e0n ph\u00edm"
+  },
+  "keyboard_norwegian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Na Uy"
+  },
+  "keyboard_pattachote": {
+    "message": "B\u00e0n ph\u00edm (Pattachote)"
+  },
+  "keyboard_persian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ba T\u01b0"
+  },
+  "keyboard_phonetic": {
+    "message": "B\u00e0n ph\u00edm (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_polish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ba Lan"
+  },
+  "keyboard_portuguese": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng B\u1ed3 \u0110\u00e0o Nha"
+  },
+  "keyboard_romanian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Rumani"
+  },
+  "keyboard_russian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Nga"
+  },
+  "keyboard_russian_phonetic": {
+    "message": "B\u00e0n ph\u00edm ng\u1eef \u00e2m ti\u1ebfng Nga"
+  },
+  "keyboard_russian_phonetic_aatseel": {
+    "message": "B\u00e0n ph\u00edm ng\u1eef \u00e2m ti\u1ebfng Nga (AATSEEL)"
+  },
+  "keyboard_russian_phonetic_yazhert": {
+    "message": "B\u00e0n ph\u00edm ng\u1eef \u00e2m ti\u1ebfng Nga (YaZHert)"
+  },
+  "keyboard_serbian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Serbia"
+  },
+  "keyboard_sinhala": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Sinhala"
+  },
+  "keyboard_slovakian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Slovakia"
+  },
+  "keyboard_slovenian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Slovenia"
+  },
+  "keyboard_soranikurdish_ar": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Kurd Sorani d\u1ef1a tr\u00ean ti\u1ebfng \u1ea2 R\u1eadp"
+  },
+  "keyboard_soranikurdish_en": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Kurd Sorani d\u1ef1a tr\u00ean ti\u1ebfng Anh"
+  },
+  "keyboard_spanish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng T\u00e2y Ban Nha"
+  },
+  "keyboard_swedish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y \u0110i\u1ec3n"
+  },
+  "keyboard_swiss": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y S\u0129"
+  },
+  "keyboard_swiss_french": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p \u1edf Th\u1ee5y S\u0129"
+  },
+  "keyboard_tamil99": {
+    "message": "B\u00e0n ph\u00edm (Tamil99)"
+  },
+  "keyboard_tamil_inscript": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Tamil (InScript)"
+  },
+  "keyboard_tamil_itrans": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Tamil (itrans)"
+  },
+  "keyboard_tamil_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Tamil (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_tamil_tamil99": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Tamil (Tamil99)"
+  },
+  "keyboard_tamil_typewriter": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Tamil (M\u00e1y \u0111\u00e1nh ch\u1eef)"
+  },
+  "keyboard_tcvn": {
+    "message": "B\u00e0n ph\u00edm (TCVN)"
+  },
+  "keyboard_telex": {
+    "message": "B\u00e0n ph\u00edm (Telex)"
+  },
+  "keyboard_telugu_phonetic": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Telugu (Ng\u1eef \u00e2m)"
+  },
+  "keyboard_thai_kedmanee": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (Kedmanee)"
+  },
+  "keyboard_thai_pattachote": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (Pattachote)"
+  },
+  "keyboard_thai_tis": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u00e1i (TIS 820-2531)"
+  },
+  "keyboard_tis": {
+    "message": "B\u00e0n ph\u00edm (TIS 820-2531)"
+  },
+  "keyboard_turkish": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u1ed5 Nh\u0129 K\u1ef3"
+  },
+  "keyboard_typewriter": {
+    "message": "B\u00e0n ph\u00edm (M\u00e1y \u0111\u00e1nh ch\u1eef)"
+  },
+  "keyboard_uk": {
+    "message": "B\u00e0n ph\u00edm V\u01b0\u01a1ng qu\u1ed1c Anh"
+  },
+  "keyboard_uk_dvorak": {
+    "message": "B\u00e0n ph\u00edm Dvorak V\u01b0\u01a1ng qu\u1ed1c Anh"
+  },
+  "keyboard_ukrainian": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Ukraina"
+  },
+  "keyboard_us": {
+    "message": "B\u00e0n ph\u00edm Hoa K\u1ef3"
+  },
+  "keyboard_us_colemak": {
+    "message": "B\u00e0n ph\u00edm Colemak Hoa K\u1ef3"
+  },
+  "keyboard_us_dvorak": {
+    "message": "B\u00e0n ph\u00edm Dvorak Hoa K\u1ef3"
+  },
+  "keyboard_us_extended": {
+    "message": "B\u00e0n ph\u00edm Hoa K\u1ef3 m\u1edf r\u1ed9ng"
+  },
+  "keyboard_us_international": {
+    "message": "B\u00e0n ph\u00edm qu\u1ed1c t\u1ebf Hoa K\u1ef3"
+  },
+  "keyboard_vietnamese_tcvn": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (TCVN)"
+  },
+  "keyboard_vietnamese_telex": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (Telex)"
+  },
+  "keyboard_vietnamese_viqr": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (VIQR)"
+  },
+  "keyboard_vietnamese_vni": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Vi\u1ec7t (VNI)"
+  },
+  "keyboard_viqr": {
+    "message": "B\u00e0n ph\u00edm (VIQR)"
+  },
+  "keyboard_vni": {
+    "message": "B\u00e0n ph\u00edm (VNI)"
+  },
+  "korean_hanja_display": {
+    "message": "Ch\u1ebf \u0111\u1ed9 Hanja Candidate"
+  },
+  "korean_keyboard_layout": {
+    "message": "B\u1ed1 c\u1ee5c b\u00e0n ph\u00edm ti\u1ebfng H\u00e0n"
+  },
+  "korean_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t ti\u1ebfng H\u00e0n"
+  },
+  "korean_syllable_input": {
+    "message": "C\u00f3 nh\u1eadp ch\u1eef Hangul l\u1ea7n l\u01b0\u1ee3t kh\u00f4ng"
+  },
+  "latam_spa_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng M\u1ef9 La-tinh (ti\u1ebfng T\u00e2y Ban Nha)"
+  },
+  "latin_settings_page": {
+    "message": "C\u00e0i \u0111\u1eb7t"
+  },
+  "left_arrow": {
+    "message": "m\u0169i t\u00ean tr\u00e1i"
+  },
+  "lt_lit_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Lithuania"
+  },
+  "lv_apostrophe_lav_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Latvia (ti\u1ebfng Latvia, ti\u1ebfng L\u00e1t-vi)"
+  },
+  "menu_key": {
+    "message": "m\u1edf menu b\u00e0n ph\u00edm"
+  },
+  "mn_mon_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng M\u00f4ng C\u1ed5"
+  },
+  "move_page_key_above": {
+    "message": "S\u1eed d\u1ee5ng c\u00e1c ph\u00edm - v\u00e0 = \u0111\u1ec3 \u0111\u00e1nh s\u1ed1 trang danh s\u00e1ch \u1ee9ng vi\u00ean"
+  },
+  "move_page_key_below": {
+    "message": "S\u1eed d\u1ee5ng c\u00e1c ph\u00edm , v\u00e0 . \u0111\u1ec3 \u0111\u00e1nh s\u1ed1 trang danh s\u00e1ch \u1ee9ng vi\u00ean"
+  },
+  "never_auto_correct": {
+    "message": "T\u1eaft"
+  },
+  "no_nob_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Na Uy"
+  },
+  "pause": {
+    "message": "T\u1ea1m d\u1eebng"
+  },
+  "physical_auto_correction_level": {
+    "message": "Auto-correction"
+  },
+  "physical_enable_capitalization": {
+    "message": "Auto-capitalization"
+  },
+  "physical_keyboard": {
+    "message": "Physical Keyboard"
+  },
+  "pinyin_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t B\u00ednh \u00e2m"
+  },
+  "pl_pol_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ba Lan"
+  },
+  "pt_por_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng B\u1ed3 \u0110\u00e0o Nha"
+  },
+  "right_arrow": {
+    "message": "m\u0169i t\u00ean ph\u1ea3i"
+  },
+  "ro_rum_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Rumani"
+  },
+  "rs_srp_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Serbia"
+  },
+  "ru_phonetic_rus_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ng\u1eef \u00e2m ti\u1ebfng Nga"
+  },
+  "ru_rus_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Nga"
+  },
+  "se_swe_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y \u0110i\u1ec3n"
+  },
+  "shift": {
+    "message": "shift"
+  },
+  "shift_lock": {
+    "message": "Kh\u00f3a ph\u00edm shift"
+  },
+  "show_candidate_mode": {
+    "message": "Th\u1eddi gian tr\u1ec5 hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng"
+  },
+  "show_candidates_1000": {
+    "message": "Hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng sau 1 gi\u00e2y"
+  },
+  "show_candidates_2000": {
+    "message": "Hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng sau 2 gi\u00e2y"
+  },
+  "show_candidates_500": {
+    "message": "Hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng sau 500 mili gi\u00e2y"
+  },
+  "show_candidates_5000": {
+    "message": "Hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng sau 5 gi\u00e2y"
+  },
+  "show_candidates_backspace": {
+    "message": "Ch\u1ec9 hi\u1ec3n th\u1ecb danh s\u00e1ch \u0111\u1ec1 xu\u1ea5t th\u1ea3 xu\u1ed1ng b\u1eb1ng ph\u00edm X\u00f3a l\u00f9i"
+  },
+  "show_hangul_candidate": {
+    "message": "Show Hangul suggestions"
+  },
+  "si_slv_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovenia"
+  },
+  "sk_slo_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovakia"
+  },
+  "sometimes_auto_correct": {
+    "message": "Khi\u00eam t\u1ed1n"
+  },
+  "sound_on_keypress": {
+    "message": "\u00c2m nh\u1ea5n ph\u00edm"
+  },
+  "space": {
+    "message": "d\u1ea5u c\u00e1ch"
+  },
+  "switch_to": {
+    "message": "chuy\u1ec3n sang "
+  },
+  "switch_to_compact_layout": {
+    "message": "Chuy\u1ec3n sang b\u1ed1 c\u1ee5c nh\u1ecf g\u1ecdn"
+  },
+  "switch_to_full_layout": {
+    "message": "Chuy\u1ec3n sang b\u1ed1 c\u1ee5c \u0111\u1ea7y \u0111\u1ee7"
+  },
+  "switch_to_keyboard_prefix": {
+    "message": "chuy\u1ec3n sang "
+  },
+  "switched_to": {
+    "message": "\u0111\u00e3 chuy\u1ec3n sang "
+  },
+  "tab": {
+    "message": "tab"
+  },
+  "touch_keyboard": {
+    "message": "B\u00e0n ph\u00edm c\u1ea3m \u1ee9ng"
+  },
+  "tr_tur_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ed5 Nh\u0129 K\u1ef3"
+  },
+  "transliteration_am": {
+    "message": "Chuy\u1ec3n ng\u1eef (salam \u2192 \u1230\u120b\u121d)"
+  },
+  "transliteration_ar": {
+    "message": "Chuy\u1ec3n ng\u1eef (marhaban \u2190 \u0645\u0631\u062d\u0628\u0627)"
+  },
+  "transliteration_be": {
+    "message": "Chuy\u1ec3n ng\u1eef (pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435)"
+  },
+  "transliteration_bg": {
+    "message": "Chuy\u1ec3n ng\u1eef (zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438)"
+  },
+  "transliteration_bn": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0)"
+  },
+  "transliteration_el": {
+    "message": "Chuy\u1ec3n ng\u1eef (geia \u2192 \u03b3\u03b5\u03b9\u03b1)"
+  },
+  "transliteration_fa": {
+    "message": "Chuy\u1ec3n ng\u1eef (salam \u2190 \u0633\u0644\u0627\u0645)"
+  },
+  "transliteration_gu": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7)"
+  },
+  "transliteration_he": {
+    "message": "Chuy\u1ec3n ng\u1eef (shalom \u2190 \u05e9\u05dc\u05d5\u05dd)"
+  },
+  "transliteration_hi": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_kn": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0)"
+  },
+  "transliteration_ml": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02)"
+  },
+  "transliteration_mr": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930)"
+  },
+  "transliteration_ne": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_or": {
+    "message": "Chuy\u1ec3n ng\u1eef (mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47)"
+  },
+  "transliteration_pa": {
+    "message": "Chuy\u1ec3n ng\u1eef (mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e)"
+  },
+  "transliteration_ru": {
+    "message": "Chuy\u1ec3n ng\u1eef (privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442)"
+  },
+  "transliteration_sa": {
+    "message": "Chuy\u1ec3n ng\u1eef (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_si": {
+    "message": "Chuy\u1ec3n ng\u1eef (halo \u2192 \u0dc4\u0dbd\u0ddd)"
+  },
+  "transliteration_sr": {
+    "message": "Chuy\u1ec3n ng\u1eef (zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e)"
+  },
+  "transliteration_ta": {
+    "message": "Chuy\u1ec3n ng\u1eef (vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd)"
+  },
+  "transliteration_te": {
+    "message": "Chuy\u1ec3n ng\u1eef (emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40)"
+  },
+  "transliteration_ti": {
+    "message": "Chuy\u1ec3n ng\u1eef (selam \u2192 \u1230\u120b\u121d)"
+  },
+  "transliteration_uk": {
+    "message": "Chuy\u1ec3n ng\u1eef (pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442)"
+  },
+  "transliteration_ur": {
+    "message": "Chuy\u1ec3n ng\u1eef (salam \u2190 \u0633\u0644\u0627\u0645)"
+  },
+  "transliteration_vi": {
+    "message": "Chuy\u1ec3n ng\u1eef (chao \u2192 ch\u00e0o)"
+  },
+  "ua_ukr_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ukraina"
+  },
+  "up_arrow": {
+    "message": "m\u0169i t\u00ean l\u00ean"
+  },
+  "us_altgr_intl_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm m\u1edf r\u1ed9ng Hoa K\u1ef3 (ti\u1ebfng Anh)"
+  },
+  "us_colemak_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Colemak Hoa K\u1ef3 (ti\u1ebfng Anh)"
+  },
+  "us_dvorak_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Dvorak Hoa K\u1ef3 (ti\u1ebfng Anh)"
+  },
+  "us_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Hoa K\u1ef3 (ti\u1ebfng Anh)"
+  },
+  "us_fil_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Hoa K\u1ef3 (ti\u1ebfng Philipin)"
+  },
+  "us_ind_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Hoa K\u1ef3 (ti\u1ebfng Indonesia)"
+  },
+  "us_intl_eng_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm qu\u1ed1c t\u1ebf Hoa K\u1ef3 (ti\u1ebfng Anh)"
+  },
+  "us_intl_nld_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm qu\u1ed1c t\u1ebf Hoa K\u1ef3 (ti\u1ebfng H\u00e0 Lan)"
+  },
+  "us_intl_por_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm qu\u1ed1c t\u1ebf Hoa K\u1ef3 (ti\u1ebfng B\u1ed3 \u0110\u00e0o Nha \u1edf Braxin)"
+  },
+  "us_msa_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Hoa K\u1ef3 (ti\u1ebfng Malay)"
+  },
+  "user_dict": {
+    "message": "B\u1eadt t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
+  "user_dict_add": {
+    "message": "Th\u00eam"
+  },
+  "user_dict_clear": {
+    "message": "X\u00f3a t\u1ea5t c\u1ea3"
+  },
+  "user_dict_done": {
+    "message": "Xong"
+  },
+  "user_dict_manage": {
+    "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n..."
+  },
+  "user_dict_new_word": {
+    "message": "T\u1eeb m\u1edbi"
+  },
+  "user_dict_remove": {
+    "message": "X\u00f3a m\u1ee5c nh\u1eadp \u0111\u00e3 ch\u1ecdn"
+  },
+  "user_dict_sync": {
+    "message": "\u0110\u1ed3ng b\u1ed9 h\u00f3a t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
+  "user_dict_title": {
+    "message": "T\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
+  },
+  "wait": {
+    "message": "Ch\u1edd"
+  },
+  "zhuyin_keyboard_layout": {
+    "message": "Lo\u1ea1i b\u00e0n ph\u00edm"
+  },
+  "zhuyin_page_size": {
+    "message": "S\u1ed1 l\u01b0\u1ee3ng \u1ee9ng vi\u00ean \u0111\u1ec3 hi\u1ec3n th\u1ecb tr\u00ean m\u1ed7i trang"
+  },
+  "zhuyin_select_keys": {
+    "message": "Ph\u00edm ch\u1ecdn"
+  },
+  "zhuyin_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t Ch\u00fa \u00e2m"
+  }
+}

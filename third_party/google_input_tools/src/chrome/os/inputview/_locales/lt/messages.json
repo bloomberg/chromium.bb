@@ -1,1 +1,3275 @@
-{"chos_inputtool_title":{"message":"\u201eGoogle\u201c \u012fvesties \u012frankiai"},"chos_inputtool_description":{"message":"Naudodami \u201eGoogle\u201c \u012fvesties \u012frankius, skirtus \u201eChrome\u201c OS, galite pageidaujama kalba \u012fvesti tekst\u0105 \u201eChrome\u201c OS."},"pinyin_settings_page":{"message":"Pinyin Settings Page"},"zhuyin_settings_page":{"message":"Zhuyin Settings Page"},"fuzzy_pinyin":{"message":"\u012egalinti netiksl\u0173 \u201ePinyin\u201c re\u017eim\u0105"},"user_dict":{"message":"\u012egalinti asmenin\u012f \u017eodyn\u0105"},"move_page_key_above":{"message":"Naudokite klavi\u0161us \u201e\u2013\u201c ir \u201e=\u201c, jei norite per\u017ei\u016br\u0117ti kandidat\u0173 s\u0105ra\u0161\u0105"},"move_page_key_below":{"message":"Naudokite klavi\u0161us \u201e,\u201c\u00b7ir \u201e.\u201c, jei norite per\u017ei\u016br\u0117ti kandidat\u0173 s\u0105ra\u0161\u0105"},"init_lang":{"message":"Pagrindin\u0117 \u012fvesties kalba \u2013 kin\u0173 k."},"init_punc":{"message":"Pagrindinis skyrybos \u017eenklo plotis yra viso dyd\u017eio"},"init_sbc":{"message":"Pagrindinis simbolio plotis yra viso dyd\u017eio"},"current_lang":{"message":"\u012evesties kalba yra kin\u0173 k."},"current_punc":{"message":"Skyrybos \u017eenklo plotis yra viso dyd\u017eio"},"current_sbc":{"message":"Simbolio plotis yra viso dyd\u017eio"},"zhuyin_keyboard_layout":{"message":"Klaviat\u016bros tipas"},"zhuyin_select_keys":{"message":"Pasirinkimo klavi\u0161ai"},"zhuyin_page_size":{"message":"Puslapyje rodom\u0173 kandidat\u0173 skai\u010dius"},"keyboard_none":{"message":"Klaviat\u016bra"},"keyboard_phonetic":{"message":"Klaviat\u016bra (fonetin\u0117)"},"keyboard_inscript":{"message":"Klaviat\u016bra (\u201eInScript\u201c)"},"keyboard_tamil99":{"message":"Klaviat\u016bra (\u201eTamil99\u201c)"},"keyboard_typewriter":{"message":"Klaviat\u016bra (ra\u0161omosios ma\u0161in\u0117l\u0117s i\u0161d\u0117stymas)"},"keyboard_itrans":{"message":"Klaviat\u016bra (\u201eItrans\u201c)"},"keyboard_kedmanee":{"message":"Klaviat\u016bra (\u201eKedmanee\u201c)"},"keyboard_pattachote":{"message":"Klaviat\u016bra (\u201ePattachote\u201c)"},"keyboard_tis":{"message":"Klaviat\u016bra (TIS 820-2531)"},"keyboard_tcvn":{"message":"Klaviat\u016bra (TCVN)"},"keyboard_telex":{"message":"Klaviat\u016bra (\u0098telekso i\u0161d\u0117stymas)"},"keyboard_vni":{"message":"Klaviat\u016bra (VNI)"},"keyboard_viqr":{"message":"Klaviat\u016bra (VIQR)"},"basic":{"message":"Pagrindiniai"},"advanced":{"message":"I\u0161pl\u0117stiniai"},"inputmethod_pinyin":{"message":"Pinyin input method"},"inputmethod_traditional_pinyin":{"message":"Pinyin input method for traditional Chinese"},"inputmethod_zhuyin":{"message":"Zhuyin input method"},"inputmethod_wubi":{"message":"Wubi input method"},"inputmethod_cangjie":{"message":"Cangjie input method"},"inputmethod_array":{"message":"Array input method"},"inputmethod_dayi":{"message":"Dayi input method"},"inputmethod_quick":{"message":"Quick input method"},"keyboard_bengali_phonetic":{"message":"Bengali\u0161ka klaviat\u016bra (fonetin\u0117)"},"keyboard_gujarati_phonetic":{"message":"Gud\u017earati klaviat\u016bra (fonetin\u0117)"},"keyboard_devanagari_phonetic":{"message":"Devanagari klaviat\u016bra (fonetin\u0117)"},"keyboard_kannada_phonetic":{"message":"Kanadieti\u0161ka klaviat\u016bra (fonetin\u0117)"},"keyboard_malayalam_phonetic":{"message":"Malajali\u0161ka klaviat\u016bra (fonetin\u0117)"},"keyboard_tamil_phonetic":{"message":"Tamili\u0161ka klaviat\u016bra (fonetin\u0117)"},"keyboard_tamil_inscript":{"message":"Tamili\u0161ka klaviat\u016bra (\u201eInScript\u201c)"},"keyboard_tamil_tamil99":{"message":"Tamili\u0161ka klaviat\u016bra (\u201eTamil99\u201c)"},"keyboard_tamil_typewriter":{"message":"Tamili\u0161ka klaviat\u016bra (ra\u0161omosios ma\u0161in\u0117l\u0117s i\u0161d\u0117stymas)"},"keyboard_tamil_itrans":{"message":"Tamili\u0161ka klaviat\u016bra (\u201eitrans\u201c)"},"keyboard_telugu_phonetic":{"message":"Telugi\u0161ka klaviat\u016bra (fonetin\u0117)"},"keyboard_ethiopic":{"message":"Etiopi\u0161ka klaviat\u016bra"},"keyboard_thai_kedmanee":{"message":"Tailandieti\u0161ka klaviat\u016bra (\u201eKedmanee\u201c)"},"keyboard_thai_pattachote":{"message":"Tailandieti\u0161ka klaviat\u016bra (\u201ePattachote\u201c)"},"keyboard_thai_tis":{"message":"Tailandieti\u0161ka klaviat\u016bra (TIS 820-2531)"},"keyboard_persian":{"message":"Persi\u0161ka klaviat\u016bra"},"keyboard_vietnamese_tcvn":{"message":"Vietnamieti\u0161ka klaviat\u016bra (TCVN)"},"keyboard_vietnamese_telex":{"message":"Vietnamieti\u0161ka klaviat\u016bra (telekso i\u0161d\u0117stymas)"},"keyboard_vietnamese_vni":{"message":"Vietnamieti\u0161ka klaviat\u016bra (VNI)"},"keyboard_vietnamese_viqr":{"message":"Vietnamieti\u0161ka klaviat\u016bra (VIQR)"},"keyboard_arabic":{"message":"Arabi\u0161ka klaviat\u016bra"},"keyboard_lao":{"message":"Laosie\u010di\u0173 klaviat\u016bra"},"keyboard_nepali_inscript":{"message":"Nepalie\u010di\u0173 klaviat\u016bra (\u201eInScript\u201c)"},"keyboard_nepali_phonetic":{"message":"Nepalie\u010di\u0173 klaviat\u016bra (fonetin\u0117)"},"keyboard_khmer":{"message":"Khmer\u0173 klaviat\u016bra"},"keyboard_myanmar":{"message":"Mianmaro MM3 klaviat\u016bra"},"keyboard_sinhala":{"message":"Sinhal\u0173 klaviat\u016bra"},"keyboard_us":{"message":"US keyboard"},"keyboard_us_international":{"message":"US international keyboard"},"keyboard_us_extended":{"message":"US extended keyboard"},"keyboard_us_dvorak":{"message":"US Dvorak keyboard"},"keyboard_us_colemak":{"message":"US Colemak keyboard"},"keyboard_belgian":{"message":"Belgian keyboard"},"keyboard_french":{"message":"French keyboard"},"keyboard_canadian_french":{"message":"Canadian French keyboard"},"keyboard_swiss_french":{"message":"Swiss French keyboard"},"keyboard_canadian_multilingual":{"message":"Canadian Multilingual keyboard"},"keyboard_german":{"message":"German keyboard"},"keyboard_german_neo_2":{"message":"German Neo 2 keyboard"},"keyboard_swiss":{"message":"Swiss keyboard"},"keyboard_japanese":{"message":"Japanese keyboard"},"keyboard_russian":{"message":"Russian keyboard"},"keyboard_russian_phonetic":{"message":"Russian phonetic keyboard"},"keyboard_brazilian":{"message":"Brazilian keyboard"},"keyboard_bulgarian":{"message":"Bulgarian keyboard"},"keyboard_bulgarian_phonetic":{"message":"Bulgarian phonetic keyboard"},"keyboard_canadian_english":{"message":"Canadian English keyboard"},"keyboard_czech":{"message":"Czech keyboard"},"keyboard_czech_qwerty":{"message":"Czech QWERTY keyboard"},"keyboard_estonian":{"message":"Estonian keyboard"},"keyboard_spanish":{"message":"Spanish keyboard"},"keyboard_catalan":{"message":"Catalan keyboard"},"keyboard_danish":{"message":"Danish keyboard"},"keyboard_greek":{"message":"Greek keyboard"},"keyboard_hebrew":{"message":"Hebrew keyboard"},"keyboard_latin_american":{"message":"Latin American keyboard"},"keyboard_lithuanian":{"message":"Lithuanian keyboard"},"keyboard_latvian":{"message":"Latvian keyboard"},"keyboard_croatian":{"message":"Croatian keyboard"},"keyboard_uk":{"message":"UK keyboard"},"keyboard_uk_dvorak":{"message":"UK Dvorak keyboard"},"keyboard_finnish":{"message":"Finnish keyboard"},"keyboard_hungarian":{"message":"Hungarian keyboard"},"keyboard_italian":{"message":"Italian keyboard"},"keyboard_icelandic":{"message":"Icelandic keyboard"},"keyboard_norwegian":{"message":"Norwegian keyboard"},"keyboard_polish":{"message":"Polish keyboard"},"keyboard_portuguese":{"message":"Portuguese keyboard"},"keyboard_romanian":{"message":"Romanian keyboard"},"keyboard_swedish":{"message":"Swedish keyboard"},"keyboard_slovakian":{"message":"Slovakian keyboard"},"keyboard_slovenian":{"message":"Slovenian keyboard"},"keyboard_serbian":{"message":"Serbian keyboard"},"keyboard_turkish":{"message":"Turkish keyboard"},"keyboard_ukrainian":{"message":"Ukrainian keyboard"},"keyboard_belarusian":{"message":"Belarusian keyboard"},"keyboard_armenian_phonetic":{"message":"Armenian Phonetic keyboard"},"keyboard_georgian":{"message":"Georgian keyboard"},"keyboard_mongolian":{"message":"Mongolian keyboard"},"keyboard_irish":{"message":"Irish keyboard"},"keyboard_soranikurdish_en":{"message":"Sorani Kurdish English-based keyboard"},"keyboard_soranikurdish_ar":{"message":"Sorani Kurdish Arabic-based keyboard"},"keyboard_myanmar_myansan":{"message":"Mianmaro Myansan klaviat\u016bra"},"transliteration_am":{"message":"Transliteracija (salam \u2192 \u1230\u120b\u121d)"},"transliteration_ar":{"message":"Transliteracija (marhaban \u2190 \u0645\u0631\u062d\u0628\u0627)"},"transliteration_be":{"message":"Transliteracija (pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435)"},"transliteration_bg":{"message":"Transliteracija (zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438)"},"transliteration_bn":{"message":"Transliteracija (namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0)"},"transliteration_el":{"message":"Transliteracija (geia \u2192 \u03b3\u03b5\u03b9\u03b1)"},"transliteration_fa":{"message":"Transliteracija (salam \u2190 \u0633\u0644\u0627\u0645)"},"transliteration_gu":{"message":"Transliteracija (namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7)"},"transliteration_he":{"message":"Transliteracija (shalom \u2190 \u05e9\u05dc\u05d5\u05dd)"},"transliteration_hi":{"message":"Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_kn":{"message":"Transliteracija (namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0)"},"transliteration_ml":{"message":"Transliteracija (namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02)"},"transliteration_mr":{"message":"Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930)"},"transliteration_ne":{"message":"Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_or":{"message":"Transliteracija (mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47)"},"transliteration_pa":{"message":"Transliteracija (mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e)"},"transliteration_ru":{"message":"Transliteracija (privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442)"},"transliteration_sa":{"message":"Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"},"transliteration_sr":{"message":"Transliteracija (zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e)"},"transliteration_si":{"message":"Transliteracija (halo \u2192 \u0dc4\u0dbd\u0ddd)"},"transliteration_ta":{"message":"Transliteracija (vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd)"},"transliteration_te":{"message":"Transliteracija (emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40)"},"transliteration_ti":{"message":"Transliteracija (selam \u2192 \u1230\u120b\u121d)"},"transliteration_uk":{"message":"Transliteracija (pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442)"},"transliteration_ur":{"message":"Transliteracija (salam \u2190 \u0633\u0644\u0627\u0645)"},"transliteration_vi":{"message":"Transliteracija (chao \u2192 ch\u00e0o)"},"appnamejpkeyboard":{"message":"\u201eGoogle\u201c \u012fvestis japon\u0173 k. (skirta japoni\u0161kai klaviat\u016brai)"},"appnameuskeyboard":{"message":"\u201eGoogle\u201c \u012fvestis japon\u0173 k. (skirta JAV klaviat\u016brai)"},"compositionmodehiragana":{"message":"Hiragana"},"compositionmodefullkatakana":{"message":"Katakana"},"compositionmodefullascii":{"message":"Viso plo\u010dio lotyn\u0173 k."},"compositionmodehalfkatakana":{"message":"Pus\u0117s plo\u010dio katakana"},"compositionmodehalfascii":{"message":"Lotyn\u0173 k."},"compositionmodedirect":{"message":"Tiesiogin\u0117 \u012fvestis"},"configpunctuationmethod":{"message":"Skyrybos \u017eenkl\u0173 stilius:"},"configpreeditmethod":{"message":"\u012evesties re\u017eimas:"},"configpreeditmethodromaji":{"message":"Romaji"},"configpreeditmethodkana":{"message":"Kana"},"configsymbolmethod":{"message":"Simboli\u0173 stilius:"},"configspacecharacterform":{"message":"Tarpo \u012fvesties stilius:"},"configspacecharacterformfollow":{"message":"Steb\u0117ti \u012fvesties re\u017eim\u0105"},"configspacecharacterformfull":{"message":"Viso plo\u010dio"},"configspacecharacterformhalf":{"message":"Pus\u0117s plo\u010dio"},"configselectionshortcut":{"message":"Pasirinkimo spartusis klavi\u0161as:"},"configselectionshortcutno":{"message":"N\u0117ra joki\u0173 spar\u010di\u0173j\u0173 klavi\u0161\u0173"},"configshiftkeymodeswitch":{"message":"Re\u017eimo perjungimas klavi\u0161u \u201eShift\u201c:"},"configshiftkeymodeswitchoff":{"message":"I\u0161jungti"},"configshiftkeymodeswitchalphanumeric":{"message":"Raidiniai skaitmeniniai simboliai"},"configshiftkeymodeswitchkatakana":{"message":"Katakana"},"configsessionkeymap":{"message":"Klavi\u0161\u0173 i\u0161d\u0117stymo stilius:"},"configsessionkeymapatok":{"message":"ATOK"},"configsessionkeymapchromeos":{"message":"\u201eChrome\u201c OS"},"configsessionkeymapmsime":{"message":"MS-IME"},"configsessionkeymapkotoeri":{"message":"Kotoeri"},"configsessionkeymapcustom":{"message":"Tinkintas klavi\u0161\u0173 i\u0161d\u0117stymas"},"configincognitomode":{"message":"I\u0161jungti suasmenintas konversijas, pasi\u016blymus ir naudotojo \u017eodyn\u0105"},"configuseautoimeturnoff":{"message":"Automati\u0161kai perjungti \u012f pus\u0117s plo\u010dio re\u017eim\u0105"},"configusehistorysuggest":{"message":"Naudoti \u012fvesties istorij\u0105"},"configusedictionarysuggest":{"message":"Naudoti sistemos \u017eodyn\u0105"},"configsuggestionssize":{"message":"Pasi\u016blym\u0173 skai\u010dius:"},"configsettingstitle":{"message":"\u012evesties japon\u0173 k. nustatymai"},"configbasicstitle":{"message":"Pagrindai"},"configinputassistancetitle":{"message":"\u012evesties pagalba"},"configsuggesttitle":{"message":"Si\u016blyti"},"configprivacytitle":{"message":"Privatumas"},"configclearhistory":{"message":"I\u0161valyti suasmeninimo duomenis..."},"configclearhistorytitle":{"message":"I\u0161valyti suasmeninimo duomenis"},"configclearhistorymessage":{"message":"Sunaikinti \u0161iuos elementus:"},"configclearhistoryconversionhistory":{"message":"Konversij\u0173 istorija"},"configclearhistorysuggestionhistory":{"message":"Pasi\u016blym\u0173 istorija"},"configclearhistoryokbutton":{"message":"I\u0161valyti suasmeninimo duomenis"},"configclearhistorycancelbutton":{"message":"At\u0161aukti"},"configcreditsdescription":{"message":"\u00a9 \u201eGoogle Inc.\u201c, 2013 m. Visos teis\u0117s saugomos."},"configosscreditsdescription":{"message":"This software is made possible by <a href=\"./credits_en.html\">open source software</a>."},"configdialogcancel":{"message":"At\u0161aukti"},"configdialogok":{"message":"Gerai"},"configdictionarytooltitle":{"message":"Naudotoj\u0173 \u017eodynai"},"configdictionarytooldescription":{"message":"Prid\u0117kite savo \u017eod\u017ei\u0173 prie naudotojo \u017eodyno, kad gal\u0117tum\u0117te tinkinti konversij\u0173 kandidatus."},"configdictionarytoolbutton":{"message":"Tvarkyti naudotojo \u017eodyn\u0105..."},"dictionarytoolpagetitle":{"message":"Naudotoj\u0173 \u017eodynai"},"dictionarytooldictionarylisttitle":{"message":"\u017dodynai"},"dictionarytoolreadingtitle":{"message":"Skaitymo tekstas"},"dictionarytoolwordtitle":{"message":"\u017dodis"},"dictionarytoolcategorytitle":{"message":"Kategorija"},"dictionarytoolcommenttitle":{"message":"K\u043ementaras"},"dictionarytoolmenutitle":{"message":"\u017dodyno tvarkymas"},"dictionarytoolexportbutton":{"message":"Eksportuoti"},"dictionarytoolimportbutton":{"message":"Importuoti..."},"dictionarytooldonebutton":{"message":"Atlikta"},"dictionarytoolreadingnewinput":{"message":"Naujas skaitymo tekstas"},"dictionarytoolwordnewinput":{"message":"Naujas \u017eodis"},"dictionarytoolcommentnewinput":{"message":"K\u043ementaras"},"dictionarytooldeletedictionarytitle":{"message":"I\u0161trinti \u017eodyn\u0105"},"dictionarytooldictionaryname":{"message":"\u017dodyno pavadinimas"},"dictionarytoolnewdictionarynameplaceholder":{"message":"Naujas \u017eodynas"},"dictionarytooldeletedictionaryconfirm":{"message":"Ar norite i\u0161trinti \u201e[object Object]\u201c?"},"dictionarytoolstatuserrorgeneral":{"message":"Operacija nepavyko."},"dictionarytoolstatuserrorfilenotfound":{"message":"Nepavyko atidaryti failo."},"dictionarytoolstatuserrorinvalidfileformat":{"message":"Nepavyko nuskaityti failo."},"dictionarytoolstatuserroremptyfile":{"message":"Failas tu\u0161\u010dias."},"dictionarytoolstatuserrorfilesizelimitexceeded":{"message":"Duomen\u0173 dydis vir\u0161ija failo dyd\u017eio limit\u0105."},"dictionarytoolstatuserrordictionarysizelimitexceeded":{"message":"Negalima sukurti daugiau \u017eodyn\u0173."},"dictionarytoolstatuserrorentrysizelimitexceeded":{"message":"Negalima sukurti daugiau \u012fra\u0161\u0173 \u0161iame \u017eodyne."},"dictionarytoolstatuserrordictionarynameempty":{"message":"\u012eveskite \u017eodyno pavadinim\u0105."},"dictionarytoolstatuserrordictionarynametoolong":{"message":"Pavadinimas per ilgas."},"dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter":{"message":"Pavadinime yra netinkam\u0173 simboli\u0173."},"dictionarytoolstatuserrordictionarynameduplicated":{"message":"Pavadinimas jau yra."},"dictionarytoolstatuserrorreadingempty":{"message":"\u012eveskite skaitymo tekst\u0105."},"dictionarytoolstatuserrorreadingtoolong":{"message":"Skaitymo tekstas per ilgas."},"dictionarytoolstatuserrorreadingcontainsinvalidcharacter":{"message":"Skaitymo tekste yra netinkam\u0173 simboli\u0173. Galite naudoti ASCII simbolius, hiragana, tariamo garso \u017eym\u0119 (\u309b), pusiau tariamo garso \u017eym\u0119 (\u309c), vidurin\u012f ta\u0161k\u0105 (\u30fb), pailginto garso \u017eym\u0119 (\u30fc), japon\u0173 k. kablel\u012f (\u3001), japon\u0173 k. ta\u0161k\u0105 (\u3002), japon\u0173 k. skliaustelius (\u300c\u300d\u300e\u300f) ir japon\u0173 k. banguot\u0105 br\u016bk\u0161nel\u012f (\u301c)."},"dictionarytoolstatuserrorwordempty":{"message":"\u012eveskite \u017eod\u012f."},"dictionarytoolstatuserrorwordtoolong":{"message":"\u017dodis per ilgas."},"dictionarytoolstatuserrorwordcontainsinvalidcharacter":{"message":"\u017dodyje yra netinkam\u0173 simboli\u0173."},"dictionarytoolstatuserrorimporttoomanywords":{"message":"Importavimo \u0161altinyje per daug \u017eod\u017ei\u0173."},"dictionarytoolstatuserrorimportinvalidentries":{"message":"Nepavyko importuoti kai kuri\u0173 \u017eod\u017ei\u0173."},"dictionarytoolstatuserrornoundohistory":{"message":"Neb\u0117ra anuliuojam\u0173 operacij\u0173."},"dictionarytoolstatuserrortitlecreatedictionary":{"message":"\u017dodyno k\u016brimo klaida"},"dictionarytoolstatuserrortitledeletedictionary":{"message":"\u017dodyno pa\u0161alinimo klaida"},"dictionarytoolstatuserrortitlerenamedictionary":{"message":"\u017dodyno pervardijimo klaida"},"dictionarytoolstatuserrortitleeditentry":{"message":"\u012era\u0161o redagavimo klaida"},"dictionarytoolstatuserrortitledeleteentry":{"message":"\u012era\u0161o pa\u0161alinimo klaida"},"dictionarytoolstatuserrortitleaddentry":{"message":"\u012era\u0161o prid\u0117jimo klaida"},"dictionarytoolstatuserrortitleimportdata":{"message":"Importavimo klaida"},"configuploadusagestats":{"message":"Automati\u0161kai si\u0173sti naudojimo statistik\u0105 ir strig\u010di\u0173 ataskaitas \u012f sistem\u0105 \u201eGoogle\u201c"},"handwriting_back":{"message":"Atgal"},"handwriting_netowrk_error":{"message":"Apgailestaujame, negalite naudoti ra\u0161ymo ranka funkcijos, nes tinklas yra nepasiekiamas."},"handwriting_privacy_info":{"message":"Your input will be sent to a Google server to recognize text"},"capital":{"message":"did\u017eioji raid\u0117"},"backspace":{"message":"naikinimo klavi\u0161as"},"tab":{"message":"tabuliavimo klavi\u0161as"},"enter":{"message":"\u012fvedimo klavi\u0161as"},"space":{"message":"tarpo klavi\u0161as"},"shift":{"message":"klavi\u0161as \u201eshift\u201c"},"ctrl":{"message":"klavi\u0161as \u201ectrl\u201c"},"alt":{"message":"klavi\u0161as \u201ealt\u201c"},"altgr":{"message":"klavi\u0161as \u201ealtgr\u201c"},"capslock":{"message":"did\u017ei\u0173j\u0173 raid\u017ei\u0173 klavi\u0161as"},"shift_lock":{"message":"klavi\u0161as \u201eshift\u201c u\u017erakintas"},"left_arrow":{"message":"rodykl\u0117 kair\u0117n"},"right_arrow":{"message":"rodykl\u0117 de\u0161in\u0117n"},"up_arrow":{"message":"rodykl\u0117 auk\u0161tyn"},"down_arrow":{"message":"rodykl\u0117 \u017eemyn"},"hide_keyboard":{"message":"sl\u0117pti klaviat\u016br\u0105"},"globe":{"message":"perjungti \u012f ankstesn\u0119 klaviat\u016br\u0105"},"switch_to":{"message":"perjungti \u012f "},"switched_to":{"message":"perjungta \u012f "},"got_it":{"message":"Supratau"},"never_auto_correct":{"message":"Off"},"sometimes_auto_correct":{"message":"Modest"},"always_auto_correct":{"message":"Aggressive"},"show_candidates_backspace":{"message":"Show suggestion dropdown by Backspace"},"show_candidates_500":{"message":"Show suggestion dropdown after 500ms"},"show_candidates_1000":{"message":"Show suggestion dropdown after 1s"},"show_candidates_2000":{"message":"Show suggestion dropdown after 2s"},"show_candidates_5000":{"message":"Show suggestion dropdown after 5s"},"latin_settings_page":{"message":"Settings"},"auto_correction_level":{"message":"Auto-correction"},"enable_capitalization":{"message":"Auto-capitalization"},"show_candidate_mode":{"message":"Delay of suggestion dropdown"},"enable_prediction":{"message":"Enable next word prediction"},"am_phonetic_arm_settings_page":{"message":"Armenian Phonetic Keyboard Settings Page"},"be_fra_settings_page":{"message":"Belgian Keyboard (French) Settings Page"},"be_ger_settings_page":{"message":"Belgian Keyboard (German) Settings Page"},"be_nld_settings_page":{"message":"Belgian Keyboard (Dutch) Settings Page"},"bg_bul_settings_page":{"message":"Bulgarian Keyboard Settings Page"},"bg_phonetic_bul_settings_page":{"message":"Bulgarian Phonetic Keyboard Settings Page"},"br_por_settings_page":{"message":"Brazilian Keyboard (Brazilian Portuguese) Settings Page"},"by_bel_settings_page":{"message":"Belarusian Keyboard Settings Page"},"ca_fra_settings_page":{"message":"Canadian French Keyboard (French) Settings Page"},"ca_eng_eng_settings_page":{"message":"Canadian English Keyboard (English) Settings Page"},"ca_multix_fra_settings_page":{"message":"Canadian Multilingual Keyboard (French) Settings Page"},"ch_ger_settings_page":{"message":"Swiss Keyboard (German) Settings Page"},"ch_fr_fra_settings_page":{"message":"Swiss French Keyboard (French) Settings Page"},"cz_cze_settings_page":{"message":"Czech Keyboard Settings Page"},"cz_qwerty_cze_settings_page":{"message":"Czech Qwerty Keyboard Settings Page"},"de_ger_settings_page":{"message":"German Keyboard Settings Page"},"de_neo_ger_settings_page":{"message":"German Neo 2 Keyboard Settings Page"},"dk_dan_settings_page":{"message":"Danish Keyboard Settings Page"},"ee_est_settings_page":{"message":"Estonian Keyboard Settings Page"},"es_spa_settings_page":{"message":"Spanish Keyboard Settings Page"},"es_cat_cat_settings_page":{"message":"Catalan Keyboard Settings Page"},"fi_fin_settings_page":{"message":"Finnish Keyboard Settings Page"},"fr_fra_settings_page":{"message":"French Keyboard Settings Page"},"gb_dvorak_eng_settings_page":{"message":"Uk Dvorak Keyboard (English) Settings Page"},"gb_extd_eng_settings_page":{"message":"Uk Keyboard (English) Settings Page"},"ge_geo_settings_page":{"message":"Georgian Keyboard Settings Page"},"gr_gre_settings_page":{"message":"Greek Keyboard Settings Page"},"hr_scr_settings_page":{"message":"Croatian Keyboard Settings Page"},"hu_hun_settings_page":{"message":"Hungarian Keyboard Settings Page"},"ie_ga_settings_page":{"message":"Irish Keyboard Settings Page"},"il_heb_settings_page":{"message":"Hebrew Keyboard Settings Page"},"is_ice_settings_page":{"message":"Icelandic Keyboard Settings Page"},"it_ita_settings_page":{"message":"Italian Keyboard Settings Page"},"jp_jpn_settings_page":{"message":"Japanese Keyboard Settings Page"},"latam_spa_settings_page":{"message":"Latin American Keyboard (Spanish) Settings Page"},"lt_lit_settings_page":{"message":"Lithuanian Keyboard Settings Page"},"lv_apostrophe_lav_settings_page":{"message":"Latvian Keyboard (Latvian, Lettish) Settings Page"},"mn_mon_settings_page":{"message":"Mongolian Keyboard Settings Page"},"no_nob_settings_page":{"message":"Norwegian Keyboard Settings Page"},"pl_pol_settings_page":{"message":"Polish Keyboard Settings Page"},"pt_por_settings_page":{"message":"Portuguese Keyboard Settings Page"},"ro_rum_settings_page":{"message":"Romanian Keyboard Settings Page"},"rs_srp_settings_page":{"message":"Serbian Keyboard Settings Page"},"ru_rus_settings_page":{"message":"Russian Keyboard Settings Page"},"ru_phonetic_rus_settings_page":{"message":"Russian Phonetic Keyboard Settings Page"},"se_swe_settings_page":{"message":"Swedish Keyboard Settings Page"},"si_slv_settings_page":{"message":"Slovenian Keyboard Settings Page"},"sk_slo_settings_page":{"message":"Slovakian Keyboard Settings Page"},"tr_tur_settings_page":{"message":"Turkish Keyboard Settings Page"},"ua_ukr_settings_page":{"message":"Ukrainian Keyboard Settings Page"},"us_eng_settings_page":{"message":"US Keyboard (English) Settings Page"},"us_fil_settings_page":{"message":"US Keyboard (Filipino) Settings Page"},"us_ind_settings_page":{"message":"US Keyboard (Indonesian) Settings Page"},"us_msa_settings_page":{"message":"US Keyboard (Malay) Settings Page"},"us_altgr_intl_eng_settings_page":{"message":"US Extended Keyboard (English) Settings Page"},"us_colemak_eng_settings_page":{"message":"US Colemak Keyboard (English) Settings Page"},"us_dvorak_eng_settings_page":{"message":"US Dvorak Keyboard (English) Settings Page"},"us_intl_eng_settings_page":{"message":"US International Keyboard (English) Settings Page"},"us_intl_nld_settings_page":{"message":"US International Keyboard (Dutch) Settings Page"},"us_intl_por_settings_page":{"message":"US International Keyboard (Brazilian Portuguese) Settings Page"},"touch_keyboard":{"message":"Touch Keyboard"},"sound_on_keypress":{"message":"Sound on keypress"},"double_space_period":{"message":"Double-space to type period"},"enable_completion":{"message":"Enable completion"},"korean_settings_page":{"message":"Korean Settings Page"},"switch_to_compact_layout":{"message":"Switch to compact layout"},"switch_to_full_layout":{"message":"Switch to full layout"},"pause":{"message":"Pause"},"wait":{"message":"Wait"}}
+{
+  "advanced": {
+    "message": "I\u0161pl\u0117stiniai"
+  },
+  "alt": {
+    "message": "klavi\u0161as \u201ealt\u201c"
+  },
+  "altgr": {
+    "message": "klavi\u0161as \u201ealtgr\u201c"
+  },
+  "always_auto_correct": {
+    "message": "Grie\u017etas"
+  },
+  "am_phonetic_arm_settings_page": {
+    "message": "Arm\u0117ni\u0161kos fonetin\u0117s klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "appnamejpkeyboard": {
+    "message": "\u201eGoogle\u201c \u012fvestis japon\u0173 k. (skirta japoni\u0161kai klaviat\u016brai)"
+  },
+  "appnameuskeyboard": {
+    "message": "\u201eGoogle\u201c \u012fvestis japon\u0173 k. (skirta JAV klaviat\u016brai)"
+  },
+  "auto_correction_level": {
+    "message": "Automatinis taisymas"
+  },
+  "backspace": {
+    "message": "naikinimo klavi\u0161as"
+  },
+  "basic": {
+    "message": "Pagrindiniai"
+  },
+  "be_fra_settings_page": {
+    "message": "Belgi\u0161kos klaviat\u016bros (pranc\u016bz\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "be_ger_settings_page": {
+    "message": "Belgi\u0161kos klaviat\u016bros (vokie\u010di\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "be_nld_settings_page": {
+    "message": "Belgi\u0161kos klaviat\u016bros (oland\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "bg_bul_settings_page": {
+    "message": "Bulgari\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "bg_phonetic_bul_settings_page": {
+    "message": "Bulgari\u0161kos fonetin\u0117s klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "br_por_settings_page": {
+    "message": "Brazili\u0161kos klaviat\u016bros (Brazilijos portugal\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "by_bel_settings_page": {
+    "message": "Baltarusi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "ca_eng_eng_settings_page": {
+    "message": "Kanados angli\u0161kos klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "ca_fra_settings_page": {
+    "message": "Kanados pranc\u016bzi\u0161kos klaviat\u016bros (pranc\u016bz\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "ca_multix_fra_settings_page": {
+    "message": "Kanados keli\u0173 kalb\u0173 klaviat\u016bros (pranc\u016bz\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "capital": {
+    "message": "did\u017eioji raid\u0117"
+  },
+  "capslock": {
+    "message": "did\u017ei\u0173j\u0173 raid\u017ei\u0173 klavi\u0161as"
+  },
+  "ch_fr_fra_settings_page": {
+    "message": "\u0160veicarijos pranc\u016bzi\u0161kos klaviat\u016bros (pranc\u016bz\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "ch_ger_settings_page": {
+    "message": "\u0160veicari\u0161kos klaviat\u016bros (vokie\u010di\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "chos_inputtool_description": {
+    "message": "Naudodami \u201eGoogle\u201c \u012fvesties \u012frankius, skirtus \u201eChrome\u201c OS, galite pageidaujama kalba \u012fvesti tekst\u0105 \u201eChrome\u201c OS."
+  },
+  "chos_inputtool_title": {
+    "message": "\u201eGoogle\u201c \u012fvesties \u012frankiai"
+  },
+  "compositionmodedirect": {
+    "message": "Tiesiogin\u0117 \u012fvestis"
+  },
+  "compositionmodefullascii": {
+    "message": "Viso plo\u010dio lotyn\u0173 k."
+  },
+  "compositionmodefullkatakana": {
+    "message": "Katakana"
+  },
+  "compositionmodehalfascii": {
+    "message": "Lotyn\u0173 k."
+  },
+  "compositionmodehalfkatakana": {
+    "message": "Pus\u0117s plo\u010dio katakana"
+  },
+  "compositionmodehiragana": {
+    "message": "Hiragana"
+  },
+  "configbasicstitle": {
+    "message": "Pagrindai"
+  },
+  "configclearhistory": {
+    "message": "I\u0161valyti suasmeninimo duomenis..."
+  },
+  "configclearhistorycancelbutton": {
+    "message": "At\u0161aukti"
+  },
+  "configclearhistoryconversionhistory": {
+    "message": "Konversij\u0173 istorija"
+  },
+  "configclearhistorymessage": {
+    "message": "Sunaikinti \u0161iuos elementus:"
+  },
+  "configclearhistoryokbutton": {
+    "message": "I\u0161valyti suasmeninimo duomenis"
+  },
+  "configclearhistorysuggestionhistory": {
+    "message": "Pasi\u016blym\u0173 istorija"
+  },
+  "configclearhistorytitle": {
+    "message": "I\u0161valyti suasmeninimo duomenis"
+  },
+  "configcreditsdescription": {
+    "message": "\u00a9 \u201eGoogle Inc.\u201c, 2013 m. Visos teis\u0117s saugomos."
+  },
+  "configdialogcancel": {
+    "message": "At\u0161aukti"
+  },
+  "configdialogok": {
+    "message": "Gerai"
+  },
+  "configdictionarytoolbutton": {
+    "message": "Tvarkyti naudotojo \u017eodyn\u0105..."
+  },
+  "configdictionarytooldescription": {
+    "message": "Prid\u0117kite savo \u017eod\u017ei\u0173 prie naudotojo \u017eodyno, kad gal\u0117tum\u0117te tinkinti konversij\u0173 kandidatus."
+  },
+  "configdictionarytooltitle": {
+    "message": "Naudotoj\u0173 \u017eodynai"
+  },
+  "configincognitomode": {
+    "message": "I\u0161jungti suasmenintas konversijas, pasi\u016blymus ir naudotojo \u017eodyn\u0105"
+  },
+  "configinputassistancetitle": {
+    "message": "\u012evesties pagalba"
+  },
+  "configosscreditsdescription": {
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
+  },
+  "configpreeditmethod": {
+    "message": "\u012evesties re\u017eimas:"
+  },
+  "configpreeditmethodkana": {
+    "message": "Kana"
+  },
+  "configpreeditmethodromaji": {
+    "message": "Romaji"
+  },
+  "configprivacytitle": {
+    "message": "Privatumas"
+  },
+  "configpunctuationmethod": {
+    "message": "Skyrybos \u017eenkl\u0173 stilius:"
+  },
+  "configselectionshortcut": {
+    "message": "Pasirinkimo spartusis klavi\u0161as:"
+  },
+  "configselectionshortcutno": {
+    "message": "N\u0117ra joki\u0173 spar\u010di\u0173j\u0173 klavi\u0161\u0173"
+  },
+  "configsessionkeymap": {
+    "message": "Klavi\u0161\u0173 i\u0161d\u0117stymo stilius:"
+  },
+  "configsessionkeymapatok": {
+    "message": "ATOK"
+  },
+  "configsessionkeymapchromeos": {
+    "message": "\u201eChrome\u201c OS"
+  },
+  "configsessionkeymapcustom": {
+    "message": "Tinkintas klavi\u0161\u0173 i\u0161d\u0117stymas"
+  },
+  "configsessionkeymapkotoeri": {
+    "message": "Kotoeri"
+  },
+  "configsessionkeymapmsime": {
+    "message": "MS-IME"
+  },
+  "configsettingstitle": {
+    "message": "\u012evesties japon\u0173 k. nustatymai"
+  },
+  "configshiftkeymodeswitch": {
+    "message": "Re\u017eimo perjungimas klavi\u0161u \u201eShift\u201c:"
+  },
+  "configshiftkeymodeswitchalphanumeric": {
+    "message": "Raidiniai skaitmeniniai simboliai"
+  },
+  "configshiftkeymodeswitchkatakana": {
+    "message": "Katakana"
+  },
+  "configshiftkeymodeswitchoff": {
+    "message": "I\u0161jungti"
+  },
+  "configspacecharacterform": {
+    "message": "Tarpo \u012fvesties stilius:"
+  },
+  "configspacecharacterformfollow": {
+    "message": "Steb\u0117ti \u012fvesties re\u017eim\u0105"
+  },
+  "configspacecharacterformfull": {
+    "message": "Viso plo\u010dio"
+  },
+  "configspacecharacterformhalf": {
+    "message": "Pus\u0117s plo\u010dio"
+  },
+  "configsuggestionssize": {
+    "message": "Pasi\u016blym\u0173 skai\u010dius:"
+  },
+  "configsuggesttitle": {
+    "message": "Si\u016blyti"
+  },
+  "configsymbolmethod": {
+    "message": "Simboli\u0173 stilius:"
+  },
+  "configuploadusagestats": {
+    "message": "Automati\u0161kai si\u0173sti naudojimo statistik\u0105 ir strig\u010di\u0173 ataskaitas \u012f sistem\u0105 \u201eGoogle\u201c"
+  },
+  "configuseautoimeturnoff": {
+    "message": "Automati\u0161kai perjungti \u012f pus\u0117s plo\u010dio re\u017eim\u0105"
+  },
+  "configusedictionarysuggest": {
+    "message": "Naudoti sistemos \u017eodyn\u0105"
+  },
+  "configusehistorysuggest": {
+    "message": "Naudoti \u012fvesties istorij\u0105"
+  },
+  "ctrl": {
+    "message": "klavi\u0161as \u201ectrl\u201c"
+  },
+  "current_lang": {
+    "message": "\u012evesties kalba yra kin\u0173 k."
+  },
+  "current_punc": {
+    "message": "Skyrybos \u017eenklo plotis yra viso dyd\u017eio"
+  },
+  "current_sbc": {
+    "message": "Simbolio plotis yra viso dyd\u017eio"
+  },
+  "cz_cze_settings_page": {
+    "message": "\u010ceki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "cz_qwerty_cze_settings_page": {
+    "message": "\u010ceki\u0161kos \u201eQwerty\u201c klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "d83c_dc04": {
+    "message": "Mahjong tile"
+  },
+  "d83c_dccf": {
+    "message": "Joker card"
+  },
+  "d83c_dd70": {
+    "message": "blood type A"
+  },
+  "d83c_dd71": {
+    "message": "blood type B"
+  },
+  "d83c_dd7e": {
+    "message": "blood type O"
+  },
+  "d83c_dd7f": {
+    "message": "parking"
+  },
+  "d83c_dd8e": {
+    "message": "blood type AB"
+  },
+  "d83c_dd91": {
+    "message": "CL"
+  },
+  "d83c_dd92": {
+    "message": "cool"
+  },
+  "d83c_dd93": {
+    "message": "free"
+  },
+  "d83c_dd94": {
+    "message": "ID"
+  },
+  "d83c_dd95": {
+    "message": "New"
+  },
+  "d83c_dd96": {
+    "message": "NG"
+  },
+  "d83c_dd97": {
+    "message": "OK"
+  },
+  "d83c_dd98": {
+    "message": "SOS"
+  },
+  "d83c_dd99": {
+    "message": "UP!"
+  },
+  "d83c_dd9a": {
+    "message": "versus"
+  },
+  "d83c_de01": {
+    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+  },
+  "d83c_de02": {
+    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+  },
+  "d83c_de1a": {
+    "message": "Japanese word 'free'"
+  },
+  "d83c_de2f": {
+    "message": "Japanese word 'reserved'"
+  },
+  "d83c_de32": {
+    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+  },
+  "d83c_de33": {
+    "message": "Chinese word 'space available'"
+  },
+  "d83c_de34": {
+    "message": "Chinese word 'pass'"
+  },
+  "d83c_de35": {
+    "message": "Chinese word 'full'"
+  },
+  "d83c_de36": {
+    "message": "Japanese word 'fees'"
+  },
+  "d83c_de37": {
+    "message": "Japanese word 'monthly'"
+  },
+  "d83c_de38": {
+    "message": "Chinese word 'application'"
+  },
+  "d83c_de39": {
+    "message": "Japanese word 'discount'"
+  },
+  "d83c_de3a": {
+    "message": "Chinese word 'in business'"
+  },
+  "d83c_de50": {
+    "message": "Japanese word 'advantage'"
+  },
+  "d83c_de51": {
+    "message": "Chinese word 'approved'"
+  },
+  "d83c_df00": {
+    "message": "cyclone"
+  },
+  "d83c_df01": {
+    "message": "foggy"
+  },
+  "d83c_df02": {
+    "message": "umbrella"
+  },
+  "d83c_df03": {
+    "message": "night stars"
+  },
+  "d83c_df04": {
+    "message": "sunrise over mountains"
+  },
+  "d83c_df05": {
+    "message": "sunrise"
+  },
+  "d83c_df06": {
+    "message": "city at dusk"
+  },
+  "d83c_df07": {
+    "message": "sunset"
+  },
+  "d83c_df08": {
+    "message": "rainbow"
+  },
+  "d83c_df09": {
+    "message": "night bridge"
+  },
+  "d83c_df0a": {
+    "message": "wave"
+  },
+  "d83c_df0b": {
+    "message": "volcano"
+  },
+  "d83c_df0c": {
+    "message": "Milky Way"
+  },
+  "d83c_df0d": {
+    "message": "globe Europe-Africa"
+  },
+  "d83c_df0e": {
+    "message": "globe Americas"
+  },
+  "d83c_df0f": {
+    "message": "globe Asia-Australia"
+  },
+  "d83c_df10": {
+    "message": "globe with meridians"
+  },
+  "d83c_df11": {
+    "message": "new moon"
+  },
+  "d83c_df12": {
+    "message": "waxing crescent moon"
+  },
+  "d83c_df13": {
+    "message": "first quarter moon"
+  },
+  "d83c_df14": {
+    "message": "waxing moon"
+  },
+  "d83c_df15": {
+    "message": "full moon"
+  },
+  "d83c_df16": {
+    "message": "waning moon"
+  },
+  "d83c_df17": {
+    "message": "last quarter moon"
+  },
+  "d83c_df18": {
+    "message": "waning crescent moon"
+  },
+  "d83c_df19": {
+    "message": "crescent moon"
+  },
+  "d83c_df1a": {
+    "message": "new moon face"
+  },
+  "d83c_df1b": {
+    "message": "first quarter moon face"
+  },
+  "d83c_df1c": {
+    "message": "last quarter moon face"
+  },
+  "d83c_df1d": {
+    "message": "full moon face"
+  },
+  "d83c_df1e": {
+    "message": "sun face"
+  },
+  "d83c_df1f": {
+    "message": "glowing star"
+  },
+  "d83c_df20": {
+    "message": "shooting star"
+  },
+  "d83c_df30": {
+    "message": "chestnut"
+  },
+  "d83c_df31": {
+    "message": "young plant"
+  },
+  "d83c_df32": {
+    "message": "evergreen tree"
+  },
+  "d83c_df33": {
+    "message": "shedding tree"
+  },
+  "d83c_df34": {
+    "message": "palm tree"
+  },
+  "d83c_df35": {
+    "message": "cactus"
+  },
+  "d83c_df37": {
+    "message": "tulip"
+  },
+  "d83c_df38": {
+    "message": "cherry blossom"
+  },
+  "d83c_df39": {
+    "message": "rose"
+  },
+  "d83c_df3a": {
+    "message": "hibiscus"
+  },
+  "d83c_df3b": {
+    "message": "sunflower"
+  },
+  "d83c_df3c": {
+    "message": "blossom"
+  },
+  "d83c_df3d": {
+    "message": "corn"
+  },
+  "d83c_df3e": {
+    "message": "rice plant"
+  },
+  "d83c_df3f": {
+    "message": "herb"
+  },
+  "d83c_df40": {
+    "message": "four leaf clover"
+  },
+  "d83c_df41": {
+    "message": "maple leaf"
+  },
+  "d83c_df42": {
+    "message": "falling leaves"
+  },
+  "d83c_df43": {
+    "message": "leaf in wind"
+  },
+  "d83c_df44": {
+    "message": "mushroom"
+  },
+  "d83c_df45": {
+    "message": "tomato"
+  },
+  "d83c_df46": {
+    "message": "eggplant"
+  },
+  "d83c_df47": {
+    "message": "grapes"
+  },
+  "d83c_df48": {
+    "message": "melon"
+  },
+  "d83c_df49": {
+    "message": "watermelon"
+  },
+  "d83c_df4a": {
+    "message": "tangerine"
+  },
+  "d83c_df4b": {
+    "message": "lemon"
+  },
+  "d83c_df4c": {
+    "message": "banana"
+  },
+  "d83c_df4d": {
+    "message": "pineapple"
+  },
+  "d83c_df4e": {
+    "message": "red apple"
+  },
+  "d83c_df4f": {
+    "message": "green apple"
+  },
+  "d83c_df50": {
+    "message": "pear"
+  },
+  "d83c_df51": {
+    "message": "peach"
+  },
+  "d83c_df52": {
+    "message": "cherry"
+  },
+  "d83c_df53": {
+    "message": "strawberry"
+  },
+  "d83c_df54": {
+    "message": "hamburger"
+  },
+  "d83c_df55": {
+    "message": "pizza slice"
+  },
+  "d83c_df56": {
+    "message": "meat"
+  },
+  "d83c_df57": {
+    "message": "chicken leg"
+  },
+  "d83c_df58": {
+    "message": "rice cracker"
+  },
+  "d83c_df59": {
+    "message": "rice ball"
+  },
+  "d83c_df5a": {
+    "message": "cooked rice"
+  },
+  "d83c_df5b": {
+    "message": "curry and rice"
+  },
+  "d83c_df5c": {
+    "message": "ramen"
+  },
+  "d83c_df5d": {
+    "message": "spaghetti"
+  },
+  "d83c_df5e": {
+    "message": "bread"
+  },
+  "d83c_df5f": {
+    "message": "fries"
+  },
+  "d83c_df60": {
+    "message": "roasted potato"
+  },
+  "d83c_df61": {
+    "message": "mochi"
+  },
+  "d83c_df62": {
+    "message": "oden"
+  },
+  "d83c_df63": {
+    "message": "sushi"
+  },
+  "d83c_df64": {
+    "message": "fried shrimp"
+  },
+  "d83c_df65": {
+    "message": "fish cake"
+  },
+  "d83c_df66": {
+    "message": "soft ice cream"
+  },
+  "d83c_df67": {
+    "message": "shaved ice"
+  },
+  "d83c_df68": {
+    "message": "ice cream"
+  },
+  "d83c_df69": {
+    "message": "donut"
+  },
+  "d83c_df6a": {
+    "message": "cookie"
+  },
+  "d83c_df6b": {
+    "message": "chocolate"
+  },
+  "d83c_df6c": {
+    "message": "candy"
+  },
+  "d83c_df6d": {
+    "message": "lollipop"
+  },
+  "d83c_df6e": {
+    "message": "custard"
+  },
+  "d83c_df6f": {
+    "message": "honeypot"
+  },
+  "d83c_df70": {
+    "message": "shortcake"
+  },
+  "d83c_df71": {
+    "message": "bento"
+  },
+  "d83c_df72": {
+    "message": "stew"
+  },
+  "d83c_df73": {
+    "message": "frying pan"
+  },
+  "d83c_df74": {
+    "message": "fork and knife"
+  },
+  "d83c_df75": {
+    "message": "teacup"
+  },
+  "d83c_df76": {
+    "message": "sake"
+  },
+  "d83c_df77": {
+    "message": "wine"
+  },
+  "d83c_df78": {
+    "message": "cocktail"
+  },
+  "d83c_df79": {
+    "message": "tropical drink"
+  },
+  "d83c_df7a": {
+    "message": "beer"
+  },
+  "d83c_df7b": {
+    "message": "beer mugs"
+  },
+  "d83c_df7c": {
+    "message": "baby bottle"
+  },
+  "d83c_df80": {
+    "message": "ribbon"
+  },
+  "d83c_df81": {
+    "message": "gift"
+  },
+  "d83c_df82": {
+    "message": "birthday cake"
+  },
+  "d83c_df83": {
+    "message": "jack-o-lantern"
+  },
+  "d83c_df84": {
+    "message": "christmas tree"
+  },
+  "d83c_df85": {
+    "message": "santa"
+  },
+  "d83c_df86": {
+    "message": "firework"
+  },
+  "d83c_df87": {
+    "message": "sparkler"
+  },
+  "d83c_df88": {
+    "message": "balloon"
+  },
+  "d83c_df89": {
+    "message": "party popper"
+  },
+  "d83c_df8a": {
+    "message": "confetti"
+  },
+  "d83c_df8b": {
+    "message": "tree and paper strips"
+  },
+  "d83c_df8c": {
+    "message": "crossed flags"
+  },
+  "d83c_df8d": {
+    "message": "pine decoration"
+  },
+  "d83c_df8e": {
+    "message": "dolls"
+  },
+  "d83c_df8f": {
+    "message": "carp streamer"
+  },
+  "d83c_df90": {
+    "message": "wind chime"
+  },
+  "d83c_df91": {
+    "message": "moon viewing"
+  },
+  "d83c_df92": {
+    "message": "school bag"
+  },
+  "d83c_df93": {
+    "message": "graduation cap"
+  },
+  "d83c_dfa0": {
+    "message": "carousel"
+  },
+  "d83c_dfa1": {
+    "message": "ferris wheel"
+  },
+  "d83c_dfa2": {
+    "message": "roller coaster"
+  },
+  "d83c_dfa3": {
+    "message": "fishing"
+  },
+  "d83c_dfa4": {
+    "message": "mic"
+  },
+  "d83c_dfa5": {
+    "message": "movie camera"
+  },
+  "d83c_dfa6": {
+    "message": "movie"
+  },
+  "d83c_dfa7": {
+    "message": "headphone"
+  },
+  "d83c_dfa8": {
+    "message": "paint palette"
+  },
+  "d83c_dfa9": {
+    "message": "top hat"
+  },
+  "d83c_dfaa": {
+    "message": "circus"
+  },
+  "d83c_dfab": {
+    "message": "ticket"
+  },
+  "d83c_dfac": {
+    "message": "clapperboard"
+  },
+  "d83c_dfad": {
+    "message": "face mask"
+  },
+  "d83c_dfae": {
+    "message": "video game"
+  },
+  "d83c_dfaf": {
+    "message": "bull's eye"
+  },
+  "d83c_dfb0": {
+    "message": "slot machine"
+  },
+  "d83c_dfb1": {
+    "message": "billiard"
+  },
+  "d83c_dfb2": {
+    "message": "game die"
+  },
+  "d83c_dfb3": {
+    "message": "bowling"
+  },
+  "d83c_dfb4": {
+    "message": "playing card"
+  },
+  "d83c_dfb5": {
+    "message": "musical note"
+  },
+  "d83c_dfb6": {
+    "message": "musical notes"
+  },
+  "d83c_dfb7": {
+    "message": "sax"
+  },
+  "d83c_dfb8": {
+    "message": "guitar"
+  },
+  "d83c_dfb9": {
+    "message": "piano"
+  },
+  "d83c_dfba": {
+    "message": "trumpet"
+  },
+  "d83c_dfbb": {
+    "message": "violin"
+  },
+  "d83c_dfbc": {
+    "message": "music score"
+  },
+  "d83c_dfbd": {
+    "message": "running shirt"
+  },
+  "d83c_dfbe": {
+    "message": "tennis"
+  },
+  "d83c_dfbf": {
+    "message": "ski"
+  },
+  "d83c_dfc0": {
+    "message": "basketball"
+  },
+  "d83c_dfc1": {
+    "message": "checkered flag"
+  },
+  "d83c_dfc2": {
+    "message": "snowboarder"
+  },
+  "d83c_dfc3": {
+    "message": "runner"
+  },
+  "d83c_dfc4": {
+    "message": "surfing"
+  },
+  "d83c_dfc6": {
+    "message": "trophy"
+  },
+  "d83c_dfc7": {
+    "message": "horse racing"
+  },
+  "d83c_dfc8": {
+    "message": "American football"
+  },
+  "d83c_dfc9": {
+    "message": "soccer"
+  },
+  "d83c_dfca": {
+    "message": "swimmer"
+  },
+  "d83c_dfe0": {
+    "message": "house"
+  },
+  "d83c_dfe1": {
+    "message": "home"
+  },
+  "d83c_dfe2": {
+    "message": "office building"
+  },
+  "d83c_dfe3": {
+    "message": "Japanese post office"
+  },
+  "d83c_dfe4": {
+    "message": "European post office"
+  },
+  "d83c_dfe5": {
+    "message": "hospital"
+  },
+  "d83c_dfe6": {
+    "message": "bank"
+  },
+  "d83c_dfe7": {
+    "message": "ATM"
+  },
+  "d83c_dfe8": {
+    "message": "hotel"
+  },
+  "d83c_dfe9": {
+    "message": "love hotel"
+  },
+  "d83c_dfea": {
+    "message": "convenience store"
+  },
+  "d83c_dfeb": {
+    "message": "school"
+  },
+  "d83c_dfec": {
+    "message": "department store"
+  },
+  "d83c_dfed": {
+    "message": "factory"
+  },
+  "d83c_dfee": {
+    "message": "red lantern"
+  },
+  "d83c_dfef": {
+    "message": "Japanese castle"
+  },
+  "d83c_dff0": {
+    "message": "European castle"
+  },
+  "d83d_dc00": {
+    "message": "Rat"
+  },
+  "d83d_dc01": {
+    "message": "Mouse"
+  },
+  "d83d_dc02": {
+    "message": "Ox"
+  },
+  "d83d_dc03": {
+    "message": "water buffalo"
+  },
+  "d83d_dc04": {
+    "message": "cow"
+  },
+  "d83d_dc06": {
+    "message": "leopard"
+  },
+  "d83d_dc07": {
+    "message": "rabbit"
+  },
+  "d83d_dc08": {
+    "message": "cat"
+  },
+  "d83d_dc09": {
+    "message": "dragon"
+  },
+  "d83d_dc0a": {
+    "message": "crocodile"
+  },
+  "d83d_dc0b": {
+    "message": "whale"
+  },
+  "d83d_dc0c": {
+    "message": "snail"
+  },
+  "d83d_dc0d": {
+    "message": "snake"
+  },
+  "d83d_dc0e": {
+    "message": "horse"
+  },
+  "d83d_dc0f": {
+    "message": "ram"
+  },
+  "d83d_dc10": {
+    "message": "goat"
+  },
+  "d83d_dc11": {
+    "message": "sheep"
+  },
+  "d83d_dc12": {
+    "message": "monkey"
+  },
+  "d83d_dc13": {
+    "message": "rooster"
+  },
+  "d83d_dc14": {
+    "message": "chicken"
+  },
+  "d83d_dc15": {
+    "message": "dog"
+  },
+  "d83d_dc16": {
+    "message": "pig"
+  },
+  "d83d_dc17": {
+    "message": "boar"
+  },
+  "d83d_dc18": {
+    "message": "elephant"
+  },
+  "d83d_dc19": {
+    "message": "octopus"
+  },
+  "d83d_dc1a": {
+    "message": "shell"
+  },
+  "d83d_dc1b": {
+    "message": "bug"
+  },
+  "d83d_dc1c": {
+    "message": "ant"
+  },
+  "d83d_dc1d": {
+    "message": "honeybee"
+  },
+  "d83d_dc1e": {
+    "message": "lady beetle"
+  },
+  "d83d_dc1f": {
+    "message": "fish"
+  },
+  "d83d_dc20": {
+    "message": "tropical fish"
+  },
+  "d83d_dc21": {
+    "message": "blowfish"
+  },
+  "d83d_dc22": {
+    "message": "turtle"
+  },
+  "d83d_dc23": {
+    "message": "hatching chick"
+  },
+  "d83d_dc24": {
+    "message": "baby chick face"
+  },
+  "d83d_dc25": {
+    "message": "baby chick"
+  },
+  "d83d_dc26": {
+    "message": "bird"
+  },
+  "d83d_dc27": {
+    "message": "penguin"
+  },
+  "d83d_dc28": {
+    "message": "koala"
+  },
+  "d83d_dc29": {
+    "message": "poodle"
+  },
+  "d83d_dc2a": {
+    "message": "one hump camel"
+  },
+  "d83d_dc2b": {
+    "message": "two hump camel"
+  },
+  "d83d_dc2c": {
+    "message": "dolphin"
+  },
+  "d83d_dc2d": {
+    "message": "mouse face"
+  },
+  "d83d_dc2e": {
+    "message": "cow face"
+  },
+  "d83d_dc2f": {
+    "message": "tiger face"
+  },
+  "d83d_dc30": {
+    "message": "rabbit face"
+  },
+  "d83d_dc31": {
+    "message": "cat face"
+  },
+  "d83d_dc32": {
+    "message": "dragon face"
+  },
+  "d83d_dc33": {
+    "message": "spouting whale"
+  },
+  "d83d_dc34": {
+    "message": "horse face"
+  },
+  "d83d_dc35": {
+    "message": "monkey face"
+  },
+  "d83d_dc36": {
+    "message": "dog face"
+  },
+  "d83d_dc37": {
+    "message": "pig face"
+  },
+  "d83d_dc38": {
+    "message": "frog face"
+  },
+  "d83d_dc39": {
+    "message": "hamster face"
+  },
+  "d83d_dc3a": {
+    "message": "wolf face"
+  },
+  "d83d_dc3b": {
+    "message": "bear face"
+  },
+  "d83d_dc3c": {
+    "message": "panda face"
+  },
+  "d83d_dc3d": {
+    "message": "pig nose"
+  },
+  "d83d_dc3e": {
+    "message": "paw"
+  },
+  "d83d_dc40": {
+    "message": "eyes"
+  },
+  "d83d_dc42": {
+    "message": "ear"
+  },
+  "d83d_dc43": {
+    "message": "nose"
+  },
+  "d83d_dc44": {
+    "message": "mouth"
+  },
+  "d83d_dc45": {
+    "message": "tongue"
+  },
+  "d83d_dc46": {
+    "message": "up finger"
+  },
+  "d83d_dc47": {
+    "message": "down finger"
+  },
+  "d83d_dc48": {
+    "message": "left finger"
+  },
+  "d83d_dc49": {
+    "message": "right finger"
+  },
+  "d83d_dc4a": {
+    "message": "clenched fist"
+  },
+  "d83d_dc4b": {
+    "message": "hand waving"
+  },
+  "d83d_dc4c": {
+    "message": "OK hand sign"
+  },
+  "d83d_dc4d": {
+    "message": "thumbs up"
+  },
+  "d83d_dc4e": {
+    "message": "thumbs down"
+  },
+  "d83d_dc4f": {
+    "message": "hands clapping"
+  },
+  "d83d_dc50": {
+    "message": "open hands"
+  },
+  "d83d_dc51": {
+    "message": "crown"
+  },
+  "d83d_dc52": {
+    "message": "woman's hat"
+  },
+  "d83d_dc53": {
+    "message": "eyeglasses"
+  },
+  "d83d_dc54": {
+    "message": "necktie"
+  },
+  "d83d_dc55": {
+    "message": "T-shirt"
+  },
+  "d83d_dc56": {
+    "message": "trousers"
+  },
+  "d83d_dc57": {
+    "message": "dress"
+  },
+  "d83d_dc58": {
+    "message": "kimono"
+  },
+  "d83d_dc59": {
+    "message": "bikini"
+  },
+  "d83d_dc5a": {
+    "message": "woman's clothes"
+  },
+  "d83d_dc5b": {
+    "message": "purse"
+  },
+  "d83d_dc5c": {
+    "message": "handbag"
+  },
+  "d83d_dc5d": {
+    "message": "pouch"
+  },
+  "d83d_dc5e": {
+    "message": "man's shoe"
+  },
+  "d83d_dc5f": {
+    "message": "athletic shoe"
+  },
+  "d83d_dc60": {
+    "message": "high-heel"
+  },
+  "d83d_dc61": {
+    "message": "woman's sandal"
+  },
+  "d83d_dc62": {
+    "message": "woman's boot"
+  },
+  "d83d_dc63": {
+    "message": "footprint"
+  },
+  "d83d_dc64": {
+    "message": "bust in silhouette"
+  },
+  "d83d_dc65": {
+    "message": "busts in silhouette"
+  },
+  "d83d_dc66": {
+    "message": "boy"
+  },
+  "d83d_dc67": {
+    "message": "girl"
+  },
+  "d83d_dc68": {
+    "message": "man"
+  },
+  "d83d_dc69": {
+    "message": "woman"
+  },
+  "d83d_dc6a": {
+    "message": "family"
+  },
+  "d83d_dc6b": {
+    "message": "man and woman"
+  },
+  "d83d_dc6c": {
+    "message": "two men"
+  },
+  "d83d_dc6d": {
+    "message": "two women"
+  },
+  "d83d_dc6e": {
+    "message": "police officer"
+  },
+  "d83d_dc6f": {
+    "message": "bunny girl"
+  },
+  "d83d_dc70": {
+    "message": "bride"
+  },
+  "d83d_dc71": {
+    "message": "blond person"
+  },
+  "d83d_dc72": {
+    "message": "man with gua pi mao"
+  },
+  "d83d_dc73": {
+    "message": "man with a turban"
+  },
+  "d83d_dc74": {
+    "message": "older man"
+  },
+  "d83d_dc75": {
+    "message": "older woman"
+  },
+  "d83d_dc76": {
+    "message": "baby"
+  },
+  "d83d_dc77": {
+    "message": "construction worker"
+  },
+  "d83d_dc78": {
+    "message": "princess"
+  },
+  "d83d_dc79": {
+    "message": "ogre"
+  },
+  "d83d_dc7a": {
+    "message": "goblin"
+  },
+  "d83d_dc7b": {
+    "message": "ghost"
+  },
+  "d83d_dc7c": {
+    "message": "baby angel"
+  },
+  "d83d_dc7d": {
+    "message": "alien"
+  },
+  "d83d_dc7e": {
+    "message": "alien monster"
+  },
+  "d83d_dc7f": {
+    "message": "imp"
+  },
+  "d83d_dc80": {
+    "message": "skull"
+  },
+  "d83d_dc81": {
+    "message": "information desk"
+  },
+  "d83d_dc82": {
+    "message": "guardsman"
+  },
+  "d83d_dc83": {
+    "message": "dancer"
+  },
+  "d83d_dc84": {
+    "message": "lipstick"
+  },
+  "d83d_dc85": {
+    "message": "nail care"
+  },
+  "d83d_dc86": {
+    "message": "face massage"
+  },
+  "d83d_dc87": {
+    "message": "haircut"
+  },
+  "d83d_dc88": {
+    "message": "barber shop"
+  },
+  "d83d_dc89": {
+    "message": "shot"
+  },
+  "d83d_dc8a": {
+    "message": "pill"
+  },
+  "d83d_dc8b": {
+    "message": "kiss mark"
+  },
+  "d83d_dc8c": {
+    "message": "love letter"
+  },
+  "d83d_dc8d": {
+    "message": "ring"
+  },
+  "d83d_dc8e": {
+    "message": "gem"
+  },
+  "d83d_dc8f": {
+    "message": "kiss"
+  },
+  "d83d_dc90": {
+    "message": "bouquet"
+  },
+  "d83d_dc91": {
+    "message": "couple"
+  },
+  "d83d_dc92": {
+    "message": "wedding chapel"
+  },
+  "d83d_dc93": {
+    "message": "pulsating heart"
+  },
+  "d83d_dc94": {
+    "message": "heart break"
+  },
+  "d83d_dc95": {
+    "message": "two hearts"
+  },
+  "d83d_dc96": {
+    "message": "sparkling heart"
+  },
+  "d83d_dc97": {
+    "message": "growing heart"
+  },
+  "d83d_dc98": {
+    "message": "heart and arrow"
+  },
+  "d83d_dc99": {
+    "message": "blue heart"
+  },
+  "d83d_dc9a": {
+    "message": "green heart"
+  },
+  "d83d_dc9b": {
+    "message": "yellow heart"
+  },
+  "d83d_dc9c": {
+    "message": "purple heart"
+  },
+  "d83d_dc9d": {
+    "message": "heart with ribbon"
+  },
+  "d83d_dc9e": {
+    "message": "revolving hearts"
+  },
+  "d83d_dc9f": {
+    "message": "heart decoration"
+  },
+  "d83d_dca0": {
+    "message": "flower petal"
+  },
+  "d83d_dca1": {
+    "message": "light bulb"
+  },
+  "d83d_dca2": {
+    "message": "anger"
+  },
+  "d83d_dca3": {
+    "message": "bomb"
+  },
+  "d83d_dca4": {
+    "message": "sleepy symbol"
+  },
+  "d83d_dca5": {
+    "message": "collision"
+  },
+  "d83d_dca6": {
+    "message": "splashing sweat"
+  },
+  "d83d_dca7": {
+    "message": "cold sweat"
+  },
+  "d83d_dca8": {
+    "message": "running dash"
+  },
+  "d83d_dca9": {
+    "message": "poop"
+  },
+  "d83d_dcaa": {
+    "message": "biceps"
+  },
+  "d83d_dcab": {
+    "message": "dizzy"
+  },
+  "d83d_dcac": {
+    "message": "speech balloon"
+  },
+  "d83d_dcad": {
+    "message": "thought balloon"
+  },
+  "d83d_dcae": {
+    "message": "flower stamp"
+  },
+  "d83d_dcaf": {
+    "message": "full score"
+  },
+  "d83d_dcb0": {
+    "message": "money bag"
+  },
+  "d83d_dcb1": {
+    "message": "currency exchange"
+  },
+  "d83d_dcb2": {
+    "message": "dollar sign"
+  },
+  "d83d_dcb3": {
+    "message": "credit card"
+  },
+  "d83d_dcb4": {
+    "message": "yen note"
+  },
+  "d83d_dcb5": {
+    "message": "dollar note"
+  },
+  "d83d_dcb6": {
+    "message": "Euro note"
+  },
+  "d83d_dcb7": {
+    "message": "Pound note"
+  },
+  "d83d_dcb8": {
+    "message": "flying money"
+  },
+  "d83d_dcb9": {
+    "message": "rising market"
+  },
+  "d83d_dcba": {
+    "message": "seat"
+  },
+  "d83d_dcbb": {
+    "message": "PC"
+  },
+  "d83d_dcbc": {
+    "message": "briefcase"
+  },
+  "d83d_dcbd": {
+    "message": "mini disc"
+  },
+  "d83d_dcbe": {
+    "message": "floppy disc"
+  },
+  "d83d_dcbf": {
+    "message": "blu-ray"
+  },
+  "d83d_dcc0": {
+    "message": "DVD"
+  },
+  "d83d_dcc1": {
+    "message": "file folder"
+  },
+  "d83d_dcc2": {
+    "message": "open folder"
+  },
+  "d83d_dcc3": {
+    "message": "document"
+  },
+  "d83d_dcc4": {
+    "message": "document"
+  },
+  "d83d_dcc5": {
+    "message": "calendar"
+  },
+  "d83d_dcc6": {
+    "message": "tear-off calendar"
+  },
+  "d83d_dcc7": {
+    "message": "card index"
+  },
+  "d83d_dcc8": {
+    "message": "upward trend"
+  },
+  "d83d_dcc9": {
+    "message": "downward trend"
+  },
+  "d83d_dcca": {
+    "message": "bar graph"
+  },
+  "d83d_dccb": {
+    "message": "clipboard"
+  },
+  "d83d_dccc": {
+    "message": "pushpin"
+  },
+  "d83d_dccd": {
+    "message": "round pushpin"
+  },
+  "d83d_dcce": {
+    "message": "paperclip"
+  },
+  "d83d_dccf": {
+    "message": "straight ruler"
+  },
+  "d83d_dcd0": {
+    "message": "triangle ruler"
+  },
+  "d83d_dcd1": {
+    "message": "bookmark tabs"
+  },
+  "d83d_dcd2": {
+    "message": "ledger"
+  },
+  "d83d_dcd3": {
+    "message": "notebook"
+  },
+  "d83d_dcd4": {
+    "message": "decorated notebook"
+  },
+  "d83d_dcd5": {
+    "message": "closed book"
+  },
+  "d83d_dcd6": {
+    "message": "open book"
+  },
+  "d83d_dcd7": {
+    "message": "green book"
+  },
+  "d83d_dcd8": {
+    "message": "book"
+  },
+  "d83d_dcd9": {
+    "message": "orange book"
+  },
+  "d83d_dcda": {
+    "message": "books"
+  },
+  "d83d_dcdb": {
+    "message": "name badge"
+  },
+  "d83d_dcdc": {
+    "message": "scroll"
+  },
+  "d83d_dcdd": {
+    "message": "memo"
+  },
+  "d83d_dcde": {
+    "message": "phone"
+  },
+  "d83d_dcdf": {
+    "message": "pager"
+  },
+  "d83d_dce0": {
+    "message": "fax"
+  },
+  "d83d_dce1": {
+    "message": "satellite dish"
+  },
+  "d83d_dce2": {
+    "message": "loudspeaker"
+  },
+  "d83d_dce3": {
+    "message": "megaphone"
+  },
+  "d83d_dce4": {
+    "message": "sent mail"
+  },
+  "d83d_dce5": {
+    "message": "Inbox"
+  },
+  "d83d_dce6": {
+    "message": "package"
+  },
+  "d83d_dce7": {
+    "message": "email"
+  },
+  "d83d_dce8": {
+    "message": "incoming mail"
+  },
+  "d83d_dce9": {
+    "message": "outgoing mail"
+  },
+  "d83d_dcea": {
+    "message": "closed mailbox with flag down"
+  },
+  "d83d_dceb": {
+    "message": "closed mailbox with flag up"
+  },
+  "d83d_dcec": {
+    "message": "open mailbox with flag up"
+  },
+  "d83d_dced": {
+    "message": "open mailbox with flag down"
+  },
+  "d83d_dcee": {
+    "message": "postbox"
+  },
+  "d83d_dcef": {
+    "message": "postal horn"
+  },
+  "d83d_dcf0": {
+    "message": "newspaper"
+  },
+  "d83d_dcf1": {
+    "message": "cell phone"
+  },
+  "d83d_dcf2": {
+    "message": "cell phone with arrow"
+  },
+  "d83d_dcf3": {
+    "message": "vibration mode"
+  },
+  "d83d_dcf4": {
+    "message": "phone off"
+  },
+  "d83d_dcf5": {
+    "message": "no cell phone"
+  },
+  "d83d_dcf6": {
+    "message": "mobile signals"
+  },
+  "d83d_dcf7": {
+    "message": "camera"
+  },
+  "d83d_dcf9": {
+    "message": "video cam"
+  },
+  "d83d_dcfa": {
+    "message": "TV"
+  },
+  "d83d_dcfb": {
+    "message": "radio"
+  },
+  "d83d_dcfc": {
+    "message": "video tape"
+  },
+  "d83d_dd00": {
+    "message": "crossed arrows"
+  },
+  "d83d_dd01": {
+    "message": "clockwise arrows"
+  },
+  "d83d_dd02": {
+    "message": "clockwise arrows"
+  },
+  "d83d_dd03": {
+    "message": "reload"
+  },
+  "d83d_dd04": {
+    "message": "anti-clockwise arrows"
+  },
+  "d83d_dd05": {
+    "message": "low brightness"
+  },
+  "d83d_dd06": {
+    "message": "high brightness"
+  },
+  "d83d_dd07": {
+    "message": "no speaking"
+  },
+  "d83d_dd08": {
+    "message": "speaker"
+  },
+  "d83d_dd09": {
+    "message": "speaker with low volume"
+  },
+  "d83d_dd0a": {
+    "message": "speaker with high volume"
+  },
+  "d83d_dd0b": {
+    "message": "battery"
+  },
+  "d83d_dd0c": {
+    "message": "electric plug"
+  },
+  "d83d_dd0d": {
+    "message": "left-tilted magnifying glass"
+  },
+  "d83d_dd0e": {
+    "message": "right-tilted magnifying glass"
+  },
+  "d83d_dd0f": {
+    "message": "lock with an ink pen"
+  },
+  "d83d_dd10": {
+    "message": "closed lock with a key"
+  },
+  "d83d_dd11": {
+    "message": "key"
+  },
+  "d83d_dd12": {
+    "message": "closed lock"
+  },
+  "d83d_dd13": {
+    "message": "open lock"
+  },
+  "d83d_dd14": {
+    "message": "bell"
+  },
+  "d83d_dd15": {
+    "message": "no bell"
+  },
+  "d83d_dd16": {
+    "message": "bookmark"
+  },
+  "d83d_dd17": {
+    "message": "link sign"
+  },
+  "d83d_dd18": {
+    "message": "radio button"
+  },
+  "d83d_dd19": {
+    "message": "back"
+  },
+  "d83d_dd1a": {
+    "message": "end"
+  },
+  "d83d_dd1b": {
+    "message": "ON arrow"
+  },
+  "d83d_dd1c": {
+    "message": "Soon sign"
+  },
+  "d83d_dd1d": {
+    "message": "Top sign"
+  },
+  "d83d_dd1e": {
+    "message": "No one under 18"
+  },
+  "d83d_dd20": {
+    "message": "uppercase letters"
+  },
+  "d83d_dd21": {
+    "message": "lowercase letters"
+  },
+  "d83d_dd22": {
+    "message": "numbers"
+  },
+  "d83d_dd23": {
+    "message": "symbols"
+  },
+  "d83d_dd24": {
+    "message": "Latin Alphabet"
+  },
+  "d83d_dd25": {
+    "message": "fire"
+  },
+  "d83d_dd26": {
+    "message": "flashlight"
+  },
+  "d83d_dd27": {
+    "message": "wrench"
+  },
+  "d83d_dd28": {
+    "message": "hammer"
+  },
+  "d83d_dd29": {
+    "message": "nut and bolt"
+  },
+  "d83d_dd2a": {
+    "message": "cooking knife"
+  },
+  "d83d_dd2b": {
+    "message": "gun"
+  },
+  "d83d_dd2c": {
+    "message": "microscope"
+  },
+  "d83d_dd2d": {
+    "message": "telescope"
+  },
+  "d83d_dd2e": {
+    "message": "crystal ball"
+  },
+  "d83d_dd2f": {
+    "message": "six-pointed star"
+  },
+  "d83d_dd30": {
+    "message": "green and yellow leaf"
+  },
+  "d83d_dd31": {
+    "message": "trident sign"
+  },
+  "d83d_dd32": {
+    "message": "solid frame square button"
+  },
+  "d83d_dd33": {
+    "message": "outlined frame square button"
+  },
+  "d83d_dd34": {
+    "message": "large red circle"
+  },
+  "d83d_dd35": {
+    "message": "large blue circle"
+  },
+  "d83d_dd36": {
+    "message": "large orange diamond"
+  },
+  "d83d_dd37": {
+    "message": "large blue diamond"
+  },
+  "d83d_dd38": {
+    "message": "small orange diamond"
+  },
+  "d83d_dd39": {
+    "message": "small blue diamond"
+  },
+  "d83d_dd3a": {
+    "message": "up triangle"
+  },
+  "d83d_dd3b": {
+    "message": "down triangle"
+  },
+  "d83d_dd3c": {
+    "message": "up triangle button"
+  },
+  "d83d_dd3d": {
+    "message": "down triangle button"
+  },
+  "d83d_dd50": {
+    "message": "1 o'clock"
+  },
+  "d83d_dd51": {
+    "message": "2 o'clock"
+  },
+  "d83d_dd52": {
+    "message": "3 o'clock"
+  },
+  "d83d_dd53": {
+    "message": "4 o'clock"
+  },
+  "d83d_dd54": {
+    "message": "5 o'clock"
+  },
+  "d83d_dd55": {
+    "message": "6 o'clock"
+  },
+  "d83d_dd56": {
+    "message": "7 o'clock"
+  },
+  "d83d_dd57": {
+    "message": "8 o'clock"
+  },
+  "d83d_dd58": {
+    "message": "9 o'clock"
+  },
+  "d83d_dd59": {
+    "message": "10 o'clock"
+  },
+  "d83d_dd5a": {
+    "message": "11 o'clock"
+  },
+  "d83d_dd5b": {
+    "message": "12 o'clock"
+  },
+  "d83d_dd5c": {
+    "message": "one-thirty"
+  },
+  "d83d_dd5d": {
+    "message": "two-thirty"
+  },
+  "d83d_dd5e": {
+    "message": "three-thirty"
+  },
+  "d83d_dd5f": {
+    "message": "four-thirty"
+  },
+  "d83d_dd60": {
+    "message": "five-thirty"
+  },
+  "d83d_dd61": {
+    "message": "six-thirty"
+  },
+  "d83d_dd62": {
+    "message": "seven-thirty"
+  },
+  "d83d_dd63": {
+    "message": "eight-thirty"
+  },
+  "d83d_dd64": {
+    "message": "nine-thirty"
+  },
+  "d83d_dd65": {
+    "message": "ten-thirty"
+  },
+  "d83d_dd66": {
+    "message": "eleven-thirty"
+  },
+  "d83d_dd67": {
+    "message": "twelve-thirty"
+  },
+  "d83d_ddfb": {
+    "message": "Mt. Fuji"
+  },
+  "d83d_ddfc": {
+    "message": "Tokyo Tower"
+  },
+  "d83d_ddfd": {
+    "message": "Statue of Liberty"
+  },
+  "d83d_ddfe": {
+    "message": "Map of Japan"
+  },
+  "d83d_ddff": {
+    "message": "Moyai statue"
+  },
+  "d83d_de00": {
+    "message": "grin"
+  },
+  "d83d_de01": {
+    "message": " grin with smiling eyes"
+  },
+  "d83d_de02": {
+    "message": "tears of joy"
+  },
+  "d83d_de03": {
+    "message": "open mouth smile"
+  },
+  "d83d_de04": {
+    "message": "open mouth smile with smiling eyes"
+  },
+  "d83d_de05": {
+    "message": "cold sweat smile"
+  },
+  "d83d_de06": {
+    "message": " open mouth smile with closed eyes"
+  },
+  "d83d_de07": {
+    "message": "smile with a halo"
+  },
+  "d83d_de08": {
+    "message": "smile with horns"
+  },
+  "d83d_de09": {
+    "message": "winking face"
+  },
+  "d83d_de0a": {
+    "message": "smile"
+  },
+  "d83d_de0b": {
+    "message": "yummy face"
+  },
+  "d83d_de0c": {
+    "message": "relieved face"
+  },
+  "d83d_de0d": {
+    "message": "smiling face"
+  },
+  "d83d_de0e": {
+    "message": "cool"
+  },
+  "d83d_de0f": {
+    "message": "smirk"
+  },
+  "d83d_de10": {
+    "message": "deadpan face"
+  },
+  "d83d_de11": {
+    "message": "expressionless"
+  },
+  "d83d_de12": {
+    "message": "unamused"
+  },
+  "d83d_de13": {
+    "message": "cold sweat"
+  },
+  "d83d_de14": {
+    "message": "pensive face"
+  },
+  "d83d_de15": {
+    "message": "confused face"
+  },
+  "d83d_de16": {
+    "message": "confounded face"
+  },
+  "d83d_de17": {
+    "message": "kissy face"
+  },
+  "d83d_de18": {
+    "message": "throwing kisses"
+  },
+  "d83d_de19": {
+    "message": "kiss and smile"
+  },
+  "d83d_de1a": {
+    "message": "kissing"
+  },
+  "d83d_de1b": {
+    "message": "tongue out"
+  },
+  "d83d_de1c": {
+    "message": "tongue out with a wink"
+  },
+  "d83d_de1d": {
+    "message": "yuck"
+  },
+  "d83d_de1e": {
+    "message": "disappointed"
+  },
+  "d83d_de1f": {
+    "message": "worried"
+  },
+  "d83d_de20": {
+    "message": "angry"
+  },
+  "d83d_de21": {
+    "message": "pouting"
+  },
+  "d83d_de22": {
+    "message": "crying"
+  },
+  "d83d_de23": {
+    "message": "blew it"
+  },
+  "d83d_de24": {
+    "message": "look of triumph"
+  },
+  "d83d_de25": {
+    "message": "whew!"
+  },
+  "d83d_de26": {
+    "message": "frowning face"
+  },
+  "d83d_de27": {
+    "message": "anguished"
+  },
+  "d83d_de28": {
+    "message": "fearful"
+  },
+  "d83d_de29": {
+    "message": "weary"
+  },
+  "d83d_de2a": {
+    "message": "sleepy"
+  },
+  "d83d_de2b": {
+    "message": "tired"
+  },
+  "d83d_de2c": {
+    "message": "grimace"
+  },
+  "d83d_de2d": {
+    "message": "loudly crying"
+  },
+  "d83d_de2e": {
+    "message": "open mouth face"
+  },
+  "d83d_de2f": {
+    "message": "hushed face"
+  },
+  "d83d_de30": {
+    "message": "rushed face"
+  },
+  "d83d_de31": {
+    "message": "fearful face"
+  },
+  "d83d_de32": {
+    "message": "astonished face"
+  },
+  "d83d_de33": {
+    "message": "flushed"
+  },
+  "d83d_de34": {
+    "message": "sleeping"
+  },
+  "d83d_de35": {
+    "message": "dizzy"
+  },
+  "d83d_de36": {
+    "message": "no mouth face"
+  },
+  "d83d_de37": {
+    "message": "face with mask"
+  },
+  "d83d_de38": {
+    "message": "grinning cat face"
+  },
+  "d83d_de39": {
+    "message": "tears of joy cat face"
+  },
+  "d83d_de3a": {
+    "message": "smiling cat face"
+  },
+  "d83d_de3b": {
+    "message": "smiling cat face"
+  },
+  "d83d_de3c": {
+    "message": "wry cat face"
+  },
+  "d83d_de3d": {
+    "message": "kissing cat"
+  },
+  "d83d_de3e": {
+    "message": "pouting cat face"
+  },
+  "d83d_de3f": {
+    "message": "crying cat face"
+  },
+  "d83d_de40": {
+    "message": "weary cat face"
+  },
+  "d83d_de45": {
+    "message": "No good gesture"
+  },
+  "d83d_de46": {
+    "message": "OK gesture"
+  },
+  "d83d_de47": {
+    "message": "i'm sorry"
+  },
+  "d83d_de48": {
+    "message": "see no evil"
+  },
+  "d83d_de49": {
+    "message": "hear no evil"
+  },
+  "d83d_de4a": {
+    "message": "speak no evil"
+  },
+  "d83d_de4b": {
+    "message": "happy person"
+  },
+  "d83d_de4c": {
+    "message": "hooray"
+  },
+  "d83d_de4d": {
+    "message": "frowning person"
+  },
+  "d83d_de4e": {
+    "message": "pouting"
+  },
+  "d83d_de4f": {
+    "message": "folded hands"
+  },
+  "d83d_de80": {
+    "message": "rocket"
+  },
+  "d83d_de81": {
+    "message": "helicopter"
+  },
+  "d83d_de82": {
+    "message": "steam locomotive"
+  },
+  "d83d_de83": {
+    "message": "train"
+  },
+  "d83d_de84": {
+    "message": "high-speed train"
+  },
+  "d83d_de85": {
+    "message": "high-speed train with bullet nose"
+  },
+  "d83d_de86": {
+    "message": "train"
+  },
+  "d83d_de87": {
+    "message": "subway"
+  },
+  "d83d_de88": {
+    "message": "light rail"
+  },
+  "d83d_de89": {
+    "message": "train station"
+  },
+  "d83d_de8a": {
+    "message": "tram"
+  },
+  "d83d_de8b": {
+    "message": "tram car"
+  },
+  "d83d_de8c": {
+    "message": "bus"
+  },
+  "d83d_de8d": {
+    "message": "oncoming bus"
+  },
+  "d83d_de8e": {
+    "message": "trolleybus"
+  },
+  "d83d_de8f": {
+    "message": "bus stop"
+  },
+  "d83d_de90": {
+    "message": "minibus"
+  },
+  "d83d_de91": {
+    "message": "ambulance"
+  },
+  "d83d_de92": {
+    "message": "fire engine"
+  },
+  "d83d_de93": {
+    "message": "police car"
+  },
+  "d83d_de94": {
+    "message": "oncoming police car"
+  },
+  "d83d_de95": {
+    "message": "taxi"
+  },
+  "d83d_de96": {
+    "message": "oncoming taxi"
+  },
+  "d83d_de97": {
+    "message": "car"
+  },
+  "d83d_de98": {
+    "message": "oncoming car"
+  },
+  "d83d_de99": {
+    "message": "RV"
+  },
+  "d83d_de9a": {
+    "message": "delivery truck"
+  },
+  "d83d_de9b": {
+    "message": "lorry"
+  },
+  "d83d_de9c": {
+    "message": "tractor"
+  },
+  "d83d_de9d": {
+    "message": "monorail"
+  },
+  "d83d_de9e": {
+    "message": "mountain railway"
+  },
+  "d83d_de9f": {
+    "message": "suspension railway"
+  },
+  "d83d_dea0": {
+    "message": "mountain cableway"
+  },
+  "d83d_dea1": {
+    "message": "cable car"
+  },
+  "d83d_dea2": {
+    "message": "ship"
+  },
+  "d83d_dea3": {
+    "message": "rowboat"
+  },
+  "d83d_dea4": {
+    "message": "speedboat"
+  },
+  "d83d_dea5": {
+    "message": "horizontal traffic lights"
+  },
+  "d83d_dea6": {
+    "message": "vertical traffic lights"
+  },
+  "d83d_dea7": {
+    "message": "under construction"
+  },
+  "d83d_dea8": {
+    "message": "revolving light"
+  },
+  "d83d_dea9": {
+    "message": "location flag"
+  },
+  "d83d_deaa": {
+    "message": "door"
+  },
+  "d83d_deab": {
+    "message": "No entry sign"
+  },
+  "d83d_deac": {
+    "message": "smoking sign"
+  },
+  "d83d_dead": {
+    "message": "no smoking sign"
+  },
+  "d83d_deae": {
+    "message": "litterbox sign"
+  },
+  "d83d_deaf": {
+    "message": "don't litter sign"
+  },
+  "d83d_deb0": {
+    "message": "drinking water"
+  },
+  "d83d_deb1": {
+    "message": "non-drinking water"
+  },
+  "d83d_deb2": {
+    "message": "bike"
+  },
+  "d83d_deb3": {
+    "message": "no bike"
+  },
+  "d83d_deb4": {
+    "message": "bicyclist"
+  },
+  "d83d_deb5": {
+    "message": "mountain bicyclist"
+  },
+  "d83d_deb6": {
+    "message": "pedestrian"
+  },
+  "d83d_deb7": {
+    "message": "no pedestrians"
+  },
+  "d83d_deb8": {
+    "message": "children crossing"
+  },
+  "d83d_deb9": {
+    "message": "Men sign"
+  },
+  "d83d_deba": {
+    "message": "Women sign"
+  },
+  "d83d_debb": {
+    "message": "restroom sign"
+  },
+  "d83d_debc": {
+    "message": "baby sign"
+  },
+  "d83d_debd": {
+    "message": "toilet"
+  },
+  "d83d_debe": {
+    "message": "water closet"
+  },
+  "d83d_debf": {
+    "message": "shower"
+  },
+  "d83d_dec0": {
+    "message": "bath"
+  },
+  "d83d_dec1": {
+    "message": "bathtub"
+  },
+  "d83d_dec2": {
+    "message": "passport control"
+  },
+  "d83d_dec3": {
+    "message": "customs"
+  },
+  "d83d_dec4": {
+    "message": "baggage claim"
+  },
+  "d83d_dec5": {
+    "message": "left luggage"
+  },
+  "de_ger_settings_page": {
+    "message": "Voki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "de_neo_ger_settings_page": {
+    "message": "Voki\u0161kos \u201eNeo 2\u201c klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "dictionarytoolcategorytitle": {
+    "message": "Kategorija"
+  },
+  "dictionarytoolcommentnewinput": {
+    "message": "K\u043ementaras"
+  },
+  "dictionarytoolcommenttitle": {
+    "message": "K\u043ementaras"
+  },
+  "dictionarytooldeletedictionaryconfirm": {
+    "message": "Ar norite i\u0161trinti \u201e[object Object]\u201c?"
+  },
+  "dictionarytooldeletedictionarytitle": {
+    "message": "I\u0161trinti \u017eodyn\u0105"
+  },
+  "dictionarytooldictionarylisttitle": {
+    "message": "\u017dodynai"
+  },
+  "dictionarytooldictionaryname": {
+    "message": "\u017dodyno pavadinimas"
+  },
+  "dictionarytooldonebutton": {
+    "message": "Atlikta"
+  },
+  "dictionarytoolexportbutton": {
+    "message": "Eksportuoti"
+  },
+  "dictionarytoolimportbutton": {
+    "message": "Importuoti..."
+  },
+  "dictionarytoolmenutitle": {
+    "message": "\u017dodyno tvarkymas"
+  },
+  "dictionarytoolnewdictionarynameplaceholder": {
+    "message": "Naujas \u017eodynas"
+  },
+  "dictionarytoolpagetitle": {
+    "message": "Naudotoj\u0173 \u017eodynai"
+  },
+  "dictionarytoolreadingnewinput": {
+    "message": "Naujas skaitymo tekstas"
+  },
+  "dictionarytoolreadingtitle": {
+    "message": "Skaitymo tekstas"
+  },
+  "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
+    "message": "Pavadinime yra netinkam\u0173 simboli\u0173."
+  },
+  "dictionarytoolstatuserrordictionarynameduplicated": {
+    "message": "Pavadinimas jau yra."
+  },
+  "dictionarytoolstatuserrordictionarynameempty": {
+    "message": "\u012eveskite \u017eodyno pavadinim\u0105."
+  },
+  "dictionarytoolstatuserrordictionarynametoolong": {
+    "message": "Pavadinimas per ilgas."
+  },
+  "dictionarytoolstatuserrordictionarysizelimitexceeded": {
+    "message": "Negalima sukurti daugiau \u017eodyn\u0173."
+  },
+  "dictionarytoolstatuserroremptyfile": {
+    "message": "Failas tu\u0161\u010dias."
+  },
+  "dictionarytoolstatuserrorentrysizelimitexceeded": {
+    "message": "Negalima sukurti daugiau \u012fra\u0161\u0173 \u0161iame \u017eodyne."
+  },
+  "dictionarytoolstatuserrorfilenotfound": {
+    "message": "Nepavyko atidaryti failo."
+  },
+  "dictionarytoolstatuserrorfilesizelimitexceeded": {
+    "message": "Duomen\u0173 dydis vir\u0161ija failo dyd\u017eio limit\u0105."
+  },
+  "dictionarytoolstatuserrorgeneral": {
+    "message": "Operacija nepavyko."
+  },
+  "dictionarytoolstatuserrorimportinvalidentries": {
+    "message": "Nepavyko importuoti kai kuri\u0173 \u017eod\u017ei\u0173."
+  },
+  "dictionarytoolstatuserrorimporttoomanywords": {
+    "message": "Importavimo \u0161altinyje per daug \u017eod\u017ei\u0173."
+  },
+  "dictionarytoolstatuserrorinvalidfileformat": {
+    "message": "Nepavyko nuskaityti failo."
+  },
+  "dictionarytoolstatuserrornoundohistory": {
+    "message": "Neb\u0117ra anuliuojam\u0173 operacij\u0173."
+  },
+  "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
+    "message": "Skaitymo tekste yra netinkam\u0173 simboli\u0173. Galite naudoti ASCII simbolius, hiragana, tariamo garso \u017eym\u0119 (\u309b), pusiau tariamo garso \u017eym\u0119 (\u309c), vidurin\u012f ta\u0161k\u0105 (\u30fb), pailginto garso \u017eym\u0119 (\u30fc), japon\u0173 k. kablel\u012f (\u3001), japon\u0173 k. ta\u0161k\u0105 (\u3002), japon\u0173 k. skliaustelius (\u300c\u300d\u300e\u300f) ir japon\u0173 k. banguot\u0105 br\u016bk\u0161nel\u012f (\u301c)."
+  },
+  "dictionarytoolstatuserrorreadingempty": {
+    "message": "\u012eveskite skaitymo tekst\u0105."
+  },
+  "dictionarytoolstatuserrorreadingtoolong": {
+    "message": "Skaitymo tekstas per ilgas."
+  },
+  "dictionarytoolstatuserrortitleaddentry": {
+    "message": "\u012era\u0161o prid\u0117jimo klaida"
+  },
+  "dictionarytoolstatuserrortitlecreatedictionary": {
+    "message": "\u017dodyno k\u016brimo klaida"
+  },
+  "dictionarytoolstatuserrortitledeletedictionary": {
+    "message": "\u017dodyno pa\u0161alinimo klaida"
+  },
+  "dictionarytoolstatuserrortitledeleteentry": {
+    "message": "\u012era\u0161o pa\u0161alinimo klaida"
+  },
+  "dictionarytoolstatuserrortitleeditentry": {
+    "message": "\u012era\u0161o redagavimo klaida"
+  },
+  "dictionarytoolstatuserrortitleimportdata": {
+    "message": "Importavimo klaida"
+  },
+  "dictionarytoolstatuserrortitlerenamedictionary": {
+    "message": "\u017dodyno pervardijimo klaida"
+  },
+  "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
+    "message": "\u017dodyje yra netinkam\u0173 simboli\u0173."
+  },
+  "dictionarytoolstatuserrorwordempty": {
+    "message": "\u012eveskite \u017eod\u012f."
+  },
+  "dictionarytoolstatuserrorwordtoolong": {
+    "message": "\u017dodis per ilgas."
+  },
+  "dictionarytoolwordnewinput": {
+    "message": "Naujas \u017eodis"
+  },
+  "dictionarytoolwordtitle": {
+    "message": "\u017dodis"
+  },
+  "dismiss_menu": {
+    "message": "dismiss keyboard menu"
+  },
+  "dk_dan_settings_page": {
+    "message": "Dani\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "double_space_period": {
+    "message": "Ta\u0161kas ir tarpas dukart paspaudus"
+  },
+  "down_arrow": {
+    "message": "rodykl\u0117 \u017eemyn"
+  },
+  "ee_est_settings_page": {
+    "message": "Esti\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "emoji_tab_emoticon": {
+    "message": "Emoji category emoticon"
+  },
+  "emoji_tab_face": {
+    "message": "Emoji category face"
+  },
+  "emoji_tab_hot": {
+    "message": "Emoji category hot"
+  },
+  "emoji_tab_nature": {
+    "message": "Emoji category nature"
+  },
+  "emoji_tab_object": {
+    "message": "Emoji category object"
+  },
+  "emoji_tab_place": {
+    "message": "Emoji category place"
+  },
+  "emoji_tab_recent": {
+    "message": "Emoji category recent"
+  },
+  "emoji_tab_symbol": {
+    "message": "Emoji category symbol"
+  },
+  "enable_capitalization": {
+    "message": "Automatinis did\u017ei\u0173j\u0173 raid\u017ei\u0173 ra\u0161ymas"
+  },
+  "enable_completion": {
+    "message": "\u012egalinti u\u017ebaigim\u0105"
+  },
+  "enable_prediction": {
+    "message": "\u012egalinti kito \u017eod\u017eio numatymo funkcij\u0105"
+  },
+  "enter": {
+    "message": "\u012fvedimo klavi\u0161as"
+  },
+  "es_cat_cat_settings_page": {
+    "message": "Katalonieti\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "es_spa_settings_page": {
+    "message": "Ispani\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "fi_fin_settings_page": {
+    "message": "Suomi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "footer_emoji_button": {
+    "message": "perjungti \u012f jaustukus"
+  },
+  "footer_handwriting_button": {
+    "message": "perjungti \u012f ra\u0161ymo ranka funkcij\u0105"
+  },
+  "footer_settings_button": {
+    "message": "atidaryti \u012fvesties metodo nustatymus"
+  },
+  "fr_fra_settings_page": {
+    "message": "Pranc\u016bzi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "fuzzy_pinyin": {
+    "message": "\u012egalinti netiksl\u0173 \u201ePinyin\u201c re\u017eim\u0105"
+  },
+  "gb_dvorak_eng_settings_page": {
+    "message": "JK Dvorako klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "gb_extd_eng_settings_page": {
+    "message": "JK klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "ge_geo_settings_page": {
+    "message": "Gruzini\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "globe": {
+    "message": "perjungti \u012f ankstesn\u0119 klaviat\u016br\u0105"
+  },
+  "got_it": {
+    "message": "Supratau"
+  },
+  "gr_gre_settings_page": {
+    "message": "Graiki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "handwriting_back": {
+    "message": "Atgal"
+  },
+  "handwriting_netowrk_error": {
+    "message": "Apgailestaujame, negalite naudoti ra\u0161ymo ranka funkcijos, nes tinklas yra nepasiekiamas."
+  },
+  "handwriting_privacy_info": {
+    "message": "J\u016bs\u0173 \u012fvestis bus i\u0161si\u0173sta \u012f \u201eGoogle\u201c server\u012f, kad b\u016bt\u0173 atpa\u017eintas tekstas"
+  },
+  "hide_keyboard": {
+    "message": "sl\u0117pti klaviat\u016br\u0105"
+  },
+  "hr_scr_settings_page": {
+    "message": "Kroati\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "hu_hun_settings_page": {
+    "message": "Vengri\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "ie_ga_settings_page": {
+    "message": "Airi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "il_heb_settings_page": {
+    "message": "Hebraji\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "init_lang": {
+    "message": "Pagrindin\u0117 \u012fvesties kalba \u2013 kin\u0173 k."
+  },
+  "init_punc": {
+    "message": "Pagrindinis skyrybos \u017eenklo plotis yra viso dyd\u017eio"
+  },
+  "init_sbc": {
+    "message": "Pagrindinis simbolio plotis yra viso dyd\u017eio"
+  },
+  "input_hangul": {
+    "message": "Hangul re\u017eimas"
+  },
+  "input_hanja": {
+    "message": "Hanja re\u017eimas"
+  },
+  "inputmethod_array": {
+    "message": "\u201eArray\u201c \u012fvesties metodas"
+  },
+  "inputmethod_cangjie": {
+    "message": "\u201eCangjie\u201c \u012fvesties metodas"
+  },
+  "inputmethod_dayi": {
+    "message": "\u201eDayi\u201c \u012fvesties metodas"
+  },
+  "inputmethod_pinyin": {
+    "message": "\u201ePinyin\u201c \u012fvesties metodas"
+  },
+  "inputmethod_quick": {
+    "message": "Spar\u010diosios \u012fvesties metodas"
+  },
+  "inputmethod_traditional_pinyin": {
+    "message": "Tradicin\u0117s kin\u0173 k. \u201ePinyin\u201c \u012fvesties metodas"
+  },
+  "inputmethod_wubi": {
+    "message": "\u201eWubi\u201c \u012fvesties metodas"
+  },
+  "inputmethod_zhuyin": {
+    "message": "\u201eZhuyin\u201c \u012fvesties metodas"
+  },
+  "is_ice_settings_page": {
+    "message": "Islandi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "it_ita_settings_page": {
+    "message": "Itali\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "jp_jpn_settings_page": {
+    "message": "Japoni\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "keyboard_arabic": {
+    "message": "Arabi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_armenian_phonetic": {
+    "message": "Arm\u0117ni\u0161ka fonetin\u0117 klaviat\u016bra"
+  },
+  "keyboard_belarusian": {
+    "message": "Baltarusi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_belgian": {
+    "message": "Belgi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_bengali_phonetic": {
+    "message": "Bengali\u0161ka klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_brazilian": {
+    "message": "Brazili\u0161ka klaviat\u016bra"
+  },
+  "keyboard_bulgarian": {
+    "message": "Bulgari\u0161ka klaviat\u016bra"
+  },
+  "keyboard_bulgarian_phonetic": {
+    "message": "Bulgari\u0161ka fonetin\u0117 klaviat\u016bra"
+  },
+  "keyboard_canadian_english": {
+    "message": "Kanados angli\u0161ka klaviat\u016bra"
+  },
+  "keyboard_canadian_french": {
+    "message": "Kanados pranc\u016bzi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_canadian_multilingual": {
+    "message": "Kanados keli\u0173 kalb\u0173 klaviat\u016bra"
+  },
+  "keyboard_catalan": {
+    "message": "Katalonieti\u0161ka klaviat\u016bra"
+  },
+  "keyboard_croatian": {
+    "message": "Kroati\u0161ka klaviat\u016bra"
+  },
+  "keyboard_czech": {
+    "message": "\u010ceki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_czech_qwerty": {
+    "message": "\u010ceki\u0161ka QWERTY klaviat\u016bra"
+  },
+  "keyboard_danish": {
+    "message": "Dani\u0161ka klaviat\u016bra"
+  },
+  "keyboard_devanagari_phonetic": {
+    "message": "Devanagari klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_estonian": {
+    "message": "Esti\u0161ka klaviat\u016bra"
+  },
+  "keyboard_ethiopic": {
+    "message": "Etiopi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_finnish": {
+    "message": "Suomi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_french": {
+    "message": "Pranc\u016bzi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_georgian": {
+    "message": "Gruzini\u0161ka klaviat\u016bra"
+  },
+  "keyboard_german": {
+    "message": "Voki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_german_neo_2": {
+    "message": "Voki\u0161ka \u201eNeo 2\u201c klaviat\u016bra"
+  },
+  "keyboard_greek": {
+    "message": "Graiki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_gujarati_phonetic": {
+    "message": "Gud\u017earati klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_hebrew": {
+    "message": "Hebraji\u0161ka klaviat\u016bra"
+  },
+  "keyboard_hungarian": {
+    "message": "Vengri\u0161ka klaviat\u016bra"
+  },
+  "keyboard_icelandic": {
+    "message": "Islandi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_inscript": {
+    "message": "Klaviat\u016bra (\u201eInScript\u201c)"
+  },
+  "keyboard_irish": {
+    "message": "Airi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_italian": {
+    "message": "Itali\u0161ka klaviat\u016bra"
+  },
+  "keyboard_itrans": {
+    "message": "Klaviat\u016bra (\u201eItrans\u201c)"
+  },
+  "keyboard_japanese": {
+    "message": "Japoni\u0161ka klaviat\u016bra"
+  },
+  "keyboard_kannada_phonetic": {
+    "message": "Kanadieti\u0161ka klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_kedmanee": {
+    "message": "Klaviat\u016bra (\u201eKedmanee\u201c)"
+  },
+  "keyboard_khmer": {
+    "message": "Khmer\u0173 klaviat\u016bra"
+  },
+  "keyboard_lao": {
+    "message": "Laosie\u010di\u0173 klaviat\u016bra"
+  },
+  "keyboard_latin_american": {
+    "message": "Lotyn\u0173 amerikie\u010di\u0173 klaviat\u016bra"
+  },
+  "keyboard_latvian": {
+    "message": "Latvi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_lithuanian": {
+    "message": "Lietuvi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_malayalam_phonetic": {
+    "message": "Malajali\u0161ka klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_maltese": {
+    "message": "Maltie\u010di\u0173 klaviat\u016bra"
+  },
+  "keyboard_mongolian": {
+    "message": "Mongoli\u0161ka klaviat\u016bra"
+  },
+  "keyboard_myanmar": {
+    "message": "Mianmaro MM3 klaviat\u016bra"
+  },
+  "keyboard_myanmar_myansan": {
+    "message": "Mianmaro Myansan klaviat\u016bra"
+  },
+  "keyboard_nepali_inscript": {
+    "message": "Nepalie\u010di\u0173 klaviat\u016bra (\u201eInScript\u201c)"
+  },
+  "keyboard_nepali_phonetic": {
+    "message": "Nepalie\u010di\u0173 klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_none": {
+    "message": "Klaviat\u016bra"
+  },
+  "keyboard_norwegian": {
+    "message": "Norvegi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_pattachote": {
+    "message": "Klaviat\u016bra (\u201ePattachote\u201c)"
+  },
+  "keyboard_persian": {
+    "message": "Persi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_phonetic": {
+    "message": "Klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_polish": {
+    "message": "Lenki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_portuguese": {
+    "message": "Portugali\u0161ka klaviat\u016bra"
+  },
+  "keyboard_romanian": {
+    "message": "Rumuni\u0161ka klaviat\u016bra"
+  },
+  "keyboard_russian": {
+    "message": "Rusi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_russian_phonetic": {
+    "message": "Rusi\u0161ka fonetin\u0117 klaviat\u016bra"
+  },
+  "keyboard_russian_phonetic_aatseel": {
+    "message": "Rusi\u0161ka fonetin\u0117 (AATSEEL) klaviat\u016bra"
+  },
+  "keyboard_russian_phonetic_yazhert": {
+    "message": "Rusi\u0161ka fonetin\u0117 (\u201eYaZHert\u201c) klaviat\u016bra"
+  },
+  "keyboard_serbian": {
+    "message": "Serbi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_sinhala": {
+    "message": "Sinhal\u0173 klaviat\u016bra"
+  },
+  "keyboard_slovakian": {
+    "message": "Slovaki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_slovenian": {
+    "message": "Slov\u0117ni\u0161ka klaviat\u016bra"
+  },
+  "keyboard_soranikurdish_ar": {
+    "message": "Sorani\u0173 kurd\u0173 arabi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_soranikurdish_en": {
+    "message": "Sorani\u0173 kurd\u0173 angli\u0161ka klaviat\u016bra"
+  },
+  "keyboard_spanish": {
+    "message": "Ispani\u0161ka klaviat\u016bra"
+  },
+  "keyboard_swedish": {
+    "message": "\u0160vedi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_swiss": {
+    "message": "\u0160veicari\u0161ka klaviat\u016bra"
+  },
+  "keyboard_swiss_french": {
+    "message": "\u0160veicarijos pranc\u016bzi\u0161ka klaviat\u016bra"
+  },
+  "keyboard_tamil99": {
+    "message": "Klaviat\u016bra (\u201eTamil99\u201c)"
+  },
+  "keyboard_tamil_inscript": {
+    "message": "Tamili\u0161ka klaviat\u016bra (\u201eInScript\u201c)"
+  },
+  "keyboard_tamil_itrans": {
+    "message": "Tamili\u0161ka klaviat\u016bra (\u201eitrans\u201c)"
+  },
+  "keyboard_tamil_phonetic": {
+    "message": "Tamili\u0161ka klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_tamil_tamil99": {
+    "message": "Tamili\u0161ka klaviat\u016bra (\u201eTamil99\u201c)"
+  },
+  "keyboard_tamil_typewriter": {
+    "message": "Tamili\u0161ka klaviat\u016bra (ra\u0161omosios ma\u0161in\u0117l\u0117s i\u0161d\u0117stymas)"
+  },
+  "keyboard_tcvn": {
+    "message": "Klaviat\u016bra (TCVN)"
+  },
+  "keyboard_telex": {
+    "message": "Klaviat\u016bra (\u0098telekso i\u0161d\u0117stymas)"
+  },
+  "keyboard_telugu_phonetic": {
+    "message": "Telugi\u0161ka klaviat\u016bra (fonetin\u0117)"
+  },
+  "keyboard_thai_kedmanee": {
+    "message": "Tailandieti\u0161ka klaviat\u016bra (\u201eKedmanee\u201c)"
+  },
+  "keyboard_thai_pattachote": {
+    "message": "Tailandieti\u0161ka klaviat\u016bra (\u201ePattachote\u201c)"
+  },
+  "keyboard_thai_tis": {
+    "message": "Tailandieti\u0161ka klaviat\u016bra (TIS 820-2531)"
+  },
+  "keyboard_tis": {
+    "message": "Klaviat\u016bra (TIS 820-2531)"
+  },
+  "keyboard_turkish": {
+    "message": "Turki\u0161ka klaviat\u016bra"
+  },
+  "keyboard_typewriter": {
+    "message": "Klaviat\u016bra (ra\u0161omosios ma\u0161in\u0117l\u0117s i\u0161d\u0117stymas)"
+  },
+  "keyboard_uk": {
+    "message": "JK klaviat\u016bra"
+  },
+  "keyboard_uk_dvorak": {
+    "message": "JK Dvorako klaviat\u016bra"
+  },
+  "keyboard_ukrainian": {
+    "message": "Ukrainieti\u0161ka klaviat\u016bra"
+  },
+  "keyboard_us": {
+    "message": "JAV klaviat\u016bra"
+  },
+  "keyboard_us_colemak": {
+    "message": "JAV \u201eColemak\u201c klaviat\u016bra"
+  },
+  "keyboard_us_dvorak": {
+    "message": "JAV Dvorako klaviat\u016bra"
+  },
+  "keyboard_us_extended": {
+    "message": "JAV i\u0161pl\u0117stin\u0117 klaviat\u016bra"
+  },
+  "keyboard_us_international": {
+    "message": "JAV tarptautin\u0117 klaviat\u016bra"
+  },
+  "keyboard_vietnamese_tcvn": {
+    "message": "Vietnamieti\u0161ka klaviat\u016bra (TCVN)"
+  },
+  "keyboard_vietnamese_telex": {
+    "message": "Vietnamieti\u0161ka klaviat\u016bra (telekso i\u0161d\u0117stymas)"
+  },
+  "keyboard_vietnamese_viqr": {
+    "message": "Vietnamieti\u0161ka klaviat\u016bra (VIQR)"
+  },
+  "keyboard_vietnamese_vni": {
+    "message": "Vietnamieti\u0161ka klaviat\u016bra (VNI)"
+  },
+  "keyboard_viqr": {
+    "message": "Klaviat\u016bra (VIQR)"
+  },
+  "keyboard_vni": {
+    "message": "Klaviat\u016bra (VNI)"
+  },
+  "korean_hanja_display": {
+    "message": "Hanja variant\u0173 re\u017eimas"
+  },
+  "korean_keyboard_layout": {
+    "message": "Kor\u0117jieti\u0161kos klaviat\u016bros i\u0161d\u0117stymas"
+  },
+  "korean_settings_page": {
+    "message": "Kor\u0117jie\u010di\u0173 k. nustatym\u0173 puslapis"
+  },
+  "korean_syllable_input": {
+    "message": "Pasirenkama, ar hangul simbolius \u012fvesti vien\u0105 po kito"
+  },
+  "latam_spa_settings_page": {
+    "message": "Lotyn\u0173 amerikie\u010di\u0173 klaviat\u016bros (ispan\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "latin_settings_page": {
+    "message": "Nustatymai"
+  },
+  "left_arrow": {
+    "message": "rodykl\u0117 kair\u0117n"
+  },
+  "lt_lit_settings_page": {
+    "message": "Lietuvi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "lv_apostrophe_lav_settings_page": {
+    "message": "Latvi\u0161kos klaviat\u016bros (latvi\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "menu_key": {
+    "message": "atidaryti klaviat\u016bros meniu"
+  },
+  "mn_mon_settings_page": {
+    "message": "Mongoli\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "move_page_key_above": {
+    "message": "Naudokite klavi\u0161us \u201e\u2013\u201c ir \u201e=\u201c, jei norite per\u017ei\u016br\u0117ti kandidat\u0173 s\u0105ra\u0161\u0105"
+  },
+  "move_page_key_below": {
+    "message": "Naudokite klavi\u0161us \u201e,\u201c\u00b7ir \u201e.\u201c, jei norite per\u017ei\u016br\u0117ti kandidat\u0173 s\u0105ra\u0161\u0105"
+  },
+  "never_auto_correct": {
+    "message": "I\u0161jungti"
+  },
+  "no_nob_settings_page": {
+    "message": "Norvegi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "pause": {
+    "message": "Pristabdyti"
+  },
+  "physical_auto_correction_level": {
+    "message": "Auto-correction"
+  },
+  "physical_enable_capitalization": {
+    "message": "Auto-capitalization"
+  },
+  "physical_keyboard": {
+    "message": "Physical Keyboard"
+  },
+  "pinyin_settings_page": {
+    "message": "\u201ePinyin\u201c nustatym\u0173 puslapis"
+  },
+  "pl_pol_settings_page": {
+    "message": "Lenki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "pt_por_settings_page": {
+    "message": "Portugali\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "right_arrow": {
+    "message": "rodykl\u0117 de\u0161in\u0117n"
+  },
+  "ro_rum_settings_page": {
+    "message": "Rumuni\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "rs_srp_settings_page": {
+    "message": "Serbi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "ru_phonetic_rus_settings_page": {
+    "message": "Rusi\u0161kos fonetin\u0117s klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "ru_rus_settings_page": {
+    "message": "Rusi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "se_swe_settings_page": {
+    "message": "\u0160vedi\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "shift": {
+    "message": "klavi\u0161as \u201eshift\u201c"
+  },
+  "shift_lock": {
+    "message": "klavi\u0161as \u201eshift\u201c u\u017erakintas"
+  },
+  "show_candidate_mode": {
+    "message": "Atid\u0117ti i\u0161skleid\u017eiamojo pasi\u016blym\u0173 s\u0105ra\u0161o rodym\u0105"
+  },
+  "show_candidates_1000": {
+    "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105 po 1 s"
+  },
+  "show_candidates_2000": {
+    "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105 po 2 s"
+  },
+  "show_candidates_500": {
+    "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105 po 500 ms"
+  },
+  "show_candidates_5000": {
+    "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105 po 5 s"
+  },
+  "show_candidates_backspace": {
+    "message": "Rodyti i\u0161skleid\u017eiam\u0105j\u012f pasi\u016blym\u0173 s\u0105ra\u0161\u0105, kai spaud\u017eiamas naikinimo klavi\u0161as"
+  },
+  "show_hangul_candidate": {
+    "message": "Show Hangul suggestions"
+  },
+  "si_slv_settings_page": {
+    "message": "Slov\u0117ni\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "sk_slo_settings_page": {
+    "message": "Slovaki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "sometimes_auto_correct": {
+    "message": "Vidutinis"
+  },
+  "sound_on_keypress": {
+    "message": "Garsas spaud\u017eiant klavi\u0161us"
+  },
+  "space": {
+    "message": "tarpo klavi\u0161as"
+  },
+  "switch_to": {
+    "message": "perjungti \u012f "
+  },
+  "switch_to_compact_layout": {
+    "message": "Perjungti \u012f kompakti\u0161k\u0105 i\u0161d\u0117stym\u0105"
+  },
+  "switch_to_full_layout": {
+    "message": "Perjungti \u012f vis\u0105 i\u0161d\u0117stym\u0105"
+  },
+  "switch_to_keyboard_prefix": {
+    "message": "perjungti \u012f "
+  },
+  "switched_to": {
+    "message": "perjungta \u012f "
+  },
+  "tab": {
+    "message": "tabuliavimo klavi\u0161as"
+  },
+  "touch_keyboard": {
+    "message": "Jutiklin\u0117 klaviat\u016bra"
+  },
+  "tr_tur_settings_page": {
+    "message": "Turki\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "transliteration_am": {
+    "message": "Transliteracija (salam \u2192 \u1230\u120b\u121d)"
+  },
+  "transliteration_ar": {
+    "message": "Transliteracija (marhaban \u2190 \u0645\u0631\u062d\u0628\u0627)"
+  },
+  "transliteration_be": {
+    "message": "Transliteracija (pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435)"
+  },
+  "transliteration_bg": {
+    "message": "Transliteracija (zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438)"
+  },
+  "transliteration_bn": {
+    "message": "Transliteracija (namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0)"
+  },
+  "transliteration_el": {
+    "message": "Transliteracija (geia \u2192 \u03b3\u03b5\u03b9\u03b1)"
+  },
+  "transliteration_fa": {
+    "message": "Transliteracija (salam \u2190 \u0633\u0644\u0627\u0645)"
+  },
+  "transliteration_gu": {
+    "message": "Transliteracija (namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7)"
+  },
+  "transliteration_he": {
+    "message": "Transliteracija (shalom \u2190 \u05e9\u05dc\u05d5\u05dd)"
+  },
+  "transliteration_hi": {
+    "message": "Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_kn": {
+    "message": "Transliteracija (namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0)"
+  },
+  "transliteration_ml": {
+    "message": "Transliteracija (namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02)"
+  },
+  "transliteration_mr": {
+    "message": "Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930)"
+  },
+  "transliteration_ne": {
+    "message": "Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_or": {
+    "message": "Transliteracija (mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47)"
+  },
+  "transliteration_pa": {
+    "message": "Transliteracija (mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e)"
+  },
+  "transliteration_ru": {
+    "message": "Transliteracija (privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442)"
+  },
+  "transliteration_sa": {
+    "message": "Transliteracija (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+  },
+  "transliteration_si": {
+    "message": "Transliteracija (halo \u2192 \u0dc4\u0dbd\u0ddd)"
+  },
+  "transliteration_sr": {
+    "message": "Transliteracija (zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e)"
+  },
+  "transliteration_ta": {
+    "message": "Transliteracija (vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd)"
+  },
+  "transliteration_te": {
+    "message": "Transliteracija (emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40)"
+  },
+  "transliteration_ti": {
+    "message": "Transliteracija (selam \u2192 \u1230\u120b\u121d)"
+  },
+  "transliteration_uk": {
+    "message": "Transliteracija (pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442)"
+  },
+  "transliteration_ur": {
+    "message": "Transliteracija (salam \u2190 \u0633\u0644\u0627\u0645)"
+  },
+  "transliteration_vi": {
+    "message": "Transliteracija (chao \u2192 ch\u00e0o)"
+  },
+  "ua_ukr_settings_page": {
+    "message": "Ukrainieti\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
+  },
+  "up_arrow": {
+    "message": "rodykl\u0117 auk\u0161tyn"
+  },
+  "us_altgr_intl_eng_settings_page": {
+    "message": "JAV i\u0161pl\u0117stin\u0117s klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_colemak_eng_settings_page": {
+    "message": "JAV \u201eColemak\u201c klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_dvorak_eng_settings_page": {
+    "message": "JAV Dvorako klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_eng_settings_page": {
+    "message": "JAV klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_fil_settings_page": {
+    "message": "JAV klaviat\u016bros (filipinie\u010di\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_ind_settings_page": {
+    "message": "JAV klaviat\u016bros (indonezie\u010di\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_intl_eng_settings_page": {
+    "message": "JAV tarptautin\u0117s klaviat\u016bros (angl\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_intl_nld_settings_page": {
+    "message": "JAV tarptautin\u0117s klaviat\u016bros (oland\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_intl_por_settings_page": {
+    "message": "JAV tarptautin\u0117s klaviat\u016bros (Brazilijos portugal\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "us_msa_settings_page": {
+    "message": "JAV klaviat\u016bros (malajie\u010di\u0173 k.) nustatym\u0173 puslapis"
+  },
+  "user_dict": {
+    "message": "\u012egalinti asmenin\u012f \u017eodyn\u0105"
+  },
+  "user_dict_add": {
+    "message": "Add"
+  },
+  "user_dict_clear": {
+    "message": "Clear All"
+  },
+  "user_dict_done": {
+    "message": "Done"
+  },
+  "user_dict_manage": {
+    "message": "Manage personal dictionary..."
+  },
+  "user_dict_new_word": {
+    "message": "New word"
+  },
+  "user_dict_remove": {
+    "message": "Remove Selected"
+  },
+  "user_dict_sync": {
+    "message": "Sync personal dictionary"
+  },
+  "user_dict_title": {
+    "message": "Personal Dictionary"
+  },
+  "wait": {
+    "message": "Palaukti"
+  },
+  "zhuyin_keyboard_layout": {
+    "message": "Klaviat\u016bros tipas"
+  },
+  "zhuyin_page_size": {
+    "message": "Puslapyje rodom\u0173 kandidat\u0173 skai\u010dius"
+  },
+  "zhuyin_select_keys": {
+    "message": "Pasirinkimo klavi\u0161ai"
+  },
+  "zhuyin_settings_page": {
+    "message": "\u201eZhuyin\u201c nustatym\u0173 puslapis"
+  }
+}

@@ -13,6 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.MenuView');
 
+goog.require('goog.a11y.aria');
+goog.require('goog.a11y.aria.State');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
@@ -113,6 +115,8 @@ MenuView.prototype.createDom = function() {
   var elem = this.getElement();
   goog.dom.classlist.add(elem, Css.MENU_VIEW);
   this.coverElement_ = dom.createDom(goog.dom.TagName.DIV, Css.ALTDATA_COVER);
+  goog.a11y.aria.setState(this.coverElement_, goog.a11y.aria.State.LABEL,
+      chrome.i18n.getMessage('DISMISS_MENU'));
   dom.appendChild(document.body, this.coverElement_);
   goog.style.setElementShown(this.coverElement_, false);
 
@@ -214,7 +218,10 @@ MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
     listItem['name'] = inputMethod['name'];
     listItem['command'] =
         [MenuView.Command.SWITCH_IME, inputMethod['id']];
-    var imeItem = new MenuItem(String(i), listItem, MenuItem.Type.LIST_ITEM);
+    var ariaLabel = chrome.i18n.getMessage('SWITCH_TO_KEYBOARD_PREFIX') +
+        inputMethod['name'];
+    var imeItem = new MenuItem(String(i), listItem, MenuItem.Type.LIST_ITEM,
+        ariaLabel);
     imeItem.render(container);
     if (currentInputMethod == inputMethod['id']) {
       imeItem.check();
@@ -256,26 +263,31 @@ MenuView.prototype.addLayoutSwitcherItem_ = function(key, currentKeysetId,
   }
   var dom = this.getDomHelper();
   // Adds layout switcher.
-  var layoutSwitcher = {};
+  var layoutSwitcherItem;
   if (isCompact) {
-    layoutSwitcher['iconURL'] = 'images/regular_size.png';
-    layoutSwitcher['name'] = chrome.i18n.getMessage('SWITCH_TO_FULL_LAYOUT');
     var fullLayoutId = currentKeysetId.split('.')[0];
-    layoutSwitcher['command'] =
-        [MenuView.Command.SWITCH_KEYSET, fullLayoutId];
+    layoutSwitcherItem = new MenuItem('MenuLayoutSwitcher',
+        {
+          'iconURL': 'images/regular_size.png',
+          'name': chrome.i18n.getMessage('SWITCH_TO_FULL_LAYOUT'),
+          'command': [MenuView.Command.SWITCH_KEYSET, fullLayoutId]
+        },
+        MenuItem.Type.LIST_ITEM,
+        chrome.i18n.getMessage('SWITCH_TO_FULL_LAYOUT'));
   } else {
-    layoutSwitcher['iconURL'] = 'images/compact.png';
-    layoutSwitcher['name'] = chrome.i18n.getMessage('SWITCH_TO_COMPACT_LAYOUT');
     if (goog.array.contains(i18n.input.chrome.inputview.util.KEYSETS_USE_US,
         currentKeysetId)) {
       key.toKeyset = currentKeysetId + '.compact.qwerty';
     }
-    layoutSwitcher['command'] =
-        [MenuView.Command.SWITCH_KEYSET, key.toKeyset];
-
+    layoutSwitcherItem = new MenuItem('MenuLayoutSwitcher',
+        {
+          'iconURL': 'images/compact.png',
+          'name': chrome.i18n.getMessage('SWITCH_TO_COMPACT_LAYOUT'),
+          'command': [MenuView.Command.SWITCH_KEYSET, key.toKeyset]
+        },
+        MenuItem.Type.LIST_ITEM,
+        chrome.i18n.getMessage('SWITCH_TO_COMPACT_LAYOUT'));
   }
-  var layoutSwitcherItem = new MenuItem('MenuLayoutSwitcher', layoutSwitcher,
-      MenuItem.Type.LIST_ITEM);
   layoutSwitcherItem.render(this.getElement());
   goog.style.setSize(layoutSwitcherItem.getElement(), MenuView.WIDTH_,
       MenuView.LIST_ITEM_HEIGHT_);
@@ -303,7 +315,8 @@ MenuView.prototype.addFooterItems_ = function(hasHwt, enableSettings,
     emoji['iconCssClass'] = Css.MENU_FOOTER_EMOJI_BUTTON;
     emoji['command'] = [MenuView.Command.OPEN_EMOJI];
     var emojiFooter = new MenuItem('emoji', emoji,
-        MenuItem.Type.FOOTER_ITEM);
+        MenuItem.Type.FOOTER_ITEM,
+        chrome.i18n.getMessage('FOOTER_EMOJI_BUTTON'));
     emojiFooter.render(footer);
   }
 
@@ -312,7 +325,8 @@ MenuView.prototype.addFooterItems_ = function(hasHwt, enableSettings,
     handWriting['iconCssClass'] = Css.MENU_FOOTER_HANDWRITING_BUTTON;
     handWriting['command'] = [MenuView.Command.OPEN_HANDWRITING];
     var handWritingFooter = new MenuItem('handwriting', handWriting,
-        MenuItem.Type.FOOTER_ITEM);
+        MenuItem.Type.FOOTER_ITEM,
+        chrome.i18n.getMessage('FOOTER_HANDWRITING_BUTTON'));
     handWritingFooter.render(footer);
   }
 
@@ -321,7 +335,8 @@ MenuView.prototype.addFooterItems_ = function(hasHwt, enableSettings,
     setting['iconCssClass'] = Css.MENU_FOOTER_SETTING_BUTTON;
     setting['command'] = [MenuView.Command.OPEN_SETTING];
     var settingFooter = new MenuItem('setting', setting,
-        MenuItem.Type.FOOTER_ITEM);
+        MenuItem.Type.FOOTER_ITEM,
+        chrome.i18n.getMessage('FOOTER_SETTINGS_BUTTON'));
     settingFooter.render(footer);
   }
 

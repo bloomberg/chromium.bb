@@ -39,6 +39,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
     'widthInWeight': 6.45,
     'children': [keyboardContainer],
     'disableCandidateView': true,
+    'disableLongpress': true,
     'widthPercent' : {
          'HORIZONTAL' : 0.56,
          'VERTICAL' : 0.56,

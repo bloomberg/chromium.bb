@@ -13,10 +13,14 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.KeyboardView');
 
+goog.require('goog.Timer');
 goog.require('goog.dom.classlist');
+goog.require('goog.math.Coordinate');
 goog.require('goog.object');
+goog.require('i18n.input.chrome.inputview.Covariance');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.inputview.elements.content.GaussianEstimator');
 goog.require('i18n.input.chrome.inputview.elements.layout.VerticalLayout');
 
 
@@ -138,6 +142,19 @@ KeyboardView.prototype.getViewForKey = function(code) {
  */
 KeyboardView.prototype.setUpNearbyKeys_ = function() {
   var softKeys = goog.object.getValues(this.softKeyMap_);
+  var covariance = new i18n.input.chrome.inputview.Covariance();
+  for (var i = 0; i < softKeys.length; i++) {
+    var key = softKeys[i];
+    key.nearbyKeys = [];
+    key.topLeftCoordinate = goog.style.getClientPosition(key.getElement());
+    key.centerCoordinate = new goog.math.Coordinate(
+        key.topLeftCoordinate.x + key.availableWidth / 2,
+        key.topLeftCoordinate.y + key.availableHeight / 2);
+    key.estimator = new i18n.input.chrome.inputview.elements.content.
+        GaussianEstimator(key.centerCoordinate,
+            covariance.getValue(key.type),
+            key.availableHeight / key.availableWidth);
+  }
   for (var i = 0; i < softKeys.length; i++) {
     var key1 = softKeys[i];
     if (!this.isQualifiedForSpatial_(key1)) {
@@ -145,7 +162,7 @@ KeyboardView.prototype.setUpNearbyKeys_ = function() {
     }
     for (var j = i + 1; j < softKeys.length; j++) {
       var key2 = softKeys[j];
-      if (this.isQualifiedForSpatial_(key2) && this.isNearby(key1, key2)) {
+      if (this.isQualifiedForSpatial_(key2) && this.isNearby_(key1, key2)) {
         // We assume that if key2 is a nearby key for key1, then key1 is
         // also a nearby key for key2.
         key1.nearbyKeys.push(key2);
@@ -180,8 +197,9 @@ KeyboardView.prototype.isQualifiedForSpatial_ = function(key) {
  * @param {!content.SoftKey} key1 .
  * @param {!content.SoftKey} key2 .
  * @return {boolean} .
+ * @private
  */
-KeyboardView.prototype.isNearby = function(key1, key2) {
+KeyboardView.prototype.isNearby_ = function(key1, key2) {
   var key2Center = key2.centerCoordinate;
   var key1Left = key1.topLeftCoordinate.x;
   var key1Right = key1Left + key1.width;
@@ -202,7 +220,7 @@ KeyboardView.prototype.isNearby = function(key1, key2) {
 KeyboardView.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
 
-  this.setUpNearbyKeys_();
+  goog.Timer.callOnce(this.setUpNearbyKeys_.bind(this));
 };
 
 });  // goog.scope

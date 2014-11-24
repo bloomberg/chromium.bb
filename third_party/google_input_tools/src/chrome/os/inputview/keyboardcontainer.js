@@ -94,12 +94,12 @@ KeyboardContainer.PADDING_BOTTOM_ = 7;
 
 
 /**
- * The padding value of handwriting panel.
+ * The margin of the tab style keyset.
  *
  * @type {number}
  * @private
  */
-KeyboardContainer.HANDWRITING_PADDING_ = 22;
+KeyboardContainer.TAB_MARGIN_ = 11;
 
 
 /**
@@ -197,6 +197,9 @@ KeyboardContainer.prototype.switchToKeyset = function(keyset, title,
     var view = this.keysetViewMap[name];
     if (name == keyset) {
       this.candidateView.setVisible(!view.disableCandidateView);
+      // Before setting view visible, activate it first, since activation may
+      // change view keys.
+      view.activate(rawKeyset);
       view.setVisible(true);
       view.update();
       if (view.spaceKey) {
@@ -212,13 +215,20 @@ KeyboardContainer.prototype.switchToKeyset = function(keyset, title,
       if (view instanceof HandwritingView) {
         view.setLanguagecode(languageCode);
       }
-      this.currentKeysetView = view;
+      // Deactivate the last keyset view instance.
+      if (this.currentKeysetView != view) {
+        if (this.currentKeysetView) {
+          this.currentKeysetView.deactivate(lastRawkeyset);
+        }
+        this.currentKeysetView = view;
+      }
       this.candidateView.updateByKeyset(rawKeyset, isPasswordBox,
           goog.i18n.bidi.isRtlLanguage(languageCode));
     } else {
       view.setVisible(false);
     }
   }
+
   return true;
 };
 
@@ -238,14 +248,16 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
   }
   var elem = this.getElement();
 
-  var h;
-  if (this.currentKeysetView.isHandwriting()) {
-    h = height - KeyboardContainer.HANDWRITING_PADDING_;
-    elem.style.paddingBottom = '';
-  } else {
-    h = height - KeyboardContainer.PADDING_BOTTOM_;
-    elem.style.paddingBottom = KeyboardContainer.PADDING_BOTTOM_ + 'px';
+  var h = height;
+  var wrapperMargin = 0;
+  if (this.currentKeysetView.isTabStyle()) {
+    h = height - 2 * KeyboardContainer.TAB_MARGIN_;
+    wrapperMargin = KeyboardContainer.TAB_MARGIN_;
   }
+  this.wrapperDiv_.style.marginTop = this.wrapperDiv_.style.marginBottom =
+      wrapperMargin + 'px';
+  h -= KeyboardContainer.PADDING_BOTTOM_;
+  elem.style.paddingBottom = KeyboardContainer.PADDING_BOTTOM_ + 'px';
 
   var padding = Math.round((width - width * widthPercent) / 2);
   elem.style.paddingLeft = elem.style.paddingRight = padding + 'px';
@@ -301,4 +313,5 @@ KeyboardContainer.prototype.cleanStroke = function() {
     this.currentKeysetView.cleanStroke();
   }
 };
+
 });  // goog.scope
