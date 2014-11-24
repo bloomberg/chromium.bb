@@ -434,70 +434,109 @@ void CanvasRenderingContext2D::restore()
     validateStateStack();
 }
 
-CanvasStyle* CanvasRenderingContext2D::strokeStyle() const
+static inline void convertCanvasStyleToUnionType(CanvasStyle* style, StringOrCanvasGradientOrCanvasPattern& returnValue)
 {
-    return state().m_strokeStyle.get();
+    if (CanvasGradient* gradient = style->canvasGradient()) {
+        returnValue.setCanvasGradient(gradient);
+        return;
+    }
+    if (CanvasPattern* pattern = style->canvasPattern()) {
+        returnValue.setCanvasPattern(pattern);
+        return;
+    }
+    returnValue.setString(style->color());
 }
 
-void CanvasRenderingContext2D::setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle> prpStyle)
+void CanvasRenderingContext2D::strokeStyle(StringOrCanvasGradientOrCanvasPattern& returnValue) const
 {
-    RefPtrWillBeRawPtr<CanvasStyle> style = prpStyle;
+    convertCanvasStyleToUnionType(state().m_strokeStyle.get(), returnValue);
+}
 
-    if (!style)
-        return;
+void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanvasPattern& style)
+{
+    ASSERT(!style.isNull());
 
-    if (state().m_strokeStyle && state().m_strokeStyle->isEquivalentColor(*style))
-        return;
+    String colorString;
+    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle;
+    if (style.isString()) {
+        colorString = style.getAsString();
+        if (colorString == state().m_unparsedStrokeColor)
+            return;
+        RGBA32 parsedColor = 0;
+        if (!parseColorOrCurrentColor(parsedColor, colorString, canvas()))
+            return;
+        if (state().m_strokeStyle->isEquivalentRGBA(parsedColor)) {
+            realizeSaves(nullptr);
+            modifiableState().m_unparsedStrokeColor = colorString;
+            return;
+        }
+        canvasStyle = CanvasStyle::createFromRGBA(parsedColor);
+    } else if (style.isCanvasGradient()) {
+        canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
+    } else if (style.isCanvasPattern()) {
+        RefPtrWillBeRawPtr<CanvasPattern> canvasPattern = style.getAsCanvasPattern();
 
-    if (style->isCurrentColor()) {
-        if (style->hasOverrideAlpha())
-            style = CanvasStyle::createFromRGBA(colorWithOverrideAlpha(currentColor(canvas()), style->overrideAlpha()));
-        else
-            style = CanvasStyle::createFromRGBA(currentColor(canvas()));
-    } else if (canvas()->originClean() && style->canvasPattern() && !style->canvasPattern()->originClean()) {
-        canvas()->setOriginTainted();
+        if (canvas()->originClean() && !canvasPattern->originClean())
+            canvas()->setOriginTainted();
+
+        canvasStyle = CanvasStyle::createFromPattern(canvasPattern);
     }
+
+    ASSERT(canvasStyle);
 
     GraphicsContext* c = drawingContext();
     realizeSaves(c);
-    modifiableState().m_strokeStyle = style.release();
+    modifiableState().m_strokeStyle = canvasStyle.release();
     if (!c)
         return;
     state().m_strokeStyle->applyStrokeColor(c);
-    modifiableState().m_unparsedStrokeColor = String();
+    modifiableState().m_unparsedStrokeColor = colorString;
 }
 
-CanvasStyle* CanvasRenderingContext2D::fillStyle() const
+void CanvasRenderingContext2D::fillStyle(StringOrCanvasGradientOrCanvasPattern& returnValue) const
 {
-    return state().m_fillStyle.get();
+    convertCanvasStyleToUnionType(state().m_fillStyle.get(), returnValue);
 }
 
-void CanvasRenderingContext2D::setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle> prpStyle)
+void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvasPattern& style)
 {
-    RefPtrWillBeRawPtr<CanvasStyle> style = prpStyle;
+    ASSERT(!style.isNull());
 
-    if (!style)
-        return;
+    String colorString;
+    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle;
+    if (style.isString()) {
+        colorString = style.getAsString();
+        if (colorString == state().m_unparsedFillColor)
+            return;
+        RGBA32 parsedColor = 0;
+        if (!parseColorOrCurrentColor(parsedColor, colorString, canvas()))
+            return;
+        if (state().m_fillStyle->isEquivalentRGBA(parsedColor)) {
+            realizeSaves(nullptr);
+            modifiableState().m_unparsedFillColor = colorString;
+            return;
+        }
+        canvasStyle = CanvasStyle::createFromRGBA(parsedColor);
+    } else if (style.isCanvasGradient()) {
+        canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
+    } else if (style.isCanvasPattern()) {
+        RefPtrWillBeRawPtr<CanvasPattern> canvasPattern = style.getAsCanvasPattern();
 
-    if (state().m_fillStyle && state().m_fillStyle->isEquivalentColor(*style))
-        return;
+        if (canvas()->originClean() && !canvasPattern->originClean())
+            canvas()->setOriginTainted();
 
-    if (style->isCurrentColor()) {
-        if (style->hasOverrideAlpha())
-            style = CanvasStyle::createFromRGBA(colorWithOverrideAlpha(currentColor(canvas()), style->overrideAlpha()));
-        else
-            style = CanvasStyle::createFromRGBA(currentColor(canvas()));
-    } else if (canvas()->originClean() && style->canvasPattern() && !style->canvasPattern()->originClean()) {
-        canvas()->setOriginTainted();
+        canvasStyle = CanvasStyle::createFromPattern(canvasPattern);
     }
+
+    ASSERT(canvasStyle);
 
     GraphicsContext* c = drawingContext();
     realizeSaves(c);
-    modifiableState().m_fillStyle = style.release();
+    modifiableState().m_fillStyle = canvasStyle.release();
     if (!c)
         return;
     state().m_fillStyle->applyFillColor(c);
-    modifiableState().m_unparsedFillColor = String();
+    modifiableState().m_unparsedFillColor = colorString;
 }
 
 float CanvasRenderingContext2D::lineWidth() const

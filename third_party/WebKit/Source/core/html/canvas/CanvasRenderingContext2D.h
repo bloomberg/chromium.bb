@@ -79,11 +79,11 @@ public:
     }
     virtual ~CanvasRenderingContext2D();
 
-    CanvasStyle* strokeStyle() const;
-    void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
+    void strokeStyle(StringOrCanvasGradientOrCanvasPattern&) const;
+    void setStrokeStyle(const StringOrCanvasGradientOrCanvasPattern&);
 
-    CanvasStyle* fillStyle() const;
-    void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
+    void fillStyle(StringOrCanvasGradientOrCanvasPattern&) const;
+    void setFillStyle(const StringOrCanvasGradientOrCanvasPattern&);
 
     float lineWidth() const;
     void setLineWidth(float);

@@ -43,64 +43,34 @@ namespace blink {
     class CanvasStyle final : public RefCountedWillBeGarbageCollected<CanvasStyle> {
     public:
         static PassRefPtrWillBeRawPtr<CanvasStyle> createFromRGBA(RGBA32 rgba) { return adoptRefWillBeNoop(new CanvasStyle(rgba)); }
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromString(const String& color);
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromStringWithOverrideAlpha(const String& color, float alpha);
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromGrayLevelWithAlpha(float grayLevel, float alpha) { return adoptRefWillBeNoop(new CanvasStyle(grayLevel, alpha)); }
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromRGBAChannels(float r, float g, float b, float a) { return adoptRefWillBeNoop(new CanvasStyle(r, g, b, a)); }
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromCMYKAChannels(float c, float m, float y, float k, float a) { return adoptRefWillBeNoop(new CanvasStyle(c, m, y, k, a)); }
         static PassRefPtrWillBeRawPtr<CanvasStyle> createFromGradient(PassRefPtrWillBeRawPtr<CanvasGradient>);
         static PassRefPtrWillBeRawPtr<CanvasStyle> createFromPattern(PassRefPtrWillBeRawPtr<CanvasPattern>);
 
-        bool isCurrentColor() const { return m_type == CurrentColor || m_type == CurrentColorWithOverrideAlpha; }
-        bool hasOverrideAlpha() const { return m_type == CurrentColorWithOverrideAlpha; }
-        float overrideAlpha() const { ASSERT(m_type == CurrentColorWithOverrideAlpha); return m_overrideAlpha; }
-
-        String color() const { ASSERT(m_type == RGBA || m_type == CMYKA); return Color(m_rgba).serialized(); }
+        String color() const { ASSERT(m_type == ColorRGBA); return Color(m_rgba).serialized(); }
         CanvasGradient* canvasGradient() const { return m_gradient.get(); }
         CanvasPattern* canvasPattern() const { return m_pattern.get(); }
 
         void applyFillColor(GraphicsContext*);
         void applyStrokeColor(GraphicsContext*);
 
-        bool isEquivalentColor(const CanvasStyle&) const;
-        bool isEquivalentRGBA(float r, float g, float b, float a) const;
-        bool isEquivalentCMYKA(float c, float m, float y, float k, float a) const;
+        bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
 
         void trace(Visitor*);
 
     private:
-        enum Type { RGBA, CMYKA, Gradient, ImagePattern, CurrentColor, CurrentColorWithOverrideAlpha };
+        enum Type { ColorRGBA, Gradient, ImagePattern };
 
-        CanvasStyle(Type, float overrideAlpha = 0);
         CanvasStyle(RGBA32 rgba);
-        CanvasStyle(float grayLevel, float alpha);
-        CanvasStyle(float r, float g, float b, float a);
-        CanvasStyle(float c, float m, float y, float k, float a);
         CanvasStyle(PassRefPtrWillBeRawPtr<CanvasGradient>);
         CanvasStyle(PassRefPtrWillBeRawPtr<CanvasPattern>);
 
         Type m_type;
-
-        union {
-            RGBA32 m_rgba;
-            float m_overrideAlpha;
-        };
+        RGBA32 m_rgba;
 
         RefPtrWillBeMember<CanvasGradient> m_gradient;
         RefPtrWillBeMember<CanvasPattern> m_pattern;
-
-        struct CMYKAValues {
-            CMYKAValues() : c(0), m(0), y(0), k(0), a(0) { }
-            CMYKAValues(float cyan, float magenta, float yellow, float black, float alpha) : c(cyan), m(magenta), y(yellow), k(black), a(alpha) { }
-            float c;
-            float m;
-            float y;
-            float k;
-            float a;
-        } m_cmyka;
     };
 
-    RGBA32 currentColor(HTMLCanvasElement*);
     bool parseColorOrCurrentColor(RGBA32& parsedColor, const String& colorString, HTMLCanvasElement*);
 
 } // namespace blink
