@@ -491,6 +491,7 @@ component("cc") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//cc/surfaces:surface_id",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:gpu_memory_buffer_manager",
@@ -647,6 +648,7 @@ source_set("test_support") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -654,6 +656,7 @@ source_set("test_support") {
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
+    "//media",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -801,6 +804,7 @@ test("cc_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//cc/surfaces",
+    "//cc/surfaces:surface_id",
     "//gpu",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",
@@ -811,6 +815,8 @@ test("cc_unittests") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx:test_support",
+    "//ui/gl",
   ]
 }
 
@@ -834,6 +840,7 @@ test("cc_perftests") {
     ":cc",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//gpu",
     "//gpu:test_support",
     "//gpu/command_buffer/common:gles2_utils",
@@ -844,5 +851,6 @@ test("cc_perftests") {
     "//testing/perf",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
 }
