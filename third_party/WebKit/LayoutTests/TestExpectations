@@ -230,7 +230,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/435943 [ XP ] compositing/shadows/shadow-drawing.html [ Pass ImageOnlyFailure ]
+crbug.com/435943 compositing/shadows/shadow-drawing.html [ NeedsRebaseline ]
 
 # Mavericks bots seem to fail lots of tests on occasion.
 # crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
