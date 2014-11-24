@@ -279,7 +279,6 @@ namespace blink {
         void setAttribute(const QualifiedName&, AttributeMatchType);
         void setArgument(const AtomicString&);
         void setSelectorList(PassOwnPtr<CSSSelectorList>);
-        void setMatchUserAgentOnly();
 
         bool parseNth() const;
         bool matchNth(int count) const;
