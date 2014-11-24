@@ -83,13 +83,10 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   // Importing is a little more involved than exporting, as we must first
   // PKCS#8 decode the input, and then import the EVP_PKEY from Private Key
   // Info structure returned.
-  //
-  // TODO(davidben): This should check that |ptr| advanced to the end of |input|
-  // to ensure there is no trailing data.
   const uint8_t* ptr = &input[0];
   ScopedPKCS8_PRIV_KEY_INFO p8inf(
       d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, input.size()));
-  if (!p8inf.get())
+  if (!p8inf.get() || ptr != &input[0] + input.size())
     return NULL;
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);

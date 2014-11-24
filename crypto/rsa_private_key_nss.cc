@@ -278,29 +278,37 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  SECItem der_private_key_info;
-  der_private_key_info.data = const_cast<unsigned char*>(&input.front());
-  der_private_key_info.len = input.size();
-  // Allow the private key to be used for key unwrapping, data decryption,
-  // and signature generation.
-  const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
-                                 KU_DIGITAL_SIGNATURE;
-  // TODO(davidben): PK11_ImportDERPrivateKeyInfoAndReturnKey calls NSS's
-  // SEC_ASN1DecodeItem which does not enforce that there is no trailing
-  // data.
-  SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(
-      slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
-      key_usage, &result->key_, NULL);
-  if (rv != SECSuccess) {
+  ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!arena) {
     NOTREACHED();
     return NULL;
   }
 
-  result->public_key_ = SECKEY_ConvertToPublicKey(result->key_);
-  if (!result->public_key_) {
-    NOTREACHED();
+  // Excess data is illegal, but NSS silently accepts it, so first ensure that
+  // |input| consists of a single ASN.1 element.
+  SECItem input_item;
+  input_item.data = const_cast<unsigned char*>(&input.front());
+  input_item.len = input.size();
+  SECItem der_private_key_info;
+  SECStatus rv = SEC_QuickDERDecodeItem(arena.get(), &der_private_key_info,
+                                        SEC_ASN1_GET(SEC_AnyTemplate),
+                                        &input_item);
+  if (rv != SECSuccess)
     return NULL;
-  }
+
+  // Allow the private key to be used for key unwrapping, data decryption,
+  // and signature generation.
+  const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
+                                 KU_DIGITAL_SIGNATURE;
+  rv = PK11_ImportDERPrivateKeyInfoAndReturnKey(
+      slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
+      key_usage, &result->key_, NULL);
+  if (rv != SECSuccess)
+    return NULL;
+
+  result->public_key_ = SECKEY_ConvertToPublicKey(result->key_);
+  if (!result->public_key_)
+    return NULL;
 
   return result.release();
 }

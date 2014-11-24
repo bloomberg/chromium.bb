@@ -150,6 +150,20 @@ TEST(RSAPrivateKeyUnitTest, CopyTest) {
   ASSERT_EQ(input, privkey_copy);
 }
 
+// Test that CreateFromPrivateKeyInfo fails if there is extra data after the RSA
+// key.
+TEST(RSAPrivateKeyUnitTest, ExtraData) {
+  std::vector<uint8> input(
+      kTestPrivateKeyInfo, kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
+  input.push_back(0);
+
+  scoped_ptr<crypto::RSAPrivateKey> key(
+      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+
+  // Import should fail.
+  EXPECT_FALSE(key);
+}
+
 
 // Verify that generated public keys look good. This test data was generated
 // with the openssl command line tool.
