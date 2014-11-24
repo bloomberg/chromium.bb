@@ -774,8 +774,6 @@
       'push_messaging/PushEvent.h',
       'push_messaging/PushManager.cpp',
       'push_messaging/PushManager.h',
-      'push_messaging/PushPermissionRequestCallbacks.cpp',
-      'push_messaging/PushPermissionRequestCallbacks.h',
       'push_messaging/PushPermissionStatusCallback.cpp',
       'push_messaging/PushPermissionStatusCallback.h',
       'push_messaging/PushRegistration.cpp',
