@@ -85,7 +85,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_externallyAllocatedMemory(0)
     , m_originClean(true)
     , m_didFailToCreateImageBuffer(false)
-    , m_didClearImageBuffer(false)
+    , m_imageBufferIsClear(false)
 {
 }
 
@@ -196,6 +196,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
 {
     if (rect.isEmpty())
         return;
+    m_imageBufferIsClear = false;
     clearCopiedImage();
     if (m_dirtyRect.isEmpty())
         blink::Platform::current()->currentThread()->addTaskObserver(this);
@@ -294,8 +295,10 @@ void HTMLCanvasElement::reset()
     // If the size of an existing buffer matches, we can just clear it instead of reallocating.
     // This optimization is only done for 2D canvases for now.
     if (hadImageBuffer && oldSize == newSize && m_context && m_context->is2d()) {
-        if (!m_didClearImageBuffer)
-            clearImageBuffer();
+        if (!m_imageBufferIsClear) {
+            m_imageBufferIsClear = true;
+            toCanvasRenderingContext2D(m_context.get())->clearRect(0, 0, width(), height());
+        }
         return;
     }
 
@@ -551,7 +554,7 @@ void HTMLCanvasElement::createImageBufferInternal()
     ASSERT(!m_contextStateSaver);
 
     m_didFailToCreateImageBuffer = true;
-    m_didClearImageBuffer = true;
+    m_imageBufferIsClear = true;
 
     IntSize deviceSize = size();
     if (deviceSize.width() * deviceSize.height() > MaxCanvasArea)
@@ -684,21 +687,6 @@ Image* HTMLCanvasElement::copiedImage() const
     return m_copiedImage.get();
 }
 
-void HTMLCanvasElement::clearImageBuffer()
-{
-    ASSERT(hasImageBuffer() && !m_didFailToCreateImageBuffer);
-    ASSERT(!m_didClearImageBuffer);
-    ASSERT(m_context);
-
-    m_didClearImageBuffer = true;
-
-    if (m_context->is2d()) {
-        // No need to undo transforms/clip/etc. because we are called right
-        // after the context is reset.
-        toCanvasRenderingContext2D(m_context.get())->clearRect(0, 0, width(), height());
-    }
-}
-
 void HTMLCanvasElement::discardImageBuffer()
 {
     m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
@@ -718,7 +706,6 @@ void HTMLCanvasElement::clearCopiedImage()
         m_copiedImage.clear();
         updateExternallyAllocatedMemory();
     }
-    m_didClearImageBuffer = false;
 }
 
 AffineTransform HTMLCanvasElement::baseTransform() const

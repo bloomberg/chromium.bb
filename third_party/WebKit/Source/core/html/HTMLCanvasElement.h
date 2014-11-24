@@ -177,7 +177,6 @@ private:
     PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
     void createImageBufferInternal();
-    void clearImageBuffer();
     bool shouldUseDisplayList(const IntSize& deviceSize);
 
     void resetDirtyRect();
@@ -207,7 +206,7 @@ private:
     // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to allocate an imageBuffer
     // after the first attempt failed.
     mutable bool m_didFailToCreateImageBuffer;
-    mutable bool m_didClearImageBuffer;
+    bool m_imageBufferIsClear;
     OwnPtr<ImageBuffer> m_imageBuffer;
     mutable OwnPtr<GraphicsContextStateSaver> m_contextStateSaver;
 
