@@ -111,6 +111,7 @@ protected:
         document->animationClock().updateTime(time);
         document->compositorPendingAnimations().update(false);
         timeline->serviceAnimations(TimingUpdateForAnimationFrame);
+        timeline->scheduleNextService();
     }
 
     RefPtrWillBePersistent<Document> document;

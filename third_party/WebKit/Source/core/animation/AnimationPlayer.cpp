@@ -703,9 +703,12 @@ double AnimationPlayer::timeToEffectChange()
         return std::numeric_limits<double>::infinity();
     if (!m_content)
         return -currentTimeInternal() / m_playbackRate;
-    if (m_playbackRate > 0)
-        return m_content->timeToForwardsEffectChange() / m_playbackRate;
-    return m_content->timeToReverseEffectChange() / -m_playbackRate;
+    double result = m_playbackRate > 0
+        ? m_content->timeToForwardsEffectChange() / m_playbackRate
+        : m_content->timeToReverseEffectChange() / -m_playbackRate;
+    return !hasActiveAnimationsOnCompositor() && m_content->phase() == AnimationNode::PhaseActive
+        ? 0
+        : result;
 }
 
 void AnimationPlayer::cancel()

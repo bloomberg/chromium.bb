@@ -122,8 +122,6 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     m_timing->cancelWake();
 
-    double timeToNextEffect = std::numeric_limits<double>::infinity();
-
     WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> players;
     players.reserveInitialCapacity(m_playersNeedingUpdate.size());
     for (RefPtrWillBeMember<AnimationPlayer> player : m_playersNeedingUpdate)
@@ -132,18 +130,27 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
     std::sort(players.begin(), players.end(), AnimationPlayer::hasLowerPriority);
 
     for (AnimationPlayer* player : players) {
-        if (player->update(reason))
-            timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
-        else
+        if (!player->update(reason))
             m_playersNeedingUpdate.remove(player);
     }
 
-    if (timeToNextEffect < s_minimumDelay)
-        m_timing->serviceOnNextFrame();
-    else if (timeToNextEffect != std::numeric_limits<double>::infinity())
-        m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
-
     ASSERT(!hasOutdatedAnimationPlayer());
+}
+
+void AnimationTimeline::scheduleNextService()
+{
+    ASSERT(!hasOutdatedAnimationPlayer());
+
+    double timeToNextEffect = std::numeric_limits<double>::infinity();
+    for (const auto& player : m_playersNeedingUpdate) {
+        timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
+    }
+
+    if (timeToNextEffect < s_minimumDelay) {
+        m_timing->serviceOnNextFrame();
+    } else if (timeToNextEffect != std::numeric_limits<double>::infinity()) {
+        m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
+    }
 }
 
 void AnimationTimeline::AnimationTimelineTiming::wakeAfter(double duration)

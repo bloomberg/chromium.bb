@@ -65,6 +65,7 @@ public:
     ~AnimationTimeline();
 
     void serviceAnimations(TimingUpdateReason);
+    void scheduleNextService();
 
     // Creates a player attached to this timeline, but without a start time.
     AnimationPlayer* createAnimationPlayer(AnimationNode*);

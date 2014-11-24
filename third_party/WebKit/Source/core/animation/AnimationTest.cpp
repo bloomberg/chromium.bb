@@ -354,11 +354,11 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(100);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(199);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(200);
@@ -387,11 +387,11 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(100);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(50, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(149);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(150);
@@ -420,11 +420,11 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(100);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(50, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(149);
-    EXPECT_EQ(0, animation->timeToForwardsEffectChange());
+    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
     player->setCurrentTimeInternal(150);

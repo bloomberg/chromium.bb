@@ -201,7 +201,7 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
             ? start - localTime
             : std::numeric_limits<double>::infinity();
     case PhaseActive:
-        if (forwards && hasActiveAnimationsOnCompositor()) {
+        if (forwards) {
             // Need service to apply fill / fire events.
             const double timeToEnd = end - localTime;
             if (hasEvents()) {
