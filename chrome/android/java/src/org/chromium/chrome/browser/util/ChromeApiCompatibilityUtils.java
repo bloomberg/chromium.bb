@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.util;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
@@ -22,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ChromeApiCompatibilityUtils {
     /**
      * @see android.app.Activity#finishAndRemoveTask()

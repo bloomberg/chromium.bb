@@ -11,12 +11,12 @@
 
     <!-- Website Settings Popup Dimensions -->
     <dimen name="website_settings_popup_padding_sides">16dp</dimen>
-    <dimen name="website_settings_popup_button_text_size">14dp</dimen>
+    <dimen name="website_settings_popup_button_text_size">14sp</dimen>
     <dimen name="website_settings_popup_button_height">36dp</dimen>
     <dimen name="website_settings_popup_button_padding_sides">8dp</dimen>
     <dimen name="website_settings_popup_button_margin_sides">4dp</dimen>
     <dimen name="website_settings_popup_permission_icon_size">24dp</dimen>
-    <dimen name="website_settings_popup_permission_spinner_text_size">16dp</dimen>
+    <dimen name="website_settings_popup_permission_spinner_text_size">16sp</dimen>
 
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>
