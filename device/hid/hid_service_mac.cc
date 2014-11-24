@@ -133,6 +133,11 @@ void PopulateDeviceInfo(io_service_t service, HidDeviceInfo* device_info) {
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
       IOHIDDeviceCreate(kCFAllocatorDefault, service));
+  if (!hid_device) {
+    VLOG(1) << "Unable to create IOHIDDevice object.";
+    return;
+  }
+
   device_info->device_id = service_path;
   device_info->vendor_id =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
@@ -285,6 +290,12 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
       IOHIDDeviceCreate(kCFAllocatorDefault, service));
+  if (!hid_device) {
+    VLOG(1) << "Unable to create IOHIDDevice object.";
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
   IOReturn result = IOHIDDeviceOpen(hid_device, kIOHIDOptionsTypeNone);
   if (result != kIOReturnSuccess) {
     VLOG(1) << "Failed to open device: "
