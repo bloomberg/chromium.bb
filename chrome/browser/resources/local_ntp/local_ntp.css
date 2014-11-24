@@ -167,12 +167,18 @@ body.fakebox-focused #cursor {
   text-align: -webkit-center;
 }
 
+/* For Google page, add space from Fakebox. */
 .classical #most-visited {
   margin-top: 51px;
 }
 
 .md #most-visited {
   margin-top: 64px;
+}
+
+/* Non-Google pages have no Fakebox, so don't need top margin. */
+.non-google-page #most-visited {
+  margin-top: 0;
 }
 
 #mv-tiles {
