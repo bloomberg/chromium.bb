@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
-#include "content/browser/renderer_host/input/gesture_text_selector.h"
+#include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -86,7 +86,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
-      public GestureTextSelectorClient,
+      public StylusTextSelectorClient,
       public TouchSelectionControllerClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
@@ -205,10 +205,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   virtual SkColorType PreferredReadbackFormat() override;
 
-  // GestureTextSelectorClient implementation.
-  virtual void ShowSelectionHandlesAutomatically() override;
-  virtual void SelectRange(float x1, float y1, float x2, float y2) override;
-  virtual void LongPress(base::TimeTicks time, float x, float y) override;
+  // StylusTextSelectorClient implementation.
+  void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
+  void OnStylusSelectUpdate(float x, float y) override;
+  void OnStylusSelectEnd() override;
+  void OnStylusSelectTap(base::TimeTicks time, float x, float y) override;
 
   // TouchSelectionControllerClient implementation.
   virtual bool SupportsAnimation() const override;
@@ -380,7 +381,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   ui::FilteredGestureProvider gesture_provider_;
 
   // Handles gesture based text selection
-  GestureTextSelector gesture_text_selector_;
+  StylusTextSelector stylus_text_selector_;
 
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.

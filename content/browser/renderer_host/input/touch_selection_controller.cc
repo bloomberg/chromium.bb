@@ -55,12 +55,6 @@ TouchSelectionController::~TouchSelectionController() {
 void TouchSelectionController::OnSelectionBoundsChanged(
     const cc::ViewportSelectionBound& start,
     const cc::ViewportSelectionBound& end) {
-  if (!activate_selection_automatically_ &&
-      !activate_insertion_automatically_) {
-    DCHECK_EQ(INPUT_EVENT_TYPE_NONE, response_pending_input_event_);
-    return;
-  }
-
   if (start == start_ && end_ == end)
     return;
 
@@ -68,6 +62,12 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   end_ = end;
   start_orientation_ = ToTouchHandleOrientation(start_.type);
   end_orientation_ = ToTouchHandleOrientation(end_.type);
+
+  if (!activate_selection_automatically_ &&
+      !activate_insertion_automatically_) {
+    DCHECK_EQ(INPUT_EVENT_TYPE_NONE, response_pending_input_event_);
+    return;
+  }
 
   // Ensure that |response_pending_input_event_| is cleared after the method
   // completes, while also making its current value available for the duration
@@ -142,6 +142,18 @@ void TouchSelectionController::OnLongPressEvent() {
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
   ResetCachedValuesIfInactive();
+}
+
+void TouchSelectionController::AllowShowingFromCurrentSelection() {
+  if (is_selection_active_ || is_insertion_active_)
+    return;
+
+  activate_selection_automatically_ = true;
+  activate_insertion_automatically_ = true;
+  if (GetStartPosition() != GetEndPosition())
+    OnSelectionChanged();
+  else if (start_orientation_ == TOUCH_HANDLE_CENTER && selection_editable_)
+    OnInsertionChanged();
 }
 
 void TouchSelectionController::OnTapEvent() {

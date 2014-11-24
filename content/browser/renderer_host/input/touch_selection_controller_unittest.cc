@@ -806,4 +806,40 @@ TEST_F(TouchSelectionControllerTest, SelectionClearOnTap) {
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
 }
 
+TEST_F(TouchSelectionControllerTest, AllowShowingFromCurrentSelection) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  // The selection should not have be activated, as it wasn't yet allowed.
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
+
+  // Now explicitly allow showing from the previously supplied bounds.
+  controller().AllowShowingFromCurrentSelection();
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  // Repeated calls to show from the current selection should be ignored.
+  controller().AllowShowingFromCurrentSelection();
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  // Trying to show from an empty selection will have no result.
+  ClearSelection();
+  EXPECT_EQ(SELECTION_CLEARED, GetLastEventType());
+  controller().AllowShowingFromCurrentSelection();
+  EXPECT_EQ(SELECTION_CLEARED, GetLastEventType());
+
+  // Showing the insertion handle should also be supported.
+  controller().OnSelectionEditable(true);
+  controller().OnSelectionEmpty(false);
+  controller().HideAndDisallowShowingAutomatically();
+  gfx::RectF insertion_rect(5, 5, 0, 10);
+  ChangeInsertion(insertion_rect, visible);
+  controller().AllowShowingFromCurrentSelection();
+  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+}
+
 }  // namespace content

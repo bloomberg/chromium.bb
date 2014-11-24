@@ -66,6 +66,10 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   // showing the selection or insertion handles from subsequent bounds changes.
   void OnLongPressEvent();
 
+  // Allow showing the selection handles from the most recent selection bounds
+  // update (if valid), or a future valid bounds update.
+  void AllowShowingFromCurrentSelection();
+
   // Hide the handles and suppress bounds updates until the next explicit
   // showing allowance.
   void HideAndDisallowShowingAutomatically();

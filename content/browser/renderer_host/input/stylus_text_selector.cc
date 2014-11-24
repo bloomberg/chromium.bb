@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/gesture_text_selector.h"
+#include "content/browser/renderer_host/input/stylus_text_selector.h"
 
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
@@ -33,39 +33,59 @@ scoped_ptr<GestureDetector> CreateGestureDetector(
 
 }  // namespace
 
-GestureTextSelector::GestureTextSelector(GestureTextSelectorClient* client)
+StylusTextSelector::StylusTextSelector(StylusTextSelectorClient* client)
     : client_(client),
       text_selection_triggered_(false),
       secondary_button_pressed_(false),
+      dragging_(false),
+      dragged_(false),
       anchor_x_(0.0f),
       anchor_y_(0.0f) {
   DCHECK(client);
 }
 
-GestureTextSelector::~GestureTextSelector() {
+StylusTextSelector::~StylusTextSelector() {
 }
 
-bool GestureTextSelector::OnTouchEvent(const MotionEvent& event) {
-  if (event.GetAction() == MotionEvent::ACTION_DOWN) {
-    // Only trigger selection on ACTION_DOWN to prevent partial touch or gesture
-    // sequences from being forwarded.
+bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
+  // Only trigger selection on ACTION_DOWN to prevent partial touch or gesture
+  // sequences from being forwarded.
+  if (event.GetAction() == MotionEvent::ACTION_DOWN)
     text_selection_triggered_ = ShouldStartTextSelection(event);
-    secondary_button_pressed_ =
-        event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
-    anchor_x_ = event.GetX();
-    anchor_y_ = event.GetY();
-  }
 
   if (!text_selection_triggered_)
     return false;
 
-  if (event.GetAction() == MotionEvent::ACTION_MOVE) {
-    secondary_button_pressed_ =
-        event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
-    if (!secondary_button_pressed_) {
+  secondary_button_pressed_ =
+      event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
+
+  switch (event.GetAction()) {
+    case MotionEvent::ACTION_DOWN:
+      dragging_ = false;
+      dragged_ = false;
       anchor_x_ = event.GetX();
       anchor_y_ = event.GetY();
-    }
+      break;
+
+    case MotionEvent::ACTION_MOVE:
+      if (!secondary_button_pressed_) {
+        dragging_ = false;
+        anchor_x_ = event.GetX();
+        anchor_y_ = event.GetY();
+      }
+      break;
+
+    case MotionEvent::ACTION_UP:
+    case MotionEvent::ACTION_CANCEL:
+      if (dragged_)
+        client_->OnStylusSelectEnd();
+      dragged_ = false;
+      dragging_ = false;
+      break;
+
+    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::ACTION_POINTER_DOWN:
+      break;
   }
 
   if (!gesture_detector_)
@@ -74,36 +94,40 @@ bool GestureTextSelector::OnTouchEvent(const MotionEvent& event) {
   gesture_detector_->OnTouchEvent(event);
 
   // Always return true, even if |gesture_detector_| technically doesn't
-  // consume the event, to prevent a partial touch stream from being forwarded.
+  // consume the event. This prevents forwarding of a partial touch stream.
   return true;
 }
 
-bool GestureTextSelector::OnSingleTapUp(const MotionEvent& e) {
+bool StylusTextSelector::OnSingleTapUp(const MotionEvent& e) {
   DCHECK(text_selection_triggered_);
-  client_->LongPress(e.GetEventTime(), e.GetX(), e.GetY());
+  DCHECK(!dragging_);
+  client_->OnStylusSelectTap(e.GetEventTime(), e.GetX(), e.GetY());
   return true;
 }
 
-bool GestureTextSelector::OnScroll(const MotionEvent& e1,
-                                   const MotionEvent& e2,
-                                   float distance_x,
-                                   float distance_y) {
+bool StylusTextSelector::OnScroll(const MotionEvent& e1,
+                                  const MotionEvent& e2,
+                                  float distance_x,
+                                  float distance_y) {
   DCHECK(text_selection_triggered_);
 
   // Return if Stylus button is not pressed.
   if (!secondary_button_pressed_)
     return true;
 
-  // TODO(changwan): check if we can show handles after the scroll finishes
-  // instead. Currently it is not possible as ShowSelectionHandles should
-  // be called before we change the selection.
-  client_->ShowSelectionHandlesAutomatically();
-  client_->SelectRange(anchor_x_, anchor_y_, e2.GetX(), e2.GetY());
+  if (!dragging_) {
+    dragging_ = true;
+    dragged_ = true;
+    client_->OnStylusSelectBegin(anchor_x_, anchor_y_, e2.GetX(), e2.GetY());
+  } else {
+    client_->OnStylusSelectUpdate(e2.GetX(), e2.GetY());
+  }
+
   return true;
 }
 
 // static
-bool GestureTextSelector::ShouldStartTextSelection(const MotionEvent& event) {
+bool StylusTextSelector::ShouldStartTextSelection(const MotionEvent& event) {
   DCHECK_GT(event.GetPointerCount(), 0u);
   // Currently we are supporting stylus-only cases.
   const bool is_stylus = event.GetToolType(0) == MotionEvent::TOOL_TYPE_STYLUS;

@@ -18,35 +18,39 @@ class MotionEvent;
 }
 
 namespace content {
-class GestureTextSelectorTest;
+class StylusTextSelectorTest;
 
-// Interface with which GestureTextSelector can select, unselect, show
+// Interface with which the StylusTextSelector conveys drag and tap gestures
+// when the activating button is pressed.
 // selection handles, or long press.
-class CONTENT_EXPORT GestureTextSelectorClient {
+class CONTENT_EXPORT StylusTextSelectorClient {
  public:
-  virtual ~GestureTextSelectorClient() {}
+  virtual ~StylusTextSelectorClient() {}
 
-  virtual void ShowSelectionHandlesAutomatically() = 0;
-  virtual void SelectRange(float x1, float y1, float x2, float y2) = 0;
-  virtual void LongPress(base::TimeTicks time, float x, float y) = 0;
+  // (x0, y0) and (x1, y1) indicate the bounds of the initial selection.
+  virtual void OnStylusSelectBegin(float x0, float y0, float x1, float y1) = 0;
+  virtual void OnStylusSelectUpdate(float x, float y) = 0;
+  virtual void OnStylusSelectEnd() = 0;
+  virtual void OnStylusSelectTap(base::TimeTicks time, float x, float y) = 0;
 };
 
-// A class to handle gesture-based text selection, such as when clicking first
-// button on stylus input. It also generates a synthetic long press gesture on
-// tap so that a word can be selected or the contextual menu can be shown.
-class CONTENT_EXPORT GestureTextSelector : public ui::SimpleGestureListener {
+// Provides stylus-based text selection and interaction, including:
+//   * Selection manipulation when an activating stylus button is pressed and
+//     the stylus is dragged.
+//   * Word selection and context menu activation when the when an activating
+//     stylus button is pressed and the stylus is tapped.
+class CONTENT_EXPORT StylusTextSelector : public ui::SimpleGestureListener {
  public:
-  explicit GestureTextSelector(GestureTextSelectorClient* client);
-  ~GestureTextSelector() override;
+  explicit StylusTextSelector(StylusTextSelectorClient* client);
+  ~StylusTextSelector() override;
 
   // This should be called before |event| is seen by the platform gesture
   // detector or forwarded to web content.
   bool OnTouchEvent(const ui::MotionEvent& event);
 
  private:
-  friend class GestureTextSelectorTest;
-  FRIEND_TEST_ALL_PREFIXES(GestureTextSelectorTest,
-                           ShouldStartTextSelection);
+  friend class StylusTextSelectorTest;
+  FRIEND_TEST_ALL_PREFIXES(StylusTextSelectorTest, ShouldStartTextSelection);
 
   // SimpleGestureListener implementation.
   bool OnSingleTapUp(const ui::MotionEvent& e) override;
@@ -57,14 +61,16 @@ class CONTENT_EXPORT GestureTextSelector : public ui::SimpleGestureListener {
 
   static bool ShouldStartTextSelection(const ui::MotionEvent& event);
 
-  GestureTextSelectorClient* client_;
+  StylusTextSelectorClient* client_;
   bool text_selection_triggered_;
   bool secondary_button_pressed_;
+  bool dragging_;
+  bool dragged_;
   float anchor_x_;
   float anchor_y_;
   scoped_ptr<ui::GestureDetector> gesture_detector_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureTextSelector);
+  DISALLOW_COPY_AND_ASSIGN(StylusTextSelector);
 };
 
 }  // namespace content

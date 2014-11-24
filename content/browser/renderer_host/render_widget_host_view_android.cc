@@ -218,7 +218,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       gesture_provider_(CreateGestureProviderConfig(), this),
-      gesture_text_selector_(this),
+      stylus_text_selector_(this),
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
                                         widget_host->GetProcess()->GetID(),
@@ -643,7 +643,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
       selection_controller_->WillHandleTouchEvent(event))
     return true;
 
-  if (gesture_text_selector_.OnTouchEvent(event))
+  if (stylus_text_selector_.OnTouchEvent(event))
     return true;
 
   if (!gesture_provider_.OnTouchEvent(event))
@@ -1111,6 +1111,12 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
     SelectionEventType event,
     const gfx::PointF& position) {
   DCHECK(content_view_core_);
+  // Showing the selection action bar can alter the current View coordinates in
+  // such a way that the current MotionEvent stream is suddenly shifted in
+  // space. Avoid the associated scroll jump by pre-emptively cancelling gesture
+  // detection; scrolling after the selection is activated is unnecessary.
+  if (event == SelectionEventType::SELECTION_SHOWN)
+    ResetGestureDetection();
   content_view_core_->OnSelectionEvent(event, position);
 }
 
@@ -1484,12 +1490,12 @@ void RenderWidgetHostViewAndroid::OnShowingPastePopup(
   insertion_bound.visible = true;
   insertion_bound.edge_top = point;
   insertion_bound.edge_bottom = point;
-  DismissTextHandles();
-  ShowSelectionHandlesAutomatically();
+  selection_controller_->HideAndDisallowShowingAutomatically();
   selection_controller_->OnSelectionEditable(true);
   selection_controller_->OnSelectionEmpty(true);
   selection_controller_->OnSelectionBoundsChanged(insertion_bound,
                                                   insertion_bound);
+  selection_controller_->AllowShowingFromCurrentSelection();
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
@@ -1712,21 +1718,27 @@ SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
   return kN32_SkColorType;
 }
 
-void RenderWidgetHostViewAndroid::ShowSelectionHandlesAutomatically() {
-  // Fake a long press to allow automatic selection handle showing.
+void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
+                                                      float y0,
+                                                      float x1,
+                                                      float y1) {
+  SelectBetweenCoordinates(gfx::PointF(x0, y0), gfx::PointF(x1, y1));
+}
+
+void RenderWidgetHostViewAndroid::OnStylusSelectUpdate(float x, float y) {
+  MoveRangeSelectionExtent(gfx::PointF(x, y));
+}
+
+void RenderWidgetHostViewAndroid::OnStylusSelectEnd() {
   if (selection_controller_)
-    selection_controller_->OnLongPressEvent();
+    selection_controller_->AllowShowingFromCurrentSelection();
 }
 
-void RenderWidgetHostViewAndroid::SelectRange(
-    float x1, float y1, float x2, float y2) {
-  if (content_view_core_)
-    static_cast<WebContentsImpl*>(content_view_core_->GetWebContents())->
-        SelectRange(gfx::Point(x1, y1), gfx::Point(x2, y2));
-}
-
-void RenderWidgetHostViewAndroid::LongPress(
-    base::TimeTicks time, float x, float y) {
+void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
+                                                    float x,
+                                                    float y) {
+  // Treat the stylus tap as a long press, activating either a word selection or
+  // context menu depending on the targetted content.
   blink::WebGestureEvent long_press = WebGestureEventBuilder::Build(
       blink::WebInputEvent::GestureLongPress,
       (time - base::TimeTicks()).InSecondsF(), x, y);
