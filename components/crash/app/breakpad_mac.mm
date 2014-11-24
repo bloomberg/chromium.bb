@@ -56,12 +56,16 @@ void ClearCrashKeyValue(NSString* key) {
 
 void SetCrashKeyValueImpl(const base::StringPiece& key,
                           const base::StringPiece& value) {
-  SetCrashKeyValue(base::SysUTF8ToNSString(key.as_string()),
-                   base::SysUTF8ToNSString(value.as_string()));
+  @autoreleasepool {
+    SetCrashKeyValue(base::SysUTF8ToNSString(key.as_string()),
+                     base::SysUTF8ToNSString(value.as_string()));
+  }
 }
 
 void ClearCrashKeyValueImpl(const base::StringPiece& key) {
-  ClearCrashKeyValue(base::SysUTF8ToNSString(key.as_string()));
+  @autoreleasepool {
+    ClearCrashKeyValue(base::SysUTF8ToNSString(key.as_string()));
+  }
 }
 
 bool FatalMessageHandler(int severity, const char* file, int line,
