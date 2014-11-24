@@ -6,6 +6,8 @@
   "default_locale": "en",
   "incognito": "split",
   "permissions": [
+    "app.window.ime",
+    "app.window.alpha",
     "input",
     "unlimitedStorage",
     "inputMethodPrivate",
