@@ -297,7 +297,7 @@ scoped_ptr<SkBitmap> IconUtil::CreateSkBitmapFromIconResource(HMODULE module,
 
   gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
       new base::RefCountedStaticMemory(png_data, png_size));
-  return scoped_ptr<SkBitmap>(new SkBitmap(image.AsBitmap()));
+  return make_scoped_ptr(new SkBitmap(image.AsBitmap()));
 }
 
 SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {

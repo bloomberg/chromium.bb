@@ -320,7 +320,7 @@ ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
   ImageSkia* copy = new ImageSkia;
   if (isNull())
-    return scoped_ptr<ImageSkia>(copy);
+    return make_scoped_ptr(copy);
 
   CHECK(CanRead());
 
@@ -333,7 +333,7 @@ scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
   // thread so that other thread can use this.
   if (!copy->isNull())
     copy->storage_->DetachFromThread();
-  return scoped_ptr<ImageSkia>(copy);
+  return make_scoped_ptr(copy);
 }
 
 bool ImageSkia::BackedBySameObjectAs(const gfx::ImageSkia& other) const {

@@ -141,7 +141,7 @@ scoped_ptr<RTreeBase::NodeBase> RTreeBase::Node::RemoveChild(
   DCHECK(i != children_.end());
   children_.weak_erase(i);
 
-  return scoped_ptr<NodeBase>(child_node);
+  return make_scoped_ptr(child_node);
 }
 
 scoped_ptr<RTreeBase::NodeBase> RTreeBase::Node::RemoveAndReturnLastChild() {
