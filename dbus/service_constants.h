@@ -264,7 +264,7 @@ const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
 const char kSetPolicyMethod[] = "SetPolicy";
-const char kSetPowerSource[] = "SetPowerSource";
+const char kSetPowerSourceMethod[] = "SetPowerSource";
 const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
 const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
@@ -299,9 +299,6 @@ enum RequestRestartReason {
   REQUEST_RESTART_FOR_USER = 0,
   REQUEST_RESTART_FOR_UPDATE = 1,
 };
-// Special ID passed via kSetPowerSource to indicate that the battery should
-// provide power.
-const char kBatteryPowerSource[] = "_BATTERY";
 }  // namespace power_manager
 
 namespace chromeos {
