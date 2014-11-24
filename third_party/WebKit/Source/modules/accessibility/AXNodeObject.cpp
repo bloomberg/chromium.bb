@@ -238,7 +238,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
     }
     if (isHTMLSelectElement(*node())) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node());
-        return selectElement.multiple() ? ListBoxRole : PopUpButtonRole;
+        return selectElement.multiple() ? ListBoxRole : ComboBoxRole;
     }
     if (isHTMLTextAreaElement(*node()))
         return TextAreaRole;
