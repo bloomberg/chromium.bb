@@ -12,7 +12,7 @@ InspectorTest.preloadPanel("network");
 
 InspectorTest.recordNetwork = function()
 {
-    WebInspector.panels.network._networkLogView._recordButton.toggled = true;
+    WebInspector.panels.network._networkLogView._recordButton.setToggled(true);
 }
 
 InspectorTest.networkRequests = function()
