@@ -29,18 +29,20 @@ void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
 // be written to.
 class VideoFrameWrapper : public cricket::VideoFrame {
  public:
+  // Create a shallow cricket::VideoFrame wrapper around the
+  // media::VideoFrame. The caller has ownership of the returned frame.
   VideoFrameWrapper(const scoped_refptr<media::VideoFrame>& frame,
                     int64 elapsed_time)
-      : frame_(media::VideoFrame::WrapVideoFrame(
-            frame,
-            frame->visible_rect(),
-            frame->natural_size(),
-            base::Bind(&ReleaseOriginalFrame, frame))),
-        elapsed_time_(elapsed_time) {}
+      : frame_(frame), elapsed_time_(elapsed_time) {}
 
   VideoFrame* Copy() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return new VideoFrameWrapper(frame_, elapsed_time_);
+    return new VideoFrameWrapper(media::VideoFrame::WrapVideoFrame(
+                                     frame_,
+                                     frame_->visible_rect(),
+                                     frame_->natural_size(),
+                                     base::Bind(&ReleaseOriginalFrame, frame_)),
+                                 elapsed_time_);
   }
 
   size_t GetWidth() const override {
@@ -236,45 +238,61 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
   }
 
   cricket::VideoFrame* CreateAliasedFrame(
-      const cricket::CapturedFrame* captured_frame,
-      int dst_width,
-      int dst_height) const override {
+      const cricket::CapturedFrame* input_frame,
+      int cropped_input_width,
+      int cropped_input_height,
+      int output_width,
+      int output_height) const override {
     // Check that captured_frame is actually our frame.
-    DCHECK(captured_frame == &captured_frame_);
+    DCHECK(input_frame == &captured_frame_);
     DCHECK(frame_.get());
 
-    scoped_refptr<media::VideoFrame> video_frame = frame_;
-    // Check if scaling is needed.
-    if (dst_width != frame_->visible_rect().width() ||
-        dst_height != frame_->visible_rect().height()) {
-      video_frame =
-          scaled_frame_pool_.CreateFrame(media::VideoFrame::I420,
-                                         gfx::Size(dst_width, dst_height),
-                                         gfx::Rect(0, 0, dst_width, dst_height),
-                                         gfx::Size(dst_width, dst_height),
-                                         frame_->timestamp());
-      libyuv::I420Scale(frame_->visible_data(media::VideoFrame::kYPlane),
-                        frame_->stride(media::VideoFrame::kYPlane),
-                        frame_->visible_data(media::VideoFrame::kUPlane),
-                        frame_->stride(media::VideoFrame::kUPlane),
-                        frame_->visible_data(media::VideoFrame::kVPlane),
-                        frame_->stride(media::VideoFrame::kVPlane),
-                        frame_->visible_rect().width(),
-                        frame_->visible_rect().height(),
-                        video_frame->data(media::VideoFrame::kYPlane),
-                        video_frame->stride(media::VideoFrame::kYPlane),
-                        video_frame->data(media::VideoFrame::kUPlane),
-                        video_frame->stride(media::VideoFrame::kUPlane),
-                        video_frame->data(media::VideoFrame::kVPlane),
-                        video_frame->stride(media::VideoFrame::kVPlane),
-                        dst_width,
-                        dst_height,
-                        libyuv::kFilterBilinear);
-    }
+    // Create a centered cropped visible rect that preservers aspect ratio for
+    // cropped natural size.
+    gfx::Rect visible_rect = frame_->visible_rect();
+    visible_rect.ClampToCenteredSize(gfx::Size(
+        visible_rect.width() * cropped_input_width / input_frame->width,
+        visible_rect.height() * cropped_input_height / input_frame->height));
 
-    // Create a shallow cricket::VideoFrame wrapper around the
-    // media::VideoFrame. The caller has ownership of the returned frame.
-    return new VideoFrameWrapper(video_frame, captured_frame_.elapsed_time);
+    const gfx::Size output_size(output_width, output_height);
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::WrapVideoFrame(
+            frame_, visible_rect, output_size,
+            base::Bind(&ReleaseOriginalFrame, frame_));
+
+    // If no scaling is needed, return a wrapped version of |frame_| directly.
+    if (video_frame->natural_size() == video_frame->visible_rect().size())
+      return new VideoFrameWrapper(video_frame, captured_frame_.elapsed_time);
+
+    // We need to scale the frame before we hand it over to cricket.
+    scoped_refptr<media::VideoFrame> scaled_frame =
+        scaled_frame_pool_.CreateFrame(media::VideoFrame::I420, output_size,
+                                       gfx::Rect(output_size), output_size,
+                                       frame_->timestamp());
+    libyuv::I420Scale(video_frame->visible_data(media::VideoFrame::kYPlane),
+                      video_frame->stride(media::VideoFrame::kYPlane),
+                      video_frame->visible_data(media::VideoFrame::kUPlane),
+                      video_frame->stride(media::VideoFrame::kUPlane),
+                      video_frame->visible_data(media::VideoFrame::kVPlane),
+                      video_frame->stride(media::VideoFrame::kVPlane),
+                      video_frame->visible_rect().width(),
+                      video_frame->visible_rect().height(),
+                      scaled_frame->data(media::VideoFrame::kYPlane),
+                      scaled_frame->stride(media::VideoFrame::kYPlane),
+                      scaled_frame->data(media::VideoFrame::kUPlane),
+                      scaled_frame->stride(media::VideoFrame::kUPlane),
+                      scaled_frame->data(media::VideoFrame::kVPlane),
+                      scaled_frame->stride(media::VideoFrame::kVPlane),
+                      output_width, output_height, libyuv::kFilterBilinear);
+    return new VideoFrameWrapper(scaled_frame, captured_frame_.elapsed_time);
+  }
+
+  cricket::VideoFrame* CreateAliasedFrame(
+      const cricket::CapturedFrame* input_frame,
+      int output_width,
+      int output_height) const override {
+    return CreateAliasedFrame(input_frame, input_frame->width,
+                              input_frame->height, output_width, output_height);
   }
 
  private:
