@@ -1014,6 +1014,16 @@ remoting.ClientSession.prototype.onRouteChanged_ =
  * @param {boolean} ready True if the connection is ready.
  */
 remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
+  // TODO(jamiewalch): Currently, the logic for determining whether or not the
+  // connection is available is based solely on whether or not any video frames
+  // have been received recently. which leads to poor UX on slow connections.
+  // Re-enable this once crbug.com/435315 has been fixed.
+  var ignoreVideoChannelState = true;
+  if (ignoreVideoChannelState) {
+    console.log('Video channel ' + (ready ? '' : 'not ') + 'ready.');
+    return;
+  }
+
   if (!ready) {
     this.container_.classList.add('session-client-inactive');
   } else {
