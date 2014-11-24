@@ -854,8 +854,7 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
     delete message;
     return false;
   }
-  if (frame_->parent() == NULL &&
-      (is_swapped_out_ || render_view_->is_swapped_out())) {
+  if (is_swapped_out_) {
     if (!SwappedOutMessages::CanSendWhileSwappedOut(message)) {
       delete message;
       return false;
@@ -1118,7 +1117,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   bool is_main_frame = !frame_->parent();
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
-  if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
+  if (!is_swapped_out_) {
     // Swap this RenderFrame out so the frame can navigate to a page rendered by
     // a different process.  This involves running the unload handler and
     // clearing the page.  We also allow this process to exit if there are no
@@ -1141,7 +1140,6 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
       frame_->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
-    // TODO(nasko): Do we need RenderFrameImpl::is_swapped_out_ anymore?
     if (is_main_frame)
       render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
@@ -1921,7 +1919,7 @@ void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {
   // its opener.  We can ignore cases where a swapped out frame clears its
   // opener after hearing about it from the browser, and the browser does not
   // (yet) care about subframe openers.
-  if (render_view_->is_swapped_out_ || frame->parent())
+  if (is_swapped_out_ || frame->parent())
     return;
 
   // Notify WebContents and all its swapped out RenderViews.
@@ -2145,8 +2143,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
   CHECK((ds->request().url() != GURL(kSwappedOutURL)) ||
-        is_swapped_out_ ||
-        render_view_->is_swapped_out()) <<
+        is_swapped_out_) <<
         "Heard swappedout:// when not swapped out.";
 
   // Update the request time if WebKit has better knowledge of it.
@@ -2701,7 +2698,7 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(
   // If we are swapping out, we have already run the beforeunload handler.
   // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
   // at all, to avoid running it twice.
-  if (render_view()->is_swapped_out_)
+  if (is_swapped_out_)
     return true;
 
   // Don't allow further dialogs if we are waiting to swap out, since the
@@ -3227,7 +3224,7 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     blink::WebDOMMessageEvent event) {
   DCHECK(!frame_ || frame_ == target_frame);
 
-  if (!render_view_->is_swapped_out_)
+  if (!is_swapped_out_)
     return false;
 
   ViewMsg_PostMessage_Params params;
@@ -3736,7 +3733,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     // There's no reason to ignore navigations on subframes, since the swap out
     // logic no longer applies.
   } else {
-    if (is_swapped_out_ || render_view_->is_swapped_out()) {
+    if (is_swapped_out_) {
       if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
         // Targeted links may try to navigate a swapped out frame.  Allow the
         // browser process to navigate the tab instead.  Note that it is also
@@ -4112,8 +4109,7 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
       state, pending_history_list_offset, page_id, *is_reload))
     return false;
 
-  if (!render_view_->is_swapped_out_ ||
-      GetWebFrame() != render_view_->webview()->mainFrame())
+  if (!is_swapped_out_ || frame_->parent())
     return true;
 
   // This is a swapped out main frame, so swap the renderer back in.
