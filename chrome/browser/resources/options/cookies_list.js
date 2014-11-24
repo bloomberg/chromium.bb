@@ -41,6 +41,7 @@ cr.define('options', function() {
                           ['certType', 'label_channel_id_type'],
                           ['created', 'label_channel_id_created']],
     'service_worker': [['origin', 'label_service_worker_origin'],
+                       ['size', 'label_service_worker_size'],
                        ['scopes', 'label_service_worker_scopes']],
     'flash_lso': [['domain', 'label_cookie_domain']],
   };

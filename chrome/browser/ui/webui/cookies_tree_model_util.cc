@@ -272,6 +272,8 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
           *node.GetDetailedInfo().service_worker_info;
 
       dict->SetString(kKeyOrigin, service_worker_info.origin.spec());
+      dict->SetString(kKeySize,
+                      ui::FormatBytes(service_worker_info.total_size_bytes));
       base::ListValue* scopes = new base::ListValue;
       for (std::vector<GURL>::const_iterator it =
                service_worker_info.scopes.begin();

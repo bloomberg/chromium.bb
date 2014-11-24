@@ -68,6 +68,8 @@ void CookiesViewHandler::GetLocalizedValues(
       IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL },
     { "label_indexed_db_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
     { "label_service_worker_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_service_worker_size",
+      IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL },
     { "label_service_worker_scopes", IDS_COOKIES_SERVICE_WORKER_SCOPES_LABEL },
     { "label_app_cache_manifest",
       IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL },
