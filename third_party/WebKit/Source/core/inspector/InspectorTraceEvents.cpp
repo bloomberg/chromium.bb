@@ -49,7 +49,7 @@ void setCallStack(TracedValue* value)
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), &stacksEnabled);
     if (!stacksEnabled)
         return;
-    RefPtr<ScriptCallStack> scriptCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
+    RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
     if (scriptCallStack)
         scriptCallStack->toTracedValue(value, "stackTrace");
 }
