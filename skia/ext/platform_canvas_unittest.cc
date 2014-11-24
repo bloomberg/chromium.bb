@@ -414,7 +414,7 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
             platform_bitmap->GetBitmap().colorType());
   EXPECT_TRUE(platform_bitmap->GetBitmap().lockPixelsAreWritable());
   EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->isLocked());
-  EXPECT_EQ(1, platform_bitmap->GetBitmap().pixelRef()->getRefCnt());
+  EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->unique());
 
   *(platform_bitmap->GetBitmap().getAddr32(10, 20)) = 0xDEED1020;
   *(platform_bitmap->GetBitmap().getAddr32(20, 30)) = 0xDEED2030;
@@ -422,8 +422,8 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
   SkBitmap sk_bitmap = platform_bitmap->GetBitmap();
   sk_bitmap.lockPixels();
 
-  EXPECT_EQ(2, platform_bitmap->GetBitmap().pixelRef()->getRefCnt());
-  EXPECT_EQ(2, sk_bitmap.pixelRef()->getRefCnt());
+  EXPECT_FALSE(platform_bitmap->GetBitmap().pixelRef()->unique());
+  EXPECT_FALSE(sk_bitmap.pixelRef()->unique());
 
   EXPECT_EQ(0xDEED1020, *sk_bitmap.getAddr32(10, 20));
   EXPECT_EQ(0xDEED2030, *sk_bitmap.getAddr32(20, 30));
@@ -434,7 +434,7 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
   // the PlatformBitmap.
   platform_bitmap.reset();
 
-  EXPECT_EQ(1, sk_bitmap.pixelRef()->getRefCnt());
+  EXPECT_TRUE(sk_bitmap.pixelRef()->unique());
 
   EXPECT_EQ(0xDEED1020, *sk_bitmap.getAddr32(10, 20));
   EXPECT_EQ(0xDEED2030, *sk_bitmap.getAddr32(20, 30));
