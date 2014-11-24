@@ -21,8 +21,16 @@
 
 namespace blink {
 
-class DOMContentLoadedListener final : public V8AbstractEventListener {
+class DOMContentLoadedListener final : public ProcessingInstruction::DetachableEventListener, public V8AbstractEventListener {
 public:
+    static PassRefPtr<DOMContentLoadedListener> create(ScriptState* scriptState, ProcessingInstruction* pi)
+    {
+        return adoptRef(new DOMContentLoadedListener(scriptState, pi));
+    }
+
+    using V8AbstractEventListener::ref;
+    using V8AbstractEventListener::deref;
+
     virtual bool operator==(const EventListener&)
     {
         return true;
@@ -50,9 +58,14 @@ public:
         DocumentXSLT::applyXSLTransform(document, pi);
     }
 
-    static PassRefPtr<DOMContentLoadedListener> create(ScriptState* scriptState, ProcessingInstruction* pi)
+    virtual void detach() override
     {
-        return adoptRef(new DOMContentLoadedListener(scriptState, pi));
+        m_processingInstruction = nullptr;
+    }
+
+    virtual EventListener* toEventListener() override
+    {
+        return this;
     }
 
 private:
@@ -62,13 +75,22 @@ private:
     {
     }
 
+    virtual void refDetachableEventListener() override { ref(); }
+    virtual void derefDetachableEventListener() override { deref(); }
+
     virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsevent, Event*)
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>();
     }
 
-    RefPtrWillBePersistent<ProcessingInstruction> m_processingInstruction;
+    // If this event listener is attached to a ProcessingInstruction, keep a
+    // weak reference back to it. That ProcessingInstruction is responsible for
+    // detaching itself and clear out the reference.
+    //
+    // FIXME: Oilpan: when EventListener is on the heap, make this a WeakMember<>,
+    // which will remove the need for explicit detachment.
+    ProcessingInstruction* m_processingInstruction;
 };
 
 DocumentXSLT::DocumentXSLT()
@@ -119,10 +141,10 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document,
         return true;
 
     ScriptState* scriptState = ScriptState::forMainWorld(document.frame());
-    RefPtr<EventListener> listener = DOMContentLoadedListener::create(scriptState, pi);
+    RefPtr<DOMContentLoadedListener> listener = DOMContentLoadedListener::create(scriptState, pi);
     document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
     ASSERT(!pi->eventListenerForXSLT());
-    pi->setEventListenerForXSLT(listener);
+    pi->setEventListenerForXSLT(listener.release());
     return true;
 }
 

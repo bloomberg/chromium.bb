@@ -67,6 +67,23 @@ ProcessingInstruction::~ProcessingInstruction()
     if (inDocument() && m_isCSS)
         document().styleEngine()->removeStyleSheetCandidateNode(this);
 #endif
+    clearEventListenerForXSLT();
+}
+
+EventListener* ProcessingInstruction::eventListenerForXSLT()
+{
+    if (!m_listenerForXSLT)
+        return 0;
+
+    return m_listenerForXSLT->toEventListener();
+}
+
+void ProcessingInstruction::clearEventListenerForXSLT()
+{
+    if (m_listenerForXSLT) {
+        m_listenerForXSLT->detach();
+        m_listenerForXSLT.clear();
+    }
 }
 
 String ProcessingInstruction::nodeName() const

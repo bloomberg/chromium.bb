@@ -55,9 +55,26 @@ public:
     bool isLoading() const;
 
     // For XSLT
-    void setEventListenerForXSLT(PassRefPtr<EventListener> listener) { m_listenerForXSLT = listener; }
-    EventListener* eventListenerForXSLT() { return m_listenerForXSLT.get(); }
-    void clearEventListenerForXSLT() { m_listenerForXSLT.clear(); }
+    class DetachableEventListener {
+    public:
+        virtual ~DetachableEventListener() { }
+
+        void ref() { refDetachableEventListener(); }
+        void deref() { derefDetachableEventListener(); }
+
+        virtual EventListener* toEventListener() = 0;
+
+        // Detach event listener from its processing instruction.
+        virtual void detach() = 0;
+
+    private:
+        virtual void refDetachableEventListener() = 0;
+        virtual void derefDetachableEventListener() = 0;
+    };
+
+    void setEventListenerForXSLT(PassRefPtr<DetachableEventListener> listener) { m_listenerForXSLT = listener; }
+    EventListener* eventListenerForXSLT();
+    void clearEventListenerForXSLT();
 
 private:
     ProcessingInstruction(Document&, const String& target, const String& data);
@@ -91,7 +108,7 @@ private:
     bool m_isCSS;
     bool m_isXSL;
 
-    RefPtr<EventListener> m_listenerForXSLT;
+    RefPtr<DetachableEventListener> m_listenerForXSLT;
 };
 
 DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, nodeType() == Node::PROCESSING_INSTRUCTION_NODE);
