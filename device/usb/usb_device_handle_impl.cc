@@ -498,9 +498,8 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
 
 scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer>
 UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(unsigned char endpoint) {
-  unsigned char address = endpoint & LIBUSB_ENDPOINT_ADDRESS_MASK;
-  if (ContainsKey(endpoint_map_, address))
-    return claimed_interfaces_[endpoint_map_[address]];
+  if (ContainsKey(endpoint_map_, endpoint))
+    return claimed_interfaces_[endpoint_map_[endpoint]];
   return NULL;
 }
 
