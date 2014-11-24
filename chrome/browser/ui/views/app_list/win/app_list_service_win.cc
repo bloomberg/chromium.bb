@@ -342,7 +342,28 @@ void AppListServiceWin::CreateShortcut() {
 void AppListServiceWin::ScheduleWarmup() {
   // Post a task to create the app list. This is posted to not impact startup
   // time.
-  const int kInitWindowDelay = 30;
+  /* const */ int kInitWindowDelay = 30;
+
+  // TODO(vadimt): Make kInitWindowDelay const and remove the below switch once
+  // crbug.com/431326 is fixed.
+
+  // Profiler UMA data is reported only for first 30 sec after browser startup.
+  // To make all invocations of AppListServiceWin::LoadProfileForWarmup visible
+  // to the server-side analysis tool, reducing this period to 10 sec in Dev
+  // builds and Canary, where profiler instrumentations are enabled.
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      kInitWindowDelay = 10;
+      break;
+
+    case chrome::VersionInfo::CHANNEL_DEV:
+    case chrome::VersionInfo::CHANNEL_BETA:
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      // Profiler instrumentations are not enabled.
+      break;
+  }
+
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppListServiceWin::LoadProfileForWarmup,
