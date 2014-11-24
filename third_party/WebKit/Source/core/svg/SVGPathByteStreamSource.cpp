@@ -18,17 +18,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPathByteStreamSource.h"
 
 namespace blink {
-
-SVGPathByteStreamSource::SVGPathByteStreamSource(const SVGPathByteStream* stream)
-{
-    ASSERT(stream);
-    m_streamCurrent = stream->begin();
-    m_streamEnd = stream->end();
-}
 
 bool SVGPathByteStreamSource::hasMoreData() const
 {

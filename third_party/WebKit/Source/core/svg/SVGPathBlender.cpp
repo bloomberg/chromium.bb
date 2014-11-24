@@ -27,14 +27,17 @@
 
 namespace blink {
 
-SVGPathBlender::SVGPathBlender()
-    : m_fromSource(nullptr)
-    , m_toSource(nullptr)
-    , m_consumer(nullptr)
+SVGPathBlender::SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer* consumer)
+    : m_fromSource(fromSource)
+    , m_toSource(toSource)
+    , m_consumer(consumer)
     , m_progress(0)
     , m_addTypesCount(0)
     , m_isInFirstHalfOfAnimation(false)
 {
+    ASSERT(m_fromSource);
+    ASSERT(m_toSource);
+    ASSERT(m_consumer);
 }
 
 void SVGPathBlender::trace(Visitor* visitor)
@@ -303,20 +306,14 @@ static inline bool isSegmentEqual(const SVGPathSegType& fromType, const SVGPathS
     return to == from - 1;
 }
 
-bool SVGPathBlender::addAnimatedPath(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer* consumer, unsigned repeatCount)
+bool SVGPathBlender::addAnimatedPath(unsigned repeatCount)
 {
     TemporaryChange<unsigned> change(m_addTypesCount, repeatCount);
-    return blendAnimatedPath(0, fromSource, toSource, consumer);
+    return blendAnimatedPath(0);
 }
 
-bool SVGPathBlender::blendAnimatedPath(float progress, SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer* consumer)
+bool SVGPathBlender::blendAnimatedPath(float progress)
 {
-    ASSERT(fromSource);
-    ASSERT(toSource);
-    ASSERT(consumer);
-    m_fromSource = fromSource;
-    m_toSource = toSource;
-    m_consumer = consumer;
     m_isInFirstHalfOfAnimation = progress < 0.5f;
     m_progress = progress;
 
@@ -397,20 +394,6 @@ bool SVGPathBlender::blendAnimatedPath(float progress, SVGPathSource* fromSource
     }
 
     return true;
-}
-
-void SVGPathBlender::cleanup()
-{
-    ASSERT(m_toSource);
-    ASSERT(m_fromSource);
-    ASSERT(m_consumer);
-
-    m_consumer->cleanup();
-    m_toSource = nullptr;
-    m_fromSource = nullptr;
-    m_consumer = nullptr;
-    m_fromCurrentPoint = FloatPoint();
-    m_toCurrentPoint = FloatPoint();
 }
 
 }

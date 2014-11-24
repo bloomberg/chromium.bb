@@ -50,7 +50,6 @@ public:
 
     virtual void incrementPathSegmentCount() = 0;
     virtual bool continueConsuming() = 0;
-    virtual void cleanup() = 0;
 
     // Used in UnalteredParsing/NormalizedParsing modes.
     virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) = 0;

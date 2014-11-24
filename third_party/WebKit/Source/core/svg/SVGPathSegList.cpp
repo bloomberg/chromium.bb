@@ -82,14 +82,9 @@ const SVGPathByteStream* SVGPathSegList::byteStream() const
         m_byteStream = SVGPathByteStream::create();
 
         if (!Base::isEmpty()) {
-            SVGPathByteStreamBuilder builder;
-            builder.setCurrentByteStream(m_byteStream.get());
-
+            SVGPathByteStreamBuilder builder(*m_byteStream);
             SVGPathSegListSource source(begin(), end());
-
-            SVGPathParser parser;
-            parser.setCurrentConsumer(&builder);
-            parser.setCurrentSource(&source);
+            SVGPathParser parser(&source, &builder);
             parser.parsePathDataFromSource(UnalteredParsing);
         }
     }
@@ -105,15 +100,9 @@ void SVGPathSegList::updateListFromByteStream()
     Base::clear();
 
     if (m_byteStream && !m_byteStream->isEmpty()) {
-        SVGPathSegListBuilder builder;
-        builder.setCurrentSVGPathElement(m_contextElement);
-        builder.setCurrentSVGPathSegList(this);
-
-        SVGPathByteStreamSource source(m_byteStream.get());
-
-        SVGPathParser parser;
-        parser.setCurrentConsumer(&builder);
-        parser.setCurrentSource(&source);
+        SVGPathSegListBuilder builder(m_contextElement, this);
+        SVGPathByteStreamSource source(*m_byteStream);
+        SVGPathParser parser(&source, &builder);
         parser.parsePathDataFromSource(UnalteredParsing);
     }
 
@@ -132,14 +121,9 @@ PassRefPtrWillBeRawPtr<SVGPathSeg> SVGPathSegList::appendItem(PassRefPtrWillBeRa
     RefPtrWillBeRawPtr<SVGPathSeg> item = Base::appendItem(passItem);
 
     if (m_byteStream) {
-        SVGPathByteStreamBuilder builder;
-        builder.setCurrentByteStream(m_byteStream.get());
-
+        SVGPathByteStreamBuilder builder(*m_byteStream);
         SVGPathSegListSource source(lastAppended(), end());
-
-        SVGPathParser parser;
-        parser.setCurrentConsumer(&builder);
-        parser.setCurrentSource(&source);
+        SVGPathParser parser(&source, &builder);
         parser.parsePathDataFromSource(UnalteredParsing, false);
     }
 
@@ -149,7 +133,7 @@ PassRefPtrWillBeRawPtr<SVGPathSeg> SVGPathSegList::appendItem(PassRefPtrWillBeRa
 String SVGPathSegList::valueAsString() const
 {
     String string;
-    buildStringFromByteStream(byteStream(), string, UnalteredParsing);
+    buildStringFromByteStream(*byteStream(), string, UnalteredParsing);
     return string;
 }
 
@@ -158,7 +142,7 @@ void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exce
     invalidateList();
     if (!m_byteStream)
         m_byteStream = SVGPathByteStream::create();
-    if (!buildSVGPathByteStreamFromString(string, m_byteStream.get(), UnalteredParsing))
+    if (!buildSVGPathByteStreamFromString(string, *m_byteStream, UnalteredParsing))
         exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
 }
 
@@ -168,8 +152,8 @@ void SVGPathSegList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGEleme
     if (length() != otherList->length())
         return;
 
-    byteStream(); // create |m_byteStream| if not exist.
-    addToSVGPathByteStream(m_byteStream.get(), otherList->byteStream());
+    byteStream(); // create |m_byteStream| if it does not exist.
+    addToSVGPathByteStream(*m_byteStream, *otherList->byteStream());
     invalidateList();
 }
 
@@ -213,23 +197,22 @@ void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElemen
     OwnPtr<SVGPathByteStream> lastAnimatedStream = m_byteStream.release();
 
     m_byteStream = SVGPathByteStream::create();
-    SVGPathByteStreamBuilder builder;
-    builder.setCurrentByteStream(m_byteStream.get());
+    SVGPathByteStreamBuilder builder(*m_byteStream);
 
-    SVGPathByteStreamSource fromSource(fromStream);
-    SVGPathByteStreamSource toSource(toStream);
+    SVGPathByteStreamSource fromSource(*fromStream);
+    SVGPathByteStreamSource toSource(*toStream);
 
-    SVGPathBlender blender;
-    blender.blendAnimatedPath(percentage, &fromSource, &toSource, &builder);
+    SVGPathBlender blender(&fromSource, &toSource, &builder);
+    blender.blendAnimatedPath(percentage);
 
     // Handle additive='sum'.
     if (!fromStream->size() || (animationElement->isAdditive() && !isToAnimation))
-        addToSVGPathByteStream(m_byteStream.get(), lastAnimatedStream.get());
+        addToSVGPathByteStream(*m_byteStream, *lastAnimatedStream);
 
     // Handle accumulate='sum'.
     if (animationElement->isAccumulated() && repeatCount) {
         const SVGPathByteStream* toAtEndOfDurationStream = toAtEndOfDuration->byteStream();
-        addToSVGPathByteStream(m_byteStream.get(), toAtEndOfDurationStream, repeatCount);
+        addToSVGPathByteStream(*m_byteStream, *toAtEndOfDurationStream, repeatCount);
     }
 }
 

@@ -31,7 +31,6 @@ public:
     String result();
 
 private:
-    virtual void cleanup() override { m_stringBuilder.clear(); }
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
 

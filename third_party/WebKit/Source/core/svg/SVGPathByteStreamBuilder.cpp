@@ -29,16 +29,15 @@ namespace blink {
 // Helper class that coalesces writes to a SVGPathByteStream to a local buffer.
 class CoalescingBuffer {
 public:
-    CoalescingBuffer(SVGPathByteStream* byteStream)
+    CoalescingBuffer(SVGPathByteStream& byteStream)
         : m_currentOffset(0)
         , m_byteStream(byteStream)
     {
-        ASSERT(byteStream);
     }
     ~CoalescingBuffer()
     {
         for (size_t i = 0; i < m_currentOffset; ++i)
-            m_byteStream->append(m_bytes[i]);
+            m_byteStream.append(m_bytes[i]);
     }
 
     template<typename DataType>
@@ -66,11 +65,11 @@ private:
     // Currently a cubic segment.
     size_t m_currentOffset;
     unsigned char m_bytes[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
-    SVGPathByteStream* m_byteStream;
+    SVGPathByteStream& m_byteStream;
 };
 
-SVGPathByteStreamBuilder::SVGPathByteStreamBuilder()
-    : m_byteStream(0)
+SVGPathByteStreamBuilder::SVGPathByteStreamBuilder(SVGPathByteStream& byteStream)
+    : m_byteStream(byteStream)
 {
 }
 

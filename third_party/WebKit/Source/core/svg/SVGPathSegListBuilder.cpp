@@ -22,7 +22,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPathSegListBuilder.h"
 
 #include "core/dom/ExceptionCode.h"
@@ -49,9 +48,9 @@
 
 namespace blink {
 
-SVGPathSegListBuilder::SVGPathSegListBuilder()
-    : m_pathElement(nullptr)
-    , m_pathSegList(nullptr)
+SVGPathSegListBuilder::SVGPathSegListBuilder(SVGPathElement* pathElement, PassRefPtrWillBeRawPtr<SVGPathSegList> pathSegList)
+    : m_pathElement(pathElement)
+    , m_pathSegList(pathSegList)
 {
 }
 

@@ -74,7 +74,7 @@ static void updatePathFromLineElement(SVGElement* element, Path& path)
 
 static void updatePathFromPathElement(SVGElement* element, Path& path)
 {
-    buildPathFromByteStream(toSVGPathElement(element)->pathByteStream(), path);
+    buildPathFromByteStream(*toSVGPathElement(element)->pathByteStream(), path);
 }
 
 static void updatePathFromPolylineElement(SVGElement* element, Path& path)

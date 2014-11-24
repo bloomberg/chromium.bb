@@ -30,14 +30,11 @@ namespace blink {
 
 class SVGPathByteStreamBuilder final : public SVGPathConsumer {
 public:
-    SVGPathByteStreamBuilder();
-
-    void setCurrentByteStream(SVGPathByteStream* byteStream) { m_byteStream = byteStream; }
+    SVGPathByteStreamBuilder(SVGPathByteStream&);
 
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
-    virtual void cleanup() override { m_byteStream = 0; }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
     virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) override;
@@ -53,7 +50,7 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override;
     virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) override;
 
-    SVGPathByteStream* m_byteStream;
+    SVGPathByteStream& m_byteStream;
 };
 
 } // namespace blink

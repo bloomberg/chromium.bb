@@ -37,12 +37,15 @@ class SVGPathSource;
 class SVGPathParser final : public NoBaseWillBeGarbageCollected<SVGPathParser> {
     WTF_MAKE_NONCOPYABLE(SVGPathParser); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    SVGPathParser();
+    SVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
+        : m_source(source)
+        , m_consumer(consumer)
+    {
+        ASSERT(m_source);
+        ASSERT(m_consumer);
+    }
 
     bool parsePathDataFromSource(PathParsingMode, bool checkForInitialMoveTo = true);
-    void setCurrentConsumer(SVGPathConsumer* consumer) { m_consumer = consumer; }
-    void setCurrentSource(SVGPathSource* source) { m_source = source; }
-    void cleanup();
 
     void trace(Visitor*);
 

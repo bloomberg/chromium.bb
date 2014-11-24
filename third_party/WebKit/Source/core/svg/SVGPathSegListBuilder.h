@@ -35,21 +35,13 @@ class SVGPathElement;
 
 class SVGPathSegListBuilder final : public SVGPathConsumer {
 public:
-    SVGPathSegListBuilder();
-
-    void setCurrentSVGPathElement(SVGPathElement* pathElement) { m_pathElement = pathElement; }
-    void setCurrentSVGPathSegList(PassRefPtrWillBeRawPtr<SVGPathSegList> pathSegList) { m_pathSegList = pathSegList; }
+    SVGPathSegListBuilder(SVGPathElement*, PassRefPtrWillBeRawPtr<SVGPathSegList>);
 
     virtual void trace(Visitor*) override;
 
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
-    virtual void cleanup() override
-    {
-        m_pathElement = nullptr;
-        m_pathSegList = nullptr;
-    }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
     virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) override;

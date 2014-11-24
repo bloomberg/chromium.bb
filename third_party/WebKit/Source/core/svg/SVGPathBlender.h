@@ -35,11 +35,10 @@ class SVGPathSource;
 class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
     WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    SVGPathBlender();
+    SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSource, SVGPathConsumer*);
 
-    bool addAnimatedPath(SVGPathSource*, SVGPathSource*, SVGPathConsumer*, unsigned repeatCount);
-    bool blendAnimatedPath(float, SVGPathSource*, SVGPathSource*, SVGPathConsumer*);
-    void cleanup();
+    bool addAnimatedPath(unsigned repeatCount);
+    bool blendAnimatedPath(float);
 
     void trace(Visitor*);
 

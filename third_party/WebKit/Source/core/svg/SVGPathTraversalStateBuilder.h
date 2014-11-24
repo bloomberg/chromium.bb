@@ -30,17 +30,14 @@ class PathTraversalState;
 
 class SVGPathTraversalStateBuilder final : public SVGPathConsumer {
 public:
-    SVGPathTraversalStateBuilder();
+    SVGPathTraversalStateBuilder(PathTraversalState&, float desiredLength = 0);
 
     unsigned pathSegmentIndex();
     float totalLength();
     FloatPoint currentPoint();
 
-    void setCurrentTraversalState(PathTraversalState* traversalState) { m_traversalState = traversalState; }
-    void setDesiredLength(float);
     virtual void incrementPathSegmentCount() override;
     virtual bool continueConsuming() override;
-    virtual void cleanup() override { m_traversalState = 0; }
 
 private:
     // Used in UnalteredParsing/NormalizedParsing modes.
@@ -58,7 +55,7 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
     virtual void arcTo(float, float, float, bool, bool, const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
 
-    PathTraversalState* m_traversalState;
+    PathTraversalState& m_traversalState;
 };
 
 } // namespace blink

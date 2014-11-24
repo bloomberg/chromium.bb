@@ -29,7 +29,11 @@ namespace blink {
 
 class SVGPathByteStreamSource final : public SVGPathSource {
 public:
-    explicit SVGPathByteStreamSource(const SVGPathByteStream*);
+    explicit SVGPathByteStreamSource(const SVGPathByteStream& stream)
+        : m_streamCurrent(stream.begin())
+        , m_streamEnd(stream.end())
+    {
+    }
 
 private:
     virtual bool hasMoreData() const override;

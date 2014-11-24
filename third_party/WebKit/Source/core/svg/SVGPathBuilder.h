@@ -33,14 +33,11 @@ class Path;
 
 class SVGPathBuilder final : public SVGPathConsumer {
 public:
-    SVGPathBuilder();
-
-    void setCurrentPath(Path* path) { m_path = path; }
+    SVGPathBuilder(Path& path) : m_path(path) { }
 
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
-    virtual void cleanup() override { m_path = 0; }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
     virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) override;
@@ -56,7 +53,7 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
     virtual void arcTo(float, float, float, bool, bool, const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
 
-    Path* m_path;
+    Path& m_path;
     FloatPoint m_current;
 };
 

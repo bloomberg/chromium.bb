@@ -36,183 +36,112 @@
 
 namespace blink {
 
-static SVGPathBuilder* globalSVGPathBuilder(Path& result)
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathBuilder())));
-    pathBuilder->setCurrentPath(&result);
-    return pathBuilder.get();
-}
-
-static SVGPathByteStreamBuilder* globalSVGPathByteStreamBuilder(SVGPathByteStream* result)
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathByteStreamBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathByteStreamBuilder())));
-    pathBuilder->setCurrentByteStream(result);
-    return pathBuilder.get();
-}
-
-static SVGPathStringBuilder* globalSVGPathStringBuilder()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathStringBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathStringBuilder())));
-    return pathBuilder.get();
-}
-
-static SVGPathTraversalStateBuilder* globalSVGPathTraversalStateBuilder(PathTraversalState& traversalState, float length)
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathTraversalStateBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathTraversalStateBuilder())));
-    pathBuilder->setCurrentTraversalState(&traversalState);
-    pathBuilder->setDesiredLength(length);
-    return pathBuilder.get();
-}
-
-static SVGPathParser* globalSVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathParser>, pathParser, (adoptPtrWillBeNoop(new SVGPathParser())));
-    pathParser->setCurrentSource(source);
-    pathParser->setCurrentConsumer(consumer);
-    return pathParser.get();
-}
-
-static SVGPathBlender* globalSVGPathBlender()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathBlender>, pathBlender, (adoptPtrWillBeNoop(new SVGPathBlender())));
-    return pathBlender.get();
-}
-
 bool buildPathFromString(const String& d, Path& result)
 {
     if (d.isEmpty())
         return true;
 
-    SVGPathBuilder* builder = globalSVGPathBuilder(result);
-
+    SVGPathBuilder builder(result);
     OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
-    SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
-    bool ok = parser->parsePathDataFromSource(NormalizedParsing);
-    parser->cleanup();
-    return ok;
+    SVGPathParser parser(source.get(), &builder);
+    return parser.parsePathDataFromSource(NormalizedParsing);
 }
 
-bool buildPathFromByteStream(const SVGPathByteStream* stream, Path& result)
+bool buildPathFromByteStream(const SVGPathByteStream& stream, Path& result)
 {
-    ASSERT(stream);
-    if (stream->isEmpty())
+    if (stream.isEmpty())
         return true;
 
-    SVGPathBuilder* builder = globalSVGPathBuilder(result);
-
+    SVGPathBuilder builder(result);
     SVGPathByteStreamSource source(stream);
-    SVGPathParser* parser = globalSVGPathParser(&source, builder);
-    bool ok = parser->parsePathDataFromSource(NormalizedParsing);
-    parser->cleanup();
-    return ok;
+    SVGPathParser parser(&source, &builder);
+    return parser.parsePathDataFromSource(NormalizedParsing);
 }
 
-bool buildStringFromByteStream(const SVGPathByteStream* stream, String& result, PathParsingMode parsingMode)
+bool buildStringFromByteStream(const SVGPathByteStream& stream, String& result, PathParsingMode parsingMode)
 {
-    ASSERT(stream);
-    if (stream->isEmpty())
+    if (stream.isEmpty())
         return true;
 
-    SVGPathStringBuilder* builder = globalSVGPathStringBuilder();
-
+    SVGPathStringBuilder builder;
     SVGPathByteStreamSource source(stream);
-    SVGPathParser* parser = globalSVGPathParser(&source, builder);
-    bool ok = parser->parsePathDataFromSource(parsingMode);
-    result = builder->result();
-    parser->cleanup();
+    SVGPathParser parser(&source, &builder);
+    bool ok = parser.parsePathDataFromSource(parsingMode);
+    result = builder.result();
     return ok;
 }
 
-bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream* result, PathParsingMode parsingMode)
+bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream& result, PathParsingMode parsingMode)
 {
-    ASSERT(result);
-    result->clear();
+    result.clear();
     if (d.isEmpty())
         return true;
 
     // The string length is typically a minor overestimate of eventual byte stream size, so it avoids us a lot of reallocs.
-    result->reserveInitialCapacity(d.length());
+    result.reserveInitialCapacity(d.length());
 
-    SVGPathByteStreamBuilder* builder = globalSVGPathByteStreamBuilder(result);
-
+    SVGPathByteStreamBuilder builder(result);
     OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
-    SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
-    bool ok = parser->parsePathDataFromSource(parsingMode);
-    parser->cleanup();
-
-    result->shrinkToFit();
-
+    SVGPathParser parser(source.get(), &builder);
+    bool ok = parser.parsePathDataFromSource(parsingMode);
+    result.shrinkToFit();
     return ok;
 }
 
-bool addToSVGPathByteStream(SVGPathByteStream* fromStream, const SVGPathByteStream* byStream, unsigned repeatCount)
+bool addToSVGPathByteStream(SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount)
 {
-    ASSERT(fromStream);
-    ASSERT(byStream);
-    if (fromStream->isEmpty() || byStream->isEmpty())
+    if (fromStream.isEmpty() || byStream.isEmpty())
         return true;
 
-    SVGPathByteStreamBuilder* builder = globalSVGPathByteStreamBuilder(fromStream);
+    OwnPtr<SVGPathByteStream> fromStreamCopy = fromStream.copy();
+    fromStream.clear();
 
-    OwnPtr<SVGPathByteStream> fromStreamCopy = fromStream->copy();
-    fromStream->clear();
-
-    SVGPathByteStreamSource fromSource(fromStreamCopy.get());
+    SVGPathByteStreamBuilder builder(fromStream);
+    SVGPathByteStreamSource fromSource(*fromStreamCopy);
     SVGPathByteStreamSource bySource(byStream);
-    SVGPathBlender* blender = globalSVGPathBlender();
-    bool ok = blender->addAnimatedPath(&fromSource, &bySource, builder, repeatCount);
-    blender->cleanup();
-    return ok;
+    SVGPathBlender blender(&fromSource, &bySource, &builder);
+    return blender.addAnimatedPath(repeatCount);
 }
 
-bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream* stream, float length, unsigned& pathSeg)
+bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream& stream, float length, unsigned& pathSeg)
 {
-    ASSERT(stream);
-    if (stream->isEmpty())
+    if (stream.isEmpty())
         return false;
 
     PathTraversalState traversalState(PathTraversalState::TraversalSegmentAtLength);
-    SVGPathTraversalStateBuilder* builder = globalSVGPathTraversalStateBuilder(traversalState, length);
-
+    SVGPathTraversalStateBuilder builder(traversalState, length);
     SVGPathByteStreamSource source(stream);
-    SVGPathParser* parser = globalSVGPathParser(&source, builder);
-    bool ok = parser->parsePathDataFromSource(NormalizedParsing);
-    pathSeg = builder->pathSegmentIndex();
-    parser->cleanup();
+    SVGPathParser parser(&source, &builder);
+    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
+    pathSeg = builder.pathSegmentIndex();
     return ok;
 }
 
-bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream* stream, float& totalLength)
+bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream& stream, float& totalLength)
 {
-    ASSERT(stream);
-    if (stream->isEmpty())
+    if (stream.isEmpty())
         return false;
 
     PathTraversalState traversalState(PathTraversalState::TraversalTotalLength);
-    SVGPathTraversalStateBuilder* builder = globalSVGPathTraversalStateBuilder(traversalState, 0);
-
+    SVGPathTraversalStateBuilder builder(traversalState);
     SVGPathByteStreamSource source(stream);
-    SVGPathParser* parser = globalSVGPathParser(&source, builder);
-    bool ok = parser->parsePathDataFromSource(NormalizedParsing);
-    totalLength = builder->totalLength();
-    parser->cleanup();
+    SVGPathParser parser(&source, &builder);
+    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
+    totalLength = builder.totalLength();
     return ok;
 }
 
-bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream* stream, float length, FloatPoint& point)
+bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream& stream, float length, FloatPoint& point)
 {
-    ASSERT(stream);
-    if (stream->isEmpty())
+    if (stream.isEmpty())
         return false;
 
     PathTraversalState traversalState(PathTraversalState::TraversalPointAtLength);
-    SVGPathTraversalStateBuilder* builder = globalSVGPathTraversalStateBuilder(traversalState, length);
-
+    SVGPathTraversalStateBuilder builder(traversalState, length);
     SVGPathByteStreamSource source(stream);
-    SVGPathParser* parser = globalSVGPathParser(&source, builder);
-    bool ok = parser->parsePathDataFromSource(NormalizedParsing);
-    point = builder->currentPoint();
-    parser->cleanup();
+    SVGPathParser parser(&source, &builder);
+    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
+    point = builder.currentPoint();
     return ok;
 }
 
