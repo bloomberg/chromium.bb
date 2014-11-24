@@ -44,6 +44,20 @@ using namespace pairing_chromeos;
       100 /* bucket_count */);                             \
   } while (0)
 
+namespace {
+
+const char * const kMetricEnrollment = "Enterprise.Enrollment";
+const char * const kMetricEnrollmentForced = "Enterprise.EnrollmentForced";
+const char * const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
+const char * const kMetricEnrollmentTimeCancel =
+    "Enterprise.EnrollmentTime.Cancel";
+const char * const kMetricEnrollmentTimeFailure =
+    "Enterprise.EnrollmentTime.Failure";
+const char * const kMetricEnrollmentTimeSuccess =
+    "Enterprise.EnrollmentTime.Success";
+
+}  // namespace
+
 namespace chromeos {
 
 // static
@@ -194,6 +208,8 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   }
 
   enrollment_failed_once_ = true;
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
   actor_->ShowAuthError(error);
 }
 
@@ -222,7 +238,7 @@ void EnrollmentScreen::OnCancel() {
   UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoCancelled
                            : policy::kMetricEnrollmentCancelled);
   if (elapsed_timer_)
-    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Cancel", elapsed_timer_);
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
   if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
       enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
     actor_->ResetAuth(
@@ -301,7 +317,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
     const policy::EnrollmentStatus& status) {
   StartupUtils::MarkOobeCompleted();
   if (elapsed_timer_)
-    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Success", elapsed_timer_);
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
   actor_->ShowEnrollmentStatus(status);
 }
 
@@ -436,7 +452,7 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
   }
   enrollment_failed_once_ = true;
   if (elapsed_timer_)
-    UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Failure", elapsed_timer_);
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
   actor_->ShowEnrollmentStatus(status);
 }
 
@@ -444,13 +460,13 @@ void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
   switch (enrollment_mode_) {
     case EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL:
     case EnrollmentScreenActor::ENROLLMENT_MODE_AUTO:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.Enrollment", sample);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollment, sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_FORCED:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.EnrollmentForced", sample);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollmentForced, sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY:
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Enterprise.EnrollmentRecovery", sample);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollmentRecovery, sample);
       break;
     case EnrollmentScreenActor::ENROLLMENT_MODE_COUNT:
       NOTREACHED();
