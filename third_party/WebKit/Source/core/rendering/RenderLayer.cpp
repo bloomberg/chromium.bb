@@ -2430,15 +2430,15 @@ GraphicsLayer* RenderLayer::graphicsLayerBackingForScrolling() const
     }
 }
 
-CompositedLayerMapping* RenderLayer::ensureCompositedLayerMapping()
+void RenderLayer::ensureCompositedLayerMapping()
 {
-    if (!m_compositedLayerMapping) {
-        m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
-        m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+    if (m_compositedLayerMapping)
+        return;
 
-        updateOrRemoveFilterEffectRenderer();
-    }
-    return m_compositedLayerMapping.get();
+    m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
+    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
+
+    updateOrRemoveFilterEffectRenderer();
 }
 
 void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
