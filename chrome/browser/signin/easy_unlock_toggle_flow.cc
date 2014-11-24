@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -145,13 +146,17 @@ void EasyUnlockToggleFlow::OnGetTokenSuccess(
   DCHECK_EQ(token_request_.get(), request);
   token_request_.reset();
 
-  mint_token_flow_.reset(
-      new OAuth2MintTokenFlow(this,
-                              OAuth2MintTokenFlow::Parameters(
-                                  extension_misc::kEasyUnlockAppId,
-                                  GetEasyUnlockAppClientId(profile_),
-                                  GetScopes(),
-                                  OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE)));
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile_);
+  std::string signin_scoped_device_id =
+      signin_client->GetSigninScopedDeviceId();
+
+  mint_token_flow_.reset(new OAuth2MintTokenFlow(
+      this,
+      OAuth2MintTokenFlow::Parameters(
+          extension_misc::kEasyUnlockAppId, GetEasyUnlockAppClientId(profile_),
+          GetScopes(), signin_scoped_device_id,
+          OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE)));
   mint_token_flow_->Start(profile_->GetRequestContext(), access_token);
 }
 

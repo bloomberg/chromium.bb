@@ -58,7 +58,7 @@ typedef std::vector<IssueAdviceInfoEntry> IssueAdviceInfo;
 // scoped "master" OAuth2 token for the user logged in to Chrome.
 class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
  public:
-  // There are four differnt modes when minting a token to grant
+  // There are four different modes when minting a token to grant
   // access to third-party app for a user.
   enum Mode {
     // Get the messages to display to the user without minting a token.
@@ -78,12 +78,14 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
     Parameters(const std::string& eid,
                const std::string& cid,
                const std::vector<std::string>& scopes_arg,
+               const std::string& device_id,
                Mode mode_arg);
     ~Parameters();
 
     std::string extension_id;
     std::string client_id;
     std::vector<std::string> scopes;
+    std::string device_id;
     Mode mode;
   };
 

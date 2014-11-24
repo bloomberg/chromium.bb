@@ -20,6 +20,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -785,6 +786,10 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 }
 
 OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(GetProfile());
+  std::string signin_scoped_device_id =
+      signin_client->GetSigninScopedDeviceId();
   OAuth2MintTokenFlow* mint_token_flow = new OAuth2MintTokenFlow(
       this,
       OAuth2MintTokenFlow::Parameters(
@@ -792,6 +797,7 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
           oauth2_client_id_,
           std::vector<std::string>(token_key_->scopes.begin(),
                                    token_key_->scopes.end()),
+          signin_scoped_device_id,
           gaia_mint_token_mode_));
   return mint_token_flow;
 }

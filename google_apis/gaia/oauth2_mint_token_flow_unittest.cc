@@ -154,17 +154,23 @@ class OAuth2MintTokenFlowTest : public testing::Test {
 
  protected:
   void CreateFlow(OAuth2MintTokenFlow::Mode mode) {
-    return CreateFlow(&delegate_, mode);
+    return CreateFlow(&delegate_, mode, "");
+  }
+
+  void CreateFlowWithDeviceId(const std::string& device_id) {
+    return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_ISSUE_ADVICE,
+                      device_id);
   }
 
   void CreateFlow(MockDelegate* delegate,
-                  OAuth2MintTokenFlow::Mode mode) {
+                  OAuth2MintTokenFlow::Mode mode,
+                  const std::string& device_id) {
     std::string ext_id = "ext1";
     std::string client_id = "client1";
     std::vector<std::string> scopes(CreateTestScopes());
     flow_.reset(new MockMintTokenFlow(
-        delegate,
-        OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes, mode)));
+        delegate, OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes,
+                                                  device_id, mode)));
   }
 
   // Helper to parse the given string to DictionaryValue.
@@ -184,11 +190,11 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
     CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
     std::string body = flow_->CreateApiCallBody();
     std::string expected_body(
-          "force=false"
-          "&response_type=none"
-          "&scope=http://scope1+http://scope2"
-          "&client_id=client1"
-          "&origin=ext1");
+        "force=false"
+        "&response_type=none"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1");
     EXPECT_EQ(expected_body, body);
   }
   {  // Record grant mode.
@@ -222,6 +228,19 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "&scope=http://scope1+http://scope2"
         "&client_id=client1"
         "&origin=ext1");
+    EXPECT_EQ(expected_body, body);
+  }
+  {  // Mint token with device_id.
+    CreateFlowWithDeviceId("device_id1");
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=false"
+        "&response_type=none"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1"
+        "&device_id=device_id1"
+        "&device_type=chrome");
     EXPECT_EQ(expected_body, body);
   }
 }
@@ -332,7 +351,7 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure) {
   {  // Null delegate should work fine.
     TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
     url_fetcher.set_status(URLRequestStatus(URLRequestStatus::FAILED, 101));
-    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "");
     flow_->ProcessApiCallFailure(&url_fetcher);
   }
 
