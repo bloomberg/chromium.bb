@@ -215,19 +215,17 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   AddExtensionToCommandLineWhitelist();
 
-  ExtensionTestMessageListener tab_capture_started("tab_capture_started", true);
-  ExtensionTestMessageListener entered_fullscreen("entered_fullscreen", true);
+  ExtensionTestMessageListener capture_started("tab_capture_started", false);
+  ExtensionTestMessageListener entered_fullscreen("entered_fullscreen", false);
 
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "fullscreen_test.html"))
       << message_;
-  EXPECT_TRUE(tab_capture_started.WaitUntilSatisfied());
-  tab_capture_started.Reply("");
+  EXPECT_TRUE(capture_started.WaitUntilSatisfied());
 
   // Click on the page to trigger the Javascript that will toggle the tab into
   // fullscreen mode.
   SimulateMouseClickInCurrentTab();
   EXPECT_TRUE(entered_fullscreen.WaitUntilSatisfied());
-  entered_fullscreen.Reply("");
 
   // Click again to exit fullscreen mode.
   SimulateMouseClickInCurrentTab();

@@ -37,7 +37,7 @@ chrome.tabCapture.onStatusChanged.addListener(function(info) {
     }
 
     if (info.fullscreen)
-      chrome.test.sendMessage('entered_fullscreen', function() {});
+      chrome.test.sendMessage('entered_fullscreen');
   }
 });
 
@@ -45,5 +45,5 @@ chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
   chrome.test.assertTrue(!!stream);
   mediaStream = stream;
   chrome.test.notifyPass();
-  chrome.test.sendMessage('tab_capture_started', function() {});
+  chrome.test.sendMessage('tab_capture_started');
 });
