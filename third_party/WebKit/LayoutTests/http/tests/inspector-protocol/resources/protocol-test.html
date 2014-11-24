@@ -26,7 +26,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <head>
 <script>
 
-InspectorFrontendAPI = {};
+DevToolsAPI = {};
+
+// FIXME: remove once embedders switch to new API.
+InspectorFrontendAPI = DevToolsAPI;
 
 InspectorTest = {};
 InspectorTest._dispatchTable = [];
@@ -160,7 +163,7 @@ InspectorTest.sendRawCommand = function(command, handler)
 /**
  * @param {string|!Object} messageOrObject
  */
-InspectorFrontendAPI.dispatchMessage = function(messageOrObject)
+DevToolsAPI.dispatchMessage = function(messageOrObject)
 {
     var messageObject = (typeof messageOrObject === "string" ? JSON.parse(messageOrObject) : messageOrObject);
     if (InspectorTest._collectProtocolMessages)
