@@ -8,7 +8,7 @@ import urlparse
 
 from integration_tests import chrome_proxy_metrics as metrics
 from metrics import loading
-from telemetry.core import util
+from telemetry.core import exceptions
 from telemetry.page import page_test
 
 
@@ -84,7 +84,7 @@ class ChromeProxyValidation(page_test.PageTest):
     # The redirect from safebrowsing causes a timeout. Ignore that.
     try:
       super(ChromeProxyValidation, self).RunNavigateSteps(page, tab)
-    except util.TimeoutException, e:
+    except exceptions.DevtoolsTargetCrashException, e:
       if self._expect_timeout:
         logging.warning('Navigation timeout on page %s',
                         page.name if page.name else page.url)
