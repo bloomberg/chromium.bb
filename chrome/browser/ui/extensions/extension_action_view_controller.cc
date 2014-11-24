@@ -112,7 +112,9 @@ bool ExtensionActionViewController::IsEnabled(
     return false;
 
   return extension_action_->GetIsVisible(
-      SessionTabHelper::IdForTab(web_contents));
+      SessionTabHelper::IdForTab(web_contents)) ||
+      extensions::ExtensionActionAPI::Get(browser_->profile())->
+          ExtensionWantsToRun(extension(), web_contents);
 }
 
 bool ExtensionActionViewController::HasPopup(
