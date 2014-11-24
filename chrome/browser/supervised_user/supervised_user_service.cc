@@ -172,14 +172,13 @@ void SupervisedUserService::URLFilterContext::OnBlacklistLoaded() {
 
 void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
     net::URLRequestContextGetter* context,
-    const std::string& cx,
-    const std::string& api_key) {
-  ui_url_filter_->InitAsyncURLChecker(context, cx, api_key);
+    const std::string& cx) {
+  ui_url_filter_->InitAsyncURLChecker(context, cx);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SupervisedUserURLFilter::InitAsyncURLChecker,
-                 io_url_filter_, context, cx, api_key));
+                 io_url_filter_, context, cx));
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -862,7 +861,7 @@ void SupervisedUserService::SetActive(bool active) {
       const std::string& cx = delegate_->GetSafeSitesCx();
       if (!cx.empty()) {
         url_filter_context_.InitAsyncURLChecker(
-            profile_->GetRequestContext(), cx, delegate_->GetSafeSitesApiKey());
+            profile_->GetRequestContext(), cx);
       }
     }
 

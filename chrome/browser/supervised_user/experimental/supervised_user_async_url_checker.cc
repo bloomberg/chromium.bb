@@ -181,19 +181,15 @@ SupervisedUserAsyncURLChecker::CheckResult::CheckResult(
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
     URLRequestContextGetter* context,
-    const std::string& cx,
-    const std::string& api_key)
+    const std::string& cx)
     : context_(context), cx_(cx), cache_(kDefaultCacheSize) {
-  SetApiKey(api_key);
 }
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
     URLRequestContextGetter* context,
     const std::string& cx,
-    const std::string& api_key,
     size_t cache_size)
     : context_(context), cx_(cx), cache_(cache_size) {
-  SetApiKey(api_key);
 }
 
 SupervisedUserAsyncURLChecker::~SupervisedUserAsyncURLChecker() {}
@@ -237,19 +233,16 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   }
 
   DVLOG(1) << "Checking URL " << url;
+  std::string api_key = google_apis::GetSafeSitesAPIKey();
   scoped_ptr<URLFetcher> fetcher_safe(
-      CreateFetcher(this, context_, cx_, api_key_, url, true));
+      CreateFetcher(this, context_, cx_, api_key, url, true));
   scoped_ptr<URLFetcher> fetcher_unsafe(
-      CreateFetcher(this, context_, cx_, api_key_, url, false));
+      CreateFetcher(this, context_, cx_, api_key, url, false));
   fetcher_safe->Start();
   fetcher_unsafe->Start();
   checks_in_progress_.push_back(
       new Check(url, fetcher_safe.Pass(), fetcher_unsafe.Pass(), callback));
   return false;
-}
-
-void SupervisedUserAsyncURLChecker::SetApiKey(const std::string& api_key) {
-  api_key_ = api_key.empty() ? google_apis::GetAPIKey() : api_key;
 }
 
 void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
