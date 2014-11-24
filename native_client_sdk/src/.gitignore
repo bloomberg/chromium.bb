@@ -10,8 +10,8 @@
 *.pyc
 *.pyo
 
-# Ignore all hidden files
-.*
+# Ignore hidden coverage file.
+.coverage
 
 # Ignore all directories than contain these names
 toolchain/

@@ -300,12 +300,15 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # http://crbug.com/222831
-    # https://bitbucket.org/eliben/pyelftools/issue/12
-    'third_party/pyelftools': [
+    # https://bitbucket.org/ned/coveragepy/issue/313/add-license-file-containing-2-3-or-4
+    # BSD 2-clause license.
+    'third_party/pycoverage': [
         'UNKNOWN',
     ],
 
+    'third_party/pyelftools': [ # http://crbug.com/222831
+        'UNKNOWN',
+    ],
     'third_party/scons-2.0.1/engine/SCons': [  # http://crbug.com/98462
         'UNKNOWN',
     ],
