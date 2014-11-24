@@ -239,35 +239,18 @@ class MediaCodecBridge {
      */
     @CalledByNative
     private static int[] getEncoderColorFormatsForMime(String mime) {
-        MediaCodecInfo[] codecs = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-            codecs = mediaCodecList.getCodecInfos();
-        } else {
-            int count = MediaCodecList.getCodecCount();
-            if (count <= 0) {
-                return null;
-            }
-            codecs = new MediaCodecInfo[count];
-            for (int i = 0; i < count; ++i) {
-                MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-                codecs[i] = info;
-            }
-        }
-
-        for (int i = 0; i < codecs.length; i++) {
-            if (!codecs[i].isEncoder()) {
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; ++i) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (!info.isEncoder())
                 continue;
-            }
 
-            String[] supportedTypes = codecs[i].getSupportedTypes();
+            String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
-                if (!supportedTypes[j].equalsIgnoreCase(mime)) {
+                if (!supportedTypes[j].equalsIgnoreCase(mime))
                     continue;
-                }
 
-                MediaCodecInfo.CodecCapabilities capabilities =
-                        codecs[i].getCapabilitiesForType(mime);
+                MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mime);
                 return capabilities.colorFormats;
             }
         }
