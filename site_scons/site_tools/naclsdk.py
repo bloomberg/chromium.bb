@@ -242,7 +242,7 @@ def _SetEnvForPnacl(env, root):
   # directly, so that the test can override them. In addition to using the
   # flags, we have to point NACL_SDK_{LIB,INCLUDE} to the toolchain directories
   # containing the biased bitcode libraries.
-  if not env.Bit('pnacl_generate_pexe'):
+  if not env.Bit('pnacl_generate_pexe') and env['TARGET_FULLARCH'] != 'mips32':
     bias_flags = ' '.join(env.BiasedBitcodeFlags())
     archdir = {'x86-32': 'i686', 'x86-64': 'x86_64', 'arm': 'arm'}
     sdk_base = os.path.join(root, archdir[env['TARGET_FULLARCH']] + '_bc-nacl')

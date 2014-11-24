@@ -2899,7 +2899,7 @@ def BiasedBitcodeFlags(env):
     return ['--target=x86_64-unknown-nacl']
   if env.Bit('target_arm'):
     return ['--target=armv7-unknown-nacl-gnueabihf', '-mfloat-abi=hard']
-  if env.Bit('target_mips'):
+  if env.Bit('target_mips32'):
     return []
   raise UserError('No known target bits set')
 
