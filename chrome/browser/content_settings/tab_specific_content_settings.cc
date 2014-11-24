@@ -655,29 +655,47 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
       content::NotificationService::NoDetails());
 }
 
-void TabSpecificContentSettings::GeolocationDidNavigate(
-      const content::LoadCommittedDetails& details) {
-  geolocation_usages_state_.DidNavigate(details);
-}
-
-void TabSpecificContentSettings::MidiDidNavigate(
-    const content::LoadCommittedDetails& details) {
-  midi_usages_state_.DidNavigate(details);
-}
-
-void TabSpecificContentSettings::ClearGeolocationContentSettings() {
-  geolocation_usages_state_.ClearStateMap();
-}
-
-void TabSpecificContentSettings::ClearMidiContentSettings() {
-  midi_usages_state_.ClearStateMap();
-}
-
 void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   if (allowed) {
     OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   } else {
     OnContentBlocked(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
+  }
+}
+
+void TabSpecificContentSettings::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  const ContentSettingsDetails details(
+      primary_pattern, secondary_pattern, content_type, resource_identifier);
+  const NavigationController& controller = web_contents()->GetController();
+  NavigationEntry* entry = controller.GetVisibleEntry();
+  GURL entry_url;
+  if (entry)
+    entry_url = entry->GetURL();
+  if (details.update_all() ||
+      // The visible NavigationEntry is the URL in the URL field of a tab.
+      // Currently this should be matched by the |primary_pattern|.
+      details.primary_pattern().Matches(entry_url)) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    const HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+
+    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+      const GURL media_origin = media_stream_access_origin();
+      ContentSetting setting = map->GetContentSetting(media_origin,
+                                                      media_origin,
+                                                      content_type,
+                                                      std::string());
+      content_allowed_[content_type] = setting == CONTENT_SETTING_ALLOW;
+      content_blocked_[content_type] = setting == CONTENT_SETTING_BLOCK;
+    }
+    RendererContentSettingRules rules;
+    GetRendererContentSettingRules(map, &rules);
+    Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
 }
 
@@ -740,42 +758,6 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
   }
 }
 
-void TabSpecificContentSettings::OnContentSettingChanged(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    std::string resource_identifier) {
-  const ContentSettingsDetails details(
-      primary_pattern, secondary_pattern, content_type, resource_identifier);
-  const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetVisibleEntry();
-  GURL entry_url;
-  if (entry)
-    entry_url = entry->GetURL();
-  if (details.update_all() ||
-      // The visible NavigationEntry is the URL in the URL field of a tab.
-      // Currently this should be matched by the |primary_pattern|.
-      details.primary_pattern().Matches(entry_url)) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    const HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-
-    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-      const GURL media_origin = media_stream_access_origin();
-      ContentSetting setting = map->GetContentSetting(media_origin,
-                                                      media_origin,
-                                                      content_type,
-                                                      std::string());
-      content_allowed_[content_type] = setting == CONTENT_SETTING_ALLOW;
-      content_blocked_[content_type] = setting == CONTENT_SETTING_BLOCK;
-    }
-    RendererContentSettingRules rules;
-    GetRendererContentSettingRules(map, &rules);
-    Send(new ChromeViewMsg_SetContentSettingRules(rules));
-  }
-}
-
 void TabSpecificContentSettings::AddSiteDataObserver(
     SiteDataObserver* observer) {
   observer_list_.AddObserver(observer);
@@ -788,4 +770,22 @@ void TabSpecificContentSettings::RemoveSiteDataObserver(
 
 void TabSpecificContentSettings::NotifySiteDataObservers() {
   FOR_EACH_OBSERVER(SiteDataObserver, observer_list_, OnSiteDataAccessed());
+}
+
+void TabSpecificContentSettings::ClearGeolocationContentSettings() {
+  geolocation_usages_state_.ClearStateMap();
+}
+
+void TabSpecificContentSettings::ClearMidiContentSettings() {
+  midi_usages_state_.ClearStateMap();
+}
+
+void TabSpecificContentSettings::GeolocationDidNavigate(
+      const content::LoadCommittedDetails& details) {
+  geolocation_usages_state_.DidNavigate(details);
+}
+
+void TabSpecificContentSettings::MidiDidNavigate(
+    const content::LoadCommittedDetails& details) {
+  midi_usages_state_.DidNavigate(details);
 }

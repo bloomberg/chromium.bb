@@ -170,29 +170,18 @@ class TabSpecificContentSettings
 
   // Resets the |content_blocked_| and |content_allowed_| arrays, except for
   // CONTENT_SETTINGS_TYPE_COOKIES related information.
+  // TODO(vabr): Only public for tests. Move to a test client.
   void ClearBlockedContentSettingsExceptForCookies();
 
   // Resets all cookies related information.
+  // TODO(vabr): Only public for tests. Move to a test client.
   void ClearCookieSpecificContentSettings();
-
-  // Clears the Geolocation settings.
-  void ClearGeolocationContentSettings();
-
-  // Clears the MIDI settings.
-  void ClearMidiContentSettings();
 
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
   // Changes the |content_blocked_| entry for downloads.
   void SetDownloadsBlocked(bool blocked);
-
-  // Updates Geolocation settings on navigation.
-  void GeolocationDidNavigate(
-      const content::LoadCommittedDetails& details);
-
-  // Updates MIDI settings on navigation.
-  void MidiDidNavigate(const content::LoadCommittedDetails& details);
 
   // Returns whether a particular kind of content has been blocked for this
   // page.
@@ -219,10 +208,12 @@ class TabSpecificContentSettings
     return media_stream_requested_video_device_;
   }
 
+  // TODO(vabr): Only public for tests. Move to a test client.
   const std::string& media_stream_selected_audio_device() const {
     return media_stream_selected_audio_device_;
   }
 
+  // TODO(vabr): Only public for tests. Move to a test client.
   const std::string& media_stream_selected_video_device() const {
     return media_stream_selected_video_device_;
   }
@@ -311,28 +302,13 @@ class TabSpecificContentSettings
   // blocked.
   void SetPepperBrokerAllowed(bool allowed);
 
-  // content::WebContentsObserver overrides.
-  void RenderFrameForInterstitialPageCreated(
-      content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-  void AppCacheAccessed(const GURL& manifest_url,
-                        bool blocked_by_policy) override;
-
-  // Message handlers. Public for testing.
+  // Message handlers.
+  // TODO(vabr): Only public for tests. Move to a test client.
   void OnContentBlocked(ContentSettingsType type);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
-  // Public for testing.
+  // TODO(vabr): Only public for tests. Move to a test client.
   void OnCookiesRead(const GURL& url,
                      const GURL& first_party_url,
                      const net::CookieList& cookie_list,
@@ -386,6 +362,22 @@ class TabSpecificContentSettings
   explicit TabSpecificContentSettings(content::WebContents* tab);
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
+  // content::WebContentsObserver overrides.
+  void RenderFrameForInterstitialPageCreated(
+      content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  void DidStartProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) override;
+  void AppCacheAccessed(const GURL& manifest_url,
+                        bool blocked_by_policy) override;
+
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
@@ -394,6 +386,19 @@ class TabSpecificContentSettings
 
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();
+
+  // Clears the Geolocation settings.
+  void ClearGeolocationContentSettings();
+
+  // Clears the MIDI settings.
+  void ClearMidiContentSettings();
+
+  // Updates Geolocation settings on navigation.
+  void GeolocationDidNavigate(
+      const content::LoadCommittedDetails& details);
+
+  // Updates MIDI settings on navigation.
+  void MidiDidNavigate(const content::LoadCommittedDetails& details);
 
   // All currently registered |SiteDataObserver|s.
   ObserverList<SiteDataObserver> observer_list_;
