@@ -855,6 +855,11 @@ bool TabsQueryFunction::RunSync() {
     if (!include_incognito() && GetProfile() != browser->profile())
       continue;
 
+    if (!browser->extension_window_controller()->IsVisibleToExtension(
+            extension())) {
+      continue;
+    }
+
     if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(browser))
       continue;
 

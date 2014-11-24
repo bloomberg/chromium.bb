@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -188,6 +189,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
     window_ids.insert(ExtensionTabUtil::GetWindowId(new_browser));
   }
 
+  // Undocked DevTools window should not be accessible.
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+
   scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
@@ -231,6 +236,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   }
   // The returned ids should contain all the current browser instance ids.
   EXPECT_EQ(window_ids, result_ids);
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
@@ -435,6 +442,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
     EXPECT_NE(window_id, utils::GetInteger(result_tab, keys::kWindowIdKey));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
+  const size_t kNumWindows = 3;
+  std::set<int> window_ids;
+  window_ids.insert(ExtensionTabUtil::GetWindowId(browser()));
+  for (size_t i = 0; i < kNumWindows - 1; ++i) {
+    Browser* new_browser = CreateBrowser(browser()->profile());
+    window_ids.insert(ExtensionTabUtil::GetWindowId(new_browser));
+  }
+
+  // Undocked DevTools window should not be accessible.
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+
+  // Get tabs in the 'current' window called from non-focused browser.
+  scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
+  function->set_extension(test_util::CreateEmptyExtension().get());
+  scoped_ptr<base::ListValue> result(utils::ToList(
+      utils::RunFunctionAndReturnSingleResult(function.get(),
+                                              "[{}]",
+                                              browser())));
+
+  std::set<int> result_ids;
+  base::ListValue* result_tabs = result.get();
+  // We should have one tab per browser except for DevTools.
+  EXPECT_EQ(kNumWindows, result_tabs->GetSize());
+  for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
+    base::DictionaryValue* result_tab = NULL;
+    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
+    result_ids.insert(utils::GetInteger(result_tab, keys::kWindowIdKey));
+  }
+  EXPECT_EQ(window_ids, result_ids);
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
