@@ -190,7 +190,7 @@ justify-self runtime_flag=CSSGridLayout, custom_all
 left animatable, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color animatable, svg, converter=convertSVGColor
-line-height animatable, inherited, getter=specifiedLineHeight, custom_value
+line-height animatable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
 list-style-image animatable, inherited, custom_value
 list-style-position inherited
 list-style-type inherited

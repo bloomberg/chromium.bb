@@ -304,34 +304,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolver
     state.style()->setNamedGridAreaColumnCount(gridTemplateAreasValue->columnCount());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length lineHeight;
-
-    if (primitiveValue->getValueID() == CSSValueNormal) {
-        lineHeight = RenderStyle::initialLineHeight();
-    } else if (primitiveValue->isLength()) {
-        float multiplier = state.style()->effectiveZoom();
-        if (LocalFrame* frame = state.document().frame())
-            multiplier *= frame->textZoomFactor();
-        lineHeight = primitiveValue->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier));
-    } else if (primitiveValue->isPercentage()) {
-        lineHeight = Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
-    } else if (primitiveValue->isNumber()) {
-        lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
-    } else if (primitiveValue->isCalculated()) {
-        double multiplier = state.style()->effectiveZoom();
-        if (LocalFrame* frame = state.document().frame())
-            multiplier *= frame->textZoomFactor();
-        Length zoomedLength = Length(primitiveValue->cssCalcValue()->toCalcValue(state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier)));
-        lineHeight = Length(valueForLength(zoomedLength, state.style()->fontSize()), Fixed);
-    } else {
-        return;
-    }
-    state.style()->setLineHeight(lineHeight);
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyListStyleImage(StyleResolverState& state, CSSValue* value)
 {
     state.style()->setListStyleImage(state.styleImage(CSSPropertyListStyleImage, value));

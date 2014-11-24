@@ -572,6 +572,33 @@ LineBoxContain StyleBuilderConverter::convertLineBoxContain(StyleResolverState&,
     return toCSSLineBoxContainValue(value)->value();
 }
 
+static CSSToLengthConversionData lineHeightToLengthConversionData(StyleResolverState& state)
+{
+    float multiplier = state.style()->effectiveZoom();
+    if (LocalFrame* frame = state.document().frame())
+        multiplier *= frame->textZoomFactor();
+    return state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier);
+}
+
+Length StyleBuilderConverter::convertLineHeight(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (primitiveValue->isLength())
+        return primitiveValue->computeLength<Length>(lineHeightToLengthConversionData(state));
+    if (primitiveValue->isPercentage())
+        return Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
+    if (primitiveValue->isNumber())
+        return Length(primitiveValue->getDoubleValue() * 100.0, Percent);
+    if (primitiveValue->isCalculated()) {
+        Length zoomedLength = Length(primitiveValue->cssCalcValue()->toCalcValue(lineHeightToLengthConversionData(state)));
+        return Length(valueForLength(zoomedLength, state.style()->fontSize()), Fixed);
+    }
+
+    ASSERT(primitiveValue->getValueID() == CSSValueNormal);
+    return RenderStyle::initialLineHeight();
+}
+
 float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

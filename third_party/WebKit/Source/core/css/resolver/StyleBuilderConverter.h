@@ -66,6 +66,7 @@ public:
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
+    static Length convertLineHeight(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
     static float convertPerspective(StyleResolverState&, CSSValue*);
     static LengthPoint convertPerspectiveOrigin(StyleResolverState&, CSSValue*);
