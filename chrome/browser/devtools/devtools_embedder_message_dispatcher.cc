@@ -259,5 +259,7 @@ DevToolsEmbedderMessageDispatcher*
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("sendMessageToBrowser",
                      &Delegate::SendMessageToBrowser, delegate);
+  d->RegisterHandler("recordActionUMA",
+                     &Delegate::RecordActionUMA, delegate);
   return d;
 }

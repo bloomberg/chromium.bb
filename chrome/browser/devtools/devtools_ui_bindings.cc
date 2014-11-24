@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -63,6 +64,11 @@ static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
 static const char kTitleFormat[] = "Developer Tools - %s";
+
+static const char kDevToolsActionTakenHistogram[] = "DevTools.ActionTaken";
+static const int kDevToolsActionTakenBoundary = 100;
+static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
+static const int kDevToolsPanelShownBoundary = 20;
 
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
@@ -670,6 +676,13 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
 void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
   if (agent_host_.get())
     agent_host_->DispatchProtocolMessage(message);
+}
+
+void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
+  if (name == kDevToolsActionTakenHistogram)
+    UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsActionTakenBoundary);
+  else if (name == kDevToolsPanelShownHistogram)
+    UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsPanelShownBoundary);
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
