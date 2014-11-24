@@ -17,7 +17,3 @@ crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
-
-# Flaky under MSan (hang forever).
-crbug.com/435650 [ Linux ] fast/encoding/api/utf-round-trip.html [ Skip ]
-crbug.com/435650 [ Linux ] fast/events/keydown-1.html [ Skip ]
