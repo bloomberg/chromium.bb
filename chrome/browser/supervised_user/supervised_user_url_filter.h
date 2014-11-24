@@ -144,7 +144,8 @@ class SupervisedUserURLFilter
   // Initializes the experimental asynchronous checker.
   // |cx| is the identifier of the Custom Search Engine to use.
   void InitAsyncURLChecker(net::URLRequestContextGetter* context,
-                           const std::string& cx);
+                           const std::string& cx,
+                           const std::string& api_key);
   // Returns whether the asynchronous checker is set up.
   bool HasAsyncURLChecker() const;
 
