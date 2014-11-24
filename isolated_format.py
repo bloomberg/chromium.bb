@@ -324,6 +324,8 @@ def file_to_metadata(filepath, prevdict, read_only, algo):
     The necessary dict to create a entry in the 'files' section of an .isolated
     file.
   """
+  # TODO(maruel): None is not a valid value.
+  assert read_only in (None, 0, 1, 2), read_only
   out = {}
   # Always check the file stat and check if it is a link. The timestamp is used
   # to know if the file's content/symlink destination should be looked into.

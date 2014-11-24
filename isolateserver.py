@@ -1876,7 +1876,7 @@ def directory_to_metadata(root, algo, blacklist):
       root, '.' + os.path.sep, blacklist, sys.platform != 'win32')
   metadata = {
     relpath: isolated_format.file_to_metadata(
-        os.path.join(root, relpath), {}, False, algo)
+        os.path.join(root, relpath), {}, 0, algo)
     for relpath in paths
   }
   for v in metadata.itervalues():

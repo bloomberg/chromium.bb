@@ -170,7 +170,8 @@ class OnErrorServerTest(OnErrorBase):
   def call(self, url, arg, returncode):
     cmd = [sys.executable, 'on_error_test.py', 'run_shell_out', url, arg]
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ,
+        universal_newlines=True)
     out = proc.communicate()[0]
     logging.debug('\n%s', out)
     self.assertEqual(returncode, proc.returncode)

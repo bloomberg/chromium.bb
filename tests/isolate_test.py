@@ -898,9 +898,11 @@ class IsolateLoad(IsolateBase):
       expected = {
         'algo': 'sha-1',
         'command': command,
-        'files': {unicode(f):{} for f in expected_files},
+        'files': {
+          unicode(f.replace('/', os.path.sep)):{} for f in expected_files
+        },
         'read_only': 1,
-        'relative_cwd': relative_cwd,
+        'relative_cwd': relative_cwd.replace('/', os.path.sep),
         'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       self.assertEqual(expected, c.saved_state.to_isolated())

@@ -75,7 +75,8 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
         'algo': 'sha-1',
         'command': ['python', test],
         'includes': [tree_isolated],
-        'version': '1.0',
+        'read_only': 0,
+        'version': '1.4',
       }
       v = os.path.join(tempdir, test_name + '.isolated')
       tools.write_json(v, isolated, True)
@@ -97,7 +98,8 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
 
 
 def run_swarming_tests_on_swarming(
-    swarming_server, isolate_server, priority, oses, tests, logs):
+    swarming_server, isolate_server, priority, oses, tests, logs,
+    no_idempotent):
   """Archives, triggers swarming jobs and gets results."""
   print('Archiving the whole tree.')
   start = time.time()
@@ -105,11 +107,11 @@ def run_swarming_tests_on_swarming(
 
   # Create and archive all the .isolated files.
   isolateds = archive_isolated_triggers(isolate_server, tree_isolated, tests)
-  logging.debug('%s', isolateds)
   print('Archival took %3.2fs' % (time.time() - start))
 
   exploded = []
   for test_path, isolated_hash in isolateds:
+    logging.debug('%s: %s', test_path, isolated_hash)
     test_name = os.path.basename(test_path).split('.')[0]
     for platform in oses:
       exploded.append((test_name, platform, isolated_hash))
@@ -122,7 +124,11 @@ def run_swarming_tests_on_swarming(
     ) for name, platform, isolated_hash in exploded
   ]
 
-  extra_args = []
+  extra_args = [
+    '--hard-timeout', '180',
+  ]
+  if not no_idempotent:
+    extra_args.append('--idempotent')
   if priority:
     extra_args.extend(['--priority', str(priority)])
     print('Using priority %s' % priority)
@@ -152,6 +158,9 @@ def main():
   parser.add_option(
       '-t', '--test', action='append',
       help='Run only these test, can be specified multiple times')
+  parser.add_option(
+      '--no-idempotent', action='store_true',
+      help='Do not use --idempotent to detect flaky tests')
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported argument %s' % args)
@@ -196,7 +205,8 @@ def main():
       options.priority,
       oses,
       tests,
-      options.logs)
+      options.logs,
+      options.no_idempotent)
 
 
 if __name__ == '__main__':

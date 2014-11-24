@@ -17,9 +17,11 @@ import time
 BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 FILE_PATH = unicode(os.path.abspath(__file__))
 
+from depot_tools import auto_stub
 import test_utils
 from utils import file_path
 
@@ -29,7 +31,7 @@ def write_content(filepath, content):
     f.write(content)
 
 
-class FilePathTest(unittest.TestCase):
+class FilePathTest(auto_stub.TestCase):
   def setUp(self):
     super(FilePathTest, self).setUp()
     self._tempdir = None
