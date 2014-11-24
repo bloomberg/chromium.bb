@@ -91,8 +91,7 @@ class SupervisedUserService : public KeyedService,
     // experimental "SafeSites" feature, or the empty string to disable the
     // feature.
     virtual std::string GetSafeSitesCx() const;
-    // Returns a custom Google API key to use for SafeSites, or the empty string
-    // to use the default one.
+    // TODO(treib): Unused, remove this!
     virtual std::string GetSafeSitesApiKey() const;
   };
 
@@ -230,8 +229,7 @@ class SupervisedUserService : public KeyedService,
     void SetManualURLs(scoped_ptr<std::map<GURL, bool> > url_map);
 
     void InitAsyncURLChecker(net::URLRequestContextGetter* context,
-                             const std::string& cx,
-                             const std::string& api_key);
+                             const std::string& cx);
 
    private:
     void OnBlacklistLoaded();

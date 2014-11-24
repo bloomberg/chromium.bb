@@ -22,7 +22,6 @@ using testing::_;
 namespace {
 
 const char kCx[] = "somecsecx";
-const char kApiKey[] = "someapikey";
 const size_t kCacheSize = 2;
 
 const int kSupervisedUserAsyncURLCheckerSafeURLFetcherID = 0;
@@ -67,7 +66,7 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
       : next_url_(0),
         request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        checker_(request_context_.get(), kCx, kApiKey, kCacheSize) {
+        checker_(request_context_.get(), kCx, kCacheSize) {
   }
 
   MOCK_METHOD3(OnCheckDone,

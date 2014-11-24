@@ -66,6 +66,8 @@ bool HasKeysConfigured();
 // e.g. URL-escaped if you use it in a URL.
 std::string GetAPIKey();
 
+std::string GetSafeSitesAPIKey();
+
 // Represents the different sets of client IDs and secrets in use.
 enum OAuth2Client {
   CLIENT_MAIN,         // Several different features use this.
