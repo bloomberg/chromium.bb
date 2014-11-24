@@ -238,8 +238,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
       process_ = base::Process(handle);
   } else {
     ServiceSandboxedProcessLauncherDelegate delegate;
-    process_ =
-        base::Process(content::StartSandboxedProcess(&delegate, cmd_line));
+    process_ = content::StartSandboxedProcess(&delegate, cmd_line);
   }
   return process_.IsValid();
 }

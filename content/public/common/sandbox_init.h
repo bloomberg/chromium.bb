@@ -58,7 +58,7 @@ CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
 
 // Launch a sandboxed process. |delegate| may be NULL. If |delegate| is non-NULL
 // then it just has to outlive this method call.
-CONTENT_EXPORT base::ProcessHandle StartSandboxedProcess(
+CONTENT_EXPORT base::Process StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line);
 

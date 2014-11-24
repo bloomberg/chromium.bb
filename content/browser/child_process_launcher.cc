@@ -313,13 +313,15 @@ void ChildProcessLauncher::Context::LaunchInternal(
   base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
-  base::ProcessHandle handle = base::kNullProcessHandle;
+  base::Process process;
   if (launch_elevated) {
     base::LaunchOptions options;
     options.start_hidden = true;
-    base::LaunchElevatedProcess(*cmd_line, options, &handle);
+    base::ProcessHandle handle = base::kNullProcessHandle;
+    if (base::LaunchElevatedProcess(*cmd_line, options, &handle))
+      process = base::Process(handle);
   } else {
-    handle = StartSandboxedProcess(delegate, cmd_line);
+    process = StartSandboxedProcess(delegate, cmd_line);
   }
 #elif defined(OS_POSIX)
   std::string process_type =
@@ -436,9 +438,10 @@ void ChildProcessLauncher::Context::LaunchInternal(
     broker->GetLock().Release();
 #endif  // defined(OS_MACOSX)
   }
+  base::Process process(handle);
 #endif  // else defined(OS_POSIX)
 #if !defined(OS_ANDROID)
-  if (handle)
+  if (process.IsValid())
     RecordHistograms(begin_launch_time);
   BrowserThread::PostTask(
       client_thread_id, FROM_HERE,
@@ -447,7 +450,7 @@ void ChildProcessLauncher::Context::LaunchInternal(
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
                  use_zygote,
 #endif
-                 base::Passed(base::Process(handle))));
+                 base::Passed(&process)));
 #endif  // !defined(OS_ANDROID)
 }
 
