@@ -195,4 +195,11 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
   return;
 }
 
+// static
+VideoCaptureDeviceFactory*
+VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  return new VideoCaptureDeviceFactoryLinux(ui_task_runner);
+}
+
 }  // namespace media

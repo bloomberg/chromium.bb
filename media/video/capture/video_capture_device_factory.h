@@ -53,6 +53,9 @@ class MEDIA_EXPORT VideoCaptureDeviceFactory {
   base::ThreadChecker thread_checker_;
 
  private:
+  static VideoCaptureDeviceFactory* CreateVideoCaptureDeviceFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactory);
 };
 

@@ -9,16 +9,6 @@
 #include "media/video/capture/fake_video_capture_device_factory.h"
 #include "media/video/capture/file_video_capture_device_factory.h"
 
-#if defined(OS_MACOSX)
-#include "media/video/capture/mac/video_capture_device_factory_mac.h"
-#elif defined(OS_LINUX)
-#include "media/video/capture/linux/video_capture_device_factory_linux.h"
-#elif defined(OS_ANDROID)
-#include "media/video/capture/android/video_capture_device_factory_android.h"
-#elif defined(OS_WIN)
-#include "media/video/capture/win/video_capture_device_factory_win.h"
-#endif
-
 namespace media {
 
 // static
@@ -38,22 +28,8 @@ scoped_ptr<VideoCaptureDeviceFactory> VideoCaptureDeviceFactory::CreateFactory(
   } else {
     // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve
     // screen rotations and for the Mac factory to run QTKit device enumeration.
-#if defined(OS_MACOSX)
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryMac(ui_task_runner));
-#elif defined(OS_LINUX)
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryLinux(ui_task_runner));
-#elif defined(OS_ANDROID)
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryAndroid());
-#elif defined(OS_WIN)
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactoryWin());
-#else
-    return scoped_ptr<VideoCaptureDeviceFactory>(new
-        VideoCaptureDeviceFactory());
-#endif
+    return scoped_ptr<VideoCaptureDeviceFactory>(
+        CreateVideoCaptureDeviceFactory(ui_task_runner));
   }
 }
 
@@ -72,5 +48,15 @@ void VideoCaptureDeviceFactory::EnumerateDeviceNames(const base::Callback<
   GetDeviceNames(device_names.get());
   callback.Run(device_names.Pass());
 }
+
+#if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_WIN)
+// static
+VideoCaptureDeviceFactory*
+VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+#endif
 
 }  // namespace media
