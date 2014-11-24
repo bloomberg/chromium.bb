@@ -1139,7 +1139,7 @@ _wl_display_add_socket(struct wl_display *display, struct wl_socket *s)
 		return -1;
 	}
 
-	if (listen(s->fd, 1) < 0) {
+	if (listen(s->fd, 128) < 0) {
 		wl_log("listen() failed with error: %m\n");
 		return -1;
 	}
