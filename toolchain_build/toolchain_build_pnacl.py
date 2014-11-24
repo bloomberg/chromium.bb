@@ -384,6 +384,19 @@ def CopyHostLibcxxForLLVMBuild(host, dest, options):
           command.Copy('%(' + GSDJoin('abs_libcxx', host) +')s/lib/' + libname,
                        os.path.join(dest, libname))]
 
+def CreateSymLinksToDirectToNaClTools():
+  return (
+      [command.Command(['ln', '-f',
+                        command.path.join('%(output)s', 'bin','clang'),
+                        command.path.join('%(output)s', 'bin',
+                                          arch + '-nacl-clang')])
+       for arch in DIRECT_TO_NACL_ARCHES] +
+      [command.Command(['ln', '-f',
+                        command.path.join('%(output)s', 'bin','clang'),
+                        command.path.join('%(output)s', 'bin',
+                                          arch + '-nacl-clang++')])
+       for arch in DIRECT_TO_NACL_ARCHES])
+
 def HostLibs(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
@@ -506,7 +519,7 @@ def HostTools(host, options):
                   ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
-                  '-DLLVM_ENABLE_LIBCXX=ON',
+                  '-DLLVM_ENABLE_LIBCXX=OFF',
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '-DLLVM_ENABLE_ASSERTIONS=ON',
@@ -518,7 +531,8 @@ def HostTools(host, options):
                   '%(llvm_src)s']),
               command.Command(['ninja', '-v']),
               command.Command(['ninja', 'install']),
-        ],
+              ] +
+          CreateSymLinksToDirectToNaClTools()
       },
   }
   llvm_autoconf = {
@@ -559,16 +573,7 @@ def HostTools(host, options):
                                Exe('clang-format'), Exe('clang-check'),
                                Exe('c-index-test'), Exe('clang-tblgen'),
                                Exe('llvm-tblgen')])] +
-              [command.Command(['ln', '-f',
-                                command.path.join('%(output)s', 'bin','clang'),
-                                command.path.join('%(output)s', 'bin',
-                                                  arch + '-nacl-clang')])
-               for arch in DIRECT_TO_NACL_ARCHES] +
-              [command.Command(['ln', '-f',
-                                command.path.join('%(output)s', 'bin','clang'),
-                                command.path.join('%(output)s', 'bin',
-                                                  arch + '-nacl-clang++')])
-               for arch in DIRECT_TO_NACL_ARCHES] +
+              CreateSymLinksToDirectToNaClTools() +
               CopyWindowsHostLibs(host),
       },
   }
