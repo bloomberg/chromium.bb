@@ -1003,16 +1003,6 @@ void DevToolsWindow::InspectElementCompleted() {
   }
 }
 
-void DevToolsWindow::MoveWindow(int x, int y) {
-  if (life_stage_ != kLoadCompleted)
-    return;
-  if (!is_docked_) {
-    gfx::Rect bounds = browser_->window()->GetBounds();
-    bounds.Offset(x, y);
-    browser_->window()->SetBounds(bounds);
-  }
-}
-
 void DevToolsWindow::SetIsDocked(bool dock_requested) {
   if (life_stage_ == kClosing)
     return;

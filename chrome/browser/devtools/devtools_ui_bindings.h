@@ -49,7 +49,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
     virtual void CloseWindow() = 0;
     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
     virtual void InspectElementCompleted() = 0;
-    virtual void MoveWindow(int x, int y) = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
     virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
@@ -102,7 +101,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void SetInspectedPageBounds(const gfx::Rect& rect) override;
   void InspectElementCompleted() override;
   void InspectedURLChanged(const std::string& url) override;
-  void MoveWindow(int x, int y) override;
   void SetIsDocked(bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
   void SaveToFile(const std::string& url,

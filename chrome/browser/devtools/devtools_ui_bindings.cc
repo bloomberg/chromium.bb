@@ -191,7 +191,6 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void CloseWindow() override {}
   void SetInspectedPageBounds(const gfx::Rect& rect) override {}
   void InspectElementCompleted() override {}
-  void MoveWindow(int x, int y) override {}
   void SetIsDocked(bool is_docked) override {}
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override {}
@@ -481,10 +480,6 @@ void DevToolsUIBindings::LoadCompleted() {
 
 void DevToolsUIBindings::SetInspectedPageBounds(const gfx::Rect& rect) {
   delegate_->SetInspectedPageBounds(rect);
-}
-
-void DevToolsUIBindings::MoveWindow(int x, int y) {
-  delegate_->MoveWindow(x, y);
 }
 
 void DevToolsUIBindings::SetIsDocked(bool dock_requested) {

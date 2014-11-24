@@ -35,7 +35,6 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
     virtual void InspectElementCompleted() = 0;
     virtual void InspectedURLChanged(const std::string& url) = 0;
-    virtual void MoveWindow(int x, int y) = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
     virtual void SaveToFile(const std::string& url,

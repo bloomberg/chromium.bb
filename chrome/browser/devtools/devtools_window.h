@@ -269,7 +269,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void CloseWindow() override;
   void SetInspectedPageBounds(const gfx::Rect& rect) override;
   void InspectElementCompleted() override;
-  void MoveWindow(int x, int y) override;
   void SetIsDocked(bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override;
