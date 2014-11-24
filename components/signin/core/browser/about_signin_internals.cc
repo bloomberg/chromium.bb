@@ -228,8 +228,15 @@ void AboutSigninInternals::NotifyObservers() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AboutSigninInternals::NotifyObservers"));
 
+  const std::string product_version = client_->GetProductVersion();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile05(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::NotifyObservers 0.5"));
+
   scoped_ptr<base::DictionaryValue> signin_status_value =
-      signin_status_.ToValue(client_->GetProductVersion());
+      signin_status_.ToValue(product_version);
 
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -447,6 +454,11 @@ AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
 
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     std::string product_version) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::SigninStatus::ToValue1"));
+
   scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
   base::ListValue* signin_info = new base::ListValue();
   signin_status->Set("signin_info", signin_info);
@@ -470,6 +482,11 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(basic_info, "Account Consistency Enabled?",
       switches::IsEnableAccountConsistency() == true ? "True" : "False");
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::SigninStatus::ToValue2"));
+
   // Only add username.  SID and LSID have moved to tokens section.
   const std::string field =
       SigninStatusFieldToLabel(static_cast<UntimedSigninStatusField>(USERNAME));
@@ -478,6 +495,11 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                   untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN]);
 
 #if !defined(OS_CHROMEOS)
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::SigninStatus::ToValue3"));
+
   // Time and status information of the possible sign in types.
   base::ListValue* detailed_info =
       AddSection(signin_info, "Last Signin Details");
@@ -491,6 +513,11 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].second);
   }
 #endif // !defined(OS_CHROMEOS)
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::SigninStatus::ToValue4"));
 
   // Token information for all services.
   base::ListValue* token_info = new base::ListValue();
