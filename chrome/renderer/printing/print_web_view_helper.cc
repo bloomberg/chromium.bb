@@ -46,6 +46,11 @@
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
+#endif  // defined(ENABLE_EXTENSIONS)
+
 using content::WebPreferences;
 
 namespace printing {
@@ -403,6 +408,24 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
       *scale_factor = factor;
   }
   return result_params;
+}
+
+// Return the PDF object element if |frame| is the out of process PDF extension.
+blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) {
+#if defined(ENABLE_EXTENSIONS)
+  GURL url = frame->document().url();
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      url.host() == extension_misc::kPdfExtensionId) {
+    // <object> with id="plugin" is created in
+    // chrome/browser/resources/pdf/pdf.js.
+    auto plugin_element = frame->document().getElementById("plugin");
+    if (!plugin_element.isNull()) {
+      return plugin_element;
+    }
+    NOTREACHED();
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
+  return blink::WebElement();
 }
 
 }  // namespace
@@ -890,9 +913,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
       return;
     }
     plugin_frame = blink::WebLocalFrame::fromFrameOwnerElement(pdf_element);
-    // <object> with id="plugin" is created in
-    // chrome/browser/resources/pdf/pdf.js.
-    plugin_element = plugin_frame->document().getElementById("plugin");
+    plugin_element = GetPdfElement(plugin_frame);
     if (plugin_element.isNull()) {
       NOTREACHED();
       return;
@@ -948,8 +969,12 @@ bool PrintWebViewHelper::GetPrintFrame(blink::WebLocalFrame** frame) {
 #if defined(ENABLE_BASIC_PRINTING)
 void PrintWebViewHelper::OnPrintPages() {
   blink::WebLocalFrame* frame;
-  if (GetPrintFrame(&frame))
-    Print(frame, blink::WebNode());
+  if (!GetPrintFrame(&frame))
+    return;
+  // If we are printing a PDF extension frame, find the plugin node and print
+  // that instead.
+  auto plugin = GetPdfElement(frame);
+  Print(frame, plugin);
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
@@ -1201,6 +1226,13 @@ void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {
   blink::WebLocalFrame* frame = NULL;
   GetPrintFrame(&frame);
   DCHECK(frame);
+  // If we are printing a PDF extension frame, find the plugin node and print
+  // that instead.
+  auto plugin = GetPdfElement(frame);
+  if (!plugin.isNull()) {
+    PrintNode(plugin);
+    return;
+  }
   print_preview_context_.InitWithFrame(frame);
   RequestPrintPreview(selection_only ?
                       PRINT_PREVIEW_USER_INITIATED_SELECTION :
