@@ -181,13 +181,11 @@ void IsolateHolder::Initialize(ScriptMode mode,
   v8::StartupData natives;
   natives.data = reinterpret_cast<const char*>(g_mapped_natives->data());
   natives.raw_size = static_cast<int>(g_mapped_natives->length());
-  natives.compressed_size = static_cast<int>(g_mapped_natives->length());
   v8::V8::SetNativesDataBlob(&natives);
 
   v8::StartupData snapshot;
   snapshot.data = reinterpret_cast<const char*>(g_mapped_snapshot->data());
   snapshot.raw_size = static_cast<int>(g_mapped_snapshot->length());
-  snapshot.compressed_size = static_cast<int>(g_mapped_snapshot->length());
   v8::V8::SetSnapshotDataBlob(&snapshot);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
   v8::V8::Initialize();
