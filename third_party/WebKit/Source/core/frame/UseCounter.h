@@ -545,6 +545,7 @@ public:
         TextWholeText = 599,
         AttrChildAccess = 600,
         AttrChildChange = 601,
+        DocumentGetOverrideStyle = 602,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

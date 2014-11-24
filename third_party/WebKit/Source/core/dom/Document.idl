@@ -85,8 +85,7 @@ interface Document : Node {
 
     // DOM Level 2 Style (DocumentCSS interface)
 
-    CSSStyleDeclaration getOverrideStyle([Default=Undefined] optional Element element,
-                                         [Default=Undefined] optional DOMString pseudoElement);
+    [MeasureAs=DocumentGetOverrideStyle] CSSStyleDeclaration getOverrideStyle();
 
     // DOM 4
     readonly attribute DOMString contentType;

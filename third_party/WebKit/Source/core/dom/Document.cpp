@@ -3942,11 +3942,6 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     }
 }
 
-CSSStyleDeclaration* Document::getOverrideStyle(Element*, const String&)
-{
-    return 0;
-}
-
 HTMLFrameOwnerElement* Document::ownerElement() const
 {
     if (!frame())
