@@ -865,16 +865,16 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
     if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {
       // Module is not loaded, denote type of module.
       if (module->type & ModuleEnumerator::SHELL_EXTENSION)
-        type_string = base::ASCIIToWide("Shell Extension");
+        type_string = L"Shell Extension";
       if (module->type & ModuleEnumerator::WINSOCK_MODULE_REGISTRATION) {
         if (!type_string.empty())
-          type_string += base::ASCIIToWide(", ");
-        type_string += base::ASCIIToWide("Winsock");
+          type_string += L", ";
+        type_string += L"Winsock";
       }
       // Must be one of the above type.
       DCHECK(!type_string.empty());
       if (!limited_mode_) {
-        type_string += base::ASCIIToWide(" -- ");
+        type_string += L" -- ";
         type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
       }
     }
@@ -890,10 +890,10 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
     if (!limited_mode_) {
       // Figure out the possible resolution help string.
       base::string16 actions;
-      base::string16 separator = base::ASCIIToWide(" ") +
+      base::string16 separator = L" " +
           l10n_util::GetStringUTF16(
               IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR) +
-          base::ASCIIToWide(" ");
+          L" ";
 
       if (module->recommended_action & ModuleEnumerator::INVESTIGATING) {
         actions = l10n_util::GetStringUTF16(
@@ -918,12 +918,12 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
               IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
         }
       }
-      base::string16 possible_resolution =
-          actions.empty() ? base::ASCIIToWide("")
-                          : l10n_util::GetStringUTF16(
-                                IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
-          base::ASCIIToWide(" ") +
-          actions;
+      base::string16 possible_resolution;
+      if (!actions.empty()) {
+        possible_resolution =
+            l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
+            L" " + actions;
+      }
       data->SetString("possibleResolution", possible_resolution);
       data->SetString("help_url",
                       ConstructHelpCenterUrl(*module).spec().c_str());

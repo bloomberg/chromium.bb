@@ -548,9 +548,9 @@ TEST_F(AboutFlagsTest, CheckValues) {
                                     std::string(kSwitch1) +
                                     std::string("=");
 #if defined(OS_WIN)
-  EXPECT_EQ(std::wstring::npos,
+  EXPECT_EQ(base::string16::npos,
             command_line.GetCommandLineString().find(
-                base::ASCIIToWide(switch1_with_equals)));
+                base::ASCIIToUTF16(switch1_with_equals)));
 #else
   EXPECT_EQ(std::string::npos,
             command_line.GetCommandLineString().find(switch1_with_equals));
@@ -561,9 +561,9 @@ TEST_F(AboutFlagsTest, CheckValues) {
                                     std::string(kSwitch2) +
                                     std::string("=");
 #if defined(OS_WIN)
-  EXPECT_NE(std::wstring::npos,
+  EXPECT_NE(base::string16::npos,
             command_line.GetCommandLineString().find(
-                base::ASCIIToWide(switch2_with_equals)));
+                base::ASCIIToUTF16(switch2_with_equals)));
 #else
   EXPECT_NE(std::string::npos,
             command_line.GetCommandLineString().find(switch2_with_equals));

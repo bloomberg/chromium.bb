@@ -594,17 +594,15 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     EXPECT_TRUE(base::PathExists(plugin_lib));
 
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL("#"));
+    std::string string_to_append = "#";
+    string_to_append.append(display_name);
+    string_to_append.append("#A CDM#0.1.0.0;");
+    string_to_append.append(mime_type);
+
 #if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToWide(display_name));
+    pepper_plugin.append(base::ASCIIToUTF16(string_to_append));
 #else
-    pepper_plugin.append(display_name);
-#endif
-    pepper_plugin.append(FILE_PATH_LITERAL("#A CDM#0.1.0.0;"));
-#if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToWide(mime_type));
-#else
-    pepper_plugin.append(mime_type);
+    pepper_plugin.append(string_to_append);
 #endif
 
     return pepper_plugin;

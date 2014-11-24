@@ -18,8 +18,8 @@ namespace {
 
 // Checks if the key exists in the given hive and expands any string variables.
 bool LoadUserDataDirPolicyFromRegistry(HKEY hive, base::FilePath* dir) {
-  std::wstring value;
-  std::wstring key_name(base::ASCIIToWide(policy::key::kUserDataDir));
+  base::string16 value;
+  base::string16 key_name(base::ASCIIToUTF16(policy::key::kUserDataDir));
   base::win::RegKey key(hive, policy::kRegistryChromePolicyKey, KEY_READ);
   if (key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *dir = base::FilePath(policy::path_parser::ExpandPathVariables(value));

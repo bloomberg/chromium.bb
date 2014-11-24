@@ -257,7 +257,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName, key_system);
     }
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-    else if (IsWidevine(key_system)) {
+    else if (IsWidevine(key_system)) {  // NOLINT
       RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName, key_system);
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
@@ -281,7 +281,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToWide(GetPepperType(key_system)));
+    pepper_plugin.append(base::ASCIIToUTF16(GetPepperType(key_system)));
 #else
     pepper_plugin.append(GetPepperType(key_system));
 #endif

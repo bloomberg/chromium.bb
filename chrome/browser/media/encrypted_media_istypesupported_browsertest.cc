@@ -214,7 +214,7 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToWide(pepper_type_for_key_system));
+    pepper_plugin.append(base::ASCIIToUTF16(pepper_type_for_key_system));
 #else
     pepper_plugin.append(pepper_type_for_key_system);
 #endif

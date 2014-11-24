@@ -146,7 +146,7 @@ LaunchMode GetLaunchShortcutKind() {
     std::string appdata_path;
     env->GetVar("USERPROFILE", &appdata_path);
     if (!appdata_path.empty() &&
-        shortcut.find(base::ASCIIToWide(appdata_path)) != std::wstring::npos)
+        shortcut.find(base::ASCIIToUTF16(appdata_path)) != base::string16::npos)
       return LM_SHORTCUT_DESKTOP;
     return LM_SHORTCUT_UNKNOWN;
   }

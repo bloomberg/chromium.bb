@@ -114,7 +114,7 @@ std::vector<PasswordForm*> PasswordStoreWin::DBHandler::GetIE7Results(
     // table.
     web_data_service_->RemoveIE7Login(info);
     std::vector<ie7_password::DecryptedCredentials> credentials;
-    std::wstring url = base::ASCIIToWide(form.origin.spec());
+    base::string16 url = base::ASCIIToUTF16(form.origin.spec());
     if (ie7_password::DecryptPasswords(url,
                                        info.encrypted_data,
                                        &credentials)) {
