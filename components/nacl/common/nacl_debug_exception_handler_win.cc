@@ -13,15 +13,15 @@ namespace {
 
 class DebugExceptionHandler : public base::PlatformThread::Delegate {
  public:
-  DebugExceptionHandler(base::ProcessHandle nacl_process,
-                        const std::string& startup_info,
-                        base::MessageLoopProxy* message_loop,
-                        const base::Callback<void(bool)>& on_connected)
+  DebugExceptionHandler(
+      base::ProcessHandle nacl_process,
+      const std::string& startup_info,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const base::Callback<void(bool)>& on_connected)
       : nacl_process_(nacl_process),
         startup_info_(startup_info),
         message_loop_(message_loop),
-        on_connected_(on_connected) {
-  }
+        on_connected_(on_connected) {}
 
   virtual void ThreadMain() override {
     // In the Windows API, the set of processes being debugged is
@@ -54,7 +54,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
  private:
   base::win::ScopedHandle nacl_process_;
   std::string startup_info_;
-  base::MessageLoopProxy* message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::Callback<void(bool)> on_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugExceptionHandler);
@@ -65,7 +65,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
 void NaClStartDebugExceptionHandlerThread(
     base::ProcessHandle nacl_process,
     const std::string& startup_info,
-    base::MessageLoopProxy* message_loop,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const base::Callback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
