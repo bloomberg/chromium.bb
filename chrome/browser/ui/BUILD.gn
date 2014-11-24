@@ -67,6 +67,7 @@ static_library("ui") {
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/content_accelerators",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx",

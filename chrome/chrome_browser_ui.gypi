@@ -2626,6 +2626,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/content_accelerators/ui_content_accelerators.gyp:ui_content_accelerators',
         '../ui/events/events.gyp:events',
         '../ui/events/events.gyp:gesture_detection',
         '../ui/gfx/gfx.gyp:gfx',

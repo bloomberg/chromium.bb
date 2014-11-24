@@ -24,6 +24,7 @@ component("webview") {
     "//skia",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/content_accelerators",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/web_dialogs",

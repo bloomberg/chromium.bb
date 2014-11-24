@@ -145,6 +145,7 @@
         '../extensions/extensions.gyp:extensions_browser',
         '../extensions/extensions.gyp:extensions_common',
         '../ui/app_list/app_list.gyp:app_list',
+        '../ui/content_accelerators/ui_content_accelerators.gyp:ui_content_accelerators',
         '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/keyboard/keyboard.gyp:keyboard_resources',
         '../third_party/WebKit/public/blink.gyp:blink',

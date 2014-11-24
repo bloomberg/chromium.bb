@@ -104,7 +104,6 @@
 #include "components/translate/core/browser/language_state.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -119,6 +118,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/content_accelerators/accelerator_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -1318,11 +1318,8 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   if (focus_manager->shortcut_handling_suspended())
     return false;
 
-  ui::Accelerator accelerator(
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-      content::GetModifiersFromNativeWebKeyboardEvent(event));
-  if (event.type == blink::WebInputEvent::KeyUp)
-    accelerator.set_type(ui::ET_KEY_RELEASED);
+  ui::Accelerator accelerator =
+      ui::GetAcceleratorFromNativeWebKeyboardEvent(event);
 
   // What we have to do here is as follows:
   // - If the |browser_| is for an app, do nothing.

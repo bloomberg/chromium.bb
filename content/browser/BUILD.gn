@@ -297,7 +297,6 @@ source_set("browser") {
       "geolocation/network_location_provider.h",
       "geolocation/network_location_request.cc",
       "geolocation/network_location_request.h",
-      "renderer_host/native_web_keyboard_event.cc",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",
 

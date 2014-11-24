@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/content_accelerators/accelerator_util.h"
 
 namespace values = extensions::manifest_values;
 
@@ -44,9 +44,8 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
   if (shortcut_handling_suspended_)
     return false;
 
-  ui::Accelerator accelerator(
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-      content::GetModifiersFromNativeWebKeyboardEvent(event));
+  ui::Accelerator accelerator =
+      ui::GetAcceleratorFromNativeWebKeyboardEvent(event);
 
   std::string extension_id;
   std::string command_name;

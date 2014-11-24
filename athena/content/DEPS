@@ -16,6 +16,7 @@ include_rules = [
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",
+  "+ui/content_accelerators",
   "+ui/gfx",
   "+ui/views",
   "+ui/wm/core",

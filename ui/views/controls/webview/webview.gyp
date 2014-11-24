@@ -19,6 +19,7 @@
         '../../../../skia/skia.gyp:skia',
         '../../../../url/url.gyp:url_lib',
         '../../../base/ui_base.gyp:ui_base',
+        '../../../content_accelerators/ui_content_accelerators.gyp:ui_content_accelerators',
         '../../../events/events.gyp:events',
         '../../../gfx/gfx.gyp:gfx',
         '../../../gfx/gfx.gyp:gfx_geometry',

@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/favicon_base/select_favicon_frames.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -28,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
@@ -84,11 +84,8 @@ class WebActivityController : public AcceleratorHandler {
   bool PreHandleKeyboardEvent(content::WebContents* source,
                               const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) {
-    ui::Accelerator accelerator(
-        static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-        content::GetModifiersFromNativeWebKeyboardEvent(event));
-    if (event.type == blink::WebInputEvent::KeyUp)
-      accelerator.set_type(ui::ET_KEY_RELEASED);
+    ui::Accelerator accelerator =
+        ui::GetAcceleratorFromNativeWebKeyboardEvent(event);
 
     if (reserved_accelerator_enabled_ &&
         accelerator_manager_->IsRegistered(accelerator, AF_RESERVED)) {

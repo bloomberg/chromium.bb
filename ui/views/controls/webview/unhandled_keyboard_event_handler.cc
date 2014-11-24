@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace views {
@@ -35,9 +35,8 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   ignore_next_char_event_ = false;
 
   if (event.type == blink::WebInputEvent::RawKeyDown) {
-    ui::Accelerator accelerator(
-        static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-        content::GetModifiersFromNativeWebKeyboardEvent(event));
+    ui::Accelerator accelerator =
+        ui::GetAcceleratorFromNativeWebKeyboardEvent(event);
 
     // This is tricky: we want to set ignore_next_char_event_ if
     // ProcessAccelerator returns true. But ProcessAccelerator might delete
