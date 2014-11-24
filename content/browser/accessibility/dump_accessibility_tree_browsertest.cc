@@ -1019,7 +1019,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySection) {
   RunTest(FILE_PATH_LITERAL("section.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySelect) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilitySelect) {
   RunTest(FILE_PATH_LITERAL("select.html"));
 }
 
