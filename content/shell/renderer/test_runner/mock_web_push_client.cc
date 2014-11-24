@@ -63,15 +63,22 @@ void MockWebPushClient::getPermissionStatus(
   blink::WebPushPermissionStatus status;
   if (error_message_.empty())
     status = blink::WebPushPermissionStatusGranted;
-  else if (error_message_.compare("deny_permission") == 0)
+  else if (error_message_ == "deny_permission")
     status = blink::WebPushPermissionStatusDenied;
   else
     status = blink::WebPushPermissionStatusDefault;
 
-  fprintf(stderr, "ABOUT TO CALL ON SUCCESS");
   callback->onSuccess(&status);
   delete callback;
 }
 
+void MockWebPushClient::requestPermission(
+    blink::WebPushPermissionRequestCallbacks* callback) {
+  if (error_message_ == "deny_permission")
+    callback->onError();
+  else
+    callback->onSuccess();
+  delete callback;
+}
 
 }  // Namespace content

@@ -44,6 +44,8 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   virtual void getPermissionStatus(
       blink::WebPushPermissionStatusCallback* callback,
       blink::WebServiceWorkerProvider* service_worker_provider);  // override
+  virtual void requestPermission(
+      blink::WebPushPermissionRequestCallbacks* callback);  // override
 
   void DoRegister(blink::WebPushRegistrationCallbacks* callbacks,
                   blink::WebServiceWorkerProvider* service_worker_provider,
@@ -58,11 +60,14 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   void OnPermissionStatus(int32 callback_id,
                           blink::WebPushPermissionStatus status);
   void OnPermissionStatusFailure(int32 callback_id);
+  void OnRequestPermissionResponse(int32 request_id, bool allowed);
 
   IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
       registration_callbacks_;
   IDMap<blink::WebPushPermissionStatusCallback, IDMapOwnPointer>
       permission_check_callbacks_;
+  IDMap<blink::WebPushPermissionRequestCallbacks, IDMapOwnPointer>
+      permission_request_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingDispatcher);
 };

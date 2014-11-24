@@ -14,7 +14,12 @@
 #include "content/common/push_messaging_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
 
 namespace content {
@@ -47,9 +52,18 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Register, OnRegister)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_PermissionStatus,
                         OnPermissionStatusRequest)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RequestPermission,
+                        OnRequestPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void PushMessagingMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  if (message.type() == PushMessagingHostMsg_RequestPermission::ID)
+    *thread = BrowserThread::UI;
 }
 
 void PushMessagingMessageFilter::OnRegister(int render_frame_id,
@@ -57,7 +71,7 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
                                             const std::string& sender_id,
                                             bool user_gesture,
                                             int service_worker_provider_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
   ServiceWorkerProviderHost* service_worker_host =
       service_worker_context_->context()->GetProviderHost(
@@ -109,6 +123,33 @@ void PushMessagingMessageFilter::OnPermissionStatusRequest(
   }
 }
 
+void PushMessagingMessageFilter::OnRequestPermission(int render_frame_id,
+                                                     int request_id,
+                                                     bool user_gesture) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id);
+  if (!render_frame_host)
+    return;
+
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
+  GetContentClient()->browser()->RequestPermission(
+      PERMISSION_PUSH_MESSAGING,
+      web_contents,
+      render_frame_id,
+      render_frame_host->GetLastCommittedURL().GetOrigin(),
+      user_gesture,
+      base::Bind(&PushMessagingMessageFilter::DidRequestPermission,
+                 weak_factory_.GetWeakPtr(),
+                 render_frame_id,
+                 request_id));
+}
+
 void PushMessagingMessageFilter::DoRegister(
     int render_frame_id,
     int callbacks_id,
@@ -116,7 +157,7 @@ void PushMessagingMessageFilter::DoRegister(
     bool user_gesture,
     const GURL& origin,
     int64 service_worker_registration_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service()) {
     PushRegistrationStatus status =
         PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
@@ -158,7 +199,7 @@ void PushMessagingMessageFilter::DidRegister(
     const GURL& push_endpoint,
     const std::string& push_registration_id,
     PushRegistrationStatus status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
     Send(new PushMessagingMsg_RegisterSuccess(
         render_frame_id, callbacks_id, push_endpoint, push_registration_id));
@@ -167,6 +208,14 @@ void PushMessagingMessageFilter::DidRegister(
         render_frame_id, callbacks_id, status));
   }
   RecordRegistrationStatus(status);
+}
+
+void PushMessagingMessageFilter::DidRequestPermission(int render_frame_id,
+                                                      int request_id,
+                                                      bool allowed) {
+  Send(new PushMessagingMsg_RequestPermissionResponse(render_frame_id,
+                                                      request_id,
+                                                      allowed));
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {

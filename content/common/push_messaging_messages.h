@@ -36,6 +36,10 @@ IPC_MESSAGE_ROUTED2(PushMessagingMsg_PermissionStatusResult,
 IPC_MESSAGE_ROUTED1(PushMessagingMsg_PermissionStatusFailure,
                     int32 /* callback_id */)
 
+IPC_MESSAGE_ROUTED2(PushMessagingMsg_RequestPermissionResponse,
+                    int32 /* request_id */,
+                    bool /* allowed */)
+
 // Messages sent from the renderer to the browser.
 
 IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_Register,
@@ -49,3 +53,8 @@ IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_PermissionStatus,
                      int32 /* render_frame_id */,
                      int32 /* service_worker_provider_id */,
                      int32 /* permission_callback_id */)
+
+IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_RequestPermission,
+                     int32 /* render_frame_id */,
+                     int32 /* request_id */,
+                     bool /* user_gesture */)
