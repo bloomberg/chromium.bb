@@ -6,6 +6,7 @@
 #define UI_GFX_TRANSFORM_UTIL_H_
 
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -57,6 +58,12 @@ GFX_EXPORT Transform ComposeTransform(const DecomposedTransform& decomp);
 GFX_EXPORT bool SnapTransform(Transform* out,
                               const Transform& transform,
                               const Rect& viewport);
+
+// Calculates a transform with a transformed origin. The resulting tranform is
+// created by composing P * T * P^-1 where P is a constant transform to the new
+// origin.
+GFX_EXPORT Transform TransformAboutPivot(const gfx::Point& pivot,
+                                         const gfx::Transform& transform);
 
 }  // namespace gfx
 

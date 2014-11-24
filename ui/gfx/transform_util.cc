@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -479,6 +480,15 @@ bool SnapTransform(Transform* out,
   return snappable;
 }
 
+Transform TransformAboutPivot(const gfx::Point& pivot,
+                              const gfx::Transform& transform) {
+  gfx::Transform result;
+  result.Translate(pivot.x(), pivot.y());
+  result.PreconcatTransform(transform);
+  result.Translate(-pivot.x(), -pivot.y());
+  return result;
+}
+
 std::string DecomposedTransform::ToString() const {
   return base::StringPrintf(
       "translate: %+0.4f %+0.4f %+0.4f\n"
@@ -505,4 +515,4 @@ std::string DecomposedTransform::ToString() const {
       quaternion[3]);
 }
 
-}  // namespace ui
+}  // namespace gfx
