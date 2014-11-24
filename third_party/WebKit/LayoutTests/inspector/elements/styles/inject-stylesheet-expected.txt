@@ -8,7 +8,7 @@ Main frame style:
 -webkit-background-origin: padding-box;
 -webkit-background-size: auto;
 -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
-    #main - url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQVR42r2RsQrDMAxEBRdl8SDcX8lQPGg1GBI6lvz/h7QyRRXV0qUULwfvwZ1tenw5PxToRPWMC52eA9+WDnlh3HFQ/xBQl86NFYJqeGflkiogrOvVlIFhqURFVho3x1moGAa3deMs+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) user stylesheet
+    #main - url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQVR42r2RsQrDMAxEBRdl8SDcX8lQPGg1GBI6lvz/h7QyRRXV0qUULwfvwZ1tenw5PxToRPWMC52eA9+WDnlh3HFQ/xBQl86NFYJqeGflkiogrOvVlIFhqURFVho3x1moGAa3deMs+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) injected stylesheet
 background-attachment: scroll;
     #main - initial inject-stylesheet.html:5
 background-clip: border-box;
@@ -22,7 +22,7 @@ background-origin: padding-box;
 background-size: auto;
     #main - initial inject-stylesheet.html:5
 color: rgb(255, 0, 0);
-    #main - red user stylesheet
+    #main - red injected stylesheet
 display: block;
     div - block user agent stylesheet
 
@@ -45,7 +45,7 @@ background: blue;
     background-color: blue;
 
 [expanded] 
-#main  { (user stylesheet)
+#main  { (injected stylesheet)
 color: red;
 -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==);
 
@@ -60,22 +60,22 @@ iframe style:
 -webkit-background-origin: padding-box;
 -webkit-background-size: auto;
 background-attachment: scroll;
-    #iframebody - initial user stylesheet
+    #iframebody - initial injected stylesheet
     /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
 background-clip: border-box;
-    #iframebody - initial user stylesheet
+    #iframebody - initial injected stylesheet
     /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
 background-color: rgb(255, 0, 0);
-    #iframebody - red user stylesheet
+    #iframebody - red injected stylesheet
     /-- overloaded --/ body - green inject-styleshe…me-data.html:4
 background-image: none;
-    #iframebody - initial user stylesheet
+    #iframebody - initial injected stylesheet
     /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
 background-origin: padding-box;
-    #iframebody - initial user stylesheet
+    #iframebody - initial injected stylesheet
     /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
 background-size: auto;
-    #iframebody - initial user stylesheet
+    #iframebody - initial injected stylesheet
     /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
 display: block;
     body - block user agent stylesheet
@@ -92,7 +92,7 @@ margin-top: 8px;
 element.style  { ()
 
 [expanded] 
-#iframebody  { (user stylesheet)
+#iframebody  { (injected stylesheet)
 background: red;
     background-image: initial;
     background-position-x: initial;

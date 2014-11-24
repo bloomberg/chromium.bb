@@ -6,7 +6,7 @@ element.style  { ()
 margin: 10px;
 
 [expanded] 
-#container  { (user stylesheet)
+#container  { (injected stylesheet)
 /-- overloaded --/ margin: 8px;
 
 [expanded] 
@@ -20,7 +20,7 @@ element.style  { ()
 /-- overloaded --/ /-- disabled --/ /* margin: 10px; */
 
 [expanded] 
-#container  { (user stylesheet)
+#container  { (injected stylesheet)
 margin: 8px;
 
 [expanded] 
@@ -34,7 +34,7 @@ element.style  { ()
 margin: 10px;
 
 [expanded] 
-#container  { (user stylesheet)
+#container  { (injected stylesheet)
 /-- overloaded --/ margin: 8px;
 
 [expanded] 
