@@ -8,55 +8,8 @@
 #include "base/prefs/default_pref_store.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace user_prefs {
-
-namespace {
-
-// A helper function for RegisterLocalized*Pref that creates a Value*
-// based on a localized resource.  Because we control the values in a
-// locale dll, this should always return a Value of the appropriate
-// type.
-base::Value* CreateLocaleDefaultValue(base::Value::Type type,
-                                      int message_id) {
-  const std::string resource_string = l10n_util::GetStringUTF8(message_id);
-  DCHECK(!resource_string.empty());
-  switch (type) {
-    case base::Value::TYPE_BOOLEAN: {
-      if ("true" == resource_string)
-        return new base::FundamentalValue(true);
-      if ("false" == resource_string)
-        return new base::FundamentalValue(false);
-      break;
-    }
-
-    case base::Value::TYPE_INTEGER: {
-      int val;
-      base::StringToInt(resource_string, &val);
-      return new base::FundamentalValue(val);
-    }
-
-    case base::Value::TYPE_DOUBLE: {
-      double val;
-      base::StringToDouble(resource_string, &val);
-      return new base::FundamentalValue(val);
-    }
-
-    case base::Value::TYPE_STRING: {
-      return new base::StringValue(resource_string);
-    }
-
-    default: {
-      NOTREACHED() <<
-          "list and dictionary types cannot have default locale values";
-    }
-  }
-  NOTREACHED();
-  return base::Value::CreateNullValue();
-}
-
-}  // namespace
 
 PrefRegistrySyncable::PrefRegistrySyncable() {
 }
@@ -131,50 +84,6 @@ void PrefRegistrySyncable::RegisterDictionaryPref(
     base::DictionaryValue* default_value,
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path, default_value, sync_status);
-}
-
-void PrefRegistrySyncable::RegisterLocalizedBooleanPref(
-    const char* path,
-    int locale_default_message_id,
-    PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(
-      path,
-      CreateLocaleDefaultValue(base::Value::TYPE_BOOLEAN,
-                               locale_default_message_id),
-      sync_status);
-}
-
-void PrefRegistrySyncable::RegisterLocalizedIntegerPref(
-    const char* path,
-    int locale_default_message_id,
-    PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(
-      path,
-      CreateLocaleDefaultValue(base::Value::TYPE_INTEGER,
-                               locale_default_message_id),
-      sync_status);
-}
-
-void PrefRegistrySyncable::RegisterLocalizedDoublePref(
-    const char* path,
-    int locale_default_message_id,
-    PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(
-      path,
-      CreateLocaleDefaultValue(base::Value::TYPE_DOUBLE,
-                               locale_default_message_id),
-      sync_status);
-}
-
-void PrefRegistrySyncable::RegisterLocalizedStringPref(
-    const char* path,
-    int locale_default_message_id,
-    PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(
-      path,
-      CreateLocaleDefaultValue(base::Value::TYPE_STRING,
-                               locale_default_message_id),
-      sync_status);
 }
 
 void PrefRegistrySyncable::RegisterInt64Pref(

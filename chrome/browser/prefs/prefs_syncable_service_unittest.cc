@@ -23,6 +23,7 @@
 #include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using syncer::SyncChange;
 using syncer::SyncData;
@@ -88,9 +89,9 @@ class PrefsSyncableServiceTest : public testing::Test {
     prefs_.registry()->RegisterListPref(
         prefs::kURLsToRestoreOnStartupOld,
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-    prefs_.registry()->RegisterLocalizedStringPref(
+    prefs_.registry()->RegisterStringPref(
         prefs::kDefaultCharset,
-        IDS_DEFAULT_ENCODING,
+        l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(

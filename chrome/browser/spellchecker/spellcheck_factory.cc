@@ -13,6 +13,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 SpellcheckService* SpellcheckServiceFactory::GetForContext(
@@ -67,9 +68,9 @@ KeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 void SpellcheckServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
-  user_prefs->RegisterLocalizedStringPref(
+  user_prefs->RegisterStringPref(
       prefs::kSpellCheckDictionary,
-      IDS_SPELLCHECK_DICTIONARY,
+      l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(
       prefs::kSpellCheckUseSpellingService,

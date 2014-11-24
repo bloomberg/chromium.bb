@@ -8,6 +8,7 @@
 
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,7 +131,8 @@ void RegisterFontFamilyMapObserver(
     PrefChangeRegistrar* registrar,
     const char* map_name,
     const PrefChangeRegistrar::NamedChangeCallback& obs) {
-  DCHECK(StartsWithASCII(map_name, "webkit.webprefs.", true));
+  bool result = StartsWithASCII(map_name, "webkit.webprefs.", true);
+  DCHECK(result);
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -313,6 +315,18 @@ void OverrideFontFamily(WebPreferences* prefs,
   (*map)[script] = base::UTF8ToUTF16(pref_value);
 }
 
+void RegisterLocalizedFontPref(
+    user_prefs::PrefRegistrySyncable* registry,
+    const char* path,
+    int default_message_id,
+    user_prefs::PrefRegistrySyncable::PrefSyncStatus status) {
+  int val = 0;
+  bool success = base::StringToInt(l10n_util::GetStringUTF8(
+      default_message_id), &val);
+  DCHECK(success);
+  registry->RegisterIntegerPref(path, val, status);
+}
+
 }  // namespace
 
 PrefsTabHelper::PrefsTabHelper(WebContents* contents)
@@ -477,13 +491,13 @@ void PrefsTabHelper::RegisterProfilePrefs(
       pref_defaults.password_echo_enabled,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  registry->RegisterLocalizedStringPref(
+  registry->RegisterStringPref(
       prefs::kAcceptLanguages,
-      IDS_ACCEPT_LANGUAGES,
+      l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterLocalizedStringPref(
+  registry->RegisterStringPref(
       prefs::kDefaultCharset,
-      IDS_DEFAULT_ENCODING,
+      l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Register font prefs that have defaults.
@@ -515,9 +529,9 @@ void PrefsTabHelper::RegisterProfilePrefs(
     // prefs (e.g., via the extensions workflow), or the problem turns out to
     // not be really critical after all.
     if (browser_script != pref_script) {
-      registry->RegisterLocalizedStringPref(
+      registry->RegisterStringPref(
           pref.pref_name,
-          pref.resource_id,
+          l10n_util::GetStringUTF8(pref.resource_id),
           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
       fonts_with_defaults.insert(pref.pref_name);
     }
@@ -528,29 +542,33 @@ void PrefsTabHelper::RegisterProfilePrefs(
   RegisterFontFamilyPrefs(registry, fonts_with_defaults);
 #endif
 
-  registry->RegisterLocalizedIntegerPref(
+  RegisterLocalizedFontPref(
+      registry,
       prefs::kWebKitDefaultFontSize,
       IDS_DEFAULT_FONT_SIZE,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterLocalizedIntegerPref(
+  RegisterLocalizedFontPref(
+      registry,
       prefs::kWebKitDefaultFixedFontSize,
       IDS_DEFAULT_FIXED_FONT_SIZE,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterLocalizedIntegerPref(
+  RegisterLocalizedFontPref(
+      registry,
       prefs::kWebKitMinimumFontSize,
       IDS_MINIMUM_FONT_SIZE,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterLocalizedIntegerPref(
+  RegisterLocalizedFontPref(
+      registry,
       prefs::kWebKitMinimumLogicalFontSize,
       IDS_MINIMUM_LOGICAL_FONT_SIZE,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterLocalizedBooleanPref(
+  registry->RegisterBooleanPref(
       prefs::kWebKitUsesUniversalDetector,
-      IDS_USES_UNIVERSAL_DETECTOR,
+      l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterLocalizedStringPref(
+  registry->RegisterStringPref(
       prefs::kStaticEncodings,
-      IDS_STATIC_ENCODING_LIST,
+      l10n_util::GetStringUTF8(IDS_STATIC_ENCODING_LIST),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kRecentlySelectedEncoding,

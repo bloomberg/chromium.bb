@@ -90,18 +90,6 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
   void RegisterDictionaryPref(const char* path,
                               base::DictionaryValue* default_value,
                               PrefSyncStatus sync_status);
-  void RegisterLocalizedBooleanPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedIntegerPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedDoublePref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
-  void RegisterLocalizedStringPref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
   void RegisterInt64Pref(const char* path,
                          int64 default_value,
                          PrefSyncStatus sync_status);
