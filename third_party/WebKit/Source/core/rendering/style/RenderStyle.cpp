@@ -1231,7 +1231,7 @@ void RenderStyle::applyTextDecorations()
         return;
 
     TextDecorationStyle style = textDecorationStyle();
-    StyleColor styleColor = visitedDependentDecorationStyleColor();
+    StyleColor styleColor = decorationColorIncludingFallback(insideLink() == InsideVisitedLink);
 
     int decorations = textDecoration();
 
@@ -1342,29 +1342,21 @@ void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUn
     }
 }
 
-StyleColor RenderStyle::visitedDependentDecorationStyleColor() const
+StyleColor RenderStyle::decorationColorIncludingFallback(bool visitedLink) const
 {
-    bool isVisited = insideLink() == InsideVisitedLink;
-
-    StyleColor styleColor = isVisited ? visitedLinkTextDecorationColor() : textDecorationColor();
+    StyleColor styleColor = visitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
 
     if (!styleColor.isCurrentColor())
         return styleColor;
 
     if (textStrokeWidth()) {
         // Prefer stroke color if possible, but not if it's fully transparent.
-        StyleColor textStrokeStyleColor = isVisited ? visitedLinkTextStrokeColor() : textStrokeColor();
+        StyleColor textStrokeStyleColor = visitedLink ? visitedLinkTextStrokeColor() : textStrokeColor();
         if (!textStrokeStyleColor.isCurrentColor() && textStrokeStyleColor.color().alpha())
             return textStrokeStyleColor;
     }
 
-    return isVisited ? visitedLinkTextFillColor() : textFillColor();
-}
-
-Color RenderStyle::visitedDependentDecorationColor() const
-{
-    bool isVisited = insideLink() == InsideVisitedLink;
-    return visitedDependentDecorationStyleColor().resolve(isVisited ? visitedLinkColor() : color());
+    return visitedLink ? visitedLinkTextFillColor() : textFillColor();
 }
 
 Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
@@ -1420,6 +1412,9 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
         break;
     case CSSPropertyWebkitTapHighlightColor:
         result = tapHighlightColor();
+        break;
+    case CSSPropertyTextDecorationColor:
+        result = decorationColorIncludingFallback(visitedLink);
         break;
     default:
         ASSERT_NOT_REACHED();

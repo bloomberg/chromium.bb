@@ -4,6 +4,7 @@
 .target {
   color: black;
   text-decoration-line: underline;
+  -webkit-text-fill-color: steelblue;
 }
 .replica {
   color: green;
@@ -27,6 +28,20 @@ assertInterpolation({
   {at: 0.6, is: '#664299'},
   {at: 1, is: 'blue'}, // 0000ff
   {at: 1.5, is: 'blue'}
+]);
+
+assertInterpolation({
+  property: 'text-decoration-color',
+  from: 'initial',
+  to: 'red'
+}, [
+  {at: -5, is: '#00ffff'},
+  {at: -0.4, is: '#00b6fc'},
+  {at: 0, is: 'steelblue'}, // 4682b4
+  {at: 0.2, is: '#6B6890'},
+  {at: 0.6, is: '#b53448'},
+  {at: 1, is: 'red'}, // ff0000
+  {at: 1.5, is: 'red'}
 ]);
 </script>
 </body>

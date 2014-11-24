@@ -433,7 +433,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
             style.svgStyle().strokePaintColor(), style.svgStyle().visitedLinkStrokePaintColor(),
             style.svgStyle().strokePaintUri(), style.svgStyle().visitedLinkStrokePaintUri());
     case CSSPropertyTextDecorationColor:
-        return AnimatableColor::create(style.textDecorationColor().resolve(style.color()), style.visitedLinkTextDecorationColor().resolve(style.visitedLinkColor()));
+        return createFromColor(property, style);
     case CSSPropertyTextIndent:
         return createFromLength(style.textIndent(), style);
     case CSSPropertyTextShadow:

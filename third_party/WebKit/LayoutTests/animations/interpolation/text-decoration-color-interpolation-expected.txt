@@ -6,6 +6,13 @@ PASS: text-decoration-color from [orange] to [blue] was [#cc8433] at 0.2
 PASS: text-decoration-color from [orange] to [blue] was [#664299] at 0.6
 PASS: text-decoration-color from [orange] to [blue] was [blue] at 1
 PASS: text-decoration-color from [orange] to [blue] was [blue] at 1.5
+PASS: text-decoration-color from [initial] to [red] was [#00ffff] at -5
+PASS: text-decoration-color from [initial] to [red] was [#00b6fc] at -0.4
+PASS: text-decoration-color from [initial] to [red] was [steelblue] at 0
+PASS: text-decoration-color from [initial] to [red] was [#6B6890] at 0.2
+PASS: text-decoration-color from [initial] to [red] was [#b53448] at 0.6
+PASS: text-decoration-color from [initial] to [red] was [red] at 1
+PASS: text-decoration-color from [initial] to [red] was [red] at 1.5
 
 Web Animations API:
 PASS: textDecorationColor from [orange] to [blue] was [#ffff00] at -5
@@ -15,4 +22,11 @@ PASS: textDecorationColor from [orange] to [blue] was [#cc8433] at 0.2
 PASS: textDecorationColor from [orange] to [blue] was [#664299] at 0.6
 PASS: textDecorationColor from [orange] to [blue] was [blue] at 1
 PASS: textDecorationColor from [orange] to [blue] was [blue] at 1.5
+PASS: textDecorationColor from [initial] to [red] was [#00ffff] at -5
+PASS: textDecorationColor from [initial] to [red] was [#00b6fc] at -0.4
+PASS: textDecorationColor from [initial] to [red] was [steelblue] at 0
+PASS: textDecorationColor from [initial] to [red] was [#6B6890] at 0.2
+PASS: textDecorationColor from [initial] to [red] was [#b53448] at 0.6
+PASS: textDecorationColor from [initial] to [red] was [red] at 1
+PASS: textDecorationColor from [initial] to [red] was [red] at 1.5
 

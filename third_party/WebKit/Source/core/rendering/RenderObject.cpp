@@ -2713,7 +2713,7 @@ void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
         styleToUse = curr->style(firstlineStyle);
         currDecs = styleToUse->textDecoration();
         currDecs &= decorations;
-        resultColor = styleToUse->visitedDependentDecorationColor();
+        resultColor = styleToUse->visitedDependentColor(CSSPropertyTextDecorationColor);
         resultStyle = styleToUse->textDecorationStyle();
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
@@ -2743,7 +2743,7 @@ void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
     if (decorations && curr) {
         styleToUse = curr->style(firstlineStyle);
-        resultColor = styleToUse->visitedDependentDecorationColor();
+        resultColor = styleToUse->visitedDependentColor(CSSPropertyTextDecorationColor);
         if (decorations & TextDecorationUnderline) {
             underline.color = resultColor;
             underline.style = resultStyle;
