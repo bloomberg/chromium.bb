@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -17,7 +18,9 @@
 
 using ::testing::_;
 using ::testing::Assign;
+using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
@@ -407,6 +410,34 @@ TEST_F(BufferedDataSourceTest, Http_Retry) {
   ReceiveData(kDataSize);
 
   EXPECT_TRUE(data_source_->loading());
+  Stop();
+}
+
+TEST_F(BufferedDataSourceTest, Http_RetryOnError) {
+  InitializeWith206Response();
+
+  // Read to advance our position.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
+  ReadAt(0);
+  ReceiveData(kDataSize);
+
+  // Issue a pending read but trigger an error to force a retry.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, (kDataSize * 2) - 1));
+  ReadAt(kDataSize);
+  base::RunLoop run_loop;
+  EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
+      .WillOnce(
+          DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+                Invoke(data_source_.get(),
+                       &MockBufferedDataSource::CreateMockResourceLoader)));
+  loader()->didFail(url_loader(), response_generator_->GenerateError());
+  run_loop.Run();
+  Respond(response_generator_->Generate206(kDataSize));
+  ReceiveData(kDataSize);
+  FinishLoading();
+  EXPECT_FALSE(data_source_->loading());
   Stop();
 }
 
