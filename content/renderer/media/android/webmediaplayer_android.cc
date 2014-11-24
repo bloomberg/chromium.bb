@@ -1198,6 +1198,9 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     // VideoFrame::CreateHoleFrame is only defined under VIDEO_HOLE.
 #if defined(VIDEO_HOLE)
     if (!natural_size_.isEmpty()) {
+      // Now we finally know that "stream texture" and "video frame" won't
+      // be needed. EME uses "external surface" and "video hole" instead.
+      ResetStreamTextureProxy();
       scoped_refptr<VideoFrame> new_frame =
           VideoFrame::CreateHoleFrame(natural_size_);
       SetCurrentFrameInternal(new_frame);
