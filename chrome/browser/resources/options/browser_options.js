@@ -227,8 +227,10 @@ cr.define('options', function() {
           $('hotword-search-setting-indicator'));
       HotwordSearchSettingIndicator.decorate(
           $('hotword-no-dsp-search-setting-indicator'));
-      HotwordSearchSettingIndicator.decorate(
-          $('hotword-always-on-search-setting-indicator'));
+      var hotwordIndicator = $('hotword-always-on-search-setting-indicator');
+      HotwordSearchSettingIndicator.decorate(hotwordIndicator);
+      hotwordIndicator.disabledOnErrorSection =
+          $('hotword-always-on-search-checkbox');
       chrome.send('requestHotwordAvailable');
 
       if ($('set-wallpaper')) {

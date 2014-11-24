@@ -38,6 +38,17 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets the variable tracking the section which becomes disabled if an
+     * error exists.
+     * @param {HTMLElement} section The section to disable.
+     */
+    set disabledOnErrorSection(section) {
+      // TODO(kcarattini): Instead of this, add a cr.EventTarget and have
+      // the element to disable register an event on it.
+      this.disabledOnErrorSection_ = section;
+    },
+
+    /**
      * Returns the current error.
      * @return {string} The error message to be displayed. May be undefined if
      *     there is no error.
@@ -63,6 +74,8 @@ cr.define('options', function() {
     updateBasedOnError: function() {
       if (this.errorText_)
         this.hidden = false;
+      if (this.disabledOnErrorSection_)
+        this.disabledOnErrorSection_.disabled = !!this.errorText_;
     },
 
     /**
