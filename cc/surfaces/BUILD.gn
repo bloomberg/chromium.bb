@@ -2,14 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("surface_id") {
-  sources = [
-    "surface_id.h",
-  ]
-
-  deps = [ "//base" ]
-}
-
 component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
@@ -23,6 +15,7 @@ component("surfaces") {
     "surface_factory.cc",
     "surface_factory.h",
     "surface_factory_client.h",
+    "surface_id.h",
     "surface_id_allocator.cc",
     "surface_id_allocator.h",
     "surface_manager.cc",
@@ -35,7 +28,6 @@ component("surfaces") {
   defines = [ "CC_SURFACES_IMPLEMENTATION=1" ]
 
   deps = [
-    ":surface_id",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
