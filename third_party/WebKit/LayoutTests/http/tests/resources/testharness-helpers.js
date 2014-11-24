@@ -5,36 +5,6 @@
  * environments, so code should for example not rely on the DOM.
  */
 
-// A testharness test that simplifies testing with promises.
-//
-// * The |func| argument should be a reference to a function that optionally
-//   takes a test object as an argument and returns a Promise (or really any
-//   thenable object).
-//
-// * Resolution of the promise completes the test. A rejection causes the test
-//   to fail. The test harness waits for the promise to resolve.
-//
-// * Assertions can be made at any point in the promise handlers. Assertions
-//   only need to be wrapped in test.step_func()s if the promise chain contains
-//   rejection handlers.
-//
-// E.g.:
-//   promise_test(function(t) {
-//       return method_that_returns_a_promise()
-//         .then(function(result) {
-//             assert_equals(result, expected_result, "Should be expected.");
-//           });
-//     }, 'Promise based test');
-function promise_test(func, name, properties) {
-  properties = properties || {};
-  var test = async_test(name, properties);
-  Promise.resolve(test.step(func, test, test))
-    .then(function() { test.done(); })
-    .catch(test.step_func(function(value) {
-        throw value;
-      }));
-}
-
 // Returns a promise that fulfills after the provided |promise| is fulfilled.
 // The |test| succeeds only if |promise| rejects with an exception matching
 // |code|. Accepted values for |code| follow those accepted for assert_throws().
