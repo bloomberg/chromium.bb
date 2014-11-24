@@ -184,7 +184,7 @@ bool GetArgumentsFromShortcut(const base::FilePath& shortcut,
   if (SUCCEEDED(result)) {
     base::win::ScopedComPtr<IPersistFile> persist;
     // Query IShellLink for the IPersistFile interface
-    result = persist.QueryFrom(i_shell_link);
+    result = persist.QueryFrom(i_shell_link.get());
     if (SUCCEEDED(result)) {
       WCHAR temp_arguments[MAX_PATH];
       // Load the shell link

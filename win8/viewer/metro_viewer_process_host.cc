@@ -47,7 +47,7 @@ void MetroViewerProcessHost::InternalMessageFilter::OnChannelConnected(
 }
 
 MetroViewerProcessHost::MetroViewerProcessHost(
-    base::SingleThreadTaskRunner* ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   DCHECK(!instance_);
   instance_ = this;
 

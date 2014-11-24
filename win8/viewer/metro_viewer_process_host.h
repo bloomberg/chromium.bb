@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
@@ -55,7 +56,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
   // viewer can otherwise be launched synchronously via
   // LaunchViewerAndWaitForConnection().
   explicit MetroViewerProcessHost(
-      base::SingleThreadTaskRunner* ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
   virtual ~MetroViewerProcessHost();
 
   // Returns the process id of the viewer process if one is connected to this
