@@ -15,7 +15,8 @@ namespace test {
 
 class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
  public:
-  TestMetroViewerProcessHost(base::SingleThreadTaskRunner* ipc_task_runner);
+  TestMetroViewerProcessHost(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
   virtual ~TestMetroViewerProcessHost();
 
   bool closed_unexpectedly() { return closed_unexpectedly_; }

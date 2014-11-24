@@ -14,9 +14,8 @@ namespace ash {
 namespace test {
 
 TestMetroViewerProcessHost::TestMetroViewerProcessHost(
-    base::SingleThreadTaskRunner* ipc_task_runner)
-    : MetroViewerProcessHost(ipc_task_runner),
-      closed_unexpectedly_(false) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
+    : MetroViewerProcessHost(ipc_task_runner), closed_unexpectedly_(false) {
 }
 
 TestMetroViewerProcessHost::~TestMetroViewerProcessHost() {
