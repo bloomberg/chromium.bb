@@ -75,20 +75,6 @@ static WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const Re
     return WebThemeEngine::StateNormal;
 }
 
-PassRefPtr<RenderTheme> RenderThemeChromiumDefault::create()
-{
-    return adoptRef(new RenderThemeChromiumDefault());
-}
-
-// RenderTheme::theme for Android is defined in RenderThemeChromiumAndroid.cpp.
-#if !OS(ANDROID)
-RenderTheme& RenderTheme::theme()
-{
-    DEFINE_STATIC_REF(RenderTheme, renderTheme, (RenderThemeChromiumDefault::create()));
-    return *renderTheme;
-}
-#endif
-
 RenderThemeChromiumDefault::RenderThemeChromiumDefault()
 {
     m_caretBlinkInterval = RenderTheme::caretBlinkInterval();
@@ -127,18 +113,11 @@ Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 
 String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 {
-    // FIXME: We should not have OS() branches here.
-    // We should have something like RenderThemeWin, RenderThemeLinux, or
-    // should concatenate UA stylesheets on build time.
-#if !OS(WIN)
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
-#if !OS(ANDROID)
-        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss)) +
-#endif
-        String(themeChromiumLinuxCss, sizeof(themeChromiumLinuxCss));
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+    return RenderThemeChromiumSkia::extraDefaultStyleSheet()
+        + String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss));
 #else
-    return RenderThemeChromiumSkia::extraDefaultStyleSheet() +
-        String(themeInputMultipleFieldsCss, sizeof(themeInputMultipleFieldsCss));
+    return RenderThemeChromiumSkia::extraDefaultStyleSheet();
 #endif
 }
 

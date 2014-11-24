@@ -35,7 +35,6 @@ namespace blink {
 
 class RenderThemeChromiumDefault : public RenderThemeChromiumSkia {
 public:
-    static PassRefPtr<RenderTheme> create();
     virtual String extraDefaultStyleSheet() override;
 
     virtual Color systemColor(CSSValueID) const override;
