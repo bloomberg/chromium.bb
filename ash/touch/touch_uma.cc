@@ -103,23 +103,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
   // Prefer raw event location (when available) over calibrated location.
   if (event.HasNativeEvent()) {
-#if defined(USE_X11)
-    XEvent* xevent = event.native_event();
-    CHECK_EQ(GenericEvent, xevent->type);
-    XIEvent* xievent = static_cast<XIEvent*>(xevent->xcookie.data);
-    if (xievent->evtype == XI_TouchBegin ||
-        xievent->evtype == XI_TouchUpdate ||
-        xievent->evtype == XI_TouchEnd) {
-      XIDeviceEvent* device_event =
-          static_cast<XIDeviceEvent*>(xevent->xcookie.data);
-      position.SetPoint(static_cast<int>(device_event->event_x),
-                        static_cast<int>(device_event->event_y));
-    } else {
-      position = ui::EventLocationFromNative(event.native_event());
-    }
-#else
     position = ui::EventLocationFromNative(event.native_event());
-#endif
     position = gfx::ToFlooredPoint(
         gfx::ScalePoint(position, 1. / target->layer()->device_scale_factor()));
   }

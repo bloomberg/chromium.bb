@@ -44,7 +44,7 @@ void X11PanelResizer::OnMousePressed(ui::MouseEvent* event) {
   if (resize_state_ != NOT_RESIZING ||
       event->type() != ui::ET_MOUSE_PRESSED ||
       !event->IsLeftMouseButton() ||
-      !event->native_event()) {
+      !event->HasNativeEvent()) {
     return;
   }
 
@@ -68,7 +68,7 @@ void X11PanelResizer::OnMouseDragged(ui::MouseEvent* event) {
     return;
   }
 
-  if (!event->native_event())
+  if (!event->HasNativeEvent())
     return;
 
   // Get the location in screen coordinates from the XEvent because converting
