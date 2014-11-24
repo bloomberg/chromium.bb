@@ -20,6 +20,7 @@
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/re2/re2/re2.h"
 
+using base::FilePath;
 using leveldb::FileLock;
 using leveldb::Slice;
 using leveldb::Status;
@@ -28,12 +29,11 @@ namespace leveldb_env {
 
 namespace {
 
-const base::FilePath::CharType backup_table_extension[] =
-    FILE_PATH_LITERAL(".bak");
-const base::FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
+const FilePath::CharType backup_table_extension[] = FILE_PATH_LITERAL(".bak");
+const FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 
-static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
-    = FILE_PATH_LITERAL("leveldb-test-");
+static const FilePath::CharType kLevelDBTestDirectoryPrefix[] =
+    FILE_PATH_LITERAL("leveldb-test-");
 
 static base::File::Error LastFileError() {
 #if defined(OS_WIN)
@@ -46,11 +46,11 @@ static base::File::Error LastFileError() {
 // Making direct platform in lieu of using base::FileEnumerator because the
 // latter can fail quietly without return an error result.
 static base::File::Error GetDirectoryEntries(
-    const base::FilePath& dir_param,
-    std::vector<base::FilePath>* result) {
+    const FilePath& dir_param,
+    std::vector<FilePath>* result) {
   result->clear();
 #if defined(OS_WIN)
-  base::FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
+  FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
   WIN32_FIND_DATA find_data;
   HANDLE find_handle = FindFirstFile(dir_filepath.value().c_str(), &find_data);
   if (find_handle == INVALID_HANDLE_VALUE) {
@@ -60,8 +60,8 @@ static base::File::Error GetDirectoryEntries(
     return base::File::OSErrorToFileError(last_error);
   }
   do {
-    base::FilePath filepath(find_data.cFileName);
-    base::FilePath::StringType basename = filepath.BaseName().value();
+    FilePath filepath(find_data.cFileName);
+    FilePath::StringType basename = filepath.BaseName().value();
     if (basename == FILE_PATH_LITERAL(".") ||
         basename == FILE_PATH_LITERAL(".."))
       continue;
@@ -249,7 +249,7 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
       tracker_(tracker),
       file_type_(kOther),
       make_backup_(make_backup) {
-  base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
+  FilePath path = FilePath::FromUTF8Unsafe(fname);
   if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
     file_type_ = kManifest;
   else if (ChromiumEnv::HasTableExtension(path))
@@ -262,7 +262,7 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
 Status ChromiumWritableFile::SyncParent() {
   TRACE_EVENT0("leveldb", "SyncParent");
 #if defined(OS_POSIX)
-  base::FilePath path = base::FilePath::FromUTF8Unsafe(parent_dir_);
+  FilePath path = FilePath::FromUTF8Unsafe(parent_dir_);
   base::File f(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!f.IsValid()) {
     return MakeIOError(parent_dir_, "Unable to open directory", kSyncParent,
@@ -520,18 +520,18 @@ bool IsIOError(const leveldb::Status& status) {
   return result != leveldb_env::NONE;
 }
 
-base::FilePath ChromiumEnv::CreateFilePath(const std::string& file_path) {
-  return base::FilePath::FromUTF8Unsafe(file_path);
+FilePath ChromiumEnv::CreateFilePath(const std::string& file_path) {
+  return FilePath::FromUTF8Unsafe(file_path);
 }
 
 bool ChromiumEnv::MakeBackup(const std::string& fname) {
-  base::FilePath original_table_name = CreateFilePath(fname);
-  base::FilePath backup_table_name =
+  FilePath original_table_name = CreateFilePath(fname);
+  FilePath backup_table_name =
       original_table_name.ReplaceExtension(backup_table_extension);
   return base::CopyFile(original_table_name, backup_table_name);
 }
 
-bool ChromiumEnv::HasTableExtension(const base::FilePath& path) {
+bool ChromiumEnv::HasTableExtension(const FilePath& path) {
   return path.MatchesExtension(table_extension);
 }
 
@@ -596,9 +596,8 @@ const char* ChromiumEnv::FileErrorString(::base::File::Error error) {
   return "Unknown error.";
 }
 
-base::FilePath ChromiumEnv::RestoreFromBackup(const base::FilePath& base_name) {
-  base::FilePath table_name =
-      base_name.AddExtension(table_extension);
+FilePath ChromiumEnv::RestoreFromBackup(const FilePath& base_name) {
+  FilePath table_name = base_name.AddExtension(table_extension);
   bool result = base::CopyFile(base_name.AddExtension(backup_table_extension),
                                table_name);
   std::string uma_name(name_);
@@ -610,20 +609,19 @@ base::FilePath ChromiumEnv::RestoreFromBackup(const base::FilePath& base_name) {
 
 void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
                                      std::vector<std::string>* result) {
-  std::set<base::FilePath> tables_found;
-  std::set<base::FilePath> backups_found;
+  std::set<FilePath> tables_found;
+  std::set<FilePath> backups_found;
   for (std::vector<std::string>::iterator it = result->begin();
        it != result->end();
        ++it) {
-    base::FilePath current = CreateFilePath(*it);
+    FilePath current = CreateFilePath(*it);
     if (current.MatchesExtension(table_extension))
       tables_found.insert(current.RemoveExtension());
     if (current.MatchesExtension(backup_table_extension))
       backups_found.insert(current.RemoveExtension());
   }
-  std::set<base::FilePath> backups_only =
-      base::STLSetDifference<std::set<base::FilePath> >(backups_found,
-                                                        tables_found);
+  std::set<FilePath> backups_only =
+      base::STLSetDifference<std::set<FilePath>>(backups_found, tables_found);
 
   if (backups_only.size()) {
     std::string uma_name(name_);
@@ -637,19 +635,17 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
                                 base::Histogram::kUmaTargetedHistogramFlag)
         ->Add(num_missing_files);
   }
-  base::FilePath dir_filepath = base::FilePath::FromUTF8Unsafe(dir);
-  for (std::set<base::FilePath>::iterator it = backups_only.begin();
-       it != backups_only.end();
-       ++it) {
-    base::FilePath restored_table_name =
-        RestoreFromBackup(dir_filepath.Append(*it));
+  FilePath dir_filepath = FilePath::FromUTF8Unsafe(dir);
+  for (std::set<FilePath>::iterator it = backups_only.begin();
+       it != backups_only.end(); ++it) {
+    FilePath restored_table_name = RestoreFromBackup(dir_filepath.Append(*it));
     result->push_back(restored_table_name.BaseName().AsUTF8Unsafe());
   }
 }
 
 Status ChromiumEnv::GetChildren(const std::string& dir_string,
                                 std::vector<std::string>* result) {
-  std::vector<base::FilePath> entries;
+  std::vector<FilePath> entries;
   base::File::Error error =
       GetDirectoryEntries(CreateFilePath(dir_string), &entries);
   if (error != base::File::FILE_OK) {
@@ -670,7 +666,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir_string,
 
 Status ChromiumEnv::DeleteFile(const std::string& fname) {
   Status result;
-  base::FilePath fname_filepath = CreateFilePath(fname);
+  FilePath fname_filepath = CreateFilePath(fname);
   // TODO(jorlow): Should we assert this is a file?
   if (!::base::DeleteFile(fname_filepath, false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
@@ -721,10 +717,10 @@ Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
 
 Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   Status result;
-  base::FilePath src_file_path = CreateFilePath(src);
+  FilePath src_file_path = CreateFilePath(src);
   if (!::base::PathExists(src_file_path))
     return result;
-  base::FilePath destination = CreateFilePath(dst);
+  FilePath destination = CreateFilePath(dst);
 
   Retrier retrier(kRenameFile, this);
   base::File::Error error = base::File::FILE_OK;
@@ -760,8 +756,8 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
 
   if (!file.IsValid()) {
     if (error_code == ::base::File::FILE_ERROR_NOT_FOUND) {
-      ::base::FilePath parent = CreateFilePath(fname).DirName();
-      ::base::FilePath last_parent;
+      FilePath parent = CreateFilePath(fname).DirName();
+      FilePath last_parent;
       int num_missing_ancestors = 0;
       do {
         if (base::DirectoryExists(parent))
@@ -839,7 +835,7 @@ Status ChromiumEnv::GetTestDirectory(std::string* path) {
 
 Status ChromiumEnv::NewLogger(const std::string& fname,
                               leveldb::Logger** result) {
-  base::FilePath path = CreateFilePath(fname);
+  FilePath path = CreateFilePath(fname);
   scoped_ptr<base::File> f(new base::File(
       path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
   if (!f->IsValid()) {
@@ -855,7 +851,7 @@ Status ChromiumEnv::NewLogger(const std::string& fname,
 
 Status ChromiumEnv::NewSequentialFile(const std::string& fname,
                                       leveldb::SequentialFile** result) {
-  base::FilePath path = CreateFilePath(fname);
+  FilePath path = CreateFilePath(fname);
   scoped_ptr<base::File> f(
       new base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   if (!f->IsValid()) {
@@ -902,7 +898,7 @@ Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
 Status ChromiumEnv::NewWritableFile(const std::string& fname,
                                     leveldb::WritableFile** result) {
   *result = NULL;
-  base::FilePath path = CreateFilePath(fname);
+  FilePath path = CreateFilePath(fname);
   scoped_ptr<base::File> f(new base::File(
       path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
   if (!f->IsValid()) {
@@ -1078,7 +1074,7 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
 }
 
 static std::string GetDirName(const std::string& filename) {
-  return base::FilePath::FromUTF8Unsafe(filename).DirName().AsUTF8Unsafe();
+  return FilePath::FromUTF8Unsafe(filename).DirName().AsUTF8Unsafe();
 }
 
 void ChromiumEnv::DidCreateNewFile(const std::string& filename) {
