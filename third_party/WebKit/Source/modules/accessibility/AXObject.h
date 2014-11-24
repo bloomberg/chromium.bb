@@ -422,6 +422,10 @@ public:
     virtual AXObject* titleUIElement() const { return 0; }
     virtual KURL url() const { return KURL(); }
 
+    // Load inline text boxes for just this node, even if
+    // settings->inlineTextBoxAccessibilityEnabled() is false.
+    virtual void loadInlineTextBoxes() { }
+
     // For an inline text box.
     virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLeftToRight; }
     // The integer horizontal pixel offset of each character in the string; negative values for RTL.

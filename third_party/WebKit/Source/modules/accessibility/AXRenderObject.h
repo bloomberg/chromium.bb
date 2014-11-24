@@ -104,6 +104,9 @@ protected:
     virtual int textLength() const override;
     virtual KURL url() const override;
 
+    // Load inline text boxes if they're not already loaded.
+    virtual void loadInlineTextBoxes() override;
+
     // Properties of interactive elements.
     virtual String actionVerb() const override;
     virtual String stringValue() const override;
@@ -210,7 +213,7 @@ private:
     void addAttachmentChildren();
     void addPopupChildren();
     void addRemoteSVGChildren();
-    void addInlineTextBoxChildren();
+    void addInlineTextBoxChildren(bool force);
 
     void ariaSelectedRows(AccessibilityChildrenVector&);
     bool elementAttributeValue(const QualifiedName&) const;

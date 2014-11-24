@@ -203,6 +203,10 @@ public:
     BLINK_EXPORT unsigned cellRowIndex() const;
     BLINK_EXPORT unsigned cellRowSpan() const;
 
+    // Load inline text boxes for just this subtree, even if
+    // settings->inlineTextBoxAccessibilityEnabled() is false.
+    BLINK_EXPORT void loadInlineTextBoxes() const;
+
     // For an inline text box.
     BLINK_EXPORT WebAXTextDirection textDirection() const;
     BLINK_EXPORT void characterOffsets(WebVector<int>&) const;

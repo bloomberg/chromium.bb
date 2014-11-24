@@ -1153,6 +1153,14 @@ unsigned WebAXObject::cellRowSpan() const
     return rowRange.second;
 }
 
+void WebAXObject::loadInlineTextBoxes() const
+{
+    if (isDetached())
+        return;
+
+    m_private->loadInlineTextBoxes();
+}
+
 WebAXTextDirection WebAXObject::textDirection() const
 {
     if (isDetached())
