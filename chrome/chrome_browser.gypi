@@ -1858,6 +1858,8 @@
       'browser/printing/print_job_worker_owner.h',
       'browser/printing/print_view_manager_base.cc',
       'browser/printing/print_view_manager_base.h',
+      'browser/printing/print_view_manager_common.cc',
+      'browser/printing/print_view_manager_common.h',
       'browser/printing/printer_query.cc',
       'browser/printing/printer_query.h',
       'browser/printing/printing_message_filter.cc',

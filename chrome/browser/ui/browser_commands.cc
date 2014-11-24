@@ -96,11 +96,9 @@
 #endif
 
 #if defined(ENABLE_PRINTING)
+#include "chrome/browser/printing/print_view_manager_common.h"
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
-#include "chrome/browser/printing/print_view_manager.h"
-#else
-#include "chrome/browser/printing/print_view_manager_basic.h"
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
 
@@ -858,25 +856,10 @@ void ShowWebsiteSettings(Browser* browser,
 
 void Print(Browser* browser) {
 #if defined(ENABLE_PRINTING)
-  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
-
-#if defined(ENABLE_PRINT_PREVIEW)
-  printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(contents);
-  if (!browser->profile()->GetPrefs()->GetBoolean(
-          prefs::kPrintPreviewDisabled)) {
-    print_view_manager->PrintPreviewNow(false);
-    return;
-  }
-#else   // ENABLE_PRINT_PREVIEW
-  printing::PrintViewManagerBasic* print_view_manager =
-      printing::PrintViewManagerBasic::FromWebContents(contents);
-#endif  // ENABLE_PRINT_PREVIEW
-
-#if defined(ENABLE_BASIC_PRINTING)
-  print_view_manager->PrintNow();
-#endif  // ENABLE_BASIC_PRINTING
-
+  printing::StartPrint(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
+      false);
 #endif  // defined(ENABLE_PRINTING)
 }
 
@@ -894,12 +877,7 @@ bool CanPrint(Browser* browser) {
 
 #if defined(ENABLE_BASIC_PRINTING)
 void BasicPrint(Browser* browser) {
-#if defined(ENABLE_PRINT_PREVIEW)
-  printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents());
-  print_view_manager->BasicPrint();
-#endif
+  printing::StartBasicPrint(browser->tab_strip_model()->GetActiveWebContents());
 }
 
 bool CanBasicPrint(Browser* browser) {
