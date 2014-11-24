@@ -175,7 +175,8 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
                                      int render_process_id,
                                      int render_view_id,
                                      const std::string& extension_id,
-                                     const std::string& view_id) {
+                                     const std::string& view_id,
+                                     bool embedded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::WebContents* web_contents =
@@ -198,9 +199,9 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
   StreamsPrivateAPI* streams_private = StreamsPrivateAPI::Get(profile);
   if (!streams_private)
     return;
-  streams_private->ExecuteMimeTypeHandler(
-      extension_id, web_contents, stream.Pass(), view_id,
-      expected_content_size);
+  streams_private->ExecuteMimeTypeHandler(extension_id, web_contents,
+                                          stream.Pass(), view_id,
+                                          expected_content_size, embedded);
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 
@@ -634,12 +635,13 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
   std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =
       stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
+  bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
-                 request->GetExpectedContentSize(),
-                 info->GetChildID(), info->GetRouteID(),
-                 ix->second.extension_id, ix->second.view_id));
+                 request->GetExpectedContentSize(), info->GetChildID(),
+                 info->GetRouteID(), ix->second.extension_id,
+                 ix->second.view_id, embedded));
   stream_target_info_.erase(request);
 #endif
 }

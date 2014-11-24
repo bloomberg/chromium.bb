@@ -31,6 +31,9 @@ namespace streamsPrivate {
     // multiple times, the header values are merged in the dictionary and
     // separated by a ", ".
     object responseHeaders;
+
+    // Whether the stream is embedded within another document.
+    boolean embedded;
   };
 
   callback AbortCallback = void ();

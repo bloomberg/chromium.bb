@@ -35,12 +35,14 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // |web_contents| is used to determine the tabId where the document is being
   // opened. The data for the document will be readable from |stream|, and
   // should be |expected_content_size| bytes long. If the viewer is being opened
-  // in a BrowserPlugin, specify a non-empty |view_id| of the plugin.
+  // in a BrowserPlugin, specify a non-empty |view_id| of the plugin. |embedded|
+  // should be set to whether the document is embedded within another document.
   void ExecuteMimeTypeHandler(const std::string& extension_id,
                               content::WebContents* web_contents,
                               scoped_ptr<content::StreamInfo> stream,
                               const std::string& view_id,
-                              int64 expected_content_size);
+                              int64 expected_content_size,
+                              bool embedded);
 
   void AbortStream(const std::string& extension_id,
                    const GURL& stream_url,

@@ -84,7 +84,7 @@ function PDFViewer(streamDetails) {
   }
   this.plugin_.setAttribute('headers', headers);
 
-  if (window.top == window)
+  if (!this.streamDetails.embedded)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
@@ -113,7 +113,7 @@ function PDFViewer(streamDetails) {
   document.onkeydown = this.handleKeyEvent_.bind(this);
 
   // Set up the zoom API.
-  if (chrome.tabs) {
+  if (this.shouldManageZoom_()) {
     chrome.tabs.setZoomSettings(this.streamDetails.tabId,
                                 {mode: 'manual', scope: 'per-tab'},
                                 this.afterZoom_.bind(this));
@@ -423,7 +423,7 @@ PDFViewer.prototype = {
   afterZoom_: function() {
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
-    if (chrome.tabs && !this.setZoomInProgress_) {
+    if (this.shouldManageZoom_() && !this.setZoomInProgress_) {
       this.setZoomInProgress_ = true;
       chrome.tabs.setZoom(this.streamDetails.tabId, zoom,
                           this.setZoomComplete_.bind(this, zoom));
@@ -572,6 +572,17 @@ PDFViewer.prototype = {
    */
   sendScriptingMessage_: function(message) {
     window.parent.postMessage(message, '*');
+  },
+
+  /**
+   * @private
+   * Return whether this PDFViewer should manage zoom for its containing page.
+   * @return {boolean} Whether this PDFViewer should manage zoom for its
+   *     containing page.
+   */
+  shouldManageZoom_: function() {
+    return !!(chrome.tabs && !this.streamDetails.embedded &&
+              this.streamDetails.tabId != -1);
   },
 
   /**

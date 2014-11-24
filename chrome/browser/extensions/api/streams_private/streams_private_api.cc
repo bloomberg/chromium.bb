@@ -63,13 +63,15 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     content::WebContents* web_contents,
     scoped_ptr<content::StreamInfo> stream,
     const std::string& view_id,
-    int64 expected_content_size) {
+    int64 expected_content_size,
+    bool embedded) {
   // Create the event's arguments value.
   streams_private::StreamInfo info;
   info.mime_type = stream->mime_type;
   info.original_url = stream->original_url.spec();
   info.stream_url = stream->handle->GetURL().spec();
   info.tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  info.embedded = embedded;
 
   if (!view_id.empty()) {
     info.view_id.reset(new std::string(view_id));

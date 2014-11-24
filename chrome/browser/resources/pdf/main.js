@@ -46,7 +46,17 @@ var viewer;
   var streamDetails = {
     streamUrl: url,
     originalUrl: url,
-    responseHeaders: ''
+    responseHeaders: '',
+    embedded: window.parent != window,
+    tabId: -1
   };
-  viewer = new PDFViewer(streamDetails);
+  if (!chrome.tabs) {
+    viewer = new PDFViewer(streamDetails);
+    return;
+  }
+  chrome.tabs.getCurrent(function(tab) {
+    if (tab && tab.id != undefined)
+      streamDetails.tabId = tab.id;
+    viewer = new PDFViewer(streamDetails);
+  });
 })();
