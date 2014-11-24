@@ -100,6 +100,18 @@ NativeWidgetMac::~NativeWidgetMac() {
     CloseNow();
 }
 
+// static
+BridgedNativeWidget* NativeWidgetMac::GetBridgeForNativeWindow(
+    gfx::NativeWindow window) {
+  id<NSWindowDelegate> window_delegate = [window delegate];
+  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
+    ViewsNSWindowDelegate* delegate =
+        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
+    return [delegate nativeWidgetMac]->bridge_.get();
+  }
+  return nullptr;  // Not created by NativeWidgetMac.
+}
+
 void NativeWidgetMac::OnWindowWillClose() {
   delegate_->OnNativeWidgetDestroying();
   // Note: If closed via CloseNow(), |bridge_| will already be reset. If closed
@@ -582,33 +594,32 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  NativeWidgetPrivate* native_widget =
-      GetNativeWidgetForNativeView(native_view);
-  if (!native_widget)
+  BridgedNativeWidget* bridge =
+      NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
+  if (!bridge)
     return NULL;
 
-  for (NativeWidgetPrivate* parent;
-       (parent = GetNativeWidgetForNativeWindow(
-            [native_widget->GetNativeWindow() parentWindow]));
-       native_widget = parent) {
+  for (BridgedNativeWidget* parent;
+       (parent = bridge->parent());
+       bridge = parent) {
   }
-  return native_widget;
+  return bridge->native_widget_mac();
 }
 
 // static
 void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
-  NativeWidgetPrivate* native_widget =
-      GetNativeWidgetForNativeView(native_view);
-  if (!native_widget)
+  BridgedNativeWidget* bridge =
+      NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
+  if (!bridge)
     return;
 
   // Code expects widget for |native_view| to be added to |children|.
-  if (native_widget->GetWidget())
-    children->insert(native_widget->GetWidget());
+  if (bridge->native_widget_mac()->GetWidget())
+    children->insert(bridge->native_widget_mac()->GetWidget());
 
-  for (NSWindow* child_window : [native_widget->GetNativeWindow() childWindows])
-    GetAllChildWidgets([child_window contentView], children);
+  for (BridgedNativeWidget* child : bridge->child_windows())
+    GetAllChildWidgets(child->ns_view(), children);
 }
 
 // static

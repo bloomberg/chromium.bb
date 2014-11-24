@@ -350,30 +350,6 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   bridge().reset();
 }
 
-// Test attaching to a parent window that is not a NativeWidgetMac. When the
-// parent is a NativeWidgetMac, that is covered in widget_unittest.cc by
-// WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget*.
-TEST_F(BridgedNativeWidgetInitTest, ParentWindowNotNativeWidgetMac) {
-  Widget::InitParams params;
-  params.parent = [test_window() contentView];
-  EXPECT_EQ(0u, [[test_window() childWindows] count]);
-
-  base::scoped_nsobject<NSWindow> child_window(
-      [[NSWindow alloc] initWithContentRect:NSMakeRect(50, 50, 400, 300)
-                                  styleMask:NSBorderlessWindowMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:YES]);
-  [child_window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-
-  EXPECT_FALSE([child_window parentWindow]);
-  bridge()->Init(child_window, params);
-
-  EXPECT_EQ(1u, [[test_window() childWindows] count]);
-  EXPECT_EQ(test_window(), [bridge()->ns_window() parentWindow]);
-  bridge().reset();
-  EXPECT_EQ(0u, [[test_window() childWindows] count]);
-}
-
 // Test getting complete string using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetCompleteString) {
   const std::string kTestString = "foo bar baz";

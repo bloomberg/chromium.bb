@@ -24,6 +24,7 @@ namespace views {
 BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
     : native_widget_mac_(parent),
       focus_manager_(NULL),
+      parent_(nullptr),
       target_fullscreen_state_(false),
       in_fullscreen_transition_(false) {
   DCHECK(parent);
@@ -33,6 +34,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
 
 BridgedNativeWidget::~BridgedNativeWidget() {
   RemoveOrDestroyChildren();
+  DCHECK(child_windows_.empty());
   SetFocusManager(NULL);
   SetRootView(NULL);
   if ([window_ delegate]) {
@@ -56,9 +58,16 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
   DCHECK_EQ(0u, [window_ styleMask] & NSFullScreenWindowMask);
 
   if (params.parent) {
-    // Use NSWindow to manage child windows. This won't automatically close them
-    // but it will maintain relative positioning of the window layer and origin.
-    [[params.parent window] addChildWindow:window_ ordered:NSWindowAbove];
+    // Disallow creating child windows of views not currently in an NSWindow.
+    CHECK([params.parent window]);
+    BridgedNativeWidget* parent =
+        NativeWidgetMac::GetBridgeForNativeWindow([params.parent window]);
+    // The parent could be an NSWindow without an associated Widget. That could
+    // work by observing NSWindowWillCloseNotification, but for now it's not
+    // supported, and there might not be a use-case for that.
+    CHECK(parent);
+    parent_ = parent;
+    parent->child_windows_.push_back(this);
   }
 }
 
@@ -101,7 +110,8 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
-  [[window_ parentWindow] removeChildWindow:window_];
+  if (parent_)
+    parent_->RemoveChildWindow(this);
   [window_ setDelegate:nil];
   native_widget_mac_->OnWindowWillClose();
 }
@@ -222,9 +232,22 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
 
 void BridgedNativeWidget::RemoveOrDestroyChildren() {
   // TODO(tapted): Implement unowned child windows if required.
-  base::scoped_nsobject<NSArray> child_windows(
-      [[NSArray alloc] initWithArray:[window_ childWindows]]);
-  [child_windows makeObjectsPerformSelector:@selector(close)];
+  while (!child_windows_.empty()) {
+    // The NSWindow can only be destroyed after -[NSWindow close] is complete.
+    // Retain the window, otherwise the reference count can reach zero when the
+    // child calls back into RemoveChildWindow() via its OnWindowWillClose().
+    base::scoped_nsobject<NSWindow> child(
+        [child_windows_.back()->ns_window() retain]);
+    [child close];
+  }
+}
+
+void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
+  auto location = std::find(
+      child_windows_.begin(), child_windows_.end(), child);
+  DCHECK(location != child_windows_.end());
+  child_windows_.erase(location);
+  child->parent_ = nullptr;
 }
 
 }  // namespace views

@@ -20,6 +20,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   NativeWidgetMac(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetMac();
 
+  // Retrieves the bridge associated with the given NSWindow. Returns null if
+  // the supplied handle has no associated Widget.
+  static BridgedNativeWidget* GetBridgeForNativeWindow(
+      gfx::NativeWindow window);
+
   // Deletes |bridge_| and informs |delegate_| that the native widget is
   // destroyed.
   void OnWindowWillClose();
