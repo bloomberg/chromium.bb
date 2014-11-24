@@ -5,9 +5,11 @@
 #ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_MEDIA_TRANSPORT_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_BLUETOOTH_MEDIA_TRANSPORT_CLIENT_H_
 
-#include "chromeos/dbus/bluetooth_media_transport_client.h"
+#include <string>
 
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_media_transport_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
@@ -29,7 +31,12 @@ class CHROMEOS_EXPORT FakeBluetoothMediaTransportClient
   FakeBluetoothMediaTransportClient();
   ~FakeBluetoothMediaTransportClient() override;
 
+  // DBusClient override.
   void Init(dbus::Bus* bus) override;
+
+  // BluetoothMediaTransportClient override.
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void Acquire(const dbus::ObjectPath& object_path,
                const AcquireCallback& callback,
@@ -42,6 +49,8 @@ class CHROMEOS_EXPORT FakeBluetoothMediaTransportClient
                const ErrorCallback& error_callback) override;
 
  private:
+  ObserverList<BluetoothMediaTransportClient::Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothMediaTransportClient);
 };
 

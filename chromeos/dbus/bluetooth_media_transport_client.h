@@ -54,6 +54,25 @@ class CHROMEOS_EXPORT BluetoothMediaTransportClient : public DBusClient {
     ~Properties() override;
   };
 
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when the Media Transport with object path |object_path| is added
+    // to the system.
+    virtual void MediaTransportAdded(const dbus::ObjectPath& object_path) {}
+
+    // Called when the Media Transport with object path |object_path| is removed
+    // from the system.
+    virtual void MediaTransportRemoved(const dbus::ObjectPath& object_path) {}
+
+    // Called when the Media Transport with object path |object_path| has
+    // a change in the value of the property with name |property_name|.
+    virtual void MediaTransportPropertyChanged(
+        const dbus::ObjectPath& object_path,
+        const std::string& property_name) {}
+  };
+
   ~BluetoothMediaTransportClient() override;
 
   // The ErrorCallback is used by media transport API methods to indicate
@@ -67,6 +86,12 @@ class CHROMEOS_EXPORT BluetoothMediaTransportClient : public DBusClient {
   typedef base::Callback<void(const dbus::FileDescriptor& fd,
                               const uint16_t read_mtu,
                               const uint16_t write_mtu)> AcquireCallback;
+
+  // Adds and removes observers for events on all remote Media Transports. Check
+  // the |object_path| parameter of observer methods to determine which Media
+  // Transport is issuing the event.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 

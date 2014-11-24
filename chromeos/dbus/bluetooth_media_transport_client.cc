@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
@@ -70,6 +71,8 @@ class BluetoothMediaTransportClientImpl
     object_manager_->UnregisterInterface(kBluetoothMediaTransportInterface);
   }
 
+  // dbus::ObjectManager::Interface overrides.
+
   dbus::PropertySet* CreateProperties(
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
@@ -80,6 +83,35 @@ class BluetoothMediaTransportClientImpl
         base::Bind(&BluetoothMediaTransportClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
     return properties;
+  }
+
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
+    VLOG(1) << "Remote Media Transport added: " << object_path.value();
+    FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer,
+                      observers_,
+                      MediaTransportAdded(object_path));
+  }
+
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
+    VLOG(1) << "Remote Media Transport removed: " << object_path.value();
+    FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer,
+                      observers_,
+                      MediaTransportRemoved(object_path));
+  }
+
+  // BluetoothMediaTransportClient overrides.
+
+  void AddObserver(BluetoothMediaTransportClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(
+      BluetoothMediaTransportClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.RemoveObserver(observer);
   }
 
   Properties* GetProperties(const dbus::ObjectPath& object_path) override {
@@ -166,10 +198,14 @@ class BluetoothMediaTransportClientImpl
 
  private:
   // Called by dbus::PropertySet when a property value is changed.
-  // TODO(mcchou): Add the callback for property-changed event
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
     VLOG(1) << "Name of the changed property: " << property_name;
+
+    // Dispatches the change to the corresponding property-changed handler.
+    FOR_EACH_OBSERVER(
+        BluetoothMediaTransportClient::Observer, observers_,
+        MediaTransportPropertyChanged(object_path, property_name));
   }
 
   // Called when a response for successful method call is received.
@@ -222,6 +258,9 @@ class BluetoothMediaTransportClientImpl
   }
 
   dbus::ObjectManager* object_manager_;
+
+  // List of observers interested in event notifications from us.
+  ObserverList<BluetoothMediaTransportClient::Observer> observers_;
 
   base::WeakPtrFactory<BluetoothMediaTransportClientImpl> weak_ptr_factory_;
 

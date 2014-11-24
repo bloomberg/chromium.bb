@@ -25,21 +25,23 @@ FakeBluetoothMediaTransportClient::Properties::Properties(
 FakeBluetoothMediaTransportClient::Properties::~Properties() {
 }
 
+// dbus::PropertySet overrides.
+
 void FakeBluetoothMediaTransportClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
-  VLOG(1) << "Get" << property->name();
+  VLOG(1) << "Get " << property->name();
   callback.Run(false);
 }
 
 void FakeBluetoothMediaTransportClient::Properties::GetAll() {
-  VLOG(1) << "GetAll";
+  VLOG(1) << "GetAll called.";
 }
 
 void FakeBluetoothMediaTransportClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
-  VLOG(1) << "Set" << property->name();
+  VLOG(1) << "Set " << property->name();
   callback.Run(false);
 }
 
@@ -49,7 +51,20 @@ FakeBluetoothMediaTransportClient::FakeBluetoothMediaTransportClient() {
 FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() {
 }
 
+// DBusClient override.
 void FakeBluetoothMediaTransportClient::Init(dbus::Bus* bus) {
+}
+
+// BluetoothMediaTransportClient overrides.
+
+void FakeBluetoothMediaTransportClient::AddObserver(
+    BluetoothMediaTransportClient::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeBluetoothMediaTransportClient::RemoveObserver(
+    BluetoothMediaTransportClient::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 FakeBluetoothMediaTransportClient::Properties*
