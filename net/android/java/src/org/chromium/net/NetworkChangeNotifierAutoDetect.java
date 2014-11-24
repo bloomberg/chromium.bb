@@ -59,24 +59,31 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     /** Queries the WifiManager for SSID of the current Wifi connection. */
     static class WifiManagerDelegate {
-        private final WifiManager mWifiManager;
+        private final Context mContext;
 
         WifiManagerDelegate(Context context) {
-            mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            mContext = context;
         }
 
         // For testing.
         WifiManagerDelegate() {
             // All the methods below should be overridden.
-            mWifiManager = null;
+            mContext = null;
         }
 
         String getWifiSSID() {
-            WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
-            if (wifiInfo == null)
-                return "";
-            String ssid = wifiInfo.getSSID();
-            return ssid == null ? "" : ssid;
+            final Intent intent = mContext.registerReceiver(null,
+                    new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+            if (intent != null) {
+                final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
+                if (wifiInfo != null) {
+                    final String ssid = wifiInfo.getSSID();
+                    if (ssid != null) {
+                        return ssid;
+                    }
+                }
+            }
+            return "";
         }
     }
 
