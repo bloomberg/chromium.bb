@@ -77,6 +77,10 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
                     " grep -v -e \\/home\\/chronos\\/user\\/Downloads\\/");
   commands.push_back(std::make_pair("user_files", command));
 
+  // Get disk space usage information
+  command = CommandLine(base::FilePath("/bin/df"));
+  commands.push_back(std::make_pair("disk_usage", command));
+
   for (size_t i = 0; i < commands.size(); ++i) {
     VLOG(1) << "Executting System Logs Command: " << commands[i].first;
     std::string output;
