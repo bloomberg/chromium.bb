@@ -10,13 +10,13 @@
 namespace switches {
 
 bool IsLinkDisambiguationPopupEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableLinkDisambiguationPopup)) {
-    return false;
-  }
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return true;
 #else
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableLinkDisambiguationPopup)) {
+    return true;
+  }
   return false;
 #endif
 }
