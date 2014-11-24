@@ -22,27 +22,3 @@ index bed494b..d6c3be1 100644
    } else {
      buttonValueMap[bot.events.EventType.CLICK] = [0, 1, 2, null];
      buttonValueMap[bot.events.EventType.CONTEXTMENU] = [null, null, 2, null];
-diff --git a/javascript/chrome-driver/build.desc b/javascript/chrome-driver/build.desc
-index 356eefd..b0e6cae 100644
---- a/javascript/chrome-driver/build.desc
-+++ b/javascript/chrome-driver/build.desc
-@@ -24,6 +24,11 @@ js_fragment(name = "get_page_zoom",
-   function = "webdriver.chrome.getPageZoom",
-   deps = [ ":deps" ])
- 
-+js_fragment(name = "touch_single_tap",
-+  module = "bot.action",
-+  function = "bot.action.tap",
-+  deps = [ "//javascript/atoms:deps" ])
-+
- js_test(name = "test",
-   srcs = [ "test/*_test.html" ],
-   deps = [
-@@ -52,6 +57,7 @@ js_fragment_cpp(name = "atoms",
-     "//javascript/chrome-driver:get_location_in_view:chrome",
-     "//javascript/chrome-driver:get_page_zoom:chrome",
-     "//javascript/chrome-driver:is_element_clickable:chrome",
-+    "//javascript/chrome-driver:touch_single_tap:chrome",
-     "//javascript/webdriver/atoms/fragments:clear_local_storage:chrome",
-     "//javascript/webdriver/atoms/fragments:clear_session_storage:chrome",
-     "//javascript/webdriver/atoms/fragments:get_appcache_status:chrome",

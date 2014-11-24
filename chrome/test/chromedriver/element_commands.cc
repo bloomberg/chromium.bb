@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
-#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -75,21 +74,6 @@ Status SendKeysToElement(
   }
 
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
-}
-
-Status ExecuteTouchSingleTapAtom(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(),
-      webdriver::atoms::asString(webdriver::atoms::TOUCH_SINGLE_TAP),
-      args,
-      value);
 }
 
 }  // namespace
@@ -202,11 +186,6 @@ Status ExecuteTouchSingleTap(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  // Fall back to javascript atom for pre-m30 Chrome.
-  if (session->chrome->GetBrowserInfo()->build_no < 1576)
-    return ExecuteTouchSingleTapAtom(
-        session, web_view, element_id, params, value);
-
   WebPoint location;
   Status status = GetElementClickableLocation(
       session, web_view, element_id, &location);
