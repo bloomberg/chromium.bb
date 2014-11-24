@@ -54,7 +54,6 @@ public:
     void trace(Visitor*);
     void disconnectClient();
 
-    void setZoomFactor(float);
     float zoomFactor();
 
     void setInjectedScriptForOrigin(const String& origin, const String& script);

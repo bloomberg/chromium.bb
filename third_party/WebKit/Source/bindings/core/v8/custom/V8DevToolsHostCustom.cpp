@@ -57,10 +57,6 @@ void V8DevToolsHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Val
 #endif
 }
 
-void V8DevToolsHost::portMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&)
-{
-}
-
 static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < itemArray->Length(); ++i) {

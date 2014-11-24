@@ -158,14 +158,6 @@ void DevToolsHost::disconnectClient()
     m_frontendPage = nullptr;
 }
 
-void DevToolsHost::setZoomFactor(float zoom)
-{
-    if (!m_frontendPage)
-        return;
-    if (LocalFrame* frame = m_frontendPage->deprecatedLocalMainFrame())
-        frame->setPageAndTextZoomFactors(zoom, 1);
-}
-
 float DevToolsHost::zoomFactor()
 {
     if (!m_frontendPage)
