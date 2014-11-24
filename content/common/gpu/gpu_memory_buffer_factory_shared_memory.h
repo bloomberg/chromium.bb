@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SURFACE_TEXTURE_H_
-#define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SURFACE_TEXTURE_H_
+#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SHARED_MEMORY_H_
+#define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SHARED_MEMORY_H_
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -14,20 +13,15 @@
 
 namespace gfx {
 class GLImage;
-class SurfaceTexture;
 }
 
 namespace content {
 
-class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
-                                             public gpu::ImageFactory {
+class GpuMemoryBufferFactorySharedMemory : public GpuMemoryBufferFactory,
+                                           public gpu::ImageFactory {
  public:
-  GpuMemoryBufferFactorySurfaceTexture();
-  ~GpuMemoryBufferFactorySurfaceTexture();
-
-  static bool IsGpuMemoryBufferConfigurationSupported(
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage);
+  GpuMemoryBufferFactorySharedMemory();
+  ~GpuMemoryBufferFactorySharedMemory() override;
 
   // Overridden from GpuMemoryBufferFactory:
   void GetSupportedGpuMemoryBufferConfigurations(
@@ -51,12 +45,9 @@ class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
       int client_id) override;
 
  private:
-  typedef std::pair<int, int> SurfaceTextureMapKey;
-  typedef base::hash_map<SurfaceTextureMapKey,
-                         scoped_refptr<gfx::SurfaceTexture>> SurfaceTextureMap;
-  SurfaceTextureMap surface_textures_;
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactorySharedMemory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SURFACE_TEXTURE_H_
+#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_SHARED_MEMORY_H_

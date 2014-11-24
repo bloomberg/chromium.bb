@@ -4,28 +4,24 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ui/gl/gl_bindings.h"
 
+#if defined(OS_MACOSX)
+#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h"
+#endif
+
 namespace content {
-namespace {
 
-gfx::GpuMemoryBufferType g_preferred_type = gfx::EMPTY_BUFFER;
-
-struct DefaultPreferredType {
-  DefaultPreferredType() : value(gfx::EMPTY_BUFFER) {
-    std::vector<gfx::GpuMemoryBufferType> supported_types;
-    GpuMemoryBufferImpl::GetSupportedTypes(&supported_types);
-    DCHECK(!supported_types.empty());
-    value = supported_types[0];
-  }
-  gfx::GpuMemoryBufferType value;
-};
-base::LazyInstance<DefaultPreferredType> g_default_preferred_type =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
@@ -44,23 +40,34 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
 }
 
 // static
-void GpuMemoryBufferImpl::SetPreferredType(gfx::GpuMemoryBufferType type) {
-  // EMPTY_BUFFER is a reserved value and not a valid preferred type.
-  DCHECK_NE(gfx::EMPTY_BUFFER, type);
-
-  // Make sure this function is only called once before the first call
-  // to GetPreferredType().
-  DCHECK_EQ(gfx::EMPTY_BUFFER, g_preferred_type);
-
-  g_preferred_type = type;
-}
-
-// static
-gfx::GpuMemoryBufferType GpuMemoryBufferImpl::GetPreferredType() {
-  if (g_preferred_type == gfx::EMPTY_BUFFER)
-    g_preferred_type = g_default_preferred_type.Get().value;
-
-  return g_preferred_type;
+scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    Format format,
+    const DestructionCallback& callback) {
+  switch (handle.type) {
+    case gfx::SHARED_MEMORY_BUFFER:
+      return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
+          handle, size, format, callback);
+#if defined(OS_MACOSX)
+    case gfx::IO_SURFACE_BUFFER:
+      return GpuMemoryBufferImplIOSurface::CreateFromHandle(
+          handle, size, format, callback);
+#endif
+#if defined(OS_ANDROID)
+    case gfx::SURFACE_TEXTURE_BUFFER:
+      return GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
+          handle, size, format, callback);
+#endif
+#if defined(USE_OZONE)
+    case gfx::OZONE_NATIVE_BUFFER:
+      return GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
+          handle, size, format, callback);
+#endif
+    default:
+      NOTREACHED();
+      return scoped_ptr<GpuMemoryBufferImpl>();
+  }
 }
 
 // static

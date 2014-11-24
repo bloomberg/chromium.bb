@@ -10,6 +10,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -19,34 +21,44 @@ class GLImage;
 
 namespace content {
 
-class GpuMemoryBufferFactoryIOSurface {
+class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
+                                        public gpu::ImageFactory {
  public:
   GpuMemoryBufferFactoryIOSurface();
   ~GpuMemoryBufferFactoryIOSurface();
 
-  // Creates a IOSurface backed GPU memory buffer with |size| and
-  // |internalformat|. A valid handle is returned on success.
+  static bool IsGpuMemoryBufferConfigurationSupported(
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage);
+
+  // Overridden from GpuMemoryBufferFactory:
+  void GetSupportedGpuMemoryBufferConfigurations(
+      std::vector<Configuration>* configurations) override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
-      int client_id);
+      gfx::GpuMemoryBuffer::Usage usage,
+      int client_id) override;
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              int client_id) override;
+  gpu::ImageFactory* AsImageFactory() override;
 
-  // Destroy a previously created GPU memory buffer.
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
-
-  // Creates a GLImage instance for a GPU memory buffer.
+  // Overridden from gpu::ImageFactory:
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
+      const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
-      int client_id);
+      unsigned internalformat,
+      int client_id) override;
 
  private:
   typedef std::pair<int, int> IOSurfaceMapKey;
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
   IOSurfaceMap io_surfaces_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryIOSurface);
 };
 
 }  // namespace content
