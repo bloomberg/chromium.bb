@@ -18,7 +18,7 @@ class PerfControl(object):
     if isinstance(device, android_commands.AndroidCommands):
       device = device_utils.DeviceUtils(device)
     self._device = device
-    # this will raise an AdbShellCommandFailedError if no CPU files are found
+    # this will raise an AdbCommandFailedError if no CPU files are found
     self._cpu_files = self._device.RunShellCommand(
         'ls -d cpu[0-9]*', cwd=self._CPU_PATH, check_return=True, as_root=True)
     assert self._cpu_files, 'Failed to detect CPUs.'

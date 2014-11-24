@@ -6,6 +6,9 @@
 Exception classes raised by AdbWrapper and DeviceUtils.
 """
 
+from pylib import cmd_helper
+
+
 class BaseError(Exception):
   """Base exception for all device and command errors."""
   pass
@@ -14,31 +17,35 @@ class BaseError(Exception):
 class CommandFailedError(BaseError):
   """Exception for command failures."""
 
-  def __init__(self, msg, device=None):
-    super(CommandFailedError, self).__init__(
-        '%s%s' % ('(device: %s) ' % device if device else '', msg))
+  def __init__(self, message, device_serial=None):
+    if device_serial is not None:
+      message = '(device: %s) %s' % (device_serial, message)
+    self.device_serial = device_serial
+    super(CommandFailedError, self).__init__(message)
 
 
 class AdbCommandFailedError(CommandFailedError):
   """Exception for adb command failures."""
 
-  def __init__(self, cmd, msg, device=None):
-    super(AdbCommandFailedError, self).__init__(
-        'adb command %r failed with message: %s' % (' '.join(cmd), msg),
-        device=device)
-
-
-class AdbShellCommandFailedError(AdbCommandFailedError):
-  """Exception for adb shell command failing with non-zero return code."""
-
-  def __init__(self, cmd, return_code, output, device=None):
-    super(AdbShellCommandFailedError, self).__init__(
-        ['shell'],
-        'command %r on device failed with return code %d and output %r'
-        % (cmd, return_code, output),
-        device=device)
-    self.return_code = return_code
+  def __init__(self, cmd, output, status=None, device_serial=None):
+    self.cmd = cmd
     self.output = output
+    self.status = status
+    message = []
+    if self.cmd[0] == 'shell':
+      assert len(self.cmd) == 2
+      message.append('adb shell command %r failed with' % self.cmd[1])
+    else:
+      command = ' '.join(cmd_helper.SingleQuote(arg) for arg in self.cmd)
+      message.append('adb command %r failed with' % command)
+    if status:
+      message.append(' exit status %d and' % self.status)
+    if output:
+      message.append(' output:\n')
+      message.extend('> %s\n' % line for line in output.splitlines())
+    else:
+      message.append(' no output')
+    super(AdbCommandFailedError, self).__init__(''.join(message), device_serial)
 
 
 class CommandTimeoutError(BaseError):

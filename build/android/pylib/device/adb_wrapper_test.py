@@ -37,12 +37,12 @@ class TestAdbWrapper(unittest.TestCase):
     return path
 
   def testShell(self):
-    output = self._adb.Shell('echo test', expect_rc=0)
+    output = self._adb.Shell('echo test', expect_status=0)
     self.assertEqual(output.strip(), 'test')
     output = self._adb.Shell('echo test')
     self.assertEqual(output.strip(), 'test')
-    self.assertRaises(device_errors.AdbShellCommandFailedError,
-        self._adb.Shell, 'echo test', expect_rc=1)
+    with self.assertRaises(device_errors.AdbCommandFailedError):
+        self._adb.Shell('echo test', expect_status=1)
 
   def testPushPull(self):
     path = self._MakeTempFile('foo')
@@ -56,16 +56,16 @@ class TestAdbWrapper(unittest.TestCase):
 
   def testInstall(self):
     path = self._MakeTempFile('foo')
-    self.assertRaises(device_errors.AdbCommandFailedError, self._adb.Install,
-                      path)
+    with self.assertRaises(device_errors.AdbCommandFailedError):
+      self._adb.Install(path)
 
   def testForward(self):
-    self.assertRaises(device_errors.AdbCommandFailedError, self._adb.Forward,
-                      0, 0)
+    with self.assertRaises(device_errors.AdbCommandFailedError):
+      self._adb.Forward(0, 0)
 
   def testUninstall(self):
-    self.assertRaises(device_errors.AdbCommandFailedError, self._adb.Uninstall,
-        'some.nonexistant.package')
+    with self.assertRaises(device_errors.AdbCommandFailedError):
+      self._adb.Uninstall('some.nonexistant.package')
 
   def testRebootWaitForDevice(self):
     self._adb.Reboot()

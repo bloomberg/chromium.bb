@@ -250,8 +250,8 @@ class DeviceUtilsNewImplTest(mock_calls.TestCase):
 
   def ShellError(self, output=None, exit_code=1):
     def action(cmd, *args, **kwargs):
-      raise device_errors.AdbShellCommandFailedError(
-          cmd, exit_code, output, str(self.device))
+      raise device_errors.AdbCommandFailedError(
+          cmd, output, exit_code, str(self.device))
     if output is None:
       output = 'Permission denied\n'
     return action
@@ -675,7 +675,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
     cmd = 'ls /root'
     output = 'opendir failed, Permission denied\n'
     with self.assertCall(self.call.adb.Shell(cmd), self.ShellError(output)):
-      with self.assertRaises(device_errors.AdbShellCommandFailedError):
+      with self.assertRaises(device_errors.AdbCommandFailedError):
         self.device.RunShellCommand(cmd, check_return=True)
 
   def testRunShellCommand_checkReturn_disabled(self):

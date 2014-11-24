@@ -135,7 +135,7 @@ class DeviceUtils(object):
     try:
       self.RunShellCommand('ls /root', check_return=True)
       return True
-    except device_errors.AdbShellCommandFailedError:
+    except device_errors.AdbCommandFailedError:
       return False
 
   def NeedsSU(self, timeout=None, retries=None):
@@ -160,7 +160,7 @@ class DeviceUtils(object):
         self.RunShellCommand('su -c ls /root && ! ls /root', check_return=True,
                              timeout=timeout, retries=retries)
         self._cache['needs_su'] = True
-      except device_errors.AdbShellCommandFailedError:
+      except device_errors.AdbCommandFailedError:
         self._cache['needs_su'] = False
     return self._cache['needs_su']
 
@@ -181,7 +181,7 @@ class DeviceUtils(object):
       del self._cache['needs_su']
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
-          'Could not enable root.', device=str(self))
+          'Could not enable root.', str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsUserBuild(self, timeout=None, retries=None):
@@ -271,7 +271,7 @@ class DeviceUtils(object):
         self.RunShellCommand(['test', '-d', self.GetExternalStoragePath()],
                              check_return=True)
         return True
-      except device_errors.AdbShellCommandFailedError:
+      except device_errors.AdbCommandFailedError:
         return False
 
     def pm_ready():
@@ -354,8 +354,7 @@ class DeviceUtils(object):
           out = self.old_interface.Uninstall(package_name)
           for line in out.splitlines():
             if 'Failure' in line:
-              raise device_errors.CommandFailedError(
-                  line.strip(), device=str(self))
+              raise device_errors.CommandFailedError(line.strip(), str(self))
       else:
         should_install = False
     else:
@@ -365,11 +364,10 @@ class DeviceUtils(object):
         out = self.old_interface.Install(apk_path, reinstall=reinstall)
         for line in out.splitlines():
           if 'Failure' in line:
-            raise device_errors.CommandFailedError(
-                line.strip(), device=str(self))
+            raise device_errors.CommandFailedError(line.strip(), str(self))
       except AssertionError as e:
         raise device_errors.CommandFailedError(
-            str(e), device=str(self)), None, sys.exc_info()[2]
+            str(e), str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RunShellCommand(self, cmd, check_return=False, cwd=None, env=None,
@@ -416,7 +414,7 @@ class DeviceUtils(object):
       (with the optional newline at the end stripped).
 
     Raises:
-      AdbShellCommandFailedError if check_return is True and the exit code of
+      AdbCommandFailedError if check_return is True and the exit code of
         the command run on the device is non-zero.
       CommandFailedError if single_line is True but the output contains two or
         more lines.
@@ -444,7 +442,7 @@ class DeviceUtils(object):
 
     try:
       output = self.adb.Shell(cmd)
-    except device_errors.AdbShellCommandFailedError as e:
+    except device_errors.AdbCommandFailedError as e:
       if check_return:
         raise
       else:
@@ -486,7 +484,7 @@ class DeviceUtils(object):
     pids = self._GetPidsImpl(process_name)
     if not pids:
       raise device_errors.CommandFailedError(
-          'No process "%s"' % process_name, device=str(self))
+          'No process "%s"' % process_name, str(self))
 
     cmd = ['kill', '-%d' % signum] + pids.values()
     self.RunShellCommand(cmd, as_root=as_root, check_return=True)
@@ -529,7 +527,7 @@ class DeviceUtils(object):
         force_stop=force_stop, flags=intent.flags)
     for l in output:
       if l.startswith('Error:'):
-        raise device_errors.CommandFailedError(l, device=str(self))
+        raise device_errors.CommandFailedError(l, str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def StartInstrumentation(self, component, finish=True, raw=False,
@@ -853,7 +851,7 @@ class DeviceUtils(object):
       self.old_interface.PullFileFromDevice(device_path, host_path)
     except AssertionError as e:
       raise device_errors.CommandFailedError(
-          str(e), device=str(self)), None, sys.exc_info()[2]
+          str(e), str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ReadFile(self, device_path, as_root=False, timeout=None, retries=None):
