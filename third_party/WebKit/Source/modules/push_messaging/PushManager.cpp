@@ -16,6 +16,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
+#include "modules/push_messaging/PushPermissionRequestCallbacks.h"
 #include "modules/push_messaging/PushPermissionStatusCallback.h"
 #include "modules/push_messaging/PushRegistration.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
@@ -49,7 +50,13 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
+    // A document is the only context in which we can reasonably ask the user for permission,
+    // providing sufficient context. The permission status for an origin should be persisted by the
+    // embedder, allowing for subsequent registration from other contexts.
+    if (scriptState->executionContext()->isDocument())
+        client->requestPermission(new PushPermissionRequestCallbacks(this, client, resolver, serviceWorkerProvider));
+    else
+        doRegister(client, resolver, serviceWorkerProvider);
 
     return promise;
 }
@@ -77,6 +84,11 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
     client->getPermissionStatus(new PushPermissionStatusCallback(resolver), serviceWorkerProvider);
     return promise;
+}
+
+void PushManager::doRegister(WebPushClient* client, PassRefPtr<ScriptPromiseResolver> resolver, WebServiceWorkerProvider* serviceWorkerProvider)
+{
+    client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
 }
 
 } // namespace blink
