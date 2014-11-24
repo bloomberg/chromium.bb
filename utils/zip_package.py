@@ -254,7 +254,8 @@ def _write_temp_data(name, data, temp_dir):
     return None
 
   try:
-    with os.open(filepath, os.O_WRONLY|os.O_CREAT|os.O_EXCL, 0600) as f:
+    fd = os.open(filepath, os.O_WRONLY|os.O_CREAT|os.O_EXCL, 0600)
+    with os.fdopen(fd, 'wb') as f:
       f.write(data)
     return filepath
   except (IOError, OSError):

@@ -19,6 +19,10 @@ sys.path.insert(0, ROOT_DIR)
 from utils import zip_package
 
 
+def check_output(*args, **kwargs):
+  return  subprocess.check_output(*args, stderr=subprocess.STDOUT, **kwargs)
+
+
 class ZipPackageTest(unittest.TestCase):
   def setUp(self):
     super(ZipPackageTest, self).setUp()
@@ -238,16 +242,43 @@ class ZipPackageTest(unittest.TestCase):
     pkg.zip_into_file(zip_file)
 
     # Run the zip, validate results.
-    proc = subprocess.Popen(
-        [sys.executable, zip_file],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    out, err = proc.communicate()
+    actual = check_output([sys.executable, zip_file]).strip().splitlines()
+    self.assertEqual(['True', zip_file, zip_file], actual)
 
-    actual = out.strip().splitlines()
-    expected = ['True', zip_file, zip_file,]
-    self.assertEqual(err, '')
-    self.assertEqual(actual, expected)
+  def test_extract_resource(self):
+    pkg = zip_package.ZipPackage(self.temp_dir)
+    pkg.add_directory(os.path.join(ROOT_DIR, 'utils'), 'utils')
+    pkg.add_buffer('cert.pem', 'Certificate\n')
+    pkg.add_buffer('__main__.py', '\n'.join([
+      'import sys',
+      'from utils import zip_package',
+      'print zip_package.extract_resource(sys.modules[__name__], \'cert.pem\')',
+    ]))
+    zip_file = os.path.join(self.temp_dir, 'out.zip')
+    pkg.zip_into_file(zip_file)
+    actual = check_output([sys.executable, zip_file]).strip()
+    self.assertEqual(tempfile.gettempdir(), os.path.dirname(actual))
+    basename = os.path.basename(actual)
+    self.assertTrue(basename.startswith('.zip_pkg-'), actual)
+    self.assertTrue(basename.endswith('-cert.pem'), actual)
+
+  def test_extract_resource_temp_dir(self):
+    pkg = zip_package.ZipPackage(self.temp_dir)
+    pkg.add_directory(os.path.join(ROOT_DIR, 'utils'), 'utils')
+    pkg.add_buffer('cert.pem', 'Certificate\n')
+    pkg.add_buffer('__main__.py', '\n'.join([
+      'import sys',
+      'from utils import zip_package',
+      'print zip_package.extract_resource(',
+      '  sys.modules[__name__], \'cert.pem\', %r)' % self.temp_dir,
+    ]))
+    zip_file = os.path.join(self.temp_dir, 'out.zip')
+    pkg.zip_into_file(zip_file)
+    actual = check_output([sys.executable, zip_file]).strip()
+    expected = os.path.join(
+        self.temp_dir,
+        '6c97fb9ae4b9c51b0c87a18716debddcb9acbaac-Certificate')
+    self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':
