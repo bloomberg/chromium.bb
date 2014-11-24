@@ -3435,3 +3435,19 @@
    fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIMN4mojo2js13HandleWrapperEFSsvEEERS0_RKN4base16BasicStringPieceISsEERKT_
    fun:_ZN4mojo2js13HandleWrapper24GetObjectTemplateBuilderEPN2v87IsolateE
 }
+{
+   bug_436110
+   Memcheck:Param
+   socketcall.sendto(msg)
+   fun:send
+   fun:_ZN4mojo8embedder20PlatformChannelWriteENS0_14PlatformHandleEPKvm
+   fun:_ZN4mojo6system12_GLOBAL__N_115RawChannelPosix11WriteNoLockEPmS3_
+   fun:_ZN4mojo6system12_GLOBAL__N_115RawChannelPosix29OnFileCanWriteWithoutBlockingEi
+   fun:_ZThn112_N4mojo6system12_GLOBAL__N_115RawChannelPosix29OnFileCanWriteWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher29OnFileCanWriteWithoutBlockingEiPS0_
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base11MessageLoop10RunHandlerEv
+}
