@@ -314,14 +314,14 @@ def main(argv):
     clang_format_diff_path = None
 
   if len(argv) == 3 and argv[2] == '--all':
-    filenames = frozenset(_GetFilesFromCompileDB(argv[1]))
+    filenames = set(_GetFilesFromCompileDB(argv[1]))
   else:
-    filenames = frozenset(_GetFilesFromGit(argv[2:]))
-  # Filter out files that aren't C/C++/Obj-C/Obj-C++.
-  extensions = frozenset(('.c', '.cc', '.m', '.mm'))
-  dispatcher = _CompilerDispatcher(argv[0], argv[1],
-                                   [f for f in filenames
-                                    if os.path.splitext(f)[1] in extensions])
+    filenames = set(_GetFilesFromGit(argv[2:]))
+    # Filter out files that aren't C/C++/Obj-C/Obj-C++.
+    extensions = frozenset(('.c', '.cc', '.m', '.mm'))
+    filenames = [f for f in filenames
+                 if os.path.splitext(f)[1] in extensions]
+  dispatcher = _CompilerDispatcher(argv[0], argv[1], filenames)
   dispatcher.Run()
   # Filter out edits to files that aren't in the git repository, since it's not
   # useful to modify files that aren't under source control--typically, these
