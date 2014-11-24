@@ -24,6 +24,9 @@ const char switches::kTestLauncherFilterFile[] = "test-launcher-filter-file";
 // Number of parallel test launcher jobs.
 const char switches::kTestLauncherJobs[] = "test-launcher-jobs";
 
+// Path to list of compiled in tests.
+const char switches::kTestLauncherListTests[] = "test-launcher-list-tests";
+
 // Path to test results file in our custom test launcher format.
 const char switches::kTestLauncherOutput[] = "test-launcher-output";
 

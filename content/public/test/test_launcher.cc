@@ -119,8 +119,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   }
 
   // base::TestLauncherDelegate:
-  bool ShouldRunTest(const testing::TestCase* test_case,
-                     const testing::TestInfo* test_info) override;
+  bool ShouldRunTest(const std::string& test_case_name,
+                     const std::string& test_name) override;
   size_t RunTests(base::TestLauncher* test_launcher,
                   const std::vector<std::string>& test_names) override;
   size_t RetryTests(base::TestLauncher* test_launcher,
@@ -171,17 +171,16 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 };
 
 bool WrapperTestLauncherDelegate::ShouldRunTest(
-    const testing::TestCase* test_case,
-    const testing::TestInfo* test_info) {
-  all_test_names_.insert(
-      std::string(test_case->name()) + "." + test_info->name());
+    const std::string& test_case_name,
+    const std::string& test_name) {
+  all_test_names_.insert(test_case_name + "." + test_name);
 
-  if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
+  if (StartsWithASCII(test_name, kManualTestPrefix, true) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
     return false;
   }
 
-  if (StartsWithASCII(test_info->name(), kPreTestPrefix, true)) {
+  if (StartsWithASCII(test_name, kPreTestPrefix, true)) {
     // We will actually run PRE_ tests, but to ensure they run on the same shard
     // as dependent tests, handle all these details internally.
     return false;

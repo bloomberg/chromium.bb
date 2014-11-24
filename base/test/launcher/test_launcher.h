@@ -43,8 +43,8 @@ class TestLauncherDelegate {
   // Called before a test is considered for running. If it returns false,
   // the test is not run. If it returns true, the test will be run provided
   // it is part of the current shard.
-  virtual bool ShouldRunTest(const testing::TestCase* test_case,
-                             const testing::TestInfo* test_info) = 0;
+  virtual bool ShouldRunTest(const std::string& test_case_name,
+                             const std::string& test_name) = 0;
 
   // Called to make the delegate run the specified tests. The delegate must
   // return the number of actual tests it's going to run (can be smaller,

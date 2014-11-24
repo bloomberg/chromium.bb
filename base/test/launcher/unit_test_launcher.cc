@@ -118,8 +118,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     FilePath output_file;
   };
 
-  bool ShouldRunTest(const testing::TestCase* test_case,
-                     const testing::TestInfo* test_info) override {
+  bool ShouldRunTest(const std::string& test_case_name,
+                     const std::string& test_name) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // There is no additional logic to disable specific tests.

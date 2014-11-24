@@ -911,6 +911,8 @@
         'test/expectations/expectation.h',
         'test/expectations/parser.cc',
         'test/expectations/parser.h',
+        'test/gtest_util.cc',
+        'test/gtest_util.h',
         'test/gtest_xml_util.cc',
         'test/gtest_xml_util.h',
         'test/launcher/test_launcher.cc',

@@ -4,6 +4,7 @@
 
 #include "base/test/launcher/test_launcher.h"
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 
@@ -16,5 +17,6 @@ int DummyRunTestSuite(void) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  base::AtExitManager at_exit;
   return base::LaunchUnitTests(argc, argv, base::Bind(&DummyRunTestSuite));
 }

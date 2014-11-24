@@ -29,6 +29,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/launcher/test_results_tracker.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/test_switches.h"
@@ -900,61 +901,56 @@ bool TestLauncher::Init() {
 }
 
 void TestLauncher::RunTests() {
-  testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
+  std::vector<SplitTestName> tests(GetCompiledInTests());
 
   std::vector<std::string> test_names;
 
-  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
-    const testing::TestCase* test_case = unit_test->GetTestCase(i);
-    for (int j = 0; j < test_case->total_test_count(); ++j) {
-      const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-      std::string test_name = FormatFullTestName(
-          test_info->test_case_name(), test_info->name());
+  for (size_t i = 0; i < tests.size(); i++) {
+    std::string test_name = FormatFullTestName(tests[i].first, tests[i].second);
 
-      results_tracker_.AddTest(test_name);
+    results_tracker_.AddTest(test_name);
 
-      const CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (test_name.find("DISABLED") != std::string::npos) {
-        results_tracker_.AddDisabledTest(test_name);
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (test_name.find("DISABLED") != std::string::npos) {
+      results_tracker_.AddDisabledTest(test_name);
 
-        // Skip disabled tests unless explicitly requested.
-        if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag))
-          continue;
-      }
-
-      if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
+      // Skip disabled tests unless explicitly requested.
+      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag))
         continue;
+    }
 
-      // Skip the test that doesn't match the filter (if given).
-      if (!positive_test_filter_.empty()) {
-        bool found = false;
-        for (size_t k = 0; k < positive_test_filter_.size(); ++k) {
-          if (MatchPattern(test_name, positive_test_filter_[k])) {
-            found = true;
-            break;
-          }
-        }
+    if (!launcher_delegate_->ShouldRunTest(tests[i].first, tests[i].second))
+      continue;
 
-        if (!found)
-          continue;
-      }
-      bool excluded = false;
-      for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
-        if (MatchPattern(test_name, negative_test_filter_[k])) {
-          excluded = true;
+    // Skip the test that doesn't match the filter (if given).
+    if (!positive_test_filter_.empty()) {
+      bool found = false;
+      for (size_t k = 0; k < positive_test_filter_.size(); ++k) {
+        if (MatchPattern(test_name, positive_test_filter_[k])) {
+          found = true;
           break;
         }
       }
-      if (excluded)
-        continue;
 
-      if (base::Hash(test_name) % total_shards_ !=
-          static_cast<uint32>(shard_index_)) {
+      if (!found)
         continue;
-      }
-
-      test_names.push_back(test_name);
     }
+    bool excluded = false;
+    for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
+      if (MatchPattern(test_name, negative_test_filter_[k])) {
+        excluded = true;
+        break;
+      }
+    }
+    if (excluded)
+      continue;
+
+    if (base::Hash(test_name) % total_shards_ !=
+        static_cast<uint32>(shard_index_)) {
+      continue;
+    }
+
+    test_names.push_back(test_name);
   }
 
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);
