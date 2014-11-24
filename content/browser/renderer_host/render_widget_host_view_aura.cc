@@ -1325,7 +1325,7 @@ void RenderWidgetHostViewAura::HideDisambiguationPopup() {
 
 void RenderWidgetHostViewAura::ProcessDisambiguationGesture(
     ui::GestureEvent* event) {
-  blink::WebGestureEvent web_gesture = content::MakeWebGestureEvent(event);
+  blink::WebGestureEvent web_gesture = content::MakeWebGestureEvent(*event);
   // If we fail to make a WebGestureEvent that is a Tap from the provided event,
   // don't forward it to Blink.
   if (web_gesture.type < blink::WebInputEvent::Type::GestureTap ||
@@ -1337,7 +1337,7 @@ void RenderWidgetHostViewAura::ProcessDisambiguationGesture(
 
 void RenderWidgetHostViewAura::ProcessDisambiguationMouse(
     ui::MouseEvent* event) {
-  blink::WebMouseEvent web_mouse = content::MakeWebMouseEvent(event);
+  blink::WebMouseEvent web_mouse = content::MakeWebMouseEvent(*event);
   host_->ForwardMouseEvent(web_mouse);
 }
 
@@ -1867,7 +1867,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
     if (event->type() == ui::ET_MOUSEWHEEL) {
       blink::WebMouseWheelEvent mouse_wheel_event =
-          MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
+          MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
       if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
         host_->ForwardWheelEvent(mouse_wheel_event);
       return;
@@ -1884,7 +1884,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       return;
     }
 
-    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
+    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(*event);
 
     bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) &&
@@ -1949,7 +1949,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     HideDisambiguationPopup();
 
     blink::WebMouseWheelEvent mouse_wheel_event =
-        MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
+        MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (CanRendererHandleEvent(event) &&
@@ -1959,7 +1959,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       FinishImeCompositionSession();
 
-    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
+    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(*event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
     // Ensure that we get keyboard focus on mouse down as a plugin window may
@@ -2012,13 +2012,12 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
         MakeWebGestureEventFlingCancel();
     host_->ForwardGestureEvent(gesture_event);
     blink::WebMouseWheelEvent mouse_wheel_event =
-        MakeWebMouseWheelEvent(event);
+        MakeWebMouseWheelEvent(*event);
     host_->ForwardWheelEvent(mouse_wheel_event);
     RecordAction(base::UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
              event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-    blink::WebGestureEvent gesture_event =
-        MakeWebGestureEvent(event);
+    blink::WebGestureEvent gesture_event = MakeWebGestureEvent(*event);
     host_->ForwardGestureEvent(gesture_event);
     if (event->type() == ui::ET_SCROLL_FLING_START)
       RecordAction(base::UserMetricsAction("TrackpadScrollFling"));
@@ -2078,7 +2077,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     delegate->HandleGestureBegin();
   }
 
-  blink::WebGestureEvent gesture = MakeWebGestureEvent(event);
+  blink::WebGestureEvent gesture = MakeWebGestureEvent(*event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.

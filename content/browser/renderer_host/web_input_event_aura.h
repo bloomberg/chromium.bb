@@ -23,17 +23,17 @@ namespace content {
 const int kPixelsPerTick = 53;
 
 CONTENT_EXPORT blink::WebMouseEvent MakeWebMouseEvent(
-    ui::MouseEvent* event);
+    const ui::MouseEvent& event);
 CONTENT_EXPORT blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
-    ui::MouseWheelEvent* event);
+    const ui::MouseWheelEvent& event);
 CONTENT_EXPORT blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
-    ui::ScrollEvent* event);
+    const ui::ScrollEvent& event);
 CONTENT_EXPORT blink::WebKeyboardEvent MakeWebKeyboardEvent(
-    ui::KeyEvent* event);
+    const ui::KeyEvent& event);
 CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEvent(
-    ui::GestureEvent* event);
+    const ui::GestureEvent& event);
 CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEvent(
-    ui::ScrollEvent* event);
+    const ui::ScrollEvent& event);
 CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEventFlingCancel();
 
 }  // namespace content
