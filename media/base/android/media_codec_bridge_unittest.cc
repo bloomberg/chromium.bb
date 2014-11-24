@@ -205,7 +205,6 @@ TEST(MediaCodecBridgeTest, DoNormal) {
         continue;
 
       case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
-        ASSERT_TRUE(media_codec->GetOutputBuffers());
         continue;
 
       default:

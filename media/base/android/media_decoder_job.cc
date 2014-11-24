@@ -430,10 +430,7 @@ void MediaDecoderJob::DecodeInternal(
         &presentation_timestamp,
         &output_eos_encountered_,
         NULL);
-    if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED &&
-        !media_codec_bridge_->GetOutputBuffers()) {
-      status = MEDIA_CODEC_ERROR;
-    } else if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) {
+    if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) {
       // TODO(qinmin): instead of waiting for the next output buffer to be
       // dequeued, post a task on the UI thread to signal the format change.
       has_format_change = true;

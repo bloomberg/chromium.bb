@@ -351,7 +351,10 @@ class MediaCodecBridge {
     private boolean start() {
         try {
             mMediaCodec.start();
-            mInputBuffers = mMediaCodec.getInputBuffers();
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                mInputBuffers = mMediaCodec.getInputBuffers();
+                mOutputBuffers = mMediaCodec.getOutputBuffers();
+            }
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot start the media codec", e);
             return false;
@@ -429,17 +432,18 @@ class MediaCodecBridge {
 
     @CalledByNative
     private ByteBuffer getInputBuffer(int index) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            return mMediaCodec.getInputBuffer(index);
+        }
         return mInputBuffers[index];
     }
 
     @CalledByNative
     private ByteBuffer getOutputBuffer(int index) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            return mMediaCodec.getOutputBuffer(index);
+        }
         return mOutputBuffers[index];
-    }
-
-    @CalledByNative
-    private int getInputBuffersCount() {
-        return mInputBuffers.length;
     }
 
     @CalledByNative
@@ -452,23 +456,14 @@ class MediaCodecBridge {
         return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
     }
 
-    @SuppressWarnings("deprecation")
-    @CalledByNative
-    private boolean getOutputBuffers() {
-        try {
-            mOutputBuffers = mMediaCodec.getOutputBuffers();
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "Cannot get output buffers", e);
-            return false;
-        }
-        return true;
-    }
-
     @CalledByNative
     private int queueInputBuffer(
             int index, int offset, int size, long presentationTimeUs, int flags) {
         resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                mMediaCodec.getInputBuffer(index);
+            }
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
         } catch (Exception e) {
             Log.e(TAG, "Failed to queue input buffer", e);
@@ -519,6 +514,9 @@ class MediaCodecBridge {
     @CalledByNative
     private void releaseOutputBuffer(int index, boolean render) {
         try {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                mMediaCodec.getOutputBuffer(index);
+            }
             mMediaCodec.releaseOutputBuffer(index, render);
         } catch (IllegalStateException e) {
             // TODO(qinmin): May need to report the error to the caller. crbug.com/356498.
@@ -546,6 +544,7 @@ class MediaCodecBridge {
                 status = MEDIA_CODEC_OK;
                 index = indexOrStatus;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+                mOutputBuffers = mMediaCodec.getOutputBuffers();
                 status = MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;

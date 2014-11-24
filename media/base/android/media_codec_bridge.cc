@@ -266,8 +266,7 @@ MediaCodecBridge::~MediaCodecBridge() {
 
 bool MediaCodecBridge::StartInternal() {
   JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_start(env, j_media_codec_.obj()) &&
-         GetOutputBuffers();
+  return Java_MediaCodecBridge_start(env, j_media_codec_.obj());
 }
 
 MediaCodecStatus MediaCodecBridge::Reset() {
@@ -449,11 +448,6 @@ void MediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
       env, j_media_codec_.obj(), index, render);
 }
 
-int MediaCodecBridge::GetInputBuffersCount() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_getInputBuffersCount(env, j_media_codec_.obj());
-}
-
 int MediaCodecBridge::GetOutputBuffersCount() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_getOutputBuffersCount(env, j_media_codec_.obj());
@@ -463,11 +457,6 @@ size_t MediaCodecBridge::GetOutputBuffersCapacity() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_getOutputBuffersCapacity(env,
                                                         j_media_codec_.obj());
-}
-
-bool MediaCodecBridge::GetOutputBuffers() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_getOutputBuffers(env, j_media_codec_.obj());
 }
 
 void MediaCodecBridge::GetInputBuffer(int input_buffer_index,

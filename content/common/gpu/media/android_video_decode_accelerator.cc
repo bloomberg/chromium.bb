@@ -259,9 +259,6 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
       }
 
       case media::MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
-        RETURN_ON_FAILURE(media_codec_->GetOutputBuffers(),
-                          "Cannot get output buffer from MediaCodec.",
-                          PLATFORM_FAILURE);
         break;
 
       case media::MEDIA_CODEC_OK:

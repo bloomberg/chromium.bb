@@ -107,9 +107,6 @@ class MEDIA_EXPORT MediaCodecBridge {
   // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED
   void GetOutputFormat(int* width, int* height);
 
-  // Returns the number of input buffers used by the codec.
-  int GetInputBuffersCount();
-
   // Submits a byte array to the given input buffer. Call this after getting an
   // available buffer from DequeueInputBuffer().  If |data| is NULL, assume the
   // input buffer has already been populated (but still obey |size|).
@@ -169,15 +166,12 @@ class MEDIA_EXPORT MediaCodecBridge {
   void ReleaseOutputBuffer(int index, bool render);
 
   // Returns the number of output buffers used by the codec.
+  // TODO(qinmin): this call is deprecated in Lollipop.
   int GetOutputBuffersCount();
 
   // Returns the capacity of each output buffer used by the codec.
+  // TODO(qinmin): this call is deprecated in Lollipop.
   size_t GetOutputBuffersCapacity();
-
-  // Gets output buffers from media codec and keeps them inside the java class.
-  // To access them, use DequeueOutputBuffer(). Returns whether output buffers
-  // were successfully obtained.
-  bool GetOutputBuffers() WARN_UNUSED_RESULT;
 
   // Returns an input buffer's base pointer and capacity.
   void GetInputBuffer(int input_buffer_index, uint8** data, size_t* capacity);

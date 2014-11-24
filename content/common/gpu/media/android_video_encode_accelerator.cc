@@ -378,8 +378,8 @@ bool AndroidVideoEncodeAccelerator::DoOutputBuffersSuffice() {
   // prepared to field multiple requests to RequireBitstreamBuffers().
   int count = media_codec_->GetOutputBuffersCount();
   size_t capacity = media_codec_->GetOutputBuffersCapacity();
-  bool ret = media_codec_->GetOutputBuffers() && count <= num_output_buffers_ &&
-             capacity <= output_buffers_capacity_;
+  bool ret = count <= num_output_buffers_ &&
+      capacity <= output_buffers_capacity_;
   LOG_IF(ERROR, !ret) << "Need more/bigger buffers; before: "
                       << num_output_buffers_ << "x" << output_buffers_capacity_
                       << ", now: " << count << "x" << capacity;
