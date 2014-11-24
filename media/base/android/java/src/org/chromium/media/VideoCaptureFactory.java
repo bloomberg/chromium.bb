@@ -89,7 +89,7 @@ class VideoCaptureFactory {
     }
 
     private static boolean isLReleaseOrLater() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.L;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     // Factory methods.
