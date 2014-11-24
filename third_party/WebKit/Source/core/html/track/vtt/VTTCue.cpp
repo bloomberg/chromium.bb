@@ -526,7 +526,6 @@ static TextDirection determineDirectionality(const String& value, bool& hasStron
 
 static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
 {
-    DEFINE_STATIC_LOCAL(const String, rtTag, ("rt"));
     ASSERT(vttRoot);
 
     // Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the
@@ -534,14 +533,23 @@ static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
     // pre-order, depth-first traversal, excluding WebVTT Ruby Text Objects and
     // their descendants.
     TextDirection textDirection = LTR;
-    for (Node& node : NodeTraversal::descendantsOf(*vttRoot)) {
-        if (!node.isTextNode() || node.localName() == rtTag)
-            continue;
+    Node* node = NodeTraversal::next(*vttRoot);
+    while (node) {
+        ASSERT(node->isDescendantOf(vttRoot));
 
-        bool hasStrongDirectionality;
-        textDirection = determineDirectionality(node.nodeValue(), hasStrongDirectionality);
-        if (hasStrongDirectionality)
-            break;
+        if (node->isTextNode()) {
+            bool hasStrongDirectionality;
+            textDirection = determineDirectionality(node->nodeValue(), hasStrongDirectionality);
+            if (hasStrongDirectionality)
+                break;
+        } else if (node->isVTTElement()) {
+            if (toVTTElement(node)->webVTTNodeType() == VTTNodeTypeRubyText) {
+                node = NodeTraversal::nextSkippingChildren(*node);
+                continue;
+            }
+        }
+
+        node = NodeTraversal::next(*node);
     }
     return isLeftToRightDirection(textDirection) ? CSSValueLtr : CSSValueRtl;
 }

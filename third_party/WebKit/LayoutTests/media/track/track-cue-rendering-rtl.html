@@ -21,7 +21,9 @@
                     ";1234تجربة",
                     "\t०१२३४५६७८९  \t",
                     "𐡘 (Imperial Aramaic number one, U+10858) strong RTL, non-BMP",
-                    "𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP"];
+                    "𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP",
+                    "<ruby><rt>𝅘𝅥</rt>تجربة</ruby>",
+                    "<ruby>1234<rt>تجربة</rt></ruby>"];
 
         function testCueStyle()
         {
@@ -37,7 +39,7 @@
             testExpected("video.currentTime", (seekedCount / 2) + .25);
             testExpected("testTrack.track.activeCues.length", 1);
             testExpected("testTrack.track.activeCues[0].text", info[seekedCount]);
-            testExpected("testCueDisplayBox.innerText", info[seekedCount]);
+            testExpected("testCueDisplayBox.innerText", info[seekedCount].replace(/<[^>]+>/g, ""));
 
             direction = seekedCount % 2 ? "ltr" : "rtl";
 
