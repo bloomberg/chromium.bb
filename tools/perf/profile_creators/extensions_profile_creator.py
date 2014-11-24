@@ -206,7 +206,7 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     # Phase 1: When the first page is loaded: we wait for a timeout to allow
     #     all extensions to install and to prime safe browsing and other
     #     caches.  Extensions may open tabs as part of the install process.
-    # Phase 2: When the second page loads, page_runner closes all tabs -
+    # Phase 2: When the second page loads, user_story_runner closes all tabs -
     #     we are left with one open tab, wait for that to finish loading.
 
     # Sleep for a bit to allow safe browsing and other data to load +
