@@ -81,17 +81,20 @@ def SetLockScreenSettings(device):
   if device.FileExists(_LOCK_SCREEN_SETTINGS_PATH):
     db = _LOCK_SCREEN_SETTINGS_PATH
     locksettings = get_lock_settings('locksettings')
+    columns = ['name', 'user', 'value']
+    generate_values = lambda k, v: [k, '0', v]
   elif device.FileExists(_ALTERNATE_LOCK_SCREEN_SETTINGS_PATH):
     db = _ALTERNATE_LOCK_SCREEN_SETTINGS_PATH
     locksettings = get_lock_settings('secure') + get_lock_settings('system')
+    columns = ['name', 'value']
+    generate_values = lambda k, v: [k, v]
   else:
     logging.warning('Unable to find database file to set lock screen settings.')
     return
 
   for table, key, value in locksettings:
     # Set the lockscreen setting for default user '0'
-    columns = ['name', 'user', 'value']
-    values = [key, '0', value]
+    values = generate_values(key, value)
 
     cmd = """begin transaction;
 delete from '%(table)s' where %(primary_key)s='%(primary_value)s';
