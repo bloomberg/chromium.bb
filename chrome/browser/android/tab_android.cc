@@ -677,11 +677,6 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetDefaultFavicon(JNIEnv* env,
   return bitmap;
 }
 
-jboolean TabAndroid::IsFaviconValid(JNIEnv* env, jobject jobj) {
-  return web_contents() &&
-      FaviconTabHelper::FromWebContents(web_contents())->FaviconIsValid();
-}
-
 prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
   Profile* profile = GetProfile();
   if (!profile)
