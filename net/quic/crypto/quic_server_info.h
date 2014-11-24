@@ -89,6 +89,14 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   const State& state() const;
   State* mutable_state();
 
+  base::TimeTicks wait_for_data_start_time() const {
+    return wait_for_data_start_time_;
+  }
+
+  base::TimeTicks wait_for_data_end_time() const {
+    return wait_for_data_end_time_;
+  }
+
  protected:
   // Parse parses pickled data and fills out the public member fields of this
   // object. It returns true iff the parse was successful. The public member
@@ -96,6 +104,10 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   bool Parse(const std::string& data);
   std::string Serialize();
   State state_;
+
+  // Time when WaitForDataReady was called and when it has finished.
+  base::TimeTicks wait_for_data_start_time_;
+  base::TimeTicks wait_for_data_end_time_;
 
  private:
   // ParseInner is a helper function for Parse.

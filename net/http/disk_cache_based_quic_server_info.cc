@@ -78,9 +78,11 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
     const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(GET_BACKEND, state_);
+  wait_for_data_start_time_ = base::TimeTicks::Now();
 
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_WAIT_FOR_DATA_READY);
   if (ready_) {
+    wait_for_data_end_time_ = base::TimeTicks::Now();
     RecordLastFailure();
     return OK;
   }
@@ -188,6 +190,7 @@ void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,
   if (rv == ERR_IO_PENDING)
     return;
   if (!wait_for_ready_callback_.is_null()) {
+    wait_for_data_end_time_ = base::TimeTicks::Now();
     RecordLastFailure();
     base::ResetAndReturn(&wait_for_ready_callback_).Run(rv);
   }

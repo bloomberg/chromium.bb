@@ -286,6 +286,24 @@ QuicClientSession::~QuicClientSession() {
     }
   }
   const QuicConnectionStats stats = connection()->GetStats();
+  if (server_info_ && stats.min_rtt_us > 0) {
+    base::TimeTicks wait_for_data_start_time =
+        server_info_->wait_for_data_start_time();
+    base::TimeTicks wait_for_data_end_time =
+        server_info_->wait_for_data_end_time();
+    if (!wait_for_data_start_time.is_null() &&
+        !wait_for_data_end_time.is_null()) {
+      base::TimeDelta wait_time =
+          wait_for_data_end_time - wait_for_data_start_time;
+      const base::HistogramBase::Sample kMaxWaitToRtt = 1000;
+      base::HistogramBase::Sample wait_to_rtt =
+          static_cast<base::HistogramBase::Sample>(
+              100 * wait_time.InMicroseconds() / stats.min_rtt_us);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicServerInfo.WaitForDataReadyToRtt",
+                                  wait_to_rtt, 0, kMaxWaitToRtt, 50);
+    }
+  }
+
   if (stats.max_sequence_reordering == 0)
     return;
   const base::HistogramBase::Sample kMaxReordering = 100;
@@ -584,6 +602,20 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   if (event == HANDSHAKE_CONFIRMED) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.HandshakeConfirmedTime",
                         base::TimeTicks::Now() - handshake_start_);
+    if (server_info_) {
+      // Track how long it has taken to finish handshake once we start waiting
+      // for reading of QUIC server information from disk cache. We could use
+      // this data to compare total time taken if we were to cancel the disk
+      // cache read vs waiting for the read to complete.
+      base::TimeTicks wait_for_data_start_time =
+          server_info_->wait_for_data_start_time();
+      if (!wait_for_data_start_time.is_null()) {
+        UMA_HISTOGRAM_TIMES(
+            "Net.QuicServerInfo.WaitForDataReady.HandshakeConfirmedTime",
+            base::TimeTicks::Now() - wait_for_data_start_time);
+      }
+    }
+
     ObserverSet::iterator it = observers_.begin();
     while (it != observers_.end()) {
       Observer* observer = *it;

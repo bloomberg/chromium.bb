@@ -17608,6 +17608,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicServerInfo.WaitForDataReady.HandshakeConfirmedTime"
+    units="Milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The elapsed time between waiting for reading of QUIC server information from
+    disk cache, and receiving crypto handshake confirmation from the server.
+    Will measure the impact of cancelling the WaitForDataReady callback. Logged
+    after crypto handshake is confirmed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicServerInfo.WaitForDataReadyToRtt" units="percent">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The ratio of the time spent waiting to load QUIC server information from
+    disk cache to the min rtt. Logged when session is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.21CumulativePacketsReceived"
     units="Received in Ranges">
   <owner>rch@chromium.org</owner>
