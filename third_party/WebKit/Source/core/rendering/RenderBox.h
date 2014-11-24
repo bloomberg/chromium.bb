@@ -404,7 +404,7 @@ public:
     LayoutUnit perpendicularContainingBlockLogicalHeight() const;
 
     virtual void updateLogicalWidth();
-    virtual void updateLogicalHeight();
+    void updateLogicalHeight();
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const;
 
     void computeLogicalWidth(LogicalExtentComputedValues&) const;
