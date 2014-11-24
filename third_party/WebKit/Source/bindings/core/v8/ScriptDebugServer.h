@@ -90,7 +90,6 @@ public:
     void runPendingTasks();
 
     bool isPaused();
-    bool runningNestedMessageLoop() { return m_runningNestedMessageLoop; }
 
     v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
     v8::Local<v8::Value> collectionEntries(v8::Handle<v8::Object>&);

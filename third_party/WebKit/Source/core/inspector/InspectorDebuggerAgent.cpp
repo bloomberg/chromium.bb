@@ -284,11 +284,6 @@ bool InspectorDebuggerAgent::isPaused()
     return scriptDebugServer().isPaused();
 }
 
-bool InspectorDebuggerAgent::runningNestedMessageLoop()
-{
-    return scriptDebugServer().runningNestedMessageLoop();
-}
-
 void InspectorDebuggerAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
     if (consoleMessage->type() == AssertMessageType && scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions)

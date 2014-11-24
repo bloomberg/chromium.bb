@@ -95,7 +95,6 @@ public:
     virtual void restore() override final;
 
     bool isPaused();
-    bool runningNestedMessageLoop();
     void addMessageToConsole(ConsoleMessage*);
 
     String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
