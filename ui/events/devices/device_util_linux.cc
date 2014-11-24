@@ -8,41 +8,37 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 
 namespace ui {
 
-// We consider the touchscreen to be internal if it is an I2c device. We search
-// all the dev input nodes registered by I2C devices to see if we can find
-// eventXXX.
+// We consider the touchscreen to be internal if it is an I2c device.
 bool IsTouchscreenInternal(const base::FilePath& path) {
   DCHECK(!base::MessageLoopForUI::IsCurrent());
   std::string event_node = path.BaseName().value();
   if (event_node.empty() || !StartsWithASCII(event_node, "event", false))
     return false;
 
-  // Extract id "XXX" from "eventXXX"
-  std::string event_node_id = event_node.substr(5);
+  // Find sysfs device path for this device.
+  base::FilePath sysfs_path =
+      base::FilePath(FILE_PATH_LITERAL("/sys/class/input"));
+  sysfs_path = sysfs_path.Append(path.BaseName());
+  sysfs_path = base::MakeAbsoluteFilePath(sysfs_path);
 
-  // I2C input device registers its dev input node at
-  // /sys/bus/i2c/devices/*/input/inputXXX/eventXXX
-  base::FileEnumerator i2c_enum(
-      base::FilePath(FILE_PATH_LITERAL("/sys/bus/i2c/devices/")),
-      false,
-      base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath i2c_name = i2c_enum.Next(); !i2c_name.empty();
-       i2c_name = i2c_enum.Next()) {
-    base::FileEnumerator input_enum(
-        i2c_name.Append(FILE_PATH_LITERAL("input")),
-        false,
-        base::FileEnumerator::DIRECTORIES,
-        FILE_PATH_LITERAL("input*"));
-    for (base::FilePath input = input_enum.Next(); !input.empty();
-         input = input_enum.Next()) {
-      if (input.BaseName().value().substr(5) == event_node_id)
-        return true;
-    }
+  // Device does not exist.
+  if (sysfs_path.empty())
+    return false;
+
+  // Check all parent devices. If any of them is the "i2c" subsystem,
+  // consider the device internal. Otherwise consider it external.
+  const base::FilePath i2c_subsystem(FILE_PATH_LITERAL("/sys/bus/i2c"));
+  for (base::FilePath path = sysfs_path; path != base::FilePath("/");
+       path = path.DirName()) {
+    if (base::MakeAbsoluteFilePath(
+          path.Append(FILE_PATH_LITERAL("subsystem"))) == i2c_subsystem)
+      return true;
   }
 
   return false;
