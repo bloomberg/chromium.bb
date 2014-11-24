@@ -69,7 +69,6 @@ Tests the script outline extraction functionality.
             name : "set name"
         }
     ]
-    index : 1
-    total : 1
+    isLastChunk : true
 }
 
