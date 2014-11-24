@@ -167,6 +167,16 @@ void GLES2TraceImplementation::CompressedTexSubImage2D(GLenum target,
                                format, imageSize, data);
 }
 
+void GLES2TraceImplementation::CopyBufferSubData(GLenum readtarget,
+                                                 GLenum writetarget,
+                                                 GLintptr readoffset,
+                                                 GLintptr writeoffset,
+                                                 GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CopyBufferSubData");
+  gl_->CopyBufferSubData(readtarget, writetarget, readoffset, writeoffset,
+                         size);
+}
+
 void GLES2TraceImplementation::CopyTexImage2D(GLenum target,
                                               GLint level,
                                               GLenum internalformat,

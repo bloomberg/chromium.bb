@@ -1452,6 +1452,9 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
+  'CopyBufferSubData': {
+    'unsafe': True,
+  },
   'CreateAndConsumeTextureCHROMIUM': {
     'decoder_func': 'DoCreateAndConsumeTextureCHROMIUM',
     'impl_func': False,
@@ -3183,26 +3186,17 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 """
     self.WriteValidUnitTest(func, file, valid_test, *extras)
 
-    invalid_test = """
+    if not func.IsUnsafe():
+      invalid_test = """
 TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);"""
-    if func.IsUnsafe():
-      invalid_test += """
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-"""
-    else:
-      invalid_test += """
+  cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
 """
-    self.WriteInvalidUnitTest(func, file, invalid_test, *extras)
+      self.WriteInvalidUnitTest(func, file, invalid_test, *extras)
 
   def WriteImmediateServiceUnitTest(self, func, file, *extras):
     """Writes the service unit test for an immediate command."""
@@ -6392,6 +6386,8 @@ class EnumBaseArgument(Argument):
     return self.named_type.GetConstantValue()
 
   def WriteValidationCode(self, file, func):
+    if func.IsUnsafe():
+      return
     if self.named_type.IsConstant():
       return
     file.Write("  if (!validators_->%s.IsValid(%s)) {\n" %

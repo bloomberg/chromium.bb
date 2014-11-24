@@ -209,6 +209,17 @@ TEST_F(GLES2ImplementationTest, CompileShader) {
 // TODO: Implement unit test for CompressedTexImage2D
 // TODO: Implement unit test for CompressedTexSubImage2D
 
+TEST_F(GLES2ImplementationTest, CopyBufferSubData) {
+  struct Cmds {
+    cmds::CopyBufferSubData cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_ARRAY_BUFFER, GL_ARRAY_BUFFER, 3, 4, 5);
+
+  gl_->CopyBufferSubData(GL_ARRAY_BUFFER, GL_ARRAY_BUFFER, 3, 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, CopyTexImage2D) {
   struct Cmds {
     cmds::CopyTexImage2D cmd;

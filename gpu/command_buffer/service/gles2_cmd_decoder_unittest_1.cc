@@ -278,26 +278,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetVertexAttribiv, 0>(
   }
 };
 
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::RenderbufferStorage, 0>(
-    bool valid) {
-  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
-                    kServiceRenderbufferId);
-  if (valid) {
-    EnsureRenderbufferBound(false);
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
-                RenderbufferStorageEXT(GL_RENDERBUFFER, _, 3, 4))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-}
-
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h"
 

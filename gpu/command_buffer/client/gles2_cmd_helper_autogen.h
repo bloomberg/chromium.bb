@@ -243,6 +243,18 @@ void CompressedTexSubImage2D(GLenum target,
   }
 }
 
+void CopyBufferSubData(GLenum readtarget,
+                       GLenum writetarget,
+                       GLintptr readoffset,
+                       GLintptr writeoffset,
+                       GLsizeiptr size) {
+  gles2::cmds::CopyBufferSubData* c =
+      GetCmdSpace<gles2::cmds::CopyBufferSubData>();
+  if (c) {
+    c->Init(readtarget, writetarget, readoffset, writeoffset, size);
+  }
+}
+
 void CopyTexImage2D(GLenum target,
                     GLint level,
                     GLenum internalformat,

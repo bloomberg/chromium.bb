@@ -1168,6 +1168,65 @@ COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_id) == 36,
 COMPILE_ASSERT(offsetof(CompressedTexSubImage2D, data_shm_offset) == 40,
                OffsetOf_CompressedTexSubImage2D_data_shm_offset_not_40);
 
+struct CopyBufferSubData {
+  typedef CopyBufferSubData ValueType;
+  static const CommandId kCmdId = kCopyBufferSubData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _readtarget,
+            GLenum _writetarget,
+            GLintptr _readoffset,
+            GLintptr _writeoffset,
+            GLsizeiptr _size) {
+    SetHeader();
+    readtarget = _readtarget;
+    writetarget = _writetarget;
+    readoffset = _readoffset;
+    writeoffset = _writeoffset;
+    size = _size;
+  }
+
+  void* Set(void* cmd,
+            GLenum _readtarget,
+            GLenum _writetarget,
+            GLintptr _readoffset,
+            GLintptr _writeoffset,
+            GLsizeiptr _size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_readtarget, _writetarget, _readoffset, _writeoffset, _size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t readtarget;
+  uint32_t writetarget;
+  int32_t readoffset;
+  int32_t writeoffset;
+  int32_t size;
+};
+
+COMPILE_ASSERT(sizeof(CopyBufferSubData) == 24,
+               Sizeof_CopyBufferSubData_is_not_24);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, header) == 0,
+               OffsetOf_CopyBufferSubData_header_not_0);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, readtarget) == 4,
+               OffsetOf_CopyBufferSubData_readtarget_not_4);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, writetarget) == 8,
+               OffsetOf_CopyBufferSubData_writetarget_not_8);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, readoffset) == 12,
+               OffsetOf_CopyBufferSubData_readoffset_not_12);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, writeoffset) == 16,
+               OffsetOf_CopyBufferSubData_writeoffset_not_16);
+COMPILE_ASSERT(offsetof(CopyBufferSubData, size) == 20,
+               OffsetOf_CopyBufferSubData_size_not_20);
+
 struct CopyTexImage2D {
   typedef CopyTexImage2D ValueType;
   static const CommandId kCmdId = kCopyTexImage2D;

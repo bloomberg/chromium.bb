@@ -12,6 +12,41 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(true);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, -1, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, RenderbufferStorageInvalidArgs3_0) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _)).Times(0);
+  SpecializedSetup<cmds::RenderbufferStorage, 0>(false);
+  cmds::RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest2, SampleCoverageValidArgs) {
   EXPECT_CALL(*gl_, SampleCoverage(1, true));
   SpecializedSetup<cmds::SampleCoverage, 0>(true);
@@ -724,7 +759,5 @@ TEST_P(GLES2DecoderTest2, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
 // TODO(gman): AsyncTexImage2DCHROMIUM
 
 // TODO(gman): WaitAsyncTexImage2DCHROMIUM
-
-// TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

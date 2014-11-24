@@ -416,6 +416,27 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCopyBufferSubData(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::CopyBufferSubData& c =
+      *static_cast<const gles2::cmds::CopyBufferSubData*>(cmd_data);
+  (void)c;
+  GLenum readtarget = static_cast<GLenum>(c.readtarget);
+  GLenum writetarget = static_cast<GLenum>(c.writetarget);
+  GLintptr readoffset = static_cast<GLintptr>(c.readoffset);
+  GLintptr writeoffset = static_cast<GLintptr>(c.writeoffset);
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  if (size < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyBufferSubData", "size < 0");
+    return error::kNoError;
+  }
+  glCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     uint32_t immediate_data_size,
     const void* cmd_data) {
@@ -811,16 +832,6 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureLayer(
   GLuint texture = c.texture;
   GLint level = static_cast<GLint>(c.level);
   GLint layer = static_cast<GLint>(c.layer);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTextureLayer", target,
-                                    "target");
-    return error::kNoError;
-  }
-  if (!validators_->attachment.IsValid(attachment)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTextureLayer", attachment,
-                                    "attachment");
-    return error::kNoError;
-  }
   DoFramebufferTextureLayer(target, attachment, texture, level, layer);
   return error::kNoError;
 }
