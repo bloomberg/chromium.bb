@@ -235,6 +235,13 @@ void FloatRect::fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const Fl
     setLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
+#ifndef NDEBUG
+void FloatRect::show() const
+{
+    LayoutRect(*this).show();
+}
+#endif
+
 IntRect enclosingIntRect(const FloatRect& rect)
 {
     IntPoint location = flooredIntPoint(rect.minXMinYCorner());

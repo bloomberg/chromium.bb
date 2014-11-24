@@ -175,6 +175,11 @@ public:
 
     operator SkRect() const { return SkRect::MakeXYWH(x(), y(), width(), height()); }
 
+#ifndef NDEBUG
+    // Prints the rect to the screen.
+    void show() const;
+#endif
+
 private:
     FloatPoint m_location;
     FloatSize m_size;
