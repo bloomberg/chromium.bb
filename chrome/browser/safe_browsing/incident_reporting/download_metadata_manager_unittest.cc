@@ -462,6 +462,9 @@ TEST_P(SetRequestTest, SetRequest) {
   }
   manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
 
+  // In http://crbug.com/433928, open after SetRequest(nullpr) caused a crash.
+  test_item_->NotifyObserversDownloadOpened();
+
   ShutdownDownloadManager();
 
   scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
@@ -484,29 +487,5 @@ INSTANTIATE_TEST_CASE_P(
                      testing::Values("none", "pending"),
                      testing::Values("waiting", "loaded"),
                      testing::Values("clear", "set")));
-
-class DownloadMetadataManagerTest : public DownloadMetadataManagerTestBase {
- protected:
-};
-
-// Test that that opening an item when there is no corresponding metadata works.
-TEST_F(DownloadMetadataManagerTest, OpenDownloadNoMetadata) {
-  // Add a download manager and some items.
-  WriteTestMetadataFile();
-  AddDownloadManager();
-  AddDownloadItems();
-
-  // Allow the metadata manager to discover that no metadata is available.
-  RunAllTasks();
-
-  // Clear metadata.
-  manager_.SetRequest(test_item_.get(), nullptr);
-
-  // Open an item.
-  test_item_->NotifyObserversDownloadOpened();
-
-  // Shut down.
-  ShutdownDownloadManager();
-}
 
 }  // namespace safe_browsing
