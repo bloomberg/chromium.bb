@@ -243,22 +243,24 @@ class GoogleUpdateSettings {
   static UpdatePolicy GetAppUpdatePolicy(const base::string16& app_guid,
                                          bool* is_overridden);
 
-  // Returns true if the app indicated by |app_guid| should be updated
-  // automatically by Google Update based on current autoupdate settings. This
-  // is distinct from GetAppUpdatePolicy which checks only a subset of things
-  // that can cause an app not to update.
-  static bool AreAutoupdatesEnabled(const base::string16& app_guid);
+  // Returns true if Chrome should be updated automatically by Google Update
+  // based on current autoupdate settings. This is distinct from
+  // GetAppUpdatePolicy (which checks only the policy for a given app), as it
+  // checks for general Google Update configuration as well as multi-install
+  // Chrome. Note that for Chromium builds, this returns false since Chromium is
+  // assumed not to autoupdate.
+  static bool AreAutoupdatesEnabled();
 
-  // Attempts to reenable auto-updates for |app_guid| by removing
-  // any group policy settings that would block updates from occurring. This is
-  // a superset of the things checked by GetAppUpdatePolicy() as
-  // GetAppUpdatePolicy() does not check Omaha's AutoUpdateCheckPeriodMinutes
-  // setting which will be reset by this method. Will need to be called from an
-  // elevated process since those settings live in HKLM. Returns true if there
-  // is a reasonable belief that updates are not disabled by policy when this
-  // method returns, false otherwise. Note that for Chromium builds, this
-  // returns true since Chromium is assumed not to autoupdate.
-  static bool ReenableAutoupdatesForApp(const base::string16& app_guid);
+  // Attempts to reenable auto-updates for Chrome by removing any group policy
+  // settings that would block updates from occurring. This is a superset of the
+  // things checked by GetAppUpdatePolicy() as GetAppUpdatePolicy() does not
+  // check Omaha's AutoUpdateCheckPeriodMinutes setting which will be reset by
+  // this method. Will need to be called from an elevated process since those
+  // settings live in HKLM. Returns true if there is a reasonable belief that
+  // updates are not disabled by policy when this method returns, false
+  // otherwise. Note that for Chromium builds, this returns true since Chromium
+  // is assumed not to autoupdate.
+  static bool ReenableAutoupdates();
 
   // Records UMA stats about Chrome's update policy.
   static void RecordChromeUpdatePolicyHistograms();

@@ -759,86 +759,91 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesDisabledByPolicy) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   EXPECT_TRUE(
-      SetUpdatePolicyForAppGuid(kTestProductGuid,
+      SetUpdatePolicyForAppGuid(dist->GetAppGuid(),
                                 GoogleUpdateSettings::UPDATES_DISABLED));
   bool is_overridden = false;
   GoogleUpdateSettings::UpdatePolicy update_policy =
-      GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+      GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
                                                &is_overridden);
   EXPECT_TRUE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
-  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
-  EXPECT_TRUE(
-      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
-  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+  EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
+  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
                                                            &is_overridden);
   // Should still have a policy but now that policy should explicitly enable
   // updates.
   EXPECT_TRUE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES, update_policy);
-  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 }
 
 TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesEnabledWithGlobalDisabled) {
-  // Disable updates globally but enable them for our specific app (the app-
-  // specific setting should take precedence).
+  // Disable updates globally but enable them for Chrome (the app-specific
+  // setting should take precedence).
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  BrowserDistribution* binaries = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
   EXPECT_TRUE(
-      SetUpdatePolicyForAppGuid(kTestProductGuid,
+      SetUpdatePolicyForAppGuid(dist->GetAppGuid(),
+                                GoogleUpdateSettings::AUTOMATIC_UPDATES));
+  EXPECT_TRUE(
+      SetUpdatePolicyForAppGuid(binaries->GetAppGuid(),
                                 GoogleUpdateSettings::AUTOMATIC_UPDATES));
   EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
 
   // Make sure we read this as still having updates enabled.
-  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
   // Make sure that the reset action returns true and is a no-op.
-  EXPECT_TRUE(
-      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
   EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES,
-            GetUpdatePolicyForAppGuid(kTestProductGuid));
+            GetUpdatePolicyForAppGuid(dist->GetAppGuid()));
+  EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES,
+            GetUpdatePolicyForAppGuid(binaries->GetAppGuid()));
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, GetGlobalUpdatePolicy());
 }
 
 TEST_F(GoogleUpdateSettingsTest, GlobalUpdatesDisabledByPolicy) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   EXPECT_TRUE(SetGlobalUpdatePolicy(GoogleUpdateSettings::UPDATES_DISABLED));
   bool is_overridden = false;
 
   // The contract for GetAppUpdatePolicy states that |is_overridden| should be
   // set to false when updates are disabled on a non-app-specific basis.
   GoogleUpdateSettings::UpdatePolicy update_policy =
-      GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+      GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
                                                &is_overridden);
   EXPECT_FALSE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, update_policy);
-  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
-  EXPECT_TRUE(
-      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
-  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
+  EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
+  update_policy = GoogleUpdateSettings::GetAppUpdatePolicy(dist->GetAppGuid(),
                                                            &is_overridden);
   // Policy should now be to enable updates, |is_overridden| should still be
   // false.
   EXPECT_FALSE(is_overridden);
   EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES, update_policy);
-  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdatesDisabledByTimeout) {
   // Disable updates altogether.
   EXPECT_TRUE(SetUpdateTimeoutOverride(0));
-  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
-  EXPECT_TRUE(
-      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
-  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
+  EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 
   // Set the update period to something unreasonable.
   EXPECT_TRUE(SetUpdateTimeoutOverride(
       GoogleUpdateSettings::kCheckPeriodOverrideMinutesMax + 1));
-  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
-  EXPECT_TRUE(
-      GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
-  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled(kTestProductGuid));
+  EXPECT_FALSE(GoogleUpdateSettings::AreAutoupdatesEnabled());
+  EXPECT_TRUE(GoogleUpdateSettings::ReenableAutoupdates());
+  EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 }
 
 TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperSystem) {

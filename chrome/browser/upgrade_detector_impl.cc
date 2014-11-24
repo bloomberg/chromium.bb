@@ -134,12 +134,10 @@ void DetectUpdatability(const base::Closure& callback_task,
                         bool* is_auto_update_enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::string16 app_guid = installer::GetAppGuidForUpdates(IsSystemInstall());
-  DCHECK(!app_guid.empty());
   // Don't try to turn on autoupdate when we failed previously.
   if (is_auto_update_enabled) {
     *is_auto_update_enabled =
-        GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid);
+        GoogleUpdateSettings::AreAutoupdatesEnabled();
   }
   *is_unstable_channel = IsUnstableChannel();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);

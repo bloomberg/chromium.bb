@@ -625,8 +625,8 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
 }
 
 // static
-bool GoogleUpdateSettings::AreAutoupdatesEnabled(
-    const base::string16& app_guid) {
+bool GoogleUpdateSettings::AreAutoupdatesEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
   // Check the auto-update check period override. If it is 0 or exceeds the
   // maximum timeout, then for all intents and purposes auto updates are
   // disabled.
@@ -640,47 +640,78 @@ bool GoogleUpdateSettings::AreAutoupdatesEnabled(
     return false;
   }
 
-  UpdatePolicy policy = GetAppUpdatePolicy(app_guid, NULL);
-  return (policy == AUTOMATIC_UPDATES || policy == AUTO_UPDATES_ONLY);
+  // Auto updates are subtly broken when Chrome and the binaries have different
+  // overrides in place. If this Chrome cannot possibly be multi-install by
+  // virtue of being a side-by-side installation, simply check Chrome's policy.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  UpdatePolicy app_policy = GetAppUpdatePolicy(dist->GetAppGuid(), nullptr);
+  if (InstallUtil::IsChromeSxSProcess())
+    return app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY;
+
+  // Otherwise, check for consistency between Chrome and the binaries regardless
+  // of whether or not this Chrome is multi-install since the next update likely
+  // will attempt to migrate it to such.
+  BrowserDistribution* binaries = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
+  return (GetAppUpdatePolicy(binaries->GetAppGuid(), nullptr) == app_policy &&
+          (app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY));
+#else  // defined(GOOGLE_CHROME_BUILD)
+  // Chromium does not auto update.
+  return false;
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 }
 
 // static
-bool GoogleUpdateSettings::ReenableAutoupdatesForApp(
-    const base::string16& app_guid) {
+bool GoogleUpdateSettings::ReenableAutoupdates() {
 #if defined(GOOGLE_CHROME_BUILD)
   int needs_reset_count = 0;
   int did_reset_count = 0;
+
+  // Reset overrides for Chrome and for the binaries if this Chrome supports
+  // multi-install.
+  std::vector<base::string16> app_guids;
+  app_guids.push_back(BrowserDistribution::GetDistribution()->GetAppGuid());
+  if (!InstallUtil::IsChromeSxSProcess()) {
+    app_guids.push_back(BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES)->GetAppGuid());
+  }
 
   UpdatePolicy update_policy = kDefaultUpdatePolicy;
   RegKey policy_key;
   if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey,
                       KEY_SET_VALUE | KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    // First check the app-specific override value and reset that if needed.
-    // Note that this intentionally sets the override to AUTOMATIC_UPDATES
-    // even if it was previously AUTO_UPDATES_ONLY. The thinking is that
-    // AUTOMATIC_UPDATES is marginally more likely to let a user update and this
-    // code is only called when a stuck user asks for updates.
-    base::string16 app_update_override(kUpdateOverrideValuePrefix);
-    app_update_override.append(app_guid);
+    // Set to true while app-specific overrides are present that allow automatic
+    // updates. When this is the case, the defaults are irrelevant and don't
+    // need to be checked or reset.
+    bool automatic_updates_allowed_by_overrides = true;
     DWORD value = 0;
-    bool has_app_update_override =
-        policy_key.ReadValueDW(app_update_override.c_str(),
-                               &value) == ERROR_SUCCESS;
-    if (has_app_update_override &&
-        (!GetUpdatePolicyFromDword(value, &update_policy) ||
-         update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES)) {
-      ++needs_reset_count;
-      if (policy_key.WriteValue(
-              app_update_override.c_str(),
-              static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES)) ==
-                  ERROR_SUCCESS) {
-        ++did_reset_count;
+    for (const base::string16& app_guid : app_guids) {
+      // First check the app-specific override value and reset that if needed.
+      // Note that this intentionally sets the override to AUTOMATIC_UPDATES
+      // even if it was previously AUTO_UPDATES_ONLY. The thinking is that
+      // AUTOMATIC_UPDATES is marginally more likely to let a user update and
+      // this code is only called when a stuck user asks for updates.
+      base::string16 app_update_override(kUpdateOverrideValuePrefix);
+      app_update_override.append(app_guid);
+      if (policy_key.ReadValueDW(app_update_override.c_str(),
+                                 &value) != ERROR_SUCCESS) {
+        automatic_updates_allowed_by_overrides = false;
+      } else if (!GetUpdatePolicyFromDword(value, &update_policy) ||
+                 update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES) {
+        automatic_updates_allowed_by_overrides = false;
+        ++needs_reset_count;
+        if (policy_key.WriteValue(
+                app_update_override.c_str(),
+                static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES)) ==
+            ERROR_SUCCESS) {
+          ++did_reset_count;
+        }
       }
     }
 
-    // If there was no app-specific override policy see if there's a global
+    // If there were no app-specific override policies, see if there's a global
     // policy preventing updates and delete it if so.
-    if (!has_app_update_override &&
+    if (!automatic_updates_allowed_by_overrides &&
         policy_key.ReadValueDW(kUpdatePolicyValue, &value) == ERROR_SUCCESS &&
         (!GetUpdatePolicyFromDword(value, &update_policy) ||
          update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES)) {
@@ -706,7 +737,7 @@ bool GoogleUpdateSettings::ReenableAutoupdatesForApp(
     // For some reason we couldn't open the policy key with the desired
     // permissions to make changes (the most likely reason is that there is no
     // policy set). Simply return whether or not we think updates are enabled.
-    return AreAutoupdatesEnabled(app_guid);
+    return AreAutoupdatesEnabled();
   }
 
 #endif
