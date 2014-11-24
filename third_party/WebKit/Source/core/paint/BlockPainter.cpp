@@ -31,11 +31,13 @@ namespace blink {
 
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderBlock);
+    PaintInfo localPaintInfo(paintInfo);
+
+    ANNOTATE_GRAPHICS_CONTEXT(localPaintInfo, &m_renderBlock);
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderBlock.location();
 
-    PaintPhase phase = paintInfo.phase;
+    PaintPhase originalPhase = localPaintInfo.phase;
 
     LayoutRect overflowBox;
     // Check if we need to do anything at all.
@@ -45,18 +47,23 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
         overflowBox = overflowRectForPaintRejection();
         m_renderBlock.flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);
-        if (!overflowBox.intersects(paintInfo.rect))
+        if (!overflowBox.intersects(localPaintInfo.rect))
             return;
     }
-
-    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
-    PaintInfo localPaintInfo(paintInfo);
 
     // There are some cases where not all clipped visual overflow is accounted for.
     // FIXME: reduce the number of such cases.
     ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
-    if (m_renderBlock.hasOverflowClip() && !m_renderBlock.hasControlClip() && !(m_renderBlock.shouldPaintSelectionGaps() && phase == PaintPhaseForeground) && !hasCaret())
+    if (m_renderBlock.hasOverflowClip() && !m_renderBlock.hasControlClip() && !(m_renderBlock.shouldPaintSelectionGaps() && originalPhase == PaintPhaseForeground) && !hasCaret())
         contentsClipBehavior = SkipContentsClipIfPossible;
+
+    if (localPaintInfo.phase == PaintPhaseOutline) {
+        localPaintInfo.phase = PaintPhaseChildOutlines;
+    } else if (localPaintInfo.phase == PaintPhaseChildBlockBackground) {
+        localPaintInfo.phase = PaintPhaseBlockBackground;
+        m_renderBlock.paintObject(localPaintInfo, adjustedPaintOffset);
+        localPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
+    }
 
     {
         BoxClipper boxClipper(m_renderBlock, localPaintInfo, adjustedPaintOffset, contentsClipBehavior);
@@ -68,6 +75,14 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
             cullSaver.cull(overflowBox);
 
         m_renderBlock.paintObject(localPaintInfo, adjustedPaintOffset);
+    }
+
+    if (originalPhase == PaintPhaseOutline) {
+        localPaintInfo.phase = PaintPhaseSelfOutline;
+        m_renderBlock.paintObject(localPaintInfo, adjustedPaintOffset);
+        localPaintInfo.phase = originalPhase;
+    } else if (originalPhase == PaintPhaseChildBlockBackground) {
+        localPaintInfo.phase = originalPhase;
     }
 
     // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with

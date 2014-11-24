@@ -17,15 +17,14 @@ enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
 public:
-    BoxClipper(RenderBox&, PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
+    BoxClipper(RenderBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     ~BoxClipper();
 
     bool pushedClip() { return m_pushedClip; }
 private:
     bool m_pushedClip;
     LayoutPoint m_accumulatedOffset;
-    PaintInfo& m_paintInfo;
-    PaintPhase m_originalPhase;
+    const PaintInfo& m_paintInfo;
     RenderBox& m_box;
 };
 

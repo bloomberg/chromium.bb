@@ -35,15 +35,13 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableSection.location();
-    // FIXME: BoxClipper wants a non-const PaintInfo to muck with.
-    PaintInfo localPaintInfo(paintInfo);
     {
-        BoxClipper boxClipper(m_renderTableSection, localPaintInfo, adjustedPaintOffset, ForceContentsClip);
-        paintObject(localPaintInfo, adjustedPaintOffset);
+        BoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
+        paintObject(paintInfo, adjustedPaintOffset);
     }
 
-    if ((localPaintInfo.phase == PaintPhaseOutline || localPaintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
-        ObjectPainter(m_renderTableSection).paintOutline(localPaintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
+    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
+        ObjectPainter(m_renderTableSection).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
 }
 
 static inline bool compareCellPositions(RenderTableCell* elem1, RenderTableCell* elem2)

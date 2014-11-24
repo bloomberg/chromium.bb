@@ -15,11 +15,10 @@
 
 namespace blink {
 
-BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
+BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
     : m_pushedClip(false)
     , m_accumulatedOffset(accumulatedOffset)
     , m_paintInfo(paintInfo)
-    , m_originalPhase(paintInfo.phase)
     , m_box(box)
 {
     if (m_paintInfo.phase == PaintPhaseBlockBackground || m_paintInfo.phase == PaintPhaseSelfOutline || m_paintInfo.phase == PaintPhaseMask)
@@ -50,15 +49,6 @@ BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& 
             conservativeClipRect.move(m_box.scrolledContentOffset());
         if (conservativeClipRect.contains(contentsVisualOverflow))
             return;
-    }
-
-    if (m_paintInfo.phase == PaintPhaseOutline) {
-        m_paintInfo.phase = PaintPhaseChildOutlines;
-    } else if (m_paintInfo.phase == PaintPhaseChildBlockBackground) {
-        m_paintInfo.phase = PaintPhaseBlockBackground;
-        // FIXME: refactor to not call paintObject from within a clipping helper.
-        m_box.paintObject(m_paintInfo, m_accumulatedOffset);
-        m_paintInfo.phase = PaintPhaseChildBlockBackgrounds;
     }
 
     DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
@@ -122,15 +112,6 @@ BoxClipper::~BoxClipper()
         m_box.view()->viewDisplayList().add(endClipDisplayItem.release());
     } else {
         endClipDisplayItem->replay(m_paintInfo.context);
-    }
-
-    // FIXME: refactor to not call paintObject from within a clipping helper.
-    if (m_originalPhase == PaintPhaseOutline) {
-        m_paintInfo.phase = PaintPhaseSelfOutline;
-        m_box.paintObject(m_paintInfo, m_accumulatedOffset);
-        m_paintInfo.phase = m_originalPhase;
-    } else if (m_originalPhase == PaintPhaseChildBlockBackground) {
-        m_paintInfo.phase = m_originalPhase;
     }
 }
 
