@@ -31,6 +31,7 @@ namespace gpu {
 
 namespace {
 
+#if defined(USE_LIBPCI)
 // This checks if a system supports PCI bus.
 // We check the existence of /sys/bus/pci or /sys/bug/pci_express.
 bool IsPciSupported() {
@@ -39,6 +40,7 @@ bool IsPciSupported() {
   return (base::PathExists(pci_path) ||
           base::PathExists(pcie_path));
 }
+#endif  // defined(USE_LIBPCI)
 
 // Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
 // Return empty string on failing.
