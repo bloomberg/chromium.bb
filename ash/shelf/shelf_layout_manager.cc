@@ -996,8 +996,16 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();
-  if (shell->GetAppListTargetVisibility())
-    return SHELF_AUTO_HIDE_SHOWN;
+  // Unhide the shelf only on the active screen when the AppList is shown
+  // (crbug.com/312445).
+  if (shell->GetAppListTargetVisibility()) {
+    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* shelf_window = shelf_->GetNativeWindow();
+    if (active_window && shelf_window &&
+        active_window->GetRootWindow() == shelf_window->GetRootWindow()) {
+      return SHELF_AUTO_HIDE_SHOWN;
+    }
+  }
 
   if (shelf_->status_area_widget() &&
       shelf_->status_area_widget()->ShouldShowShelf())

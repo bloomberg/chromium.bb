@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
+#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
@@ -27,6 +28,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -331,6 +333,15 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(aura::WINDOW_LAYER_TEXTURED);
     ParentWindowInPrimaryRootWindow(window);
+    return window;
+  }
+
+  aura::Window* CreateTestWindowInParent(aura::Window* root_window) {
+    aura::Window* window = new aura::Window(NULL);
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    aura::client::ParentWindowWithContext(window, root_window, gfx::Rect());
     return window;
   }
 
@@ -1316,6 +1327,88 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   shell->DismissAppList();
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+}
+
+// Makes sure that when we have dual displays, with one or both shelves are set
+// to AutoHide, viewing the AppList on one of them doesn't unhide the other
+// hidden shelf.
+TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Create two displays.
+  Shell* shell = Shell::GetInstance();
+  DisplayManager* display_manager = shell->display_manager();
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  UpdateDisplay("0+0-200x200,+200+0-100x100");
+  EXPECT_EQ(2U, display_manager->GetNumDisplays());
+
+  DisplayController* display_controller = shell->display_controller();
+  aura::Window::Windows root_windows = display_controller->GetAllRootWindows();
+  EXPECT_EQ(root_windows.size(), 2U);
+
+  // Get the shelves in both displays and set them to be 'AutoHide'.
+  ShelfLayoutManager* shelf_1 =
+      GetRootWindowController(root_windows[0])->GetShelfLayoutManager();
+  ShelfLayoutManager* shelf_2 =
+      GetRootWindowController(root_windows[1])->GetShelfLayoutManager();
+  EXPECT_NE(shelf_1, shelf_2);
+  EXPECT_NE(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            shelf_2->shelf_widget()->GetNativeWindow()->
+            GetRootWindow());
+  shelf_1->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_1->LayoutShelf();
+  shelf_2->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_2->LayoutShelf();
+
+  // Create a window in each display and show them in maximized state.
+  aura::Window* window_1 =
+      CreateTestWindowInParent(root_windows[0]);
+  window_1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window_1->SetProperty(aura::client::kShowStateKey,
+                              ui::SHOW_STATE_MAXIMIZED);
+  window_1->Show();
+  aura::Window* window_2 =
+      CreateTestWindowInParent(root_windows[1]);
+  window_2->SetBounds(gfx::Rect(201, 0, 100, 100));
+  window_2->SetProperty(aura::client::kShowStateKey,
+                                ui::SHOW_STATE_MAXIMIZED);
+  window_2->Show();
+
+  EXPECT_EQ(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            window_1->GetRootWindow());
+  EXPECT_EQ(shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow(),
+            window_2->GetRootWindow());
+
+  // Activate one window in one display and manually trigger the update of shelf
+  // visibility.
+  wm::ActivateWindow(window_1);
+  shell->UpdateShelfVisibility();
+
+  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
+
+  // Show app list.
+  shell->ShowAppList(NULL);
+  shell->UpdateShelfVisibility();
+
+  // Only the shelf in the active display should be shown, the other is hidden.
+  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf_1->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
+
+  // Hide app list, both shelves should be hidden.
+  shell->DismissAppList();
+  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
 }
 
 // Makes sure shelf will be hidden when app list opens as shelf is in HIDDEN
