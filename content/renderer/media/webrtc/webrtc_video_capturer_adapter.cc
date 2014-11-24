@@ -141,35 +141,6 @@ class VideoFrameWrapper : public cricket::VideoFrame {
     return 0;
   }
 
-  // TODO(magjed): Refactor into base class.
-  size_t ConvertToRgbBuffer(uint32 to_fourcc,
-                            uint8* buffer,
-                            size_t size,
-                            int stride_rgb) const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    const size_t needed = std::abs(stride_rgb) * GetHeight();
-    if (size < needed) {
-      DLOG(WARNING) << "RGB buffer is not large enough";
-      return needed;
-    }
-
-    if (libyuv::ConvertFromI420(GetYPlane(),
-                                GetYPitch(),
-                                GetUPlane(),
-                                GetUPitch(),
-                                GetVPlane(),
-                                GetVPitch(),
-                                buffer,
-                                stride_rgb,
-                                static_cast<int>(GetWidth()),
-                                static_cast<int>(GetHeight()),
-                                to_fourcc)) {
-      DLOG(ERROR) << "RGB type not supported: " << to_fourcc;
-      return 0;  // 0 indicates error
-    }
-    return needed;
-  }
-
   // The rest of the public methods are NOTIMPLEMENTED.
   bool InitToBlack(int w,
                    int h,
