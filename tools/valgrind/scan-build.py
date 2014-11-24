@@ -24,7 +24,7 @@ Failed memory test: content
 CACHE_DIR = "buildlogs.tmp"
 
 # If we don't find anything after searching |CUTOFF| logs, we're probably done.
-CUTOFF = 100
+CUTOFF = 200
 
 def EnsurePath(path):
   """Makes sure |path| does exist, tries to create it if it doesn't."""

@@ -1883,3 +1883,21 @@ name=bug_434033
 *!TCompiler::compile
 *!TypeTrackingTest::compile
 *!TypeTrackingTest_StructConstructorResultNoPrecision_Test::TestBody
+
+UNADDRESSABLE ACCESS
+name=bug_436131
+*!ash::test::ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone
+*!ash::test::ShelfViewTest_OverflowBubbleSize_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNADDRESSABLE ACCESS
+name=bug_436131_b
+views.dll!ObserverListBase<>::RemoveObserver
+*!ash::test::ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNADDRESSABLE ACCESS
+name=bug_436131_c
+*!ash::test::ShelfViewTestAPI::GetPreferredSize
+*!ash::test::ShelfViewTest_OverflowBubbleSize_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
