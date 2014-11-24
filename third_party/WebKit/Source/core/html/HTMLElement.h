@@ -100,8 +100,6 @@ public:
     HTMLMenuElement* contextMenu() const;
     void setContextMenu(HTMLMenuElement*);
 
-    virtual String altText() const { return String(); }
-
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 

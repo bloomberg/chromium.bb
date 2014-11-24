@@ -27,18 +27,14 @@
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Logging.h"
 
 namespace blink {
 
-using namespace HTMLNames;
-
-HTMLImageLoader::HTMLImageLoader(Element* element)
-    : ImageLoader(element)
-    , m_loadFallbackContentTimer(this, &HTMLImageLoader::timerFired)
+HTMLImageLoader::HTMLImageLoader(Element* node)
+    : ImageLoader(node)
 {
 }
 
@@ -65,56 +61,17 @@ String HTMLImageLoader::sourceURI(const AtomicString& attr) const
     return stripLeadingAndTrailingHTMLSpaces(attr);
 }
 
-static void loadFallbackContentForElement(Element* element)
-{
-    if (isHTMLImageElement(element))
-        toHTMLImageElement(element)->ensureFallbackContent();
-    else if (isHTMLInputElement(element))
-        toHTMLInputElement(element)->ensureFallbackContent();
-}
-
-void HTMLImageLoader::noImageResourceToLoad()
-{
-    // FIXME: Use fallback content even when there is no alt-text. The only blocker is the large amount of rebaselining it requires.
-    if (!toHTMLElement(element())->altText().isEmpty())
-        loadFallbackContentForElement(element());
-}
-
 void HTMLImageLoader::notifyFinished(Resource*)
 {
     ImageResource* cachedImage = image();
+
     RefPtrWillBeRawPtr<Element> element = this->element();
     ImageLoader::notifyFinished(cachedImage);
 
     bool loadError = cachedImage->errorOccurred() || cachedImage->response().httpStatusCode() >= 400;
-    if (isHTMLImageElement(*element)) {
-        if (loadError)
-            ensureFallbackContent();
-        else
-            toHTMLImageElement(element)->ensurePrimaryContent();
-    }
-
-    if (isHTMLInputElement(*element)) {
-        if (loadError)
-            ensureFallbackContent();
-        else
-            toHTMLInputElement(element)->ensurePrimaryContent();
-    }
 
     if (loadError && isHTMLObjectElement(*element))
         toHTMLObjectElement(element)->renderFallbackContent();
 }
 
-void HTMLImageLoader::ensureFallbackContent()
-{
-    if (image()->url().protocolIsData())
-        m_loadFallbackContentTimer.startOneShot(0, FROM_HERE);
-    else
-        loadFallbackContentForElement(element());
-}
-
-void HTMLImageLoader::timerFired(Timer<HTMLImageLoader>*)
-{
-    loadFallbackContentForElement(element());
-}
 }

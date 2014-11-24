@@ -138,11 +138,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
 
 void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheetContents)
 {
-    // Updating the style on the shadow DOM for image fallback content can bring us here when imports
-    // are still getting loaded in the main document. Just need to exit early as we will return here
-    // when the imports finish loading.
-    if (styleSheetContents->isLoading())
-        return;
+    ASSERT(!styleSheetContents->isLoading());
 
     // See if all rules on the sheet are scoped to some specific ids or classes.
     // Then test if we actually have any of those in the tree at the moment.
