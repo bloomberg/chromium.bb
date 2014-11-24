@@ -73,33 +73,6 @@ class RetryLoopTest(RetryLoopMockedTest):
     self.assertNotEqual(a, b)
 
 
-class GetHttpServiceTest(unittest.TestCase):
-  """Tests get_http_service implementation."""
-
-  def test_get_http_service(self):
-    def assert_is_appengine_service(service):
-      """Verifies HttpService is configured for App Engine communications."""
-      self.assertIsNotNone(service.authenticator)
-
-    def assert_is_googlestorage_service(service):
-      """Verifies HttpService is configured for GS communications."""
-      self.assertIsNone(service.authenticator)
-
-    # Can recognize app engine URLs.
-    assert_is_appengine_service(
-        net.get_http_service('https://appengine-app.appspot.com'))
-    assert_is_appengine_service(
-        net.get_http_service('https://version-dot-appengine-app.appspot.com'))
-
-    # Localhost is also sort of appengine when running on dev server...
-    assert_is_appengine_service(
-        net.get_http_service('http://localhost:8080'))
-
-    # Check GS urls.
-    assert_is_googlestorage_service(
-        net.get_http_service('https://bucket-name.storage.googleapis.com'))
-
-
 class HttpServiceTest(RetryLoopMockedTest):
   """Tests for HttpService class."""
 
