@@ -105,6 +105,7 @@ class ComponentLoaderTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   MockExtensionService extension_service_;
   TestingPrefServiceSyncable prefs_;
@@ -116,8 +117,6 @@ class ComponentLoaderTest : public testing::Test {
 
   // The contents of the text extension's manifest file.
   std::string manifest_contents_;
-
-  content::TestBrowserThreadBundle thread_bundle_;
 
   base::FilePath GetBasePath() {
     base::FilePath test_data_dir;
@@ -224,10 +223,6 @@ TEST_F(ComponentLoaderTest, Remove) {
 }
 
 TEST_F(ComponentLoaderTest, LoadAll) {
-  // This loads the hotword component extension which has a dependency on sync.
-  // However, this doesn't work with unittests so disable sync.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-
   extension_service_.set_ready(false);
   ExtensionRegistry* registry = ExtensionRegistry::Get(&profile_);
 
@@ -249,10 +244,6 @@ TEST_F(ComponentLoaderTest, LoadAll) {
 }
 
 TEST_F(ComponentLoaderTest, AddOrReplace) {
-  // This loads the hotword component extension which has a dependency on sync.
-  // However, this doesn't work with unittests so disable sync.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-
   EXPECT_EQ(0u, component_loader_.registered_extensions_count());
   component_loader_.AddDefaultComponentExtensions(false);
   size_t const default_count = component_loader_.registered_extensions_count();
