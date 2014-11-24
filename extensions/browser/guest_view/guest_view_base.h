@@ -218,6 +218,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return opener_.get();
   }
 
+  // Whether the guest view is inside a plugin document.
+  bool is_full_page_plugin() { return is_full_page_plugin_; }
+
   // Destroy this guest.
   void Destroy();
 
@@ -233,7 +236,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                         const gfx::Size& new_size) final;
   void RegisterDestructionCallback(const DestructionCallback& callback) final;
   void WillAttach(content::WebContents* embedder_web_contents,
-                  int browser_plugin_instance_id) final;
+                  int browser_plugin_instance_id,
+                  bool is_full_page_plugin) final;
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
   void DispatchEventToEmbedder(Event* event);
@@ -332,6 +336,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // The minimum size constraints of the container element in autosize mode.
   gfx::Size min_auto_size_;
+
+  // Whether the guest view is inside a plugin document.
+  bool is_full_page_plugin_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

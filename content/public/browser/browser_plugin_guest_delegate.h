@@ -30,7 +30,8 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // prior to resuming resource loads. |element_instance_id| uniquely identifies
   // the element that will serve as a container for the guest.
   virtual void WillAttach(content::WebContents* embedder_web_contents,
-                          int element_instance_id) {}
+                          int element_instance_id,
+                          bool is_full_page_plugin) {}
 
   virtual WebContents* CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);
@@ -67,8 +68,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // is handled by this browser plugin guest delegate.
   virtual bool Find(int request_id,
                     const base::string16& search_text,
-                    const blink::WebFindOptions& options,
-                    bool is_full_page_plugin);
+                    const blink::WebFindOptions& options);
 };
 
 }  // namespace content

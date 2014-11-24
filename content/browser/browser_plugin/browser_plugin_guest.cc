@@ -336,8 +336,7 @@ void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
 bool BrowserPluginGuest::Find(int request_id,
                               const base::string16& search_text,
                               const blink::WebFindOptions& options) {
-  return delegate_->Find(request_id, search_text, options,
-                         is_full_page_plugin_);
+  return delegate_->Find(request_id, search_text, options);
 }
 
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
@@ -510,7 +509,8 @@ void BrowserPluginGuest::Attach(
     int browser_plugin_instance_id,
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
-  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id);
+  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id,
+                        params.is_full_page_plugin);
 
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager

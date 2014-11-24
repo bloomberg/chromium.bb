@@ -42,8 +42,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   // content::BrowserPluginGuestDelegate implementation
   bool Find(int request_id,
             const base::string16& search_text,
-            const blink::WebFindOptions& options,
-            bool is_full_page_plugin) override;
+            const blink::WebFindOptions& options) override;
 
   // WebContentsDelegate implementation.
   void ContentsZoomChange(bool zoom_in) override;

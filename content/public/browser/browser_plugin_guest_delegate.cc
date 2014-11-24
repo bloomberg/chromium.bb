@@ -13,8 +13,7 @@ WebContents* BrowserPluginGuestDelegate::CreateNewGuestWindow(
 
 bool BrowserPluginGuestDelegate::Find(int request_id,
                                       const base::string16& search_text,
-                                      const blink::WebFindOptions& options,
-                                      bool is_full_page_plugin) {
+                                      const blink::WebFindOptions& options) {
   return false;
 }
 

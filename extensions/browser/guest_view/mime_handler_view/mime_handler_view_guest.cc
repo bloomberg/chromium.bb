@@ -136,9 +136,8 @@ void MimeHandlerViewGuest::DidInitialize() {
 
 bool MimeHandlerViewGuest::Find(int request_id,
                                 const base::string16& search_text,
-                                const blink::WebFindOptions& options,
-                                bool is_full_page_plugin) {
-  if (is_full_page_plugin) {
+                                const blink::WebFindOptions& options) {
+  if (is_full_page_plugin()) {
     web_contents()->Find(request_id, search_text, options);
     return true;
   }

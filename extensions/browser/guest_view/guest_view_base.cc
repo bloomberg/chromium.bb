@@ -144,6 +144,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       initialized_(false),
       is_being_destroyed_(false),
       auto_size_enabled_(false),
+      is_full_page_plugin_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -397,7 +398,8 @@ void GuestViewBase::RegisterDestructionCallback(
 }
 
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
-                               int element_instance_id) {
+                               int element_instance_id,
+                               bool is_full_page_plugin) {
   embedder_web_contents_ = embedder_web_contents;
 
   // If we are attaching to a different WebContents than the one that created
@@ -408,6 +410,7 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
   }
 
   element_instance_id_ = element_instance_id;
+  is_full_page_plugin_ = is_full_page_plugin;
 
   WillAttachToEmbedder();
 }
