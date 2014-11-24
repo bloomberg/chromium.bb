@@ -75,7 +75,6 @@ struct WebLocalizedString {
         AXMediaShowClosedCaptionsButton,
         AXMediaShowClosedCaptionsButtonHelp,
         AXMediaSlider, // Deprecated.
-        AXMediaSliderHelp,
         AXMediaSliderThumb, // Deprecated.
         AXMediaSliderThumbHelp, // Deprecated.
         AXMediaStatusDisplay,
