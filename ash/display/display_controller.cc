@@ -57,6 +57,9 @@
 #undef RootWindow
 #endif  // defined(USE_X11)
 
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#include "ui/events/ozone/chromeos/cursor_controller.h"
+#endif
 
 namespace ash {
 namespace {
@@ -78,6 +81,11 @@ const int64 kAfterDisplayChangeThrottleTimeoutMs = 500;
 const int64 kCycleDisplayThrottleTimeoutMs = 4000;
 const int64 kSwapDisplayThrottleTimeoutMs = 500;
 
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+// Add 20% more cursor motion on non-integrated displays.
+const float kCursorMultiplierForExternalDisplays = 1.2f;
+#endif
+
 DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
@@ -86,7 +94,8 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
                                 const gfx::Display& display) {
   DisplayInfo info = GetDisplayManager()->GetDisplayInfo(display.id());
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // Native window property (Atom in X11) that specifies the display's
   // rotation, scale factor and if it's internal display.  They are
   // read and used by touchpad/mouse driver directly on X (contact
@@ -122,6 +131,16 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
                      kScaleFactorProp,
                      kCARDINAL,
                      100 * display.device_scale_factor());
+#elif defined(USE_OZONE)
+  // Scale all motion on High-DPI displays.
+  float scale = display.device_scale_factor();
+
+  if (!display.IsInternal())
+    scale *= kCursorMultiplierForExternalDisplays;
+
+  ui::CursorController::GetInstance()->SetCursorConfigForWindow(
+      host->GetAcceleratedWidget(), info.rotation(), scale);
+#endif
 #endif
   scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
@@ -134,6 +153,15 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
         base::TimeDelta::FromMicroseconds(
             base::Time::kMicrosecondsPerSecond / mode.refresh_rate));
   }
+}
+
+void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
+                                  const gfx::Display& display) {
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+  ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
+      host->GetAcceleratedWidget());
+#endif
 }
 
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
@@ -619,6 +647,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
         GetDisplayManager()->GetDisplayForId(primary_display_id),
         DISPLAY_METRIC_BOUNDS);
   }
+  ClearDisplayPropertiesOnHost(host_to_delete, display);
   RootWindowController* controller =
       GetRootWindowController(GetWindow(host_to_delete));
   DCHECK(controller);

@@ -11,11 +11,14 @@
     'type': '<(component)',
     'dependencies': [
       '../../../base/base.gyp:base',
+      '../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     ],
     'defines': [
       'EVENTS_OZONE_IMPLEMENTATION',
     ],
     'sources': [
+      'chromeos/cursor_controller.cc',
+      'chromeos/cursor_controller.h',
       'device/device_event.cc',
       'device/device_event.h',
       'device/device_event_observer.h',

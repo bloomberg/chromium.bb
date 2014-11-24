@@ -13,6 +13,10 @@
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/events/ozone/chromeos/cursor_controller.h"
+#endif
+
 namespace ui {
 
 DriCursor::DriCursor(HardwareCursorDelegate* hardware,
@@ -77,7 +81,14 @@ void DriCursor::MoveCursorTo(const gfx::PointF& location) {
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
+#if defined(OS_CHROMEOS)
+  gfx::Vector2dF transformed_delta = delta;
+  ui::CursorController::GetInstance()->ApplyCursorConfigForWindow(
+      cursor_window_, &transformed_delta);
+  MoveCursorTo(cursor_window_, cursor_location_ + transformed_delta);
+#else
   MoveCursorTo(cursor_window_, cursor_location_ + delta);
+#endif
 }
 
 gfx::Rect DriCursor::GetCursorDisplayBounds() {

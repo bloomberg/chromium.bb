@@ -7,6 +7,8 @@ import("//build/config/ui.gni")
 
 component("events_ozone") {
   sources = [
+    "chromeos/cursor_controller.cc",
+    "chromeos/cursor_controller.h",
     "device/device_event.cc",
     "device/device_event.h",
     "device/device_event_observer.h",
@@ -21,6 +23,7 @@ component("events_ozone") {
 
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
   ]
 
   defines = [
