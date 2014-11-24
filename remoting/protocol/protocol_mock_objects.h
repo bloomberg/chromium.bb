@@ -144,6 +144,17 @@ class MockClientStub : public ClientStub {
   DISALLOW_COPY_AND_ASSIGN(MockClientStub);
 };
 
+class MockCursorShapeStub : public CursorShapeStub {
+ public:
+  MockCursorShapeStub();
+  virtual ~MockCursorShapeStub();
+
+  MOCK_METHOD1(SetCursorShape, void(const CursorShapeInfo& cursor_shape));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCursorShapeStub);
+};
+
 class MockVideoStub : public VideoStub {
  public:
   MockVideoStub();

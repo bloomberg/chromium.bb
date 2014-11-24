@@ -5,17 +5,11 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/cpp/mouse_lock.h"
-#include "ppapi/cpp/point.h"
-#include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/protocol/input_stub.h"
 
 namespace pp {
-class ImageData;
 class InputEvent;
-class Instance;
 }  // namespace pp
 
 namespace remoting {
@@ -24,33 +18,14 @@ namespace protocol {
 class InputStub;
 } // namespace protocol
 
-class PepperInputHandler : public pp::MouseLock {
+class PepperInputHandler {
  public:
-  // |instance| must outlive |this|.
-  explicit PepperInputHandler(pp::Instance* instance);
-  ~PepperInputHandler() override;
+  PepperInputHandler();
 
+  // Sets the input stub to which processed events will be passed.
   void set_input_stub(protocol::InputStub* input_stub) {
     input_stub_ = input_stub;
   }
-
-  bool HandleInputEvent(const pp::InputEvent& event);
-
-  // Enables locking the mouse when the host sets a completely transparent mouse
-  // cursor.
-  void AllowMouseLock();
-
-  // Called when the plugin receives or loses focus.
-  void DidChangeFocus(bool has_focus);
-
-  // Sets the mouse cursor image. Passing NULL |image| will cause the cursor to
-  // be hidden.
-  // Passing NULL |image| will also cause mouse-lock to be entered, if allowed.
-  void SetMouseCursor(scoped_ptr<pp::ImageData> image,
-                      const pp::Point& hotspot);
-
-  // Hides the mousr cursor without triggering mouse-lock.
-  void HideMouseCursor();
 
   // Enable or disable sending mouse input when the plugin does not have input
   // focus.
@@ -58,44 +33,19 @@ class PepperInputHandler : public pp::MouseLock {
     send_mouse_input_when_unfocused_ = send;
   }
 
+  void set_send_mouse_move_deltas(bool enable) {
+    send_mouse_move_deltas_ = enable;
+  }
+
+  // Processes PPAPI events and dispatches them to |input_stub_|.
+  bool HandleInputEvent(const pp::InputEvent& event);
+
+  // Must be called when the plugin receives or loses focus.
+  void DidChangeFocus(bool has_focus);
+
  private:
-  enum MouseLockState {
-    MouseLockDisallowed,
-    MouseLockOff,
-    MouseLockRequestPending,
-    MouseLockOn,
-    MouseLockCancelling
-  };
-
-  // pp::MouseLock interface.
-  void MouseLockLost() override;
-
-  // Requests the browser to lock the mouse and hides the cursor.
-  void RequestMouseLock();
-
-  // Requests the browser to cancel mouse lock and restores the cursor once
-  // the lock is gone.
-  void CancelMouseLock();
-
-  // Applies |cursor_image_| as the custom pointer or uses the standard arrow
-  // pointer if |cursor_image_| is not available.
-  void UpdateMouseCursor();
-
-  // Handles completion of the mouse lock request issued by RequestMouseLock().
-  void OnMouseLocked(int error);
-
-  pp::Instance* instance_;
+  // Receives input events generated from PPAPI input.
   protocol::InputStub* input_stub_;
-
-  pp::CompletionCallbackFactory<PepperInputHandler> callback_factory_;
-
-  // Custom cursor image sent by the host. |cursor_image_| is set to NULL when
-  // the cursor image is completely transparent. This can be interpreted as
-  // a mouse lock request if enabled by the webapp.
-  scoped_ptr<pp::ImageData> cursor_image_;
-
-  // Hot spot for |cursor_image_|.
-  pp::Point cursor_hotspot_;
 
   // True if the plugin has focus.
   bool has_focus_;
@@ -104,7 +54,9 @@ class PepperInputHandler : public pp::MouseLock {
   // keyboard focus.
   bool send_mouse_input_when_unfocused_;
 
-  MouseLockState mouse_lock_state_;
+  // True if the plugin should include mouse move deltas, in addition to
+  // absolute position information, in mouse events.
+  bool send_mouse_move_deltas_;
 
   // Accumulated sub-pixel and sub-tick deltas from wheel events.
   float wheel_delta_x_;

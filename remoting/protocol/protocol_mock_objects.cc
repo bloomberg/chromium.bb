@@ -39,6 +39,10 @@ MockClientStub::MockClientStub() {}
 
 MockClientStub::~MockClientStub() {}
 
+MockCursorShapeStub::MockCursorShapeStub() {}
+
+MockCursorShapeStub::~MockCursorShapeStub() {}
+
 MockVideoStub::MockVideoStub() {}
 
 MockVideoStub::~MockVideoStub() {}

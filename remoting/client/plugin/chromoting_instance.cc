@@ -4,7 +4,6 @@
 
 #include "remoting/client/plugin/chromoting_instance.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -44,7 +43,7 @@
 #include "remoting/client/plugin/normalizing_input_filter_cros.h"
 #include "remoting/client/plugin/normalizing_input_filter_mac.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
-#include "remoting/client/plugin/pepper_input_handler.h"
+#include "remoting/client/plugin/pepper_mouse_locker.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/software_video_renderer.h"
@@ -65,15 +64,6 @@ namespace remoting {
 
 namespace {
 
-// 32-bit BGRA is 4 bytes per pixel.
-const int kBytesPerPixel = 4;
-
-#if defined(ARCH_CPU_LITTLE_ENDIAN)
-const uint32_t kPixelAlphaMask = 0xff000000;
-#else  // !defined(ARCH_CPU_LITTLE_ENDIAN)
-const uint32_t kPixelAlphaMask = 0x000000ff;
-#endif  // !defined(ARCH_CPU_LITTLE_ENDIAN)
-
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
@@ -82,10 +72,6 @@ const int kPerfStatsIntervalMs = 1000;
 
 // URL scheme used by Chrome apps and extensions.
 const char kChromeExtensionUrlScheme[] = "chrome-extension";
-
-// Maximum width and height of a mouse cursor supported by PPAPI.
-const int kMaxCursorWidth = 32;
-const int kMaxCursorHeight = 32;
 
 #if defined(USE_OPENSSL)
 // Size of the random seed blob used to initialize RNG in libjingle. Libjingle
@@ -152,16 +138,6 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
   return std::string();
 }
 
-// Returns true if |pixel| is not completely transparent.
-bool IsVisiblePixel(uint32_t pixel) {
-  return (pixel & kPixelAlphaMask) != 0;
-}
-
-// Returns true if there is at least one visible pixel in the given range.
-bool IsVisibleRow(const uint32_t* begin, const uint32_t* end) {
-  return std::find_if(begin, end, &IsVisiblePixel) != end;
-}
-
 bool ParseAuthMethods(
     const std::string& auth_methods_str,
     std::vector<protocol::AuthenticationMethod>* auth_methods) {
@@ -214,11 +190,11 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
       key_mapper_(&input_tracker_),
-      input_handler_(this),
+      cursor_setter_(this),
+      empty_cursor_filter_(&cursor_setter_),
       text_input_controller_(this),
       use_async_pin_dialog_(false),
       use_media_source_rendering_(false),
-      delegate_large_cursors_(false),
       weak_factory_(this) {
 #if defined(OS_NACL)
   // In NaCl global resources need to be initialized differently because they
@@ -392,6 +368,8 @@ void ChromotingInstance::DidChangeFocus(bool has_focus) {
     return;
 
   input_handler_.DidChangeFocus(has_focus);
+  if (mouse_locker_)
+    mouse_locker_->DidChangeFocus(has_focus);
 }
 
 void ChromotingInstance::DidChangeView(const pp::View& view) {
@@ -540,9 +518,7 @@ protocol::ClipboardStub* ChromotingInstance::GetClipboardStub() {
 }
 
 protocol::CursorShapeStub* ChromotingInstance::GetCursorShapeStub() {
-  // TODO(sergeyu): Move cursor shape code to a separate class.
-  // crbug.com/138108
-  return this;
+  return &empty_cursor_filter_;
 }
 
 void ChromotingInstance::InjectClipboardEvent(
@@ -555,88 +531,29 @@ void ChromotingInstance::InjectClipboardEvent(
 
 void ChromotingInstance::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  COMPILE_ASSERT(sizeof(uint32_t) == kBytesPerPixel, rgba_pixels_are_32bit);
-
-  // pp::MouseCursor requires image to be in the native format.
-  if (pp::ImageData::GetNativeImageDataFormat() !=
-      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
-    LOG(WARNING) << "Unable to set cursor shape - native image format is not"
-                    " premultiplied BGRA";
+  // If the delegated cursor is empty then stop rendering a DOM cursor.
+  if (IsCursorShapeEmpty(cursor_shape)) {
+    PostChromotingMessage("unsetCursorShape", pp::VarDictionary());
     return;
   }
 
-  int width = cursor_shape.width();
-  int height = cursor_shape.height();
+  // Cursor is not empty, so pass it to JS to render.
+  const int kBytesPerPixel = sizeof(uint32_t);
+  const size_t buffer_size =
+      cursor_shape.height() * cursor_shape.width() * kBytesPerPixel;
 
-  int hotspot_x = cursor_shape.hotspot_x();
-  int hotspot_y = cursor_shape.hotspot_y();
-  int bytes_per_row = width * kBytesPerPixel;
-  int src_stride = width;
-  const uint32_t* src_row_data = reinterpret_cast<const uint32_t*>(
-      cursor_shape.data().data());
-  const uint32_t* src_row_data_end = src_row_data + src_stride * height;
+  pp::VarArrayBuffer array_buffer(buffer_size);
+  void* dst = array_buffer.Map();
+  memcpy(dst, cursor_shape.data().data(), buffer_size);
+  array_buffer.Unmap();
 
-  scoped_ptr<pp::ImageData> cursor_image;
-  pp::Point cursor_hotspot;
-
-  // Check if the cursor is visible.
-  if (IsVisibleRow(src_row_data, src_row_data_end)) {
-    // If the cursor exceeds the size permitted by PPAPI then crop it, keeping
-    // the hotspot as close to the center of the new cursor shape as possible.
-    if (height > kMaxCursorHeight && !delegate_large_cursors_) {
-      int y = hotspot_y - (kMaxCursorHeight / 2);
-      y = std::max(y, 0);
-      y = std::min(y, height - kMaxCursorHeight);
-
-      src_row_data += src_stride * y;
-      height = kMaxCursorHeight;
-      hotspot_y -= y;
-    }
-    if (width > kMaxCursorWidth && !delegate_large_cursors_) {
-      int x = hotspot_x - (kMaxCursorWidth / 2);
-      x = std::max(x, 0);
-      x = std::min(x, height - kMaxCursorWidth);
-
-      src_row_data += x;
-      width = kMaxCursorWidth;
-      bytes_per_row = width * kBytesPerPixel;
-      hotspot_x -= x;
-    }
-
-    cursor_image.reset(new pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                          pp::Size(width, height), false));
-    cursor_hotspot = pp::Point(hotspot_x, hotspot_y);
-
-    uint8* dst_row_data = reinterpret_cast<uint8*>(cursor_image->data());
-    for (int row = 0; row < height; row++) {
-      memcpy(dst_row_data, src_row_data, bytes_per_row);
-      src_row_data += src_stride;
-      dst_row_data += cursor_image->stride();
-    }
-  }
-
-  if (height > kMaxCursorHeight || width > kMaxCursorWidth) {
-    DCHECK(delegate_large_cursors_);
-    size_t buffer_size = height * bytes_per_row;
-    pp::VarArrayBuffer array_buffer(buffer_size);
-    void* dst = array_buffer.Map();
-    memcpy(dst, cursor_image->data(), buffer_size);
-    array_buffer.Unmap();
-    pp::VarDictionary dictionary;
-    dictionary.Set(pp::Var("width"), width);
-    dictionary.Set(pp::Var("height"), height);
-    dictionary.Set(pp::Var("hotspotX"), cursor_hotspot.x());
-    dictionary.Set(pp::Var("hotspotY"), cursor_hotspot.y());
-    dictionary.Set(pp::Var("data"), array_buffer);
-    PostChromotingMessage("setCursorShape", dictionary);
-    input_handler_.HideMouseCursor();
-  } else {
-    if (delegate_large_cursors_) {
-      pp::VarDictionary dictionary;
-      PostChromotingMessage("unsetCursorShape", dictionary);
-    }
-    input_handler_.SetMouseCursor(cursor_image.Pass(), cursor_hotspot);
-  }
+  pp::VarDictionary dictionary;
+  dictionary.Set(pp::Var("width"), cursor_shape.width());
+  dictionary.Set(pp::Var("height"), cursor_shape.height());
+  dictionary.Set(pp::Var("hotspotX"), cursor_shape.hotspot_x());
+  dictionary.Set(pp::Var("hotspotY"), cursor_shape.hotspot_y());
+  dictionary.Set(pp::Var("data"), array_buffer);
+  PostChromotingMessage("setCursorShape", dictionary);
 }
 
 void ChromotingInstance::OnFirstFrameReceived() {
@@ -1018,7 +935,12 @@ void ChromotingInstance::HandleExtensionMessage(
 }
 
 void ChromotingInstance::HandleAllowMouseLockMessage() {
-  input_handler_.AllowMouseLock();
+  // Create the mouse lock handler and route cursor shape messages through it.
+  mouse_locker_.reset(new PepperMouseLocker(
+      this, base::Bind(&PepperInputHandler::set_send_mouse_move_deltas,
+                       base::Unretained(&input_handler_)),
+      &cursor_setter_));
+  empty_cursor_filter_.set_cursor_stub(mouse_locker_.get());
 }
 
 void ChromotingInstance::HandleEnableMediaSourceRendering() {
@@ -1030,7 +952,7 @@ void ChromotingInstance::HandleSendMouseInputWhenUnfocused() {
 }
 
 void ChromotingInstance::HandleDelegateLargeCursors() {
-  delegate_large_cursors_ = true;
+  cursor_setter_.set_delegate_stub(this);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

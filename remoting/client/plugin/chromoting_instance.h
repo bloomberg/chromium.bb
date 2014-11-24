@@ -20,7 +20,9 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
+#include "remoting/client/plugin/empty_cursor_filter.h"
 #include "remoting/client/plugin/media_source_video_renderer.h"
+#include "remoting/client/plugin/pepper_cursor_setter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
@@ -62,6 +64,7 @@ class DelegatingSignalStrategy;
 class FrameConsumer;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
+class PepperMouseLocker;
 class TokenFetcherProxy;
 class PepperView;
 class RectangleUpdateDecoder;
@@ -274,6 +277,13 @@ class ChromotingInstance :
   scoped_ptr<protocol::InputFilter> normalizing_input_filter_;
   PepperInputHandler input_handler_;
 
+  // Cursor shape handling components, in reverse order to that in which they
+  // process cursor shape events. Note that |mouse_locker_| appears in the
+  // cursor pipeline since it is triggered by receipt of an empty cursor.
+  PepperCursorSetter cursor_setter_;
+  scoped_ptr<PepperMouseLocker> mouse_locker_;
+  EmptyCursorFilter empty_cursor_filter_;
+
   // Used to control text input settings, such as whether to show the IME.
   pp::TextInputController text_input_controller_;
 
@@ -285,10 +295,6 @@ class ChromotingInstance :
   // rendering. In that case all the encoded video will be passed to the
   // webapp for decoding.
   bool use_media_source_rendering_;
-
-  // Set to true if the web-app can handle large cursors. If false, then large
-  // cursors will be cropped to the maximum size supported by Pepper.
-  bool delegate_large_cursors_;
 
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
