@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -299,14 +300,20 @@ TEST_F(AttachmentDownloaderImplTest, HappyCase) {
   token_service()->RespondToAccessTokenRequest(
       GoogleServiceAuthError::AuthErrorNone());
   RunMessageLoop();
+  // Catch histogram entries.
+  base::HistogramTester histogram_tester;
   // Check that there is outstanding URLFetcher request and complete it.
   CompleteDownload(net::HTTP_OK, HASH_HEADER_VALID);
+  // Verify that the response code was logged properly.
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.DownloadResponseCode",
+                                      net::HTTP_OK, 1);
   // Verify that callback was called for the right id with the right result.
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_SUCCESS);
 }
 
 TEST_F(AttachmentDownloaderImplTest, SameIdMultipleDownloads) {
   AttachmentId id1 = AttachmentId::Create();
+  base::HistogramTester histogram_tester;
   // Call DownloadAttachment two times for the same id.
   downloader()->DownloadAttachment(id1, download_callback(id1));
   downloader()->DownloadAttachment(id1, download_callback(id1));
@@ -337,6 +344,8 @@ TEST_F(AttachmentDownloaderImplTest, SameIdMultipleDownloads) {
   // Verify that all download requests completed.
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_SUCCESS);
   EXPECT_EQ(4, num_completed_downloads());
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.DownloadResponseCode",
+                                      net::HTTP_OK, 2);
 }
 
 TEST_F(AttachmentDownloaderImplTest, RequestAccessTokenFails) {
@@ -373,9 +382,12 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_BadToken) {
   RunMessageLoop();
   // Fail URLFetcher. This should trigger download failure and access token
   // invalidation.
+  base::HistogramTester histogram_tester;
   CompleteDownload(net::HTTP_UNAUTHORIZED, HASH_HEADER_VALID);
   EXPECT_EQ(1, token_service()->num_invalidate_token());
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.DownloadResponseCode",
+                                      net::HTTP_UNAUTHORIZED, 1);
 }
 
 TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
@@ -388,9 +400,12 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
   RunMessageLoop();
   // Fail URLFetcher. This should trigger download failure. Access token
   // shouldn't be invalidated.
+  base::HistogramTester histogram_tester;
   CompleteDownload(net::HTTP_SERVICE_UNAVAILABLE, HASH_HEADER_VALID);
   EXPECT_EQ(0, token_service()->num_invalidate_token());
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.DownloadResponseCode",
+                                      net::HTTP_SERVICE_UNAVAILABLE, 1);
 }
 
 // Verify that if no hash is present on the response the downloader accepts the

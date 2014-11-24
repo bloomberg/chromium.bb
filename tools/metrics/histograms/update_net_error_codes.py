@@ -18,7 +18,10 @@ from update_histogram_enum import UpdateHistogramFromDict
 
 NET_ERROR_LIST_PATH = '../../../net/base/net_error_list.h'
 
-def ReadNetErrorCodes(filename):
+POSITIVE_ERROR_REGEX = re.compile(r'^NET_ERROR\(([\w]+), -([0-9]+)\)')
+NEGATIVE_ERROR_REGEX = re.compile(r'^NET_ERROR\(([\w]+), (-[0-9]+)\)')
+
+def ReadNetErrorCodes(filename, error_regex):
   """Reads in values from net_error_list.h, returning a dictionary mapping
   error code to error name.
   """
@@ -26,12 +29,10 @@ def ReadNetErrorCodes(filename):
   with open(filename) as f:
     content = f.readlines()
 
-  ERROR_REGEX = re.compile(r'^NET_ERROR\(([\w]+), -([0-9]+)\)')
-
   # Parse out lines that are net errors.
   errors = {}
   for line in content:
-    m = ERROR_REGEX.match(line)
+    m = error_regex.match(line)
     if m:
       errors[int(m.group(2))] = m.group(1)
   return errors
@@ -43,7 +44,13 @@ def main():
     sys.exit(1)
 
   UpdateHistogramFromDict(
-    'NetErrorCodes', ReadNetErrorCodes(NET_ERROR_LIST_PATH),
+    'NetErrorCodes',
+    ReadNetErrorCodes(NET_ERROR_LIST_PATH, POSITIVE_ERROR_REGEX),
+    NET_ERROR_LIST_PATH)
+
+  UpdateHistogramFromDict(
+    'CombinedHttpResponseAndNetErrorCode',
+    ReadNetErrorCodes(NET_ERROR_LIST_PATH, NEGATIVE_ERROR_REGEX),
     NET_ERROR_LIST_PATH)
 
 if __name__ == '__main__':

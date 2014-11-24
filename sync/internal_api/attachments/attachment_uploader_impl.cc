@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +20,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_status.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -170,7 +172,10 @@ void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
 
   UploadResult result = UPLOAD_TRANSIENT_ERROR;
   AttachmentId attachment_id = attachment_.GetId();
+  net::URLRequestStatus status = source->GetStatus();
   const int response_code = source->GetResponseCode();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.Attachments.UploadResponseCode",
+      status.is_success() ? response_code : status.error());
   if (response_code == net::HTTP_OK) {
     result = UPLOAD_SUCCESS;
   } else if (response_code == net::HTTP_UNAUTHORIZED) {

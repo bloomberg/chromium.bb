@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
@@ -445,6 +446,7 @@ TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_PathAndSlash) {
 // received by server.
 TEST_F(AttachmentUploaderImplTest, UploadAttachment_HappyCase) {
   Attachment attachment = UploadAndRespondWith(net::HTTP_OK);
+  base::HistogramTester histogram_tester;
 
   // Run until the done callback is invoked.
   RunAndWaitFor(1);
@@ -454,6 +456,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_HappyCase) {
   EXPECT_EQ(AttachmentUploader::UPLOAD_SUCCESS, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.UploadResponseCode",
+                                      net::HTTP_OK, 1);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());
@@ -546,6 +550,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
   some_data->data() = kAttachmentData;
   Attachment attachment = Attachment::Create(some_data);
   uploader()->UploadAttachment(attachment, upload_callback());
+  base::HistogramTester histogram_tester;
 
   RunAndWaitFor(1);
 
@@ -554,6 +559,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
   EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+  histogram_tester.ExpectTotalCount("Sync.Attachments.UploadResponseCode", 0);
 
   // See that no HTTP request was received.
   ASSERT_EQ(0U, http_requests_received().size());
@@ -562,6 +568,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
 // Verify behavior when the server returns "503 Service Unavailable".
 TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
   Attachment attachment = UploadAndRespondWith(net::HTTP_SERVICE_UNAVAILABLE);
+  base::HistogramTester histogram_tester;
 
   RunAndWaitFor(1);
 
@@ -570,6 +577,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
   EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.UploadResponseCode",
+                                      net::HTTP_SERVICE_UNAVAILABLE, 1);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());
@@ -588,6 +597,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
 // Verify that we "403 Forbidden" as a non-transient error.
 TEST_F(AttachmentUploaderImplTest, UploadAttachment_Forbidden) {
   Attachment attachment = UploadAndRespondWith(net::HTTP_FORBIDDEN);
+  base::HistogramTester histogram_tester;
 
   RunAndWaitFor(1);
 
@@ -596,6 +606,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_Forbidden) {
   EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.UploadResponseCode",
+                                      net::HTTP_FORBIDDEN, 1);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());
@@ -615,6 +627,7 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_Forbidden) {
 // token.
 TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   Attachment attachment = UploadAndRespondWith(net::HTTP_UNAUTHORIZED);
+  base::HistogramTester histogram_tester;
 
   RunAndWaitFor(1);
 
@@ -623,6 +636,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   EXPECT_EQ(AttachmentUploader::UPLOAD_TRANSIENT_ERROR, upload_results()[0]);
   ASSERT_EQ(1U, attachment_ids().size());
   EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
+  histogram_tester.ExpectUniqueSample("Sync.Attachments.UploadResponseCode",
+                                      net::HTTP_UNAUTHORIZED, 1);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());

@@ -7,12 +7,14 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/sys_byteorder.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/sync.pb.h"
@@ -145,7 +147,10 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
   scoped_refptr<base::RefCountedString> attachment_data;
   uint32_t attachment_crc32c = 0;
 
+  net::URLRequestStatus status = source->GetStatus();
   const int response_code = source->GetResponseCode();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sync.Attachments.DownloadResponseCode",
+      status.is_success() ? response_code : status.error());
   if (response_code == net::HTTP_OK) {
     std::string data_as_string;
     source->GetResponseAsString(&data_as_string);

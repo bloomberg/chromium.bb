@@ -35683,6 +35683,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.Attachments.DownloadResponseCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>Response or error codes from downloading sync attachments.</summary>
+</histogram>
+
+<histogram name="Sync.Attachments.UploadResponseCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>Response or error codes from uploading sync attachments.</summary>
+</histogram>
+
 <histogram name="Sync.AttemptNigoriMigration" enum="SyncNigoriMigrationResult">
   <owner>zea@chromium.org</owner>
   <summary>
@@ -42212,6 +42224,243 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="No Advantage"/>
   <int value="1" label="Header packets Only"/>
   <int value="30" label="More Than 30"/>
+</enum>
+
+<enum name="CombinedHttpResponseAndNetErrorCode" type="int">
+<!-- Generated from ../../../net/base/net_error_list.h -->
+
+  <int value="-806" label="DNS_SORT_ERROR"/>
+  <int value="-805" label="DNS_SEARCH_EMPTY"/>
+  <int value="-804" label="DNS_CACHE_MISS"/>
+  <int value="-803" label="DNS_TIMED_OUT"/>
+  <int value="-802" label="DNS_SERVER_FAILED"/>
+  <int value="-801" label="DNS_SERVER_REQUIRES_TCP"/>
+  <int value="-800" label="DNS_MALFORMED_RESPONSE"/>
+  <int value="-715" label="CHANNEL_ID_IMPORT_FAILED"/>
+  <int value="-714" label="CERT_DATABASE_CHANGED"/>
+  <int value="-713" label="SELF_SIGNED_CERT_GENERATION_FAILED"/>
+  <int value="-712" label="PRIVATE_KEY_EXPORT_FAILED"/>
+  <int value="-711" label="ORIGIN_BOUND_CERT_GENERATION_FAILED"/>
+  <int value="-710" label="KEY_GENERATION_FAILED"/>
+  <int value="-709" label="PKCS12_IMPORT_UNSUPPORTED"/>
+  <int value="-708" label="PKCS12_IMPORT_INVALID_FILE"/>
+  <int value="-707" label="PKCS12_IMPORT_INVALID_MAC"/>
+  <int value="-706" label="IMPORT_SERVER_CERT_FAILED"/>
+  <int value="-705" label="IMPORT_CA_CERT_FAILED"/>
+  <int value="-704" label="IMPORT_CERT_ALREADY_EXISTS"/>
+  <int value="-703" label="IMPORT_CA_CERT_NOT_CA"/>
+  <int value="-702" label="PKCS12_IMPORT_FAILED"/>
+  <int value="-701" label="PKCS12_IMPORT_BAD_PASSWORD"/>
+  <int value="-607" label="FTP_BAD_COMMAND_SEQUENCE"/>
+  <int value="-606" label="FTP_COMMAND_NOT_SUPPORTED"/>
+  <int value="-605" label="FTP_SYNTAX_ERROR"/>
+  <int value="-604" label="FTP_FILE_BUSY"/>
+  <int value="-603" label="FTP_TRANSFER_ABORTED"/>
+  <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
+  <int value="-601" label="FTP_FAILED"/>
+  <int value="-503" label="ADD_USER_CERT_FAILED"/>
+  <int value="-502" label="NO_PRIVATE_KEY_FOR_CERT"/>
+  <int value="-501" label="INSECURE_RESPONSE"/>
+  <int value="-409" label="CACHE_LOCK_TIMEOUT"/>
+  <int value="-408" label="CACHE_CHECKSUM_MISMATCH"/>
+  <int value="-407" label="CACHE_CHECKSUM_READ_FAILURE"/>
+  <int value="-406" label="CACHE_RACE"/>
+  <int value="-405" label="CACHE_CREATE_FAILURE"/>
+  <int value="-404" label="CACHE_OPEN_FAILURE"/>
+  <int value="-403" label="CACHE_OPERATION_NOT_SUPPORTED"/>
+  <int value="-402" label="CACHE_WRITE_FAILURE"/>
+  <int value="-401" label="CACHE_READ_FAILURE"/>
+  <int value="-400" label="CACHE_MISS"/>
+  <int value="-364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
+  <int value="-363" label="SPDY_COMPRESSION_ERROR"/>
+  <int value="-362" label="SPDY_FRAME_SIZE_ERROR"/>
+  <int value="-361" label="SPDY_FLOW_CONTROL_ERROR"/>
+  <int value="-360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
+  <int value="-359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
+  <int value="-358" label="QUIC_HANDSHAKE_FAILED"/>
+  <int value="-357" label="RESPONSE_HEADERS_TRUNCATED"/>
+  <int value="-356" label="QUIC_PROTOCOL_ERROR"/>
+  <int value="-355" label="INCOMPLETE_CHUNKED_ENCODING"/>
+  <int value="-354" label="CONTENT_LENGTH_MISMATCH"/>
+  <int value="-352" label="SPDY_PING_FAILED"/>
+  <int value="-351" label="SPDY_SERVER_REFUSED_STREAM"/>
+  <int value="-350" label="RESPONSE_HEADERS_MULTIPLE_LOCATION"/>
+  <int value="-349" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION"/>
+  <int value="-348" label="PAC_NOT_IN_DHCP"/>
+  <int value="-347" label="INCOMPLETE_SPDY_HEADERS"/>
+  <int value="-346" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH"/>
+  <int value="-345" label="RESPONSE_BODY_TOO_BIG_TO_DRAIN"/>
+  <int value="-344" label="UNDOCUMENTED_SECURITY_LIBRARY_STATUS"/>
+  <int value="-343" label="MISCONFIGURED_AUTH_ENVIRONMENT"/>
+  <int value="-342" label="UNEXPECTED_SECURITY_LIBRARY_STATUS"/>
+  <int value="-341" label="MISSING_AUTH_CREDENTIALS"/>
+  <int value="-340" label="ENCODING_DETECTION_FAILED"/>
+  <int value="-339" label="UNSUPPORTED_AUTH_SCHEME"/>
+  <int value="-338" label="INVALID_AUTH_CREDENTIALS"/>
+  <int value="-337" label="SPDY_PROTOCOL_ERROR"/>
+  <int value="-336" label="NO_SUPPORTED_PROXIES"/>
+  <int value="-335" label="INVALID_SPDY_STREAM"/>
+  <int value="-334" label="UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT"/>
+  <int value="-333" label="ENCODING_CONVERSION_FAILED"/>
+  <int value="-332" label="SYN_REPLY_NOT_RECEIVED"/>
+  <int value="-331" label="NETWORK_IO_SUSPENDED"/>
+  <int value="-330" label="CONTENT_DECODING_FAILED"/>
+  <int value="-329" label="MALFORMED_IDENTITY"/>
+  <int value="-328" label="REQUEST_RANGE_NOT_SATISFIABLE"/>
+  <int value="-327" label="PAC_SCRIPT_FAILED"/>
+  <int value="-326" label="PAC_STATUS_NOT_OK"/>
+  <int value="-325" label="RESPONSE_HEADERS_TOO_BIG"/>
+  <int value="-324" label="EMPTY_RESPONSE"/>
+  <int value="-323" label="UNEXPECTED_PROXY_AUTH"/>
+  <int value="-322" label="METHOD_NOT_SUPPORTED"/>
+  <int value="-321" label="INVALID_CHUNKED_ENCODING"/>
+  <int value="-320" label="INVALID_RESPONSE"/>
+  <int value="-312" label="UNSAFE_PORT"/>
+  <int value="-311" label="UNSAFE_REDIRECT"/>
+  <int value="-310" label="TOO_MANY_REDIRECTS"/>
+  <int value="-302" label="UNKNOWN_URL_SCHEME"/>
+  <int value="-301" label="DISALLOWED_URL_SCHEME"/>
+  <int value="-300" label="INVALID_URL"/>
+  <int value="-213" label="CERT_END"/>
+  <int value="-212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
+  <int value="-211" label="CERT_WEAK_KEY"/>
+  <int value="-210" label="CERT_NON_UNIQUE_NAME"/>
+  <int value="-208" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
+  <int value="-207" label="CERT_INVALID"/>
+  <int value="-206" label="CERT_REVOKED"/>
+  <int value="-205" label="CERT_UNABLE_TO_CHECK_REVOCATION"/>
+  <int value="-204" label="CERT_NO_REVOCATION_MECHANISM"/>
+  <int value="-203" label="CERT_CONTAINS_ERRORS"/>
+  <int value="-202" label="CERT_AUTHORITY_INVALID"/>
+  <int value="-201" label="CERT_DATE_INVALID"/>
+  <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-165" label="SSL_FALLBACK_BEYOND_MINIMUM_VERSION"/>
+  <int value="-164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
+  <int value="-163" label="SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE"/>
+  <int value="-162" label="SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE"/>
+  <int value="-161" label="SOCKET_SET_SEND_BUFFER_SIZE_ERROR"/>
+  <int value="-160" label="SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR"/>
+  <int value="-159" label="SSL_UNRECOGNIZED_NAME_ALERT"/>
+  <int value="-158" label="CT_NO_SCTS_VERIFIED_OK"/>
+  <int value="-157" label="SSL_INAPPROPRIATE_FALLBACK"/>
+  <int value="-156" label="SSL_SERVER_CERT_CHANGED"/>
+  <int value="-154" label="WS_THROTTLE_QUEUE_TOO_LARGE"/>
+  <int value="-153" label="SSL_DECRYPT_ERROR_ALERT"/>
+  <int value="-152" label="ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH"/>
+  <int value="-151" label="CLIENT_AUTH_CERT_TYPE_UNSUPPORTED"/>
+  <int value="-150" label="SSL_PINNED_KEY_NOT_IN_CERT_CHAIN"/>
+  <int value="-149" label="SSL_BAD_PEER_PUBLIC_KEY"/>
+  <int value="-148" label="SSL_HANDSHAKE_NOT_COMPLETED"/>
+  <int value="-147" label="ADDRESS_IN_USE"/>
+  <int value="-145" label="WS_PROTOCOL_ERROR"/>
+  <int value="-143" label="SPDY_SESSION_ALREADY_EXISTS"/>
+  <int value="-142" label="MSG_TOO_BIG"/>
+  <int value="-141" label="SSL_CLIENT_AUTH_SIGNATURE_FAILED"/>
+  <int value="-140" label="HTTPS_PROXY_TUNNEL_RESPONSE"/>
+  <int value="-139" label="TEMPORARILY_THROTTLED"/>
+  <int value="-138" label="NETWORK_ACCESS_DENIED"/>
+  <int value="-137" label="NAME_RESOLUTION_FAILED"/>
+  <int value="-136" label="PROXY_CERTIFICATE_INVALID"/>
+  <int value="-135" label="SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY"/>
+  <int value="-134" label="SSL_CLIENT_AUTH_PRIVATE_KEY_ACCESS_DENIED"/>
+  <int value="-133" label="PRECONNECT_MAX_SOCKET_LIMIT"/>
+  <int value="-131" label="MANDATORY_PROXY_CONFIGURATION_FAILED"/>
+  <int value="-130" label="PROXY_CONNECTION_FAILED"/>
+  <int value="-129" label="SSL_WEAK_SERVER_EPHEMERAL_DH_KEY"/>
+  <int value="-128" label="SSL_UNSAFE_NEGOTIATION"/>
+  <int value="-127" label="PROXY_AUTH_REQUESTED"/>
+  <int value="-126" label="SSL_BAD_RECORD_MAC_ALERT"/>
+  <int value="-125" label="SSL_DECOMPRESSION_FAILURE_ALERT"/>
+  <int value="-124" label="WINSOCK_UNEXPECTED_WRITTEN_BYTES"/>
+  <int value="-123" label="SSL_NO_RENEGOTIATION"/>
+  <int value="-122" label="NPN_NEGOTIATION_FAILED"/>
+  <int value="-121" label="SOCKS_CONNECTION_HOST_UNREACHABLE"/>
+  <int value="-120" label="SOCKS_CONNECTION_FAILED"/>
+  <int value="-119" label="HOST_RESOLVER_QUEUE_TOO_LARGE"/>
+  <int value="-118" label="CONNECTION_TIMED_OUT"/>
+  <int value="-117" label="BAD_SSL_CLIENT_AUTH_CERT"/>
+  <int value="-116" label="CERT_ERROR_IN_SSL_RENEGOTIATION"/>
+  <int value="-115" label="PROXY_AUTH_UNSUPPORTED"/>
+  <int value="-114" label="SSL_RENEGOTIATION_REQUESTED"/>
+  <int value="-113" label="SSL_VERSION_OR_CIPHER_MISMATCH"/>
+  <int value="-112" label="NO_SSL_VERSIONS_ENABLED"/>
+  <int value="-111" label="TUNNEL_CONNECTION_FAILED"/>
+  <int value="-110" label="SSL_CLIENT_AUTH_CERT_NEEDED"/>
+  <int value="-109" label="ADDRESS_UNREACHABLE"/>
+  <int value="-108" label="ADDRESS_INVALID"/>
+  <int value="-107" label="SSL_PROTOCOL_ERROR"/>
+  <int value="-106" label="INTERNET_DISCONNECTED"/>
+  <int value="-105" label="NAME_NOT_RESOLVED"/>
+  <int value="-104" label="CONNECTION_FAILED"/>
+  <int value="-103" label="CONNECTION_ABORTED"/>
+  <int value="-102" label="CONNECTION_REFUSED"/>
+  <int value="-101" label="CONNECTION_RESET"/>
+  <int value="-100" label="CONNECTION_CLOSED"/>
+  <int value="-25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
+  <int value="-24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
+  <int value="-23" label="SOCKET_IS_CONNECTED"/>
+  <int value="-22" label="BLOCKED_BY_ADMINISTRATOR"/>
+  <int value="-21" label="NETWORK_CHANGED"/>
+  <int value="-20" label="BLOCKED_BY_CLIENT"/>
+  <int value="-19" label="FILE_VIRUS_INFECTED"/>
+  <int value="-18" label="FILE_NO_SPACE"/>
+  <int value="-17" label="FILE_PATH_TOO_LONG"/>
+  <int value="-16" label="FILE_EXISTS"/>
+  <int value="-15" label="SOCKET_NOT_CONNECTED"/>
+  <int value="-14" label="UPLOAD_FILE_CHANGED"/>
+  <int value="-13" label="OUT_OF_MEMORY"/>
+  <int value="-12" label="INSUFFICIENT_RESOURCES"/>
+  <int value="-11" label="NOT_IMPLEMENTED"/>
+  <int value="-10" label="ACCESS_DENIED"/>
+  <int value="-9" label="UNEXPECTED"/>
+  <int value="-8" label="FILE_TOO_BIG"/>
+  <int value="-7" label="TIMED_OUT"/>
+  <int value="-6" label="FILE_NOT_FOUND"/>
+  <int value="-5" label="INVALID_HANDLE"/>
+  <int value="-4" label="INVALID_ARGUMENT"/>
+  <int value="-3" label="ABORTED"/>
+  <int value="-2" label="FAILED"/>
+  <int value="-1" label="IO_PENDING"/>
+  <int value="100" label="100: Continue"/>
+  <int value="101" label="101: Switching Protocols"/>
+  <int value="200" label="200: OK"/>
+  <int value="201" label="201: Created"/>
+  <int value="202" label="202: Accepted"/>
+  <int value="203" label="203: Non-Authoritative Information"/>
+  <int value="204" label="204: No Content"/>
+  <int value="205" label="205: Reset Content"/>
+  <int value="206" label="206: Partial Content"/>
+  <int value="300" label="300: Multiple Choices"/>
+  <int value="301" label="301: Moved Permanently"/>
+  <int value="302" label="302: Found"/>
+  <int value="303" label="303: See Other"/>
+  <int value="304" label="304: Not Modified"/>
+  <int value="305" label="305: Use Proxy"/>
+  <int value="306" label="306: (Unused)"/>
+  <int value="307" label="307: Temporary Redirect"/>
+  <int value="400" label="400: Bad Request"/>
+  <int value="401" label="401: Unauthorized"/>
+  <int value="402" label="402: Payment Required"/>
+  <int value="403" label="403: Forbidden"/>
+  <int value="404" label="404: Not Found"/>
+  <int value="405" label="405: Method Not Allowed"/>
+  <int value="406" label="406: Not Acceptable"/>
+  <int value="407" label="407: Proxy Authentication Required"/>
+  <int value="408" label="408: Request Timeout"/>
+  <int value="409" label="409: Conflict"/>
+  <int value="410" label="410: Gone"/>
+  <int value="411" label="411: Length Required"/>
+  <int value="412" label="412: Precondition Failed"/>
+  <int value="413" label="413: Request Entity Too Large"/>
+  <int value="414" label="414: Request-URI Too Long"/>
+  <int value="415" label="415: Unsupported Media Type"/>
+  <int value="416" label="416: Requested Range Not Satisfiable"/>
+  <int value="417" label="417: Expectation Failed"/>
+  <int value="500" label="500: Internal Server Error"/>
+  <int value="501" label="501: Not Implemented"/>
+  <int value="503" label="503: Service Unavailable"/>
+  <int value="504" label="504: Gateway Timeout"/>
+  <int value="505" label="505: HTTP Version Not Supported"/>
 </enum>
 
 <enum name="CompositedScrolling" type="int">
@@ -50011,6 +50260,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="22" label="BLOCKED_BY_ADMINISTRATOR"/>
   <int value="23" label="SOCKET_IS_CONNECTED"/>
   <int value="24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
+  <int value="25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
   <int value="100" label="CONNECTION_CLOSED"/>
   <int value="101" label="CONNECTION_RESET"/>
   <int value="102" label="CONNECTION_REFUSED"/>
