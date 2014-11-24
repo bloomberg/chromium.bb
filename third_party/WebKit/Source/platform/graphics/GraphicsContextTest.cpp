@@ -1209,13 +1209,13 @@ TEST(GraphicsContextTest, RecordingCanvas)
     EXPECT_TRUE(canvas2);
 
     EXPECT_NE(canvas1, canvas2);
-    EXPECT_EQ(1, canvas1->getRefCnt());
+    EXPECT_TRUE(canvas1->unique());
 
     // endRecording finally makes the picture accessible
     RefPtr<DisplayList> dl = context.endRecording();
     SkPicture* pic = dl->picture().get();
     EXPECT_TRUE(pic);
-    EXPECT_EQ(1, pic->getRefCnt());
+    EXPECT_TRUE(pic->unique());
 
     context.endRecording();
 }
