@@ -458,15 +458,6 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
 void SupervisedUserService::OnHistoryRecordingStateChanged() {
   bool record_history =
       profile_->GetPrefs()->GetBoolean(prefs::kRecordHistory);
-  GetSettingsService()->SetLocalSetting(
-      supervised_users::kAllowDeletingBrowserHistory,
-      make_scoped_ptr(new base::FundamentalValue(!record_history)));
-  GetSettingsService()->SetLocalSetting(
-      supervised_users::kIncognitoModeAvailability,
-      make_scoped_ptr(new base::FundamentalValue(
-          record_history ? IncognitoModePrefs::DISABLED
-                         : IncognitoModePrefs::ENABLED)));
-
   includes_sync_sessions_type_ = record_history;
   ProfileSyncServiceFactory::GetForProfile(profile_)
       ->ReconfigureDatatypeManager();

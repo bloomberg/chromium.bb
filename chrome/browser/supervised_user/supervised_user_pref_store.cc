@@ -26,10 +26,6 @@ struct SupervisedUserSettingsPrefMappingEntry {
 
 SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   {
-      supervised_users::kAllowDeletingBrowserHistory,
-      prefs::kAllowDeletingBrowserHistory,
-  },
-  {
     supervised_users::kContentPackDefaultFilteringBehavior,
     prefs::kDefaultSupervisedUserFilteringBehavior,
   },
@@ -43,10 +39,6 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   },
   {
     supervised_users::kForceSafeSearch, prefs::kForceSafeSearch,
-  },
-  {
-      supervised_users::kIncognitoModeAvailability,
-      prefs::kIncognitoModeAvailability,
   },
   {
     supervised_users::kRecordHistory, prefs::kRecordHistory,
@@ -99,25 +91,32 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   scoped_ptr<PrefValueMap> old_prefs = prefs_.Pass();
   prefs_.reset(new PrefValueMap);
   if (settings) {
-    // Set hardcoded prefs.
-    prefs_->SetValue(prefs::kAllowDeletingBrowserHistory,
-                     new FundamentalValue(false));
-    prefs_->SetValue(prefs::kDefaultSupervisedUserFilteringBehavior,
-                     new FundamentalValue(SupervisedUserURLFilter::ALLOW));
-    prefs_->SetValue(prefs::kForceSafeSearch, new FundamentalValue(true));
-    prefs_->SetValue(prefs::kRecordHistory, new FundamentalValue(true));
-    prefs_->SetValue(prefs::kHideWebStoreIcon, new FundamentalValue(true));
-    prefs_->SetValue(prefs::kIncognitoModeAvailability,
-                     new FundamentalValue(IncognitoModePrefs::DISABLED));
-    prefs_->SetValue(prefs::kSigninAllowed, new FundamentalValue(false));
+    // Set hardcoded prefs and defaults.
+    prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
+    prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
+                       SupervisedUserURLFilter::ALLOW);
+    prefs_->SetBoolean(prefs::kForceSafeSearch, true);
+    prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
+    prefs_->SetInteger(prefs::kIncognitoModeAvailability,
+                       IncognitoModePrefs::DISABLED);
+    prefs_->SetBoolean(prefs::kRecordHistory, true);
+    prefs_->SetBoolean(prefs::kSigninAllowed, false);
 
     // Copy supervised user settings to prefs.
-    for (size_t i = 0; i < arraysize(kSupervisedUserSettingsPrefMapping); ++i) {
-      const SupervisedUserSettingsPrefMappingEntry& entry =
-          kSupervisedUserSettingsPrefMapping[i];
+    for (const auto& entry : kSupervisedUserSettingsPrefMapping) {
       const base::Value* value = NULL;
       if (settings->GetWithoutPathExpansion(entry.settings_name, &value))
         prefs_->SetValue(entry.pref_name, value->DeepCopy());
+    }
+
+    // Manually set preferences that aren't direct copies of the settings value.
+    bool record_history;
+    if (settings->GetBoolean(supervised_users::kRecordHistory,
+                             &record_history)) {
+      prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
+      prefs_->SetInteger(prefs::kIncognitoModeAvailability,
+                         record_history ? IncognitoModePrefs::DISABLED
+                                        : IncognitoModePrefs::ENABLED);
     }
   }
 
