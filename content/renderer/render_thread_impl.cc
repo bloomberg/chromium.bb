@@ -512,6 +512,9 @@ void RenderThreadImpl::Init() {
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // TODO(danakj): If changing these also update NumberOfRendererRasterThreads
+  // in compositor_util.cc. We should be using methods from compositor_util here
+  // instead of inspecting flags.
   is_one_copy_enabled_ = command_line.HasSwitch(switches::kEnableOneCopy);
 #else
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -209,7 +210,23 @@ bool IsImplSidePaintingEnabled() {
 }
 
 int NumberOfRendererRasterThreads() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
   int num_raster_threads = 1;
+
+  // TODO(danakj): Don't do this when using async uploads. Add methods to this
+  // file for enabling zero/one copy and use those to tell if we want an extra
+  // raster thread.
+  bool is_zero_copy_enabled = command_line.HasSwitch(switches::kEnableZeroCopy);
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  bool is_one_copy_enabled = command_line.HasSwitch(switches::kEnableOneCopy);
+#else
+  bool is_one_copy_enabled = !command_line.HasSwitch(switches::kDisableOneCopy);
+#endif
+  bool allow_extra_thread = is_zero_copy_enabled || is_one_copy_enabled;
+  if (base::SysInfo::NumberOfProcessors() >= 4 && allow_extra_thread)
+    num_raster_threads = 2;
 
   int force_num_raster_threads = ForceNumberOfRendererRasterThreads();
   if (force_num_raster_threads)
