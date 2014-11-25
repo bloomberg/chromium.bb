@@ -1,3 +1,2 @@
-CONSOLE WARNING: 'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).
 Test	http://www.w3.org/2001/DOM-Test-Suite/level3/core/nodecomparedocumentposition11
 Status	Success

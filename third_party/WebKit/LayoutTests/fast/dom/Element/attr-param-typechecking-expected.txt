@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).
 This test checks whether passing wrong types to setAttributeNode causes a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

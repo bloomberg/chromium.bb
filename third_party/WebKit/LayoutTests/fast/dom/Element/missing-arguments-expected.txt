@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).
 PASS element.getAttribute() threw exception TypeError: Failed to execute 'getAttribute' on 'Element': 1 argument required, but only 0 present..
 PASS element.getAttributeNS() threw exception TypeError: Failed to execute 'getAttributeNS' on 'Element': 2 arguments required, but only 0 present..
 PASS element.getAttributeNS('http://example.com/') threw exception TypeError: Failed to execute 'getAttributeNS' on 'Element': 2 arguments required, but only 1 present..

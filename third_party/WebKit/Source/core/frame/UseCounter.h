@@ -219,7 +219,7 @@ public:
         HTMLElementInnerText = 213,
         HTMLElementOuterText = 214,
         ReplaceDocumentViaJavaScriptURL = 215,
-        ElementSetAttributeNodeNS = 216, // Removed from DOM4.
+        ElementSetAttributeNodeNS = 216,
         ElementPrefixedMatchesSelector = 217,
         CSSStyleSheetRules = 219,
         CSSStyleSheetAddRule = 220,

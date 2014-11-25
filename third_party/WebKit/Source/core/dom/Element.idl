@@ -42,7 +42,7 @@ interface Element : Node {
     [CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
     HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
     [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CustomElementCallbacks, DeprecateAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS(Attr newAttr); // Removed from DOM4.
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS(Attr newAttr);
     boolean hasAttribute(DOMString name);
     boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
 
