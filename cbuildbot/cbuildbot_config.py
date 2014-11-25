@@ -1909,40 +1909,7 @@ internal_paladin.add_config('wolf-tot-paladin',
   hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
 )
 
-# Autogeneration of paladin configs.
-# TODO(akeshet) create paladin configs for all boards.
-# List of boards to not create a regular paladin for.
-_non_paladin_boards = frozenset([
-  'arm64-generic',
-  'auron_paine',
-  'auron_yuna',
-  'bayleybay',
-  'falco_li',
-  'mccloud',
-  'mipseb-n32-generic',
-  'mipseb-n64-generic',
-  'mipseb-o32-generic',
-  'mipsel-n32-generic',
-  'mipsel-n64-generic',
-  'nyan_big',
-  'nyan_blaze',
-  'nyan_kitty',
-  'panther_freon',
-  'parrot_ivb',
-  'peach_pi',
-  'peppy_freon',
-  'rush',
-  'tricky',
-  'veyron_jerry',
-  'veyron_mighty',
-  'x86-alex_he',
-  'x86-pineview',
-  'x86-zgb_he',
-  'zako',
-  'zako_freon',
-])
-
-_paladin_boards = frozenset(_all_boards - _non_paladin_boards)
+_paladin_boards = _all_boards
 
 # List of paladin boards where the regular paladin config is important.
 _paladin_important_boards = frozenset([

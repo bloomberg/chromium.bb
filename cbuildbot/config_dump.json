@@ -779,6 +779,24 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "arm64-generic-paladin": {
+        "boards": [
+            "arm64-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "arm64-generic-paladin",
+        "paladin_builder_name": "arm64-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "arm64-generic-pre-cq": {
         "archive": false,
         "boards": [
@@ -1765,6 +1783,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "auron_paine-paladin": {
+        "boards": [
+            "auron_paine"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "auron_paine-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "auron_paine paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "auron_paine-payloads": {
         "boards": [
             "auron_paine"
@@ -2214,6 +2255,29 @@
         "trybot_list": true,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
+    },
+    "auron_yuna-paladin": {
+        "boards": [
+            "auron_yuna"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "auron_yuna-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "auron_yuna paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "auron_yuna-payloads": {
         "boards": [
@@ -2759,6 +2823,29 @@
         "trybot_list": true,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
+    },
+    "bayleybay-paladin": {
+        "boards": [
+            "bayleybay"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "bayleybay-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "bayleybay paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "bayleybay-payloads": {
         "boards": [
@@ -11459,6 +11546,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "falco_li-paladin": {
+        "boards": [
+            "falco_li"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "falco_li-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "falco_li paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "falco_li-payloads": {
         "boards": [
             "falco_li"
@@ -17481,6 +17591,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "mccloud-paladin": {
+        "boards": [
+            "mccloud"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mccloud-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "mccloud paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "mccloud-payloads": {
         "boards": [
             "mccloud"
@@ -17916,6 +18049,24 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipseb-n32-generic-paladin": {
+        "boards": [
+            "mipseb-n32-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "mipseb-n32-generic-paladin",
+        "paladin_builder_name": "mipseb-n32-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "mipseb-n32-generic-pre-cq": {
         "archive": false,
         "boards": [
@@ -18003,6 +18154,24 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "mipseb-n64-generic-paladin": {
+        "boards": [
+            "mipseb-n64-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "mipseb-n64-generic-paladin",
+        "paladin_builder_name": "mipseb-n64-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-pre-cq": {
@@ -18094,6 +18263,24 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipseb-o32-generic-paladin": {
+        "boards": [
+            "mipseb-o32-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "mipseb-o32-generic-paladin",
+        "paladin_builder_name": "mipseb-o32-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "mipseb-o32-generic-pre-cq": {
         "archive": false,
         "boards": [
@@ -18183,6 +18370,24 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "mipsel-n32-generic-paladin": {
+        "boards": [
+            "mipsel-n32-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "mipsel-n32-generic-paladin",
+        "paladin_builder_name": "mipsel-n32-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "mipsel-n32-generic-pre-cq": {
         "archive": false,
         "boards": [
@@ -18270,6 +18475,24 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "mipsel-n64-generic-paladin": {
+        "boards": [
+            "mipsel-n64-generic"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "mipsel-n64-generic-paladin",
+        "paladin_builder_name": "mipsel-n64-generic paladin",
+        "prebuilts": "public",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-pre-cq": {
@@ -19940,6 +20163,31 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "nyan_big-paladin": {
+        "boards": [
+            "nyan_big"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_big-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "nyan_big paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "nyan_big-payloads": {
         "boards": [
             "nyan_big"
@@ -20386,6 +20634,31 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "nyan_blaze-paladin": {
+        "boards": [
+            "nyan_blaze"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_blaze-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "nyan_blaze paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_blaze-payloads": {
@@ -21306,6 +21579,31 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "nyan_kitty-paladin": {
+        "boards": [
+            "nyan_kitty"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_kitty-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "nyan_kitty paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_kitty-payloads": {
@@ -22322,6 +22620,29 @@
         "trybot_list": true,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
+    },
+    "panther_freon-paladin": {
+        "boards": [
+            "panther_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "panther_freon-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "panther_freon paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "panther_freon-payloads": {
         "boards": [
@@ -23966,6 +24287,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "parrot_ivb-paladin": {
+        "boards": [
+            "parrot_ivb"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "parrot_ivb-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "parrot_ivb paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "parrot_ivb-payloads": {
         "boards": [
             "parrot_ivb"
@@ -25264,6 +25608,31 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "peach_pi-paladin": {
+        "boards": [
+            "peach_pi"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "peach_pi-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "peach_pi paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "peach_pi-payloads": {
@@ -26729,6 +27098,29 @@
         "trybot_list": true,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
+    },
+    "peppy_freon-paladin": {
+        "boards": [
+            "peppy_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "peppy_freon-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "peppy_freon paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "peppy_freon-payloads": {
         "boards": [
@@ -30467,6 +30859,31 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "rush-paladin": {
+        "boards": [
+            "rush"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "rush-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "rush paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush-pre-cq": {
@@ -35843,6 +36260,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "tricky-paladin": {
+        "boards": [
+            "tricky"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "tricky-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "tricky paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "tricky-payloads": {
         "boards": [
             "tricky"
@@ -36715,6 +37155,31 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "veyron_jerry-paladin": {
+        "boards": [
+            "veyron_jerry"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "veyron_jerry-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "veyron_jerry paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "veyron_jerry-payloads": {
         "boards": [
             "veyron_jerry"
@@ -37160,6 +37625,31 @@
         "unittests": false,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
+        "vm_tests": []
+    },
+    "veyron_mighty-paladin": {
+        "boards": [
+            "veyron_mighty"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "veyron_mighty-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "veyron_mighty paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_mighty-payloads": {
@@ -40047,6 +40537,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "x86-alex_he-paladin": {
+        "boards": [
+            "x86-alex_he"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "x86-alex_he paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "x86-alex_he-payloads": {
         "boards": [
             "x86-alex_he"
@@ -41278,6 +41791,22 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "x86-pineview-paladin": {
+        "boards": [
+            "x86-pineview"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue",
+        "manifest_version": true,
+        "name": "x86-pineview-paladin",
+        "paladin_builder_name": "x86-pineview paladin",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "x86-pineview-pre-cq": {
         "archive": false,
         "boards": [
@@ -42029,6 +42558,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "x86-zgb_he-paladin": {
+        "boards": [
+            "x86-zgb_he"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "x86-zgb_he paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "x86-zgb_he-payloads": {
         "boards": [
             "x86-zgb_he"
@@ -42568,6 +43120,29 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "zako-paladin": {
+        "boards": [
+            "zako"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "zako-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "zako paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "zako-payloads": {
         "boards": [
             "zako"
@@ -43018,6 +43593,29 @@
         "trybot_list": true,
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
+    },
+    "zako_freon-paladin": {
+        "boards": [
+            "zako_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "zako_freon-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "zako_freon paladin",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "zako_freon-payloads": {
         "boards": [
