@@ -150,6 +150,7 @@ cr.define('options.autofillOptions', function() {
       }
 
       this.addEventListener('commitedit', this.onEditCommitted_);
+      this.closeButtonFocusAllowed = true;
     },
 
     /**
