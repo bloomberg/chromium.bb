@@ -307,6 +307,10 @@ TEST_P(GetDetailsTest, GetDownloadDetails) {
   if (details_loaded_)
     RunAllTasks();
 
+  // In http://crbug.com/433928, open after removal during load caused a crash.
+  if (item_action_ == REMOVED)
+    test_item_->NotifyObserversDownloadOpened();
+
   MockDownloadDetailsGetter details_getter;
   if (metadata_file_present_ && item_action_ != REMOVED) {
     // The file is present, so expect that the callback is invoked with the

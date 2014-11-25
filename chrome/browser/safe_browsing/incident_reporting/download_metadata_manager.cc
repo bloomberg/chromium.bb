@@ -587,17 +587,19 @@ void DownloadMetadataManager::ManagerContext::OnMetadataReady(
     if (iter != pending_items_.end()) {
       const ItemData& item_data = iter->second;
       download = item_data.item;  // non-null if not destroyed.
-      if (item_data.removed)
+      if (item_data.removed) {
         RemoveMetadata();
-      else if (!item_data.last_opened_time.is_null())
+        download = nullptr;
+      } else if (!item_data.last_opened_time.is_null()) {
         UpdateLastOpenedTime(item_data.last_opened_time);
+      }
     }
   }
 
   // Stop observing all items.
   ClearPendingItems();
 
-  // If the download was known, observe it from here on out.
+  // If the download was known and not removed, observe it from here on out.
   if (download) {
     download->AddObserver(this);
     item_ = download;
