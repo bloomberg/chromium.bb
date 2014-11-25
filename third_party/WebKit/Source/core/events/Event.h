@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
+#include "core/events/EventInitDictionary.h"
 #include "core/events/EventPath.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -188,6 +189,7 @@ protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);
     Event(const AtomicString& type, const EventInit&);
+    Event(const AtomicString& type, const EventInitDictionary&);
 
     virtual void receivedTarget();
     bool dispatched() const { return m_target; }

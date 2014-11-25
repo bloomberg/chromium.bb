@@ -52,6 +52,7 @@ def dictionary_context(dictionary, interfaces_info):
                     for member in sorted(dictionary.members,
                                          key=operator.attrgetter('name'))],
         'v8_class': v8_types.v8_type(cpp_class),
+        'v8_original_class': v8_types.v8_type(dictionary.name),
     }
     if dictionary.parent:
         IdlType(dictionary.parent).add_includes_for_type()
