@@ -137,11 +137,12 @@ class GPU_EXPORT CommandBufferHelper {
 
   template <typename T>
   void ForceNullCheck(T* data) {
-#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+#if defined(COMPILER_MSVC) && defined(ARCH_CPU_64_BITS) && !defined(__clang__)
     // 64-bit MSVC's alias analysis was determining that the command buffer
     // entry couldn't be NULL, so it optimized out the NULL check.
     // Dereferencing the same datatype through a volatile pointer seems to
     // prevent that from happening. http://crbug.com/361936
+    // TODO(jbauman): Remove once we're on VC2015, http://crbug.com/412902
     if (data)
       static_cast<volatile T*>(data)->header;
 #endif
