@@ -273,13 +273,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
   // Step 4: Post lockscreen confirmation.
-  strings->SetString(
-      "setupPostLockHeaderTitle",
-      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TITLE));
-  strings->SetString(
-      "setupPostLockHeaderText",
-      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TEXT));
-  strings->SetString("setupPostLockTryItOutButtonLabel",
+  strings->SetString("setupPostLockDismissButtonLabel",
                      l10n_util::GetStringUTF16(
                          IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL));
 

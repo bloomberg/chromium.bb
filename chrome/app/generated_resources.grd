@@ -14983,14 +14983,8 @@ Do you accept?
         Smart Lock settings
       </message>
       <!-- Step 4: Post Lock Screen -->
-      <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the post lockscreen step, giving closure to the setup flow.">
-        Chrome Smart Lock is now on.
-      </message>
-      <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TEXT" desc="The text to show as the header body of the Easy Unlock dialog during the post lockscreen step, giving closure to the setup flow. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-        When your phone is unlocked and nearby, you can just click your picture to enter. The lock icon shows Smart Lock status; mouse over it for more details. To change or turn off this feature, visit your &lt;a&gt;<ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>'s settings.&lt;/a&gt;
-      </message>
       <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog during the post lockscreen step. Clicking this button dismisses the dialog.">
-        Got it, thanks!
+        Done
       </message>
       <!-- Error strings for the Easy Unlock setup dialog -->
       <message name="IDS_EASY_UNLOCK_LEARN_MORE_LINK_TITLE" desc="Text to use for links that point to more information about Easy Unlock in the easy unlock setup dialog.">
