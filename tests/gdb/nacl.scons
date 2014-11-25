@@ -46,6 +46,11 @@ env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 if env.Bit('bitcode'):
   env.Append(LINKFLAGS=['-O0'])
   env.Append(TRANSLATEFLAGS=['-O0'])
+  # TODO(jfb) ARM bots test the local GDB, which isn't as recent as
+  #           nacl-gdb. The move to LLVM 3.5 broke line info reading on some of
+  #           the ARM bots, and using DWARF 3 "fixes" this issue.
+  if env.Bit('build_arm'):
+    env.Append(CCFLAGS=['-gdwarf-3'])
 
 sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-v'])
 if env.GetEmulator():
