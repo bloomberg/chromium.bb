@@ -12,7 +12,6 @@
 #include "gin/modules/console.h"
 #include "gin/modules/module_runner_delegate.h"
 #include "gin/public/isolate_holder.h"
-#include "gin/test/file_runner.h"
 #include "gin/try_catch.h"
 
 namespace gin {
