@@ -1385,10 +1385,6 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/385014 accessibility/clickable.html [ Failure ]
 crbug.com/385014 accessibility/nochildren-elements.html [ Failure ]
 
-crbug.com/169564 accessibility/canvas-fallback-content.html [ Failure ]
-crbug.com/169564 accessibility/canvas-fallback-content-labels.html [ Failure ]
-crbug.com/169564 accessibility/canvas-accessibilitynodeobject.html [ Failure ]
-
 crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html  [ Failure ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
