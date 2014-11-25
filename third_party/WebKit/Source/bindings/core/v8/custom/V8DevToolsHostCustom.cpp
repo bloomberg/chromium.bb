@@ -165,25 +165,5 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
     devtoolsHost->showContextMenu(document->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }
 
-static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& info, int boundaryValue)
-{
-    if (info.Length() < 1 || !info[0]->IsInt32())
-        return;
-
-    int sample = info[0]->ToInt32(info.GetIsolate())->Value();
-    if (sample < boundaryValue)
-        blink::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
-}
-
-void V8DevToolsHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    histogramEnumeration("DevTools.ActionTaken", info, 100);
-}
-
-void V8DevToolsHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    histogramEnumeration("DevTools.PanelShown", info, 20);
-}
-
 } // namespace blink
 
