@@ -329,6 +329,8 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
                 return MenuItemRadioRole;
             return RadioButtonRole;
         }
+        if (type == InputTypeNames::file)
+            return ButtonRole;
         if (type == InputTypeNames::number)
             return SpinButtonRole;
         if (input.isTextButton())
@@ -339,9 +341,6 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
             return TimeRole;
         return TextFieldRole;
     }
-
-    if (isFileUploadButton())
-        return ButtonRole;
 
     if (cssBox && cssBox->isMenuList())
         return PopUpButtonRole;
@@ -491,11 +490,6 @@ bool AXRenderObject::isAttachment() const
     bool isRenderPart = renderer->isRenderPart();
     ASSERT(!isRenderPart || (renderer->isReplaced() && !isImage()));
     return isRenderPart;
-}
-
-bool AXRenderObject::isFileUploadButton() const
-{
-    return m_renderer && isHTMLInputElement(m_renderer->node()) && toHTMLInputElement(*m_renderer->node()).type() == InputTypeNames::file;
 }
 
 static bool isLinkable(const AXObject& object)

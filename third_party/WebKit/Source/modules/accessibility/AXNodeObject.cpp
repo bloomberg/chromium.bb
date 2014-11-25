@@ -1531,14 +1531,12 @@ Element* AXNodeObject::actionElement() const
 
     if (isHTMLInputElement(*node)) {
         HTMLInputElement& input = toHTMLInputElement(*node);
-        if (!input.isDisabledFormControl() && (isCheckboxOrRadio() || input.isTextButton()))
+        if (!input.isDisabledFormControl() && (isCheckboxOrRadio() || input.isTextButton()
+            || input.type() == InputTypeNames::file))
             return &input;
     } else if (isHTMLButtonElement(*node)) {
         return toElement(node);
     }
-
-    if (isFileUploadButton())
-        return toElement(node);
 
     if (AXObject::isARIAInput(ariaRoleAttribute()))
         return toElement(node);

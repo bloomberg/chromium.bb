@@ -337,7 +337,6 @@ public:
     virtual bool isDataTable() const { return false; }
     virtual bool isEmbeddedObject() const { return false; }
     virtual bool isFieldset() const { return false; }
-    virtual bool isFileUploadButton() const { return false; }
     virtual bool isHeading() const { return false; }
     virtual bool isImage() const { return false; }
     virtual bool isImageMapLink() const { return false; }
