@@ -2080,13 +2080,15 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     paintInfo.renderLayer->renderer()->assertSubtreeIsLaidOut();
 #endif
 
+    float deviceScaleFactor = blink::deviceScaleFactor(paintInfo.renderLayer->renderer()->frame());
+    context->setDeviceScaleFactor(deviceScaleFactor);
+
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
         // FIXME: GraphicsLayers need a way to split for RenderRegions.
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-
 #ifndef NDEBUG
             context->fillRect(dirtyRect, Color(0xFF, 0, 0));
 #endif

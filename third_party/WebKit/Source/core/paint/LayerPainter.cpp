@@ -182,9 +182,6 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_renderLayer.hasVisibleContent() && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    float deviceScaleFactor = blink::deviceScaleFactor(m_renderLayer.renderer()->frame());
-    context->setDeviceScaleFactor(deviceScaleFactor);
-
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.renderer()->isRenderView() && !m_renderLayer.renderer()->isDocumentElement())
         return;
 
