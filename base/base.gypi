@@ -244,6 +244,7 @@
           'hash.cc',
           'hash.h',
           'id_map.h',
+          'ios/block_types.h',
           'ios/device_util.h',
           'ios/device_util.mm',
           'ios/ios_util.h',
