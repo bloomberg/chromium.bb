@@ -50,17 +50,9 @@
 }
 
 #device-disabled-message {
-  margin-top: -3px;
+  margin: -3px 0 -5px;
   max-height: 400px;
   overflow: auto;
   text-overflow: ellipsis;
   white-space: pre-wrap;
-}
-
-#device-disabled-help-link-container {
-  margin: 17px 0 -5px;
-}
-
-#device-disabled-help-link {
-  color: rgb(85, 149, 243);
 }

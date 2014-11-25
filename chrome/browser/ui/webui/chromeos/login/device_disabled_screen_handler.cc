@@ -62,7 +62,6 @@ void DeviceDisabledScreenHandler::DeclareLocalizedValues(
                IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN);
   builder->Add("deviceDisabledExplanationWithoutDomain",
                IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN);
-  builder->Add("deviceDisabledHelpLink", IDS_DEVICE_DISABLED_HELP_LINK);
 }
 
 void DeviceDisabledScreenHandler::Initialize() {

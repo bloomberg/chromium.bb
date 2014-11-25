@@ -7,8 +7,6 @@
  */
 
 login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
-  /** @const */ var HELP_TOPIC_DEVICE_DISABLING = 4631259;
-
   return {
     EXTERNAL_API: [
       'setEnrollmentDomain',
@@ -23,11 +21,6 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     /** @override */
     decorate: function() {
       this.setEnrollmentDomain(null);
-      $('device-disabled-help-link').addEventListener(
-          'click',
-          function() {
-            chrome.send('launchHelpApp', [HELP_TOPIC_DEVICE_DISABLING]);
-          });
     },
 
     /**

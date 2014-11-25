@@ -5176,9 +5176,6 @@ Battery full
   <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is not known.">
     This device was locked by the owner.
   </message>
-  <message name="IDS_DEVICE_DISABLED_HELP_LINK" desc="Link to a help center article explaining how the owner can re-enable the device. Shown to the user when the device has been disabled by its owner.">
-    Unlocking help for owners
-  </message>
 
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">
