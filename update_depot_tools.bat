@@ -38,7 +38,12 @@ goto :EOF
 
 
 :SVN_UPDATE
-call svn up -q "%DEPOT_TOOLS_DIR%."
+FOR %%A IN (%*) DO (
+  IF "%%A" == "--force" (
+    call svn -q revert -R "%DEPOT_TOOLS_DIR%."
+  )
+)
+call svn -q up "%DEPOT_TOOLS_DIR%."
 goto :EOF
 
 
@@ -58,8 +63,8 @@ for /F %%x in ('git config --get remote.origin.url') DO (
 call git fetch -q origin > NUL
 call git rebase -q origin/master > NUL
 if errorlevel 1 echo Failed to update depot_tools.
-
 goto :EOF
+
 
 :GIT_SVN_UPDATE
 cd /d "%DEPOT_TOOLS_DIR%."
