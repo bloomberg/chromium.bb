@@ -1600,7 +1600,6 @@ def GetDefaultTryConfigs(bots=None):
       'android_chromium_gn_compile_rel': ['compile'],
       'android_clang_dbg_recipe': ['slave_steps'],
       'android_dbg_tests_recipe': ['slave_steps'],
-      'cros_x86': ['defaulttests'],
       'ios_dbg_simulator': [
           'compile',
           'base_unittests',
@@ -1617,9 +1616,13 @@ def GetDefaultTryConfigs(bots=None):
       #TODO(stip): Change the name of this builder to reflect that it's release.
       'linux_gtk': standard_tests,
       'linux_chromeos_asan': ['compile'],
+      'linux_chromium_asan_rel': ['defaulttests'],
       'linux_chromium_chromeos_clang_dbg': ['defaulttests'],
+      'linux_chromium_chromeos_compile_dbg_ng': ['defaulttests'],
       'linux_chromium_chromeos_rel': ['defaulttests'],
+      'linux_chromium_chromeos_rel_ng': ['defaulttests'],
       'linux_chromium_compile_dbg': ['defaulttests'],
+      'linux_chromium_compile_dbg_32_ng': ['compile'],
       'linux_chromium_gn_dbg': ['compile'],
       'linux_chromium_gn_rel': ['defaulttests'],
       'linux_chromium_rel': ['defaulttests'],
@@ -1628,6 +1631,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_gpu': ['defaulttests'],
       'linux_nacl_sdk_build': ['compile'],
       'mac_chromium_compile_dbg': ['defaulttests'],
+      'mac_chromium_compile_dbg_ng': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
       'mac_chromium_rel_ng': ['defaulttests'],
       'mac_gpu': ['defaulttests'],
@@ -1686,7 +1690,7 @@ def GetPreferredTryMasters(project, change):
 
   if all(re.search(r'\.(m|mm)$|(^|[\\\/_])mac[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
-        'mac_chromium_compile_dbg',
+        'mac_chromium_compile_dbg_ng',
         'mac_chromium_rel_ng',
     ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
@@ -1704,6 +1708,7 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
   builders = [
+      'android_aosp',
       'android_arm64_dbg_recipe',
       'android_chromium_gn_compile_rel',
       'android_chromium_gn_compile_dbg',
@@ -1712,12 +1717,15 @@ def GetPreferredTryMasters(project, change):
       'ios_dbg_simulator',
       'ios_rel_device',
       'ios_rel_device_ninja',
-      'linux_chromium_chromeos_rel',
+      'linux_chromium_asan_rel',
+      'linux_chromium_chromeos_compile_dbg_ng',
+      'linux_chromium_chromeos_rel_ng',
+      'linux_chromium_compile_dbg_32_ng',
       'linux_chromium_gn_dbg',
       'linux_chromium_gn_rel',
       'linux_chromium_rel_ng',
       'linux_gpu',
-      'mac_chromium_compile_dbg',
+      'mac_chromium_compile_dbg_ng',
       'mac_chromium_rel_ng',
       'mac_gpu',
       'win_chromium_compile_dbg',
@@ -1733,20 +1741,5 @@ def GetPreferredTryMasters(project, change):
     builders.extend([
         'linux_chromeos_asan',
     ])
-
-  # If there are gyp changes to base, build, or chromeos, run a full cros build
-  # in addition to the shorter linux_chromeos build. Changes to high level gyp
-  # files have a much higher chance of breaking the cros build, which is
-  # differnt from the linux_chromeos build that most chrome developers test
-  # with.
-  if any(re.search('^(base|build|chromeos).*\.gypi?$', f) for f in files):
-    builders.extend(['cros_x86'])
-
-  # The AOSP bot doesn't build the chrome/ layer, so ignore any changes to it
-  # unless they're .gyp(i) files as changes to those files can break the gyp
-  # step on that bot.
-  if (not all(re.search('^chrome', f) for f in files) or
-      any(re.search('\.gypi?$', f) for f in files)):
-    builders.extend(['android_aosp'])
 
   return GetDefaultTryConfigs(builders)
