@@ -4,12 +4,6 @@
 
 #include "content/test/content_test_suite.h"
 
-#if defined(OS_ANDROID)
-#include <android/native_window.h>
-#include <android/native_window_jni.h>
-#include <map>
-#endif
-
 #include "base/base_paths.h"
 #include "base/logging.h"
 #include "content/public/common/content_client.h"
@@ -36,15 +30,6 @@
 #include "ui/gl/gl_surface.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/memory/linked_ptr.h"
-#include "content/common/android/surface_texture_manager.h"
-#include "ui/gl/android/scoped_java_surface.h"
-#include "ui/gl/android/surface_texture.h"
-#endif
-
-namespace content {
 namespace {
 
 class TestInitializationListener : public testing::EmptyTestEventListener {
@@ -67,34 +52,9 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(TestInitializationListener);
 };
 
-#if defined(OS_ANDROID)
-class SurfaceTextureManagerImpl : public SurfaceTextureManager {
- public:
-  // Overridden from SurfaceTextureManager:
-  void RegisterSurfaceTexture(int surface_texture_id,
-                              int client_id,
-                              gfx::SurfaceTexture* surface_texture) override {
-    surfaces_[surface_texture_id] =
-        make_linked_ptr(new gfx::ScopedJavaSurface(surface_texture));
-  }
-  void UnregisterSurfaceTexture(int surface_texture_id,
-                                int client_id) override {
-    surfaces_.erase(surface_texture_id);
-  }
-  gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
-      int surface_texture_id) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    return ANativeWindow_fromSurface(
-        env, surfaces_[surface_texture_id]->j_surface().obj());
-  }
-
- private:
-  typedef std::map<int, linked_ptr<gfx::ScopedJavaSurface>> SurfaceMap;
-  SurfaceMap surfaces_;
-};
-#endif
-
 }  // namespace
+
+namespace content {
 
 ContentTestSuite::ContentTestSuite(int argc, char** argv)
     : ContentTestSuiteBase(argc, argv) {
@@ -134,9 +94,6 @@ void ContentTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
-#if defined(OS_ANDROID)
-  SurfaceTextureManager::InitInstance(new SurfaceTextureManagerImpl);
-#endif
 }
 
 }  // namespace content

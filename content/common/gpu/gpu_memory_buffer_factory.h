@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_H_
 
-#include <vector>
-
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -25,29 +23,16 @@ namespace content {
 
 class CONTENT_EXPORT GpuMemoryBufferFactory {
  public:
-  struct Configuration {
-    gfx::GpuMemoryBuffer::Format format;
-    gfx::GpuMemoryBuffer::Usage usage;
-  };
-
   GpuMemoryBufferFactory() {}
   virtual ~GpuMemoryBufferFactory() {}
 
-  // Gets system supported GPU memory buffer factory types. Preferred type at
-  // the front of vector.
-  static void GetSupportedTypes(std::vector<gfx::GpuMemoryBufferType>* types);
+  // Creates a new platform specific factory instance.
+  static scoped_ptr<GpuMemoryBufferFactory> Create();
 
-  // Creates a new factory instance for |type|.
-  static scoped_ptr<GpuMemoryBufferFactory> Create(
-      gfx::GpuMemoryBufferType type);
-
-  // Gets supported format/usage configurations.
-  virtual void GetSupportedGpuMemoryBufferConfigurations(
-      std::vector<Configuration>* configurations) = 0;
-
-  // Creates a new GPU memory buffer instance. A valid handle is returned on
-  // success.
+  // Creates a GPU memory buffer instance of |type|. A valid handle is
+  // returned on success.
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferType type,
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
@@ -55,7 +40,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       int client_id) = 0;
 
   // Destroys GPU memory buffer identified by |id|.
-  virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+  virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                      gfx::GpuMemoryBufferId id,
                                       int client_id) = 0;
 
   // Type-checking downcast routine.

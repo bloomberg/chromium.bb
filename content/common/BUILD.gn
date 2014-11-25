@@ -178,6 +178,10 @@ source_set("common") {
   }
 
   if (use_ozone) {
+    sources -= [
+      "gpu/client/gpu_memory_buffer_impl_linux.cc",
+      "gpu/gpu_memory_buffer_factory_linux.cc",
+    ]
     deps += [
       "//ui/ozone:ozone",
       "//ui/ozone:ozone_base",
@@ -187,10 +191,10 @@ source_set("common") {
     sources -= [
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
+      "gpu/client/gpu_memory_buffer_impl_ozone.cc",
       "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc",
       "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h",
-      "gpu/gpu_memory_buffer_factory_ozone_native_buffer.cc",
-      "gpu/gpu_memory_buffer_factory_ozone_native_buffer.h",
+      "gpu/gpu_memory_buffer_factory_ozone.cc",
     ]
   }
 

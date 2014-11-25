@@ -20,18 +20,15 @@
 #include "base/timer/timer.h"
 #include "content/common/gpu/devtools_gpu_agent.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(OS_POSIX)
@@ -820,36 +817,6 @@ uint64 GpuChannel::GetMemoryUsage() {
     size += it.GetCurrentValue()->GetMemoryUsage();
   }
   return size;
-}
-
-scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    uint32 internalformat) {
-  switch (handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      scoped_refptr<gfx::GLImageSharedMemory> image(
-          new gfx::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle, format))
-        return scoped_refptr<gfx::GLImage>();
-
-      return image;
-    }
-    default: {
-      GpuChannelManager* manager = gpu_channel_manager();
-      if (!manager->gpu_memory_buffer_factory())
-        return scoped_refptr<gfx::GLImage>();
-
-      return manager->gpu_memory_buffer_factory()
-          ->AsImageFactory()
-          ->CreateImageForGpuMemoryBuffer(handle,
-                                          size,
-                                          format,
-                                          internalformat,
-                                          client_id_);
-    }
-  }
 }
 
 }  // namespace content

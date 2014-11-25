@@ -9,13 +9,6 @@
 #include "ui/gl/gl_image_surface_texture.h"
 
 namespace content {
-namespace {
-
-const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-  { gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP }
-};
-
-}  // namespace
 
 GpuMemoryBufferFactorySurfaceTexture::GpuMemoryBufferFactorySurfaceTexture() {
 }
@@ -23,32 +16,11 @@ GpuMemoryBufferFactorySurfaceTexture::GpuMemoryBufferFactorySurfaceTexture() {
 GpuMemoryBufferFactorySurfaceTexture::~GpuMemoryBufferFactorySurfaceTexture() {
 }
 
-// static
-bool GpuMemoryBufferFactorySurfaceTexture::
-    IsGpuMemoryBufferConfigurationSupported(gfx::GpuMemoryBuffer::Format format,
-                                            gfx::GpuMemoryBuffer::Usage usage) {
-  for (auto& configuration : kSupportedConfigurations) {
-    if (configuration.format == format && configuration.usage == usage)
-      return true;
-  }
-
-  return false;
-}
-
-void GpuMemoryBufferFactorySurfaceTexture::
-    GetSupportedGpuMemoryBufferConfigurations(
-        std::vector<Configuration>* configurations) {
-  configurations->assign(
-      kSupportedConfigurations,
-      kSupportedConfigurations + arraysize(kSupportedConfigurations));
-}
-
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    unsigned internalformat,
     int client_id) {
   // Note: this needs to be 0 as the surface texture implemenation will take
   // ownership of the texture and call glDeleteTextures when the GPU service
@@ -84,19 +56,13 @@ void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
   SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id, client_id);
 }
 
-gpu::ImageFactory* GpuMemoryBufferFactorySurfaceTexture::AsImageFactory() {
-  return this;
-}
-
 scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
     unsigned internalformat,
     int client_id) {
-  DCHECK_EQ(handle.type, gfx::SURFACE_TEXTURE_BUFFER);
-  SurfaceTextureMapKey key(handle.id, client_id);
+  SurfaceTextureMapKey key(id, client_id);
   SurfaceTextureMap::iterator it = surface_textures_.find(key);
   if (it == surface_textures_.end())
     return scoped_refptr<gfx::GLImage>();

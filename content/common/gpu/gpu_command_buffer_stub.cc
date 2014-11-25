@@ -15,6 +15,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -28,6 +29,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -959,8 +961,12 @@ void GpuCommandBufferStub::OnCreateImage(int32 id,
     return;
   }
 
-  scoped_refptr<gfx::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
-      handle, size, format, internalformat);
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  scoped_refptr<gfx::GLImage> image =
+      manager->gpu_memory_buffer_factory()
+          ->AsImageFactory()
+          ->CreateImageForGpuMemoryBuffer(
+              handle, size, format, internalformat, channel()->client_id());
   if (!image.get())
     return;
 

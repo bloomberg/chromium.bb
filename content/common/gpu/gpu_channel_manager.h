@@ -124,9 +124,14 @@ class GpuChannelManager : public IPC::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
   void OnLoadedShader(std::string shader);
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
-  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id, int client_id);
-  void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                              gfx::GpuMemoryBufferId id,
+                              int client_id);
+  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferType type,
+                                  gfx::GpuMemoryBufferId id,
+                                  int client_id);
+  void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 int32 sync_point);
   void OnRelinquishResources();

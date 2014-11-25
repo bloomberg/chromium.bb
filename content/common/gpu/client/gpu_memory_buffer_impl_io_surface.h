@@ -15,11 +15,30 @@ namespace content {
 // Implementation of GPU memory buffer based on IO surfaces.
 class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  public:
+  static void Create(gfx::GpuMemoryBufferId id,
+                     const gfx::Size& size,
+                     Format format,
+                     int client_id,
+                     const CreationCallback& callback);
+
+  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
+                                      const gfx::Size& size,
+                                      Format format,
+                                      int child_client_id,
+                                      const AllocationCallback& callback);
+
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       Format format,
       const DestructionCallback& callback);
+
+  static void DeletedByChildProcess(gfx::GpuMemoryBufferId id,
+                                    int child_client_id,
+                                    uint32_t sync_point);
+
+  static bool IsFormatSupported(Format format);
+  static bool IsUsageSupported(Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override;

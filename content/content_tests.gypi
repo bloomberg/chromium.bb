@@ -705,7 +705,6 @@
         'common/dwrite_font_platform_win_unittest.cc',
         'common/fileapi/file_system_util_unittest.cc',
         'common/gpu/client/gpu_memory_buffer_impl_unittest.cc',
-        'common/gpu/gpu_memory_buffer_factory_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
         'common/host_discardable_shared_memory_manager_unittest.cc',
         'common/host_shared_bitmap_manager_unittest.cc',
