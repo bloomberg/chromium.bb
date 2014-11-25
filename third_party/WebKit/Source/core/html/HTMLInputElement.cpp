@@ -1027,7 +1027,7 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
     m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
 
     if (valueChanged && eventBehavior == DispatchNoEvent)
-        setTextAsOfLastFormControlChangeEvent(sanitizedValue);
+        setTextAsOfLastFormControlChangeEvent(sanitizedValue.isNull() ? defaultValue() : sanitizedValue);
 
     if (!valueChanged)
         return;

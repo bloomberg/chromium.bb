@@ -189,7 +189,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
     }
 
     if (!input->focused())
-        input->setTextAsOfLastFormControlChangeEvent(sanitizedValue);
+        input->setTextAsOfLastFormControlChangeEvent(sanitizedValue.isNull() ? input->defaultValue() : sanitizedValue);
 }
 
 void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event)
