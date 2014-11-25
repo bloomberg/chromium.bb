@@ -174,6 +174,13 @@ function FileManager() {
    */
   this.bannersController_ = null;
 
+  /**
+   * Gear menu controller.
+   * @type {GearMenuController}
+   * @private
+   */
+  this.gearMenuController_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -197,18 +204,6 @@ function FileManager() {
    * @private
    */
   this.document_ = null;
-
-  /**
-   * The menu item to toggle "Do not use mobile data for sync".
-   * @type {HTMLMenuItemElement}
-   */
-  this.syncButton = null;
-
-  /**
-   * The menu item to toggle "Show Google Docs files".
-   * @type {HTMLMenuItemElement}
-   */
-  this.hostedButton = null;
 
   /**
    * The menu item for doing an action.
@@ -259,28 +254,6 @@ function FileManager() {
    * @private
    */
   this.pressingTab_ = false;
-
-  /**
-   * True while a user is pressing <Ctrl>.
-   *
-   * TODO(fukino): This key is used only for controlling gear menu, so it
-   * should be moved to GearMenu class. crbug.com/366032.
-   *
-   * @type {boolean}
-   * @private
-   */
-  this.pressingCtrl_ = false;
-
-  /**
-   * True if shown gear menu is in secret mode.
-   *
-   * TODO(fukino): The state of gear menu should be moved to GearMenu class.
-   * crbug.com/366032.
-   *
-   * @type {boolean}
-   * @private
-   */
-  this.isSecretGearMenuShown_ = false;
 
   /**
    * The last clicked item in the file list.
@@ -575,18 +548,24 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       listBeingUpdated = null;
     });
 
-    this.initGearMenu_();
     this.initCommands_();
+
     assert(this.directoryModel_);
     assert(this.spinnerController_);
     assert(this.commandHandler);
     assert(this.selectionHandler_);
+
     this.scanController_ = new ScanController(
         this.directoryModel_,
         this.ui_.listContainer,
         this.spinnerController_,
         this.commandHandler,
         this.selectionHandler_);
+   this.gearMenuController_ = new GearMenuController(
+        this.ui_.gearButton,
+        this.ui_.gearMenu,
+        this.directoryModel_,
+        this.commandHandler);
 
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(
         this.onPreferencesChanged_.bind(this));
@@ -658,42 +637,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     item.state = ProgressItemState.ERROR;
     this.backgroundPage_.background.progressCenter.updateItem(item);
     this.sourceNotFoundErrorCount_++;
-  };
-
-  /**
-   * One-time initialization for the gear menu.
-   * @private
-   */
-  FileManager.prototype.initGearMenu_ = function() {
-    this.ui_.gearButton.addEventListener(
-        'menushow', this.onShowGearMenu_.bind(this));
-    this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
-        'menuitem, hr';
-
-    this.syncButton.checkable = true;
-    this.hostedButton.checkable = true;
-  };
-
-  FileManager.prototype.onShowGearMenu_ = function() {
-    this.refreshRemainingSpace_(false);  /* Without loading caption. */
-
-    // If the menu is opened while CTRL key pressed, secret menu itemscan be
-    // shown.
-    this.isSecretGearMenuShown_ = this.pressingCtrl_;
-
-    // Update view of drive-related settings.
-    this.commandHandler.updateAvailability();
-    this.document_.getElementById('drive-separator').hidden =
-        !this.shouldShowDriveSettings();
-
-    // Force to update the gear menu position.
-    // TODO(hirono): Remove the workaround for the crbug.com/374093 after fixing
-    // it.
-    var gearMenu = this.document_.querySelector('#gear-menu');
-    gearMenu.style.left = '';
-    gearMenu.style.right = '';
-    gearMenu.style.top = '';
-    gearMenu.style.bottom = '';
   };
 
   /**
@@ -978,13 +921,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.dialogContainer_ = /** @type {!HTMLDivElement} */
         (this.dialogDom_.querySelector('.dialog-container'));
-
-    this.syncButton = /** @type {!HTMLMenuItemElement} */
-        (queryRequiredElement(this.dialogDom_,
-                              '#gear-menu-drive-sync-settings'));
-    this.hostedButton = /** @type {!HTMLMenuItemElement} */
-        (queryRequiredElement(this.dialogDom_,
-                             '#gear-menu-drive-hosted-settings'));
 
     this.ui_.taskMenuButton.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
@@ -1664,21 +1600,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var use12hourClock = !prefs.use24hourClock;
       self.ui_.listContainer.table.setDateTimeFormat(use12hourClock);
       self.refreshCurrentDirectoryMetadata_();
-
-      if (prefs.cellularDisabled)
-        self.syncButton.setAttribute('checked', '');
-      else
-        self.syncButton.removeAttribute('checked');
-
-      if (self.hostedButton.hasAttribute('checked') ===
-          prefs.hostedFilesDisabled && self.isOnDrive()) {
-        self.directoryModel_.rescan(false);
-      }
-
-      if (!prefs.hostedFilesDisabled)
-        self.hostedButton.setAttribute('checked', '');
-      else
-        self.hostedButton.removeAttribute('checked');
     });
   };
 
@@ -1912,67 +1833,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Update the gear menu.
-   * @private
-   */
-  FileManager.prototype.updateGearMenu_ = function() {
-    this.refreshRemainingSpace_(true);  // Show loading caption.
-  };
-
-  /**
-   * Refreshes space info of the current volume.
-   * @param {boolean} showLoadingCaption Whether show loading caption or not.
-   * @private
-   */
-  FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
-    if (!this.currentVolumeInfo_)
-      return;
-
-    var volumeSpaceInfo = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#volume-space-info'));
-    var volumeSpaceInfoSeparator = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#volume-space-info-separator'));
-    var volumeSpaceInfoLabel = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#volume-space-info-label'));
-    var volumeSpaceInnerBar = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#volume-space-info-bar'));
-    var volumeSpaceOuterBar = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#volume-space-info-bar').parentNode);
-
-    var currentVolumeInfo = this.currentVolumeInfo_;
-
-    // TODO(mtomasz): Add support for remaining space indication for provided
-    // file systems.
-    if (currentVolumeInfo.volumeType ==
-        VolumeManagerCommon.VolumeType.PROVIDED) {
-      volumeSpaceInfo.hidden = true;
-      volumeSpaceInfoSeparator.hidden = true;
-      return;
-    }
-
-    volumeSpaceInfo.hidden = false;
-    volumeSpaceInfoSeparator.hidden = false;
-    volumeSpaceInnerBar.setAttribute('pending', '');
-
-    if (showLoadingCaption) {
-      volumeSpaceInfoLabel.innerText = str('WAITING_FOR_SPACE_INFO');
-      volumeSpaceInnerBar.style.width = '100%';
-    }
-
-    chrome.fileManagerPrivate.getSizeStats(
-        currentVolumeInfo.volumeId, function(result) {
-          var volumeInfo = this.volumeManager_.getVolumeInfo(
-              this.directoryModel_.getCurrentDirEntry());
-          if (currentVolumeInfo !== this.currentVolumeInfo_)
-            return;
-          updateSpaceInfo(result,
-                          volumeSpaceInnerBar,
-                          volumeSpaceInfoLabel,
-                          volumeSpaceOuterBar);
-        }.bind(this));
-  };
-
-  /**
    * Update the UI when the current directory changes.
    *
    * @param {Event} event The directory-changed event.
@@ -1987,7 +1847,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // If volume has changed, then update the gear menu.
     if (oldCurrentVolumeInfo !== this.currentVolumeInfo_) {
-      this.updateGearMenu_();
       // If the volume has changed, and it was previously set, then do not
       // close on unmount anymore.
       if (oldCurrentVolumeInfo)
@@ -2097,8 +1956,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onKeyDown_ = function(event) {
     if (event.keyCode === 9)  // Tab
       this.pressingTab_ = true;
-    if (event.keyCode === 17)  // Ctrl
-      this.pressingCtrl_ = true;
 
     if (event.srcElement === this.ui_.listContainer.renameInput) {
       // Ignore keydown handler in the rename input box.
@@ -2130,8 +1987,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onKeyUp_ = function(event) {
     if (event.keyCode === 9)  // Tab
       this.pressingTab_ = false;
-    if (event.keyCode == 17)  // Ctrl
-      this.pressingCtrl_ = false;
   };
 
   /**

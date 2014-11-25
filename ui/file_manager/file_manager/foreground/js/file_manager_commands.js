@@ -564,7 +564,8 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     // If checked, the sync is disabled.
-    var nowCellularDisabled = fileManager.syncButton.hasAttribute('checked');
+    var nowCellularDisabled =
+        fileManager.ui.gearMenu.syncButton.hasAttribute('checked');
     var changeInfo = {cellularDisabled: !nowCellularDisabled};
     chrome.fileManagerPrivate.setPreferences(changeInfo);
   },
@@ -592,7 +593,7 @@ CommandHandler.COMMANDS_['drive-hosted-settings'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     // If checked, showing drive hosted files is enabled.
     var nowHostedFilesEnabled =
-        fileManager.hostedButton.hasAttribute('checked');
+        fileManager.ui.gearMenu.hostedButton.hasAttribute('checked');
     var nowHostedFilesDisabled = !nowHostedFilesEnabled;
     /*
     var changeInfo = {hostedFilesDisabled: !nowHostedFilesDisabled};

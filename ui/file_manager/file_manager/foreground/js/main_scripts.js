@@ -93,6 +93,7 @@
 //<include src="file_transfer_controller.js">
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
+//<include src="gear_menu_controller.js">
 //<include src="launch_param.js">
 //<include src="metadata/metadata_cache.js">
 //<include src="naming_controller.js">
@@ -113,6 +114,7 @@
 //<include src="ui/file_grid.js">
 //<include src="ui/file_manager_ui.js">
 //<include src="ui/file_table.js">
+//<include src="ui/gear_menu.js">
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">
 //<include src="ui/multi_profile_share_dialog.js">

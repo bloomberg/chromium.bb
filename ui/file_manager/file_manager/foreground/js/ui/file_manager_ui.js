@@ -123,6 +123,7 @@ function FileManagerUI(element, launchParam) {
   /**
    * Search box.
    * @type {!SearchBox}
+   * @const
    */
   this.searchBox = new SearchBox(
       this.element_.querySelector('#search-box'),
@@ -132,15 +133,23 @@ function FileManagerUI(element, launchParam) {
   /**
    * Toggle-view button.
    * @type {!Element}
+   * @const
    */
   this.toggleViewButton = queryRequiredElement(this.element_, '#view-button');
 
   /**
    * The button to open gear menu.
    * @type {!cr.ui.MenuButton}
+   * @const
    */
   this.gearButton = FileManagerUI.queryDecoratedElement_(
       '#gear-button', cr.ui.MenuButton);
+
+  /**
+   * @type {!GearMenu}
+   * @const
+   */
+  this.gearMenu = new GearMenu(this.gearButton.menu);
 
   /**
    * Directory tree.

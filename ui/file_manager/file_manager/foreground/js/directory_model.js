@@ -84,6 +84,17 @@ DirectoryModel.prototype.getFileListSelection = function() {
 };
 
 /**
+ * Obtains current volume information.
+ * @return {VolumeInfo}
+ */
+DirectoryModel.prototype.getCurrentVolumeInfo = function() {
+  var entry = this.getCurrentDirEntry();
+  if (!entry)
+    return null;
+  return this.volumeManager_.getVolumeInfo(entry);
+};
+
+/**
  * @return {?VolumeManagerCommon.RootType} Root type of current root, or null if
  *     not found.
  */
@@ -899,10 +910,15 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           // For tests that open the dialog to empty directories, everything
           // is loaded at this point.
           util.testSendMessage('directory-change-complete');
-
+          var previousVolumeInfo =
+              previousDirEntry ?
+              this.volumeManager_.getVolumeInfo(previousDirEntry) : null;
+          // VolumeInfo for dirEntry.
+          var currentVolumeInfo = this.getCurrentVolumeInfo();
           var event = new Event('directory-changed');
           event.previousDirEntry = previousDirEntry;
           event.newDirEntry = dirEntry;
+          event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
           this.dispatchEvent(event);
         }.bind(this));
   }.bind(this, this.changeDirectorySequence_));

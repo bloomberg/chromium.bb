@@ -53,6 +53,22 @@ EntriesChangedEvent.prototype.kind;
 /** @type {Array.<!Entry>} */
 EntriesChangedEvent.prototype.entries;
 
+/**
+ * @constructor
+ * @extends {Event}
+ * @struct
+ * @suppress {checkStructDictInheritance}
+ */
+var DirectoryChangeEvent = function() {};
+
+/** @type {DirectoryEntry} */
+DirectoryChangeEvent.prototype.previousDirEntry;
+
+/** @type {DirectoryEntry|Object} */
+DirectoryChangeEvent.prototype.newDirEntry;
+
+/** @type {boolean} */
+DirectoryChangeEvent.prototype.volumeChanged;
 
 /**
  * @param {string} url
