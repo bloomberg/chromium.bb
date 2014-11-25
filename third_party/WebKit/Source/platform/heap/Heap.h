@@ -698,8 +698,6 @@ public:
 #endif
     virtual size_t objectPayloadSizeForTesting() = 0;
 
-    virtual void updateRemainingAllocationSize() = 0;
-
     virtual void prepareHeapForTermination() = 0;
 
     virtual int normalPageCount() = 0;
@@ -765,8 +763,6 @@ public:
 #endif
     virtual size_t objectPayloadSizeForTesting() override;
 
-    virtual void updateRemainingAllocationSize() override;
-
     ThreadState* threadState() { return m_threadState; }
 
     void addToFreeList(Address address, size_t size)
@@ -807,6 +803,7 @@ private:
         m_currentAllocationPoint = point;
         m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
     }
+    void updateRemainingAllocationSize();
     void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
