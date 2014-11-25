@@ -53,6 +53,9 @@ bear-320x240-av_enc-v.webm - bear-320x240.webm with video track encrypted using 
 bear-320x240-av_enc-a.webm - bear-320x240.webm with audio track encrypted using key ID [1] and key [2].
 bear-320x240-v_enc-v.webm - bear-320x240-video-only.webm encrypted using key ID [1] and key [2].
 bear-320x240-v-vp9_enc-v.webm - bear-vp9.webm VP9 video only encrypted using key ID [1] and key [2].
+bear-320x240-opus-a_enc-a.webm - bear-opus.webm encrypted using key ID [1] and key[2].
+bear-320x240-opus-av_enc-av.webm - bear-vp9-opus.webm with audio & video encrypted using key ID [1] and key[2].
+bear-320x240-opus-av_enc-v.webm - bear-vp9-opus.webm with video track encrypted using key ID [1] and key[2].
 bear-640x360-a_frag-cenc.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
 bear-640x360-a_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-640x360-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
