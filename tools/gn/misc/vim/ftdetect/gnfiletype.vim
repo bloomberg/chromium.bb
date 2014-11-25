@@ -22,6 +22,6 @@ function! s:gnfiletype_post()
   let &g:fileencodings = s:current_fileencodings
 endfunction
 
-au BufNewFile *.gn setlocal filetype=gn fileencoding=utf-8 fileformat=unix
-au BufRead *.gn call s:gnfiletype_pre()
-au BufReadPost *.gn call s:gnfiletype_post()
+au BufNewFile *.gn,*.gni setlocal filetype=gn fileencoding=utf-8 fileformat=unix
+au BufRead *.gn,*.gni call s:gnfiletype_pre()
+au BufReadPost *.gn,*.gni call s:gnfiletype_post()
