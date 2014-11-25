@@ -6,6 +6,8 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/html/HTMLCanvasElement.h"
+#include "core/paint/ClipRecorder.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -21,12 +23,11 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect paintRect = m_renderHTMLCanvas.replacedContentRect();
     paintRect.moveBy(paintOffset);
 
+    PaintInfo localPaintInfo(paintInfo);
+    OwnPtr<ClipRecorder> clipRecorder;
     bool clip = !contentRect.contains(paintRect);
-    if (clip) {
-        // Not allowed to overflow the content box.
-        paintInfo.context->save();
-        paintInfo.context->clip(pixelSnappedIntRect(contentRect));
-    }
+    if (clip)
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderHTMLCanvas, paintInfo, contentRect));
 
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
     // See bug for more details: crbug.com/353716.
@@ -39,13 +40,11 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
         interpolationQuality = InterpolationNone;
     }
 
+    DrawingRecorder recorder(context, &m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
     canvas->paint(context, paintRect);
     context->setImageInterpolationQuality(previousInterpolationQuality);
-
-    if (clip)
-        context->restore();
 }
 
 } // namespace blink

@@ -11,6 +11,7 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/DrawingRecorder.h"
+#include "core/paint/TransparencyDisplayItem.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -515,7 +516,7 @@ void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintO
 void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
     // Figure out if we need to push a transparency layer to render our mask.
-    bool pushTransparencyLayer = false;
+    OwnPtr<TransparencyRecorder> transparencyRecorder;
     bool compositedMask = m_renderBox.hasLayer() && m_renderBox.layer()->hasCompositedMask();
     bool flattenCompositingLayers = m_renderBox.view()->frameView() && m_renderBox.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
     CompositeOperator compositeOp = CompositeSourceOver;
@@ -523,7 +524,6 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     bool allMaskImagesLoaded = true;
 
     if (!compositedMask || flattenCompositingLayers) {
-        pushTransparencyLayer = true;
         StyleImage* maskBoxImage = m_renderBox.style()->maskBoxImage().image();
         const FillLayer& maskLayers = m_renderBox.style()->maskLayers();
 
@@ -534,7 +534,9 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
         paintInfo.context->setCompositeOperation(CompositeDestinationIn);
-        paintInfo.context->beginTransparencyLayer(1);
+
+        transparencyRecorder = adoptPtr(new TransparencyRecorder(paintInfo.context, &m_renderBox, DisplayItem::BeginTransparency, WebBlendModeNormal, 1));
+
         compositeOp = CompositeSourceOver;
     }
 
@@ -542,9 +544,6 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
         paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), compositeOp);
     }
-
-    if (pushTransparencyLayer)
-        paintInfo.context->endLayer();
 }
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

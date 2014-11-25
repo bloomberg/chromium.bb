@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/ViewDisplayList.h"
 
-#include "core/paint/ClipRecorder.h"
 #include "core/paint/DrawingRecorder.h"
+#include "core/paint/LayerClipRecorder.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -64,7 +64,7 @@ void drawClippedRect(GraphicsContext* context, RenderLayerModelObject* renderer,
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    ClipRecorder clipRecorder(renderer, context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    LayerClipRecorder layerClipRecorder(renderer, context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
     drawRect(context, renderer, phase, bound);
 }
 
@@ -362,7 +362,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
 
     ClipRect firstClipRect(IntRect(1, 1, 2, 2));
     {
-        ClipRecorder clipRecorder(firstRenderer, context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        LayerClipRecorder layerClipRecorder(firstRenderer, context, DisplayItem::ClipLayerForeground, firstClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
         drawRect(context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
@@ -385,7 +385,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
     drawRect(context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     ClipRect secondClipRect(IntRect(1, 1, 2, 2));
     {
-        ClipRecorder clipRecorder(secondRenderer, context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
+        LayerClipRecorder layerClipRecorder(secondRenderer, context, DisplayItem::ClipLayerForeground, secondClipRect, 0, LayoutPoint(), PaintLayerFlags());
         drawRect(context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     }
 

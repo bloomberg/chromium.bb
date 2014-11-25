@@ -1388,6 +1388,12 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/ve
 # Skip until V8's --harmony-scoping is shipped by default.
 crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ Skip ]
 
+crbug.com/435240 virtual/slimmingpaint/fast/images/favicon-as-image.html [ ImageOnlyFailure ]
+crbug.com/435240 virtual/slimmingpaint/fast/images/exif-orientation-image-document.html [ ImageOnlyFailure ]
+crbug.com/435246 virtual/slimmingpaint/fast/images/mask-box-image-crash.html [ ImageOnlyFailure ]
+crbug.com/435246 virtual/slimmingpaint/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
+crbug.com/436551 virtual/slimmingpaint/fast/images/icon-decoding.html [ ImageOnlyFailure ]
+
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/385014 accessibility/clickable.html [ Failure ]
 crbug.com/385014 accessibility/nochildren-elements.html [ Failure ]

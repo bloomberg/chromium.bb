@@ -148,6 +148,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case DisplayItem::EndClip: return "EndClip";
     case DisplayItem::BeginFilter: return "BeginFilter";
     case DisplayItem::EndFilter: return "EndFilter";
+    case DisplayItem::TransparencyClip: return "TransparencyClip";
     case DisplayItem::BeginTransparency: return "BeginTransparency";
     case DisplayItem::EndTransparency: return "EndTransparency";
     case ClipBoxChildBlockBackgrounds: return "ClipBoxChildBlockBackgrounds";

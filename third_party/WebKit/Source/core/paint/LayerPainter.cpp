@@ -8,6 +8,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
+#include "core/paint/LayerClipRecorder.h"
 #include "core/paint/TransformDisplayItem.h"
 #include "core/paint/TransparencyDisplayItem.h"
 #include "core/rendering/ClipPathOperation.h"
@@ -78,47 +79,6 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
 
     paintLayerContentsAndReflection(context, paintingInfo, paintFlags);
 }
-
-class TransparencyLayerHelper {
-public:
-    TransparencyLayerHelper(GraphicsContext* context, RenderLayer& renderLayer, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
-        : m_transparencyLayerInProgress(false)
-        , m_context(context)
-        , m_renderLayer(renderLayer)
-    {
-        // Blending operations must be performed only with the nearest ancestor stacking context.
-        // Note that there is no need to create a transparency layer if we're painting the root.
-        // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
-        bool shouldUseTransparencyLayerForBlendMode = !renderLayer.renderer()->isDocumentElement() && renderLayer.stackingNode()->isStackingContext() && renderLayer.hasNonIsolatedDescendantWithBlendMode();
-        if (!shouldUseTransparencyLayerForBlendMode && !renderLayer.paintsWithTransparency(paintBehavior))
-            return;
-
-        OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(
-            renderLayer.renderer(), DisplayItem::BeginTransparency, renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior),
-            renderLayer.renderer()->style()->blendMode(), renderLayer.renderer()->opacity()));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            renderLayer.renderer()->view()->viewDisplayList().add(beginTransparencyDisplayItem.release());
-        else
-            beginTransparencyDisplayItem->replay(context);
-
-        m_transparencyLayerInProgress = true;
-    }
-
-    ~TransparencyLayerHelper()
-    {
-        if (!m_transparencyLayerInProgress)
-            return;
-        OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderLayer.renderer(), DisplayItem::EndTransparency));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransparencyDisplayItem.release());
-        else
-            endTransparencyDisplayItem->replay(m_context);
-    }
-private:
-    bool m_transparencyLayerInProgress;
-    GraphicsContext* m_context;
-    const RenderLayer& m_renderLayer;
-};
 
 void LayerPainter::paintLayerContentsAndReflection(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
@@ -243,7 +203,21 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     // These helpers output clip and transparency layers using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
     // so they are nested properly.
     ClipPathHelper clipPathHelper(context, m_renderLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
-    TransparencyLayerHelper transparencyLayerHelper(context, m_renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+
+    OwnPtr<TransparencyRecorder> transparencyRecorder;
+    OwnPtr<LayerClipRecorder> clipRecorder;
+    // Blending operations must be performed only with the nearest ancestor stacking context.
+    // Note that there is no need to create a transparency layer if we're painting the root.
+    // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
+    bool shouldUseTransparencyLayerForBlendMode = !m_renderLayer.renderer()->isDocumentElement() && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
+    if (shouldUseTransparencyLayerForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::TransparencyClip,
+            m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
+            &paintingInfo, LayoutPoint(), paintFlags));
+
+        transparencyRecorder = adoptPtr(new TransparencyRecorder(context, m_renderLayer.renderer(), DisplayItem::BeginTransparency,
+            m_renderLayer.renderer()->style()->blendMode(), m_renderLayer.renderer()->opacity()));
+    }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
 
@@ -388,7 +362,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
     }
 
     for (const auto& fragment: fragments) {
-        OwnPtr<ClipRecorder> clipRecorder;
+        OwnPtr<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(clipRect);
             clipRectForFragment.moveBy(fragment.paginationOffset);
@@ -396,7 +370,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
             if (clipRectForFragment.isEmpty())
                 continue;
             if (needsToClip(paintingInfo, clipRectForFragment))
-                clipRecorder = adoptPtr(new ClipRecorder(parentLayer->renderer(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
+                clipRecorder = adoptPtr(new LayerClipRecorder(parentLayer->renderer(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
         }
 
         paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
@@ -492,10 +466,10 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
 
-        OwnPtr<ClipRecorder> clipRecorder;
+        OwnPtr<LayerClipRecorder> clipRecorder;
 
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
+            clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
         if (RenderLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
             scrollableArea->paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
@@ -644,9 +618,9 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
 
 void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment& fragment, GraphicsContext* context, const ClipRect& clipRect, const LayerPaintingInfo& paintingInfo, PaintBehavior paintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags, ClipState clipState)
 {
-    OwnPtr<ClipRecorder> clipRecorder;
+    OwnPtr<LayerClipRecorder> clipRecorder;
     if (clipState != HasClipped && paintingInfo.clipToDirtyRect && needsToClip(paintingInfo, clipRect)) {
-        ClipRecorder::BorderRadiusClippingRule clippingRule = ClipRecorder::IncludeSelfForBorderRadius;
+        LayerClipRecorder::BorderRadiusClippingRule clippingRule = LayerClipRecorder::IncludeSelfForBorderRadius;
         DisplayItem::Type clipType = DisplayItem::ClipLayerFragmentFloat;
         switch (phase) {
         case PaintPhaseFloat:
@@ -665,15 +639,15 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
             break;
         case PaintPhaseBlockBackground:
             clipType = DisplayItem::ClipLayerBackground;
-            clippingRule = ClipRecorder::DoNotIncludeSelfForBorderRadius; // Background painting will handle clipping to self.
+            clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius; // Background painting will handle clipping to self.
             break;
         case PaintPhaseSelfOutline:
             clipType = DisplayItem::ClipLayerFragmentOutline;
-            clippingRule = ClipRecorder::DoNotIncludeSelfForBorderRadius;
+            clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius;
             break;
         case PaintPhaseMask:
             clipType = DisplayItem::ClipLayerFragmentMask;
-            clippingRule = ClipRecorder::DoNotIncludeSelfForBorderRadius; // Mask painting will handle clipping to self.
+            clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius; // Mask painting will handle clipping to self.
             break;
         case PaintPhaseClippingMask:
             clipType = DisplayItem::ClipLayerFragmentClippingMask;
@@ -682,7 +656,7 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
             ASSERT_NOT_REACHED();
         }
 
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->renderer());
@@ -705,9 +679,9 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     // Optimize clipping for the single fragment case.
     bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() == 1 && !layerFragments[0].foregroundRect.isEmpty();
     ClipState clipState = HasNotClipped;
-    OwnPtr<ClipRecorder> clipRecorder;
+    OwnPtr<LayerClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
-        clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
         clipState = HasClipped;
     }
 

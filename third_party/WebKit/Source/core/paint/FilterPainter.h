@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class ClipRecorder;
+class LayerClipRecorder;
 class ClipRect;
 class GraphicsContext;
 class RenderLayer;
@@ -49,7 +49,7 @@ public:
 private:
     bool m_filterInProgress;
     GraphicsContext* m_context;
-    OwnPtr<ClipRecorder> m_clipRecorder;
+    OwnPtr<LayerClipRecorder> m_clipRecorder;
     RenderObject* m_renderer;
 };
 

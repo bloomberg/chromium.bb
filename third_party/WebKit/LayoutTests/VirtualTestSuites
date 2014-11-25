@@ -156,6 +156,11 @@
   },
   {
     "prefix": "slimmingpaint",
+    "base": "fast/images",
+    "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
     "base": "fast/table",
     "args": ["--enable-slimming-paint"]
   }

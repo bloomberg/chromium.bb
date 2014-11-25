@@ -52,40 +52,8 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
     }
 
     DisplayItem::Type clipType = DisplayItem::ClipBoxForeground;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        switch (m_paintInfo.phase) {
-        case PaintPhaseChildBlockBackgrounds:
-            clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
-            break;
-        case PaintPhaseFloat:
-            clipType = DisplayItem::ClipBoxFloat;
-            break;
-        case PaintPhaseForeground:
-            clipType = DisplayItem::ClipBoxChildBlockBackgrounds;
-            break;
-        case PaintPhaseChildOutlines:
-            clipType = DisplayItem::ClipBoxChildOutlines;
-            break;
-        case PaintPhaseSelection:
-            clipType = DisplayItem::ClipBoxSelection;
-            break;
-        case PaintPhaseCollapsedTableBorders:
-            clipType = DisplayItem::ClipBoxCollapsedTableBorders;
-            break;
-        case PaintPhaseTextClip:
-            clipType = DisplayItem::ClipBoxTextClip;
-            break;
-        case PaintPhaseClippingMask:
-            clipType = DisplayItem::ClipBoxClippingMask;
-            break;
-        case PaintPhaseChildBlockBackground:
-        case PaintPhaseOutline:
-        case PaintPhaseBlockBackground:
-        case PaintPhaseSelfOutline:
-        case PaintPhaseMask:
-            ASSERT_NOT_REACHED();
-        }
-    }
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        clipType = ClipRecorder::paintPhaseToClipType(m_paintInfo.phase);
 
     OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(&m_box, clipType, pixelSnappedIntRect(clipRect)));
     if (hasBorderRadius)

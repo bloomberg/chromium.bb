@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/FilterPainter.h"
 
+#include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
@@ -81,7 +82,7 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = adoptPtr(new ClipRecorder(renderLayer.renderer(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
+        m_clipRecorder = adoptPtr(new LayerClipRecorder(renderLayer.renderer(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
     }
 
     OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer, DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));

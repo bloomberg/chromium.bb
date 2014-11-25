@@ -5,15 +5,15 @@
 #include "config.h"
 #include "core/paint/TransparencyDisplayItem.h"
 
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
 void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
 {
-    context->save();
-    context->clip(m_clipRect);
-
     bool hasBlendMode = this->hasBlendMode();
     if (hasBlendMode)
         context->setCompositeOperation(context->compositeOperation(), m_blendMode);
@@ -22,17 +22,13 @@ void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
 
     if (hasBlendMode)
         context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
-#ifdef REVEAL_TRANSPARENCY_LAYERS
-    context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
-#endif
 }
 
 #ifndef NDEBUG
 WTF::String BeginTransparencyDisplayItem::asDebugString() const
 {
-    return String::format("{%s, type: \"%s\", clip bounds: [%f,%f,%f,%f], hasBlendMode: %d, blendMode: %d, opacity: %f}",
+    return String::format("{%s, type: \"%s\", hasBlendMode: %d, blendMode: %d, opacity: %f}",
         rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_clipRect.x().toFloat(), m_clipRect.y().toFloat(), m_clipRect.width().toFloat(), m_clipRect.height().toFloat(),
         hasBlendMode(), m_blendMode, m_opacity);
 }
 #endif
@@ -40,7 +36,6 @@ WTF::String BeginTransparencyDisplayItem::asDebugString() const
 void EndTransparencyDisplayItem::replay(GraphicsContext* context)
 {
     context->endLayer();
-    context->restore();
 }
 
 #ifndef NDEBUG
@@ -50,5 +45,26 @@ WTF::String EndTransparencyDisplayItem::asDebugString() const
         rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data());
 }
 #endif
+
+TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, const RenderObject* renderer, DisplayItem::Type type, const WebBlendMode& blendMode, const float opacity)
+    : m_renderer(renderer)
+    , m_type(type)
+    , m_graphicsContext(graphicsContext)
+{
+    OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(renderer, type, blendMode, opacity));
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        renderer->view()->viewDisplayList().add(beginTransparencyDisplayItem.release());
+    else
+        beginTransparencyDisplayItem->replay(graphicsContext);
+}
+
+TransparencyRecorder::~TransparencyRecorder()
+{
+    OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderer, m_type));
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        m_renderer->view()->viewDisplayList().add(endTransparencyDisplayItem.release());
+    else
+        endTransparencyDisplayItem->replay(m_graphicsContext);
+}
 
 } // namespace blink

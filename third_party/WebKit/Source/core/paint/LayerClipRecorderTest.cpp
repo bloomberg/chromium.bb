@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/ClipRecorder.h"
+#include "core/paint/LayerClipRecorder.h"
 
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
@@ -14,9 +14,9 @@
 namespace blink {
 namespace {
 
-class ClipRecorderTest : public RenderingTest {
+class LayerClipRecorderTest : public RenderingTest {
 public:
-    ClipRecorderTest() : m_renderView(nullptr) { }
+    LayerClipRecorderTest() : m_renderView(nullptr) { }
 
 protected:
     RenderView* renderView() { return m_renderView; }
@@ -39,10 +39,10 @@ void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
-    ClipRecorder clipRecorder(renderer->compositor()->rootRenderLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
+    LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootRenderLayer()->renderer(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
-TEST_F(ClipRecorderTest, ClipRecorderTest_Single)
+TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)
 {
     GraphicsContext* context = new GraphicsContext(nullptr);
     FloatRect bound = renderView()->viewRect();

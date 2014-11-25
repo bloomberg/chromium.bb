@@ -11,11 +11,12 @@
 
 namespace blink {
 
+// FIXME: Move this file to TransparencyRecorder
+
 class BeginTransparencyDisplayItem : public DisplayItem {
 public:
-    BeginTransparencyDisplayItem(const RenderObject* renderer, Type type, const LayoutRect& clipRect, const WebBlendMode& blendMode, const float opacity)
+    BeginTransparencyDisplayItem(const RenderObject* renderer, Type type, const WebBlendMode& blendMode, const float opacity)
         : DisplayItem(renderer, type)
-        , m_clipRect(clipRect)
         , m_blendMode(blendMode)
         , m_opacity(opacity) { }
     virtual void replay(GraphicsContext*) override;
@@ -27,7 +28,6 @@ private:
 
     bool hasBlendMode() const { return m_blendMode != WebBlendModeNormal; }
 
-    const LayoutRect m_clipRect;
     const WebBlendMode m_blendMode;
     const float m_opacity;
 };
@@ -42,6 +42,18 @@ private:
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif
+};
+
+class TransparencyRecorder {
+public:
+    explicit TransparencyRecorder(GraphicsContext*, const RenderObject*, DisplayItem::Type, const WebBlendMode&, const float opacity);
+
+    ~TransparencyRecorder();
+
+private:
+    const RenderObject* m_renderer;
+    const DisplayItem::Type m_type;
+    GraphicsContext* m_graphicsContext;
 };
 
 } // namespace blink
