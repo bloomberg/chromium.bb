@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "url/gurl.h"
 
@@ -54,11 +55,13 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   // be off-the-record.
   static IncognitoConnectability* Get(content::BrowserContext* context);
 
-  // Returns true if |url| is allowed to connect from this profile, false
-  // otherwise. If unknown, this call will block and prompt the user.
-  bool Query(const Extension* extension,
+  // Passes true to the provided callback if |url| is allowed to connect from
+  // this profile, false otherwise. If unknown, the user will be prompted before
+  // an answer is returned.
+  void Query(const Extension* extension,
              content::WebContents* web_contents,
-             const GURL& url);
+             const GURL& url,
+             const base::Callback<void(bool)>& callback);
 
  private:
   friend class BrowserContextKeyedAPIFactory<IncognitoConnectability>;
@@ -67,6 +70,17 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   ~IncognitoConnectability() override;
 
   typedef std::map<std::string, std::set<GURL> > ExtensionToOriginsMap;
+  typedef std::pair<std::string, GURL> ExtensionOriginPair;
+  typedef base::Callback<void(bool)> AuthorizationCallback;
+  typedef std::map<ExtensionOriginPair, std::vector<AuthorizationCallback>>
+      PendingAuthorizationMap;
+
+  // Called with the user's selection from the infobar.
+  // |response == INTERACTIVE| indicates that the user closed the infobar
+  // without selecting allow or deny.
+  void OnInteractiveResponse(const std::string& extension_id,
+                             const GURL& origin,
+                             ScopedAlertTracker::Mode response);
 
   // Returns true if the (|extension|, |origin|) pair appears in the map.
   bool IsInMap(const Extension* extension,
@@ -87,6 +101,11 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   // profile is destroyed (i.e. when the last incognito window is closed).
   ExtensionToOriginsMap allowed_origins_;
   ExtensionToOriginsMap disallowed_origins_;
+
+  // These are origin pairs that are currently being prompted for.
+  PendingAuthorizationMap pending_origins_;
+
+  base::WeakPtrFactory<IncognitoConnectability> weak_factory_;
 };
 
 }  // namespace extensions

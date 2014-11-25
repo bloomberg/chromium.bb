@@ -8,9 +8,11 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,10 +20,61 @@
 namespace extensions {
 
 namespace {
+
 IncognitoConnectability::ScopedAlertTracker::Mode g_alert_mode =
     IncognitoConnectability::ScopedAlertTracker::INTERACTIVE;
 int g_alert_count = 0;
-}
+
+class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  typedef base::Callback<void(
+      IncognitoConnectability::ScopedAlertTracker::Mode)> InfoBarCallback;
+
+  // Creates a confirmation infobar and delegate and adds the infobar to
+  // |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     const base::string16& message,
+                     const InfoBarCallback& callback) {
+    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+        scoped_ptr<ConfirmInfoBarDelegate>(
+            new IncognitoConnectabilityInfoBarDelegate(message, callback))));
+  }
+
+ private:
+  IncognitoConnectabilityInfoBarDelegate(const base::string16& message,
+                                         const InfoBarCallback& callback)
+      : message_(message), callback_(callback) {}
+  ~IncognitoConnectabilityInfoBarDelegate() override {}
+
+  // ConfirmInfoBarDelegate:
+  base::string16 GetMessageText() const override { return message_; }
+  base::string16 GetButtonLabel(InfoBarButton button) const override {
+    return l10n_util::GetStringUTF16(
+        (button == BUTTON_OK) ? IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
+  }
+
+  bool Accept() override {
+    callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+    return true;
+  }
+  bool Cancel() override {
+    callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
+    return true;
+  }
+
+  // InfoBarDelegate:
+  void InfoBarDismissed() override {
+    // The user has not expressed an explicit preference. The current request
+    // should be denied but further requests should show an interactive prompt.
+    callback_.Run(IncognitoConnectability::ScopedAlertTracker::INTERACTIVE);
+  }
+  Type GetInfoBarType() const override { return PAGE_ACTION_TYPE; }
+
+  base::string16 message_;
+  InfoBarCallback callback_;
+};
+
+}  // namespace
 
 IncognitoConnectability::ScopedAlertTracker::ScopedAlertTracker(Mode mode)
     : last_checked_invocation_count_(g_alert_count) {
@@ -42,7 +95,8 @@ int IncognitoConnectability::ScopedAlertTracker::GetAndResetAlertCount() {
 }
 
 IncognitoConnectability::IncognitoConnectability(
-    content::BrowserContext* context) {
+    content::BrowserContext* context)
+    : weak_factory_(this) {
   CHECK(context->IsOffTheRecord());
 }
 
@@ -55,53 +109,95 @@ IncognitoConnectability* IncognitoConnectability::Get(
   return BrowserContextKeyedAPIFactory<IncognitoConnectability>::Get(context);
 }
 
-bool IncognitoConnectability::Query(const Extension* extension,
-                                    content::WebContents* web_contents,
-                                    const GURL& url) {
+void IncognitoConnectability::Query(
+    const Extension* extension,
+    content::WebContents* web_contents,
+    const GURL& url,
+    const base::Callback<void(bool)>& callback) {
   GURL origin = url.GetOrigin();
-  if (origin.is_empty())
-    return false;
+  if (origin.is_empty()) {
+    callback.Run(false);
+    return;
+  }
 
-  if (IsInMap(extension, origin, allowed_origins_))
-    return true;
-  if (IsInMap(extension, origin, disallowed_origins_))
-    return false;
+  if (IsInMap(extension, origin, allowed_origins_)) {
+    callback.Run(true);
+    return;
+  }
+
+  if (IsInMap(extension, origin, disallowed_origins_)) {
+    callback.Run(false);
+    return;
+  }
+
+  ExtensionOriginPair extension_origin_pair =
+      ExtensionOriginPair(extension->id(), origin);
+  if (ContainsKey(pending_origins_, extension_origin_pair)) {
+    // We are already asking the user.
+    pending_origins_[extension_origin_pair].push_back(callback);
+    return;
+  }
 
   // We need to ask the user.
   ++g_alert_count;
-  chrome::MessageBoxResult result = chrome::MESSAGE_BOX_RESULT_NO;
+  pending_origins_[extension_origin_pair].push_back(callback);
 
   switch (g_alert_mode) {
     // Production code should always be using INTERACTIVE.
     case ScopedAlertTracker::INTERACTIVE: {
-      int template_id = extension->is_app() ?
-          IDS_EXTENSION_PROMPT_APP_CONNECT_FROM_INCOGNITO :
-          IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO;
-      result = chrome::ShowMessageBox(
-          web_contents ? web_contents->GetTopLevelNativeWindow() : NULL,
-          base::string16(),  // no title
+      int template_id =
+          extension->is_app()
+              ? IDS_EXTENSION_PROMPT_APP_CONNECT_FROM_INCOGNITO
+              : IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO;
+      IncognitoConnectabilityInfoBarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents),
           l10n_util::GetStringFUTF16(template_id,
                                      base::UTF8ToUTF16(origin.spec()),
                                      base::UTF8ToUTF16(extension->name())),
-          chrome::MESSAGE_BOX_TYPE_QUESTION);
+          base::Bind(&IncognitoConnectability::OnInteractiveResponse,
+                     weak_factory_.GetWeakPtr(), extension->id(), origin));
       break;
     }
 
     // Testing code can override to always allow or deny.
     case ScopedAlertTracker::ALWAYS_ALLOW:
-      result = chrome::MESSAGE_BOX_RESULT_YES;
+    case ScopedAlertTracker::ALWAYS_DENY:
+      OnInteractiveResponse(extension->id(), origin, g_alert_mode);
+      break;
+  }
+}
+
+void IncognitoConnectability::OnInteractiveResponse(
+    const std::string& extension_id,
+    const GURL& origin,
+    ScopedAlertTracker::Mode response) {
+  switch (response) {
+    case ScopedAlertTracker::ALWAYS_ALLOW:
+      allowed_origins_[extension_id].insert(origin);
       break;
     case ScopedAlertTracker::ALWAYS_DENY:
-      result = chrome::MESSAGE_BOX_RESULT_NO;
+      disallowed_origins_[extension_id].insert(origin);
+      break;
+    default:
+      // Otherwise the user has not expressed an explicit preference and so
+      // nothing should be permanently recorded.
       break;
   }
 
-  if (result == chrome::MESSAGE_BOX_RESULT_NO) {
-    disallowed_origins_[extension->id()].insert(origin);
-    return false;
+  ExtensionOriginPair extension_origin_pair =
+      ExtensionOriginPair(extension_id, origin);
+  PendingAuthorizationMap::iterator pending_origin =
+      pending_origins_.find(extension_origin_pair);
+  DCHECK(pending_origin != pending_origins_.end());
+
+  std::vector<AuthorizationCallback> callbacks;
+  callbacks.swap(pending_origin->second);
+  pending_origins_.erase(pending_origin);
+  DCHECK(!callbacks.empty());
+
+  for (const AuthorizationCallback& callback : callbacks) {
+    callback.Run(response == ScopedAlertTracker::ALWAYS_ALLOW);
   }
-  allowed_origins_[extension->id()].insert(origin);
-  return true;
 }
 
 bool IncognitoConnectability::IsInMap(const Extension* extension,

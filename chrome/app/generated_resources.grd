@@ -4280,10 +4280,10 @@ Make sure you do not expose any sensitive information.
 
       <!-- Extension/App install dialog strings -->
       <message name="IDS_EXTENSION_PROMPT_APP_CONNECT_FROM_INCOGNITO" desc="Shown when a website tries to connect to an app from incognito mode, prompting the user to allow or deny the request.">
-        Allow <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> to communicate with the app "<ph name="EXTENSION_NAME">$2<ex>Gmail</ex></ph>"?
+        <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> wants to communicate with the app "<ph name="EXTENSION_NAME">$2<ex>Gmail</ex></ph>"
       </message>
       <message name="IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO" desc="Shown when a website tries to connect to an extension from incognito mode, prompting the user to allow or deny the request.">
-        Allow <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> to communicate with the extension "<ph name="EXTENSION_NAME">$2<ex>Gmail Checker</ex></ph>"?
+        <ph name="ORIGIN">$1<ex>http://www.google.com</ex></ph> wants to communicate with the extension "<ph name="EXTENSION_NAME">$2<ex>Gmail Checker</ex></ph>"
       </message>
       <message name="IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app installation prompt. Note that the exact wording is important. This should mean that the extension or app _can_ access the listed privileges, but not necessarily that it will or needs to.">
         It can:

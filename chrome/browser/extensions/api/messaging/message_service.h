@@ -169,9 +169,9 @@ class MessageService : public BrowserContextKeyedAPI,
 
   typedef std::pair<int, Message> PendingMessage;
   typedef std::vector<PendingMessage> PendingMessagesQueue;
-  // A set of channel IDs waiting for TLS channel IDs to complete opening,
-  // and any pending messages queued to be sent on those channels.
-  typedef std::map<int, PendingMessagesQueue> PendingTlsChannelIdMap;
+  // A set of channel IDs waiting to complete opening, and any pending messages
+  // queued to be sent on those channels.
+  typedef std::map<int, PendingMessagesQueue> PendingChannelMap;
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
@@ -201,6 +201,9 @@ class MessageService : public BrowserContextKeyedAPI,
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);
 
+  // If the channel is being opened from an incognito tab the user must allow
+  // the connection.
+  void OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params, bool allowed);
   void GotChannelID(scoped_ptr<OpenChannelParams> params,
                     const std::string& tls_channel_id);
 
@@ -223,7 +226,8 @@ class MessageService : public BrowserContextKeyedAPI,
   bool MaybeAddPendingLazyBackgroundPageOpenChannelTask(
       content::BrowserContext* context,
       const Extension* extension,
-      OpenChannelParams* params);
+      scoped_ptr<OpenChannelParams>* params,
+      const PendingMessagesQueue& pending_messages);
 
   // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
   // ExtensionHost to its task callbacks, though some of our callbacks don't
@@ -251,6 +255,9 @@ class MessageService : public BrowserContextKeyedAPI,
                             int port_id,
                             const std::string& error_message);
 
+  void DispatchPendingMessages(const PendingMessagesQueue& queue,
+                               int channel_id);
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "MessageService";
@@ -261,7 +268,15 @@ class MessageService : public BrowserContextKeyedAPI,
 
   content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;
-  PendingTlsChannelIdMap pending_tls_channel_id_channels_;
+  // A set of channel IDs waiting for TLS channel IDs to complete opening, and
+  // any pending messages queued to be sent on those channels. This and the
+  // following two maps form a pipeline where messages are queued before the
+  // channel they are addressed to is ready.
+  PendingChannelMap pending_tls_channel_id_channels_;
+  // A set of channel IDs waiting for user permission to cross the border
+  // between an incognito page and an app or extension, and any pending messages
+  // queued to be sent on those channels.
+  PendingChannelMap pending_incognito_channels_;
   PendingLazyBackgroundPageChannelMap pending_lazy_background_page_channels_;
   MessagePropertyProvider property_provider_;
 

@@ -304,35 +304,6 @@ void MessageService::OpenChannelToExtension(
   WebContents* source_contents = tab_util::GetWebContentsByFrameID(
       source_process_id, source_routing_id);
 
-  if (context->IsOffTheRecord() &&
-      !util::IsIncognitoEnabled(target_extension_id, context)) {
-    // Give the user a chance to accept an incognito connection from the web if
-    // they haven't already, with the conditions:
-    // - Only for spanning-mode incognito. We don't want the complication of
-    //   spinning up an additional process here which might need to do some
-    //   setup that we're not expecting.
-    // - Only for extensions that can't normally be enabled in incognito, since
-    //   that surface (e.g. chrome://extensions) should be the only one for
-    //   enabling in incognito. In practice this means platform apps only.
-    if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
-        target_extension->can_be_incognito_enabled() ||
-        // This check may show a dialog.
-        !IncognitoConnectability::Get(context)
-             ->Query(target_extension, source_contents, source_url)) {
-      DispatchOnDisconnect(
-          source, receiver_port_id, kReceivingEndDoesntExistError);
-      return;
-    }
-  }
-
-  // Note: we use the source's profile here. If the source is an incognito
-  // process, we will use the incognito EPM to find the right extension process,
-  // which depends on whether the extension uses spanning or split mode.
-  MessagePort* receiver = new ExtensionMessagePort(
-      GetExtensionProcess(context, target_extension_id),
-      MSG_ROUTING_CONTROL,
-      target_extension_id);
-
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;
   int source_frame_id = -1;
@@ -349,36 +320,39 @@ void MessageService::OpenChannelToExtension(
       source_frame_id = !rfh->GetParent() ? 0 : source_routing_id;
   }
 
-  OpenChannelParams* params = new OpenChannelParams(
-      source, source_tab.Pass(), source_frame_id, receiver, receiver_port_id,
+  scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
+      source, source_tab.Pass(), source_frame_id, nullptr, receiver_port_id,
       source_extension_id, target_extension_id, source_url, channel_name,
-      include_tls_channel_id);
+      include_tls_channel_id));
 
-  // If the target requests the TLS channel id, begin the lookup for it.
-  // The target might also be a lazy background page, checked next, but the
-  // loading of lazy background pages continues asynchronously, so enqueue
-  // messages awaiting TLS channel ID first.
-  if (include_tls_channel_id) {
-    pending_tls_channel_id_channels_[GET_CHANNEL_ID(params->receiver_port_id)]
-        = PendingMessagesQueue();
-    property_provider_.GetChannelID(
-        Profile::FromBrowserContext(context),
-        source_url,
-        base::Bind(&MessageService::GotChannelID,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(make_scoped_ptr(params))));
+  pending_incognito_channels_[GET_CHANNEL_ID(params->receiver_port_id)] =
+      PendingMessagesQueue();
+  if (context->IsOffTheRecord() &&
+      !util::IsIncognitoEnabled(target_extension_id, context)) {
+    // Give the user a chance to accept an incognito connection from the web if
+    // they haven't already, with the conditions:
+    // - Only for spanning-mode incognito. We don't want the complication of
+    //   spinning up an additional process here which might need to do some
+    //   setup that we're not expecting.
+    // - Only for extensions that can't normally be enabled in incognito, since
+    //   that surface (e.g. chrome://extensions) should be the only one for
+    //   enabling in incognito. In practice this means platform apps only.
+    if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
+        target_extension->can_be_incognito_enabled()) {
+      DispatchOnDisconnect(source, receiver_port_id,
+                           kReceivingEndDoesntExistError);
+      return;
+    }
+
+    // This check may show a dialog.
+    IncognitoConnectability::Get(context)
+        ->Query(target_extension, source_contents, source_url,
+                base::Bind(&MessageService::OnOpenChannelAllowed,
+                           weak_factory_.GetWeakPtr(), base::Passed(&params)));
     return;
   }
 
-  // The target might be a lazy background page. In that case, we have to check
-  // if it is loaded and ready, and if not, queue up the task and load the
-  // page.
-  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-          context, target_extension, params)) {
-    return;
-  }
-
-  OpenChannelImpl(make_scoped_ptr(params));
+  OnOpenChannelAllowed(params.Pass(), true);
 }
 
 void MessageService::OpenChannelToNativeApp(
@@ -655,13 +629,25 @@ void MessageService::OnProcessClosed(content::RenderProcessHost* process) {
 void MessageService::EnqueuePendingMessage(int source_port_id,
                                            int channel_id,
                                            const Message& message) {
-  PendingTlsChannelIdMap::iterator pending_for_tls_channel_id =
+  PendingChannelMap::iterator pending_for_incognito =
+      pending_incognito_channels_.find(channel_id);
+  if (pending_for_incognito != pending_incognito_channels_.end()) {
+    pending_for_incognito->second.push_back(
+        PendingMessage(source_port_id, message));
+    // A channel should only be holding pending messages because it is in one
+    // of these states.
+    DCHECK(!ContainsKey(pending_tls_channel_id_channels_, channel_id));
+    DCHECK(!ContainsKey(pending_lazy_background_page_channels_, channel_id));
+    return;
+  }
+  PendingChannelMap::iterator pending_for_tls_channel_id =
       pending_tls_channel_id_channels_.find(channel_id);
   if (pending_for_tls_channel_id != pending_tls_channel_id_channels_.end()) {
     pending_for_tls_channel_id->second.push_back(
         PendingMessage(source_port_id, message));
-    // Pending messages must only be pending the TLS channel ID or lazy
-    // background page loading, never both.
+    // A channel should only be holding pending messages because it is in one
+    // of these states.
+    DCHECK(!ContainsKey(pending_lazy_background_page_channels_, channel_id));
     return;
   }
   EnqueuePendingMessageForLazyBackgroundLoad(source_port_id,
@@ -697,7 +683,8 @@ void MessageService::DispatchMessage(int source_port_id,
 bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
     BrowserContext* context,
     const Extension* extension,
-    OpenChannelParams* params) {
+    scoped_ptr<OpenChannelParams>* params,
+    const PendingMessagesQueue& pending_messages) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return false;
 
@@ -710,18 +697,83 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   if (!lazy_background_task_queue_->ShouldEnqueueTask(context, extension))
     return false;
 
-  pending_lazy_background_page_channels_
-      [GET_CHANNEL_ID(params->receiver_port_id)] =
-          PendingLazyBackgroundPageChannel(context, extension->id());
-  scoped_ptr<OpenChannelParams> scoped_params(params);
+  int channel_id = GET_CHANNEL_ID((*params)->receiver_port_id);
+  pending_lazy_background_page_channels_[channel_id] =
+      PendingLazyBackgroundPageChannel(context, extension->id());
+  int source_id = (*params)->source->GetID();
   lazy_background_task_queue_->AddPendingTask(
-      context,
-      extension->id(),
+      context, extension->id(),
       base::Bind(&MessageService::PendingLazyBackgroundPageOpenChannel,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&scoped_params),
-                 params->source->GetID()));
+                 weak_factory_.GetWeakPtr(), base::Passed(params), source_id));
+
+  for (const PendingMessage& message : pending_messages) {
+    EnqueuePendingMessageForLazyBackgroundLoad(message.first, channel_id,
+                                               message.second);
+  }
   return true;
+}
+
+void MessageService::OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params,
+                                          bool allowed) {
+  int channel_id = GET_CHANNEL_ID(params->receiver_port_id);
+
+  PendingChannelMap::iterator pending_for_incognito =
+      pending_incognito_channels_.find(channel_id);
+  if (pending_for_incognito == pending_incognito_channels_.end()) {
+    NOTREACHED();
+    return;
+  }
+  PendingMessagesQueue pending_messages;
+  pending_messages.swap(pending_for_incognito->second);
+  pending_incognito_channels_.erase(pending_for_incognito);
+
+  if (!allowed) {
+    DispatchOnDisconnect(params->source, params->receiver_port_id,
+                         kReceivingEndDoesntExistError);
+    return;
+  }
+
+  BrowserContext* context = params->source->GetBrowserContext();
+
+  // Note: we use the source's profile here. If the source is an incognito
+  // process, we will use the incognito EPM to find the right extension process,
+  // which depends on whether the extension uses spanning or split mode.
+  params->receiver.reset(new ExtensionMessagePort(
+      GetExtensionProcess(context, params->target_extension_id),
+      MSG_ROUTING_CONTROL, params->target_extension_id));
+
+  // If the target requests the TLS channel id, begin the lookup for it.
+  // The target might also be a lazy background page, checked next, but the
+  // loading of lazy background pages continues asynchronously, so enqueue
+  // messages awaiting TLS channel ID first.
+  if (params->include_tls_channel_id) {
+    // Transfer pending messages to the next pending channel list.
+    pending_tls_channel_id_channels_[channel_id].swap(pending_messages);
+
+    property_provider_.GetChannelID(
+        Profile::FromBrowserContext(context), params->source_url,
+        base::Bind(&MessageService::GotChannelID, weak_factory_.GetWeakPtr(),
+                   base::Passed(&params)));
+    return;
+  }
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const Extension* target_extension =
+      registry->enabled_extensions().GetByID(params->target_extension_id);
+  if (!target_extension) {
+    DispatchOnDisconnect(params->source, params->receiver_port_id,
+                         kReceivingEndDoesntExistError);
+    return;
+  }
+
+  // The target might be a lazy background page. In that case, we have to check
+  // if it is loaded and ready, and if not, queue up the task and load the
+  // page.
+  if (!MaybeAddPendingLazyBackgroundPageOpenChannelTask(
+          context, target_extension, &params, pending_messages)) {
+    OpenChannelImpl(params.Pass());
+    DispatchPendingMessages(pending_messages, channel_id);
+  }
 }
 
 void MessageService::GotChannelID(scoped_ptr<OpenChannelParams> params,
@@ -729,51 +781,32 @@ void MessageService::GotChannelID(scoped_ptr<OpenChannelParams> params,
   params->tls_channel_id.assign(tls_channel_id);
   int channel_id = GET_CHANNEL_ID(params->receiver_port_id);
 
-  PendingTlsChannelIdMap::iterator pending_for_tls_channel_id =
+  PendingChannelMap::iterator pending_for_tls_channel_id =
       pending_tls_channel_id_channels_.find(channel_id);
   if (pending_for_tls_channel_id == pending_tls_channel_id_channels_.end()) {
     NOTREACHED();
     return;
   }
+  PendingMessagesQueue pending_messages;
+  pending_messages.swap(pending_for_tls_channel_id->second);
+  pending_tls_channel_id_channels_.erase(pending_for_tls_channel_id);
 
   BrowserContext* context = params->source->GetBrowserContext();
-
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* target_extension =
       registry->enabled_extensions().GetByID(params->target_extension_id);
   if (!target_extension) {
-    pending_tls_channel_id_channels_.erase(channel_id);
     DispatchOnDisconnect(
         params->source, params->receiver_port_id,
         kReceivingEndDoesntExistError);
     return;
   }
-  PendingMessagesQueue& pending_messages = pending_for_tls_channel_id->second;
-  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-          context, target_extension, params.get())) {
-    // Lazy background queue took ownership. Release ours.
-    ignore_result(params.release());
-    // Messages queued up waiting for the TLS channel ID now need to be queued
-    // up for the lazy background page to load.
-    for (PendingMessagesQueue::iterator it = pending_messages.begin();
-         it != pending_messages.end();
-         it++) {
-      EnqueuePendingMessageForLazyBackgroundLoad(it->first, channel_id,
-                                                 it->second);
-    }
-  } else {
+
+  if (!MaybeAddPendingLazyBackgroundPageOpenChannelTask(
+          context, target_extension, &params, pending_messages)) {
     OpenChannelImpl(params.Pass());
-    // Messages queued up waiting for the TLS channel ID can be posted now.
-    MessageChannelMap::iterator channel_iter = channels_.find(channel_id);
-    if (channel_iter != channels_.end()) {
-      for (PendingMessagesQueue::iterator it = pending_messages.begin();
-           it != pending_messages.end();
-           it++) {
-        DispatchMessage(it->first, channel_iter->second, it->second);
-      }
-    }
+    DispatchPendingMessages(pending_messages, channel_id);
   }
-  pending_tls_channel_id_channels_.erase(channel_id);
 }
 
 void MessageService::PendingLazyBackgroundPageOpenChannel(
@@ -801,6 +834,16 @@ void MessageService::DispatchOnDisconnect(content::RenderProcessHost* source,
                                           const std::string& error_message) {
   ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
   port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(port_id), error_message);
+}
+
+void MessageService::DispatchPendingMessages(const PendingMessagesQueue& queue,
+                                             int channel_id) {
+  MessageChannelMap::iterator channel_iter = channels_.find(channel_id);
+  if (channel_iter != channels_.end()) {
+    for (const PendingMessage& message : queue) {
+      DispatchMessage(message.first, channel_iter->second, message.second);
+    }
+  }
 }
 
 }  // namespace extensions
