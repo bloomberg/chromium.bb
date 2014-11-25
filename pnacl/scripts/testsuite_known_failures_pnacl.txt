@@ -5,12 +5,6 @@
 # newlib does not have ffsl function?
 2005-05-11-Popcount-ffs-fls
 
-# some output incorrect
-sphereflake
-
-# FP nan/inf handling
-voronoi
-
 # SSE tests use -msse* flags, which our le32 frontend doesn't understand.
 sse.isamax
 sse.shift
@@ -35,6 +29,7 @@ SingleSource/Regression/C/PR1386 O0f
 # supported for PNaCl's stable ABI.  When the -lowerinvoke pass is
 # applied, the "throw" statements in these tests fail at run time.
 SingleSource/Benchmarks/Shootout-C++/EH/except
+SingleSource/Regression/C++/EH/class_hierarchy
 SingleSource/Regression/C++/EH/ctor_dtor_count
 SingleSource/Regression/C++/EH/ctor_dtor_count-2
 SingleSource/Regression/C++/EH/exception_spec_test
@@ -51,3 +46,13 @@ SingleSource/Regression/C++/EH/throw_rethrow_test
 ############################################################################
 # exec failures on ARM
 MultiSource/Benchmarks/SciMark2-C/scimark2 arm
+
+# New as of LLVM 3.5 update, followed by updating test-suite to master.
+# For all of these the native version fails, but the PNaCl version passes.
+MultiSource/Benchmarks/Prolangs-C++/office/office
+MultiSource/Benchmarks/Prolangs-C++/deriv2/deriv2
+MultiSource/Benchmarks/Prolangs-C++/deriv1/deriv1
+MultiSource/Applications/kimwitu++/kc
+MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4
+MultiSource/Benchmarks/Prolangs-C++/employ/employ
+MultiSource/Benchmarks/Prolangs-C++/shapes/shapes
