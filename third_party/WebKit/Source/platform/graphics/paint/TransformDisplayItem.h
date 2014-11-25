@@ -5,16 +5,16 @@
 #ifndef TransformDisplayItem_h
 #define TransformDisplayItem_h
 
-#include "core/paint/ViewDisplayList.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
 
 class TransformationMatrix;
 
-class BeginTransformDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
 public:
-    BeginTransformDisplayItem(const RenderObject* renderer, const TransformationMatrix&);
+    BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
     virtual void replay(GraphicsContext*) override;
 
 #ifndef NDEBUG
@@ -23,10 +23,10 @@ public:
     const TransformationMatrix m_transform;
 };
 
-class EndTransformDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndTransformDisplayItem : public DisplayItem {
 public:
-    EndTransformDisplayItem(const RenderObject* renderer)
-        : DisplayItem(renderer, EndTransform) { }
+    EndTransformDisplayItem(DisplayItemClient client)
+        : DisplayItem(client, EndTransform) { }
     virtual void replay(GraphicsContext*) override;
 
 #ifndef NDEBUG

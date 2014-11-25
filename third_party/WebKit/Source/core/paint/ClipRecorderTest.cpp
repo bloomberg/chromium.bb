@@ -9,6 +9,8 @@
 #include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -20,6 +22,7 @@ public:
 
 protected:
     RenderView* renderView() { return m_renderView; }
+    DisplayItemList& rootDisplayItemList() { return renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
 
 private:
     virtual void SetUp() override
@@ -27,6 +30,7 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
 
         RenderingTest::SetUp();
+        enableCompositing();
 
         m_renderView = document().view()->renderView();
         ASSERT_TRUE(m_renderView);
@@ -46,10 +50,10 @@ TEST_F(ClipRecorderTest, ClipRecorderTest_Single)
 {
     GraphicsContext* context = new GraphicsContext(nullptr);
     FloatRect bound = renderView()->viewRect();
-    EXPECT_EQ((size_t)0, renderView()->viewDisplayList().paintList().size());
+    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
     drawClip(context, renderView(), PaintPhaseForeground, bound);
-    EXPECT_EQ((size_t)2, renderView()->viewDisplayList().paintList().size());
+    EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
 }
 
 }

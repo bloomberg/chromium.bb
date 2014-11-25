@@ -8,8 +8,6 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
-#include "core/paint/TransformDisplayItem.h"
-#include "core/paint/TransparencyDisplayItem.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
@@ -17,6 +15,10 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/graphics/paint/TransparencyDisplayItem.h"
 
 namespace blink {
 
@@ -96,9 +98,10 @@ public:
         OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(
             renderLayer.renderer(), DisplayItem::BeginTransparency, renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior),
             renderLayer.renderer()->style()->blendMode(), renderLayer.renderer()->opacity()));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            renderLayer.renderer()->view()->viewDisplayList().add(beginTransparencyDisplayItem.release());
-        else
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(beginTransparencyDisplayItem.release());
+        } else
             beginTransparencyDisplayItem->replay(context);
 
         m_transparencyLayerInProgress = true;
@@ -108,10 +111,11 @@ public:
     {
         if (!m_transparencyLayerInProgress)
             return;
-        OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderLayer.renderer(), DisplayItem::EndTransparency));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransparencyDisplayItem.release());
-        else
+        OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderLayer.renderer()->displayItemClient(), DisplayItem::EndTransparency));
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(endTransparencyDisplayItem.release());
+        } else
             endTransparencyDisplayItem->replay(m_context);
     }
 private:
@@ -417,10 +421,12 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
 
     if (!transform.isIdentity()) {
         OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = adoptPtr(new BeginTransformDisplayItem(m_renderLayer.renderer(), transform));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(beginTransformDisplayItem.release());
-        else
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(beginTransformDisplayItem.release());
+        } else {
             beginTransformDisplayItem->replay(context);
+        }
     }
 
     // Now do a paint with the root layer shifted to be us.
@@ -430,10 +436,12 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
 
     if (!transform.isIdentity()) {
         OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()));
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransformDisplayItem.release());
-        else
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(endTransformDisplayItem.release());
+        } else {
             endTransformDisplayItem->replay(context);
+        }
     }
 }
 

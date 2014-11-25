@@ -6,12 +6,13 @@
 #include "core/paint/BoxClipper.h"
 
 #include "core/paint/ClipRecorder.h"
-#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -91,9 +92,10 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
     if (hasBorderRadius)
         clipDisplayItem->roundedRectClips().append(clipRoundedRect);
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_box.view()->viewDisplayList().add(clipDisplayItem.release());
-    else
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        if (RenderLayer* container = m_box.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
+    } else
         clipDisplayItem->replay(paintInfo.context);
 
     m_pushedClip = true;
@@ -109,7 +111,8 @@ BoxClipper::~BoxClipper()
     OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_box));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_box.view()->viewDisplayList().add(endClipDisplayItem.release());
+        if (RenderLayer* container = m_box.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(endClipDisplayItem.release());
     } else {
         endClipDisplayItem->replay(m_paintInfo.context);
     }
