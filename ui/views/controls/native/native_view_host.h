@@ -58,6 +58,12 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void set_fast_resize(bool fast_resize) { fast_resize_ = fast_resize; }
   bool fast_resize() const { return fast_resize_; }
 
+  // Sets the color to paint the background during a resize that involves a
+  // clip. This is white by default.
+  void set_resize_background_color(SkColor resize_background_color) {
+    resize_background_color_ = resize_background_color;
+  }
+
   // Value of fast_resize() the last time Layout() was invoked.
   bool fast_resize_at_last_layout() const {
     return fast_resize_at_last_layout_;
@@ -112,6 +118,9 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // Value of |fast_resize_| during the last call to Layout.
   bool fast_resize_at_last_layout_;
+
+  // Color to paint in the background while resizing.
+  SkColor resize_background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

@@ -72,6 +72,10 @@ class WEBVIEW_EXPORT WebView : public View,
   //         resizing performance during interactive resizes and animations.
   void SetFastResize(bool fast_resize);
 
+  // Set the background color to use while resizing with a clip. This is white
+  // by default.
+  void SetResizeBackgroundColor(SkColor resize_background_color);
+
   // Called when the WebContents is focused.
   // TODO(beng): This view should become a WebContentsViewObserver when a
   //             WebContents is attached, and not rely on the delegate to

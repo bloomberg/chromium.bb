@@ -87,6 +87,10 @@ void WebView::SetFastResize(bool fast_resize) {
   holder_->set_fast_resize(fast_resize);
 }
 
+void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
+  holder_->set_resize_background_color(resize_background_color);
+}
+
 void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
