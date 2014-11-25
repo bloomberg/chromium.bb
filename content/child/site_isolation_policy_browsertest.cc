@@ -93,6 +93,13 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
                        MAYBE_CrossSiteDocumentBlockingForDifferentTargets) {
+  // TODO(creis): Re-enable this test in --site-per-process mode once we support
+  // sibling frames from the same site with correct DidStopLoading behavior.
+  // See http://crbug.com/419087 and http://crbug.com/436250.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one
   // character string (' ') is returned instead, this tests that the renderer
