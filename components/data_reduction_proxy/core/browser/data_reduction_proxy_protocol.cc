@@ -85,7 +85,7 @@ bool MaybeBypassProxyAndPrepareToRetry(
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers
-  bool event_logged;
+  bool event_logged = false;
   DataReductionProxyInfo data_reduction_proxy_info;
   DataReductionProxyBypassType bypass_type =
       GetDataReductionProxyBypassType(
