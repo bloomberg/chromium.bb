@@ -2635,34 +2635,13 @@ size_t Heap::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
     ASSERT(ThreadState::isAnyThreadInGC());
-    makeConsistentForSweeping();
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
     for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        (*it)->makeConsistentForSweeping();
         objectPayloadSize += (*it)->objectPayloadSizeForTesting();
     }
     return objectPayloadSize;
-}
-
-#if ENABLE(ASSERT)
-bool Heap::isConsistentForSweeping()
-{
-    ASSERT(ThreadState::isAnyThreadInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        if (!(*it)->isConsistentForSweeping())
-            return false;
-    }
-    return true;
-}
-#endif
-
-void Heap::makeConsistentForSweeping()
-{
-    ASSERT(ThreadState::isAnyThreadInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->makeConsistentForSweeping();
 }
 
 template<typename HeapTraits, typename HeapType, typename HeaderType>

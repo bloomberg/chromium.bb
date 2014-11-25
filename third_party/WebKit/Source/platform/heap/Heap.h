@@ -939,14 +939,6 @@ public:
 
     static size_t objectPayloadSizeForTesting();
 
-    static void getHeapSpaceSize(uint64_t*, uint64_t*);
-
-    static void makeConsistentForSweeping();
-
-#if ENABLE(ASSERT)
-    static bool isConsistentForSweeping();
-#endif
-
     static void flushHeapDoesNotContainCache();
 
     // Return true if the last GC found a pointer into a heap page
