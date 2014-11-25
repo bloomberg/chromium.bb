@@ -581,7 +581,11 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
 	protocol/xdg-shell-unstable-v5-client-protocol.h		\
 	protocol/ivi-application-protocol.c		\
-	protocol/ivi-application-client-protocol.h
+	protocol/ivi-application-client-protocol.h	\
+	protocol/pointer-constraints-unstable-v1-protocol.c		\
+	protocol/pointer-constraints-unstable-v1-client-protocol.h	\
+	protocol/relative-pointer-unstable-v1-protocol.c		\
+	protocol/relative-pointer-unstable-v1-client-protocol.h
 
 BUILT_SOURCES += $(nodist_libtoytoolkit_la_SOURCES)
 

@@ -213,6 +213,29 @@ typedef void (*window_output_handler_t)(struct window *window, struct output *ou
 typedef void (*window_state_changed_handler_t)(struct window *window,
 					       void *data);
 
+
+typedef void (*window_locked_pointer_motion_handler_t)(struct window *window,
+						       struct input *input,
+						       uint32_t time,
+						       float x, float y,
+						       void *data);
+
+typedef void (*locked_pointer_locked_handler_t)(struct window *window,
+						struct input *input,
+						void *data);
+
+typedef void (*locked_pointer_unlocked_handler_t)(struct window *window,
+						  struct input *input,
+						  void *data);
+
+typedef void (*confined_pointer_confined_handler_t)(struct window *window,
+						    struct input *input,
+						    void *data);
+
+typedef void (*confined_pointer_unconfined_handler_t)(struct window *window,
+						      struct input *input,
+						      void *data);
+
 typedef void (*widget_resize_handler_t)(struct widget *widget,
 					int32_t width, int32_t height,
 					void *data);
@@ -359,6 +382,24 @@ window_schedule_redraw(struct window *window);
 void
 window_schedule_resize(struct window *window, int width, int height);
 
+int
+window_lock_pointer(struct window *window, struct input *input);
+
+void
+window_unlock_pointer(struct window *window);
+
+void
+widget_set_locked_pointer_cursor_hint(struct widget *widget,
+				      float x, float y);
+
+int
+window_confine_pointer_to_widget(struct window *window,
+				 struct widget *widget,
+				 struct input *input);
+
+void
+window_unconfine_pointer(struct window *window);
+
 cairo_surface_t *
 window_get_surface(struct window *window);
 
@@ -435,6 +476,20 @@ window_set_output_handler(struct window *window,
 void
 window_set_state_changed_handler(struct window *window,
 				 window_state_changed_handler_t handler);
+
+void
+window_set_pointer_locked_handler(struct window *window,
+				  locked_pointer_locked_handler_t locked,
+				  locked_pointer_unlocked_handler_t unlocked);
+
+void
+window_set_pointer_confined_handler(struct window *window,
+				    confined_pointer_confined_handler_t confined,
+				    confined_pointer_unconfined_handler_t unconfined);
+
+void
+window_set_locked_pointer_motion_handler(
+	struct window *window, window_locked_pointer_motion_handler_t handler);
 
 void
 window_set_title(struct window *window, const char *title);

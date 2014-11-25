@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +73,8 @@ typedef void *EGLContext;
 #include "shared/zalloc.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
+#include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "relative-pointer-unstable-v1-client-protocol.h"
 #include "shared/os-compatibility.h"
 
 #include "window.h"
@@ -79,6 +82,9 @@ typedef void *EGLContext;
 #include <sys/types.h>
 #include "ivi-application-client-protocol.h"
 #define IVI_SURFACE_ID 9000
+
+#define ZWP_RELATIVE_POINTER_MANAGER_V1_VERSION 1
+#define ZWP_POINTER_CONSTRAINTS_V1_VERSION 1
 
 struct shm_pool;
 
@@ -99,6 +105,8 @@ struct display {
 	struct text_cursor_position *text_cursor_position;
 	struct xdg_shell *xdg_shell;
 	struct ivi_application *ivi_application; /* ivi style shell */
+	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
+	struct zwp_pointer_constraints_v1 *pointer_constraints;
 	EGLDisplay dpy;
 	EGLConfig argb_config;
 	EGLContext argb_ctx;
@@ -247,6 +255,8 @@ struct window {
 	window_output_handler_t output_handler;
 	window_state_changed_handler_t state_changed_handler;
 
+	window_locked_pointer_motion_handler_t locked_pointer_motion_handler;
+
 	struct surface *main_surface;
 	struct xdg_surface *xdg_surface;
 	struct xdg_popup *xdg_popup;
@@ -260,6 +270,19 @@ struct window {
 
 	/* struct surface::link, contains also main_surface */
 	struct wl_list subsurface_list;
+
+	struct zwp_relative_pointer_v1 *relative_pointer;
+	struct zwp_locked_pointer_v1 *locked_pointer;
+	struct input *locked_input;
+	bool pointer_locked;
+	locked_pointer_locked_handler_t pointer_locked_handler;
+	locked_pointer_unlocked_handler_t pointer_unlocked_handler;
+	confined_pointer_confined_handler_t pointer_confined_handler;
+	confined_pointer_unconfined_handler_t pointer_unconfined_handler;
+
+	struct zwp_confined_pointer_v1 *confined_pointer;
+	struct widget *confined_widget;
+	bool confined;
 
 	void *user_data;
 	struct wl_list link;
@@ -4056,6 +4079,22 @@ window_do_resize(struct window *window)
 
 	if (!window->fullscreen && !window->maximized)
 		window->saved_allocation = window->pending_allocation;
+
+	if (window->confined && window->confined_widget) {
+		struct wl_compositor *compositor = window->display->compositor;
+		struct wl_region *region;
+		struct widget *widget = window->confined_widget;
+
+		region = wl_compositor_create_region(compositor);
+		wl_region_add(region,
+			      widget->allocation.x,
+			      widget->allocation.y,
+			      widget->allocation.width,
+			      widget->allocation.height);
+		zwp_confined_pointer_v1_set_region(window->confined_pointer,
+						   region);
+		wl_region_destroy(region);
+	}
 }
 
 static void
@@ -4585,6 +4624,31 @@ window_set_state_changed_handler(struct window *window,
 }
 
 void
+window_set_pointer_locked_handler(struct window *window,
+				  locked_pointer_locked_handler_t locked,
+				  locked_pointer_unlocked_handler_t unlocked)
+{
+	window->pointer_unlocked_handler = unlocked;
+	window->pointer_locked_handler = locked;
+}
+
+void
+window_set_pointer_confined_handler(struct window *window,
+				    confined_pointer_confined_handler_t confined,
+				    confined_pointer_unconfined_handler_t unconfined)
+{
+	window->pointer_confined_handler = confined;
+	window->pointer_unconfined_handler = unconfined;
+}
+
+void
+window_set_locked_pointer_motion_handler(struct window *window,
+					 window_locked_pointer_motion_handler_t handler)
+{
+	window->locked_pointer_motion_handler = handler;
+}
+
+void
 window_set_title(struct window *window, const char *title)
 {
 	free(window->title);
@@ -4616,6 +4680,248 @@ window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
 				    window->main_surface->surface,
 				    wl_fixed_from_int(x),
 				    wl_fixed_from_int(y));
+}
+
+static void
+relative_pointer_handle_motion(void *data, struct zwp_relative_pointer_v1 *pointer,
+			       uint32_t utime_hi,
+			       uint32_t utime_lo,
+			       wl_fixed_t dx,
+			       wl_fixed_t dy,
+			       wl_fixed_t dx_unaccel,
+			       wl_fixed_t dy_unaccel)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+	uint32_t ms = (((uint64_t) utime_hi) << 32 | utime_lo) / 1000;
+
+	if (window->locked_pointer_motion_handler &&
+	    window->pointer_locked) {
+		window->locked_pointer_motion_handler(
+			window, input, ms,
+			wl_fixed_to_double(dx),
+			wl_fixed_to_double(dy),
+			window->user_data);
+	}
+}
+
+static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
+	relative_pointer_handle_motion,
+};
+
+static void
+locked_pointer_locked(void *data,
+		      struct zwp_locked_pointer_v1 *locked_pointer)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	window->pointer_locked = true;
+
+	if (window->pointer_locked_handler) {
+		window->pointer_locked_handler(window,
+					       input,
+					       window->user_data);
+	}
+}
+
+static void
+locked_pointer_unlocked(void *data,
+			struct zwp_locked_pointer_v1 *locked_pointer)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	window_unlock_pointer(window);
+
+	if (window->pointer_unlocked_handler) {
+		window->pointer_unlocked_handler(window,
+						 input,
+						 window->user_data);
+	}
+}
+
+static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
+	locked_pointer_locked,
+	locked_pointer_unlocked,
+};
+
+int
+window_lock_pointer(struct window *window, struct input *input)
+{
+	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager =
+		window->display->relative_pointer_manager;
+	struct zwp_pointer_constraints_v1 *pointer_constraints =
+		window->display->pointer_constraints;
+	struct zwp_relative_pointer_v1 *relative_pointer;
+	struct zwp_locked_pointer_v1 *locked_pointer;
+
+	if (!window->display->relative_pointer_manager)
+		return -1;
+
+	if (!window->display->pointer_constraints)
+		return -1;
+
+	if (window->locked_pointer)
+		return -1;
+
+	if (window->confined_pointer)
+		return -1;
+
+	if (!input->pointer)
+		return -1;
+
+	relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(
+		relative_pointer_manager, input->pointer);
+	zwp_relative_pointer_v1_add_listener(relative_pointer,
+					     &relative_pointer_listener,
+					     input);
+
+	locked_pointer =
+		zwp_pointer_constraints_v1_lock_pointer(pointer_constraints,
+							window->main_surface->surface,
+							input->pointer,
+							NULL,
+							ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+	zwp_locked_pointer_v1_add_listener(locked_pointer,
+					   &locked_pointer_listener,
+					   input);
+
+	window->locked_input = input;
+	window->locked_pointer = locked_pointer;
+	window->relative_pointer = relative_pointer;
+
+	return 0;
+}
+
+void
+window_unlock_pointer(struct window *window)
+{
+	if (!window->locked_pointer)
+		return;
+
+	zwp_locked_pointer_v1_destroy(window->locked_pointer);
+	zwp_relative_pointer_v1_destroy(window->relative_pointer);
+	window->locked_pointer = NULL;
+	window->relative_pointer = NULL;
+	window->pointer_locked = false;
+	window->locked_input = NULL;
+}
+
+void
+widget_set_locked_pointer_cursor_hint(struct widget *widget,
+				      float x, float y)
+{
+	struct window *window = widget->window;
+
+	if (!window->locked_pointer)
+		return;
+
+	zwp_locked_pointer_v1_set_cursor_position_hint(window->locked_pointer,
+						       wl_fixed_from_double(x),
+						       wl_fixed_from_double(y));
+	wl_surface_commit(window->main_surface->surface);
+}
+
+static void
+confined_pointer_confined(void *data,
+			  struct zwp_confined_pointer_v1 *confined_pointer)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	window->confined = true;
+
+	if (window->pointer_confined_handler) {
+		window->pointer_confined_handler(window,
+						 input,
+						 window->user_data);
+	}
+}
+
+static void
+confined_pointer_unconfined(void *data,
+			    struct zwp_confined_pointer_v1 *confined_pointer)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	window_unconfine_pointer(window);
+
+	window->confined = false;
+
+	if (window->pointer_unconfined_handler) {
+		window->pointer_unconfined_handler(window,
+						   input,
+						   window->user_data);
+	}
+}
+
+static const struct zwp_confined_pointer_v1_listener confined_pointer_listener = {
+	confined_pointer_confined,
+	confined_pointer_unconfined,
+};
+
+int
+window_confine_pointer_to_widget(struct window *window,
+				 struct widget *widget,
+				 struct input *input)
+{
+	struct zwp_pointer_constraints_v1 *pointer_constraints =
+		window->display->pointer_constraints;
+	struct zwp_confined_pointer_v1 *confined_pointer;
+	struct wl_compositor *compositor = window->display->compositor;
+	struct wl_region *region = NULL;
+
+	if (!window->display->pointer_constraints)
+		return -1;
+
+	if (window->locked_pointer)
+		return -1;
+
+	if (window->confined_pointer)
+		return -1;
+
+	if (!input->pointer)
+		return -1;
+
+	if (widget) {
+		region = wl_compositor_create_region(compositor);
+		wl_region_add(region,
+			      widget->allocation.x,
+			      widget->allocation.y,
+			      widget->allocation.width,
+			      widget->allocation.height);
+	}
+
+	confined_pointer =
+		zwp_pointer_constraints_v1_confine_pointer(pointer_constraints,
+							   window->main_surface->surface,
+							   input->pointer,
+							   region,
+							   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+	if (region)
+		wl_region_destroy(region);
+
+	zwp_confined_pointer_v1_add_listener(confined_pointer,
+					     &confined_pointer_listener,
+					     input);
+
+	window->confined_pointer = confined_pointer;
+	window->confined_widget = widget;
+
+	return 0;
+}
+
+void
+window_unconfine_pointer(struct window *window)
+{
+	if (!window->confined_pointer)
+		return;
+
+	zwp_confined_pointer_v1_destroy(window->confined_pointer);
+	window->confined_pointer = NULL;
+	window->confined = false;
 }
 
 static void
@@ -5459,6 +5765,18 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		display_add_input(d, id, version);
+	} else if (strcmp(interface, "zwp_relative_pointer_manager_v1") == 0 &&
+		   version == ZWP_RELATIVE_POINTER_MANAGER_V1_VERSION) {
+		d->relative_pointer_manager =
+			wl_registry_bind(registry, id,
+					 &zwp_relative_pointer_manager_v1_interface,
+					 1);
+	} else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0 &&
+		   version == ZWP_POINTER_CONSTRAINTS_V1_VERSION)  {
+		d->pointer_constraints =
+			wl_registry_bind(registry, id,
+					 &zwp_pointer_constraints_v1_interface,
+					 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 		wl_shm_add_listener(d->shm, &shm_listener, d);
