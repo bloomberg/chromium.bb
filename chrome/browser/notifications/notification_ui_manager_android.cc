@@ -76,10 +76,13 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   ScopedJavaLocalRef<jstring> body = ConvertUTF16ToJavaString(
       env, notification.message());
   ScopedJavaLocalRef<jstring> origin = ConvertUTF8ToJavaString(
-      env, notification.origin_url().spec());
+      env, notification.origin_url().GetOrigin().spec());
+
+  ScopedJavaLocalRef<jobject> icon;
 
   SkBitmap icon_bitmap = notification.icon().AsBitmap();
-  ScopedJavaLocalRef<jobject> icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
+  if (!icon_bitmap.isNull())
+    icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   int platform_id = Java_NotificationUIManager_displayNotification(
       env, java_object_.obj(), id.obj(), title.obj(), body.obj(), icon.obj(),

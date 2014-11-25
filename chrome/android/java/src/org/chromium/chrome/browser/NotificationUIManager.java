@@ -11,11 +11,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
  * Provides the ability for the NotificationUIManagerAndroid to talk to the Android platform
@@ -33,10 +36,15 @@ public class NotificationUIManager extends BroadcastReceiver {
     private static final String ACTION_SITE_SETTINGS_NOTIFICATION =
             "org.chromium.chrome.browser.ACTION_SITE_SETTINGS_NOTIFICATION";
 
+    private static final int NOTIFICATION_ICON_BG_COLOR = Color.rgb(150, 150, 150);
+    private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
+
     private final long mNativeNotificationManager;
 
     private final Context mAppContext;
     private final NotificationManager mNotificationManager;
+
+    private RoundedIconGenerator mIconGenerator;
 
     private int mLastNotificationId;
 
@@ -104,7 +112,10 @@ public class NotificationUIManager extends BroadcastReceiver {
     @CalledByNative
     private int displayNotification(String notificationId, String title, String body, Bitmap icon,
                                     String origin) {
-        // TODO(peter): Create a default icon if |icon| is not sufficient.
+        if (icon == null || icon.getWidth() == 0) {
+            icon = getIconGenerator().generateIconForUrl(origin);
+        }
+
         Notification notification = new Notification.Builder(mAppContext)
                 .setContentTitle(title)
                 .setContentText(body)
@@ -123,6 +134,32 @@ public class NotificationUIManager extends BroadcastReceiver {
         mNotificationManager.notify(mLastNotificationId, notification);
 
         return mLastNotificationId++;
+    }
+
+    /**
+     * Ensures the existance of an icon generator, which is created lazily.
+     *
+     * @return The icon generator which can be used.
+     */
+    private RoundedIconGenerator getIconGenerator() {
+        if (mIconGenerator == null) {
+            Resources res = mAppContext.getResources();
+            float density = res.getDisplayMetrics().density;
+
+            int widthPx = res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+            int heightPx =
+                    res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+
+            mIconGenerator = new RoundedIconGenerator(
+                    mAppContext,
+                    (int) (widthPx / density),
+                    (int) (heightPx / density),
+                    (int) (Math.min(widthPx, heightPx) / density / 2),
+                    NOTIFICATION_ICON_BG_COLOR,
+                    NOTIFICATION_TEXT_SIZE_DP);
+        }
+
+        return mIconGenerator;
     }
 
     /**
