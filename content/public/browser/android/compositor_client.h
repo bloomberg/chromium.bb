@@ -17,9 +17,6 @@ class CONTENT_EXPORT CompositorClient {
   // The compositor has completed swapping a frame.
   virtual void OnSwapBuffersCompleted(int pending_swap_buffers) {}
 
-  // Tells the client that GL resources were lost and need to be reinitialized.
-  virtual void DidLoseResources() {}
-
  protected:
   CompositorClient() {}
   virtual ~CompositorClient() {}

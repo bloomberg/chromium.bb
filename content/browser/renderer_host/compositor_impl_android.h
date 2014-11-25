@@ -13,7 +13,6 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/browser/android/ui_resource_provider_impl.h"
-#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/android/compositor.h"
@@ -43,7 +42,6 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
-      public ImageTransportFactoryAndroidObserver,
       public ui::WindowAndroidCompositor {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
@@ -90,9 +88,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void ScheduleAnimation() override;
   virtual void DidPostSwapBuffers() override;
   virtual void DidAbortSwapBuffers() override;
-
-  // ImageTransportFactoryAndroidObserver implementation.
-  virtual void OnLostResources() override;
 
   // WindowAndroidCompositor implementation.
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;

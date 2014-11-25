@@ -189,13 +189,11 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
-  ImageTransportFactoryAndroid::AddObserver(this);
   root_window->AttachCompositor(this);
 }
 
 CompositorImpl::~CompositorImpl() {
   root_window_->DetachCompositor();
-  ImageTransportFactoryAndroid::RemoveObserver(this);
   // Clean-up any surface references.
   SetSurface(NULL);
 }
@@ -593,10 +591,6 @@ void CompositorImpl::PopulateGpuCapabilities(
     gpu::Capabilities gpu_capabilities) {
   ui_resource_provider_.SetSupportsETC1NonPowerOfTwo(
       gpu_capabilities.texture_format_etc1_npot);
-}
-
-void CompositorImpl::OnLostResources() {
-  client_->DidLoseResources();
 }
 
 void CompositorImpl::ScheduleComposite() {
