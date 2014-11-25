@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 
+#include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 
 namespace password_manager {
@@ -28,6 +29,14 @@ bool StubPasswordManagerClient::ShouldFilterAutofillResult(
 
 bool StubPasswordManagerClient::PromptUserToSavePassword(
     scoped_ptr<PasswordFormManager> form_to_save) {
+  return false;
+}
+
+bool StubPasswordManagerClient::PromptUserToChooseCredentials(
+    const std::vector<autofill::PasswordForm*>& forms,
+    base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+  ScopedVector<autofill::PasswordForm> entries;
+  entries.assign(forms.begin(), forms.end());
   return false;
 }
 

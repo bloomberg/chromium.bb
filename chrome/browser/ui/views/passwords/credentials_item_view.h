@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_CREDENTIALS_ITEM_VIEW_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/common/password_form.h"
 #include "ui/views/controls/button/label_button.h"
 
 // CredentialsItemView represents a credential view in the account chooser
@@ -13,10 +14,14 @@
 class CredentialsItemView : public views::LabelButton {
  public:
   CredentialsItemView(views::ButtonListener* button_listener,
-                      const base::string16& text);
+                      const autofill::PasswordForm& form);
   ~CredentialsItemView() override;
 
+  const autofill::PasswordForm& form() const { return form_; }
+
  private:
+  autofill::PasswordForm form_;
+
   DISALLOW_COPY_AND_ASSIGN(CredentialsItemView);
 };
 

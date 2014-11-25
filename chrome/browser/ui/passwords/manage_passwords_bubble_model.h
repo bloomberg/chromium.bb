@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -13,6 +14,7 @@
 #include "ui/gfx/range/range.h"
 
 class ManagePasswordsIconController;
+class ManagePasswordsUIController;
 
 namespace content {
 class WebContents;
@@ -65,14 +67,20 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
+  // Called by the view code to notify about chosen credential.
+  void OnChooseCredentials(const autofill::PasswordForm& password_form);
+
   password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }
-  const autofill::PasswordForm& pending_credentials() const {
-    return pending_credentials_;
+  const autofill::PasswordForm& pending_password() const {
+    return pending_password_;
   }
   const autofill::ConstPasswordFormMap& best_matches() const {
     return best_matches_;
+  }
+  const ScopedVector<autofill::PasswordForm>& pending_credentials() const {
+    return pending_credentials_;
   }
   const base::string16& manage_link() const { return manage_link_; }
   const base::string16& save_confirmation_text() const {
@@ -105,8 +113,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
  private:
   password_manager::ui::State state_;
   base::string16 title_;
-  autofill::PasswordForm pending_credentials_;
+  autofill::PasswordForm pending_password_;
   autofill::ConstPasswordFormMap best_matches_;
+  ScopedVector<autofill::PasswordForm> pending_credentials_;
   base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;

@@ -13272,11 +13272,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
         No passwords saved.
       </message>
-      <message name="IDS_MANAGE_PASSWORDS_DELETED" desc="The text that is used in the manage passwords bubble when a password is de.">
+      <message name="IDS_MANAGE_PASSWORDS_DELETED" desc="The text that is used in the manage passwords bubble when a password is deleted.">
       Password deleted
       </message>
       <message name="IDS_MANAGE_PASSWORDS_UNDO" desc="The text that is used in the manage passwords bubble when a password is de.">
       Undo
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_CHOOSE_TITLE" desc="The title of the password bubble when a credential should be chosen.">
+      Choose an account from your Google Smart Lock
       </message>
 
       <message name="IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to allow autofilling in about:flags">

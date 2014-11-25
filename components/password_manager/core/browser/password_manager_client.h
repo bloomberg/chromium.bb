@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
+#include "base/callback.h"
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -13,6 +14,7 @@ class PrefService;
 
 namespace password_manager {
 
+struct CredentialInfo;
 class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;
@@ -62,6 +64,15 @@ class PasswordManagerClient {
   // Returns true if the prompt was indeed displayed.
   virtual bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save) = 0;
+
+  // Informs the embedder of a password forms that the user should choose from.
+  // Returns true if the prompt is indeed displayed. If the prompt is not
+  // displayed, returns false and does not call |callback|.
+  // |callback| should be invoked with the chosen form.
+  // Note: The implementation takes ownership of all PasswordForms in |forms|.
+  virtual bool PromptUserToChooseCredentials(
+      const std::vector<autofill::PasswordForm*>& forms,
+      base::Callback<void(const CredentialInfo&)> callback) = 0;
 
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.

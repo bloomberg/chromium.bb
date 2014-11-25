@@ -54,13 +54,13 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
 
-  // TODO(mkwst): Reverse this logic. The controller should populate the model
-  // directly rather than the model pulling from the controller. Perhaps like
-  // `controller->PopulateModel(this)`.
   state_ = controller->state();
   if (password_manager::ui::IsPendingState(state_))
-    pending_credentials_ = controller->PendingCredentials();
-  best_matches_ = controller->best_matches();
+    pending_password_ = controller->PendingPassword();
+  if (password_manager::ui::IsCredentialsState(state_))
+    pending_credentials_.swap(controller->new_password_forms());
+  else
+    best_matches_ = controller->best_matches();
 
   if (password_manager::ui::IsPendingState(state_)) {
     title_ = l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD);
@@ -69,6 +69,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
+  } else if (password_manager::ui::IsCredentialsState(state_)) {
+    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
   } else {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
@@ -102,6 +104,8 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
     if (state_ == password_manager::ui::CONFIRMATION_STATE) {
       display_disposition_ =
           metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
+    } else if (password_manager::ui::IsCredentialsState(state_)) {
+      display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
     } else {
       display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
     }
@@ -112,9 +116,22 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
   // with the button in such a way that it closes, we'll reset this value
   // accordingly.
   dismissal_reason_ = metrics_util::NO_DIRECT_INTERACTION;
+
+  ManagePasswordsUIController* controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  controller->OnBubbleShown();
 }
 
 void ManagePasswordsBubbleModel::OnBubbleHidden() {
+  if (password_manager::ui::IsCredentialsState(state_)) {
+    // It's time to run the pending callback if it wasn't called in
+    // OnChooseCredentials().
+    ManagePasswordsUIController* manage_passwords_ui_controller =
+        ManagePasswordsUIController::FromWebContents(web_contents());
+    manage_passwords_ui_controller->ChooseCredential(false,
+                                                     autofill::PasswordForm());
+    state_ = password_manager::ui::INACTIVE_STATE;
+  }
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
@@ -127,7 +144,8 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
 void ManagePasswordsBubbleModel::OnNopeClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NOPE;
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
-  state_ = password_manager::ui::PENDING_PASSWORD_STATE;
+  if (!password_manager::ui::IsCredentialsState(state_))
+    state_ = password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -187,6 +205,16 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);
+}
+
+void ManagePasswordsBubbleModel::OnChooseCredentials(
+    const autofill::PasswordForm& password_form) {
+  dismissal_reason_ = metrics_util::CLICKED_CREDENTIAL;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  manage_passwords_ui_controller->ChooseCredential(true, password_form);
+  state_ = password_manager::ui::INACTIVE_STATE;
 }
 
 // static

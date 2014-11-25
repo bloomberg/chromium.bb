@@ -24,6 +24,10 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save) override;
+  bool PromptUserToChooseCredentials(
+      const std::vector<autofill::PasswordForm*>& forms,
+      base::Callback<void(const password_manager::CredentialInfo&)>
+          callback) override;
   void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;

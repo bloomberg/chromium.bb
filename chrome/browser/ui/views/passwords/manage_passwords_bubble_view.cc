@@ -209,12 +209,9 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   AddTitleRow(layout, parent_->model());
 
-  // TODO(vasilii): this is a stub instead of actual data. We temporary show 2
-  // credentials.
-  for (int i = 0; i < 2; ++i) {
-    base::string16 name =
-        l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME, i);
-    CredentialsItemView* credential_view = new CredentialsItemView(this, name);
+  const auto& pending_credentials = parent_->model()->pending_credentials();
+  for (autofill::PasswordForm* form : pending_credentials) {
+    CredentialsItemView* credential_view = new CredentialsItemView(this, *form);
     // Add the title to the layout with appropriate padding.
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(credential_view);
@@ -237,6 +234,14 @@ ManagePasswordsBubbleView::AccountChooserView::~AccountChooserView() {
 
 void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
+  if (sender != cancel_button_) {
+    // ManagePasswordsBubbleModel should care about calling a callback in case
+    // the bubble is dismissed by any other means.
+    CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
+    parent_->model()->OnChooseCredentials(view->form());
+  } else {
+    parent_->model()->OnNopeClicked();
+  }
   parent_->Close();
 }
 
@@ -281,7 +286,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   // Create the pending credential item, save button and refusal combobox.
   ManagePasswordItemView* item =
       new ManagePasswordItemView(parent->model(),
-                                 parent->model()->pending_credentials(),
+                                 parent->model()->pending_password(),
                                  password_manager::ui::FIRST_ITEM);
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
@@ -888,6 +893,8 @@ void ManagePasswordsBubbleView::Refresh() {
     AddChildView(new BlacklistedView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
+  } else if (password_manager::ui::IsCredentialsState(model()->state())) {
+    AddChildView(new AccountChooserView(this));
   } else {
     AddChildView(new ManageView(this));
   }

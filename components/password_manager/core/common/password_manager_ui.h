@@ -35,6 +35,13 @@ enum State {
   // The user has blacklisted the site rendered in the current WebContents.
   // The icon needs to be visible, in the blacklisted state.
   BLACKLIST_STATE,
+
+  // The site has asked user to choose a credential. Now we need to display an
+  // Omnibox icon, and pop up a bubble.
+  CREDENTIAL_REQUEST_AND_BUBBLE_STATE,
+
+  // Credentials are pending, but we don't need to pop up a bubble.
+  CREDENTIAL_REQUEST_STATE,
 };
 
 // The position of a password item in a list of credentials.
@@ -48,6 +55,9 @@ enum PasswordItemPosition {
 
 // Returns true if |state| represents a pending password.
 bool IsPendingState(State state);
+
+// Returns true if |state| represents a pending credentials.
+bool IsCredentialsState(State state);
 
 // Returns true if this state show cause the bubble to be shown without user
 // interaction.

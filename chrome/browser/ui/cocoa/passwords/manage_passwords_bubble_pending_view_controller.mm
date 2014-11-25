@@ -87,7 +87,7 @@ using namespace password_manager::mac::ui;
   // It should be at least as wide as the box without the padding.
   passwordItem_.reset([[ManagePasswordItemViewController alloc]
       initWithModel:model_
-       passwordForm:model_->pending_credentials()
+       passwordForm:model_->pending_password()
            position:password_manager::ui::FIRST_ITEM]);
   NSView* password = [passwordItem_ view];
   [self.view addSubview:password];

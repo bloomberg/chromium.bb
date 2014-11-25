@@ -4,6 +4,7 @@
 
 #include "components/password_manager/content/browser/content_credential_manager_dispatcher.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -32,7 +33,9 @@ class TestPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
   TestPasswordManagerClient(password_manager::PasswordStore* store)
-      : did_prompt_user_to_save_(false), store_(store) {}
+      : did_prompt_user_to_save_(false),
+        did_prompt_user_to_choose_(false),
+        store_(store) {}
   ~TestPasswordManagerClient() override {}
 
   password_manager::PasswordStore* GetPasswordStore() override {
@@ -50,7 +53,22 @@ class TestPasswordManagerClient
     return true;
   }
 
+  bool PromptUserToChooseCredentials(
+      const std::vector<autofill::PasswordForm*>& forms,
+      base::Callback<void(const password_manager::CredentialInfo&)>
+          callback) override {
+    EXPECT_FALSE(forms.empty());
+    did_prompt_user_to_choose_ = true;
+    ScopedVector<autofill::PasswordForm> entries;
+    entries.assign(forms.begin(), forms.end());
+    password_manager::CredentialInfo info(*entries[0]);
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback,
+                                                                 info));
+    return true;
+  }
+
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
+  bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }
 
   password_manager::PasswordFormManager* pending_manager() const {
     return manager_.get();
@@ -58,6 +76,7 @@ class TestPasswordManagerClient
 
  private:
   bool did_prompt_user_to_save_;
+  bool did_prompt_user_to_choose_;
   password_manager::PasswordStore* store_;
   password_manager::StubPasswordManagerDriver driver_;
   scoped_ptr<password_manager::PasswordFormManager> manager_;
@@ -180,6 +199,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   CredentialManagerMsg_SendCredential::Read(message, &param);
   EXPECT_EQ(CREDENTIAL_TYPE_EMPTY, param.b.type);
   process()->sink().ClearMessages();
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
 }
 
 TEST_F(ContentCredentialManagerDispatcherTest,
@@ -195,7 +215,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
+  EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
 TEST_F(ContentCredentialManagerDispatcherTest,
@@ -215,6 +235,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   CredentialManagerMsg_RejectCredentialRequest::Read(message, &reject_param);
   EXPECT_EQ(blink::WebCredentialManagerError::ErrorTypePendingRequest,
             reject_param.b);
+  EXPECT_FALSE(client_->did_prompt_user_to_choose());
 
   process()->sink().ClearMessages();
 
@@ -230,6 +251,7 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
   EXPECT_NE(CREDENTIAL_TYPE_EMPTY, send_param.b.type);
   process()->sink().ClearMessages();
+  EXPECT_TRUE(client_->did_prompt_user_to_choose());
 }
 
 }  // namespace password_manager

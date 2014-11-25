@@ -183,6 +183,18 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
   return true;
 }
 
+bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
+    const std::vector<autofill::PasswordForm*>& forms,
+    base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+  // Take ownership of all the password form objects in the |results| vector.
+  ScopedVector<autofill::PasswordForm> entries;
+  entries.assign(forms.begin(), forms.end());
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  return manage_passwords_ui_controller->OnChooseCredentials(entries.Pass(),
+                                                             callback);
+}
+
 void ChromePasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<password_manager::PasswordFormManager> saved_form) {
 #if defined(OS_ANDROID)

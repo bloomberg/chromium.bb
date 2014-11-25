@@ -5,13 +5,15 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 
 #include "content/public/browser/web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
     content::WebContents* contents)
     : ManagePasswordsUIController(contents),
       navigated_to_settings_page_(false),
       saved_password_(false),
-      never_saved_password_(false) {
+      never_saved_password_(false),
+      choose_credential_(false) {
   contents->SetUserData(UserDataKey(), this);
 }
 
@@ -24,13 +26,18 @@ void ManagePasswordsUIControllerMock::
 }
 
 const autofill::PasswordForm&
-    ManagePasswordsUIControllerMock::PendingCredentials() const {
-  return pending_credentials_;
+    ManagePasswordsUIControllerMock::PendingPassword() const {
+  return pending_password_;
 }
 
-void ManagePasswordsUIControllerMock::SetPendingCredentials(
-    autofill::PasswordForm pending_credentials) {
-  pending_credentials_ = pending_credentials;
+void ManagePasswordsUIControllerMock::SetPendingPassword(
+    autofill::PasswordForm pending_password) {
+  pending_password_ = pending_password;
+}
+
+void ManagePasswordsUIControllerMock::UpdateBubbleAndIconVisibility() {
+  ManagePasswordsUIController::UpdateBubbleAndIconVisibility();
+  OnBubbleShown();
 }
 
 bool ManagePasswordsUIControllerMock::IsInstalled() const {
@@ -43,4 +50,11 @@ void ManagePasswordsUIControllerMock::SavePasswordInternal() {
 
 void ManagePasswordsUIControllerMock::NeverSavePasswordInternal() {
   never_saved_password_ = true;
+}
+
+void ManagePasswordsUIControllerMock::ChooseCredential(
+    bool was_chosen,
+    const autofill::PasswordForm& form) {
+  EXPECT_FALSE(choose_credential_);
+  choose_credential_ = true;
 }

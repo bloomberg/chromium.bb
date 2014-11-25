@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_CONTENT_CREDENTIAL_MANAGER_DISPATCHER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/password_manager/core/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -31,8 +32,6 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
                                            public content::WebContentsObserver,
                                            public PasswordStoreConsumer {
  public:
-  // |client| isn't yet used by this class, but is necessary for the next step:
-  // wiring this up as a subclass of PasswordStoreConsumer.
   ContentCredentialManagerDispatcher(content::WebContents* web_contents,
                                      PasswordManagerClient* client);
   ~ContentCredentialManagerDispatcher() override;
@@ -56,8 +55,13 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
+  using CredentialCallback =
+      base::Callback<void(const autofill::PasswordForm&)>;
+
  private:
   PasswordStore* GetPasswordStore();
+
+  void SendCredential(int request_id, const CredentialInfo& info);
 
   PasswordManagerClient* client_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;

@@ -17,8 +17,9 @@ const int kButtonHeight = 50;
 }
 
 CredentialsItemView::CredentialsItemView(views::ButtonListener* button_listener,
-                                         const base::string16& text)
-    : LabelButton(button_listener, text) {
+                                         const autofill::PasswordForm& form)
+    : LabelButton(button_listener, form.username_value),
+      form_(form) {
   SetMinSize(gfx::Size(0, kButtonHeight));
   // TODO(vasilii): temporary code below shows the built-in profile icon instead
   // of avatar.

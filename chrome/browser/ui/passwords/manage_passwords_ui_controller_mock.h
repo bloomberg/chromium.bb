@@ -40,8 +40,14 @@ class ManagePasswordsUIControllerMock
   void NeverSavePasswordInternal() override;
   bool never_saved_password() const { return never_saved_password_; }
 
-  const autofill::PasswordForm& PendingCredentials() const override;
-  void SetPendingCredentials(autofill::PasswordForm pending_credentials);
+  void ChooseCredential(bool was_chosen,
+                        const autofill::PasswordForm& form) override;
+  bool choose_credential() const { return choose_credential_; }
+
+  const autofill::PasswordForm& PendingPassword() const override;
+  void SetPendingPassword(autofill::PasswordForm pending_password);
+
+  void UpdateBubbleAndIconVisibility() override;
 
   // Sneaky setters for testing.
   void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {
@@ -60,8 +66,9 @@ class ManagePasswordsUIControllerMock
   bool navigated_to_settings_page_;
   bool saved_password_;
   bool never_saved_password_;
+  bool choose_credential_;
 
-  autofill::PasswordForm pending_credentials_;
+  autofill::PasswordForm pending_password_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
 };
