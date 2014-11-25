@@ -168,6 +168,12 @@ void ModuleRegistry::LoadModule(Isolate* isolate,
     return;
   }
   waiting_callbacks_.insert(std::make_pair(id, callback));
+
+  for (size_t i = 0; i < pending_modules_.size(); ++i) {
+    if (pending_modules_[i]->id == id)
+      return;
+  }
+
   unsatisfied_dependencies_.insert(id);
 }
 

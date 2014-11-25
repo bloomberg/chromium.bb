@@ -70,6 +70,10 @@ void OnModuleLoaded(TestHelper* helper,
       ->LoadModule(isolate, "two", base::Bind(NestedCallback));
 }
 
+void OnModuleLoadedNoOp(v8::Handle<v8::Value> value) {
+  ASSERT_TRUE(value->IsNumber());
+}
+
 }  // namespace
 
 typedef V8Test ModuleRegistryTest;
@@ -131,6 +135,30 @@ TEST_F(ModuleRegistryTest, LoadModuleTest) {
   EXPECT_EQ(0, counter);
   helper.runner->Run(source, "script");
   EXPECT_EQ(3, counter);
+}
+
+// Verifies that explicitly loading a module that's already pending does
+// not cause the ModuleRegistry's unsatisfied_dependency set to grow.
+TEST_F(ModuleRegistryTest, UnsatisfiedDependenciesTest) {
+  TestHelper helper(instance_->isolate());
+  std::string source =
+      "define('one', ['no_such_module'], function(nsm) {"
+      "  return 1;"
+      "});";
+  ModuleRegistry* registry =
+    ModuleRegistry::From(helper.runner->GetContextHolder()->context());
+
+  std::set<std::string> no_such_module_set;
+  no_such_module_set.insert("no_such_module");
+
+  // Adds one unsatisfied dependency on "no-such-module".
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(no_such_module_set, registry->unsatisfied_dependencies());
+
+  // Should have no effect on the unsatisfied_dependencies set.
+  ModuleRegistry::LoadModuleCallback callback = base::Bind(OnModuleLoadedNoOp);
+  registry->LoadModule(instance_->isolate(), "one", callback);
+  EXPECT_EQ(no_such_module_set, registry->unsatisfied_dependencies());
 }
 
 }  // namespace gin
