@@ -150,6 +150,9 @@ class ChildProcessSecurityPolicy {
   // The browser should check this property before assuming the child process
   // is allowed to use WebUI bindings.
   virtual bool HasWebUIBindings(int child_id) = 0;
+
+  // Grants permission to send system exclusive message to any MIDI devices.
+  virtual void GrantSendMidiSysExMessage(int child_id) = 0;
 };
 
 }  // namespace content

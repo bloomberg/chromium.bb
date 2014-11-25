@@ -904,8 +904,6 @@
       'browser/media/media_internals_proxy.h',
       'browser/media/media_internals_ui.cc',
       'browser/media/media_internals_ui.h',
-      'browser/media/midi_dispatcher_host.cc',
-      'browser/media/midi_dispatcher_host.h',
       'browser/media/midi_host.cc',
       'browser/media/midi_host.h',
       'browser/media/webrtc_identity_store.cc',

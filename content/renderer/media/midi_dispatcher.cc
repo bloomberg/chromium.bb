@@ -5,12 +5,11 @@
 #include "content/renderer/media/midi_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "content/common/media/midi_messages.h"
+#include "content/public/common/service_registry.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebMIDIPermissionRequest.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebMIDIPermissionRequest;
 using blink::WebSecurityOrigin;
@@ -23,23 +22,22 @@ MidiDispatcher::MidiDispatcher(RenderFrame* render_frame)
 
 MidiDispatcher::~MidiDispatcher() {}
 
-bool MidiDispatcher::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MidiDispatcher, message)
-    IPC_MESSAGE_HANDLER(MidiMsg_SysExPermissionApproved,
-                        OnSysExPermissionApproved)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void MidiDispatcher::requestSysexPermission(
       const WebMIDIPermissionRequest& request) {
-  int bridge_id = requests_.Add(new WebMIDIPermissionRequest(request));
-  WebSecurityOrigin security_origin = request.securityOrigin();
-  GURL url(security_origin.toString());
-  Send(new MidiHostMsg_RequestSysExPermission(routing_id(), bridge_id, url,
-      blink::WebUserGestureIndicator::isProcessingUserGesture()));
+  if (!permission_service_.get()) {
+    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
+        &permission_service_);
+  }
+
+  int permission_request_id =
+      requests_.Add(new WebMIDIPermissionRequest(request));
+
+  permission_service_->RequestPermission(
+      PERMISSION_NAME_MIDI_SYSEX,
+      request.securityOrigin().toString().utf8(),
+      base::Bind(&MidiDispatcher::OnSysExPermissionSet,
+                 base::Unretained(this),
+                 permission_request_id));
 }
 
 void MidiDispatcher::cancelSysexPermissionRequest(
@@ -53,14 +51,14 @@ void MidiDispatcher::cancelSysexPermissionRequest(
   }
 }
 
-void MidiDispatcher::OnSysExPermissionApproved(int bridge_id,
-                                               bool is_allowed) {
+void MidiDispatcher::OnSysExPermissionSet(int request_id,
+                                          PermissionStatus status) {
   // |request| can be NULL when the request is canceled.
-  WebMIDIPermissionRequest* request = requests_.Lookup(bridge_id);
+  WebMIDIPermissionRequest* request = requests_.Lookup(request_id);
   if (!request)
     return;
-  request->setIsAllowed(is_allowed);
-  requests_.Remove(bridge_id);
+  request->setIsAllowed(status == PERMISSION_STATUS_GRANTED);
+  requests_.Remove(request_id);
 }
 
 }  // namespace content

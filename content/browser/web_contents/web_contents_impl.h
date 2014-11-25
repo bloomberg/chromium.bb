@@ -55,7 +55,6 @@ class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class ManifestManagerHost;
-class MidiDispatcherHost;
 class PluginContentOriginWhitelist;
 class PowerSaveBlocker;
 class RenderViewHost;
@@ -1212,8 +1211,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool last_dialog_suppressed_;
 
   scoped_ptr<GeolocationServiceContext> geolocation_service_context_;
-
-  scoped_ptr<MidiDispatcherHost> midi_dispatcher_host_;
 
   scoped_ptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host_;

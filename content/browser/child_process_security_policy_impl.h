@@ -73,6 +73,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanDeleteFromFileSystem(int child_id,
                                const std::string& filesystem_id) override;
   bool HasWebUIBindings(int child_id) override;
+  void GrantSendMidiSysExMessage(int child_id) override;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -118,9 +119,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
-
-  // Grants permission to send system exclusive message to any MIDI devices.
-  void GrantSendMidiSysExMessage(int child_id);
 
   // Before servicing a child process's request for a URL, the browser should
   // call this method to determine whether the process has the capability to

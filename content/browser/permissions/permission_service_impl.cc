@@ -16,6 +16,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
   switch(name) {
     case PERMISSION_NAME_GEOLOCATION:
       return PERMISSION_GEOLOCATION;
+    case PERMISSION_NAME_MIDI_SYSEX:
+      return PERMISSION_MIDI_SYSEX;
   }
 
   NOTREACHED();
@@ -82,6 +84,7 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
     int request_id,
     bool allowed) {
   // TODO(mlamouri): we might want a generic way to handle those things.
+  // TODO(mlamouri): could that move to <name>_permission_context.cc?
   if (allowed &&
       pending_requests_.Lookup(request_id)->permission ==
           PERMISSION_GEOLOCATION) {

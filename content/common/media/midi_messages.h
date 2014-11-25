@@ -26,20 +26,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MidiResult, media::MIDI_RESULT_LAST)
 
-// Messages for IPC between MidiDispatcher and MidiDispatcherHost.
-
-// Renderer request to browser for using system exclusive messages.
-IPC_MESSAGE_ROUTED3(MidiHostMsg_RequestSysExPermission,
-                    int /* client id */,
-                    GURL /* origin */,
-                    bool /* user_gesture */)
-
-// Messages sent from the browser to the renderer.
-
-IPC_MESSAGE_ROUTED2(MidiMsg_SysExPermissionApproved,
-                    int /* client id */,
-                    bool /* is_allowed */)
-
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
 // Renderer request to browser for access to MIDI services.
