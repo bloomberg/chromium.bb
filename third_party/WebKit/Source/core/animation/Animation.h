@@ -85,6 +85,8 @@ public:
 
     virtual void trace(Visitor*) override;
 
+    void downgradeToNormalAnimation() { m_priority = DefaultPriority; }
+
 protected:
     void applyEffects();
     void clearEffects();
