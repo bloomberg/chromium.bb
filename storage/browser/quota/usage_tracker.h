@@ -66,6 +66,12 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
 
   typedef std::map<QuotaClient::ID, ClientUsageTracker*> ClientTrackerMap;
 
+  typedef CallbackQueue<UsageCallback, int64> UsageCallbackQueue;
+  typedef CallbackQueue<GlobalUsageCallback, int64, int64>
+      GlobalUsageCallbackQueue;
+  typedef CallbackQueueMap<UsageCallback, std::string, int64>
+      HostUsageCallbackMap;
+
   friend class ClientUsageTracker;
   void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                           int64 limited_usage);

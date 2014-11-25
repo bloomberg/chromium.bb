@@ -58,8 +58,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void SetUsageCacheEnabled(const GURL& origin, bool enabled);
 
  private:
-  typedef CallbackQueueMap<HostUsageAccumulator, std::string,
-                           Tuple2<int64, int64> > HostUsageAccumulatorMap;
+  typedef CallbackQueueMap<HostUsageAccumulator, std::string, int64, int64>
+      HostUsageAccumulatorMap;
 
   typedef std::set<std::string> HostSet;
   typedef std::map<GURL, int64> UsageMap;
@@ -126,7 +126,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   OriginSetByHost non_cached_limited_origins_by_host_;
   OriginSetByHost non_cached_unlimited_origins_by_host_;
 
-  GlobalUsageCallbackQueue global_usage_callback_;
   HostUsageAccumulatorMap host_usage_accumulators_;
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;

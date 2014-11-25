@@ -7,12 +7,10 @@
 
 #include <map>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/tuple.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "storage/common/quota/quota_types.h"
 
@@ -34,14 +32,8 @@ typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
 
-template<typename CallbackType, typename Args>
-void DispatchToCallback(const CallbackType& callback,
-                        const Args& args) {
-  DispatchToMethod(&callback, &CallbackType::Run, args);
-}
-
 // Simple template wrapper for a callback queue.
-template <typename CallbackType, typename Args>
+template <typename CallbackType, typename... Args>
 class CallbackQueue {
  public:
   // Returns true if the given |callback| is the first one added to the queue.
@@ -55,35 +47,26 @@ class CallbackQueue {
   }
 
   // Runs the callbacks added to the queue and clears the queue.
-  void Run(const Args& args) {
-    typedef typename std::vector<CallbackType>::iterator iterator;
-    for (iterator iter = callbacks_.begin();
-         iter != callbacks_.end(); ++iter)
-      DispatchToCallback(*iter, args);
-    callbacks_.clear();
+  void Run(
+      typename base::internal::CallbackParamTraits<Args>::ForwardType... args) {
+    std::vector<CallbackType> callbacks;
+    callbacks.swap(callbacks_);
+    for (const auto& callback : callbacks)
+      callback.Run(base::internal::CallbackForward(args)...);
+  }
+
+  void Swap(CallbackQueue<CallbackType, Args...>* other) {
+    callbacks_.swap(other->callbacks_);
   }
 
  private:
   std::vector<CallbackType> callbacks_;
 };
 
-typedef CallbackQueue<GlobalUsageCallback,
-                      Tuple2<int64, int64> >
-    GlobalUsageCallbackQueue;
-typedef CallbackQueue<UsageCallback, Tuple1<int64> >
-    UsageCallbackQueue;
-typedef CallbackQueue<AvailableSpaceCallback,
-                      Tuple2<QuotaStatusCode, int64> >
-    AvailableSpaceCallbackQueue;
-typedef CallbackQueue<QuotaCallback,
-                      Tuple2<QuotaStatusCode, int64> >
-    GlobalQuotaCallbackQueue;
-typedef CallbackQueue<base::Closure, Tuple0> ClosureQueue;
-
-template <typename CallbackType, typename Key, typename Args>
+template <typename CallbackType, typename Key, typename... Args>
 class CallbackQueueMap {
  public:
-  typedef CallbackQueue<CallbackType, Args> CallbackQueueType;
+  typedef CallbackQueue<CallbackType, Args...> CallbackQueueType;
   typedef std::map<Key, CallbackQueueType> CallbackMap;
   typedef typename CallbackMap::iterator iterator;
 
@@ -106,23 +89,20 @@ class CallbackQueueMap {
 
   // Runs the callbacks added for the given |key| and clears the key
   // from the map.
-  void Run(const Key& key, const Args& args) {
+  void Run(
+      const Key& key,
+      typename base::internal::CallbackParamTraits<Args>::ForwardType... args) {
     if (!this->HasCallbacks(key))
       return;
-    CallbackQueueType& queue = callback_map_[key];
-    queue.Run(args);
+    CallbackQueueType queue;
+    queue.Swap(&callback_map_[key]);
     callback_map_.erase(key);
+    queue.Run(base::internal::CallbackForward(args)...);
   }
 
  private:
   CallbackMap callback_map_;
 };
-
-typedef CallbackQueueMap<UsageCallback, std::string, Tuple1<int64> >
-    HostUsageCallbackMap;
-typedef CallbackQueueMap<QuotaCallback, std::string,
-                         Tuple2<QuotaStatusCode, int64> >
-    HostQuotaCallbackMap;
 
 }  // namespace storage
 

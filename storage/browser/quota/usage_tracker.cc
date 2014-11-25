@@ -168,7 +168,7 @@ void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
 
   // All the clients have returned their usage data.  Dispatch the
   // pending callbacks.
-  global_limited_usage_callbacks_.Run(MakeTuple(info->usage));
+  global_limited_usage_callbacks_.Run(info->usage);
 }
 
 void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
@@ -192,7 +192,7 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
 
   // All the clients have returned their usage data.  Dispatch the
   // pending callbacks.
-  global_usage_callbacks_.Run(MakeTuple(info->usage, info->unlimited_usage));
+  global_usage_callbacks_.Run(info->usage, info->unlimited_usage);
 }
 
 void UsageTracker::AccumulateClientHostUsage(AccumulateInfo* info,
@@ -208,7 +208,7 @@ void UsageTracker::AccumulateClientHostUsage(AccumulateInfo* info,
 
   // All the clients have returned their usage data.  Dispatch the
   // pending callbacks.
-  host_usage_callbacks_.Run(host, MakeTuple(info->usage));
+  host_usage_callbacks_.Run(host, info->usage);
 }
 
 }  // namespace storage

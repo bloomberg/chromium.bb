@@ -1531,8 +1531,7 @@ void QuotaManager::DidGetPersistentHostQuota(const std::string& host,
                                              const int64* quota,
                                              bool success) {
   DidDatabaseWork(success);
-  persistent_host_quota_callbacks_.Run(
-      host, MakeTuple(kQuotaStatusOk, *quota));
+  persistent_host_quota_callbacks_.Run(host, kQuotaStatusOk, *quota);
 }
 
 void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
@@ -1556,7 +1555,7 @@ void QuotaManager::DidInitialize(int64* temporary_quota_override,
                              kReportHistogramInterval),
                          this, &QuotaManager::ReportHistogram);
 
-  db_initialization_callbacks_.Run(MakeTuple());
+  db_initialization_callbacks_.Run();
   GetTemporaryGlobalQuota(
       base::Bind(&QuotaManager::DidGetInitialTemporaryGlobalQuota,
                  weak_factory_.GetWeakPtr()));
@@ -1600,7 +1599,7 @@ void QuotaManager::DidInitializeTemporaryOriginsInfo(bool success) {
 }
 
 void QuotaManager::DidGetAvailableSpace(int64 space) {
-  available_space_callbacks_.Run(MakeTuple(kQuotaStatusOk, space));
+  available_space_callbacks_.Run(kQuotaStatusOk, space);
 }
 
 void QuotaManager::DidDatabaseWork(bool success) {

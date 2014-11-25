@@ -331,7 +331,7 @@ void ClientUsageTracker::AccumulateOriginUsage(AccumulateInfo* info,
 
   AddCachedHost(host);
   host_usage_accumulators_.Run(
-      host, MakeTuple(info->limited_usage, info->unlimited_usage));
+      host, info->limited_usage, info->unlimited_usage);
 }
 
 void ClientUsageTracker::DidGetHostUsageAfterUpdate(

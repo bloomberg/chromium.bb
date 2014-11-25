@@ -298,6 +298,12 @@ class STORAGE_EXPORT QuotaManager
   typedef base::Callback<void(const OriginInfoTableEntries&)>
       DumpOriginInfoTableCallback;
 
+  typedef CallbackQueue<base::Closure> ClosureQueue;
+  typedef CallbackQueue<AvailableSpaceCallback, QuotaStatusCode, int64>
+      AvailableSpaceCallbackQueue;
+  typedef CallbackQueueMap<QuotaCallback, std::string, QuotaStatusCode, int64>
+      HostQuotaCallbackMap;
+
   struct EvictionContext {
     EvictionContext();
     virtual ~EvictionContext();
@@ -418,7 +424,6 @@ class STORAGE_EXPORT QuotaManager
 
   ClosureQueue db_initialization_callbacks_;
   AvailableSpaceCallbackQueue available_space_callbacks_;
-  GlobalQuotaCallbackQueue temporary_global_quota_callbacks_;
   HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
   bool temporary_quota_initialized_;
