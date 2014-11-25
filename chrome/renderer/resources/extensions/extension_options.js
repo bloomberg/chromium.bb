@@ -20,7 +20,7 @@ var AUTO_SIZE_ATTRIBUTES = {
   'minwidth': 32
 };
 
-function ExtensionOptionsInternal(extensionoptionsNode) {
+function ExtensionOptionsImpl(extensionoptionsNode) {
   privates(extensionoptionsNode).internal = this;
   this.extensionoptionsNode = extensionoptionsNode;
   this.viewInstanceId = IdGenerator.GetNextId();
@@ -51,7 +51,7 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
   shadowRoot.appendChild(this.browserPluginNode);
 };
 
-ExtensionOptionsInternal.prototype.attachWindow = function() {
+ExtensionOptionsImpl.prototype.attachWindow = function() {
   return guestViewInternalNatives.AttachGuest(
       this.internalInstanceId,
       this.guestInstanceId,
@@ -65,13 +65,13 @@ ExtensionOptionsInternal.prototype.attachWindow = function() {
       });
 };
 
-ExtensionOptionsInternal.prototype.createBrowserPluginNode = function() {
-  var browserPluginNode = new ExtensionOptionsInternal.BrowserPlugin();
+ExtensionOptionsImpl.prototype.createBrowserPluginNode = function() {
+  var browserPluginNode = new ExtensionOptionsImpl.BrowserPlugin();
   privates(browserPluginNode).internal = this;
   return browserPluginNode;
 };
 
-ExtensionOptionsInternal.prototype.createGuestIfNecessary = function() {
+ExtensionOptionsImpl.prototype.createGuestIfNecessary = function() {
   if (!this.elementAttached || this.pendingGuestCreation) {
     return;
   }
@@ -106,12 +106,12 @@ ExtensionOptionsInternal.prototype.createGuestIfNecessary = function() {
   this.pendingGuestCreation = true;
 };
 
-ExtensionOptionsInternal.prototype.dispatchEvent =
+ExtensionOptionsImpl.prototype.dispatchEvent =
     function(extensionOptionsEvent) {
   return this.extensionoptionsNode.dispatchEvent(extensionOptionsEvent);
 };
 
-ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
+ExtensionOptionsImpl.prototype.handleExtensionOptionsAttributeMutation =
     function(name, oldValue, newValue) {
   // We treat null attribute (attribute removed) and the empty string as
   // one case.
@@ -156,7 +156,7 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
   }
 };
 
-ExtensionOptionsInternal.prototype.handleBrowserPluginAttributeMutation =
+ExtensionOptionsImpl.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
     this.elementAttached = true;
@@ -168,7 +168,7 @@ ExtensionOptionsInternal.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-ExtensionOptionsInternal.prototype.onSizeChanged =
+ExtensionOptionsImpl.prototype.onSizeChanged =
     function(newWidth, newHeight, oldWidth, oldHeight) {
   if (this.autosizeDeferred) {
     this.deferredAutoSizeState = {
@@ -182,7 +182,7 @@ ExtensionOptionsInternal.prototype.onSizeChanged =
   }
 };
 
-ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
+ExtensionOptionsImpl.prototype.parseExtensionAttribute = function() {
   if (this.extensionoptionsNode.hasAttribute('extension')) {
     this.extensionId = this.extensionoptionsNode.getAttribute('extension');
     return true;
@@ -190,7 +190,7 @@ ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
   return false;
 };
 
-ExtensionOptionsInternal.prototype.resize =
+ExtensionOptionsImpl.prototype.resize =
     function(newWidth, newHeight, oldWidth, oldHeight) {
   this.browserPluginNode.style.width = newWidth + 'px';
   this.browserPluginNode.style.height = newHeight + 'px';
@@ -218,7 +218,7 @@ ExtensionOptionsInternal.prototype.resize =
 
 // Adds an 'on<event>' property on the view, which can be used to set/unset
 // an event handler.
-ExtensionOptionsInternal.prototype.setupEventProperty = function(eventName) {
+ExtensionOptionsImpl.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
   var extensionoptionsNode = this.extensionoptionsNode;
   Object.defineProperty(extensionoptionsNode, propertyName, {
@@ -237,7 +237,7 @@ ExtensionOptionsInternal.prototype.setupEventProperty = function(eventName) {
   });
 };
 
-ExtensionOptionsInternal.prototype.setupNodeProperties = function() {
+ExtensionOptionsImpl.prototype.setupNodeProperties = function() {
   utils.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
     // Get the size constraints from the <extensionoptions> tag, or use the
     // defaults if not specified
@@ -272,7 +272,7 @@ ExtensionOptionsInternal.prototype.setupNodeProperties = function() {
   });
 };
 
-ExtensionOptionsInternal.prototype.resetSizeConstraintsIfInvalid = function () {
+ExtensionOptionsImpl.prototype.resetSizeConstraintsIfInvalid = function () {
   if (this.minheight > this.maxheight || this.minheight < 0) {
     this.minheight = AUTO_SIZE_ATTRIBUTES.minheight;
     this.maxheight = AUTO_SIZE_ATTRIBUTES.maxheight;
@@ -292,7 +292,7 @@ ExtensionOptionsInternal.prototype.resetSizeConstraintsIfInvalid = function () {
  * When set to false, the element resizes whenever it receives new autosize
  * dimensions.
  */
-ExtensionOptionsInternal.prototype.setDeferAutoSize = function(value) {
+ExtensionOptionsImpl.prototype.setDeferAutoSize = function(value) {
   if (!value)
     resumeDeferredAutoSize();
   this.autosizeDeferred = value;
@@ -302,7 +302,7 @@ ExtensionOptionsInternal.prototype.setDeferAutoSize = function(value) {
  * Allows the element to resize to most recent set of autosize dimensions if
  * autosizing is being deferred.
  */
-ExtensionOptionsInternal.prototype.resumeDeferredAutoSize = function() {
+ExtensionOptionsImpl.prototype.resumeDeferredAutoSize = function() {
   if (this.autosizeDeferred) {
     this.resize(this.deferredAutoSizeState.newWidth,
                 this.deferredAutoSizeState.newHeight,
@@ -311,7 +311,7 @@ ExtensionOptionsInternal.prototype.resumeDeferredAutoSize = function() {
   }
 };
 
-ExtensionOptionsInternal.prototype.reset = function() {
+ExtensionOptionsImpl.prototype.reset = function() {
   if (this.guestInstanceId) {
     GuestViewInternal.destroyGuest(this.guestInstanceId);
     this.guestInstanceId = undefined;
@@ -340,7 +340,7 @@ function registerBrowserPluginElement() {
     var unused = this.nonExistentAttribute;
   };
 
-  ExtensionOptionsInternal.BrowserPlugin =
+  ExtensionOptionsImpl.BrowserPlugin =
       DocumentNatives.RegisterElement('extensionoptionsplugin',
                                       {extends: 'object', prototype: proto});
   delete proto.createdCallback;
@@ -353,7 +353,7 @@ function registerExtensionOptionsElement() {
   var proto = Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
-    new ExtensionOptionsInternal(this);
+    new ExtensionOptionsImpl(this);
   };
 
   proto.detachedCallback = function() {
@@ -378,7 +378,7 @@ function registerExtensionOptionsElement() {
     'resumeDeferredAutoSize'
   ];
 
-  // Forward proto.foo* method calls to ExtensionOptionsInternal.foo*.
+  // Forward proto.foo* method calls to ExtensionOptionsImpl.foo*.
   for (var i = 0; methods[i]; ++i) {
     var createHandler = function(m) {
       return function(var_args) {

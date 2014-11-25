@@ -8,7 +8,7 @@ var GuestViewInternal =
 var IdGenerator = requireNative('id_generator');
 var guestViewInternalNatives = requireNative('guest_view_internal');
 
-function AppViewInternal(appviewNode) {
+function AppViewImpl(appviewNode) {
   privates(appviewNode).internal = this;
   this.appviewNode = appviewNode;
   this.elementAttached = false;
@@ -20,7 +20,7 @@ function AppViewInternal(appviewNode) {
   this.viewInstanceId = IdGenerator.GetNextId();
 }
 
-AppViewInternal.prototype.getErrorNode = function() {
+AppViewImpl.prototype.getErrorNode = function() {
   if (!this.errorNode) {
     this.errorNode = document.createElement('div');
     this.errorNode.innerText = 'Unable to connect to app.';
@@ -34,15 +34,15 @@ AppViewInternal.prototype.getErrorNode = function() {
   return this.errorNode;
 };
 
-AppViewInternal.prototype.createBrowserPluginNode = function() {
+AppViewImpl.prototype.createBrowserPluginNode = function() {
   // We create BrowserPlugin as a custom element in order to observe changes
   // to attributes synchronously.
-  var browserPluginNode = new AppViewInternal.BrowserPlugin();
+  var browserPluginNode = new AppViewImpl.BrowserPlugin();
   privates(browserPluginNode).internal = this;
   return browserPluginNode;
 };
 
-AppViewInternal.prototype.connect = function(app, data, callback) {
+AppViewImpl.prototype.connect = function(app, data, callback) {
   if (!this.elementAttached || this.pendingGuestCreation) {
     if (callback) {
       callback(false);
@@ -81,7 +81,7 @@ AppViewInternal.prototype.connect = function(app, data, callback) {
   this.pendingGuestCreation = true;
 };
 
-AppViewInternal.prototype.attachWindow = function(guestInstanceId) {
+AppViewImpl.prototype.attachWindow = function(guestInstanceId) {
   this.guestInstanceId = guestInstanceId;
   if (!this.internalInstanceId) {
     return;
@@ -96,7 +96,7 @@ AppViewInternal.prototype.attachWindow = function(guestInstanceId) {
       params);
 };
 
-AppViewInternal.prototype.handleBrowserPluginAttributeMutation =
+AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
     this.browserPluginNode.removeAttribute('internalinstanceid');
@@ -115,7 +115,7 @@ AppViewInternal.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-AppViewInternal.prototype.reset = function() {
+AppViewImpl.prototype.reset = function() {
   if (this.guestInstanceId) {
     GuestViewInternal.destroyGuest(this.guestInstanceId);
     this.guestInstanceId = undefined;
@@ -144,7 +144,7 @@ function registerBrowserPluginElement() {
     internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
   };
 
-  AppViewInternal.BrowserPlugin =
+  AppViewImpl.BrowserPlugin =
       DocumentNatives.RegisterElement('appplugin', {extends: 'object',
                                                     prototype: proto});
 
@@ -158,7 +158,7 @@ function registerAppViewElement() {
   var proto = Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
-    new AppViewInternal(this);
+    new AppViewImpl(this);
   };
 
   proto.attachedCallback = function() {
