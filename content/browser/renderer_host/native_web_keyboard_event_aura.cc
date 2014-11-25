@@ -14,8 +14,8 @@ namespace {
 // queued in RenderWidgetHost and may be passed and used
 // RenderViewHostDelegate::HandledKeybardEvent after the original aura
 // event is destroyed.
-ui::Event* CopyEvent(ui::Event* event) {
-  return event ? new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)) : NULL;
+ui::Event* CopyEvent(const ui::Event* event) {
+  return event ? ui::Event::Clone(*event).release() : nullptr;
 }
 
 int EventFlagsToWebInputEventModifiers(int flags) {
@@ -39,9 +39,12 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
-    : WebKeyboardEvent(
-          MakeWebKeyboardEvent(static_cast<ui::KeyEvent&>(*native_event))),
-      os_event(CopyEvent(native_event)),
+    : NativeWebKeyboardEvent(static_cast<ui::KeyEvent&>(*native_event)) {
+}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event)
+    : WebKeyboardEvent(MakeWebKeyboardEvent(key_event)),
+      os_event(CopyEvent(&key_event)),
       skip_in_browser(false),
       match_edit_command(false) {
 }

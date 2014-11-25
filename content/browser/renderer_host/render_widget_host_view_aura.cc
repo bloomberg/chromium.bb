@@ -1847,7 +1847,7 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
           ui::EventTimeForNow().InSecondsF());
       ForwardKeyboardEvent(webkit_event);
     } else {
-      NativeWebKeyboardEvent webkit_event(event);
+      NativeWebKeyboardEvent webkit_event(*event);
       ForwardKeyboardEvent(webkit_event);
     }
   }

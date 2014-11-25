@@ -145,11 +145,6 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // Allows implementation to tweak widget position.
   void SetWidgetPositionNative(const gfx::Rect& new_pos, bool no_redraw);
 
-  // Returns a keyboard event suitable for forwarding.
-  content::NativeWebKeyboardEvent GetKeyboardEvent(
-      const content::WebContents* contents,
-      const ui::KeyEvent& key_event);
-
   // Returns the animation for the dropdown.
   gfx::SlideAnimation* animation() {
     return animation_.get();

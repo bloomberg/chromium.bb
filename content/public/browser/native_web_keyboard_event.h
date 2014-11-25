@@ -13,6 +13,10 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace ui {
+class KeyEvent;
+}
+
 namespace content {
 
 // Owns a platform specific event; used to pass own and pass event through
@@ -22,21 +26,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   NativeWebKeyboardEvent();
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
-#if defined(USE_AURA)
-  NativeWebKeyboardEvent(ui::EventType type,
-                         bool is_char,
-                         wchar_t character,
-                         int state,
-                         double time_stamp_seconds);
-#elif defined(OS_MACOSX)
-  // TODO(suzhe): Limit these constructors to Linux native Gtk port.
-  // For Linux Views port, after using RenderWidgetHostViewViews to replace
-  // RenderWidgetHostViewGtk, we can use constructors for TOOLKIT_VIEWS defined
-  // below.
-  NativeWebKeyboardEvent(wchar_t character,
-                         int state,
-                         double time_stamp_seconds);
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                          int modifiers,
                          double time_secs,
@@ -51,6 +41,15 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
                          int keycode,
                          int unicode_character,
                          bool is_system_key);
+#else
+  explicit NativeWebKeyboardEvent(const ui::KeyEvent& key_event);
+#if defined(USE_AURA)
+  NativeWebKeyboardEvent(ui::EventType type,
+                         bool is_char,
+                         wchar_t character,
+                         int state,
+                         double time_stamp_seconds);
+#endif
 #endif
 
   NativeWebKeyboardEvent(const NativeWebKeyboardEvent& event);

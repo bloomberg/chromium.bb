@@ -1663,8 +1663,7 @@ void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
 
 bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
                                          const ui::KeyEvent& key_event) {
-  ui::KeyEvent copy(key_event);
-  content::NativeWebKeyboardEvent event(&copy);
+  content::NativeWebKeyboardEvent event(key_event);
   return delegate_->HandleKeyPressEventInInput(event);
 }
 

@@ -4,24 +4,9 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 
-#include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/events/event.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
-
-using content::NativeWebKeyboardEvent;
-using content::WebContents;
-
-NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
-     const WebContents* contents,
-     const ui::KeyEvent& key_event) {
-  // NativeWebKeyboardEvent should take a const gfx::NativeEvent, which would
-  // prevent this casting.
-  ui::Event* ui_event =
-      static_cast<ui::Event*>(const_cast<ui::KeyEvent*>(&key_event));
-  return NativeWebKeyboardEvent(ui_event);
-}
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {

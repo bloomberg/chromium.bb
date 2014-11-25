@@ -52,13 +52,10 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
-
-#if defined(USE_AURA)
-#include "ui/events/event.h"
-#endif
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
@@ -187,30 +184,18 @@ class RenderViewImplTest : public RenderViewTest {
     // WM_KEYDOWN and WM_KEYUP sends virtual-key codes. On the other hand,
     // WM_CHAR sends a composed Unicode character.
     MSG msg1 = { NULL, WM_KEYDOWN, key_code, 0 };
-#if defined(USE_AURA)
     ui::KeyEvent evt1(msg1);
-    NativeWebKeyboardEvent keydown_event(&evt1);
-#else
-    NativeWebKeyboardEvent keydown_event(msg1);
-#endif
+    NativeWebKeyboardEvent keydown_event(evt1);
     SendNativeKeyEvent(keydown_event);
 
     MSG msg2 = { NULL, WM_CHAR, (*output)[0], 0 };
-#if defined(USE_AURA)
     ui::KeyEvent evt2(msg2);
-    NativeWebKeyboardEvent char_event(&evt2);
-#else
-    NativeWebKeyboardEvent char_event(msg2);
-#endif
+    NativeWebKeyboardEvent char_event(evt2);
     SendNativeKeyEvent(char_event);
 
     MSG msg3 = { NULL, WM_KEYUP, key_code, 0 };
-#if defined(USE_AURA)
     ui::KeyEvent evt3(msg3);
-    NativeWebKeyboardEvent keyup_event(&evt3);
-#else
-    NativeWebKeyboardEvent keyup_event(msg3);
-#endif
+    NativeWebKeyboardEvent keyup_event(evt3);
     SendNativeKeyEvent(keyup_event);
 
     return length;
@@ -225,7 +210,7 @@ class RenderViewImplTest : public RenderViewTest {
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
     ui::KeyEvent event1(xevent);
-    NativeWebKeyboardEvent keydown_event(&event1);
+    NativeWebKeyboardEvent keydown_event(event1);
     SendNativeKeyEvent(keydown_event);
 
     // X11 doesn't actually have native character events, but give the test
@@ -238,14 +223,14 @@ class RenderViewImplTest : public RenderViewTest {
                                                  event2.flags()));
     ui::KeyEventTestApi test_event2(&event2);
     test_event2.set_is_char(true);
-    NativeWebKeyboardEvent char_event(&event2);
+    NativeWebKeyboardEvent char_event(event2);
     SendNativeKeyEvent(char_event);
 
     xevent.InitKeyEvent(ui::ET_KEY_RELEASED,
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
     ui::KeyEvent event3(xevent);
-    NativeWebKeyboardEvent keyup_event(&event3);
+    NativeWebKeyboardEvent keyup_event(event3);
     SendNativeKeyEvent(keyup_event);
 
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
@@ -258,19 +243,19 @@ class RenderViewImplTest : public RenderViewTest {
     ui::KeyEvent keydown_event(ui::ET_KEY_PRESSED,
                                static_cast<ui::KeyboardCode>(key_code),
                                flags);
-    NativeWebKeyboardEvent keydown_web_event(&keydown_event);
+    NativeWebKeyboardEvent keydown_web_event(keydown_event);
     SendNativeKeyEvent(keydown_web_event);
 
     ui::KeyEvent char_event(keydown_event.GetCharacter(),
                             static_cast<ui::KeyboardCode>(key_code),
                             flags);
-    NativeWebKeyboardEvent char_web_event(&char_event);
+    NativeWebKeyboardEvent char_web_event(char_event);
     SendNativeKeyEvent(char_web_event);
 
     ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED,
                              static_cast<ui::KeyboardCode>(key_code),
                              flags);
-    NativeWebKeyboardEvent keyup_web_event(&keyup_event);
+    NativeWebKeyboardEvent keyup_web_event(keyup_event);
     SendNativeKeyEvent(keyup_web_event);
 
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
