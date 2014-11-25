@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
@@ -197,7 +198,20 @@ void AppListController::Show(aura::Window* window) {
     views::View* applist_button =
         Shelf::ForWindow(container)->GetAppListButtonView();
     is_centered_ = view->ShouldCenterWindow();
-    if (is_centered_) {
+    bool is_fullscreen = false;
+#if defined(OS_CHROMEOS)
+    is_fullscreen = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                        switches::kAshEnableFullscreenAppList) &&
+                    app_list::switches::IsExperimentalAppListEnabled() &&
+                    Shell::GetInstance()
+                        ->maximize_mode_controller()
+                        ->IsMaximizeModeWindowManagerEnabled();
+#endif
+    if (is_fullscreen) {
+      view->InitAsFramelessWindow(
+          container, current_apps_page_,
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(container));
+    } else if (is_centered_) {
       // Note: We can't center the app list until we have its dimensions, so we
       // init at (0, 0) and then reset its anchor point.
       view->InitAsBubbleAtFixedLocation(container,

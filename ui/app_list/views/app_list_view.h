@@ -64,6 +64,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                                    views::BubbleBorder::Arrow arrow,
                                    bool border_accepts_events);
 
+  // Initializes the widget as a frameless window, not a bubble.
+  void InitAsFramelessWindow(gfx::NativeView parent,
+                             int initial_apps_page,
+                             gfx::Rect bounds);
+
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
   void SetAnchorPoint(const gfx::Point& anchor_point);
@@ -128,6 +133,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
  private:
   friend class ::test::AppListViewTestApi;
+
+  void InitContents(gfx::NativeView parent, int initial_apps_page);
 
   void InitAsBubbleInternal(gfx::NativeView parent,
                             int initial_apps_page,
