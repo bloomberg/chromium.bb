@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.NetworkChangeNotifierAutoDetect.NetworkState;
 
 /**
  * Tests for org.chromium.net.NetworkChangeNotifier.
@@ -50,31 +51,16 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         private int mNetworkSubtype;
 
         @Override
-        boolean activeNetworkExists() {
-            return mActiveNetworkExists;
-        }
-
-        @Override
-        boolean isConnected() {
-            return getNetworkType() != NetworkChangeNotifier.CONNECTION_NONE;
+        NetworkState getNetworkState() {
+            return new NetworkState(mActiveNetworkExists, mNetworkType, mNetworkSubtype);
         }
 
         void setActiveNetworkExists(boolean networkExists) {
             mActiveNetworkExists = networkExists;
         }
 
-        @Override
-        int getNetworkType() {
-            return mNetworkType;
-        }
-
         void setNetworkType(int networkType) {
             mNetworkType = networkType;
-        }
-
-        @Override
-        int getNetworkSubtype() {
-            return mNetworkSubtype;
         }
 
         void setNetworkSubtype(int networkSubtype) {

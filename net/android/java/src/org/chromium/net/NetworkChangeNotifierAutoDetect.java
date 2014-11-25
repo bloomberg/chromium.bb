@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
@@ -25,6 +26,30 @@ import org.chromium.base.ApplicationStatus;
 public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         implements ApplicationStatus.ApplicationStateListener {
 
+    static class NetworkState {
+        private final boolean mConnected;
+        private final int mType;
+        private final int mSubtype;
+
+        public NetworkState(boolean connected, int type, int subtype) {
+            mConnected = connected;
+            mType = type;
+            mSubtype = subtype;
+        }
+
+        public boolean isConnected() {
+            return mConnected;
+        }
+
+        public int getNetworkType() {
+            return mType;
+        }
+
+        public int getNetworkSubType() {
+            return mSubtype;
+        }
+    }
+
     /** Queries the ConnectivityManager for information about the current connection. */
     static class ConnectivityManagerDelegate {
         private final ConnectivityManager mConnectivityManager;
@@ -40,20 +65,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
             mConnectivityManager = null;
         }
 
-        boolean activeNetworkExists() {
-            return mConnectivityManager.getActiveNetworkInfo() != null;
-        }
-
-        boolean isConnected() {
-            return mConnectivityManager.getActiveNetworkInfo().isConnected();
-        }
-
-        int getNetworkType() {
-            return mConnectivityManager.getActiveNetworkInfo().getType();
-        }
-
-        int getNetworkSubtype() {
-            return mConnectivityManager.getActiveNetworkInfo().getSubtype();
+        NetworkState getNetworkState() {
+            final NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (networkInfo == null || !networkInfo.isConnected()) {
+                return new NetworkState(false, -1, -1);
+            }
+            return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype());
         }
     }
 
@@ -168,12 +185,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     public int getCurrentConnectionType() {
         // Track exactly what type of connection we have.
-        if (!mConnectivityManagerDelegate.activeNetworkExists()
-                || !mConnectivityManagerDelegate.isConnected()) {
+        final NetworkState networkState = mConnectivityManagerDelegate.getNetworkState();
+        if (!networkState.isConnected()) {
             return NetworkChangeNotifier.CONNECTION_NONE;
         }
 
-        switch (mConnectivityManagerDelegate.getNetworkType()) {
+        switch (networkState.getNetworkType()) {
             case ConnectivityManager.TYPE_ETHERNET:
                 return NetworkChangeNotifier.CONNECTION_ETHERNET;
             case ConnectivityManager.TYPE_WIFI:
@@ -184,7 +201,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
                 return NetworkChangeNotifier.CONNECTION_BLUETOOTH;
             case ConnectivityManager.TYPE_MOBILE:
                 // Use information from TelephonyManager to classify the connection.
-                switch (mConnectivityManagerDelegate.getNetworkSubtype()) {
+                switch (networkState.getNetworkSubType()) {
                     case TelephonyManager.NETWORK_TYPE_GPRS:
                     case TelephonyManager.NETWORK_TYPE_EDGE:
                     case TelephonyManager.NETWORK_TYPE_CDMA:
