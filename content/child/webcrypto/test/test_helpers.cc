@@ -650,6 +650,8 @@ blink::WebCryptoKeyFormat GetKeyFormatFromJsonTestCase(
     return blink::WebCryptoKeyFormatPkcs8;
   else if (format == "spki")
     return blink::WebCryptoKeyFormatSpki;
+  else if (format == "raw")
+    return blink::WebCryptoKeyFormatRaw;
 
   ADD_FAILURE() << "Unrecognized key format: " << format;
   return blink::WebCryptoKeyFormatRaw;
