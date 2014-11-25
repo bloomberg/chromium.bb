@@ -116,7 +116,7 @@ class WinTool(object):
     env = self._GetEnv(arch)
     if use_separate_mspdbsrv == 'True':
       self._UseSeparateMspdbsrv(env, args)
-    link = subprocess.Popen(args,
+    link = subprocess.Popen([args[0].replace('/', '\\')] + list(args[1:]),
                             shell=True,
                             env=env,
                             stdout=subprocess.PIPE,
