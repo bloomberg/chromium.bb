@@ -764,10 +764,6 @@ BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
         if (largeObject->contains(address))
             return largeObject;
     }
-    for (LargeObject<Header>* largeObject = m_firstLargeObjectAllocatedDuringSweeping; largeObject; largeObject = largeObject->next()) {
-        if (largeObject->contains(address))
-            return largeObject;
-    }
     return 0;
 }
 
