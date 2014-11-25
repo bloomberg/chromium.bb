@@ -875,6 +875,8 @@
         'browser/chromeos/system/device_disabling_manager_default_delegate.h',
         'browser/chromeos/system/input_device_settings.cc',
         'browser/chromeos/system/input_device_settings.h',
+        'browser/chromeos/system/input_device_settings_impl_ozone.cc',
+        'browser/chromeos/system/input_device_settings_impl_x11.cc',
         'browser/chromeos/system/pointer_device_observer.cc',
         'browser/chromeos/system/pointer_device_observer.h',
         'browser/chromeos/system/syslogs_provider.cc',
@@ -1168,6 +1170,10 @@
           'sources!': [
             'browser/chromeos/device_uma.cc',
             'browser/chromeos/device_uma.h',
+            'browser/chromeos/events/system_key_event_listener.cc',
+            'browser/chromeos/events/system_key_event_listener.h',
+            'browser/chromeos/events/xinput_hierarchy_changed_event_listener.cc',
+            'browser/chromeos/events/xinput_hierarchy_changed_event_listener.h',
           ],
         }],
         ['use_cras==1', {
@@ -1228,12 +1234,6 @@
         ['use_ozone == 1', {
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
-          ],
-          'sources!': [
-            'browser/chromeos/events/system_key_event_listener.cc',
-            'browser/chromeos/events/system_key_event_listener.h',
-            'browser/chromeos/events/xinput_hierarchy_changed_event_listener.cc',
-            'browser/chromeos/events/xinput_hierarchy_changed_event_listener.h',
           ],
         }],
       ],

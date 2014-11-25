@@ -19,7 +19,7 @@ void FakeInputDeviceSettings::TouchpadExists(
 
 void FakeInputDeviceSettings::UpdateTouchpadSettings(
     const TouchpadSettings& settings) {
-  current_touchpad_settings_.Update(settings, NULL);
+  current_touchpad_settings_.Update(settings);
 }
 
 void FakeInputDeviceSettings::SetTouchpadSensitivity(int value) {
@@ -59,7 +59,7 @@ void FakeInputDeviceSettings::MouseExists(
 
 void FakeInputDeviceSettings::UpdateMouseSettings(
     const MouseSettings& settings) {
-  current_mouse_settings_.Update(settings, NULL);
+  current_mouse_settings_.Update(settings);
 }
 
 void FakeInputDeviceSettings::SetMouseSensitivity(int value) {
@@ -72,10 +72,6 @@ void FakeInputDeviceSettings::SetPrimaryButtonRight(bool right) {
   MouseSettings settings;
   settings.SetPrimaryButtonRight(right);
   UpdateMouseSettings(settings);
-}
-
-bool FakeInputDeviceSettings::ForceKeyboardDrivenUINavigation() {
-  return false;
 }
 
 void FakeInputDeviceSettings::ReapplyTouchpadSettings() {

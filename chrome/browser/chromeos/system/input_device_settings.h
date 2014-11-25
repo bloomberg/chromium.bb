@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 
-#include <string>
-#include <vector>
-
 #include "base/callback.h"
 #include "base/logging.h"
 
 namespace chromeos {
 namespace system {
+
+class InputDeviceSettings;
 
 namespace internal {
 
@@ -22,10 +21,7 @@ namespace internal {
 template <typename T>
 class Optional {
  public:
-  Optional()
-    : value_(),
-      is_set_(false) {
-  }
+  Optional() : value_(), is_set_(false) {}
 
   Optional& operator=(const Optional& other) {
     if (&other != this) {
@@ -40,9 +36,7 @@ class Optional {
     value_ = value;
   }
 
-  bool is_set() const {
-    return is_set_;
-  }
+  bool is_set() const { return is_set_; }
 
   T value() const {
     DCHECK(is_set());
@@ -68,8 +62,7 @@ class Optional {
 
 }  // namespace internal
 
-// Min/max possible pointer sensitivity values. Defined in CrOS inputcontrol
-// scripts (see kTpControl/kMouseControl in the source file).
+// Min/max possible pointer sensitivity values.
 const int kMinPointerSensitivity = 1;
 const int kMaxPointerSensitivity = 5;
 
@@ -86,24 +79,31 @@ class TouchpadSettings {
 
   void SetSensitivity(int value);
   int GetSensitivity() const;
+  bool IsSensitivitySet() const;
 
   void SetTapToClick(bool enabled);
   bool GetTapToClick() const;
+  bool IsTapToClickSet() const;
 
   void SetThreeFingerClick(bool enabled);
   bool GetThreeFingerClick() const;
+  bool IsThreeFingerClickSet() const;
 
   void SetTapDragging(bool enabled);
   bool GetTapDragging() const;
+  bool IsTapDraggingSet() const;
 
   void SetNaturalScroll(bool enabled);
   bool GetNaturalScroll() const;
+  bool IsNaturalScrollSet() const;
 
   // Updates |this| with |settings|. If at least one setting was updated returns
   // true.
-  // |argv| is filled with arguments of script, that should be launched in order
-  // to apply update. This argument is optional and could be NULL.
-  bool Update(const TouchpadSettings& settings, std::vector<std::string>* argv);
+  bool Update(const TouchpadSettings& settings);
+
+  // Apply |settings| to input devices.
+  static void Apply(const TouchpadSettings& touchpad_settings,
+                    InputDeviceSettings* input_device_settings);
 
  private:
   internal::Optional<int> sensitivity_;
@@ -126,21 +126,26 @@ class MouseSettings {
 
   void SetSensitivity(int value);
   int GetSensitivity() const;
+  bool IsSensitivitySet() const;
 
   void SetPrimaryButtonRight(bool right);
   bool GetPrimaryButtonRight() const;
+  bool IsPrimaryButtonRightSet() const;
 
   // Updates |this| with |settings|. If at least one setting was updated returns
   // true.
-  // |argv| is filled with arguments of script, that should be launched in order
-  // to apply update. This argument is optional and could be NULL.
-  bool Update(const MouseSettings& update, std::vector<std::string>* argv);
+  bool Update(const MouseSettings& settings);
+
+  // Apply |settings| to input devices.
+  static void Apply(const MouseSettings& mouse_settings,
+                    InputDeviceSettings* input_device_settings);
 
  private:
   internal::Optional<int> sensitivity_;
   internal::Optional<bool> primary_button_right_;
 };
 
+// Interface for configuring input device settings.
 class InputDeviceSettings {
  public:
   typedef base::Callback<void(bool)> DeviceExistsCallback;
@@ -154,6 +159,10 @@ class InputDeviceSettings {
   // |test_settings|. Default implementation could be returned back by passing
   // NULL to this method.
   static void SetSettingsForTesting(InputDeviceSettings* test_settings);
+
+  // Returns true if UI should implement enhanced keyboard support for cases
+  // where other input devices like mouse are absent.
+  static bool ForceKeyboardDrivenUINavigation();
 
   // Calls |callback| asynchronously after determining if a touchpad is
   // connected.
@@ -194,10 +203,6 @@ class InputDeviceSettings {
 
   // Sets the primary mouse button to the right button if |right| is true.
   virtual void SetPrimaryButtonRight(bool right) = 0;
-
-  // Returns true if UI should implement enhanced keyboard support for cases
-  // where other input devices like mouse are absent.
-  virtual bool ForceKeyboardDrivenUINavigation() = 0;
 
   // Reapplies previously set touchpad settings.
   virtual void ReapplyTouchpadSettings() = 0;
