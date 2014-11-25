@@ -4,6 +4,11 @@
 
 #include "chrome/browser/printing/print_view_manager_common.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#endif  // defined(ENABLE_EXTENSIONS)
+
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_view_manager.h"
 #else
@@ -11,6 +16,34 @@
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
 namespace printing {
+namespace {
+#if defined(ENABLE_EXTENSIONS)
+// Stores |guest_contents| in |result| and returns true if |guest_contents| is a
+// full page MimeHandlerViewGuest plugin. Otherwise, returns false.
+bool StoreFullPagePlugin(content::WebContents** result,
+                         content::WebContents* guest_contents) {
+  auto guest_view =
+      extensions::MimeHandlerViewGuest::FromWebContents(guest_contents);
+  if (guest_view && guest_view->is_full_page_plugin()) {
+    *result = guest_contents;
+    return true;
+  }
+  return false;
+}
+#endif  // defined(ENABLE_EXTENSIONS)
+
+// If we have a single full-page embedded mime handler view guest, print the
+// guest's WebContents instead.
+content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
+#if defined(ENABLE_EXTENSIONS)
+  extensions::GuestViewManager::FromBrowserContext(
+      contents->GetBrowserContext())
+      ->ForEachGuest(contents, base::Bind(&StoreFullPagePlugin, &contents));
+#endif  // defined(ENABLE_EXTENSIONS)
+  return contents;
+}
+
+}  // namespace
 
 void StartPrint(content::WebContents* contents,
                 bool print_preview_disabled,
@@ -21,7 +54,8 @@ void StartPrint(content::WebContents* contents,
   using PrintViewManagerImpl = PrintViewManagerBasic;
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
-  auto print_view_manager = PrintViewManagerImpl::FromWebContents(contents);
+  auto print_view_manager =
+      PrintViewManagerImpl::FromWebContents(GetWebContentsToUse(contents));
   if (!print_view_manager)
     return;
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -40,7 +74,7 @@ void StartPrint(content::WebContents* contents,
 void StartBasicPrint(content::WebContents* contents) {
 #if defined(ENABLE_PRINT_PREVIEW)
   PrintViewManager* print_view_manager =
-      PrintViewManager::FromWebContents(contents);
+      PrintViewManager::FromWebContents(GetWebContentsToUse(contents));
   if (!print_view_manager)
     return;
   print_view_manager->BasicPrint();
