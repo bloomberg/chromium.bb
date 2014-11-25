@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import org.chromium.ui.R;
+import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.DateTimePickerDialog.OnDateTimeSetListener;
 import org.chromium.ui.picker.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
 
@@ -32,17 +33,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class InputDialogContainer {
 
+    /**
+     * Delegate that implements the picker's actions.
+     */
     public interface InputActionDelegate {
         void cancelDateTimeDialog();
         void replaceDateTime(double value);
     }
-
-    private static int sTextInputTypeDate;
-    private static int sTextInputTypeDateTime;
-    private static int sTextInputTypeDateTimeLocal;
-    private static int sTextInputTypeMonth;
-    private static int sTextInputTypeTime;
-    private static int sTextInputTypeWeek;
 
     private final Context mContext;
 
@@ -52,22 +49,10 @@ public class InputDialogContainer {
     private AlertDialog mDialog;
     private final InputActionDelegate mInputActionDelegate;
 
-    public static void initializeInputTypes(int textInputTypeDate,
-            int textInputTypeDateTime, int textInputTypeDateTimeLocal,
-            int textInputTypeMonth, int textInputTypeTime,
-            int textInputTypeWeek) {
-        sTextInputTypeDate = textInputTypeDate;
-        sTextInputTypeDateTime = textInputTypeDateTime;
-        sTextInputTypeDateTimeLocal = textInputTypeDateTimeLocal;
-        sTextInputTypeMonth = textInputTypeMonth;
-        sTextInputTypeTime = textInputTypeTime;
-        sTextInputTypeWeek = textInputTypeWeek;
-    }
-
     public static boolean isDialogInputType(int type) {
-        return type == sTextInputTypeDate || type == sTextInputTypeTime
-                || type == sTextInputTypeDateTime || type == sTextInputTypeDateTimeLocal
-                || type == sTextInputTypeMonth || type == sTextInputTypeWeek;
+        return type == TextInputType.DATE || type == TextInputType.TIME
+                || type == TextInputType.DATE_TIME || type == TextInputType.DATE_TIME_LOCAL
+                || type == TextInputType.MONTH || type == TextInputType.WEEK;
     }
 
     public InputDialogContainer(Context context, InputActionDelegate inputActionDelegate) {
@@ -87,9 +72,9 @@ public class InputDialogContainer {
             cal = Calendar.getInstance();
             cal.set(Calendar.MILLISECOND, 0);
         } else {
-            if (dialogType == sTextInputTypeMonth) {
+            if (dialogType == TextInputType.MONTH) {
                 cal = MonthPicker.createDateFromValue(dialogValue);
-            } else if (dialogType == sTextInputTypeWeek) {
+            } else if (dialogType == TextInputType.WEEK) {
                 cal = WeekPicker.createDateFromValue(dialogValue);
             } else {
                 GregorianCalendar gregorianCalendar =
@@ -101,19 +86,19 @@ public class InputDialogContainer {
                 cal =  gregorianCalendar;
             }
         }
-        if (dialogType == sTextInputTypeDate) {
+        if (dialogType == TextInputType.DATE) {
             showPickerDialog(dialogType,
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
                     cal.get(Calendar.DAY_OF_MONTH),
                     0, 0, 0, 0, 0, min, max, step);
-        } else if (dialogType == sTextInputTypeTime) {
+        } else if (dialogType == TextInputType.TIME) {
             showPickerDialog(dialogType, 0, 0, 0,
                     cal.get(Calendar.HOUR_OF_DAY),
                     cal.get(Calendar.MINUTE),
                     0, 0, 0, min, max, step);
-        } else if (dialogType == sTextInputTypeDateTime
-                || dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == TextInputType.DATE_TIME
+                || dialogType == TextInputType.DATE_TIME_LOCAL) {
             showPickerDialog(dialogType,
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
@@ -123,10 +108,10 @@ public class InputDialogContainer {
                     cal.get(Calendar.SECOND),
                     cal.get(Calendar.MILLISECOND),
                     0, min, max, step);
-        } else if (dialogType == sTextInputTypeMonth) {
+        } else if (dialogType == TextInputType.MONTH) {
             showPickerDialog(dialogType, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 0,
                     0, 0, 0, 0, 0, min, max, step);
-        } else if (dialogType == sTextInputTypeWeek) {
+        } else if (dialogType == TextInputType.WEEK) {
             int year = WeekPicker.getISOWeekYearForDate(cal);
             int week = WeekPicker.getWeekForDate(cal);
             showPickerDialog(dialogType, year, 0, 0, 0, 0, 0, 0, week, min, max, step);
@@ -157,14 +142,14 @@ public class InputDialogContainer {
         });
 
         int dialogTitleId = R.string.date_picker_dialog_title;
-        if (dialogType == sTextInputTypeTime) {
+        if (dialogType == TextInputType.TIME) {
             dialogTitleId = R.string.time_picker_dialog_title;
-        } else if (dialogType == sTextInputTypeDateTime
-                || dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == TextInputType.DATE_TIME
+                || dialogType == TextInputType.DATE_TIME_LOCAL) {
             dialogTitleId = R.string.date_time_picker_dialog_title;
-        } else if (dialogType == sTextInputTypeMonth) {
+        } else if (dialogType == TextInputType.MONTH) {
             dialogTitleId = R.string.month_picker_dialog_title;
-        } else if (dialogType == sTextInputTypeWeek) {
+        } else if (dialogType == TextInputType.WEEK) {
             dialogTitleId = R.string.week_picker_dialog_title;
         }
 
@@ -214,7 +199,7 @@ public class InputDialogContainer {
 
         int stepTime = (int) step;
 
-        if (dialogType == sTextInputTypeDate) {
+        if (dialogType == TextInputType.DATE) {
             ChromeDatePickerDialog dialog = new ChromeDatePickerDialog(mContext,
                     new DateListener(dialogType),
                     year, month, monthDay);
@@ -225,24 +210,24 @@ public class InputDialogContainer {
 
             dialog.setTitle(mContext.getText(R.string.date_picker_dialog_title));
             mDialog = dialog;
-        } else if (dialogType == sTextInputTypeTime) {
+        } else if (dialogType == TextInputType.TIME) {
             mDialog = new MultiFieldTimePickerDialog(
                 mContext, 0 /* theme */ ,
                 hourOfDay, minute, second, millis,
                 (int) min, (int) max, stepTime,
                 DateFormat.is24HourFormat(mContext),
                 new FullTimeListener(dialogType));
-        } else if (dialogType == sTextInputTypeDateTime
-                || dialogType == sTextInputTypeDateTimeLocal) {
+        } else if (dialogType == TextInputType.DATE_TIME
+                || dialogType == TextInputType.DATE_TIME_LOCAL) {
             mDialog = new DateTimePickerDialog(mContext,
                     new DateTimeListener(dialogType),
                     year, month, monthDay,
                     hourOfDay, minute,
                     DateFormat.is24HourFormat(mContext), min, max);
-        } else if (dialogType == sTextInputTypeMonth) {
+        } else if (dialogType == TextInputType.MONTH) {
             mDialog = new MonthPickerDialog(mContext, new MonthOrWeekListener(dialogType),
                     year, month, min, max);
-        } else if (dialogType == sTextInputTypeWeek) {
+        } else if (dialogType == TextInputType.WEEK) {
             mDialog = new WeekPickerDialog(mContext, new MonthOrWeekListener(dialogType),
                     year, week, min, max);
         }
@@ -318,7 +303,7 @@ public class InputDialogContainer {
         private final int mDialogType;
 
         public DateTimeListener(int dialogType) {
-            mLocal = dialogType == sTextInputTypeDateTimeLocal;
+            mLocal = dialogType == TextInputType.DATE_TIME_LOCAL;
             mDialogType = dialogType;
         }
 
@@ -339,7 +324,7 @@ public class InputDialogContainer {
 
         @Override
         public void onValueSet(int year, int positionInYear) {
-            if (mDialogType == sTextInputTypeMonth) {
+            if (mDialogType == TextInputType.MONTH) {
                 setFieldDateTimeValue(mDialogType, year, positionInYear, 0, 0, 0, 0, 0, 0);
             } else {
                 setFieldDateTimeValue(mDialogType, year, 0, 0, 0, 0, 0, 0, positionInYear);
@@ -357,12 +342,12 @@ public class InputDialogContainer {
             return;
         mDialogAlreadyDismissed = true;
 
-        if (dialogType == sTextInputTypeMonth) {
+        if (dialogType == TextInputType.MONTH) {
             mInputActionDelegate.replaceDateTime((year - 1970) * 12 + month);
-        } else if (dialogType == sTextInputTypeWeek) {
+        } else if (dialogType == TextInputType.WEEK) {
             mInputActionDelegate.replaceDateTime(
                     WeekPicker.createDateFromWeek(year, week).getTimeInMillis());
-        } else if (dialogType == sTextInputTypeTime) {
+        } else if (dialogType == TextInputType.TIME) {
             mInputActionDelegate.replaceDateTime(TimeUnit.HOURS.toMillis(hourOfDay)
                     + TimeUnit.MINUTES.toMillis(minute)
                     + TimeUnit.SECONDS.toMillis(second)

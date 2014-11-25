@@ -33,6 +33,7 @@
         '../ui/android/ui_android.gyp:page_transition_types_java',
         '../ui/android/ui_android.gyp:system_ui_resource_type_java',
         '../ui/android/ui_android.gyp:window_open_disposition_java',
+        '../ui/android/ui_android.gyp:text_input_type_java',
       ],
       # Enable feedback-directed optimisation for the library when building in
       # android.

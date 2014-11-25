@@ -9,6 +9,9 @@ namespace ui {
 
 // Intentionally keep sync with blink::WebTextInputType defined in:
 // third_party/WebKit/public/web/WebTextInputType.h
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base.ime
 enum TextInputType {
   // Input caret is not in an editable node, no input method shall be used.
   TEXT_INPUT_TYPE_NONE,

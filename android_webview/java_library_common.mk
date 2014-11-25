@@ -64,6 +64,7 @@ $(call intermediates-dir-for,GYP,shared)/enums/base_java_memory_pressure_level/o
 $(call intermediates-dir-for,GYP,shared)/enums/media_android_imageformat/org/chromium/media/AndroidImageFormat.java \
 $(call intermediates-dir-for,GYP,shared)/enums/page_transition_types_java/org/chromium/ui/base/PageTransition.java \
 $(call intermediates-dir-for,GYP,shared)/enums/system_ui_resource_type_java/org/chromium/ui/base/SystemUIResourceType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/text_input_type_java/org/chromium/ui/base/ime/TextInputType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/net_errors_java/org/chromium/net/NetError.java \
 
 # content dependencies on java components that are provided by the system on

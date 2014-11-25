@@ -43,13 +43,6 @@ class DateTimeChooserAndroid {
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, jobject);
 
-  // Propagates the different types of accepted date/time values to the
-  // java side.
-  static void InitializeDateInputTypes(
-       int text_input_type_date, int text_input_type_date_time,
-       int text_input_type_date_time_local, int text_input_type_month,
-       int text_input_type_time, int text_input_type_week);
-
  private:
   RenderViewHost* host_;
 

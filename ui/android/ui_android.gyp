@@ -40,6 +40,14 @@
       'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
     {
+      'target_name': 'text_input_type_java',
+      'type': 'none',
+      'variables': {
+        'source_file': '../base/ime/text_input_type.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
+    {
       'target_name': 'ui_java',
       'type': 'none',
       'variables': {
@@ -55,6 +63,7 @@
         'system_ui_resource_type_java',
         'ui_strings_grd',
         'window_open_disposition_java',
+        'text_input_type_java',
       ],
       'includes': [ '../../build/java.gypi' ],
     },

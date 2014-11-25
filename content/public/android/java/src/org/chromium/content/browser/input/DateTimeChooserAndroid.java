@@ -79,17 +79,6 @@ class DateTimeChooserAndroid {
         array[index] = new DateTimeSuggestion(value, localizedValue, label);
     }
 
-    @CalledByNative
-    private static void initializeDateInputTypes(
-            int textInputTypeDate, int textInputTypeDateTime,
-            int textInputTypeDateTimeLocal, int textInputTypeMonth,
-            int textInputTypeTime, int textInputTypeWeek) {
-        InputDialogContainer.initializeInputTypes(
-                textInputTypeDate,
-                textInputTypeDateTime, textInputTypeDateTimeLocal,
-                textInputTypeMonth, textInputTypeTime, textInputTypeWeek);
-    }
-
     private native void nativeReplaceDateTime(long nativeDateTimeChooserAndroid,
                                               double dialogValue);
 
