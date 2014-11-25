@@ -1,4 +1,3 @@
-
 function loadJson(path) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", path, false);
@@ -48,6 +47,8 @@ function escapeString(string) {
 }
 
 ColorTest.prototype.run = function() {
+    setPrintTestResultsLazily();
+
     // This is a hack to make getComputedstyle work.
     this.parentElement = document.createElement("foo");
     this.testElement = document.createElement("bar");

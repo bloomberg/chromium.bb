@@ -1,3 +1,8 @@
+// js-test now supports lazily printing test results which dumps all test
+// results once at the end of the test instead of building them up. To enable
+// this option, call setPrintTestResultsLazily() before running any tests.
+var _lazyTestResults; // Set by setPrintTestResultsLazily().
+
 // svg/dynamic-updates tests set enablePixelTesting=true, as we want to dump text + pixel results
 if (self.testRunner) {
     if (self.enablePixelTesting)
@@ -53,9 +58,13 @@ var unexpectedErrorMessage; // set by onerror when expectingError is not true
 
     debug = function debug(msg)
     {
-        var span = document.createElement("span");
-        getOrCreate("console", "div").appendChild(span); // insert it first so XHTML knows the namespace
-        span.innerHTML = msg + '<br />';
+        if (self._lazyTestResults) {
+            self._lazyTestResults.push(msg);
+        } else {
+            var span = document.createElement("span");
+            getOrCreate("console", "div").appendChild(span); // insert it first so XHTML knows the namespace
+            span.innerHTML = msg + '<br />';
+        }
     };
 
     var css =
@@ -720,6 +729,10 @@ function asyncMinorGC(callback) {
     setTimeout(callback, 1);
 }
 
+function setPrintTestResultsLazily() {
+    self._lazyTestResults = self._lazyTestResults || [];
+}
+
 function isSuccessfullyParsed()
 {
     // FIXME: Remove this and only report unexpected syntax errors.
@@ -738,6 +751,22 @@ function finishJSTest()
     if (!self.wasPostTestScriptParsed)
         return;
     isSuccessfullyParsed();
+
+    if (self._lazyTestResults && self._lazyTestResults.length > 0) {
+        var consoleElement = document.getElementById("console");
+        if (!consoleElement) {
+            consoleElement = document.createElement("div");
+            consoleElement.id = "console";
+            var parent = document.body || document.documentElement;
+            parent.insertBefore(consoleElement, parent.firstChild);
+        }
+        self._lazyTestResults.forEach(function(msg) {
+            var span = document.createElement("span");
+            span.innerHTML = msg + '<br />';
+            consoleElement.appendChild(span);
+        });
+    }
+
     if (self.jsTestIsAsync && self.testRunner)
         testRunner.notifyDone();
 }
