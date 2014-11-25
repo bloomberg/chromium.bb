@@ -4165,8 +4165,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
                 GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
                 ASSERT(rootScrollLayer);
                 WebLayer* pageScaleLayer = rootScrollLayer->parent() ? rootScrollLayer->parent()->platformLayer() : 0;
-                // TODO(ccameron): Use the version of this function which specifies the overscroll layer as well.
-                m_layerTreeView->registerViewportLayers(pageScaleLayer, rootScrollLayer->platformLayer(), 0);
+                // Note that it is invalid to have 0 as a scroll elasticity layer when using pinch virtual viewport.
+                m_layerTreeView->registerViewportLayers(0, pageScaleLayer, rootScrollLayer->platformLayer(), 0);
             }
         } else {
             m_layerTreeView->clearRootLayer();

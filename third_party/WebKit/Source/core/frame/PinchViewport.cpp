@@ -366,8 +366,8 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
     m_webOverlayScrollbarVertical->setScrollLayer(scrollLayer);
 
     ASSERT(compositor);
-    // TODO(ccameron): Use the version of this function which specifies the overscroll layer as well.
     layerTreeView->registerViewportLayers(
+        m_overscrollElasticityLayer->platformLayer(),
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
         scrollLayer);
