@@ -212,3 +212,43 @@ message GetLoginStatusReply {
   optional bool boot_lockbox_finalized=2;
 }
 
+message GetTpmStatusRequest {
+}
+
+message GetTpmStatusReply {
+  extend BaseReply {
+    optional GetTpmStatusReply reply = 1006;
+  }
+  // Whether a TPM is enabled on the system.
+  optional bool enabled = 1;
+  // Whether the TPM has been owned.
+  optional bool owned = 2;
+  // Whether the TPM initialization flow has completed. This includes taking
+  // ownership, preparing attestation data, and finalizing lockbox NVRAM.
+  optional bool initialized = 3;
+  // The TPM owner password. This is only available when (owned &&
+  // !initialized) and sometimes not even then.
+  optional string owner_password = 4;
+  // Whether attestation data has been prepared. This includes reading the
+  // endorsement certificate out of NVRAM and generating an identity key. This
+  // does not include any kind of enrollment with a Privacy CA.
+  optional bool attestation_prepared = 7;
+  // Whether the device has enrolled with a Privacy CA. This means the identity
+  // key has been successfully certified.
+  optional bool attestation_enrolled = 8;
+  // The current dictionary attack counter value.
+  optional int32 dictionary_attack_counter = 9;
+  // The current dictionary attack counter threshold.
+  optional int32 dictionary_attack_threshold = 10;
+  // Whether the TPM is in some form of dictionary attack lockout.
+  optional bool dictionary_attack_lockout_in_effect = 11;
+  // The number of seconds remaining in the lockout.
+  optional int32 dictionary_attack_lockout_seconds_remaining = 12;
+  // Whether the install lockbox has been finalized.
+  optional bool install_lockbox_finalized = 13;
+  // Whether the boot lockbox has been finalized.
+  optional bool boot_lockbox_finalized = 14;
+  // Whether the current PCR values show a verified boot.
+  optional bool verified_boot_measured = 15;
+}
+
