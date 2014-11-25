@@ -121,6 +121,7 @@ public class SelectActionModeCallback implements ActionMode.Callback {
 
     private void createActionMenu(ActionMode mode, Menu menu) {
         mode.getMenuInflater().inflate(R.menu.select_action_menu, menu);
+
         if (!mEditable || !canPaste()) {
             menu.removeItem(R.id.select_action_menu_paste);
         }

@@ -37,14 +37,14 @@
         />
     <item
         android:id="@+id/select_action_menu_share"
-        android:icon="@drawable/ic_menu_share_holo_light"
         android:title="@string/actionbar_share"
         android:showAsAction="always|withText"
+        style="@style/SelectActionMenuShare"
         />
     <item
         android:id="@+id/select_action_menu_web_search"
-        android:icon="@drawable/ic_menu_search_holo_light"
         android:title="@string/actionbar_web_search"
         android:showAsAction="always|withText"
+        style="@style/SelectActionMenuWebSearch"
         />
 </menu>
