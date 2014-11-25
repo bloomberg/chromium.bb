@@ -61,16 +61,16 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
  * Return a blob with the encoded image with metadata inserted.
  * @param {!HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {!ImageEncoder.MetadataEncoder} metadataEncoder Encoder to use.
- * @param {number} quality (0..1], Encoding quality, defaults to 0.9.
+ * @param {number=} opt_quality (0..1], Encoding quality, defaults to 0.9.
  * @return {!Blob} encoded data.
  */
-ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
+ImageEncoder.getBlob = function(canvas, metadataEncoder, opt_quality) {
   // Contrary to what one might think 1.0 is not a good default. Opening and
   // saving an typical photo taken with consumer camera increases its file size
   // by 50-100%.
   // Experiments show that 0.9 is much better. It shrinks some photos a bit,
   // keeps others about the same size, but does not visibly lower the quality.
-  quality = quality || 0.9;
+  var quality = opt_quality || 0.9;
 
   ImageUtil.trace.resetTimer('dataurl');
   // WebKit does not support canvas.toBlob yet so canvas.toDataURL is

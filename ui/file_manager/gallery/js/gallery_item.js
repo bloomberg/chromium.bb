@@ -5,46 +5,50 @@
 /**
  * Object representing an image item (a photo).
  *
- * @param {FileEntry} entry Image entry.
- * @param {EntryLocation} locationInfo Entry location information.
- * @param {Object} metadata Metadata for the entry.
- * @param {MetadataCache} metadataCache Metadata cache instance.
+ * @param {!FileEntry} entry Image entry.
+ * @param {!EntryLocation} locationInfo Entry location information.
+ * @param {!Object} metadata Metadata for the entry.
+ * @param {!MetadataCache} metadataCache Metadata cache instance.
  * @param {boolean} original Whether the entry is original or edited.
  * @constructor
+ * @struct
  */
 Gallery.Item = function(
     entry, locationInfo, metadata, metadataCache, original) {
   /**
-   * @type {FileEntry}
+   * @type {!FileEntry}
    * @private
    */
   this.entry_ = entry;
 
   /**
-   * @type {EntryLocation}
+   * @type {!EntryLocation}
    * @private
    */
   this.locationInfo_ = locationInfo;
 
   /**
-   * @type {Object}
+   * @type {!Object}
    * @private
    */
   this.metadata_ = Object.freeze(metadata);
 
   /**
-   * @type {MetadataCache}
+   * @type {!MetadataCache}
    * @private
+   * @const
    */
   this.metadataCache_ = metadataCache;
 
+  // TODO(yawano): Change this.contentImage and this.screenImage to private
+  // fields and provide utility methods for them (e.g. revokeFullImageCache).
   /**
    * The content cache is used for prefetching the next image when going through
    * the images sequentially. The real life photos can be large (18Mpix = 72Mb
    * pixel array) so we want only the minimum amount of caching.
    * @type {HTMLCanvasElement}
    */
-  this.screenImage = null;
+  this.contentImage = null;
 
   /**
    * We reuse previously generated screen-scale images so that going back to a
@@ -53,7 +57,7 @@ Gallery.Item = function(
    * cache more of them.
    * @type {HTMLCanvasElement}
    */
-  this.contentImage = null;
+  this.screenImage = null;
 
   /**
    * Last accessed date to be used for selecting items whose cache are evicted.
@@ -72,19 +76,19 @@ Gallery.Item = function(
 };
 
 /**
- * @return {FileEntry} Image entry.
+ * @return {!FileEntry} Image entry.
  */
 Gallery.Item.prototype.getEntry = function() { return this.entry_; };
 
 /**
- * @return {EntryLocation} Entry location information.
+ * @return {!EntryLocation} Entry location information.
  */
 Gallery.Item.prototype.getLocationInfo = function() {
   return this.locationInfo_;
 };
 
 /**
- * @return {Object} Metadata.
+ * @return {!Object} Metadata.
  */
 Gallery.Item.prototype.getMetadata = function() { return this.metadata_; };
 
@@ -93,7 +97,7 @@ Gallery.Item.prototype.getMetadata = function() { return this.metadata_; };
  *
  * This is a heavy operation since it forces to load the image data to obtain
  * the metadata.
- * @return {Promise} Promise to be fulfilled with fetched metadata.
+ * @return {!Promise} Promise to be fulfilled with fetched metadata.
  */
 Gallery.Item.prototype.getFetchedMedia = function() {
   return new Promise(function(fulfill, reject) {
@@ -111,7 +115,7 @@ Gallery.Item.prototype.getFetchedMedia = function() {
 
 /**
  * Sets the metadata.
- * @param {Object} metadata New metadata.
+ * @param {!Object} metadata New metadata.
  */
 Gallery.Item.prototype.setMetadata = function(metadata) {
   this.metadata_ = Object.freeze(metadata);
@@ -147,19 +151,22 @@ Gallery.Item.prototype.touch = function() {
 // TODO: Localize?
 /**
  * @type {string} Suffix for a edited copy file name.
+ * @const
  */
 Gallery.Item.COPY_SIGNATURE = ' - Edited';
 
 /**
  * Regular expression to match '... - Edited'.
- * @type {RegExp}
+ * @type {!RegExp}
+ * @const
  */
 Gallery.Item.REGEXP_COPY_0 =
     new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + '$');
 
 /**
  * Regular expression to match '... - Edited (N)'.
- * @type {RegExp}
+ * @type {!RegExp}
+ * @const
  */
 Gallery.Item.REGEXP_COPY_N =
     new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + ' \\((\\d+)\\)$');
@@ -167,7 +174,7 @@ Gallery.Item.REGEXP_COPY_N =
 /**
  * Creates a name for an edited copy of the file.
  *
- * @param {DirectoryEntry} dirEntry Entry.
+ * @param {!DirectoryEntry} dirEntry Entry.
  * @param {function(string)} callback Callback.
  * @private
  */
@@ -225,12 +232,12 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
 /**
  * Writes the new item content to either the existing or a new file.
  *
- * @param {VolumeManager} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {string} fallbackDir Fallback directory in case the current directory
  *     is read only.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
- * @param {HTMLCanvasElement} canvas Source canvas.
- * @param {ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
+ * @param {!HTMLCanvasElement} canvas Source canvas.
+ * @param {!ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)=} opt_callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
@@ -257,7 +264,7 @@ Gallery.Item.prototype.saveToFile = function(
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
     if (opt_callback)
       opt_callback(false);
-  }
+  };
 
   var doSave = function(newFile, fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
@@ -278,7 +285,7 @@ Gallery.Item.prototype.saveToFile = function(
         fileWriter.truncate(0);
       }
     }, onError);
-  }
+  };
 
   var getFile = function(dir, newFile) {
     dir.getFile(name, {create: newFile, exclusive: newFile},
@@ -289,7 +296,7 @@ Gallery.Item.prototype.saveToFile = function(
             onError('NotFound');
             return;
           }
-          doSave(newFile, fileEntry, locationInfo);
+          doSave(newFile, fileEntry);
         }.bind(this), onError);
   }.bind(this);
 
@@ -297,7 +304,7 @@ Gallery.Item.prototype.saveToFile = function(
     dir.getFile(name, {create: false, exclusive: false},
         getFile.bind(null, dir, false /* existing file */),
         getFile.bind(null, dir, true /* create new file */));
-  }
+  };
 
   var saveToDir = function(dir) {
     if (overwrite && !this.locationInfo_.isReadOnly) {
@@ -322,8 +329,8 @@ Gallery.Item.prototype.saveToFile = function(
  * Renames the item.
  *
  * @param {string} displayName New display name (without the extension).
- * @return {Promise} Promise fulfilled with when renaming completes, or rejected
- *     with the error message.
+ * @return {!Promise} Promise fulfilled with when renaming completes, or
+ *     rejected with the error message.
  */
 Gallery.Item.prototype.rename = function(displayName) {
   var newFileName = this.entry_.name.replace(
