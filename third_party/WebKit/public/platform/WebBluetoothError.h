@@ -9,7 +9,8 @@
 
 namespace blink {
 
-// Error object when a bluetooth request can not be satisfied.
+// Error object when a bluetooth request can not be satisfied used to create
+// DOMExceptions.
 struct WebBluetoothError {
     enum ErrorType {
         NotFoundError,

@@ -6,12 +6,18 @@
 #define WebBluetooth_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 
+struct WebBluetoothDevice;
 struct WebBluetoothError;
 
-// FIXME: Return a WebBluetoothDevice http://crbug.com/420284
+// Success and failure callbacks for requestDevice.
+// WebBluetoothDevice and WebBluetoothError object ownership is transfered.
+// FIXME: After removing references to old version in crrev.com/699843003, update to:
+// typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
+// Old version:
 typedef WebCallbacks<void, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
 
 class WebBluetooth {
@@ -20,7 +26,8 @@ public:
 
     // Requests a bluetooth device.
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
-    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) = 0;
+    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void requestDevice(WebCallbacks<WebBluetoothDevice, WebBluetoothError>*) { BLINK_ASSERT_NOT_REACHED(); };
 };
 
 } // namespace blink
