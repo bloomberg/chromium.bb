@@ -21,22 +21,16 @@
 #include "config.h"
 #include "core/xml/XMLSerializer.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/editing/MarkupAccumulator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionState)
+String XMLSerializer::serializeToString(Node* root)
 {
-    if (!node) {
-        exceptionState.throwTypeError("Invalid node value.");
-        return String();
-    }
-
+    ASSERT(root);
     MarkupAccumulator accumulator(0, DoNotResolveURLs, nullptr, ForcedXML);
-    return accumulator.serializeNodes(*node, IncludeNode);
+    return accumulator.serializeNodes(*root, IncludeNode);
 }
 
 } // namespace blink

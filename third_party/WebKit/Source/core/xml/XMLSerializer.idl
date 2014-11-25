@@ -19,9 +19,9 @@
  */
 
 [
+    Constructor,
+    TypeChecking=Interface,
     WillBeGarbageCollected,
-    Constructor
 ] interface XMLSerializer {
-    [RaisesException] DOMString serializeToString([Default=Undefined] optional Node node);
+    DOMString serializeToString(Node root);
 };
-

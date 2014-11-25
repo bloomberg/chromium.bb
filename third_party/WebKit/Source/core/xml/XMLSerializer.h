@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new XMLSerializer);
     }
 
-    String serializeToString(Node*, ExceptionState&);
+    String serializeToString(Node*);
 
     void trace(Visitor*) { }
 

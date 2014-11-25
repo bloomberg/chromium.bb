@@ -20,12 +20,12 @@ function shouldThrowException(node)
 {
     document.body.appendChild(document.createElement("br"));
     var header = document.createElement("div");
-    header.textContent = ++count + ". Verifying XMLSerializer.serializeToString() should THROW exception with node value = " + node;
+    header.textContent = ++count + ". Verifying XMLSerializer.serializeToString() should THROW exception with " + (arguments.length ? "argument " + node : "no argument");
     document.body.appendChild(header);
 
     var xs = new XMLSerializer();
     try {
-        var str = xs.serializeToString(node);
+        var str = xs.serializeToString.apply(xs, arguments);
 
         var result = document.createElement("div");
         result.className = "failed"
@@ -48,7 +48,7 @@ function shouldNOTThrowException(node)
 {
     document.body.appendChild(document.createElement("br"));
     var header = document.createElement("div");
-    header.textContent = ++count + ". Verifying XMLSerializer.serializeToString() should NOT-THROW exception with node value = " + node;
+    header.textContent = ++count + ". Verifying XMLSerializer.serializeToString() should NOT-THROW exception with argument " + node;
     document.body.appendChild(header);
 
     var xs = new XMLSerializer();
@@ -74,6 +74,7 @@ function shouldNOTThrowException(node)
 
 function runTest()
 {
+    shouldThrowException();
     shouldThrowException(null);
     shouldThrowException(undefined);
     shouldThrowException("<html><title>Hello World</title></html>");
