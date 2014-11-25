@@ -725,6 +725,13 @@ bool GLES2Implementation::GetIntegervHelper(GLenum pname, GLint* params) {
   return GetHelper(pname, params);
 }
 
+bool GLES2Implementation::GetInternalformativHelper(
+    GLenum target, GLenum format, GLenum pname, GLsizei bufSize,
+    GLint* params) {
+  // TODO(zmo): Implement the client side caching.
+  return false;
+}
+
 GLuint GLES2Implementation::GetMaxValueInBufferCHROMIUMHelper(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   typedef cmds::GetMaxValueInBufferCHROMIUM::Result Result;

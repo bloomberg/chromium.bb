@@ -3048,6 +3048,73 @@ COMPILE_ASSERT(offsetof(GetIntegerv, params_shm_id) == 8,
 COMPILE_ASSERT(offsetof(GetIntegerv, params_shm_offset) == 12,
                OffsetOf_GetIntegerv_params_shm_offset_not_12);
 
+struct GetInternalformativ {
+  typedef GetInternalformativ ValueType;
+  static const CommandId kCmdId = kGetInternalformativ;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLenum _format,
+            GLenum _pname,
+            GLsizei _bufSize,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    target = _target;
+    format = _format;
+    pname = _pname;
+    bufSize = _bufSize;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _format,
+            GLenum _pname,
+            GLsizei _bufSize,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target, _format, _pname, _bufSize,
+                                       _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t format;
+  uint32_t pname;
+  int32_t bufSize;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetInternalformativ) == 28,
+               Sizeof_GetInternalformativ_is_not_28);
+COMPILE_ASSERT(offsetof(GetInternalformativ, header) == 0,
+               OffsetOf_GetInternalformativ_header_not_0);
+COMPILE_ASSERT(offsetof(GetInternalformativ, target) == 4,
+               OffsetOf_GetInternalformativ_target_not_4);
+COMPILE_ASSERT(offsetof(GetInternalformativ, format) == 8,
+               OffsetOf_GetInternalformativ_format_not_8);
+COMPILE_ASSERT(offsetof(GetInternalformativ, pname) == 12,
+               OffsetOf_GetInternalformativ_pname_not_12);
+COMPILE_ASSERT(offsetof(GetInternalformativ, bufSize) == 16,
+               OffsetOf_GetInternalformativ_bufSize_not_16);
+COMPILE_ASSERT(offsetof(GetInternalformativ, params_shm_id) == 20,
+               OffsetOf_GetInternalformativ_params_shm_id_not_20);
+COMPILE_ASSERT(offsetof(GetInternalformativ, params_shm_offset) == 24,
+               OffsetOf_GetInternalformativ_params_shm_offset_not_24);
+
 struct GetProgramiv {
   typedef GetProgramiv ValueType;
   static const CommandId kCmdId = kGetProgramiv;

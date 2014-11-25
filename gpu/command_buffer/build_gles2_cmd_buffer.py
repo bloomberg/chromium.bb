@@ -1869,6 +1869,11 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGetIntegerv',
     'client_test': False,
   },
+  'GetInternalformativ': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLint>'],
+    'unsafe': True,
+  },
   'GetMaxValueInBufferCHROMIUM': {
     'type': 'Is',
     'decoder_func': 'DoGetMaxValueInBufferCHROMIUM',
@@ -4937,12 +4942,21 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(local_gl_args)s));
   result->size = 0;
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
+  cmd.Init(%(args)s);"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    valid_test += """
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
                 %(valid_pname)s),
             result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));"""
+    valid_test += """
 }
 """
     gl_arg_strings = []
@@ -4962,7 +4976,8 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
         'valid_pname': valid_pname,
       }, *extras)
 
-    invalid_test = """
+    if not func.IsUnsafe():
+      invalid_test = """
 TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
@@ -4975,7 +4990,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_EQ(0u, result->size);%(gl_error_test)s
 }
 """
-    self.WriteInvalidUnitTest(func, file, invalid_test, *extras)
+      self.WriteInvalidUnitTest(func, file, invalid_test, *extras)
 
 class ArrayArgTypeHandler(TypeHandler):
   """Base class for type handlers that handle args that are arrays"""

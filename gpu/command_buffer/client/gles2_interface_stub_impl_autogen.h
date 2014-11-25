@@ -256,6 +256,12 @@ void GLES2InterfaceStub::GetFramebufferAttachmentParameteriv(
 }
 void GLES2InterfaceStub::GetIntegerv(GLenum /* pname */, GLint* /* params */) {
 }
+void GLES2InterfaceStub::GetInternalformativ(GLenum /* target */,
+                                             GLenum /* format */,
+                                             GLenum /* pname */,
+                                             GLsizei /* bufSize */,
+                                             GLint* /* params */) {
+}
 void GLES2InterfaceStub::GetProgramiv(GLuint /* program */,
                                       GLenum /* pname */,
                                       GLint* /* params */) {

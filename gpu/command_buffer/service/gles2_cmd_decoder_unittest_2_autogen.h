@@ -12,6 +12,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): ReleaseShaderCompiler
+
 TEST_P(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
   SpecializedSetup<cmds::RenderbufferStorage, 0>(true);
   cmds::RenderbufferStorage cmd;
@@ -757,7 +759,5 @@ TEST_P(GLES2DecoderTest2, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
 // TODO(gman): AsyncTexSubImage2DCHROMIUM
 
 // TODO(gman): AsyncTexImage2DCHROMIUM
-
-// TODO(gman): WaitAsyncTexImage2DCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

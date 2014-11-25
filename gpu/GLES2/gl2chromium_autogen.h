@@ -80,6 +80,7 @@
 #define glGetFramebufferAttachmentParameteriv \
   GLES2_GET_FUN(GetFramebufferAttachmentParameteriv)
 #define glGetIntegerv GLES2_GET_FUN(GetIntegerv)
+#define glGetInternalformativ GLES2_GET_FUN(GetInternalformativ)
 #define glGetProgramiv GLES2_GET_FUN(GetProgramiv)
 #define glGetProgramInfoLog GLES2_GET_FUN(GetProgramInfoLog)
 #define glGetRenderbufferParameteriv GLES2_GET_FUN(GetRenderbufferParameteriv)

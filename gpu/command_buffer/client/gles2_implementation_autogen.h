@@ -226,6 +226,12 @@ void GetFramebufferAttachmentParameteriv(GLenum target,
 
 void GetIntegerv(GLenum pname, GLint* params) override;
 
+void GetInternalformativ(GLenum target,
+                         GLenum format,
+                         GLenum pname,
+                         GLsizei bufSize,
+                         GLint* params) override;
+
 void GetProgramiv(GLuint program, GLenum pname, GLint* params) override;
 
 void GetProgramInfoLog(GLuint program,

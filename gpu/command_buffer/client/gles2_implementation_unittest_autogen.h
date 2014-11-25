@@ -654,6 +654,24 @@ TEST_F(GLES2ImplementationTest, GetIntegerv) {
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
 
+TEST_F(GLES2ImplementationTest, GetInternalformativ) {
+  struct Cmds {
+    cmds::GetInternalformativ cmd;
+  };
+  typedef cmds::GetInternalformativ::Result Result;
+  Result::Type result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_RGBA4, GL_RENDERBUFFER_RED_SIZE, 4, result1.id,
+                    result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .RetiresOnSaturation();
+  gl_->GetInternalformativ(123, GL_RGBA4, GL_RENDERBUFFER_RED_SIZE, 4, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<Result::Type>(1), result);
+}
+
 TEST_F(GLES2ImplementationTest, GetProgramiv) {
   struct Cmds {
     cmds::GetProgramiv cmd;

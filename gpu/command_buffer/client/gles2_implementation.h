@@ -510,6 +510,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetFramebufferAttachmentParameterivHelper(
       GLenum target, GLenum attachment, GLenum pname, GLint* params);
   bool GetIntegervHelper(GLenum pname, GLint* params);
+  bool GetInternalformativHelper(
+      GLenum target, GLenum format, GLenum pname, GLsizei bufSize,
+      GLint* params);
   bool GetProgramivHelper(GLuint program, GLenum pname, GLint* params);
   bool GetRenderbufferParameterivHelper(
       GLenum target, GLenum pname, GLint* params);

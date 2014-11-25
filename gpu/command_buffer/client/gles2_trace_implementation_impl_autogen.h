@@ -449,6 +449,15 @@ void GLES2TraceImplementation::GetIntegerv(GLenum pname, GLint* params) {
   gl_->GetIntegerv(pname, params);
 }
 
+void GLES2TraceImplementation::GetInternalformativ(GLenum target,
+                                                   GLenum format,
+                                                   GLenum pname,
+                                                   GLsizei bufSize,
+                                                   GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetInternalformativ");
+  gl_->GetInternalformativ(target, format, pname, bufSize, params);
+}
+
 void GLES2TraceImplementation::GetProgramiv(GLuint program,
                                             GLenum pname,
                                             GLint* params) {

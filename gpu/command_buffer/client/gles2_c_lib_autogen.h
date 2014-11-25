@@ -304,6 +304,14 @@ void GLES2GetFramebufferAttachmentParameteriv(GLenum target,
 void GLES2GetIntegerv(GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetIntegerv(pname, params);
 }
+void GLES2GetInternalformativ(GLenum target,
+                              GLenum format,
+                              GLenum pname,
+                              GLsizei bufSize,
+                              GLint* params) {
+  gles2::GetGLContext()->GetInternalformativ(target, format, pname, bufSize,
+                                             params);
+}
 void GLES2GetProgramiv(GLuint program, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetProgramiv(program, pname, params);
 }
@@ -1241,6 +1249,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetIntegerv",
      reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv),
+    },
+    {
+     "glGetInternalformativ",
+     reinterpret_cast<GLES2FunctionPointer>(glGetInternalformativ),
     },
     {
      "glGetProgramiv",

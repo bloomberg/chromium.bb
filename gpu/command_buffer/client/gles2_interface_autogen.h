@@ -166,6 +166,11 @@ virtual void GetFramebufferAttachmentParameteriv(GLenum target,
                                                  GLenum pname,
                                                  GLint* params) = 0;
 virtual void GetIntegerv(GLenum pname, GLint* params) = 0;
+virtual void GetInternalformativ(GLenum target,
+                                 GLenum format,
+                                 GLenum pname,
+                                 GLsizei bufSize,
+                                 GLint* params) = 0;
 virtual void GetProgramiv(GLuint program, GLenum pname, GLint* params) = 0;
 virtual void GetProgramInfoLog(GLuint program,
                                GLsizei bufsize,

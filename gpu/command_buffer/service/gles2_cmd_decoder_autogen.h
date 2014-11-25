@@ -1155,6 +1155,47 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetInternalformativ(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetInternalformativ& c =
+      *static_cast<const gles2::cmds::GetInternalformativ*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLsizei bufSize = static_cast<GLsizei>(c.bufSize);
+  typedef cmds::GetInternalformativ::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
+  if (bufSize < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetInternalformativ",
+                       "bufSize < 0");
+    return error::kNoError;
+  }
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetInternalformativ");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  glGetInternalformativ(target, format, pname, bufSize, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetInternalformativ", "");
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetProgramiv(uint32_t immediate_data_size,
                                                   const void* cmd_data) {
   const gles2::cmds::GetProgramiv& c =
