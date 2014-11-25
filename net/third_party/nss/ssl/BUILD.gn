@@ -8,14 +8,6 @@ config("ssl_config") {
   if (is_mac || is_win) {
     defines = [ "NSS_PLATFORM_CLIENT_AUTH" ]
   }
-
-  if (is_clang) {
-    cflags = [
-      # There is a broken header guard in /usr/include/nss/secmod.h:
-      # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
-      "-Wno-header-guard",
-    ]
-  }
 }
 
 component("libssl") {
@@ -103,6 +95,11 @@ component("libssl") {
     ]
   } else if (is_mac) {
     libs = [ "Security.framework" ]
+  }
+
+  if (is_clang) {
+    # SSL triggers some of these Clang warnings.
+    configs -= [ "//build/config/clang:extra_warnings" ]
   }
 
   if (is_posix) {

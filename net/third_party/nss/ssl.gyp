@@ -79,6 +79,12 @@
         'USE_UTIL_DIRECTLY',
       ],
       'msvs_disabled_warnings': [4018, 4244, 4267],
+      'variables': {
+        'clang_warning_flags_unset': [
+          # ssl uses PR_ASSERT(!"foo") instead of PR_ASSERT(false && "foo")
+          '-Wstring-conversion',
+        ],
+      },
       'conditions': [
         ['component == "shared_library"', {
           'conditions': [

@@ -700,6 +700,12 @@
         'src/src/mesa/drivers/osmesa/osmesa.c',
         'src/src/mesa/drivers/osmesa/osmesa.def',
       ],
+      'variables': {
+        'clang_warning_flags_unset': [
+          # Don't warn about string->bool used in asserts.
+          '-Wstring-conversion',
+        ],
+      },
     },
   ],
   'conditions': [

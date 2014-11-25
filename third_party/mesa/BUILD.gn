@@ -679,6 +679,11 @@ shared_library("osmesa") {
 
   include_dirs = [ "src/src/mesa/drivers" ]
 
+  if (is_clang) {
+    # Mesa triggers some of these Clang warnings.
+    configs -= [ "//build/config/clang:extra_warnings" ]
+  }
+
   deps = [
     ":mesa_headers",
     ":mesa",
