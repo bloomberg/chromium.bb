@@ -184,7 +184,7 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
       break;
     }
     case UPGRADE_IS_AVAILABLE: {
-      DCHECK(!google_updater_);  // Should have been nulled out already.
+      DCHECK(!google_updater_.get());  // Should have been nulled out already.
       CreateGoogleUpdater();
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, base::string16());
       // Specify true to upgrade now.
