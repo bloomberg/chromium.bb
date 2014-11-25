@@ -43,8 +43,16 @@ class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   IncognitoConnectabilityInfoBarDelegate(const base::string16& message,
                                          const InfoBarCallback& callback)
-      : message_(message), callback_(callback) {}
-  ~IncognitoConnectabilityInfoBarDelegate() override {}
+      : message_(message), answered_(false), callback_(callback) {}
+
+  ~IncognitoConnectabilityInfoBarDelegate() override {
+    if (!answered_) {
+      // The infobar has closed without the user expressing an explicit
+      // preference. The current request should be denied but further requests
+      // should show an interactive prompt.
+      callback_.Run(IncognitoConnectability::ScopedAlertTracker::INTERACTIVE);
+    }
+  }
 
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override { return message_; }
@@ -55,22 +63,20 @@ class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   bool Accept() override {
     callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+    answered_ = true;
     return true;
   }
   bool Cancel() override {
     callback_.Run(IncognitoConnectability::ScopedAlertTracker::ALWAYS_DENY);
+    answered_ = true;
     return true;
   }
 
   // InfoBarDelegate:
-  void InfoBarDismissed() override {
-    // The user has not expressed an explicit preference. The current request
-    // should be denied but further requests should show an interactive prompt.
-    callback_.Run(IncognitoConnectability::ScopedAlertTracker::INTERACTIVE);
-  }
   Type GetInfoBarType() const override { return PAGE_ACTION_TYPE; }
 
   base::string16 message_;
+  bool answered_;
   InfoBarCallback callback_;
 };
 
