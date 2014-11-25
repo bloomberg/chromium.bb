@@ -12,16 +12,17 @@ namespace content {
 // Implementation of GPU memory buffer based on shared memory.
 class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
-  static void Create(gfx::GpuMemoryBufferId id,
-                     const gfx::Size& size,
-                     Format format,
-                     const CreationCallback& callback);
+  ~GpuMemoryBufferImplSharedMemory() override;
 
-  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
-                                      const gfx::Size& size,
-                                      Format format,
-                                      base::ProcessHandle child_process,
-                                      const AllocationCallback& callback);
+  static scoped_ptr<GpuMemoryBufferImpl> Create(gfx::GpuMemoryBufferId id,
+                                                const gfx::Size& size,
+                                                Format format);
+
+  static gfx::GpuMemoryBufferHandle AllocateForChildProcess(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      Format format,
+      base::ProcessHandle child_process);
 
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
@@ -30,7 +31,6 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       const DestructionCallback& callback);
 
   static bool IsFormatSupported(Format format);
-  static bool IsUsageSupported(Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override;
@@ -44,7 +44,6 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
                                   Format format,
                                   const DestructionCallback& callback,
                                   scoped_ptr<base::SharedMemory> shared_memory);
-  ~GpuMemoryBufferImplSharedMemory() override;
 
   scoped_ptr<base::SharedMemory> shared_memory_;
 

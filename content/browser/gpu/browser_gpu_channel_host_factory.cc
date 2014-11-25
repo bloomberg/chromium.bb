@@ -14,6 +14,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -21,6 +22,18 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/message_filter.h"
+
+#if defined(OS_MACOSX)
+#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#endif
 
 namespace content {
 
@@ -223,7 +236,7 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_manager_(
-          new BrowserGpuMemoryBufferManager(gpu_client_id_)),
+          new BrowserGpuMemoryBufferManager(this, gpu_client_id_)),
       gpu_host_id_(0),
       next_create_gpu_memory_buffer_request_id_(0) {
 }
@@ -412,8 +425,39 @@ void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
                  filter));
 }
 
+bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
+  // Preferred type is always used by factory.
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+  switch (supported_types[0]) {
+    case gfx::SHARED_MEMORY_BUFFER:
+      // Shared memory buffers must be created in-process.
+      return false;
+#if defined(OS_MACOSX)
+    case gfx::IO_SURFACE_BUFFER:
+      return GpuMemoryBufferFactoryIOSurface::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+#if defined(OS_ANDROID)
+    case gfx::SURFACE_TEXTURE_BUFFER:
+      return GpuMemoryBufferFactorySurfaceTexture::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+#if defined(USE_OZONE)
+    case gfx::OZONE_NATIVE_BUFFER:
+      return GpuMemoryBufferFactoryOzoneNativeBuffer::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
@@ -432,7 +476,6 @@ void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
   create_gpu_memory_buffer_requests_[request_id] = callback;
 
   host->CreateGpuMemoryBuffer(
-      type,
       id,
       size,
       format,
@@ -444,7 +487,6 @@ void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
 }
 
 void BrowserGpuChannelHostFactory::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     int client_id,
     int32 sync_point) {
@@ -453,14 +495,12 @@ void BrowserGpuChannelHostFactory::DestroyGpuMemoryBuffer(
       FROM_HERE,
       base::Bind(&BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO,
                  base::Unretained(this),
-                 type,
                  id,
                  client_id,
                  sync_point));
 }
 
 void BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     int client_id,
     int32 sync_point) {
@@ -470,7 +510,7 @@ void BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO(
   if (!host)
     return;
 
-  host->DestroyGpuMemoryBuffer(type, id, client_id, sync_point);
+  host->DestroyGpuMemoryBuffer(id, client_id, sync_point);
 }
 
 void BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated(

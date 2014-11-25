@@ -4,49 +4,9 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace content {
-namespace {
-
-void GpuMemoryBufferDeleted(gfx::GpuMemoryBufferId id,
-                            int client_id,
-                            uint32 sync_point) {
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
-      gfx::IO_SURFACE_BUFFER, id, client_id, sync_point);
-}
-
-void GpuMemoryBufferCreated(
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    int client_id,
-    const GpuMemoryBufferImpl::CreationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  if (handle.is_null()) {
-    callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
-    return;
-  }
-
-  DCHECK_EQ(gfx::IO_SURFACE_BUFFER, handle.type);
-  callback.Run(GpuMemoryBufferImplIOSurface::CreateFromHandle(
-      handle,
-      size,
-      format,
-      base::Bind(&GpuMemoryBufferDeleted, handle.id, client_id)));
-}
-
-void GpuMemoryBufferCreatedForChildProcess(
-    const GpuMemoryBufferImpl::AllocationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_IMPLIES(!handle.is_null(), gfx::IO_SURFACE_BUFFER == handle.type);
-
-  callback.Run(handle);
-}
-
-}  // namespace
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     gfx::GpuMemoryBufferId id,
@@ -61,46 +21,11 @@ GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
 }
 
 // static
-void GpuMemoryBufferImplIOSurface::Create(gfx::GpuMemoryBufferId id,
-                                          const gfx::Size& size,
-                                          Format format,
-                                          int client_id,
-                                          const CreationCallback& callback) {
-  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      gfx::IO_SURFACE_BUFFER,
-      id,
-      size,
-      format,
-      MAP,
-      client_id,
-      base::Bind(&GpuMemoryBufferCreated, size, format, client_id, callback));
-}
-
-// static
-void GpuMemoryBufferImplIOSurface::AllocateForChildProcess(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    Format format,
-    int child_client_id,
-    const AllocationCallback& callback) {
-  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      gfx::IO_SURFACE_BUFFER,
-      id,
-      size,
-      format,
-      MAP,
-      child_client_id,
-      base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
-}
-
-// static
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsFormatSupported(format));
-
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       IOSurfaceLookup(handle.io_surface_id));
   if (!io_surface)
@@ -108,42 +33,6 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplIOSurface(
       handle.id, size, format, callback, io_surface.release()));
-}
-
-// static
-void GpuMemoryBufferImplIOSurface::DeletedByChildProcess(
-    gfx::GpuMemoryBufferId id,
-    int child_client_id,
-    uint32_t sync_point) {
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
-      gfx::IO_SURFACE_BUFFER, id, child_client_id, sync_point);
-}
-
-// static
-bool GpuMemoryBufferImplIOSurface::IsFormatSupported(Format format) {
-  switch (format) {
-    case BGRA_8888:
-      return true;
-    case RGBA_8888:
-    case RGBX_8888:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-bool GpuMemoryBufferImplIOSurface::IsUsageSupported(Usage usage) {
-  switch (usage) {
-    case MAP:
-      return true;
-    case SCANOUT:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 void* GpuMemoryBufferImplIOSurface::Map() {

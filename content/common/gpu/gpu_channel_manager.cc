@@ -58,26 +58,35 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
  protected:
   ~GpuChannelManagerMessageFilter() override {}
 
-  void OnCreateGpuMemoryBuffer(
-      const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
+  void OnCreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                               const gfx::Size& size,
+                               gfx::GpuMemoryBuffer::Format format,
+                               gfx::GpuMemoryBuffer::Usage usage,
+                               int client_id) {
     TRACE_EVENT2("gpu",
                  "GpuChannelManagerMessageFilter::OnCreateGpuMemoryBuffer",
                  "id",
-                 params.id,
+                 id,
                  "client_id",
-                 params.client_id);
+                 client_id);
     sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
-        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(params.type,
-                                                          params.id,
-                                                          params.size,
-                                                          params.format,
-                                                          params.usage,
-                                                          params.client_id)));
+        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(id,
+                                                          size,
+                                                          format,
+                                                          usage,
+                                                          client_id)));
   }
 
   IPC::Sender* sender_;
   GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
 };
+
+gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+  return supported_types[0];
+}
 
 }  // namespace
 
@@ -94,7 +103,8 @@ GpuChannelManager::GpuChannelManager(MessageRouter* router,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
       sync_point_manager_(new gpu::SyncPointManager),
-      gpu_memory_buffer_factory_(GpuMemoryBufferFactory::Create()),
+      gpu_memory_buffer_factory_(
+          GpuMemoryBufferFactory::Create(GetGpuMemoryBufferFactoryType())),
       channel_(channel),
       filter_(
           new GpuChannelManagerMessageFilter(gpu_memory_buffer_factory_.get())),
@@ -244,38 +254,33 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
 }
 
 void GpuChannelManager::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     int client_id) {
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannelManager::DestroyGpuMemoryBufferOnIO,
                  base::Unretained(this),
-                 type,
                  id,
                  client_id));
 }
 
 void GpuChannelManager::DestroyGpuMemoryBufferOnIO(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(type, id, client_id);
+  gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
 }
 
 void GpuChannelManager::OnDestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     int client_id,
     int32 sync_point) {
   if (!sync_point) {
-    DestroyGpuMemoryBuffer(type, id, client_id);
+    DestroyGpuMemoryBuffer(id, client_id);
   } else {
     sync_point_manager()->AddSyncPointCallback(
         sync_point,
         base::Bind(&GpuChannelManager::DestroyGpuMemoryBuffer,
                    base::Unretained(this),
-                   type,
                    id,
                    client_id));
   }

@@ -4,48 +4,26 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 
-#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/common/android/surface_texture_manager.h"
-#include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 namespace {
 
-void GpuMemoryBufferDeleted(gfx::GpuMemoryBufferId id,
-                            int client_id,
-                            uint32 sync_point) {
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
-      gfx::SURFACE_TEXTURE_BUFFER, id, client_id, sync_point);
-}
-
-void GpuMemoryBufferCreated(
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    int client_id,
-    const GpuMemoryBufferImpl::CreationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  if (handle.is_null()) {
-    callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
-    return;
+int WindowFormat(gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+      return WINDOW_FORMAT_RGBA_8888;
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      NOTREACHED();
+      return 0;
   }
 
-  DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
-  callback.Run(GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
-      handle,
-      size,
-      format,
-      base::Bind(&GpuMemoryBufferDeleted, handle.id, client_id)));
-}
-
-void GpuMemoryBufferCreatedForChildProcess(
-    const GpuMemoryBufferImpl::AllocationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_IMPLIES(!handle.is_null(), gfx::SURFACE_TEXTURE_BUFFER == handle.type);
-
-  callback.Run(handle);
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace
@@ -66,48 +44,12 @@ GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
 }
 
 // static
-void GpuMemoryBufferImplSurfaceTexture::Create(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    Format format,
-    int client_id,
-    const CreationCallback& callback) {
-  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      gfx::SURFACE_TEXTURE_BUFFER,
-      id,
-      size,
-      format,
-      MAP,
-      client_id,
-      base::Bind(&GpuMemoryBufferCreated, size, format, client_id, callback));
-}
-
-// static
-void GpuMemoryBufferImplSurfaceTexture::AllocateForChildProcess(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    Format format,
-    int child_client_id,
-    const AllocationCallback& callback) {
-  GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      gfx::SURFACE_TEXTURE_BUFFER,
-      id,
-      size,
-      format,
-      MAP,
-      child_client_id,
-      base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
-}
-
-// static
 scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsFormatSupported(format));
-
   ANativeWindow* native_window = SurfaceTextureManager::GetInstance()->
       AcquireNativeWidgetForSurfaceTexture(handle.id);
   if (!native_window)
@@ -119,57 +61,6 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSurfaceTexture(
           handle.id, size, format, callback, native_window));
-}
-
-// static
-void GpuMemoryBufferImplSurfaceTexture::DeletedByChildProcess(
-    gfx::GpuMemoryBufferId id,
-    int child_client_id,
-    uint32_t sync_point) {
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
-      gfx::SURFACE_TEXTURE_BUFFER, id, child_client_id, sync_point);
-}
-
-// static
-bool GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(Format format) {
-  switch (format) {
-    case RGBA_8888:
-      return true;
-    case RGBX_8888:
-    case BGRA_8888:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-bool GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(Usage usage) {
-  switch (usage) {
-    case MAP:
-      return true;
-    case SCANOUT:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-int GpuMemoryBufferImplSurfaceTexture::WindowFormat(Format format) {
-  switch (format) {
-    case RGBA_8888:
-      return WINDOW_FORMAT_RGBA_8888;
-    case RGBX_8888:
-    case BGRA_8888:
-      NOTREACHED();
-      return 0;
-  }
-
-  NOTREACHED();
-  return 0;
 }
 
 void* GpuMemoryBufferImplSurfaceTexture::Map() {

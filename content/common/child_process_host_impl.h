@@ -88,9 +88,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 uint32 sync_point);
 
-  void GpuMemoryBufferAllocated(IPC::Message* reply,
-                                const gfx::GpuMemoryBufferHandle& handle);
-
   ChildProcessHostDelegate* delegate_;
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.

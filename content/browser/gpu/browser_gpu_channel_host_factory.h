@@ -36,16 +36,17 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 route_id) override;
 
   // Overridden from GpuMemoryBufferFactoryHost:
+  virtual bool IsGpuMemoryBufferConfigurationSupported(
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage) override;
   void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferType type,
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
       int client_id,
       const CreateGpuMemoryBufferCallback& callback) override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
-                              gfx::GpuMemoryBufferId id,
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               int32 sync_point) override;
 
@@ -86,8 +87,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                                        CreateCommandBufferResult result);
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
-  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferType type,
-                                  gfx::GpuMemoryBufferId id,
+  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                   int client_id,
                                   int32 sync_point);
   void OnGpuMemoryBufferCreated(uint32 request_id,
