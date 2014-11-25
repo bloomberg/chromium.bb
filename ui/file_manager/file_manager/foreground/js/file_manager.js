@@ -129,13 +129,6 @@ function FileManager() {
    */
   this.viewOptions_ = {};
 
-  /**
-   * The user preference.
-   * @type {Object}
-   * @private
-   */
-  this.preferences_ = null;
-
   // --------------------------------------------------------------------------
   // Controllers.
 
@@ -505,12 +498,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-  FileManager.prototype.initPreferences_ = function(callback) {
+  FileManager.prototype.initSettings_ = function(callback) {
     var group = new AsyncUtil.Group();
-
-    // DRIVE preferences should be initialized before creating DirectoryModel
-    // to rebuild the roots list.
-    group.add(this.getPreferences_.bind(this));
 
     // Get startup preferences.
     group.add(function(done) {
@@ -555,18 +544,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return this.metadataCache_.isInitialized();
     }.bind(this));
 
-    this.initDateTimeFormatters_();
-
     var self = this;
 
     // Get the 'allowRedeemOffers' preference before launching
     // FileListBannerController.
-    this.getPreferences_(function(pref) {
-      /** @type {boolean} */
-      var showOffers = !!pref['allowRedeemOffers'];
+    chrome.fileManagerPrivate.getPreferences(function(pref) {
       self.bannersController_ = new FileListBannerController(
-          self.directoryModel_, self.volumeManager_, self.document_,
-          showOffers);
+          self.directoryModel_,
+          self.volumeManager_,
+          self.document_,
+          pref.allowRedeemOffers);
       self.bannersController_.addEventListener(
           'relayout', self.ui_.relayout.bind(self.ui_));
     });
@@ -601,11 +588,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.commandHandler,
         this.selectionHandler_);
 
-    var stateChangeHandler =
-        this.onPreferencesChanged_.bind(this);
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(
-        stateChangeHandler);
-    stateChangeHandler();
+        this.onPreferencesChanged_.bind(this));
+    this.onPreferencesChanged_();
 
     var driveConnectionChangedHandler =
         this.onDriveConnectionChanged_.bind(this);
@@ -619,14 +604,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ui_.listContainer.endBatchUpdates();
 
     callback();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.initDateTimeFormatters_ = function() {
-    var use12hourClock = !this.preferences_['use24hourClock'];
-    this.ui_.listContainer.table.setDateTimeFormat(use12hourClock);
   };
 
   /**
@@ -778,8 +755,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initBackgroundPage_.bind(this),
                               [], 'initBackgroundPage');
-    this.initializeQueue_.add(this.initPreferences_.bind(this),
-                              ['initGeneral'], 'initPreferences');
+    this.initializeQueue_.add(this.initSettings_.bind(this),
+                              ['initGeneral'], 'initSettings');
     this.initializeQueue_.add(this.initVolumeManager_.bind(this),
                               ['initGeneral', 'initBackgroundPage'],
                               'initVolumeManager');
@@ -800,7 +777,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         ['initEssentialUI'], 'initAdditionalUI');
     this.initializeQueue_.add(
         this.initFileSystemUI_.bind(this),
-        ['initAdditionalUI', 'initPreferences'], 'initFileSystemUI');
+        ['initAdditionalUI', 'initSettings'], 'initFileSystemUI');
 
     // Run again just in case if all pending closures have completed and the
     // queue has stopped and monitor the completion.
@@ -1683,8 +1660,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onPreferencesChanged_ = function() {
     var self = this;
-    this.getPreferences_(function(prefs) {
-      self.initDateTimeFormatters_();
+    chrome.fileManagerPrivate.getPreferences(function(prefs) {
+      var use12hourClock = !prefs.use24hourClock;
+      self.ui_.listContainer.table.setDateTimeFormat(use12hourClock);
       self.refreshCurrentDirectoryMetadata_();
 
       if (prefs.cellularDisabled)
@@ -1701,8 +1679,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         self.hostedButton.setAttribute('checked', '');
       else
         self.hostedButton.removeAttribute('checked');
-    },
-    true /* refresh */);
+    });
   };
 
   FileManager.prototype.onDriveConnectionChanged_ = function() {
@@ -2283,27 +2260,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
-  };
-
-  /**
-   * Retrieve the preferences of the files.app. This method caches the result
-   * and returns it unless opt_update is true.
-   * @param {function(Object.<string, *>)} callback Callback to get the
-   *     preference.
-   * @param {boolean=} opt_update If is's true, don't use the cache and
-   *     retrieve latest preference. Default is false.
-   * @private
-   */
-  FileManager.prototype.getPreferences_ = function(callback, opt_update) {
-    if (!opt_update && this.preferences_ !== null) {
-      callback(this.preferences_);
-      return;
-    }
-
-    chrome.fileManagerPrivate.getPreferences(function(prefs) {
-      this.preferences_ = prefs;
-      callback(prefs);
-    }.bind(this));
   };
 
   /**
