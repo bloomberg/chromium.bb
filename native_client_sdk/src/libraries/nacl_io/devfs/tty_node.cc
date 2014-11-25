@@ -115,7 +115,8 @@ Error TtyNode::Read(const HandleAttr& attr,
   *out_bytes = 0;
 
   // If interrupted, return
-  Error err = wait.WaitOnEvent(POLLIN, -1);
+  int ms = attr.IsBlocking() ? -1 : 0;
+  Error err = wait.WaitOnEvent(POLLIN, ms);
   if (err == ETIMEDOUT)
     err = EWOULDBLOCK;
   if (err != 0)

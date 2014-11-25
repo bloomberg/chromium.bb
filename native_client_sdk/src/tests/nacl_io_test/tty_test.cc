@@ -32,6 +32,22 @@ static int ki_ioctl_wrapper(int fd, int request, ...) {
   return rtn;
 }
 
+static int ki_fcntl_wrapper(int fd, int request, ...) {
+  va_list ap;
+  va_start(ap, request);
+  int rtn = ki_fcntl(fd, request, ap);
+  va_end(ap);
+  return rtn;
+}
+
+static void SetNonBlocking(int fd) {
+  int flags = ki_fcntl_wrapper(fd, F_GETFL);
+  ASSERT_NE(-1, flags);
+  flags |= O_NONBLOCK;
+  ASSERT_EQ(0, ki_fcntl_wrapper(fd, F_SETFL, flags));
+  ASSERT_EQ(flags, ki_fcntl_wrapper(fd, F_GETFL));
+}
+
 class TtyNodeTest : public ::testing::Test {
  public:
   TtyNodeTest() : fs_(&ppapi_) {}
@@ -227,7 +243,7 @@ TEST_F(TtyTest, TtySelect) {
   // TTY should now be readable
   ASSERT_EQ(1, IsReadable(tty_fd));
 
-  ki_close(tty_fd);
+  ASSERT_EQ(0, ki_close(tty_fd));
 }
 
 TEST_F(TtyTest, TtyICANON) {
@@ -375,6 +391,22 @@ TEST_F(TtyTest, InputDuringSelect) {
   pthread_join(resize_thread, NULL);
 
   ASSERT_EQ(1, rtn);
+}
+
+TEST_F(TtyTest, NonBlocking) {
+  // Test that non-blocking mode works.
+  int fd = ki_open("/dev/tty", O_RDONLY, 0);
+  ASSERT_GT(fd, 0) << "tty open failed: " << errno;
+  SetNonBlocking(fd);
+  int bytes_read;
+  char buffer[100];
+  bytes_read = ki_read(fd, buffer, sizeof(buffer));
+  ASSERT_EQ(-1, bytes_read);
+  ASSERT_EQ(EWOULDBLOCK, errno);
+  ASSERT_EQ(0, TtyWrite(fd, "test\n"));
+  bytes_read = ki_read(fd, buffer, sizeof(buffer));
+  ASSERT_EQ(5, bytes_read);
+  ASSERT_EQ(0, memcmp(buffer, "test\n", 5));
 }
 
 }  // namespace
