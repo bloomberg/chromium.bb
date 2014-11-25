@@ -127,15 +127,6 @@ public class VideoCaptureTango extends VideoCaptureCamera {
         try {
             if (!mIsRunning) return;
             if (data.length == SF_WIDTH * SF_FULL_HEIGHT) {
-                int rotation = getDeviceOrientation();
-                if (rotation != mDeviceOrientation) {
-                    mDeviceOrientation = rotation;
-                }
-                if (mCameraFacing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    rotation = 360 - rotation;
-                }
-                rotation = (mCameraOrientation + rotation) % 360;
-
                 if (mTangoCameraId == DEPTH_CAMERA_ID) {
                     int sizeY = SF_WIDTH * SF_LINES_DEPTH;
                     int startY =
@@ -189,7 +180,7 @@ public class VideoCaptureTango extends VideoCaptureCamera {
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
                                        mFrameBuffer.array(),
                                        mFrameBuffer.capacity(),
-                                       rotation);
+                                       getCameraRotation());
             }
         } finally {
             mPreviewBufferLock.unlock();

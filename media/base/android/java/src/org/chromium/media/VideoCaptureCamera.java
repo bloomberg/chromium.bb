@@ -8,8 +8,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.util.Log;
-import android.view.Surface;
-import android.view.WindowManager;
 
 import org.chromium.base.JNINamespace;
 
@@ -37,9 +35,6 @@ public abstract class VideoCaptureCamera extends VideoCapture
     protected SurfaceTexture mSurfaceTexture = null;
     protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
 
-    protected int mCameraOrientation;
-    protected int mCameraFacing;
-    protected int mDeviceOrientation;
     private static final String TAG = "VideoCaptureCamera";
 
     protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
@@ -90,12 +85,12 @@ public abstract class VideoCaptureCamera extends VideoCapture
             mCamera = null;
             return false;
         }
-
-        mCameraOrientation = cameraInfo.orientation;
-        mCameraFacing = cameraInfo.facing;
-        mDeviceOrientation = getDeviceOrientation();
-        Log.d(TAG, "allocate: orientation dev=" + mDeviceOrientation
-                  + ", cam=" + mCameraOrientation + ", facing=" + mCameraFacing);
+        mCameraNativeOrientation = cameraInfo.orientation;
+        // For Camera API, the readings of back-facing camera need to be inverted.
+        mInvertDeviceOrientationReadings =
+                (cameraInfo.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK);
+        Log.d(TAG, "allocate: Rotation dev=" + getDeviceRotation() + ", cam="
+                + mCameraNativeOrientation + ", facing back? " + mInvertDeviceOrientationReadings);
 
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
         if (parameters == null) {
@@ -215,16 +210,16 @@ public abstract class VideoCaptureCamera extends VideoCapture
     }
 
     @Override
-    public int startCapture() {
+    public boolean startCapture() {
         if (mCamera == null) {
             Log.e(TAG, "startCapture: camera is null");
-            return -1;
+            return false;
         }
 
         mPreviewBufferLock.lock();
         try {
             if (mIsRunning) {
-                return 0;
+                return true;
             }
             mIsRunning = true;
         } finally {
@@ -235,22 +230,22 @@ public abstract class VideoCaptureCamera extends VideoCapture
             mCamera.startPreview();
         } catch (RuntimeException ex) {
             Log.e(TAG, "startCapture: Camera.startPreview: " + ex);
-            return -1;
+            return false;
         }
-        return 0;
+        return true;
     }
 
     @Override
-    public int stopCapture() {
+    public boolean stopCapture() {
         if (mCamera == null) {
             Log.e(TAG, "stopCapture: camera is null");
-            return 0;
+            return true;
         }
 
         mPreviewBufferLock.lock();
         try {
             if (!mIsRunning) {
-                return 0;
+                return true;
             }
             mIsRunning = false;
         } finally {
@@ -259,7 +254,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
 
         mCamera.stopPreview();
         setPreviewCallback(null);
-        return 0;
+        return true;
     }
 
     @Override
@@ -280,6 +275,10 @@ public abstract class VideoCaptureCamera extends VideoCapture
         }
     }
 
+    // Local hook to allow derived classes to configure and plug capture
+    // buffers if needed.
+    abstract void allocateBuffers();
+
     // Local hook to allow derived classes to fill capture format and modify
     // camera parameters as they see fit.
     abstract void setCaptureParameters(
@@ -291,28 +290,4 @@ public abstract class VideoCaptureCamera extends VideoCapture
     // Local method to be overriden with the particular setPreviewCallback to be
     // used in the implementations.
     abstract void setPreviewCallback(android.hardware.Camera.PreviewCallback cb);
-
-    protected int getDeviceOrientation() {
-        int orientation = 0;
-        if (mContext != null) {
-            WindowManager wm = (WindowManager) mContext.getSystemService(
-                    Context.WINDOW_SERVICE);
-            switch(wm.getDefaultDisplay().getRotation()) {
-                case Surface.ROTATION_90:
-                    orientation = 90;
-                    break;
-                case Surface.ROTATION_180:
-                    orientation = 180;
-                    break;
-                case Surface.ROTATION_270:
-                    orientation = 270;
-                    break;
-                case Surface.ROTATION_0:
-                default:
-                    orientation = 0;
-                    break;
-            }
-        }
-        return orientation;
-    }
 }

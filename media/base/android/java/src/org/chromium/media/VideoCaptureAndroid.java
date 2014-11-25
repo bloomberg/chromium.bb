@@ -158,16 +158,8 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
                 return;
             }
             if (data.length == mExpectedFrameSize) {
-                int rotation = getDeviceOrientation();
-                if (rotation != mDeviceOrientation) {
-                    mDeviceOrientation = rotation;
-                }
-                if (mCameraFacing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    rotation = 360 - rotation;
-                }
-                rotation = (mCameraOrientation + rotation) % 360;
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
-                        data, mExpectedFrameSize, rotation);
+                        data, mExpectedFrameSize, getCameraRotation());
             }
         } finally {
             mPreviewBufferLock.unlock();

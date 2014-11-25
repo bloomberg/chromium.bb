@@ -31,6 +31,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     // Android graphics ImageFormat mapping, see reference in:
     // http://developer.android.com/reference/android/graphics/ImageFormat.html
     ANDROID_IMAGE_FORMAT_NV21 = 17,
+    ANDROID_IMAGE_FORMAT_YUV_420_888 = 35,
     ANDROID_IMAGE_FORMAT_YV12 = 842094169,
     ANDROID_IMAGE_FORMAT_UNKNOWN = 0,
   };
@@ -58,6 +59,9 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
       jbyteArray data,
       jint length,
       jint rotation);
+
+  // Implement org.chromium.media.VideoCapture.nativeOnError.
+  void OnError(JNIEnv* env, jobject obj, jstring message);
 
  private:
   enum InternalState {

@@ -96,13 +96,19 @@ class VideoCaptureFactory {
     @CalledByNative
     static VideoCapture createVideoCapture(
             Context context, int id, long nativeVideoCaptureDeviceAndroid) {
-        if (ChromiumCameraInfo.isSpecialCamera(id)) {
-            return new VideoCaptureTango(context, ChromiumCameraInfo.toSpecialCameraId(id),
-                    nativeVideoCaptureDeviceAndroid);
-        } else {
-            return new VideoCaptureAndroid(context, id,
-                    nativeVideoCaptureDeviceAndroid);
+        if (isLReleaseOrLater()) {
+            return new VideoCaptureCamera2(context,
+                                           id,
+                                           nativeVideoCaptureDeviceAndroid);
         }
+        if (!ChromiumCameraInfo.isSpecialCamera(id)) {
+            return new VideoCaptureAndroid(context,
+                                           id,
+                                           nativeVideoCaptureDeviceAndroid);
+        }
+        return new VideoCaptureTango(context,
+                                     ChromiumCameraInfo.toSpecialCameraId(id),
+                                     nativeVideoCaptureDeviceAndroid);
     }
 
     @CalledByNative

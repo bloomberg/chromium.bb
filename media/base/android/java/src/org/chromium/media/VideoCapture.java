@@ -6,6 +6,8 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -49,6 +51,13 @@ public abstract class VideoCapture {
         }
     }
 
+    // The angle (0, 90, 180, 270) that the image needs to be rotated to show in
+    // the display's native orientation.
+    protected int mCameraNativeOrientation;
+    // In some occasions we need to invert the device rotation readings, see the
+    // individual implementations.
+    protected boolean mInvertDeviceOrientationReadings;
+
     protected CaptureFormat mCaptureFormat = null;
     protected final Context mContext;
     protected final int mId;
@@ -63,21 +72,20 @@ public abstract class VideoCapture {
         mNativeVideoCaptureDeviceAndroid = nativeVideoCaptureDeviceAndroid;
     }
 
+    // Allocate necessary resources for capture.
     @CalledByNative
-    abstract boolean allocate(int width, int height, int frameRate);
+    public abstract boolean allocate(int width, int height, int frameRate);
+
+    // Starts actual capture.
+    @CalledByNative
+    public abstract boolean startCapture();
+
+    // Stops current capture.
+    @CalledByNative
+    public abstract boolean stopCapture();
 
     @CalledByNative
-    abstract int startCapture();
-
-    @CalledByNative
-    abstract int stopCapture();
-
-    @CalledByNative
-    abstract void deallocate();
-
-    // Local hook to allow derived classes to configure and plug capture
-    // buffers if needed.
-    abstract void allocateBuffers();
+    public abstract void deallocate();
 
     @CalledByNative
     public final int queryWidth() {
@@ -99,6 +107,8 @@ public abstract class VideoCapture {
         switch (mCaptureFormat.mPixelFormat) {
             case ImageFormat.YV12:
                 return AndroidImageFormat.YV12;
+            case ImageFormat.YUV_420_888:
+                return AndroidImageFormat.YUV_420_888;
             case ImageFormat.NV21:
                 return AndroidImageFormat.NV21;
             case ImageFormat.UNKNOWN:
@@ -107,10 +117,41 @@ public abstract class VideoCapture {
         }
     }
 
+    protected final int getCameraRotation() {
+        int rotation = mInvertDeviceOrientationReadings
+                ?  (360 - getDeviceRotation()) : getDeviceRotation();
+        return (mCameraNativeOrientation + rotation) % 360;
+    }
+
+    protected final int getDeviceRotation() {
+        if (mContext == null) return 0;
+        final int orientation;
+        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        switch(wm.getDefaultDisplay().getRotation()) {
+            case Surface.ROTATION_90:
+                orientation = 90;
+                break;
+            case Surface.ROTATION_180:
+                orientation = 180;
+                break;
+            case Surface.ROTATION_270:
+                orientation = 270;
+                break;
+            case Surface.ROTATION_0:
+            default:
+                orientation = 0;
+                break;
+        }
+        return orientation;
+    }
+
     // Method for VideoCapture implementations to call back native code.
-    public native void nativeOnFrameAvailable(
-            long nativeVideoCaptureDeviceAndroid,
-            byte[] data,
-            int length,
-            int rotation);
+    public native void nativeOnFrameAvailable(long nativeVideoCaptureDeviceAndroid,
+                                              byte[] data,
+                                              int length,
+                                              int rotation);
+
+    // Method for VideoCapture implementations to signal an asynchronous error.
+    public native void nativeOnError(long nativeVideoCaptureDeviceAndroid,
+                                     String message);
 }
