@@ -1490,9 +1490,11 @@ void RenderFrameImpl::OnSetupTransitionView(const std::string& markup) {
   frame_->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
 }
 
-void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector) {
+void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector,
+                                            bool exit_to_native_app) {
   frame_->document().setIsTransitionDocument();
-  frame_->document().beginExitTransition(WebString::fromUTF8(css_selector));
+  frame_->document().beginExitTransition(WebString::fromUTF8(css_selector),
+                                         exit_to_native_app);
 }
 
 void RenderFrameImpl::OnHideTransitionElements(

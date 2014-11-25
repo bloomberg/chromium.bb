@@ -436,8 +436,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetupTransitionView,
 
 // Tells the renderer to hide the elements specified by the supplied CSS
 // selector, and activates any exiting-transition stylesheets.
-IPC_MESSAGE_ROUTED1(FrameMsg_BeginExitTransition,
-                    std::string /* css_selector */)
+IPC_MESSAGE_ROUTED2(FrameMsg_BeginExitTransition,
+                    std::string /* css_selector */,
+                    bool /* exit_to_native_app */)
 
 // Tell the renderer to hide transition elements.
 IPC_MESSAGE_ROUTED1(FrameMsg_HideTransitionElements,

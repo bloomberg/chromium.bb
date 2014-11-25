@@ -55,7 +55,8 @@ class CONTENT_EXPORT WebContentsAndroid
   void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
   void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
   void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
-  void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector);
+  void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector,
+                           jboolean exit_to_native_app);
   void HideTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
   void ShowTransitionElements(JNIEnv* env, jobject jobj, jstring css_selector);
   void ClearNavigationTransitionData(JNIEnv* env, jobject jobj);

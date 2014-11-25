@@ -192,9 +192,14 @@ import org.chromium.content_public.browser.WebContents;
      * Hides transition elements specified by the selector, and activates any
      * exiting-transition stylesheets.
      */
+    // TODO(zhenw): This will be removed once the Java side implementation is done.
     @Override
     public void beginExitTransition(String cssSelector) {
-        nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector);
+        nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector, false);
+    }
+    @Override
+    public void beginExitTransition(String cssSelector, boolean exitToNativeApp) {
+        nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector, exitToNativeApp);
     }
 
     /**
@@ -312,7 +317,7 @@ import org.chromium.content_public.browser.WebContents;
     private native void nativeSetupTransitionView(long nativeWebContentsAndroid,
             String markup);
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
-            String cssSelector);
+            String cssSelector, boolean exitToNativeApp);
     private native void nativeHideTransitionElements(long nativeWebContentsAndroid,
             String cssSelector);
     private native void nativeShowTransitionElements(long nativeWebContentsAndroid,

@@ -161,6 +161,7 @@ public interface WebContents {
      * exiting-transition stylesheets.
      */
     public void beginExitTransition(String cssSelector);
+    public void beginExitTransition(String cssSelector, boolean exitToNativeApp);
 
     /**
      * Hide transition elements.

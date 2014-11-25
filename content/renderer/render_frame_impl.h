@@ -565,7 +565,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextSurroundingSelectionRequest(size_t max_length);
   void OnAddStyleSheetByURL(const std::string& url);
   void OnSetupTransitionView(const std::string& markup);
-  void OnBeginExitTransition(const std::string& css_selector);
+  void OnBeginExitTransition(const std::string& css_selector,
+                             bool exit_to_native_app);
   void OnHideTransitionElements(const std::string& css_selector);
   void OnShowTransitionElements(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
