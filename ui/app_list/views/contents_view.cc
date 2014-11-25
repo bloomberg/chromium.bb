@@ -222,6 +222,11 @@ void ContentsView::ActivePageChanged() {
 
   // Notify parent AppListMainView of the page change.
   app_list_main_view_->UpdateSearchBoxVisibility();
+
+  if (custom_page_view_) {
+    custom_page_view_->SetFocusable(state ==
+                                    AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+  }
 }
 
 void ContentsView::ShowSearchResults(bool show) {

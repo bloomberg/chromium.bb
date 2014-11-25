@@ -103,8 +103,10 @@ void StartPageView::InitInstantContainer() {
 
   views::View* web_view = view_delegate_->CreateStartPageWebView(
       gfx::Size(kWebViewWidth, kWebViewHeight));
-  if (web_view)
+  if (web_view) {
+    web_view->SetFocusable(false);
     instant_container_->AddChildView(web_view);
+  }
 
   // TODO(calamity): This container is needed to horizontally center the search
   // box view. Remove this container once BoxLayout supports CrossAxisAlignment.
