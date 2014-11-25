@@ -603,8 +603,8 @@
       "id": "xkb:am:phonetic:arm",
       "description": "",
       "language": ["hy"],
-      "layouts": ["am"],
-      "input_view": "inputview.html#id=am&language=hy&passwordLayout=us&name=keyboard_armenian_phonetic",
+      "layouts": ["am(phonetic)"],
+      "input_view": "inputview.html#id=am-phonetic&language=hy&passwordLayout=us&name=keyboard_armenian_phonetic",
       "options_page": "hmm_options.html?code=xkb:am:phonetic:arm"
     },
     {
