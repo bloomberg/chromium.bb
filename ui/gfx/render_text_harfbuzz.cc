@@ -11,6 +11,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/lazy_instance.h"
+#include "base/profiler/scoped_tracker.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -835,6 +836,11 @@ void RenderTextHarfBuzz::ResetLayout() {
 }
 
 void RenderTextHarfBuzz::EnsureLayout() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::EnsureLayout"));
+
   if (needs_layout_) {
     runs_.clear();
     grapheme_iterator_.reset();
@@ -1162,6 +1168,11 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
 bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
                                           const std::string& font_family,
                                           const FontRenderParams& params) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 RenderTextHarfBuzz::ShapeRunWithFont"));
+
   const base::string16& text = GetLayoutText();
   skia::RefPtr<SkTypeface> skia_face =
       internal::CreateSkiaTypeface(font_family, run->font_style);

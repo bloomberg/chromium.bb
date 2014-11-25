@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/memory/singleton.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -142,6 +143,12 @@ const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
 
   cached_linked_fonts_[font_name] = std::vector<Font>();
   std::vector<Font>* linked_fonts = &cached_linked_fonts_[font_name];
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 CachedFontLinkSettings::GetLinkedFonts"));
+
   QueryLinkedFontsFromRegistry(font, &cached_system_fonts_, linked_fonts);
   return linked_fonts;
 }
