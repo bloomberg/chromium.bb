@@ -48,16 +48,12 @@
       # we should figure out a way to unify the settings.
       ['target_arch=="ia32"', {
         'nacl_defines': [
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=32',
           'NACL_BUILD_ARCH=x86',
         ],
       }],
       ['target_arch=="x64"', {
         'nacl_defines': [
-          'NACL_TARGET_SUBARCH=64',
-          'NACL_TARGET_ARCH=x86',
           'NACL_BUILD_SUBARCH=64',
           'NACL_BUILD_ARCH=x86',
         ],
@@ -66,16 +62,12 @@
         'nacl_defines': [
           'NACL_BUILD_ARCH=arm',
           'NACL_BUILD_SUBARCH=32',
-          'NACL_TARGET_ARCH=arm',
-          'NACL_TARGET_SUBARCH=32',
         ],
       }],
       ['target_arch=="mipsel"', {
         'nacl_defines': [
           'NACL_BUILD_ARCH=mips',
           'NACL_BUILD_SUBARCH=32',
-          'NACL_TARGET_ARCH=mips',
-          'NACL_TARGET_SUBARCH=32',
         ],
       }],
     ],
