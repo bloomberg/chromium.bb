@@ -46,10 +46,6 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActionRedesign[] =
     "enable-extension-action-redesign";
 
-// Hack so that feature switch can work with about_flags. See
-// kEnableScriptsRequireAction.
-const char kEnableMimeHandlerView[] = "enable-mime-handler-view";
-
 // Enables the mojo implementation of the serial API.
 const char kEnableMojoSerialService[] = "enable-mojo-serial-service";
 
@@ -81,9 +77,6 @@ const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
 // Path to a comma-separated list of apps to load at startup.  The first app in
 // the list will be launched.
 const char kLoadApps[] = "load-apps";
-
-// Whether or not mime handler view guests are enabled.
-const char kMimeHandlerView[] = "mime-handler-view";
 
 // Notify the user and require consent for extensions running scripts.
 // Appending --scripts-require-action=1 has the same effect as

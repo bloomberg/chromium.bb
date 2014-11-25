@@ -35,8 +35,6 @@ class CommonSwitches {
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
                                    FeatureSwitch::DEFAULT_DISABLED),
-        mime_handler_view(switches::kMimeHandlerView,
-                          FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_DISABLED) {
   }
@@ -56,7 +54,6 @@ class CommonSwitches {
   FeatureSwitch extension_action_redesign;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
-  FeatureSwitch mime_handler_view;
   FeatureSwitch trace_app_source;
 };
 
@@ -88,9 +85,6 @@ FeatureSwitch* FeatureSwitch::scripts_require_action() {
 }
 FeatureSwitch* FeatureSwitch::embedded_extension_options() {
   return &g_common_switches.Get().embedded_extension_options;
-}
-FeatureSwitch* FeatureSwitch::mime_handler_view() {
-  return &g_common_switches.Get().mime_handler_view;
 }
 FeatureSwitch* FeatureSwitch::trace_app_source() {
   return &g_common_switches.Get().trace_app_source;

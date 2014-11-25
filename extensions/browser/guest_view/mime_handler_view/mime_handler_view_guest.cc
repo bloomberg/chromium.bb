@@ -14,7 +14,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
@@ -31,9 +30,6 @@ const char MimeHandlerViewGuest::Type[] = "mimehandler";
 GuestViewBase* MimeHandlerViewGuest::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id) {
-  if (!extensions::FeatureSwitch::mime_handler_view()->IsEnabled())
-    return NULL;
-
   return new MimeHandlerViewGuest(browser_context, guest_instance_id);
 }
 

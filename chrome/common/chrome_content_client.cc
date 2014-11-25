@@ -29,7 +29,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/feature_switch.h"
 #include "gpu/config/gpu_info.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -142,9 +141,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       pdf.name = ChromeContentClient::kPDFPluginName;
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kOutOfProcessPdf)) {
-        // Always enable the MIME handler view flag for OOP PDF.
-        extensions::FeatureSwitch::mime_handler_view()->SetOverrideValue(
-            extensions::FeatureSwitch::OVERRIDE_ENABLED);
         pdf.is_out_of_process = true;
         content::WebPluginMimeType pdf_mime_type(kPDFPluginOutOfProcessMimeType,
                                                  kPDFPluginExtension,
