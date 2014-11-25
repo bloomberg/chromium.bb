@@ -11,7 +11,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ManagePasswordsUIControllerMock;
+class ManagePasswordsUIController;
 class ManagePasswordsIcon;
 
 // Test class for the various password management view bits and pieces. Sets
@@ -19,13 +19,10 @@ class ManagePasswordsIcon;
 // to poke at the bubble, icon, and controller's state.
 class ManagePasswordsTest : public InProcessBrowserTest {
  public:
-  ManagePasswordsTest() {}
+  ManagePasswordsTest() = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
-
-  // Get the mock UI controller for the current WebContents.
-  ManagePasswordsUIControllerMock* controller();
 
   // Get the icon view for the current WebContents.
   virtual ManagePasswordsIcon* view() = 0;
@@ -51,6 +48,9 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   autofill::PasswordForm* test_form() { return &test_form_; }
 
  private:
+  // Get the UI controller for the current WebContents.
+  ManagePasswordsUIController* GetController();
+
   autofill::PasswordForm test_form_;
   base::HistogramTester histogram_tester_;
 

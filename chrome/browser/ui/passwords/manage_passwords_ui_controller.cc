@@ -6,19 +6,17 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/common/url_constants.h"
-#include "components/password_manager/core/browser/password_store.h"
-#include "content/public/browser/notification_service.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
+#include "content/public/browser/navigation_details.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chromium_application.h"
@@ -125,13 +123,6 @@ void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
   origin_ = password_form_map_.begin()->second->origin;
   state_ = password_manager::ui::BLACKLIST_STATE;
   UpdateBubbleAndIconVisibility();
-}
-
-void ManagePasswordsUIController::WebContentsDestroyed() {
-  password_manager::PasswordStore* password_store =
-      GetPasswordStore(web_contents());
-  if (password_store)
-    password_store->RemoveObserver(this);
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(
@@ -281,4 +272,11 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 bool ManagePasswordsUIController::PasswordPendingUserDecision() const {
   return state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE;
+}
+
+void ManagePasswordsUIController::WebContentsDestroyed() {
+  password_manager::PasswordStore* password_store =
+      GetPasswordStore(web_contents());
+  if (password_store)
+    password_store->RemoveObserver(this);
 }

@@ -5,20 +5,20 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace password_manager {
+class PasswordFormManager;
 }
 
 class ManagePasswordsIcon;
