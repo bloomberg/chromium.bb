@@ -1097,19 +1097,21 @@ ComponentExtensionIMEManager*
 scoped_refptr<InputMethodManager::State> InputMethodManagerImpl::CreateNewState(
     Profile* profile) {
   StateImpl* new_state = new StateImpl(this, profile);
-#if defined(USE_ATHENA)
-  // Athena for now doesn't have user preferences for input methods,
-  // therefore no one sets the active input methods in IMF. So just set
-  // the default IME here.
-  // TODO(shuchen): we need to better initialize with user preferences.
+
+  // Active IM should be set to owner's default.
+  PrefService* prefs = g_browser_process->local_state();
+  const std::string initial_input_method_id =
+      prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
+
   const InputMethodDescriptor* descriptor =
       GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-          GetInputMethodUtil()->GetFallbackInputMethodDescriptor().id());
+          initial_input_method_id.empty()
+              ? GetInputMethodUtil()->GetFallbackInputMethodDescriptor().id()
+              : initial_input_method_id);
   if (descriptor) {
     new_state->active_input_method_ids.push_back(descriptor->id());
     new_state->current_input_method = *descriptor;
   }
-#endif
   return scoped_refptr<InputMethodManager::State>(new_state);
 }
 
