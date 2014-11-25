@@ -79,15 +79,28 @@ v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned 
     const char* data = cachedMetadata->data();
     int length = cachedMetadata->size();
     std::string uncompressedOutput;
+    bool invalidCache = false;
     if (compressed) {
-        snappy::Uncompress(data, length, &uncompressedOutput);
-        data = uncompressedOutput.data();
-        length = uncompressedOutput.length();
+        if (snappy::Uncompress(data, length, &uncompressedOutput)) {
+            data = uncompressedOutput.data();
+            length = uncompressedOutput.length();
+        } else {
+            invalidCache = true;
+        }
     }
-    v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
-        reinterpret_cast<const uint8_t*>(data), length, v8::ScriptCompiler::CachedData::BufferNotOwned);
-    v8::ScriptCompiler::Source source(code, origin, cachedData);
-    return v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
+    v8::Local<v8::Script> script;
+    if (invalidCache) {
+        script = compileWithoutOptions(isolate, code, origin);
+    } else {
+        v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
+            reinterpret_cast<const uint8_t*>(data), length, v8::ScriptCompiler::CachedData::BufferNotOwned);
+        v8::ScriptCompiler::Source source(code, origin, cachedData);
+        script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
+        invalidCache = cachedData->rejected;
+    }
+    if (invalidCache)
+        resource->clearCachedMetadata();
+    return script;
 }
 
 // Compile a script, and produce a V8 cache for future use.
