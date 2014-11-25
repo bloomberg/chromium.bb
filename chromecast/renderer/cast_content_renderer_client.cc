@@ -34,7 +34,8 @@ void CastContentRendererClient::RenderThreadStarted() {
   // On platforms where the system NSS shared libraries are used,
   // initialize NSS now because it won't be able to load the .so's
   // after entering the sandbox.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
 #endif
 }

@@ -359,7 +359,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
       net::HttpCache::DefaultBackend::InMemory(16 * 1024 * 1024);
 
   bool ignore_certificate_errors = false;
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors)) {
     ignore_certificate_errors = true;
   }

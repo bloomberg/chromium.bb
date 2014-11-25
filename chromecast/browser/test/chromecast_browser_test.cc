@@ -29,7 +29,7 @@ ChromecastBrowserTest::~ChromecastBrowserTest() {
 }
 
 void ChromecastBrowserTest::SetUp() {
-  SetUpCommandLine(CommandLine::ForCurrentProcess());
+  SetUpCommandLine(base::CommandLine::ForCurrentProcess());
   setup_called_ = true;
   BrowserTestBase::SetUp();
 }

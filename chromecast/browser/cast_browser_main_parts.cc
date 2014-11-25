@@ -63,7 +63,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { NULL, NULL },  // Termination
 };
 
-void AddDefaultCommandLineSwitches(CommandLine* command_line) {
+void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
   int i = 0;
   while (g_default_switches[i].switch_name != NULL) {
     command_line->AppendSwitchASCII(
@@ -82,7 +82,7 @@ CastBrowserMainParts::CastBrowserMainParts(
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
       url_request_context_factory_(url_request_context_factory) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
 }
 
