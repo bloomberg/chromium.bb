@@ -403,8 +403,13 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   set_border_accepts_events(border_accepts_events);
   set_shadow(SupportsShadow() ? views::BubbleBorder::BIG_SHADOW
                               : views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
+  // This creates the app list widget. (Before this, child widgets cannot be
+  // created.)
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrow(arrow);
+
+  // We can now create the internal widgets.
+  app_list_main_view_->InitWidgets();
 
 #if defined(USE_AURA)
   aura::Window* window = GetWidget()->GetNativeWindow();

@@ -162,6 +162,26 @@ TileItemView* StartPageView::all_apps_button() const {
   return all_apps_button_;
 }
 
+void StartPageView::OnShow() {
+  // This can get called before InitWidgets(), so we cannot guarantee that
+  // custom_page_clickzone_ will not be null.
+  views::Widget* custom_page_clickzone =
+      app_list_main_view_->GetCustomPageClickzone();
+  if (!custom_page_clickzone)
+    return;
+
+  custom_page_clickzone->ShowInactive();
+}
+
+void StartPageView::OnHide() {
+  views::Widget* custom_page_clickzone =
+      app_list_main_view_->GetCustomPageClickzone();
+  if (!custom_page_clickzone)
+    return;
+
+  custom_page_clickzone->Hide();
+}
+
 void StartPageView::Layout() {
   gfx::Rect bounds(GetContentsBounds());
   bounds.set_height(instant_container_->GetHeightForWidth(bounds.width()));

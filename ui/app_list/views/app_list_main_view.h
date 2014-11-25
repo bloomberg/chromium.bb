@@ -61,6 +61,11 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
+  // Gets the invisible widget that sits partly over the bottom of the app list,
+  // covering the collapsed-state custom page. May return nullptr, if the widget
+  // has not been initialized or has already been destroyed.
+  views::Widget* GetCustomPageClickzone() const;
+
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
@@ -78,6 +83,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // Called when the search box's visibility is changed.
   void NotifySearchBoxVisibilityChanged();
+
+  // Initialize widgets that live inside the app list's main widget.
+  void InitWidgets();
 
  private:
   class IconLoader;
@@ -122,6 +130,11 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // Owned by views hierarchy. NULL in the non-experimental app list.
   ContentsSwitcherView* contents_switcher_view_;
+
+  // Invisible widget that sits partly over the bottom of the app list, covering
+  // the collapsed-state custom page, and intercepts click events. Always use
+  // GetCustomPageClickzone() to access this (do not access it directly).
+  views::Widget* custom_page_clickzone_;  // Owned by the app list widget.
 
   // A timer that fires when maximum allowed time to wait for icon loading has
   // passed.

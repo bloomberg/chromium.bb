@@ -126,6 +126,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     return GetAnimatorForTransition(from_page, to_page, reverse);
   }
 
+  // Determines whether the custom page clickzone widget should be displayed.
+  bool ShouldShowCustomPageClickzone() const;
+
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
   bool Back();

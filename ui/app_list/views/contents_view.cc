@@ -109,6 +109,9 @@ void ContentsView::Init(AppListModel* model) {
   DCHECK_GE(initial_page_index, 0);
 
   page_before_search_ = initial_page_index;
+  // Must only call SetTotalPages once all the launcher pages have been added
+  // (as it will trigger a SelectedPageChanged call).
+  pagination_model_.SetTotalPages(view_model_->view_size());
   pagination_model_.SelectPage(initial_page_index, false);
 
   ActivePageChanged();
@@ -321,6 +324,7 @@ views::View* ContentsView::GetPageView(int index) const {
 
 void ContentsView::AddBlankPageForTesting() {
   AddLauncherPage(new views::View, 0);
+  pagination_model_.SetTotalPages(view_model_->view_size());
 }
 
 int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
@@ -329,7 +333,6 @@ int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
   view_model_->Add(view, page_index);
   if (contents_switcher_view_ && resource_id)
     contents_switcher_view_->AddSwitcherButton(resource_id, page_index);
-  pagination_model_.SetTotalPages(view_model_->view_size());
   return page_index;
 }
 
@@ -371,6 +374,10 @@ gfx::Rect ContentsView::GetCustomPageCollapsedBounds() const {
   int page_height = bounds.height();
   bounds.set_y(page_height - kCustomPageCollapsedHeight);
   return bounds;
+}
+
+bool ContentsView::ShouldShowCustomPageClickzone() const {
+  return custom_page_view_ && IsStateActive(AppListModel::STATE_START);
 }
 
 bool ContentsView::Back() {
@@ -461,6 +468,15 @@ void ContentsView::TotalPagesChanged() {
 }
 
 void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
+  // TODO(mgiuca): This should be generalized so we call a virtual OnShow and
+  // OnHide method for each page.
+  if (!start_page_view_)
+    return;
+
+  if (ShouldShowCustomPageClickzone())
+    start_page_view_->OnShow();
+  else
+    start_page_view_->OnHide();
 }
 
 void ContentsView::TransitionStarted() {

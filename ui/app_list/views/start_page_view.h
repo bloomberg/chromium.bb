@@ -36,6 +36,13 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
   TileItemView* all_apps_button() const;
   SearchBoxView* dummy_search_box_view() { return search_box_view_; }
 
+  // Called when the start page view is displayed.
+  void OnShow();
+
+  // Called when the start page view is hidden (while the app list is still
+  // open).
+  void OnHide();
+
   // Overridden from views::View:
   void Layout() override;
 

@@ -27,6 +27,8 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -38,6 +40,35 @@ namespace {
 
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
+
+// Button for the custom page click zone. Receives click events when the user
+// clicks on the custom page, and in response, switches to the custom page.
+class CustomPageButton : public views::CustomButton,
+                         public views::ButtonListener {
+ public:
+  explicit CustomPageButton(AppListMainView* app_list_main_view);
+
+  // ButtonListener overrides:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+ private:
+  AppListMainView* app_list_main_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomPageButton);
+};
+
+CustomPageButton::CustomPageButton(AppListMainView* app_list_main_view)
+    : views::CustomButton(this), app_list_main_view_(app_list_main_view) {
+}
+
+void CustomPageButton::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  // Switch to the custom page.
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  int custom_page_index = contents_view->GetPageIndexForState(
+      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+  contents_view->SetActivePage(custom_page_index);
+}
 
 }  // namespace
 
@@ -78,9 +109,10 @@ class AppListMainView::IconLoader : public AppListItemObserver {
 AppListMainView::AppListMainView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
-      search_box_view_(NULL),
-      contents_view_(NULL),
-      contents_switcher_view_(NULL),
+      search_box_view_(nullptr),
+      contents_view_(nullptr),
+      contents_switcher_view_(nullptr),
+      custom_page_clickzone_(nullptr),
       weak_ptr_factory_(this) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 }
@@ -191,6 +223,17 @@ void AppListMainView::OnStartPageSearchTextfieldChanged(
   search_box_view_->search_box()->RequestFocus();
 }
 
+views::Widget* AppListMainView::GetCustomPageClickzone() const {
+  // During shutdown, the widgets may be deleted, which means
+  // |custom_page_clickzone_| will be a dangling pointer. Therefore, always
+  // check that the main app list widget (its parent) is still alive before
+  // returning the pointer.
+  if (!GetWidget())
+    return nullptr;
+
+  return custom_page_clickzone_;
+}
+
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
@@ -258,6 +301,32 @@ void AppListMainView::NotifySearchBoxVisibilityChanged() {
   // won't propagate paints upward.
   if (parent())
     parent()->SchedulePaint();
+}
+
+void AppListMainView::InitWidgets() {
+  // The widget that receives click events to transition to the custom page.
+  views::Widget::InitParams custom_page_clickzone_params(
+      views::Widget::InitParams::TYPE_CONTROL);
+
+  custom_page_clickzone_params.parent = GetWidget()->GetNativeView();
+  custom_page_clickzone_params.layer_type = aura::WINDOW_LAYER_NOT_DRAWN;
+
+  gfx::Rect custom_page_bounds = contents_view_->GetCustomPageCollapsedBounds();
+  custom_page_bounds.Intersect(contents_view_->bounds());
+  custom_page_bounds = contents_view_->ConvertRectToWidget(custom_page_bounds);
+  custom_page_clickzone_params.bounds = custom_page_bounds;
+
+  // Create a widget for the custom page click zone. This widget masks click
+  // events from the WebContents that rests underneath it. (It has to be a
+  // widget, not an ordinary view, so that it can be placed in front of the
+  // WebContents.)
+  custom_page_clickzone_ = new views::Widget;
+  custom_page_clickzone_->Init(custom_page_clickzone_params);
+  custom_page_clickzone_->SetContentsView(new CustomPageButton(this));
+  // The widget is shown by default. If the ContentsView determines that we do
+  // not need a clickzone upon startup, hide it.
+  if (!contents_view_->ShouldShowCustomPageClickzone())
+    custom_page_clickzone_->Hide();
 }
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
