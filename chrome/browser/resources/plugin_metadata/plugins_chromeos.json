@@ -6,7 +6,7 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
+        "status": "requires_authorization",
         "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' are bundled with ChromeOS, so we don't define a minimum version."
       }
     ],

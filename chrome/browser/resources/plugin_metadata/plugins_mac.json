@@ -6,7 +6,7 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
+        "status": "requires_authorization",
         "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' use two completely different versioning schemes, so we can't define a minimum version."
       }
     ],
@@ -260,7 +260,7 @@
     "versions": [
       {
         "version": "5.1.30214.0",
-        "status": "up_to_date",
+        "status": "requires_authorization",
         "reference": "https://support.microsoft.com/kb/2932677"
       }
     ],
@@ -290,7 +290,7 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
+        "status": "requires_authorization",
         "comment": "We do not track version information for the Facebook Video Calling Plugin."
       }
     ],
@@ -306,7 +306,7 @@
     "versions": [
       {
         "version": "0",
-        "status": "up_to_date",
+        "status": "requires_authorization",
         "comment": "We do not track version information for the Google Earth Plugin."
       }
     ],
