@@ -10,6 +10,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
@@ -770,7 +771,7 @@ bool GLES2Util::ParseUniformName(
     bool* getting_array) {
   bool getting_array_location = false;
   size_t open_pos = std::string::npos;
-  int index = 0;
+  base::CheckedNumeric<int> index = 0;
   if (name[name.size() - 1] == ']') {
     if (name.size() < 3) {
       return false;
@@ -788,10 +789,13 @@ bool GLES2Util::ParseUniformName(
       }
       index = index * 10 + digit;
     }
+    if (!index.IsValid()) {
+      return false;
+    }
     getting_array_location = true;
   }
   *getting_array = getting_array_location;
-  *element_index = index;
+  *element_index = index.ValueOrDie();
   *array_pos = open_pos;
   return true;
 }
