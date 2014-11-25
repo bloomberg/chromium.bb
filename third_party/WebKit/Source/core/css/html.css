@@ -762,6 +762,10 @@ select {
     cursor: default;
 }
 
+select:not(:-internal-list-box) {
+    overflow: visible !important;
+}
+
 select:-internal-list-box {
     -webkit-appearance: listbox;
     align-items: flex-start;
