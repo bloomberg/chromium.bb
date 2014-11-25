@@ -297,7 +297,7 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
 LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForPaintInvalidation,
-    // RenderSVGRoot::computeFloatRectForPaintInvalidation and RenderReplaced::clippedOverflowRectForPaintInvalidation.
+    // RenderSVGRoot::mapRectToPaintInvalidationBacking and RenderReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
@@ -328,19 +328,16 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
     return rect;
 }
 
-void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGRoot::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    // Apply our local transforms (except for x/y translation), then our shadow,
-    // and then call RenderBox's method to handle all the normal CSS Box model bits
-    paintInvalidationRect = m_localToBorderBoxTransform.mapRect(paintInvalidationRect);
+    // Note that we don't apply the border-box transform here - it's assumed
+    // that whoever called us has done that already.
 
     // Apply initial viewport clip
     if (shouldApplyViewportClip())
-        paintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
+        rect.intersect(pixelSnappedBorderBoxRect());
 
-    LayoutRect rect = enclosingIntRect(paintInvalidationRect);
     RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
-    paintInvalidationRect = rect;
 }
 
 // This method expects local CSS box coordinates.

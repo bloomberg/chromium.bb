@@ -20,11 +20,11 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGBlock.h"
 
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowList.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
@@ -105,13 +105,8 @@ void RenderSVGBlock::mapRectToPaintInvalidationBacking(const RenderLayerModelObj
 {
     FloatRect paintInvalidationRect = rect;
     paintInvalidationRect.inflate(style()->outlineWidth());
-    computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
-    rect = enclosingLayoutRect(paintInvalidationRect);
-}
-
-void RenderSVGBlock::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState) const
-{
-    SVGRenderSupport::computeFloatRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    const RenderSVGRoot& svgRoot = SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(this, paintInvalidationRect, rect);
+    svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)

@@ -44,6 +44,13 @@
 
 namespace blink {
 
+static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
+{
+    if (rect.isEmpty())
+        return LayoutRect();
+    return enclosingIntRect(rect);
+}
+
 LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
@@ -59,10 +66,8 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
         // Compute accumulated SVG transform and apply to local paint rect.
         AffineTransform transform = paintInvalidationState->svgTransform() * object->localToParentTransform();
         paintInvalidationRect = transform.mapRect(paintInvalidationRect);
-        // FIXME: These are quirks carried forward from RenderSVGRoot::computeFloatRectForPaintInvalidation.
-        LayoutRect rect;
-        if (!paintInvalidationRect.isEmpty())
-            rect = enclosingIntRect(paintInvalidationRect);
+        // FIXME: These are quirks carried forward from the old paint invalidation infrastructure.
+        LayoutRect rect = enclosingIntRectIfNotEmpty(paintInvalidationRect);
         // Offset by SVG root paint offset and apply clipping as needed.
         rect.move(paintInvalidationState->paintOffset());
         if (paintInvalidationState->isClipped())
@@ -70,15 +75,32 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
         return rect;
     }
 
-    object->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
-    return enclosingLayoutRect(paintInvalidationRect);
+    LayoutRect rect;
+    const RenderSVGRoot& svgRoot = mapRectToSVGRootForPaintInvalidation(object, paintInvalidationRect, rect);
+    svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    return rect;
 }
 
-void SVGRenderSupport::computeFloatRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState)
+const RenderSVGRoot& SVGRenderSupport::mapRectToSVGRootForPaintInvalidation(const RenderObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
 {
-    // Translate to coords in our parent renderer, and then call computeFloatRectForPaintInvalidation() on our parent.
-    paintInvalidationRect = object->localToParentTransform().mapRect(paintInvalidationRect);
-    object->parent()->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    ASSERT(object && object->isSVG() && !object->isSVGRoot());
+
+    FloatRect paintInvalidationRect = localPaintInvalidationRect;
+    // FIXME: Building the transform to the SVG root border box and then doing
+    // mapRect() with that would be slightly more efficient, but requires some
+    // additions to AffineTransform (preMultiply, preTranslate) to avoid
+    // excessive copying and to get a similar fast-path for translations.
+    const RenderObject* parent = object;
+    do {
+        paintInvalidationRect = parent->localToParentTransform().mapRect(paintInvalidationRect);
+        parent = parent->parent();
+    } while (!parent->isSVGRoot());
+
+    const RenderSVGRoot& svgRoot = toRenderSVGRoot(*parent);
+
+    paintInvalidationRect = svgRoot.localToBorderBoxTransform().mapRect(paintInvalidationRect);
+    rect = enclosingIntRectIfNotEmpty(paintInvalidationRect);
+    return svgRoot;
 }
 
 void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)

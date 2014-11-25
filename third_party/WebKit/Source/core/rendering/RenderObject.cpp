@@ -1408,11 +1408,6 @@ void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
     }
 }
 
-void RenderObject::computeFloatRectForPaintInvalidation(const RenderLayerModelObject*, FloatRect&, const PaintInvalidationState*) const
-{
-    ASSERT_NOT_REACHED();
-}
-
 void RenderObject::dirtyLinesFromChangedChild(RenderObject*)
 {
 }
