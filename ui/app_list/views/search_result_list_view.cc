@@ -23,7 +23,6 @@
 namespace {
 
 const int kMaxResults = 6;
-const int kExperimentAppListMaxResults = 3;
 const int kTimeoutIndicatorHeight = 2;
 const int kTimeoutFramerate = 60;
 const SkColor kTimeoutIndicatorColor = SkColorSetRGB(30, 144, 255);
@@ -42,11 +41,7 @@ SearchResultListView::SearchResultListView(
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
-  int max_results = kMaxResults;
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    max_results = kExperimentAppListMaxResults;
-
-  for (int i = 0; i < max_results; ++i)
+  for (int i = 0; i < kMaxResults; ++i)
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
 
