@@ -388,6 +388,46 @@ create_display(void)
 
 	wl_display_roundtrip(display->display);
 
+	/*
+	 * Why do we need two roundtrips here?
+	 *
+	 * wl_display_get_registry() sends a request to the server, to which
+	 * the server replies by emitting the wl_registry.global events.
+	 * The first wl_display_roundtrip() sends wl_display.sync. The server
+	 * first processes the wl_display.get_registry which includes sending
+	 * the global events, and then processes the sync. Therefore when the
+	 * sync (roundtrip) returns, we are guaranteed to have received and
+	 * processed all the global events.
+	 *
+	 * While we are inside the first wl_display_roundtrip(), incoming
+	 * events are dispatched, which causes registry_handle_global() to
+	 * be called for each global. One of these globals is wl_shm.
+	 * registry_handle_global() sends wl_registry.bind request for the
+	 * wl_shm global. However, wl_registry.bind request is sent after
+	 * the first wl_display.sync, so the reply to the sync comes before
+	 * the initial events of the wl_shm object.
+	 *
+	 * The initial events that get sent as a reply to binding to wl_shm
+	 * include wl_shm.format. These tell us which pixel formats are
+	 * supported, and we need them before we can create buffers. They
+	 * don't change at runtime, so we receive them as part of init.
+	 *
+	 * When the reply to the first sync comes, the server may or may not
+	 * have sent the initial wl_shm events. Therefore we need the second
+	 * wl_display_roundtrip() call here.
+	 *
+	 * The server processes the wl_registry.bind for wl_shm first, and
+	 * the second wl_display.sync next. During our second call to
+	 * wl_display_roundtrip() the initial wl_shm events are received and
+	 * processed. Finally, when the reply to the second wl_display.sync
+	 * arrives, it guarantees we have processed all wl_shm initial events.
+	 *
+	 * This sequence contains two examples on how wl_display_roundtrip()
+	 * can be used to guarantee, that all reply events to a request
+	 * have been received and processed. This is a general Wayland
+	 * technique.
+	 */
+
 	if (!(display->formats & (1 << WL_SHM_FORMAT_XRGB8888))) {
 		fprintf(stderr, "WL_SHM_FORMAT_XRGB32 not available\n");
 		exit(1);
