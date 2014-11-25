@@ -1915,7 +1915,6 @@ _paladin_important_boards = frozenset([
   'link_freon',
   'lumpy',
   'monroe',
-  'mipsel-o32-generic',
   'nyan',
   'panther',
   'panther_moblab',
