@@ -110,7 +110,8 @@ def MakeParentDirectoryIfAbsent(path):
   Args:
     path: Path of child where parent directory should be created for.
   """
-  MakeDirectoryIfAbsent(os.path.dirname(path))
+  abs_path = os.path.abspath(path)
+  MakeDirectoryIfAbsent(os.path.dirname(abs_path))
 
 
 def RemoveDirectoryIfPresent(path):

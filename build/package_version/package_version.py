@@ -454,6 +454,33 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
                                                              package_target,
                                                              package_name)
 
+    # Get a list of overlay archives.
+    overlaid_archives = set()
+    if overlay_tar_dir:
+      overlay_file = package_locations.GetLocalPackageFile(overlay_tar_dir,
+                                                           package_target,
+                                                           package_name)
+      logging.debug('Checking overlaid package file: %s', overlay_file)
+      if os.path.isfile(overlay_file):
+        logging.info('Found overlaid package file: %s', overlay_file)
+        overlay_package_desc = package_info.PackageInfo(overlay_file,
+                                                        skip_missing=True)
+
+        combined_archives = dict([(archive_obj.GetArchiveData().name,
+                                   archive_obj)
+                                 for archive_obj
+                                 in package_desc.GetArchiveList()])
+
+        for archive_obj in overlay_package_desc.GetArchiveList():
+          archive_desc = archive_obj.GetArchiveData()
+          if archive_desc.hash:
+            overlaid_archives.add(archive_desc.name)
+            combined_archives[archive_desc.name] = archive_obj
+
+        package_desc = package_info.PackageInfo()
+        for archive_name, archive_obj in combined_archives.iteritems():
+          package_desc.AppendArchive(archive_obj)
+
     # Only do the extraction if the extract packages do not match.
     if os.path.isfile(dest_package_file):
       try:
@@ -472,21 +499,6 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       logging.debug('Deleting old package directory: %s', dest_package_dir)
       pynacl.file_tools.RemoveDir(dest_package_dir)
 
-    # Get a list of overlay archives.
-    overlay_archives = {}
-    if overlay_tar_dir:
-      overlay_file = package_locations.GetLocalPackageFile(overlay_tar_dir,
-                                                           package_target,
-                                                           package_name)
-      if os.path.isfile(overlay_file):
-        logging.info('Found overlaid package file: %s', overlay_file)
-        overlay_package_desc = package_info.PackageInfo(overlay_file,
-                                                        skip_missing=True)
-
-        for archive_obj in overlay_package_desc.GetArchiveList():
-          archive_desc = archive_obj.GetArchiveData()
-          overlay_archives[archive_desc.name] = archive_desc
-
     logging.info('Extracting package (%s) to directory: %s',
                  package_name, dest_package_dir)
     archive_list = package_desc.GetArchiveList()
@@ -494,20 +506,16 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
     for index, archive_obj in enumerate(archive_list):
       archive_desc = archive_obj.GetArchiveData()
       archive_file = None
-      overlay_archive_desc = overlay_archives.get(archive_desc.name, None)
-      if overlay_archive_desc:
-        logging.info('Using overlaid archive: %s', archive_desc.name)
-        archive_desc = overlay_archive_desc
+      if archive_desc.name in overlaid_archives:
         archive_file = package_locations.GetLocalPackageArchiveFile(
             overlay_tar_dir,
             archive_desc.name,
             archive_desc.hash)
-      if archive_file is None:
+      else:
         archive_file = package_locations.GetLocalPackageArchiveFile(
             tar_dir,
             archive_desc.name,
-            archive_desc.hash
-        )
+            archive_desc.hash)
 
       # Upon extraction, some files may not be downloaded (or have stale files),
       # we need to check the hash of each file and attempt to download it if
