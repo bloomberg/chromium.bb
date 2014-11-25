@@ -300,10 +300,11 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::InvalidSyscall() const {
   return CrashSIGSYS();
 }
 
-bool InitializeBPFSandbox() {
-  bool sandbox_is_initialized =
-      content::InitializeSandbox(scoped_ptr<sandbox::bpf_dsl::Policy>(
-          new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy()));
+bool InitializeBPFSandbox(base::ScopedFD proc_task_fd) {
+  bool sandbox_is_initialized = content::InitializeSandbox(
+      scoped_ptr<sandbox::bpf_dsl::Policy>(
+          new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy()),
+      proc_task_fd.Pass());
   if (!sandbox_is_initialized)
     return false;
   RunSandboxSanityChecks();

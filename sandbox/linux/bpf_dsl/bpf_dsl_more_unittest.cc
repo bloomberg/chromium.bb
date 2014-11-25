@@ -81,7 +81,7 @@ TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupports)) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
   bool seccomp_bpf_supported =
-      SandboxBPF::SupportsSeccompSandbox(-1) == SandboxBPF::STATUS_AVAILABLE;
+      SandboxBPF::SupportsSeccompSandbox() == SandboxBPF::STATUS_AVAILABLE;
   // We want to log whether or not seccomp BPF is actually supported
   // since actual test coverage depends on it.
   RecordProperty("SeccompBPFSupported",
@@ -93,8 +93,8 @@ TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupports)) {
 }
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupportsTwice)) {
-  SandboxBPF::SupportsSeccompSandbox(-1);
-  SandboxBPF::SupportsSeccompSandbox(-1);
+  SandboxBPF::SupportsSeccompSandbox();
+  SandboxBPF::SupportsSeccompSandbox();
 }
 
 // BPF_TEST does a lot of the boiler-plate code around setting up a
@@ -131,7 +131,7 @@ class VerboseAPITestingPolicy : public Policy {
 };
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
-  if (SandboxBPF::SupportsSeccompSandbox(-1) ==
+  if (SandboxBPF::SupportsSeccompSandbox() ==
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
     static int counter = 0;
 
@@ -2069,7 +2069,7 @@ class TraceAllPolicy : public Policy {
 };
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
-  if (SandboxBPF::SupportsSeccompSandbox(-1) !=
+  if (SandboxBPF::SupportsSeccompSandbox() !=
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
     return;
   }

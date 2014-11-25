@@ -59,23 +59,22 @@ class SANDBOX_EXPORT SandboxBPF {
   // system calls.
   static bool IsValidSyscallNumber(int sysnum);
 
-  // There are a lot of reasons why the Seccomp sandbox might not be available.
-  // This could be because the kernel does not support Seccomp mode, or it
-  // could be because another sandbox is already active.
-  // "proc_fd" should be a file descriptor for "/proc", or -1 if not
-  // provided by the caller.
-  static SandboxStatus SupportsSeccompSandbox(int proc_fd);
+  // Detect if the kernel supports the seccomp sandbox. The result of calling
+  // this function will be cached. The first time this function is called, the
+  // running process must be unsandboxed (able to use /proc) and monothreaded.
+  static SandboxStatus SupportsSeccompSandbox();
 
   // Determines if the kernel has support for the seccomp() system call to
   // synchronize BPF filters across a thread group.
   static SandboxStatus SupportsSeccompThreadFilterSynchronization();
 
-  // The sandbox needs to be able to access files in "/proc/self". If this
-  // directory is not accessible when "startSandbox()" gets called, the caller
-  // can provide an already opened file descriptor by calling "set_proc_fd()".
+  // The sandbox needs to be able to access files in "/proc/self/task/". If
+  // this directory is not accessible when "startSandbox()" gets called, the
+  // caller must provide an already opened file descriptor by calling
+  // "set_proc_task_fd()".
   // The sandbox becomes the new owner of this file descriptor and will
   // eventually close it when "StartSandbox()" executes.
-  void set_proc_fd(int proc_fd);
+  void set_proc_task_fd(int proc_task_fd);
 
   // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
   // to the sandbox object.
@@ -122,7 +121,7 @@ class SANDBOX_EXPORT SandboxBPF {
 
  private:
   // Get a file descriptor pointing to "/proc", if currently available.
-  int proc_fd() { return proc_fd_; }
+  int proc_task_fd() { return proc_task_fd_; }
 
   // Creates a subprocess and runs "code_in_sandbox" inside of the specified
   // policy. The caller has to make sure that "this" has not yet been
@@ -148,7 +147,7 @@ class SANDBOX_EXPORT SandboxBPF {
   static SandboxStatus status_;
 
   bool quiet_;
-  int proc_fd_;
+  int proc_task_fd_;
   bool sandbox_has_started_;
   scoped_ptr<bpf_dsl::Policy> policy_;
 

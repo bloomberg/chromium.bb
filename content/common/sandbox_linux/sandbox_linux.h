@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_SANDBOX_LINUX_SANDBOX_LINUX_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -49,7 +50,18 @@ class LinuxSandbox {
   // Do some initialization that can only be done before any of the sandboxes
   // are enabled. If using the setuid sandbox, this should be called manually
   // before the setuid sandbox is engaged.
+  // Security: When this runs, it is imperative that either InitializeSandbox()
+  // runs as well or that all file descriptors returned in
+  // GetFileDescriptorsToClose() get closed.
+  // Otherwise file descriptors that bypass the security of the setuid sandbox
+  // would be kept open. One must be particularly careful if a process performs
+  // a fork().
   void PreinitializeSandbox();
+
+  // Return a list of file descriptors to close if PreinitializeSandbox() ran
+  // but InitializeSandbox() won't. Avoid using.
+  // TODO(jln): get rid of this hack.
+  std::vector<int> GetFileDescriptorsToClose();
 
   // Initialize the sandbox with the given pre-built configuration. Currently
   // seccomp-bpf and address space limitations (the setuid sandbox works
@@ -132,6 +144,7 @@ class LinuxSandbox {
   bool pre_initialized_;
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
   bool yama_is_enforcing_;  // Accurate if pre_initialized_.
+  bool initialize_sandbox_ran_;  // InitializeSandbox() was called.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
 #if defined(ANY_OF_AMTLU_SANITIZER)
   scoped_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace sandbox {
@@ -36,12 +37,14 @@ class SandboxSeccompBPF {
   static bool SupportsSandbox();
   // Start the sandbox and apply the policy for process_type, depending on
   // command line switches.
-  static bool StartSandbox(const std::string& process_type);
+  static bool StartSandbox(const std::string& process_type,
+                           base::ScopedFD proc_task_fd);
 
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
-      scoped_ptr<sandbox::bpf_dsl::Policy> policy);
+      scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+      base::ScopedFD proc_task_fd);
   // The "baseline" policy can be a useful base to build a sandbox policy.
   static scoped_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
 

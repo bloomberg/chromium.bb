@@ -165,7 +165,7 @@ bool UpdateProcessTypeAndEnableSandbox(
   DCHECK(broker_sandboxer_allocator);
   UpdateProcessTypeToGpuBroker();
   return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-      make_scoped_ptr(broker_sandboxer_allocator()));
+      make_scoped_ptr(broker_sandboxer_allocator()), base::ScopedFD());
 }
 
 }  // namespace

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
@@ -86,9 +87,12 @@ CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
 class SandboxInitializerDelegate;
 
 // Initialize a seccomp-bpf sandbox. |policy| may not be NULL.
+// If an existing layer of sandboxing is present that would prevent access to
+// /proc, |proc_task_fd| must be a valid file descriptor to /proc/self/task.
 // Returns true if the sandbox has been properly engaged.
 CONTENT_EXPORT bool InitializeSandbox(
-    scoped_ptr<sandbox::bpf_dsl::Policy> policy);
+    scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+    base::ScopedFD proc_task_fd);
 
 // Return a "baseline" policy. This is used by a SandboxInitializerDelegate to
 // implement a policy that is derived from the baseline.

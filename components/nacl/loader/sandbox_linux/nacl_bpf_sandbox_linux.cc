@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 
 #include "components/nacl/common/nacl_switches.h"
@@ -161,10 +162,11 @@ void RunSandboxSanityChecks() {
 
 #endif  // defined(USE_SECCOMP_BPF)
 
-bool InitializeBPFSandbox() {
+bool InitializeBPFSandbox(base::ScopedFD proc_task_fd) {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy));
+      scoped_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy),
+      proc_task_fd.Pass());
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;

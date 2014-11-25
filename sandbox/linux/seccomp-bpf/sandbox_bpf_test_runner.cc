@@ -31,17 +31,10 @@ void SandboxBPFTestRunner::Run() {
   scoped_ptr<bpf_dsl::Policy> policy =
       bpf_tester_delegate_->GetSandboxBPFPolicy();
 
-  if (sandbox::SandboxBPF::SupportsSeccompSandbox(-1) ==
+  if (sandbox::SandboxBPF::SupportsSeccompSandbox() ==
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
-    // Ensure the the sandbox is actually available at this time
-    int proc_fd;
-    SANDBOX_ASSERT((proc_fd = open("/proc", O_RDONLY | O_DIRECTORY)) >= 0);
-    SANDBOX_ASSERT(sandbox::SandboxBPF::SupportsSeccompSandbox(proc_fd) ==
-                   sandbox::SandboxBPF::STATUS_AVAILABLE);
-
     // Initialize and then start the sandbox with our custom policy
     sandbox::SandboxBPF sandbox;
-    sandbox.set_proc_fd(proc_fd);
     sandbox.SetSandboxPolicy(policy.release());
     SANDBOX_ASSERT(
         sandbox.StartSandbox(sandbox::SandboxBPF::PROCESS_SINGLE_THREADED));

@@ -19,6 +19,8 @@
 
 #if defined(USE_SECCOMP_BPF)
 
+#include "base/files/scoped_file.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
@@ -59,7 +61,8 @@ namespace content {
 #if defined(USE_SECCOMP_BPF)
 namespace {
 
-void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy);
+void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
+                            base::ScopedFD proc_task_fd);
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -144,7 +147,8 @@ void RunSandboxSanityChecks(const std::string& process_type) {
 
 
 // This function takes ownership of |policy|.
-void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy) {
+void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
+                            base::ScopedFD proc_task_fd) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for
@@ -152,6 +156,8 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy) {
   // doing so does not stop the sandbox.
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(policy);
+
+  sandbox.set_proc_task_fd(proc_task_fd.release());
   CHECK(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 }
 
@@ -181,7 +187,8 @@ scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
 
 // Initialize the seccomp-bpf sandbox.
 bool StartBPFSandbox(const base::CommandLine& command_line,
-                     const std::string& process_type) {
+                     const std::string& process_type,
+                     base::ScopedFD proc_task_fd) {
   scoped_ptr<SandboxBPFBasePolicy> policy;
 
   if (process_type == switches::kGpuProcess) {
@@ -198,7 +205,7 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
   }
 
   CHECK(policy->PreSandboxHook());
-  StartSandboxWithPolicy(policy.release());
+  StartSandboxWithPolicy(policy.release(), proc_task_fd.Pass());
 
   RunSandboxSanityChecks(process_type);
   return true;
@@ -246,22 +253,17 @@ bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
 
 bool SandboxSeccompBPF::SupportsSandbox() {
 #if defined(USE_SECCOMP_BPF)
-  // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
-  // here.
   SandboxBPF::SandboxStatus bpf_sandbox_status =
-      SandboxBPF::SupportsSeccompSandbox(-1);
-  // Kernel support is what we are interested in here. Other status
-  // such as STATUS_UNAVAILABLE (has threads) still indicate kernel support.
-  // We make this a negative check, since if there is a bug, we would rather
-  // "fail closed" (expect a sandbox to be available and try to start it).
-  if (bpf_sandbox_status != SandboxBPF::STATUS_UNSUPPORTED) {
+      SandboxBPF::SupportsSeccompSandbox();
+  if (bpf_sandbox_status == SandboxBPF::STATUS_AVAILABLE) {
     return true;
   }
 #endif
   return false;
 }
 
-bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
+bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
+                                     base::ScopedFD proc_task_fd) {
 #if defined(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -271,7 +273,8 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    bool started_sandbox = StartBPFSandbox(command_line, process_type);
+    bool started_sandbox =
+        StartBPFSandbox(command_line, process_type, proc_task_fd.Pass());
     CHECK(started_sandbox);
     return true;
   }
@@ -280,11 +283,12 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
 }
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-    scoped_ptr<sandbox::bpf_dsl::Policy> policy) {
+    scoped_ptr<sandbox::bpf_dsl::Policy> policy,
+    base::ScopedFD proc_task_fd) {
 #if defined(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(policy.release());
+    StartSandboxWithPolicy(policy.release(), proc_task_fd.Pass());
     return true;
   }
 #endif  // defined(USE_SECCOMP_BPF)

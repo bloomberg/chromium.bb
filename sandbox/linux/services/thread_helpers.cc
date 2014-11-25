@@ -43,7 +43,8 @@ bool IsSingleThreadedImpl(int proc_self_task) {
 bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
   DCHECK_LE(-1, proc_self_task);
   if (-1 == proc_self_task) {
-    const int task_fd = open("/proc/self/task/", O_RDONLY | O_DIRECTORY);
+    const int task_fd =
+        open("/proc/self/task/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     PCHECK(0 <= task_fd);
     const bool result = IsSingleThreadedImpl(task_fd);
     PCHECK(0 == IGNORE_EINTR(close(task_fd)));

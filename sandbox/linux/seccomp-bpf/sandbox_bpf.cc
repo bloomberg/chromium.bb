@@ -42,6 +42,7 @@
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/services/thread_helpers.h"
 
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Error;
@@ -122,33 +123,19 @@ void TryVsyscallProcess(void) {
   }
 }
 
-bool IsSingleThreaded(int proc_fd) {
-  if (proc_fd < 0) {
-    // Cannot determine whether program is single-threaded. Hope for
-    // the best...
-    return true;
-  }
-
-  struct stat sb;
-  int task = -1;
-  if ((task = openat(proc_fd, "self/task", O_RDONLY | O_DIRECTORY)) < 0 ||
-      fstat(task, &sb) != 0 || sb.st_nlink != 3 || IGNORE_EINTR(close(task))) {
-    if (task >= 0) {
-      if (IGNORE_EINTR(close(task))) {
-      }
-    }
-    return false;
-  }
-  return true;
+bool IsSingleThreaded(int proc_task_fd) {
+  return ThreadHelpers::IsSingleThreaded(proc_task_fd);
 }
 
 }  // namespace
 
 SandboxBPF::SandboxBPF()
-    : quiet_(false), proc_fd_(-1), sandbox_has_started_(false), policy_() {
+    : quiet_(false), proc_task_fd_(-1), sandbox_has_started_(false), policy_() {
 }
 
 SandboxBPF::~SandboxBPF() {
+  if (proc_task_fd_ != -1)
+    IGNORE_EINTR(close(proc_task_fd_));
 }
 
 bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
@@ -175,7 +162,7 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
   // This code is using fork() and should only ever run single-threaded.
   // Most of the code below is "async-signal-safe" and only minor changes
   // would be needed to support threads.
-  DCHECK(IsSingleThreaded(proc_fd_));
+  DCHECK(IsSingleThreaded(proc_task_fd_));
   pid_t pid = fork();
   if (pid < 0) {
     // Die if we cannot fork(). We would probably fail a little later
@@ -282,58 +269,28 @@ bool SandboxBPF::KernelSupportSeccompBPF() {
 }
 
 // static
-SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox(int proc_fd) {
-  // It the sandbox is currently active, we clearly must have support for
-  // sandboxing.
-  if (status_ == STATUS_ENABLED) {
-    return status_;
-  }
-
-  // Even if the sandbox was previously available, something might have
-  // changed in our run-time environment. Check one more time.
-  if (status_ == STATUS_AVAILABLE) {
-    if (!IsSingleThreaded(proc_fd)) {
-      status_ = STATUS_UNAVAILABLE;
-    }
-    return status_;
-  }
-
-  if (status_ == STATUS_UNAVAILABLE && IsSingleThreaded(proc_fd)) {
-    // All state transitions resulting in STATUS_UNAVAILABLE are immediately
-    // preceded by STATUS_AVAILABLE. Furthermore, these transitions all
-    // happen, if and only if they are triggered by the process being multi-
-    // threaded.
-    // In other words, if a single-threaded process is currently in the
-    // STATUS_UNAVAILABLE state, it is safe to assume that sandboxing is
-    // actually available.
-    status_ = STATUS_AVAILABLE;
+SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox() {
+  if (status_ != STATUS_UNKNOWN) {
     return status_;
   }
 
   // If we have not previously checked for availability of the sandbox or if
   // we otherwise don't believe to have a good cached value, we have to
   // perform a thorough check now.
-  if (status_ == STATUS_UNKNOWN) {
-    // We create our own private copy of a "Sandbox" object. This ensures that
-    // the object does not have any policies configured, that might interfere
-    // with the tests done by "KernelSupportSeccompBPF()".
-    SandboxBPF sandbox;
 
-    // By setting "quiet_ = true" we suppress messages for expected and benign
-    // failures (e.g. if the current kernel lacks support for BPF filters).
-    sandbox.quiet_ = true;
-    sandbox.set_proc_fd(proc_fd);
-    status_ = sandbox.KernelSupportSeccompBPF() ? STATUS_AVAILABLE
-                                                : STATUS_UNSUPPORTED;
+  // We create our own private copy of a "Sandbox" object. This ensures that
+  // the object does not have any policies configured, that might interfere
+  // with the tests done by "KernelSupportSeccompBPF()".
+  SandboxBPF sandbox;
 
-    // As we are performing our tests from a child process, the run-time
-    // environment that is visible to the sandbox is always guaranteed to be
-    // single-threaded. Let's check here whether the caller is single-
-    // threaded. Otherwise, we mark the sandbox as temporarily unavailable.
-    if (status_ == STATUS_AVAILABLE && !IsSingleThreaded(proc_fd)) {
-      status_ = STATUS_UNAVAILABLE;
-    }
-  }
+  // By setting "quiet_ = true" we suppress messages for expected and benign
+  // failures (e.g. if the current kernel lacks support for BPF filters).
+  // TODO(jln): use kernel API to check for seccomp support now that things
+  // have stabilized.
+  sandbox.quiet_ = true;
+  status_ =
+      sandbox.KernelSupportSeccompBPF() ? STATUS_AVAILABLE : STATUS_UNSUPPORTED;
+
   return status_;
 }
 
@@ -355,7 +312,9 @@ SandboxBPF::SupportsSeccompThreadFilterSynchronization() {
   }
 }
 
-void SandboxBPF::set_proc_fd(int proc_fd) { proc_fd_ = proc_fd; }
+void SandboxBPF::set_proc_task_fd(int proc_task_fd) {
+  proc_task_fd_ = proc_task_fd;
+}
 
 bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
   CHECK(thread_state == PROCESS_SINGLE_THREADED ||
@@ -372,24 +331,17 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
         "object instead.");
     return false;
   }
-  if (proc_fd_ < 0) {
-    proc_fd_ = open("/proc", O_RDONLY | O_DIRECTORY);
-  }
-  if (proc_fd_ < 0) {
-    // For now, continue in degraded mode, if we can't access /proc.
-    // In the future, we might want to tighten this requirement.
-  }
 
   bool supports_tsync =
       SupportsSeccompThreadFilterSynchronization() == STATUS_AVAILABLE;
 
   if (thread_state == PROCESS_SINGLE_THREADED) {
-    if (!IsSingleThreaded(proc_fd_)) {
+    if (!IsSingleThreaded(proc_task_fd_)) {
       SANDBOX_DIE("Cannot start sandbox; process is already multi-threaded");
       return false;
     }
   } else if (thread_state == PROCESS_MULTI_THREADED) {
-    if (IsSingleThreaded(proc_fd_)) {
+    if (IsSingleThreaded(proc_task_fd_)) {
       SANDBOX_DIE("Cannot start sandbox; "
                   "process may be single-threaded when reported as not");
       return false;
@@ -404,12 +356,12 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
   // We no longer need access to any files in /proc. We want to do this
   // before installing the filters, just in case that our policy denies
   // close().
-  if (proc_fd_ >= 0) {
-    if (IGNORE_EINTR(close(proc_fd_))) {
+  if (proc_task_fd_ >= 0) {
+    if (IGNORE_EINTR(close(proc_task_fd_))) {
       SANDBOX_DIE("Failed to close file descriptor for /proc");
       return false;
     }
-    proc_fd_ = -1;
+    proc_task_fd_ = -1;
   }
 
   // Install the filters.

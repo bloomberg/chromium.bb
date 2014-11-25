@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_NACL_LOADER_SANDBOX_LINUX_NACL_BPF_SANDBOX_LINUX_H_
 #define COMPONENTS_NACL_LOADER_SANDBOX_LINUX_NACL_BPF_SANDBOX_LINUX_H_
 
+#include "base/files/scoped_file.h"
+
 namespace nacl {
 
-bool InitializeBPFSandbox();
+bool InitializeBPFSandbox(base::ScopedFD proc_task_fd);
 
 }  // namespace nacl
 
