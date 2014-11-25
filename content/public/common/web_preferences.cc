@@ -31,16 +31,24 @@ COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
 COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
                               WebSettings::EditingBehaviorAndroid);
 
-COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_OFF,
-                              WebSettings::V8CacheOptionsOff);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
+                              WebSettings::V8CacheOptionsDefault);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
                               WebSettings::V8CacheOptionsParse);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
                               WebSettings::V8CacheOptionsCode);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE_COMPRESSED,
                               WebSettings::V8CacheOptionsCodeCompressed);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
+                              WebSettings::V8CacheOptionsNone);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE_MEMORY,
+                              WebSettings::V8CacheOptionsParseMemory);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS,
+                              WebSettings::V8CacheOptionsHeuristics);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_MOBILE,
+                              WebSettings::V8CacheOptionsHeuristicsMobile);
 COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                              WebSettings::V8CacheOptionsCodeCompressed);
+                              WebSettings::V8CacheOptionsHeuristicsMobile);
 
 COMPILE_ASSERT_MATCHING_ENUMS(V8_SCRIPT_STREAMING_MODE_ALL,
                               WebSettings::V8ScriptStreamingModeAll);
@@ -171,7 +179,7 @@ WebPreferences::WebPreferences()
       rubber_banding_on_compositor_thread(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
-      v8_cache_options(V8_CACHE_OPTIONS_OFF),
+      v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
       v8_script_streaming_enabled(false),
       v8_script_streaming_mode(V8_SCRIPT_STREAMING_MODE_ALL),
       slimming_paint_enabled(false),

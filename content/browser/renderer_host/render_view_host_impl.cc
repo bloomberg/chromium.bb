@@ -480,18 +480,26 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 
-  if (command_line.HasSwitch(switches::kV8CacheOptions)) {
-    const std::string v8_cache_options =
-        command_line.GetSwitchValueASCII(switches::kV8CacheOptions);
-    if (v8_cache_options == "parse") {
-      prefs.v8_cache_options = V8_CACHE_OPTIONS_PARSE;
-    } else if (v8_cache_options == "code") {
-      prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE;
-    } else if (v8_cache_options == "code-compressed") {
-      prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE_COMPRESSED;
-    } else {
-      prefs.v8_cache_options = V8_CACHE_OPTIONS_OFF;
-    }
+  std::string v8_cache_options =
+      command_line.GetSwitchValueASCII(switches::kV8CacheOptions);
+  if (v8_cache_options.empty())
+    v8_cache_options = base::FieldTrialList::FindFullName("V8CacheOptions");
+  if (v8_cache_options == "parse") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_PARSE;
+  } else if (v8_cache_options == "code") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE;
+  } else if (v8_cache_options == "code-compressed") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_CODE_COMPRESSED;
+  } else if (v8_cache_options == "none") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_NONE;
+  } else if (v8_cache_options == "parse-memory") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_PARSE_MEMORY;
+  } else if (v8_cache_options == "heuristics") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS;
+  } else if (v8_cache_options == "heuristics-mobile") {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_HEURISTICS_MOBILE;
+  } else {
+    prefs.v8_cache_options = V8_CACHE_OPTIONS_DEFAULT;
   }
 
   std::string streaming_experiment_group =
