@@ -161,6 +161,14 @@ void ChromeWebContentsViewDelegateViews::ShowDisambiguationPopup(
     const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
     const base::Callback<void(ui::MouseEvent*)>& mouse_cb) {
 #if defined(USE_AURA)
+  // If we are attempting to show a link disambiguation popup while already
+  // showing one this means that the popup itself received an ambiguous touch.
+  // Don't show another popup in this case.
+  if (link_disambiguation_popup_) {
+    link_disambiguation_popup_.reset();
+    return;
+  }
+
   link_disambiguation_popup_.reset(new LinkDisambiguationPopup);
   link_disambiguation_popup_->Show(
       views::Widget::GetTopLevelWidgetForNativeView(GetActiveNativeView()),
