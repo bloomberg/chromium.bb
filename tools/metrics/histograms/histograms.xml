@@ -21101,6 +21101,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.WakeOnWiFiFeaturesEnabledState"
+    enum="WakeOnWiFiFeaturesEnabledState">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network usage metric that tracks the wake on WiFi features that
+    are enabled in shill. Recorded once every 10 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wimax.DevicePresenceStatus"
     enum="BooleanPresent">
   <owner>zqiu@chromium.org</owner>
@@ -56801,6 +56810,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="L2TP/IPSec None"/>
   <int value="5" label="L2TP/IPSec Certificate"/>
   <int value="6" label="L2TP/IPSec Username/Password"/>
+</enum>
+
+<enum name="WakeOnWiFiFeaturesEnabledState" type="int">
+  <summary>
+    The wake on WiFi features enabled in shill, which come from
+    WakeOnWiFiFeaturesEnabledState in shill/metrics.h
+  </summary>
+  <int value="0" label="None"/>
+  <int value="1" label="Packet"/>
+  <int value="2" label="DarkConnect"/>
+  <int value="3" label="Packet and DarkConnect"/>
 </enum>
 
 <enum name="WalletApiCall" type="int">
