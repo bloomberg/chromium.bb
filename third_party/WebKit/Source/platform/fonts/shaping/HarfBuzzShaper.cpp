@@ -1017,6 +1017,13 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
         uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
         bool isRunEnd = (i + 1 == numGlyphs);
         bool isClusterEnd =  isRunEnd || (currentRun->startIndex() + glyphToCharacterIndexes[i + 1] != currentCharacterIndex);
+
+        if ((m_run.rtl() && currentCharacterIndex >= m_toIndex) || (!m_run.rtl() && currentCharacterIndex < m_fromIndex)) {
+            advanceSoFar += advances[i];
+            m_run.rtl() ? --clusterStart : ++clusterStart;
+            continue;
+        }
+
         clusterAdvance += advances[i];
 
         if (isClusterEnd) {
