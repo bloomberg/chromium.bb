@@ -32,8 +32,6 @@
         'ipc_channel_mojo.h',
         'ipc_channel_mojo_host.cc',
         'ipc_channel_mojo_host.h',
-        'ipc_channel_mojo_readers.cc',
-        'ipc_channel_mojo_readers.h',
         'ipc_mojo_bootstrap.cc',
         'ipc_mojo_bootstrap.h',
         'ipc_message_pipe_reader.cc',

@@ -14,7 +14,6 @@
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
 #include "ipc/mojo/ipc_channel_mojo_host.h"
-#include "ipc/mojo/ipc_channel_mojo_readers.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
