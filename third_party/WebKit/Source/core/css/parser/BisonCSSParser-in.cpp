@@ -965,7 +965,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForContentPse
     // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
     OwnPtr<CSSParserSelector> elementNameSelector = adoptPtr(new CSSParserSelector(tag));
     last->setTagHistory(elementNameSelector.release());
-    last->setRelation(CSSSelector::SubSelector);
     return specifiers;
 }
 

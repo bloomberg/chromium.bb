@@ -328,7 +328,7 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
         features.adjacent = current->isAdjacentSelector();
         return std::make_pair(current->tagHistory(), foundFeatures ? UseFeatures : ForceSubtree);
     }
-    return std::make_pair(nullptr, ForceSubtree);
+    return std::make_pair(nullptr,  foundFeatures ? UseFeatures : ForceSubtree);
 }
 
 // Add features extracted from the rightmost compound selector to descendant invalidation

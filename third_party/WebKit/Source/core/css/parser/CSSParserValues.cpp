@@ -311,9 +311,7 @@ void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool t
     second->m_selector = m_selector.release();
     second->m_tagHistory = m_tagHistory.release();
     m_tagHistory = second.release();
-
     m_selector = adoptPtr(new CSSSelector(tagQName, tagIsForNamespaceRule));
-    m_selector->setRelation(CSSSelector::SubSelector);
 }
 
 bool CSSParserSelector::hasHostPseudoSelector() const

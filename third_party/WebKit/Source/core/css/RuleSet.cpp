@@ -57,10 +57,8 @@ static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector& sele
         const AtomicString& selectorNamespace = selector.tagQName().namespaceURI();
         if (selectorNamespace != starAtom && selectorNamespace != xhtmlNamespaceURI)
             return false;
-        if (selector.relation() == CSSSelector::SubSelector) {
-            ASSERT(selector.tagHistory());
+        if (selector.relation() == CSSSelector::SubSelector && selector.tagHistory())
             return isSelectorMatchingHTMLBasedOnRuleHash(*selector.tagHistory());
-        }
         return true;
     }
     if (SelectorChecker::isCommonPseudoClassSelector(selector))
@@ -181,10 +179,8 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
 #endif
 
     const CSSSelector* it = &component;
-    for (; it && it->relation() == CSSSelector::SubSelector; it = it->tagHistory()) {
+    for (; it && it->relation() == CSSSelector::SubSelector; it = it->tagHistory())
         extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
-    }
-    // FIXME: this null check should not be necessary. See crbug.com/358475
     if (it)
         extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
 

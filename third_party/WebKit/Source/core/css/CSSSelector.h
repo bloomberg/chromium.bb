@@ -48,9 +48,6 @@ namespace blink {
     //   --> (relation == SubSelector)
     //     selectorText(): .b
     //
-    // Note that currently a bare selector such as ".a" has a relation() of Descendant. This is a bug - instead the relation should be
-    // "None".
-    //
     // The order of tagHistory() varies depending on the situation.
     // * Relations using combinators (http://www.w3.org/TR/css3-selectors/#combinators), such as descendant, sibling, etc., are parsed
     //   right-to-left (in the example above, this is why .c is earlier in the tagHistory() chain than .a.b).
@@ -106,7 +103,7 @@ namespace blink {
 
         /* how the attribute value has to match.... Default is Exact */
         enum Match {
-            Unknown = 0,
+            Unknown,
             Tag, // Example: div
             Id, // Example: #id
             Class, // example: .class
@@ -124,17 +121,17 @@ namespace blink {
         };
 
         enum Relation {
-            Descendant = 0, // "Space" combinator
+            SubSelector, // No combinator
+            Descendant, // "Space" combinator
             Child, // > combinator
             DirectAdjacent, // + combinator
             IndirectAdjacent, // ~ combinator
-            SubSelector, // "No space" combinator
             ShadowPseudo, // Special case of shadow DOM pseudo elements / shadow pseudo element
             ShadowDeep // /deep/ combinator
         };
 
         enum PseudoType {
-            PseudoNotParsed = 0,
+            PseudoNotParsed,
             PseudoUnknown,
             PseudoEmpty,
             PseudoFirstChild,
@@ -295,8 +292,6 @@ namespace blink {
         bool isHostPseudoClass() const;
         bool isTreeBoundaryCrossing() const;
         bool isInsertionPointCrossing() const;
-        // FIXME: selectors with no tagHistory() get a relation() of Descendant (and sometimes even SubSelector). It should instead be
-        // None.
         Relation relation() const { return static_cast<Relation>(m_relation); }
         void setRelation(Relation relation)
         {
@@ -471,7 +466,7 @@ inline void CSSSelector::setValue(const AtomicString& value)
 }
 
 inline CSSSelector::CSSSelector()
-    : m_relation(Descendant)
+    : m_relation(SubSelector)
     , m_match(Unknown)
     , m_pseudoType(PseudoNotParsed)
     , m_parsedNth(false)
@@ -485,7 +480,7 @@ inline CSSSelector::CSSSelector()
 }
 
 inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsForNamespaceRule)
-    : m_relation(Descendant)
+    : m_relation(SubSelector)
     , m_match(Tag)
     , m_pseudoType(PseudoNotParsed)
     , m_parsedNth(false)
