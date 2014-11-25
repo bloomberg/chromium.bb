@@ -232,6 +232,10 @@ public:
     BLINK_PLATFORM_EXPORT bool skipServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setSkipServiceWorker(bool);
 
+    // True if corresponding AppCache group should be resetted.
+    BLINK_PLATFORM_EXPORT bool shouldResetAppCache() const;
+    BLINK_PLATFORM_EXPORT void setShouldResetAppCache(bool);
+
     // The request mode which will be passed to the ServiceWorker.
     BLINK_PLATFORM_EXPORT FetchRequestMode fetchRequestMode() const;
     BLINK_PLATFORM_EXPORT void setFetchRequestMode(FetchRequestMode);

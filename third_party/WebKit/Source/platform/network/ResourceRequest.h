@@ -180,6 +180,10 @@ public:
     bool skipServiceWorker() const { return m_skipServiceWorker; }
     void setSkipServiceWorker(bool skipServiceWorker) { m_skipServiceWorker = skipServiceWorker; }
 
+    // True if corresponding AppCache group should be resetted.
+    bool shouldResetAppCache() { return m_shouldResetAppCache; }
+    void setShouldResetAppCache(bool shouldResetAppCache) { m_shouldResetAppCache = shouldResetAppCache; }
+
     // Extra data associated with this request.
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
@@ -227,6 +231,7 @@ private:
     bool m_downloadToFile : 1;
     bool m_useStreamOnResponse : 1;
     bool m_skipServiceWorker : 1;
+    bool m_shouldResetAppCache : 1;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
     int m_requestorID;
@@ -269,6 +274,7 @@ public:
     bool m_downloadToFile;
     bool m_skipServiceWorker;
     bool m_useStreamOnResponse;
+    bool m_shouldResetAppCache;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
     int m_requestorID;

@@ -319,6 +319,16 @@ void WebURLRequest::setSkipServiceWorker(bool skipServiceWorker)
     m_private->m_resourceRequest->setSkipServiceWorker(skipServiceWorker);
 }
 
+bool WebURLRequest::shouldResetAppCache() const
+{
+    return m_private->m_resourceRequest->shouldResetAppCache();
+}
+
+void WebURLRequest::setShouldResetAppCache(bool setShouldResetAppCache)
+{
+    m_private->m_resourceRequest->setShouldResetAppCache(setShouldResetAppCache);
+}
+
 WebURLRequest::FetchRequestMode WebURLRequest::fetchRequestMode() const
 {
     return m_private->m_resourceRequest->fetchRequestMode();

@@ -345,8 +345,10 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
 
     request.setReportRawHeaders(true);
 
-    if (m_state->getBoolean(ResourceAgentState::cacheDisabled))
+    if (m_state->getBoolean(ResourceAgentState::cacheDisabled)) {
         request.setCachePolicy(ReloadBypassingCache);
+        request.setShouldResetAppCache(true);
+    }
 
     String frameId = m_pageAgent->frameId(loader->frame());
 

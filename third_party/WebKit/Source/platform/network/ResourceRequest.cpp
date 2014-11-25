@@ -52,6 +52,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setDownloadToFile(data->m_downloadToFile);
     request->setUseStreamOnResponse(data->m_useStreamOnResponse);
     request->setSkipServiceWorker(data->m_skipServiceWorker);
+    request->setShouldResetAppCache(data->m_shouldResetAppCache);
     request->setRequestorID(data->m_requestorID);
     request->setRequestorProcessID(data->m_requestorProcessID);
     request->setAppCacheHostID(data->m_appCacheHostID);
@@ -84,6 +85,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_downloadToFile = m_downloadToFile;
     data->m_useStreamOnResponse = m_useStreamOnResponse;
     data->m_skipServiceWorker = m_skipServiceWorker;
+    data->m_shouldResetAppCache = m_shouldResetAppCache;
     data->m_requestorID = m_requestorID;
     data->m_requestorProcessID = m_requestorProcessID;
     data->m_appCacheHostID = m_appCacheHostID;
@@ -416,6 +418,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_downloadToFile = false;
     m_useStreamOnResponse = false;
     m_skipServiceWorker = false;
+    m_shouldResetAppCache = false;
     m_priority = ResourceLoadPriorityLowest;
     m_intraPriorityValue = 0;
     m_requestorID = 0;
