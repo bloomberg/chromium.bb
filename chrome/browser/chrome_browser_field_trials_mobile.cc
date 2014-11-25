@@ -15,7 +15,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/common/chrome_version_info.h"
 #endif
 
 namespace chrome {
@@ -63,29 +62,16 @@ void SetupDataCompressionProxyFieldTrials() {
       "DataCompressionProxyPromoVisibility", 100, 1000);
 }
 
-#if defined(OS_ANDROID)
-void SetupProfilerTiming() {
-  // Enable profiler timing on trunk build so that performance bot can measure
-  // its impact.
-  bool enabled_via_trunk_build =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN;
-
-  // Enable profiler timing based on the field trial.
-  bool enabled_via_field_trial =
-      base::FieldTrialList::FindFullName("ProfilerTiming") == "Enable";
-
-  if (enabled_via_trunk_build || enabled_via_field_trial)
-    tracked_objects::ThreadData::EnableProfilerTiming();
-}
-#endif
-
 }  // namespace
 
 void SetupMobileFieldTrials(const CommandLine& parsed_command_line) {
   SetupDataCompressionProxyFieldTrials();
 #if defined(OS_ANDROID)
   prerender::ConfigurePrerender(parsed_command_line);
-  SetupProfilerTiming();
+
+  // Force-enable profiler timing depending on the field trial.
+  if (base::FieldTrialList::FindFullName("ProfilerTiming") == "Enable")
+    tracked_objects::ThreadData::EnableProfilerTiming();
 #endif
 }
 
