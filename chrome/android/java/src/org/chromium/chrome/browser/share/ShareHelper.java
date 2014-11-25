@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -59,11 +60,11 @@ public class ShareHelper {
      * @param screenshot Screenshot of the page to be shared.
      */
     public static void share(boolean shareDirectly, Activity activity, String title, String url,
-            Bitmap screenshot, int extraIntentFlags) {
+            Bitmap screenshot) {
         if (shareDirectly) {
-            shareWithLastUsed(activity, title, url, screenshot, extraIntentFlags);
+            shareWithLastUsed(activity, title, url, screenshot);
         } else {
-            showShareDialog(activity, title, url, screenshot, extraIntentFlags);
+            showShareDialog(activity, title, url, screenshot);
         }
     }
 
@@ -74,11 +75,10 @@ public class ShareHelper {
      * @param title Title of the page to be shared.
      * @param url URL of the page to be shared.
      * @param screenshot Screenshot of the page to be shared.
-     * @param extraIntentFlags Additional flags that should be added to the share intent.
      */
     private static void showShareDialog(final Activity activity, final String title,
-            final String url, final Bitmap screenshot, final int extraIntentFlags) {
-        Intent intent = getShareIntent(title, url, screenshot, extraIntentFlags);
+            final String url, final Bitmap screenshot) {
+        Intent intent = getShareIntent(title, url, screenshot);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
@@ -101,8 +101,7 @@ public class ShareHelper {
                 ComponentName component =
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
                 setLastShareComponentName(activity, component);
-                Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component,
-                        extraIntentFlags);
+                Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component);
                 activity.startActivity(intent);
                 dialog.dismiss();
             }
@@ -116,14 +115,12 @@ public class ShareHelper {
      * @param title Title of the page to be shared.
      * @param url URL of the page to be shared.
      * @param screenshot Screenshot of the page to be shared.
-     * @param extraIntentFlags Additional flags that should be added to the share intent.
      */
     private static void shareWithLastUsed(
-            Activity activity, String title, String url, Bitmap screenshot, int extraIntentFlags) {
+            Activity activity, String title, String url, Bitmap screenshot) {
         ComponentName component = getLastShareComponentName(activity);
         if (component == null) return;
-        Intent intent = getDirectShareIntentForComponent(
-                title, url, screenshot, component, extraIntentFlags);
+        Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component);
         activity.startActivity(intent);
     }
 
@@ -157,11 +154,10 @@ public class ShareHelper {
     }
 
     @VisibleForTesting
-    public static Intent getShareIntent(String title, String url, Bitmap screenshot,
-            int extraIntentFlags) {
+    public static Intent getShareIntent(String title, String url, Bitmap screenshot) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.addFlags(extraIntentFlags);
+        intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, url);
@@ -170,8 +166,8 @@ public class ShareHelper {
     }
 
     private static Intent getDirectShareIntentForComponent(String title, String url,
-            Bitmap screenshot, ComponentName component, int extraIntentFlags) {
-        Intent intent = getShareIntent(title, url, screenshot, extraIntentFlags);
+            Bitmap screenshot, ComponentName component) {
+        Intent intent = getShareIntent(title, url, screenshot);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);

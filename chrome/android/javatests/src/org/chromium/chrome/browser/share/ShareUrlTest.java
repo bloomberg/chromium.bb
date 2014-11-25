@@ -26,7 +26,7 @@ public class ShareUrlTest extends ChromeShellTestBase {
     }
 
     private void assertCorrectUrl(String originalUrl, String sharedUrl) {
-        Intent intent = ShareHelper.getShareIntent("", sharedUrl, null, 0);
+        Intent intent = ShareHelper.getShareIntent("", sharedUrl, null);
         assert (intent.hasExtra(Intent.EXTRA_TEXT));
         String url = intent.getStringExtra(Intent.EXTRA_TEXT);
         assertEquals(originalUrl, url);
