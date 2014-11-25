@@ -2932,27 +2932,17 @@ void FrameView::removeChild(Widget* child)
 
 bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
-    bool allowScrolling = userInputScrollable(HorizontalScrollbar) || userInputScrollable(VerticalScrollbar);
-
     // Note that to allow for rubber-band over-scroll behavior, even non-scrollable views
     // should handle wheel events.
 #if !USE(RUBBER_BANDING)
     if (!isScrollable())
-        allowScrolling = false;
+        return false;
 #endif
 
     if (m_frame->settings()->rootLayerScrolls())
-        allowScrolling = false;
+        return false;
 
-    if (allowScrolling && ScrollableArea::handleWheelEvent(wheelEvent))
-        return true;
-
-    // If the frame didn't handle the event, give the pinch-zoom viewport a chance to
-    // process the scroll event.
-    if (m_frame->settings()->pinchVirtualViewportEnabled() && m_frame->isMainFrame())
-        return page()->frameHost().pinchViewport().handleWheelEvent(wheelEvent);
-
-    return false;
+    return ScrollableArea::handleWheelEvent(wheelEvent);
 }
 
 bool FrameView::isVerticalDocument() const

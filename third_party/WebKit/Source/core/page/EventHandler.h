@@ -293,7 +293,7 @@ private:
 
     bool passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults&);
 
-    bool passWheelEventToWidget(const PlatformWheelEvent&, Widget*);
+    bool passWheelEventToWidget(const PlatformWheelEvent&, Widget&);
     void defaultSpaceEventHandler(KeyboardEvent*);
     void defaultBackspaceEventHandler(KeyboardEvent*);
     void defaultTabEventHandler(KeyboardEvent*);
@@ -313,7 +313,6 @@ private:
     bool handleScrollGestureOnResizer(Node*, const PlatformGestureEvent&);
 
     bool passScrollGestureEventToWidget(const PlatformGestureEvent&, RenderObject*);
-    bool sendScrollEventToView(const PlatformGestureEvent&, const FloatSize&);
 
     AutoscrollController* autoscrollController() const;
     bool panScrollInProgress() const;

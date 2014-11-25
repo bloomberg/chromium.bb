@@ -2003,7 +2003,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
         if (isOverWidget && target && target->isRenderPart()) {
             Widget* widget = toRenderPart(target)->widget();
-            if (widget && passWheelEventToWidget(event, widget))
+            if (widget && passWheelEventToWidget(event, *widget))
                 RETURN_WHEEL_EVENT_HANDLED();
         }
 
@@ -2011,13 +2011,22 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
             RETURN_WHEEL_EVENT_HANDLED();
     }
 
-    // We do another check on the frame view because the event handler can run JS which results in the frame getting destroyed.
+    // We do another check on the frame view because the event handler can run
+    // JS which results in the frame getting destroyed.
     view = m_frame->view();
-    if (!view || !view->wheelEvent(event))
+    if (!view)
         return false;
 
-    RETURN_WHEEL_EVENT_HANDLED();
+    if (view->wheelEvent(event))
+        RETURN_WHEEL_EVENT_HANDLED();
 
+    // If the main frame didn't scroll, pass it up to the pinch viewport.
+    if (m_frame->settings()->pinchVirtualViewportEnabled() && m_frame->isMainFrame()) {
+        if (m_frame->page()->frameHost().pinchViewport().handleWheelEvent(event))
+            RETURN_WHEEL_EVENT_HANDLED();
+    }
+
+    return false;
 #undef RETURN_WHEEL_EVENT_HANDLED
 }
 
@@ -2438,6 +2447,13 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     return true;
 }
 
+static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
+{
+    bool scrolledHorizontal = view.scroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
+    bool scrolledVertical = view.scroll(ScrollUp, ScrollByPrecisePixel, delta.height());
+    return scrolledHorizontal || scrolledVertical;
+}
+
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
 {
     FloatSize delta(gestureEvent.deltaX(), gestureEvent.deltaY());
@@ -2445,69 +2461,62 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         return false;
 
     Node* node = m_scrollGestureHandlingNode.get();
-    if (!node)
-        return sendScrollEventToView(gestureEvent, delta);
+    if (node) {
+        RenderObject* renderer = node->renderer();
+        if (!renderer)
+            return false;
 
-    // Ignore this event if the targeted node does not have a valid renderer.
-    RenderObject* renderer = node->renderer();
-    if (!renderer)
-        return false;
+        RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+        Node* stopNode = nullptr;
+        bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation
+            || (gestureEvent.type() == PlatformEvent::GestureScrollUpdate && gestureEvent.preventPropagation());
 
-    Node* stopNode = nullptr;
-    bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation
-        || (gestureEvent.type() == PlatformEvent::GestureScrollUpdate && gestureEvent.preventPropagation());
+        // Try to send the event to the correct view.
+        if (passScrollGestureEventToWidget(gestureEvent, renderer)) {
+            if (scrollShouldNotPropagate)
+                m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
 
-    // Try to send the event to the correct view.
-    if (passScrollGestureEventToWidget(gestureEvent, renderer)) {
-        if(scrollShouldNotPropagate)
-              m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
+            return true;
+        }
 
-        return true;
+        if (scrollShouldNotPropagate)
+            stopNode = m_previousGestureScrolledNode.get();
+
+        // First try to scroll the closest scrollable RenderBox ancestor of |node|.
+        ScrollGranularity granularity = ScrollByPixel;
+        bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
+        bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
+
+        if (scrollShouldNotPropagate)
+            m_previousGestureScrolledNode = stopNode;
+
+        if (horizontalScroll || verticalScroll) {
+            setFrameWasScrolledByUser();
+            return true;
+        }
     }
 
-    if (scrollShouldNotPropagate)
-        stopNode = m_previousGestureScrolledNode.get();
-
-    // First try to scroll the closest scrollable RenderBox ancestor of |node|.
-    ScrollGranularity granularity = ScrollByPixel;
-    bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
-    bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
-
-    if (scrollShouldNotPropagate)
-        m_previousGestureScrolledNode = stopNode;
-
-    if (horizontalScroll || verticalScroll) {
-        setFrameWasScrolledByUser();
-        return true;
-    }
-
-    // Otherwise try to scroll the view.
-    return sendScrollEventToView(gestureEvent, delta);
-}
-
-bool EventHandler::sendScrollEventToView(const PlatformGestureEvent& gestureEvent, const FloatSize& delta)
-{
+    // Try to scroll the frame view.
     FrameView* view = m_frame->view();
     if (!view)
         return false;
 
-    const float tickDivisor = static_cast<float>(WheelEvent::TickMultiplier);
-    IntPoint point(gestureEvent.position().x(), gestureEvent.position().y());
-    IntPoint globalPoint(gestureEvent.globalPosition().x(), gestureEvent.globalPosition().y());
-    PlatformWheelEvent syntheticWheelEvent(point, globalPoint,
-        delta.width(), delta.height(),
-        delta.width() / tickDivisor, delta.height() / tickDivisor,
-        ScrollByPixelWheelEvent,
-        gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey());
-    syntheticWheelEvent.setHasPreciseScrollingDeltas(true);
-
-    bool scrolledFrame = view->wheelEvent(syntheticWheelEvent);
-    if (scrolledFrame)
+    if (scrollAreaOnBothAxes(delta, *view)) {
         setFrameWasScrolledByUser();
+        return true;
+    }
 
-    return scrolledFrame;
+    // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
+    if (!m_frame->settings()->pinchVirtualViewportEnabled() || !m_frame->isMainFrame())
+        return false;
+
+    if (scrollAreaOnBothAxes(delta, m_frame->page()->frameHost().pinchViewport())) {
+        setFrameWasScrolledByUser();
+        return true;
+    }
+
+    return false;
 }
 
 void EventHandler::clearGestureScrollNodes()
@@ -3820,19 +3829,14 @@ bool EventHandler::passMouseReleaseEventToSubframe(MouseEventWithHitTestResults&
     return true;
 }
 
-bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, Widget* widget)
+bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, Widget& widget)
 {
-    // We can sometimes get a null widget!  EventHandlerMac handles a null
-    // widget by returning false, so we do the same.
-    if (!widget)
-        return false;
-
     // If not a FrameView, then probably a plugin widget.  Those will receive
     // the event via an EventTargetNode dispatch when this returns false.
-    if (!widget->isFrameView())
+    if (!widget.isFrameView())
         return false;
 
-    return toFrameView(widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
+    return toFrameView(&widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
 }
 
 bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)
