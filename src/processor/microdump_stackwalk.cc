@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2014 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,22 +27,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// minidump_stackwalk.cc: Process a minidump with MinidumpProcessor, printing
+// microdump_stackwalk.cc: Process a microdump with MicrodumpProcessor, printing
 // the results, including stack traces.
-//
-// Author: Mark Mentovai
 
 #include <stdio.h>
 #include <string.h>
 
+#include <fstream>
 #include <string>
 #include <vector>
 
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
-#include "google_breakpad/processor/minidump_processor.h"
+#include "google_breakpad/processor/microdump_processor.h"
 #include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/stack_frame_symbolizer.h"
 #include "processor/logging.h"
 #include "processor/simple_symbol_supplier.h"
 #include "processor/stackwalk_common.h"
@@ -51,59 +51,67 @@
 namespace {
 
 using google_breakpad::BasicSourceLineResolver;
-using google_breakpad::MinidumpProcessor;
+using google_breakpad::MicrodumpProcessor;
+using google_breakpad::ProcessResult;
 using google_breakpad::ProcessState;
-using google_breakpad::SimpleSymbolSupplier;
 using google_breakpad::scoped_ptr;
+using google_breakpad::SimpleSymbolSupplier;
+using google_breakpad::StackFrameSymbolizer;
 
-// Processes |minidump_file| using MinidumpProcessor.  |symbol_path|, if
+// Processes |microdump_file| using MicrodumpProcessor. |symbol_path|, if
 // non-empty, is the base directory of a symbol storage area, laid out in
 // the format required by SimpleSymbolSupplier.  If such a storage area
-// is specified, it is made available for use by the MinidumpProcessor.
+// is specified, it is made available for use by the MicrodumpProcessor.
 //
-// Returns the value of MinidumpProcessor::Process.  If processing succeeds,
-// prints identifying OS and CPU information from the minidump, crash
-// information if the minidump was produced as a result of a crash, and
-// call stacks for each thread contained in the minidump.  All information
-// is printed to stdout.
-bool PrintMinidumpProcess(const string &minidump_file,
-                          const std::vector<string> &symbol_paths,
+// Returns the value of MicrodumpProcessor::Process. If processing succeeds,
+// prints identifying OS and CPU information from the microdump, crash
+// information and call stacks for the crashing thread.
+// All information is printed to stdout.
+int PrintMicrodumpProcess(const char* microdump_file,
+                          const std::vector<string>& symbol_paths,
                           bool machine_readable) {
+  std::ifstream file_stream(microdump_file);
+  std::vector<char> bytes;
+  file_stream.seekg(0, std::ios_base::end);
+  bytes.resize(file_stream.tellg());
+  file_stream.seekg(0, std::ios_base::beg);
+  file_stream.read(&bytes[0], bytes.size());
+  string microdump_content(&bytes[0], bytes.size());
+
   scoped_ptr<SimpleSymbolSupplier> symbol_supplier;
   if (!symbol_paths.empty()) {
-    // TODO(mmentovai): check existence of symbol_path if specified?
     symbol_supplier.reset(new SimpleSymbolSupplier(symbol_paths));
   }
 
   BasicSourceLineResolver resolver;
-  MinidumpProcessor minidump_processor(symbol_supplier.get(), &resolver);
-
-  // Process the minidump.
+  StackFrameSymbolizer frame_symbolizer(symbol_supplier.get(), &resolver);
   ProcessState process_state;
-  if (minidump_processor.Process(minidump_file, &process_state) !=
-      google_breakpad::PROCESS_OK) {
-    BPLOG(ERROR) << "MinidumpProcessor::Process failed";
-    return false;
+  MicrodumpProcessor microdump_processor(&frame_symbolizer);
+  ProcessResult res = microdump_processor.Process(microdump_content,
+                                                  &process_state);
+
+  if (res == google_breakpad::PROCESS_OK) {
+    if (machine_readable) {
+      PrintProcessStateMachineReadable(process_state);
+    } else {
+      PrintProcessState(process_state);
+    }
+    return 0;
   }
 
-  if (machine_readable) {
-    PrintProcessStateMachineReadable(process_state);
-  } else {
-    PrintProcessState(process_state);
-  }
-
-  return true;
+  BPLOG(ERROR) << "MicrodumpProcessor::Process failed (code = " << res << ")";
+  return 1;
 }
 
 void usage(const char *program_name) {
-  fprintf(stderr, "usage: %s [-m] <minidump-file> [symbol-path ...]\n"
+  fprintf(stderr, "usage: %s [-m] <microdump-file> [symbol-path ...]\n"
           "    -m : Output in machine-readable format\n",
           program_name);
 }
 
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   BPLOG_INIT(&argc, &argv);
 
   if (argc < 2) {
@@ -111,7 +119,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  const char *minidump_file;
+  const char* microdump_file;
   bool machine_readable;
   int symbol_path_arg;
 
@@ -122,11 +130,11 @@ int main(int argc, char **argv) {
     }
 
     machine_readable = true;
-    minidump_file = argv[2];
+    microdump_file = argv[2];
     symbol_path_arg = 3;
   } else {
     machine_readable = false;
-    minidump_file = argv[1];
+    microdump_file = argv[1];
     symbol_path_arg = 2;
   }
 
@@ -137,7 +145,7 @@ int main(int argc, char **argv) {
       symbol_paths.push_back(argv[argi]);
   }
 
-  return PrintMinidumpProcess(minidump_file,
-                              symbol_paths,
-                              machine_readable) ? 0 : 1;
+  return PrintMicrodumpProcess(microdump_file,
+                               symbol_paths,
+                               machine_readable);
 }

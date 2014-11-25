@@ -145,6 +145,7 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
 
 @DISABLE_PROCESSOR_FALSE@am__append_11 = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk
 
@@ -516,7 +517,7 @@ am__src_third_party_libdisasm_libdisasm_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_operand_list.$(OBJEXT)
 src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 	$(am_src_third_party_libdisasm_libdisasm_a_OBJECTS)
-@DISABLE_PROCESSOR_FALSE@am__EXEEXT_1 =  \
+@DISABLE_PROCESSOR_FALSE@am__EXEEXT_1 = src/processor/microdump_stackwalk$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk$(EXEEXT)
 @LINUX_HOST_TRUE@am__EXEEXT_2 = src/client/linux/linux_dumper_unittest_helper$(EXEEXT)
@@ -852,10 +853,10 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -923,10 +924,10 @@ src_processor_microdump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -935,6 +936,42 @@ src_processor_microdump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
+am__src_processor_microdump_stackwalk_SOURCES_DIST =  \
+	src/processor/microdump_stackwalk.cc
+@DISABLE_PROCESSOR_FALSE@am_src_processor_microdump_stackwalk_OBJECTS = src/processor/microdump_stackwalk.$(OBJEXT)
+src_processor_microdump_stackwalk_OBJECTS =  \
+	$(am_src_processor_microdump_stackwalk_OBJECTS)
+@DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalk_common.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_minidump_dump_SOURCES_DIST =  \
 	src/processor/minidump_dump.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_minidump_dump_OBJECTS = src/processor/minidump_dump.$(OBJEXT)
@@ -976,10 +1013,10 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -1015,11 +1052,12 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalk_common.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -1185,10 +1223,10 @@ src_processor_stackwalker_selftest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -1440,6 +1478,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 	$(src_processor_fast_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_map_serializers_unittest_SOURCES) \
 	$(src_processor_microdump_processor_unittest_SOURCES) \
+	$(src_processor_microdump_stackwalk_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
 	$(src_processor_minidump_stackwalk_SOURCES) \
@@ -1484,6 +1523,7 @@ DIST_SOURCES =  \
 	$(am__src_processor_fast_source_line_resolver_unittest_SOURCES_DIST) \
 	$(am__src_processor_map_serializers_unittest_SOURCES_DIST) \
 	$(am__src_processor_microdump_processor_unittest_SOURCES_DIST) \
+	$(am__src_processor_microdump_stackwalk_SOURCES_DIST) \
 	$(am__src_processor_minidump_dump_SOURCES_DIST) \
 	$(am__src_processor_minidump_processor_unittest_SOURCES_DIST) \
 	$(am__src_processor_minidump_stackwalk_SOURCES_DIST) \
@@ -2053,6 +2093,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_operand_list.h
 
 @DISABLE_PROCESSOR_FALSE@check_SCRIPTS = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk_test \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk_machine_readable_test \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump_test \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk_test \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk_machine_readable_test
@@ -2370,10 +2412,10 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -2470,10 +2512,10 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -2514,10 +2556,10 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -2660,10 +2702,10 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -2826,6 +2868,41 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
+@DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk.cc
+
+@DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/microdump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalk_common.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
+
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk.cc
 
@@ -2850,11 +2927,12 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_cpu.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stack_frame_symbolizer.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalk_common.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm64.o \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_address_list.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
@@ -3849,6 +3927,13 @@ src/testing/src/src_processor_microdump_processor_unittest-gmock-all.$(OBJEXT): 
 src/processor/microdump_processor_unittest$(EXEEXT): $(src_processor_microdump_processor_unittest_OBJECTS) $(src_processor_microdump_processor_unittest_DEPENDENCIES) $(EXTRA_src_processor_microdump_processor_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/microdump_processor_unittest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_microdump_processor_unittest_OBJECTS) $(src_processor_microdump_processor_unittest_LDADD) $(LIBS)
+src/processor/microdump_stackwalk.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+
+src/processor/microdump_stackwalk$(EXEEXT): $(src_processor_microdump_stackwalk_OBJECTS) $(src_processor_microdump_stackwalk_DEPENDENCIES) $(EXTRA_src_processor_microdump_stackwalk_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/microdump_stackwalk$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_microdump_stackwalk_OBJECTS) $(src_processor_microdump_stackwalk_LDADD) $(LIBS)
 src/processor/minidump_dump.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 
@@ -4384,6 +4469,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/microdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/microdump_processor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/microdump_stackwalk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor.Po@am__quote@
@@ -7535,6 +7621,20 @@ src/tools/linux/md2core/minidump_2_core_unittest.log: src/tools/linux/md2core/mi
 src/processor/stackwalker_selftest.log: src/processor/stackwalker_selftest$(EXEEXT)
 	@p='src/processor/stackwalker_selftest$(EXEEXT)'; \
 	b='src/processor/stackwalker_selftest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/processor/microdump_stackwalk_test.log: src/processor/microdump_stackwalk_test
+	@p='src/processor/microdump_stackwalk_test'; \
+	b='src/processor/microdump_stackwalk_test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/processor/microdump_stackwalk_machine_readable_test.log: src/processor/microdump_stackwalk_machine_readable_test
+	@p='src/processor/microdump_stackwalk_machine_readable_test'; \
+	b='src/processor/microdump_stackwalk_machine_readable_test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

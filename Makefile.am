@@ -301,6 +301,7 @@ src_third_party_libdisasm_libdisasm_a_SOURCES = \
 
 ## Programs
 bin_PROGRAMS += \
+	src/processor/microdump_stackwalk \
 	src/processor/minidump_dump \
 	src/processor/minidump_stackwalk
 endif !DISABLE_PROCESSOR
@@ -375,6 +376,8 @@ endif !DISABLE_PROCESSOR
 
 if !DISABLE_PROCESSOR
 check_SCRIPTS = \
+	src/processor/microdump_stackwalk_test \
+	src/processor/microdump_stackwalk_machine_readable_test \
 	src/processor/minidump_dump_test \
 	src/processor/minidump_stackwalk_test \
 	src/processor/minidump_stackwalk_machine_readable_test
@@ -710,10 +713,10 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
 	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_arm64.o \
-	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_mips.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
@@ -802,10 +805,10 @@ src_processor_microdump_processor_unittest_LDADD = \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_symbolizer.o \
 	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_arm64.o \
-	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_mips.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
@@ -844,10 +847,10 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
 	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_arm64.o \
-	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_mips.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
@@ -976,10 +979,10 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
 	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_arm64.o \
-	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_mips.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
@@ -1130,6 +1133,40 @@ src_processor_minidump_dump_LDADD = \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o
 
+src_processor_microdump_stackwalk_SOURCES = \
+	src/processor/microdump_stackwalk.cc
+src_processor_microdump_stackwalk_LDADD = \
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/binarystream.o \
+	src/processor/call_stack.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/disassembler_x86.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
+	src/processor/logging.o \
+	src/processor/microdump.o \
+	src/processor/microdump_processor.o \
+	src/processor/pathname_stripper.o \
+	src/processor/process_state.o \
+	src/processor/simple_symbol_supplier.o \
+	src/processor/source_line_resolver_base.o \
+	src/processor/stack_frame_cpu.o \
+	src/processor/stack_frame_symbolizer.o \
+	src/processor/stackwalk_common.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_arm64.o \
+	src/processor/stackwalker_mips.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_ppc64.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o \
+	src/third_party/libdisasm/libdisasm.a
+
 src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 src_processor_minidump_stackwalk_LDADD = \
@@ -1153,11 +1190,12 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stack_frame_cpu.o \
 	src/processor/stack_frame_symbolizer.o \
+	src/processor/stackwalk_common.o \
 	src/processor/stackwalker.o \
+	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
 	src/processor/stackwalker_arm64.o \
-	src/processor/stackwalker_address_list.o \
 	src/processor/stackwalker_mips.o \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_ppc64.o \
