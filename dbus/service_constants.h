@@ -841,6 +841,7 @@ const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
 const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
+const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
 const char kServiceCompleteListProperty[] = "ServiceCompleteList";
 const char kShortDNSTimeoutTechnologiesProperty[] =
     "ShortDNSTimeoutTechnologies";
