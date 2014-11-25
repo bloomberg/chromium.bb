@@ -179,8 +179,8 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // adjusting a lot of actions at once.
   bool suppress_layout_;
 
-  // True if we should suppress animation; we typically do this e.g. when
-  // switching tabs changes the state of the icons.
+  // True if we should suppress animation; we do this when first creating the
+  // toolbar, and also when switching tabs changes the state of the icons.
   bool suppress_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBar);

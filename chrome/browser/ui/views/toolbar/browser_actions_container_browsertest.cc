@@ -231,7 +231,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
 class BrowserActionsContainerOverflowTest
     : public BrowserActionsBarBrowserTest {
  public:
-  BrowserActionsContainerOverflowTest() : main_bar_(NULL), model_(NULL) {
+  BrowserActionsContainerOverflowTest() : main_bar_(nullptr),
+                                          overflow_bar_(nullptr),
+                                          model_(nullptr) {
   }
   ~BrowserActionsContainerOverflowTest() override {}
 
@@ -244,11 +246,12 @@ class BrowserActionsContainerOverflowTest
   // that the number of visible browser actions in |main_bar_| is
   // |expected_visible| and shows the first icons, and that the overflow bar
   // shows all (and only) the remainder.
-  testing::AssertionResult VerifyVisibleCount(size_t expected_visible);
+  testing::AssertionResult VerifyVisibleCount(size_t expected_visible)
+      WARN_UNUSED_RESULT;
 
   // Accessors.
   BrowserActionsContainer* main_bar() { return main_bar_; }
-  BrowserActionsContainer* overflow_bar() { return overflow_bar_.get(); }
+  BrowserActionsContainer* overflow_bar() { return overflow_bar_; }
   extensions::ExtensionToolbarModel* model() { return model_; }
 
  private:
@@ -259,9 +262,13 @@ class BrowserActionsContainerOverflowTest
   // The main BrowserActionsContainer (owned by the browser view).
   BrowserActionsContainer* main_bar_;
 
+  // A parent view for the overflow menu.
+  scoped_ptr<views::View> overflow_parent_;
+
   // The overflow BrowserActionsContainer. We manufacture this so that we don't
   // have to open the wrench menu.
-  scoped_ptr<BrowserActionsContainer> overflow_bar_;
+  // Owned by the |overflow_parent_|.
+  BrowserActionsContainer* overflow_bar_;
 
   // The associated toolbar model.
   extensions::ExtensionToolbarModel* model_;
@@ -284,13 +291,15 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   BrowserActionsBarBrowserTest::SetUpOnMainThread();
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
-  overflow_bar_.reset(new BrowserActionsContainer(browser(), main_bar_));
-  overflow_bar_->set_owned_by_client();
+  overflow_parent_.reset(new views::View());
+  overflow_parent_->set_owned_by_client();
+  overflow_bar_ = new BrowserActionsContainer(browser(), main_bar_);
+  overflow_parent_->AddChildView(overflow_bar_);
   model_ = extensions::ExtensionToolbarModel::Get(profile());
 }
 
 void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {
-  overflow_bar_.reset();
+  overflow_parent_.reset();
   enable_redesign_.reset();
   BrowserActionsBarBrowserTest::TearDownOnMainThread();
 }
@@ -414,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
-  VerifyVisibleCount(1u);
+  EXPECT_TRUE(VerifyVisibleCount(1u));
 
   // Drag extension A back from overflow to the main bar.
   ui::OSExchangeData drop_data2;
@@ -432,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
-  VerifyVisibleCount(2u);
+  EXPECT_TRUE(VerifyVisibleCount(2u));
 
   // Drag extension C from overflow to the main bar (before extension B).
   ui::OSExchangeData drop_data3;
@@ -449,5 +458,5 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
-  VerifyVisibleCount(3u);
+  EXPECT_TRUE(VerifyVisibleCount(3u));
 }

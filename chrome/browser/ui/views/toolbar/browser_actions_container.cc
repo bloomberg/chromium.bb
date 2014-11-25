@@ -79,6 +79,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       resize_area_(NULL),
       chevron_(NULL),
       suppress_chevron_(false),
+      added_to_view_(false),
       resize_amount_(0),
       animation_target_size_(0) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
@@ -251,6 +252,12 @@ void BrowserActionsContainer::RemoveAllViews() {
 }
 
 void BrowserActionsContainer::Redraw(bool order_changed) {
+  if (!added_to_view_) {
+    // We don't want to redraw before the view has been fully added to the
+    // hierarchy.
+    return;
+  }
+
   std::vector<ToolbarActionViewController*> actions =
       toolbar_actions_bar_->toolbar_actions();
   if (order_changed) {
@@ -733,6 +740,8 @@ void BrowserActionsContainer::ViewHierarchyChanged(
     // calls Layout on the Toolbar, which needs this object to be constructed
     // before its Layout function is called.
     toolbar_actions_bar_->CreateActions();
+
+    added_to_view_ = true;
   }
 }
 

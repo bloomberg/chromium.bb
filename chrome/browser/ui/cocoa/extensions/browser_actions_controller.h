@@ -14,7 +14,6 @@ class Browser;
 @class BrowserActionButton;
 @class BrowserActionsContainerView;
 @class MenuButton;
-class Profile;
 class ToolbarActionsBar;
 class ToolbarActionsBarDelegate;
 
@@ -34,9 +33,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
   // The view from Toolbar.xib we'll be rendering our browser actions in. Weak.
   BrowserActionsContainerView* containerView_;
-
-  // The current profile. Weak.
-  Profile* profile_;
 
   // Array of toolbar action buttons in the correct order for them to be
   // displayed (includes both hidden and visible buttons).
@@ -79,10 +75,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Returns the current number of browser action buttons displayed in the
 // container.
 - (NSUInteger)visibleButtonCount;
-
-// Resizes the container given the number of visible buttons, taking into
-// account the size of the grippy. Also updates the persistent width preference.
-- (void)resizeContainerAndAnimate:(BOOL)animate;
 
 // Returns the saved width determined by the number of shown Browser Actions
 // preference property. If no preference is found, then the width for the

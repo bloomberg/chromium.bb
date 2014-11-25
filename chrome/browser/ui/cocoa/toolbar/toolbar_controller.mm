@@ -92,7 +92,6 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
 - (void)browserActionsContainerWillDrag:(NSNotification*)notification;
 - (void)browserActionsContainerDragged:(NSNotification*)notification;
-- (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
@@ -603,11 +602,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
              object:browserActionsContainerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(browserActionsContainerDragFinished:)
-               name:kBrowserActionGrippyDragFinishedNotification
-             object:browserActionsController_];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
            selector:@selector(browserActionsVisibilityChanged:)
                name:kBrowserActionVisibilityChangedNotification
              object:browserActionsController_];
@@ -644,10 +638,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   [browserActionsContainerView_ setGrippyPinned:locationBarAtMinSize_];
   [self adjustLocationSizeBy:
       [browserActionsContainerView_ resizeDeltaX] animate:NO];
-}
-
-- (void)browserActionsContainerDragFinished:(NSNotification*)notification {
-  [browserActionsController_ resizeContainerAndAnimate:YES];
 }
 
 - (void)browserActionsContainerWillDrag:(NSNotification*)notification {

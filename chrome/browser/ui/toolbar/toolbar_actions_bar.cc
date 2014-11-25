@@ -79,7 +79,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       platform_settings_(in_overflow_mode),
       model_observer_(this),
       suppress_layout_(false),
-      suppress_animation_(!model_ || !model_->extensions_initialized()) {
+      suppress_animation_(true) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 }
@@ -241,6 +241,14 @@ void ToolbarActionsBar::CreateActions() {
     for (size_t i = 0; i < toolbar_actions_.size(); ++i)
       delegate_->AddViewForAction(toolbar_actions_[i], i);
   }
+
+  if (!toolbar_actions_.empty()) {
+    delegate_->Redraw(false);
+    ResizeDelegate(gfx::Tween::EASE_OUT, false);
+  }
+
+  // Once the actions are created, we should animate the changes.
+  suppress_animation_ = false;
 }
 
 void ToolbarActionsBar::DeleteActions() {
@@ -434,12 +442,7 @@ void ToolbarActionsBar::ToolbarHighlightModeChanged(bool is_highlighting) {
 void ToolbarActionsBar::OnToolbarModelInitialized() {
   // We shouldn't have any actions before the model is initialized.
   DCHECK(toolbar_actions_.empty());
-  suppress_animation_ = false;
   CreateActions();
-  if (!toolbar_actions_.empty()) {
-    delegate_->Redraw(false);
-    ResizeDelegate(gfx::Tween::EASE_OUT, false);
-  }
 }
 
 void ToolbarActionsBar::OnToolbarReorderNecessary(
