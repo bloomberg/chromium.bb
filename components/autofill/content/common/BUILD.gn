@@ -19,5 +19,6 @@ static_library("common") {
     "//third_party/WebKit/public:blink_minimal",
     "//ui/gfx",
     "//ui/gfx/ipc",
+    "//url",
   ]
 }

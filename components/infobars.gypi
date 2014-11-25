@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/strings/ui_strings.gyp:ui_strings',
       ],

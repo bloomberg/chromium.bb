@@ -2,13 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("test_support") {
+source_set("test_support") {
+  testonly = true
+
   sources = [
     "infobar_test.cc",
   ]
 
   deps = [
     "//base",
+    "//components/infobars/core",
     "//skia",
   ]
 }

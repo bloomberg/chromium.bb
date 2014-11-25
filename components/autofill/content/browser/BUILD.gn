@@ -56,7 +56,9 @@ static_library("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//google_apis",
+    "//gpu/config",
     "//ipc",
+    "//net",
     "//sql",
     "//third_party/icu",
     "//third_party/libphonenumber",
@@ -85,6 +87,8 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":browser",
+    "//base",
     "//testing/gmock",
   ]
 }
@@ -106,6 +110,18 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    "//base",
+    "//components/autofill/content/common",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
+    "//components/autofill/core/common",
+    "//content/public/browser",
+    "//content/public/common",
+    "//content/test:test_support",
+    "//google_apis",
+    "//ipc:test_support",
+    "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

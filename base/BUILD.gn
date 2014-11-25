@@ -1087,9 +1087,11 @@ source_set("prefs_test_support") {
     "prefs/testing_pref_store.h",
   ]
 
+  public_deps = [
+    ":prefs",
+  ]
   deps = [
     ":base",
-    ":prefs",
     "//testing/gmock",
     "//testing/gtest",
   ]

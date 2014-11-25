@@ -42,7 +42,10 @@ static_library("omnibox") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
+    "//components/history/core/browser",
     "//components/resources",
+    "//components/search",
     "//components/search_engines",
     "//components/strings",
     "//components/url_fixer",

@@ -24,6 +24,7 @@ static_library("core") {
   ]
   deps = [
     "//base",
+    "//ui/base",
     "//ui/gfx",
     "//ui/strings",
   ]

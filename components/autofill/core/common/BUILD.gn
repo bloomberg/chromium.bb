@@ -34,6 +34,7 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//ui/base",
     "//ui/gfx",
     "//url",
@@ -55,7 +56,10 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    "//base",
+    "//base:i18n",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }

@@ -20,6 +20,7 @@
         'component_metrics_proto',
         'components_strings.gyp:components_strings',
         'google_core_browser',
+        'history_core_browser',
         'keyed_service_core',
         'policy',
         'pref_registry',

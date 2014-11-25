@@ -15,6 +15,7 @@
         # List of dependencies is intentionally very minimal. Please avoid
         # adding extra dependencies without first checking with OWNERS.
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
       ],
       'sources': [
@@ -62,7 +63,7 @@
       ],
     },
     {
-      # GN version: //components/variations/net/variations_http_provider
+      # GN version: //components/variations/net:net
       'target_name': 'variations_http_provider',
       'type': 'static_library',
       'include_dirs': [
@@ -70,6 +71,8 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'components.gyp:google_core_browser',
         "components.gyp:metrics",
         'variations',

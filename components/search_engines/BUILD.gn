@@ -45,6 +45,7 @@ static_library("search_engines") {
     ":prepopulated_engines",
     "//base",
     "//components/google/core/browser",
+    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/metrics/proto",
     "//components/pref_registry",

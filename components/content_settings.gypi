@@ -10,7 +10,11 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
+        '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'content_settings_core_common',
+        'pref_registry',
       ],
       'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [

@@ -41,6 +41,7 @@ source_set("variations") {
   deps = [
     "proto",
     "//base",
+    "//base:prefs",
     "//third_party/mt19937ar",
   ]
 
@@ -77,6 +78,7 @@ source_set("unit_tests") {
     ":variations",
     "net",
     "proto",
+    "//base:prefs_test_support",
     "//base/test:test_support",
     "//testing/gtest",
   ]

@@ -33,7 +33,9 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }

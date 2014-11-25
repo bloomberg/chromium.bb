@@ -8,12 +8,15 @@ source_set("net") {
     "variations_http_header_provider.h",
   ]
 
-  public_deps = [ "//components/variations" ]
+  public_deps = [
+    "//components/variations",
+    "//net",
+    "//url",
+  ]
   deps = [
     "//base",
     "//components/google/core/browser",
     "//components/metrics",
     "//components/variations/proto",
-    "//net",
   ]
 }

@@ -30,9 +30,12 @@ static_library("renderer") {
     "//components/strings",
     "//content/public/common",
     "//content/public/renderer",
+    "//google_apis",
     "//ipc",
+    "//net",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//ui/base",
   ]
 
   if (is_win) {

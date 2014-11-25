@@ -32,7 +32,11 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//base:prefs",
     "//components/content_settings/core/common",
+    "//components/pref_registry:pref_registry",
+    "//net",
+    "//url",
   ]
 }
 
@@ -48,8 +52,11 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    "//base",
+    "//components/content_settings/core/common",
     "//components/content_settings/core/test:test_support",
     "//testing/gtest",
+    "//url",
   ]
 }
 

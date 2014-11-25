@@ -143,6 +143,7 @@ static_library("browser") {
     "//components/strings",
     "//components/webdata/common",
     "//google_apis",
+    "//net",
     "//skia",
     "//sql",
     "//third_party/fips181",
@@ -192,8 +193,14 @@ static_library("test_support") {
 
   deps = [
     ":browser",
+    "//base",
+    "//base:prefs",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/os_crypt",
+    "//components/pref_registry",
     "//skia",
     "//testing/gtest",
   ]
@@ -238,10 +245,23 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    "//base",
+    "//base:prefs",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//components/os_crypt",
     "//components/resources",
     "//components/strings",
+    "//components/webdata/common",
+    "//net:test_support",
+    "//sql",
+    "//sync",
+    "//sync:test_support_sync_api",
     "//testing/gmock",
+    "//testing/gtest",
     "//third_party/libphonenumber",
-    "//third_party/libjingle"
+    "//third_party/libjingle",
+    "//ui/base",
+    "//url",
   ]
 }
