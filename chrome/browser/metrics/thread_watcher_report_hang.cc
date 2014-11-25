@@ -19,6 +19,8 @@ namespace metrics {
 // is unresponsive. This makes it possible to tell from the callstack alone what
 // thread was unresponsive.
 NOINLINE void ReportThreadHang() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
 #if defined(NDEBUG)
   base::debug::DumpWithoutCrashing();
 #else
@@ -29,39 +31,57 @@ NOINLINE void ReportThreadHang() {
 #if !defined(OS_ANDROID) || !defined(NDEBUG)
 // TODO(rtenneti): Enabled crashing, after getting data.
 NOINLINE void StartupHang() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 #endif  // OS_ANDROID
 
 NOINLINE void ShutdownHang() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_UI() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_DB() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_FILE() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_CACHE() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_IO() {
+  volatile const char* inhibit_comdat = __FUNCTION__;
+  ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
 }
 
