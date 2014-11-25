@@ -92,6 +92,9 @@ bool GpuSurfacelessBrowserCompositorOutputSurface::BindToClient(
   } else {
     helper = ImageTransportFactory::GetInstance()->GetGLHelper();
   }
+  if (!helper)
+    return false;
+
   output_surface_.reset(
       new BufferQueue(context_provider_, internalformat_, helper));
   return output_surface_->Initialize();

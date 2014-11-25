@@ -31,7 +31,7 @@ class GLContextLostListener
 
 namespace {
 
-static ImageTransportFactoryAndroid* g_factory = NULL;
+static ImageTransportFactoryAndroid* g_factory = nullptr;
 
 class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
  public:
@@ -41,6 +41,7 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual GLHelper* GetGLHelper() override;
 
  private:
+  bool CreateContext();
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
   scoped_ptr<GLHelper> gl_helper_;
 
@@ -48,11 +49,19 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
 };
 
 CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
+}
+
+bool CmdBufferImageTransportFactory::CreateContext() {
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  DCHECK(gpu_channel_host.get());
+  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+  // GLHelper can only be used in asynchronous APIs for postprocessing after
+  // Browser Compositor operations (i.e. readback).
+  DCHECK(gpu_channel_host.get()) << "Illegal access to GPU channel at startup";
+  if (gpu_channel_host->IsLost()) {
+    // The Browser Compositor is in charge of reestablishing the channel.
+    return false;
+  }
 
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
@@ -78,19 +87,23 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
                                                 attrs,
                                                 lose_context_when_out_of_memory,
                                                 limits,
-                                                NULL));
+                                                nullptr));
   context_->setContextLostCallback(context_lost_listener_.get());
   if (context_->InitializeOnCurrentThread())
     context_->pushGroupMarkerEXT(
         base::StringPrintf("CmdBufferImageTransportFactory-%p",
                            context_.get()).c_str());
+  return true;
 }
 
 CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
-  context_->setContextLostCallback(NULL);
+  context_->setContextLostCallback(nullptr);
 }
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
+  if (!context_ && !CreateContext())
+    return nullptr;
+
   if (!gl_helper_)
     gl_helper_.reset(new GLHelper(context_->GetImplementation(),
                                   context_->GetContextSupport()));
@@ -116,7 +129,7 @@ void ImageTransportFactoryAndroid::InitializeForUnitTests(
 void ImageTransportFactoryAndroid::TerminateForUnitTests() {
   DCHECK(g_factory);
   delete g_factory;
-  g_factory = NULL;
+  g_factory = nullptr;
 }
 
 // static
@@ -153,7 +166,7 @@ void GLContextLostListener::onContextLost() {
 
 void GLContextLostListener::DidLoseContext() {
   delete g_factory;
-  g_factory = NULL;
+  g_factory = nullptr;
   FOR_EACH_OBSERVER(ImageTransportFactoryAndroidObserver,
       g_factory_observers.Get(),
       OnLostResources());

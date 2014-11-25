@@ -310,6 +310,10 @@ CreateCommandBufferResult BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
   return request.result;
 }
 
+// Blocking the UI thread to open a GPU channel is not supported on Android.
+// (Opening the initial channel to a child process involves handling a reply
+// task on the UI thread first, so we cannot block here.)
+#if !defined(OS_ANDROID)
 GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   EstablishGpuChannel(cause_for_gpu_launch, base::Closure());
@@ -319,6 +323,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
 
   return gpu_channel_.get();
 }
+#endif
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     CauseForGpuLaunch cause_for_gpu_launch,

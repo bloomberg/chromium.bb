@@ -58,8 +58,10 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       const base::Callback<void(const IPC::Message&)>& handler,
       base::TaskRunner* target_task_runner);
   int GpuProcessHostId() { return gpu_host_id_; }
+#if !defined(OS_ANDROID)
   GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch);
+#endif
   void EstablishGpuChannel(CauseForGpuLaunch cause_for_gpu_launch,
                            const base::Closure& callback);
   GpuChannelHost* GetGpuChannel();

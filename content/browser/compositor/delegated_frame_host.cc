@@ -586,7 +586,8 @@ static void CopyFromCompositingSurfaceFinished(
   uint32 sync_point = 0;
   if (result) {
     GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-    sync_point = gl_helper->InsertSyncPoint();
+    if (gl_helper)
+      sync_point = gl_helper->InsertSyncPoint();
   }
   bool lost_resource = sync_point == 0;
   release_callback->Run(sync_point, lost_resource);

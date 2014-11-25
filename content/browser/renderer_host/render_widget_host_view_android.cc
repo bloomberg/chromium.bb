@@ -110,7 +110,8 @@ void CopyFromCompositingSurfaceFinished(
   if (result) {
     GLHelper* gl_helper =
         ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
-    sync_point = gl_helper->InsertSyncPoint();
+    if (gl_helper)
+      sync_point = gl_helper->InsertSyncPoint();
   }
   bool lost_resource = sync_point == 0;
   release_callback->Run(sync_point, lost_resource);
@@ -778,9 +779,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
-  if ((!host_ || host_->is_hidden()) ||
-      !IsReadbackConfigSupported(color_type)) {
-    callback.Run(SkBitmap(), READBACK_FORMAT_NOT_SUPPORTED);
+  if (!host_ || host_->is_hidden()) {
+    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -1664,8 +1664,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
-
-  if (!gl_helper)
+  if (!gl_helper || !gl_helper->IsReadbackConfigSupported(color_type))
     return;
 
   scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
@@ -1698,22 +1697,17 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       GLHelper::SCALER_QUALITY_GOOD);
 }
 
-bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(
-    SkColorType color_type) {
-  ImageTransportFactoryAndroid* factory =
-      ImageTransportFactoryAndroid::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return false;
-  return gl_helper->IsReadbackConfigSupported(color_type);
-}
-
 SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
   // Define the criteria here. If say the 16 texture readback is
   // supported we should go with that (this degrades quality)
   // or stick back to the default format.
   if (base::SysInfo::IsLowEndDevice()) {
-    if (IsReadbackConfigSupported(kRGB_565_SkColorType))
+    ImageTransportFactoryAndroid* factory =
+        ImageTransportFactoryAndroid::GetInstance();
+    // TODO(sievers): This needs to work differently, because we might
+    // not have a GPU channel to query for readback configs here.
+    GLHelper* gl_helper = factory->GetGLHelper();
+    if (gl_helper && gl_helper->IsReadbackConfigSupported(kRGB_565_SkColorType))
       return kRGB_565_SkColorType;
   }
   return kN32_SkColorType;

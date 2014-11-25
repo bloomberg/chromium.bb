@@ -36,8 +36,12 @@ class ContextTestBase : public content::ContentBrowserTest {
         content::BrowserGpuChannelHostFactory::instance();
     CHECK(factory);
     bool lose_context_when_out_of_memory = false;
-    scoped_refptr<content::GpuChannelHost> gpu_channel_host(
-        factory->EstablishGpuChannelSync(kInitCause));
+    base::RunLoop run_loop;
+    factory->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
+    run_loop.Run();
+    scoped_refptr<content::GpuChannelHost>
+        gpu_channel_host(factory->GetGpuChannel());
+    DCHECK(gpu_channel_host.get());
     context_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
@@ -148,6 +152,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   run_loop.Run();
 }
 
+#if !defined(OS_ANDROID)
 // Fails since UI Compositor establishes a GpuChannel.
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        DISABLED_AlreadyEstablished) {
@@ -163,6 +168,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EXPECT_TRUE(event);
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }
+#endif
 
 // Fails since UI Compositor establishes a GpuChannel.
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,

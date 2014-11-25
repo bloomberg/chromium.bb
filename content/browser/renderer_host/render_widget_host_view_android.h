@@ -312,8 +312,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                ReadbackRequestCallback& callback,
                                const SkColorType color_type);
 
-  bool IsReadbackConfigSupported(SkColorType color_type);
-
   // If we have locks on a frame during a ContentViewCore swap or a context
   // lost, the frame is no longer valid and we can safely release all the locks.
   // Use this method to release all the locks.

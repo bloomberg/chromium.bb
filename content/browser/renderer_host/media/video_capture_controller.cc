@@ -80,12 +80,13 @@ void ReturnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
 #else
   GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
 #endif
-  DCHECK(gl_helper);
   // UpdateReleaseSyncPoint() creates a new sync_point using |gl_helper|, so
   // wait the given |sync_point| using |gl_helper|.
-  gl_helper->WaitSyncPoint(sync_point);
-  SyncPointClientImpl client(gl_helper);
-  video_frame->UpdateReleaseSyncPoint(&client);
+  if (gl_helper) {
+    gl_helper->WaitSyncPoint(sync_point);
+    SyncPointClientImpl client(gl_helper);
+    video_frame->UpdateReleaseSyncPoint(&client);
+  }
 }
 
 }  // anonymous namespace
