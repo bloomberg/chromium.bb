@@ -18,9 +18,8 @@ namespace cc {
 // completely damaged the first time they're drawn from.
 static const int kFrameIndexStart = 2;
 
-Surface::Surface(SurfaceId id, const gfx::Size& size, SurfaceFactory* factory)
+Surface::Surface(SurfaceId id, SurfaceFactory* factory)
     : surface_id_(id),
-      size_(size),
       factory_(factory->AsWeakPtr()),
       frame_index_(kFrameIndexStart) {
 }

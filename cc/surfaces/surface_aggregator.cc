@@ -153,13 +153,14 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
 }
 
 gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
-                                                  const RenderPass& source) {
+                                                  const RenderPass& source,
+                                                  const gfx::Rect& full_rect) {
   int previous_index = previous_contained_surfaces_[surface->surface_id()];
   if (previous_index == surface->frame_index())
     return gfx::Rect();
   else if (previous_index == surface->frame_index() - 1)
     return source.damage_rect;
-  return gfx::Rect(surface->size());
+  return full_rect;
 }
 
 void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
@@ -267,7 +268,8 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
       gfx::UnionRects(dest_pass->damage_rect,
                       MathUtil::MapEnclosingClippedRect(
                           surface_quad->quadTransform(),
-                          DamageRectForSurface(surface, last_pass)));
+                          DamageRectForSurface(surface, last_pass,
+                                               surface_quad->visible_rect)));
 
   referenced_surfaces_.erase(it);
 }
@@ -364,9 +366,8 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
     RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());
 
-    copy_pass->SetAll(remapped_pass_id,
-                      source.output_rect,
-                      DamageRectForSurface(surface, source),
+    copy_pass->SetAll(remapped_pass_id, source.output_rect,
+                      DamageRectForSurface(surface, source, source.output_rect),
                       source.transform_to_root_target,
                       source.has_transparent_background);
 

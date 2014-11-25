@@ -63,7 +63,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                      RenderPassList* render_pass_list);
   int ChildIdForSurface(Surface* surface);
   gfx::Rect DamageRectForSurface(const Surface* surface,
-                                 const RenderPass& source);
+                                 const RenderPass& source,
+                                 const gfx::Rect& full_rect);
 
   SurfaceManager* manager_;
   ResourceProvider* provider_;

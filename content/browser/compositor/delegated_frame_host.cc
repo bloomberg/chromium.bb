@@ -402,7 +402,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         if (!surface_id_.is_null())
           surface_factory_->Destroy(surface_id_);
         surface_id_ = id_allocator_->GenerateId();
-        surface_factory_->Create(surface_id_, frame_size);
+        surface_factory_->Create(surface_id_);
         // manager must outlive compositors using it.
         client_->GetLayer()->SetShowSurface(
             surface_id_,

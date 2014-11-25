@@ -38,7 +38,7 @@ class CC_SURFACES_EXPORT SurfaceFactory
   SurfaceFactory(SurfaceManager* manager, SurfaceFactoryClient* client);
   ~SurfaceFactory();
 
-  void Create(SurfaceId surface_id, const gfx::Size& size);
+  void Create(SurfaceId surface_id);
   void Destroy(SurfaceId surface_id);
   void DestroyAll();
   // A frame can only be submitted to a surface created by this factory,

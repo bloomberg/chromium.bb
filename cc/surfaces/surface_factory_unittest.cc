@@ -39,7 +39,7 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
 class SurfaceFactoryTest : public testing::Test {
  public:
   SurfaceFactoryTest() : factory_(&manager_, &client_), surface_id_(3) {
-    factory_.Create(surface_id_, gfx::Size(5, 5));
+    factory_.Create(surface_id_);
   }
 
   virtual ~SurfaceFactoryTest() {
@@ -361,7 +361,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
 // Tests doing a DestroyAll before shutting down the factory;
 TEST_F(SurfaceFactoryTest, DestroyAll) {
   SurfaceId id(7);
-  factory_.Create(id, gfx::Size(1, 1));
+  factory_.Create(id);
 
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   TransferableResource resource;
@@ -378,7 +378,7 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
   SurfaceId id2(5);
-  factory_.Create(id2, gfx::Size(5, 5));
+  factory_.Create(id2);
 
   // Check that waiting before the sequence is satisfied works.
   manager_.GetSurfaceForId(id2)
@@ -395,7 +395,7 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
-  factory_.Create(id2, gfx::Size(5, 5));
+  factory_.Create(id2);
   DCHECK(manager_.GetSurfaceForId(id2));
   manager_.GetSurfaceForId(id2)
       ->AddDestructionDependency(SurfaceSequence(0, 6));

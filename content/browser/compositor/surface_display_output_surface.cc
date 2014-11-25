@@ -48,7 +48,7 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
       factory_.Destroy(surface_id_);
     }
     surface_id_ = allocator_->GenerateId();
-    factory_.Create(surface_id_, frame_size);
+    factory_.Create(surface_id_);
     display_size_ = frame_size;
   }
   display_client_->display()->Resize(

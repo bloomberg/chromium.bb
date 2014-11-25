@@ -85,7 +85,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   root_frame->delegated_frame_data = delegated_frame_data.Pass();
 
   SurfaceId root_surface_id = allocator_.GenerateId();
-  factory_.Create(root_surface_id, device_viewport_size_);
+  factory_.Create(root_surface_id);
   factory_.SubmitFrame(root_surface_id, root_frame.Pass(), base::Closure());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get());
@@ -107,8 +107,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
   SurfaceId child_surface_id = allocator_.GenerateId();
   SurfaceId root_surface_id = allocator_.GenerateId();
-  factory_.Create(child_surface_id, child_size);
-  factory_.Create(root_surface_id, device_viewport_size_);
+  factory_.Create(child_surface_id);
+  factory_.Create(root_surface_id);
   {
     gfx::Rect rect(device_viewport_size_);
     RenderPassId id(1, 1);
@@ -199,9 +199,9 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   SurfaceId left_child_id = allocator_.GenerateId();
   SurfaceId right_child_id = allocator_.GenerateId();
   SurfaceId root_surface_id = allocator_.GenerateId();
-  factory_.Create(left_child_id, child_size);
-  factory_.Create(right_child_id, child_size);
-  factory_.Create(root_surface_id, device_viewport_size_);
+  factory_.Create(left_child_id);
+  factory_.Create(right_child_id);
+  factory_.Create(root_surface_id);
 
   {
     gfx::Rect rect(device_viewport_size_);

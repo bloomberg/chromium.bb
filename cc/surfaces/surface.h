@@ -34,10 +34,9 @@ class SurfaceResourceHolder;
 
 class CC_SURFACES_EXPORT Surface {
  public:
-  Surface(SurfaceId id, const gfx::Size& size, SurfaceFactory* factory);
+  Surface(SurfaceId id, SurfaceFactory* factory);
   ~Surface();
 
-  const gfx::Size& size() const { return size_; }
   SurfaceId surface_id() const { return surface_id_; }
 
   void QueueFrame(scoped_ptr<CompositorFrame> frame,
@@ -74,7 +73,6 @@ class CC_SURFACES_EXPORT Surface {
   void ClearCopyRequests();
 
   SurfaceId surface_id_;
-  gfx::Size size_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
