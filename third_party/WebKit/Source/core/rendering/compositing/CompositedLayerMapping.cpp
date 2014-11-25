@@ -2085,6 +2085,19 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+
+#ifndef NDEBUG
+            context->fillRect(dirtyRect, Color(0xFF, 0, 0));
+#endif
+
+            if (RenderView* view = paintInfo.renderLayer->renderer()->view()) {
+                const PaintList& paintList = view->viewDisplayList().paintList();
+                for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
+                    (*it)->replay(context);
+            }
+        }
+
         if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
             LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "platform/graphics/paint/TransparencyDisplayItem.h"
+#include "core/paint/TransparencyDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
 
@@ -31,7 +31,7 @@ void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
 WTF::String BeginTransparencyDisplayItem::asDebugString() const
 {
     return String::format("{%s, type: \"%s\", clip bounds: [%f,%f,%f,%f], hasBlendMode: %d, blendMode: %d, opacity: %f}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
         m_clipRect.x().toFloat(), m_clipRect.y().toFloat(), m_clipRect.width().toFloat(), m_clipRect.height().toFloat(),
         hasBlendMode(), m_blendMode, m_opacity);
 }
@@ -47,7 +47,7 @@ void EndTransparencyDisplayItem::replay(GraphicsContext* context)
 WTF::String EndTransparencyDisplayItem::asDebugString() const
 {
     return String::format("{%s, type: \"%s\"}",
-        clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data());
 }
 #endif
 

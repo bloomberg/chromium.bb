@@ -11,13 +11,43 @@
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/FilterDisplayItem.h"
 
 namespace blink {
+
+void BeginFilterDisplayItem::replay(GraphicsContext* context)
+{
+    context->save();
+    FloatRect boundaries = mapImageFilterRect(m_imageFilter.get(), m_bounds);
+    context->translate(m_bounds.x().toFloat(), m_bounds.y().toFloat());
+    boundaries.move(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
+    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, m_imageFilter.get());
+    context->translate(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
+}
+
+#ifndef NDEBUG
+WTF::String BeginFilterDisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\", filter bounds: [%f,%f,%f,%f]}",
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
+        m_bounds.x().toFloat(), m_bounds.y().toFloat(), m_bounds.width().toFloat(), m_bounds.height().toFloat());
+}
+#endif
+
+void EndFilterDisplayItem::replay(GraphicsContext* context)
+{
+    context->endLayer();
+    context->restore();
+}
+
+#ifndef NDEBUG
+WTF::String EndFilterDisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\"}",
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data());
+}
+#endif
 
 FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
     LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
@@ -55,12 +85,10 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     }
 
     OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer, DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(filterDisplayItem.release());
-    } else {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        renderLayer.renderer()->view()->viewDisplayList().add(filterDisplayItem.release());
+    else
         filterDisplayItem->replay(context);
-    }
 
     m_filterInProgress = true;
 }
@@ -70,10 +98,9 @@ FilterPainter::~FilterPainter()
     if (!m_filterInProgress)
         return;
 
-    OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = adoptPtr(new EndFilterDisplayItem(m_renderer->displayItemClient()));
+    OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = adoptPtr(new EndFilterDisplayItem(m_renderer));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(endFilterDisplayItem.release());
+        m_renderer->view()->viewDisplayList().add(endFilterDisplayItem.release());
     } else {
         endFilterDisplayItem->replay(m_context);
     }

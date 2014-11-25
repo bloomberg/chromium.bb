@@ -5,16 +5,17 @@
 #include "config.h"
 #include "core/paint/DrawingRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
 
 namespace blink {
+
+void DrawingDisplayItem::replay(GraphicsContext* context)
+{
+    context->drawPicture(m_picture.get(), m_location);
+}
 
 #if ENABLE(ASSERT)
 static bool s_inDrawingRecorder = false;
@@ -51,18 +52,18 @@ DrawingRecorder::~DrawingRecorder()
         return;
     ASSERT(displayList->bounds() == m_bounds);
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, displayList->picture(), m_bounds.location()));
-#ifndef NDEBUG
-    if (!m_renderer)
-        drawingItem->setClientDebugString("nullptr");
-    else if (m_renderer->node())
-        drawingItem->setClientDebugString(String::format("nodeName: \"%s\", renderer: \"%p\"", m_renderer->node()->nodeName().utf8().data(), m_renderer));
-    else
-        drawingItem->setClientDebugString(String::format("renderer: \"%p\"", m_renderer));
-#endif
-
-    if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-        container->graphicsLayerBacking()->displayItemList().add(drawingItem.release());
+        new DrawingDisplayItem(displayList->picture(), m_bounds.location(), m_phase, m_renderer));
+    ASSERT(m_renderer->view());
+    m_renderer->view()->viewDisplayList().add(drawingItem.release());
 }
+
+#ifndef NDEBUG
+WTF::String DrawingDisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\", location: [%f,%f]}",
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
+        m_location.x(), m_location.y());
+}
+#endif
 
 } // namespace blink
