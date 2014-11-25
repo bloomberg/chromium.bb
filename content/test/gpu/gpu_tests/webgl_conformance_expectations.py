@@ -163,6 +163,32 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Linux failures
     self.Fail('conformance/textures/default-texture.html',
         ['linux', ('nvidia', 0x104a)], bug=422152)
+    self.Fail('conformance/programs/program-test.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/rendering/multisample-corruption.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/default-texture.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-webgl-canvas.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-webgl-canvas-rgb565.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-webgl-canvas-rgba4444.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/texture-mips.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/texture-npot-video.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/textures/texture-size.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
