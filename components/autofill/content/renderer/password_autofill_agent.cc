@@ -882,6 +882,8 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
           provisionally_saved_forms_[frame]->password_value;
       submitted_form->new_password_value =
           provisionally_saved_forms_[frame]->new_password_value;
+      submitted_form->username_value =
+          provisionally_saved_forms_[frame]->username_value;
     }
 
     // Some observers depend on sending this information now instead of when
