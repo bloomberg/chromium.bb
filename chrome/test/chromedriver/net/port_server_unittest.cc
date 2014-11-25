@@ -184,7 +184,7 @@ TEST_F(PortServerTest, ReserveReserve) {
   RunServer(path, "12346\n", &request);
   status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
-  ASSERT_EQ(12345u, port);
+  ASSERT_EQ(12346u, port);
 }
 #endif
 
