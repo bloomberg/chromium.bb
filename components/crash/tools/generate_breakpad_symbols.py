@@ -43,8 +43,8 @@ def GetDumpSymsBinary(build_dir=None):
   DUMP_SYMS = 'dump_syms'
   dump_syms_bin = os.path.join(os.path.expanduser(build_dir), DUMP_SYMS)
   if not os.access(dump_syms_bin, os.X_OK):
-    print 'Cannot find %s.' % DUMP_SYMS
-    sys.exit(1)
+    print 'Cannot find %s.' % dump_syms_bin
+    return None
 
   return dump_syms_bin
 
@@ -239,6 +239,9 @@ def main():
       shutil.rmtree(options.symbols_dir)
     except:
       pass
+
+  if not GetDumpSymsBinary(options.build_dir):
+    return 1
 
   # Build the transitive closure of all dependencies.
   binaries = set([options.binary])
