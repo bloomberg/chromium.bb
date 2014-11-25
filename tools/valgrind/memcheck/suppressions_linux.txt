@@ -21,4 +21,13 @@
 # in our own code, or stuff that is so trivial it's not worth fixing.
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
-
+{
+   bug_436253
+   Memcheck:Overlap
+   fun:memcpy@@GLIBC_2.14
+   fun:_ZN7content14WebPreferencesaSERKS0_
+   fun:_ZN7content14RenderViewImpl22OnUpdateWebPreferencesERKNS_14WebPreferencesE
+   fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
+   fun:_ZThn784_N7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
+   fun:_ZN7content16WebKitTestRunner5ResetEv
+}
