@@ -43,7 +43,6 @@ const StringMethodPair resize_methods[] = {
   ADD_METHOD(HAMMING1),
   ADD_METHOD(LANCZOS2),
   ADD_METHOD(LANCZOS3),
-  ADD_METHOD(SUBPIXEL)
 };
 
 // converts a string into one of the image operation method to resize.

@@ -79,15 +79,11 @@ class SK_API ImageOperations {
     // each side, then oscillates 2 more times. It gives nice sharp edges.
     RESIZE_LANCZOS3,
 
-    // Lanczos filter + subpixel interpolation. If subpixel rendering is not
-    // appropriate we automatically fall back to Lanczos.
-    RESIZE_SUBPIXEL,
-
     // enum aliases for first and last methods by algorithm or by quality.
     RESIZE_FIRST_QUALITY_METHOD = RESIZE_GOOD,
     RESIZE_LAST_QUALITY_METHOD = RESIZE_BEST,
     RESIZE_FIRST_ALGORITHM_METHOD = RESIZE_BOX,
-    RESIZE_LAST_ALGORITHM_METHOD = RESIZE_SUBPIXEL,
+    RESIZE_LAST_ALGORITHM_METHOD = RESIZE_LANCZOS3,
   };
 
   // Resizes the given source bitmap using the specified resize method, so that
@@ -113,19 +109,6 @@ class SK_API ImageOperations {
 
  private:
   ImageOperations();  // Class for scoping only.
-
-  // Supports all methods except RESIZE_SUBPIXEL.
-  static SkBitmap ResizeBasic(const SkBitmap& source,
-                              ResizeMethod method,
-                              int dest_width, int dest_height,
-                              const SkIRect& dest_subset,
-                              SkBitmap::Allocator* allocator = NULL);
-
-  // Subpixel renderer.
-  static SkBitmap ResizeSubpixel(const SkBitmap& source,
-                                 int dest_width, int dest_height,
-                                 const SkIRect& dest_subset,
-                                 SkBitmap::Allocator* allocator = NULL);
 };
 
 }  // namespace skia

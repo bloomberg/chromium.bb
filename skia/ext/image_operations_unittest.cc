@@ -495,7 +495,6 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
   const SkColor colors[] = { checker_color1, checker_color2 };
   const SkColor average_color = AveragePixel(colors, arraysize(colors));
 
-  // RESIZE_SUBPIXEL is only supported on Linux/non-GTV platforms.
   static const TestedResizeMethod tested_methods[] = {
     { skia::ImageOperations::RESIZE_GOOD,     "GOOD",     0.0f },
     { skia::ImageOperations::RESIZE_BETTER,   "BETTER",   0.0f },
@@ -504,26 +503,6 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
     { skia::ImageOperations::RESIZE_HAMMING1, "HAMMING1", 0.0f },
     { skia::ImageOperations::RESIZE_LANCZOS2, "LANCZOS2", 0.0f },
     { skia::ImageOperations::RESIZE_LANCZOS3, "LANCZOS3", 0.0f },
-#if defined(OS_LINUX) && !defined(GTV)
-    // SUBPIXEL has slightly worse performance than the other filters:
-    //   6.324  Bottom left/right corners
-    //   5.099  Top left/right corners
-    //   2.828  Bottom middle
-    //   1.414  Top/Left/Right middle, center
-    //
-    // This is expected since, in order to judge RESIZE_SUBPIXEL accurately,
-    // we'd need to compute distances for each sub-pixel, and potentially
-    // tweak the test parameters so that expectations were realistic when
-    // looking at sub-pixels in isolation.
-    //
-    // Rather than going to these lengths, we added the "max_distance_override"
-    // field in TestedResizeMethod, intended for RESIZE_SUBPIXEL. It allows
-    // us to to enable its testing without having to lower the success criteria
-    // for the other methods. This procedure is  distateful but defining
-    // a distance limit for each tested pixel for each method was judged to add
-    // unneeded complexity.
-    { skia::ImageOperations::RESIZE_SUBPIXEL, "SUBPIXEL", 6.4f },
-#endif
   };
 
   // Create our source bitmap.
