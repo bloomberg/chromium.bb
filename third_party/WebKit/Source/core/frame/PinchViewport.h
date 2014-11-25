@@ -117,6 +117,11 @@ public:
     // FIXME: This should be a DoubleRect since scroll offsets are now doubles.
     FloatRect visibleRectInDocument() const;
 
+    // Convert the given rect in the main FrameView's coordinates into a rect
+    // in the viewport. The given and returned rects are in CSS pixels, meaning
+    // scale isn't applied.
+    FloatRect mainViewToViewportCSSPixels(const FloatRect&) const;
+
     // Scroll the main frame and pinch viewport so that the given rect in the
     // top-level document is centered in the viewport. This method will avoid
     // scrolling the pinch viewport unless necessary.

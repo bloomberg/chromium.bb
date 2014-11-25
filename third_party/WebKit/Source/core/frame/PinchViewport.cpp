@@ -138,6 +138,14 @@ FloatRect PinchViewport::visibleRectInDocument() const
     return pinchRect;
 }
 
+FloatRect PinchViewport::mainViewToViewportCSSPixels(const FloatRect& rect) const
+{
+    // Note, this is in CSS Pixels so we don't apply scale.
+    FloatRect rectInViewport = rect;
+    rectInViewport.moveBy(-location());
+    return rectInViewport;
+}
+
 void PinchViewport::scrollIntoView(const LayoutRect& rect)
 {
     if (!mainFrame() || !mainFrame()->view())

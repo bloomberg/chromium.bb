@@ -80,9 +80,11 @@
 #include "core/editing/markup.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/FocusEvent.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -806,6 +808,11 @@ IntRect Element::boundsInRootViewSpace()
         result.unite(quads[i].enclosingBoundingBox());
 
     result = view->contentsToRootView(result);
+
+    // FIXME: Cleanup pinch viewport coordinate translations. crbug.com/371902.
+    PinchViewport& pinchViewport = document().page()->frameHost().pinchViewport();
+    result = enclosingIntRect(pinchViewport.mainViewToViewportCSSPixels(result));
+
     return result;
 }
 

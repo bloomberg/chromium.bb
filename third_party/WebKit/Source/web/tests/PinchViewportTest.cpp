@@ -1232,6 +1232,32 @@ TEST_F(PinchViewportTest, ResizePinchViewportStaysWithinOuterViewport)
     EXPECT_EQ(0, pinchViewport.location().y());
 }
 
+TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
+{
+    initializeWithAndroidSettings();
+
+    webViewImpl()->resize(IntSize(500, 800));
+
+    registerMockedHttpURLLoad("pinch-viewport-input-field.html");
+    navigateTo(m_baseURL + "pinch-viewport-input-field.html");
+
+    webViewImpl()->setInitialFocus(false);
+    Element* inputElement = webViewImpl()->focusedElement();
+
+    IntRect bounds = inputElement->renderer()->absoluteBoundingBoxRect();
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    IntPoint scrollDelta(250, 400);
+    pinchViewport.setScale(2);
+    pinchViewport.setLocation(scrollDelta);
+
+    IntRect boundsInViewport = inputElement->boundsInRootViewSpace();
+
+    EXPECT_POINT_EQ(IntPoint(bounds.location() - scrollDelta),
+        boundsInViewport.location());
+    EXPECT_SIZE_EQ(bounds.size(), boundsInViewport.size());
+}
+
 // Tests that when a new frame is created, it is created with the intended
 // size (i.e. the contentWidth).
 TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
