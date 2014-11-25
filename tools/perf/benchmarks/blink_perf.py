@@ -97,6 +97,19 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     print log
 
 
+class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
+  def __init__(self):
+    super(_BlinkPerfFullFrameMeasurement, self).__init__()
+    self._blink_perf_js += '\nwindow.fullFrameMeasurement = true;'
+
+  def CustomizeBrowserOptions(self, options):
+    super(_BlinkPerfFullFrameMeasurement, self).CustomizeBrowserOptions(
+        options)
+    # Full layout measurement needs content_shell with internals testing API.
+    assert 'content-shell' in options.browser_type
+    options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
+
+
 class BlinkPerfAnimation(benchmark.Benchmark):
   tag = 'animation'
   test = _BlinkPerfMeasurement
@@ -169,6 +182,12 @@ class BlinkPerfLayout(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+@benchmark.Enabled('content-shell')
+class BlinkPerfLayoutFullLayout(BlinkPerfLayout):
+  tag = 'layout_full_frame'
+  test = _BlinkPerfFullFrameMeasurement
+
+
 class BlinkPerfMutation(benchmark.Benchmark):
   tag = 'mutation'
   test = _BlinkPerfMeasurement
@@ -194,6 +213,12 @@ class BlinkPerfSVG(benchmark.Benchmark):
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
+
+
+@benchmark.Enabled('content-shell')
+class BlinkPerfSVGFullLayout(BlinkPerfSVG):
+  tag = 'svg_full_frame'
+  test = _BlinkPerfFullFrameMeasurement
 
 
 class BlinkPerfShadowDOM(benchmark.Benchmark):
