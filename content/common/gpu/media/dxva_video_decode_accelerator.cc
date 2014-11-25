@@ -14,20 +14,76 @@
 #include <mferror.h>
 #include <wmcodecdsp.h>
 
+#include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/win/windows_version.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
+
+namespace {
+
+// Path is appended on to the PROGRAM_FILES base path.
+const wchar_t kVPXDecoderDLLPath[] = L"Intel\\Media SDK\\";
+
+const wchar_t kVP8DecoderDLLName[] =
+#if defined(ARCH_CPU_X86)
+  L"mfx_mft_vp8vd_32.dll";
+#elif defined(ARCH_CPU_X86_64)
+  L"mfx_mft_vp8vd_64.dll";
+#else
+#error Unsupported Windows CPU Architecture
+#endif
+
+const wchar_t kVP9DecoderDLLName[] =
+#if defined(ARCH_CPU_X86)
+  L"mfx_mft_vp9vd_32.dll";
+#elif defined(ARCH_CPU_X86_64)
+  L"mfx_mft_vp9vd_64.dll";
+#else
+#error Unsupported Windows CPU Architecture
+#endif
+
+const CLSID CLSID_WebmMfVp8Dec = {
+  0x451e3cb7,
+  0x2622,
+  0x4ba5,
+  { 0x8e, 0x1d, 0x44, 0xb3, 0xc4, 0x1d, 0x09, 0x24 }
+};
+
+const CLSID CLSID_WebmMfVp9Dec = {
+  0x07ab4bd2,
+  0x1979,
+  0x4fcd,
+  { 0xa6, 0x97, 0xdf, 0x9a, 0xd1, 0x5b, 0x34, 0xfe }
+};
+
+const CLSID MEDIASUBTYPE_VP80 = {
+  0x30385056,
+  0x0000,
+  0x0010,
+  { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }
+};
+
+const CLSID MEDIASUBTYPE_VP90 = {
+  0x30395056,
+  0x0000,
+  0x0010,
+  { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }
+};
+
+}
 
 namespace content {
 
@@ -431,7 +487,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       pictures_requested_(false),
       inputs_before_decode_(0),
       make_context_current_(make_context_current),
-      weak_this_factory_(this) {
+      weak_this_factory_(this),
+      codec_(media::kUnknownVideoCodec) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
 }
@@ -458,9 +515,11 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   // H264PROFILE_HIGH video decoding is janky at times. Needs more
   // investigation. http://crbug.com/426707
   if (profile != media::H264PROFILE_BASELINE &&
-      profile != media::H264PROFILE_MAIN) {
+      profile != media::H264PROFILE_MAIN &&
+      profile != media::VP8PROFILE_ANY &&
+      profile != media::VP9PROFILE_ANY) {
     RETURN_AND_NOTIFY_ON_FAILURE(false,
-        "Unsupported h264 profile", PLATFORM_FAILURE, false);
+        "Unsupported h.264, vp8, or vp9 profile", PLATFORM_FAILURE, false);
   }
 
   RETURN_AND_NOTIFY_ON_FAILURE(
@@ -639,30 +698,51 @@ bool DXVAVideoDecodeAccelerator::CanDecodeOnIOThread() {
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
-  if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
-    return false;
+  HMODULE decoder_dll = NULL;
 
-  // We mimic the steps CoCreateInstance uses to instantiate the object. This
-  // was previously done because it failed inside the sandbox, and now is done
-  // as a more minimal approach to avoid other side-effects CCI might have (as
-  // we are still in a reduced sandbox).
-  HMODULE decoder_dll = ::LoadLibrary(L"msmpeg2vdec.dll");
-  RETURN_ON_FAILURE(decoder_dll,
-                    "msmpeg2vdec.dll required for decoding is not loaded",
-                    false);
+  // Profile must fall within the valid range for one of the supported codecs.
+  if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
+    // We mimic the steps CoCreateInstance uses to instantiate the object. This
+    // was previously done because it failed inside the sandbox, and now is done
+    // as a more minimal approach to avoid other side-effects CCI might have (as
+    // we are still in a reduced sandbox).
+    decoder_dll = ::LoadLibrary(L"msmpeg2vdec.dll");
+    RETURN_ON_FAILURE(decoder_dll,
+                      "msmpeg2vdec.dll required for decoding is not loaded",
+                      false);
 
-  // Check version of DLL, version 6.7.7140 is blacklisted due to high crash
-  // rates in browsers loading that DLL. If that is the version installed we
-  // fall back to software decoding. See crbug/403440.
-  FileVersionInfo* version_info =
-      FileVersionInfo::CreateFileVersionInfoForModule(decoder_dll);
-  RETURN_ON_FAILURE(version_info,
-                    "unable to get version of msmpeg2vdec.dll",
-                    false);
-  base::string16 file_version = version_info->file_version();
-  RETURN_ON_FAILURE(file_version.find(L"6.1.7140") == base::string16::npos,
-                    "blacklisted version of msmpeg2vdec.dll 6.7.7140",
-                    false);
+    // Check version of DLL, version 6.7.7140 is blacklisted due to high crash
+    // rates in browsers loading that DLL. If that is the version installed we
+    // fall back to software decoding. See crbug/403440.
+    FileVersionInfo* version_info =
+        FileVersionInfo::CreateFileVersionInfoForModule(decoder_dll);
+    RETURN_ON_FAILURE(version_info,
+                      "unable to get version of msmpeg2vdec.dll",
+                      false);
+    base::string16 file_version = version_info->file_version();
+    RETURN_ON_FAILURE(file_version.find(L"6.1.7140") == base::string16::npos,
+                      "blacklisted version of msmpeg2vdec.dll 6.7.7140",
+                      false);
+    codec_ = media::kCodecH264;
+  } else if (profile == media::VP8PROFILE_ANY ||
+             profile == media::VP9PROFILE_ANY) {
+    base::FilePath dll_path;
+    RETURN_ON_FAILURE(PathService::Get(base::DIR_PROGRAM_FILES, &dll_path),
+        "failed to get path for DIR_PROGRAM_FILES", false);
+    dll_path = dll_path.Append(kVPXDecoderDLLPath);
+    if (profile == media::VP8PROFILE_ANY) {
+      codec_ = media::kCodecVP8;
+      dll_path = dll_path.Append(kVP8DecoderDLLName);
+    } else {
+      codec_ = media::kCodecVP9;
+      dll_path = dll_path.Append(kVP9DecoderDLLName);
+    }
+    decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
+        LOAD_WITH_ALTERED_SEARCH_PATH);
+    RETURN_ON_FAILURE(decoder_dll, "vpx decoder dll is not loaded", false);
+  } else {
+    RETURN_ON_FAILURE(false, "Unsupported codec.", false);
+  }
 
   typedef HRESULT(WINAPI * GetClassObject)(
       const CLSID & clsid, const IID & iid, void * *object);
@@ -673,9 +753,22 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
       get_class_object, "Failed to get DllGetClassObject pointer", false);
 
   base::win::ScopedComPtr<IClassFactory> factory;
-  HRESULT hr = get_class_object(__uuidof(CMSH264DecoderMFT),
-                                __uuidof(IClassFactory),
-                                reinterpret_cast<void**>(factory.Receive()));
+  HRESULT hr;
+  if (codec_ == media::kCodecH264) {
+    hr  = get_class_object(__uuidof(CMSH264DecoderMFT),
+                           __uuidof(IClassFactory),
+                           reinterpret_cast<void**>(factory.Receive()));
+  } else if (codec_ == media::kCodecVP8) {
+    hr  = get_class_object(CLSID_WebmMfVp8Dec,
+                           __uuidof(IClassFactory),
+                           reinterpret_cast<void**>(factory.Receive()));
+  } else if (codec_ == media::kCodecVP9) {
+    hr  = get_class_object(CLSID_WebmMfVp9Dec,
+                           __uuidof(IClassFactory),
+                           reinterpret_cast<void**>(factory.Receive()));
+  } else {
+    RETURN_ON_FAILURE(false, "Unsupported codec.", false);
+  }
   RETURN_ON_HR_FAILURE(hr, "DllGetClassObject for decoder failed", false);
 
   hr = factory->CreateInstance(NULL,
@@ -725,8 +818,11 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   hr = attributes->GetUINT32(MF_SA_D3D_AWARE, &dxva);
   RETURN_ON_HR_FAILURE(hr, "Failed to check if decoder supports DXVA", false);
 
-  hr = attributes->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE);
-  RETURN_ON_HR_FAILURE(hr, "Failed to enable DXVA H/W decoding", false);
+  if (codec_ == media::kCodecH264) {
+    hr = attributes->SetUINT32(CODECAPI_AVDecVideoAcceleration_H264, TRUE);
+    RETURN_ON_HR_FAILURE(hr, "Failed to enable DXVA H/W decoding", false);
+  }
+
   return true;
 }
 
@@ -744,7 +840,16 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
   hr = media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   RETURN_ON_HR_FAILURE(hr, "Failed to set major input type", false);
 
-  hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
+  if (codec_ == media::kCodecH264) {
+    hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
+  } else if (codec_ == media::kCodecVP8) {
+    hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP80);
+  } else if (codec_ == media::kCodecVP9) {
+    hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP90);
+  } else {
+    NOTREACHED();
+    RETURN_ON_FAILURE(false, "Unsupported codec on input media type.", false);
+  }
   RETURN_ON_HR_FAILURE(hr, "Failed to set subtype", false);
 
   // Not sure about this. msdn recommends setting this value on the input
@@ -798,10 +903,12 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 
   DVLOG(1) << "Input stream info: ";
   DVLOG(1) << "Max latency: " << input_stream_info_.hnsMaxLatency;
-  // There should be three flags, one for requiring a whole frame be in a
-  // single sample, one for requiring there be one buffer only in a single
-  // sample, and one that specifies a fixed sample size. (as in cbSize)
-  CHECK_EQ(input_stream_info_.dwFlags, 0x7u);
+  if (codec_ == media::kCodecH264) {
+    // There should be three flags, one for requiring a whole frame be in a
+    // single sample, one for requiring there be one buffer only in a single
+    // sample, and one that specifies a fixed sample size. (as in cbSize)
+    CHECK_EQ(input_stream_info_.dwFlags, 0x7u);
+  }
 
   DVLOG(1) << "Min buffer size: " << input_stream_info_.cbSize;
   DVLOG(1) << "Max lookahead: " << input_stream_info_.cbMaxLookahead;
@@ -813,7 +920,9 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
   // allocate its own sample.
   DVLOG(1) << "Flags: "
           << std::hex << std::showbase << output_stream_info_.dwFlags;
-  CHECK_EQ(output_stream_info_.dwFlags, 0x107u);
+  if (codec_ == media::kCodecH264) {
+    CHECK_EQ(output_stream_info_.dwFlags, 0x107u);
+  }
   DVLOG(1) << "Min buffer size: " << output_stream_info_.cbSize;
   DVLOG(1) << "Alignment: " << output_stream_info_.cbAlignment;
   return true;

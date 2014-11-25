@@ -70,27 +70,27 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   typedef void* EGLSurface;
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually
-  // passed to the IMFTransform interface implemented by the h.264 decoder.
+  // passed to the IMFTransform interface implemented by the decoder.
   bool CreateD3DDevManager();
 
-  // Creates, initializes and sets the media types for the h.264 decoder.
+  // Creates, initializes and sets the media codec types for the decoder.
   bool InitDecoder(media::VideoCodecProfile profile);
 
-  // Validates whether the h.264 decoder supports hardware video acceleration.
+  // Validates whether the decoder supports hardware video acceleration.
   bool CheckDecoderDxvaSupport();
 
   // Returns information about the input and output streams. This includes
   // alignment information, decoder support flags, minimum sample size, etc.
   bool GetStreamsInfoAndBufferReqs();
 
-  // Registers the input and output media types on the h.264 decoder. This
-  // includes the expected input and output formats.
+  // Registers the input and output media types on the decoder. This includes
+  // the expected input and output formats.
   bool SetDecoderMediaTypes();
 
-  // Registers the input media type for the h.264 decoder.
+  // Registers the input media type for the decoder.
   bool SetDecoderInputMediaType();
 
-  // Registers the output media type for the h.264 decoder.
+  // Registers the output media type for the decoder.
   bool SetDecoderOutputMediaType(const GUID& subtype);
 
   // Passes a command message to the decoder. This includes commands like
@@ -223,6 +223,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
+
+  // Which codec we are decoding with hardware acceleration.
+  media::VideoCodec codec_;
 };
 
 }  // namespace content
