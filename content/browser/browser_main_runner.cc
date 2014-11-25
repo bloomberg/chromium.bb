@@ -21,6 +21,7 @@
 
 #if defined(OS_WIN)
 #include <dwrite.h>
+#include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "net/cert/sha256_legacy_support_win.h"
@@ -134,14 +135,23 @@ void MaybeEnableDirectWriteFontRendering() {
     // Not finding the DWriteCreateFactory function indicates a corrupt dll.
     CHECK(dwrite_create_factory_proc);
 
-    IDWriteFactory* factory = NULL;
+    base::win::ScopedComPtr<IDWriteFactory> factory;
 
     CHECK(SUCCEEDED(
-        dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
-                                   __uuidof(IDWriteFactory),
-                                   reinterpret_cast<IUnknown**>(&factory))));
-    SetDefaultSkiaFactory(SkFontMgr_New_DirectWrite(factory));
-    gfx::PlatformFontWin::SetDirectWriteFactory(factory);
+        dwrite_create_factory_proc(
+            DWRITE_FACTORY_TYPE_SHARED,
+          __uuidof(IDWriteFactory),
+          reinterpret_cast<IUnknown**>(factory.Receive()))));
+    // The skia call to create a new DirectWrite font manager instance can fail
+    // if we are unable to get the system font collection from the DirectWrite
+    // factory. The GetSystemFontCollection method in the IDWriteFactory
+    // interface fails with E_INVALIDARG on certain Windows 7 gold versions
+    // (6.1.7600.*). We should just use GDI in these cases.
+    SkFontMgr* direct_write_font_mgr = SkFontMgr_New_DirectWrite(factory.get());
+    if (direct_write_font_mgr) {
+      SetDefaultSkiaFactory(direct_write_font_mgr);
+      gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
+    }
   }
 }
 
