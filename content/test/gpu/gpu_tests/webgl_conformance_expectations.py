@@ -189,6 +189,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['linux', ('amd', 0x68f9)], bug=436212)
     self.Fail('conformance/textures/texture-size.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/more/functions/drawArraysOutOfBounds.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/more/functions/texImage2DHTML.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
+    self.Fail('conformance/more/functions/texSubImage2DHTML.html',
+        ['linux', ('amd', 0x68f9)], bug=436212)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
