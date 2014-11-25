@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_observer.h"
 
 class TemplateURL;
 
@@ -16,7 +17,7 @@ class TemplateURL;
 // Android wrapper of the TemplateUrlService which provides access from the Java
 // layer. Note that on Android, there's only a single profile, and therefore
 // a single instance of this wrapper.
-class TemplateUrlServiceAndroid {
+class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
  public:
   TemplateUrlServiceAndroid(JNIEnv* env, jobject obj);
 
@@ -60,6 +61,9 @@ class TemplateUrlServiceAndroid {
   bool IsPrepopulatedTemplate(TemplateURL* url);
 
   void OnTemplateURLServiceLoaded();
+
+  // TemplateUrlServiceObserver:
+  void OnTemplateURLServiceChanged() override;
 
   JavaObjectWeakGlobalRef weak_java_obj_;
 

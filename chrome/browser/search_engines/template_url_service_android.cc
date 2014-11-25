@@ -36,9 +36,11 @@ TemplateUrlServiceAndroid::TemplateUrlServiceAndroid(JNIEnv* env,
       template_url_service_->RegisterOnLoadedCallback(
           base::Bind(&TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded,
                      base::Unretained(this)));
+  template_url_service_->AddObserver(this);
 }
 
 TemplateUrlServiceAndroid::~TemplateUrlServiceAndroid() {
+  template_url_service_->RemoveObserver(this);
 }
 
 void TemplateUrlServiceAndroid::Load(JNIEnv* env, jobject obj) {
@@ -135,6 +137,15 @@ void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {
     return;
 
   Java_TemplateUrlService_templateUrlServiceLoaded(
+      env, weak_java_obj_.get(env).obj());
+}
+
+void TemplateUrlServiceAndroid::OnTemplateURLServiceChanged() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (weak_java_obj_.get(env).is_null())
+    return;
+
+  Java_TemplateUrlService_onTemplateURLServiceChanged(
       env, weak_java_obj_.get(env).obj());
 }
 
