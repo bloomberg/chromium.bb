@@ -62,17 +62,32 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
 // These values come from the WhatWG spec.
-static const int DefaultWidth = 300;
-static const int DefaultHeight = 150;
+const int DefaultWidth = 300;
+const int DefaultHeight = 150;
 
 // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
 // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
 // in exchange for a smaller maximum canvas size.
-static const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
+const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 
 //In Skia, we will also limit width/height to 32767.
-static const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
+const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
+
+bool canCreateImageBuffer(const IntSize& deviceSize)
+{
+    if (deviceSize.width() * deviceSize.height() > MaxCanvasArea)
+        return false;
+    if (deviceSize.width() > MaxSkiaDim || deviceSize.height() > MaxSkiaDim)
+        return false;
+    if (!deviceSize.width() || !deviceSize.height())
+        return false;
+    return true;
+}
+
+} // namespace
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CanvasObserver);
 
@@ -395,10 +410,14 @@ const AtomicString HTMLCanvasElement::imageSourceURL() const
 
 String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, bool isSaving) const
 {
-    if (m_size.isEmpty() || !buffer())
+    if (m_size.isEmpty() || !canCreateImageBuffer(size()))
         return String("data:,");
 
     String encodingMimeType = toEncodingMimeType(mimeType);
+    if (!m_context) {
+        RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(m_size);
+        return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
+    }
 
     // Try to get ImageData first, as that may avoid lossy conversions.
     RefPtrWillBeRawPtr<ImageData> imageData = getImageData();
@@ -406,7 +425,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     if (imageData)
         return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
 
-    if (m_context && m_context->is3d()) {
+    if (m_context->is3d()) {
         m_context->paintRenderingResultsToCanvas(isSaving ? CanvasRenderingContext::Front : CanvasRenderingContext::Back);
     }
 
@@ -556,18 +575,11 @@ void HTMLCanvasElement::createImageBufferInternal()
     m_didFailToCreateImageBuffer = true;
     m_imageBufferIsClear = true;
 
-    IntSize deviceSize = size();
-    if (deviceSize.width() * deviceSize.height() > MaxCanvasArea)
-        return;
-
-    if (deviceSize.width() > MaxSkiaDim || deviceSize.height() > MaxSkiaDim)
-        return;
-
-    if (!deviceSize.width() || !deviceSize.height())
+    if (!canCreateImageBuffer(size()))
         return;
 
     int msaaSampleCount;
-    OwnPtr<ImageBufferSurface> surface = createImageBufferSurface(deviceSize, &msaaSampleCount);
+    OwnPtr<ImageBufferSurface> surface = createImageBufferSurface(size(), &msaaSampleCount);
     if (!surface->isValid())
         return;
 
