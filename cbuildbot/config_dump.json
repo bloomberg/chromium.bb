@@ -13538,6 +13538,9 @@
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "internal": true,
         "manifest": "kayle.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13609,6 +13612,9 @@
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "important": true,
         "internal": true,
         "manifest": "kayle.xml",
@@ -13643,6 +13649,9 @@
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "important": true,
         "internal": true,
         "manifest": "kayle.xml",
@@ -13679,8 +13688,7 @@
         "hwqual": true,
         "image_test": true,
         "images": [
-            "base",
-            "test"
+            "base"
         ],
         "internal": true,
         "manifest": "kayle.xml",
@@ -13962,6 +13970,9 @@
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base"
+        ],
         "internal": true,
         "manifest": "kayle.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

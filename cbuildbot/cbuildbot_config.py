@@ -1439,7 +1439,12 @@ def _CreateBaseConfigs():
       base.update(manifest='kayle.xml',
                   dev_manifest='kayle.xml',
                   factory_toolkit=False,
-                  factory_install_netboot=False)
+                  # TODO(namnguyen): Cannot build factory net install (no
+                  # usbnet).
+                  factory_install_netboot=False,
+                  # TODO(namngyuyen) Cannot build dev or test images due to
+                  # #436523.
+                  images=['base'])
 
     _base_configs[board] = base.derive(boards=[board])
 
@@ -2548,7 +2553,6 @@ _non_testable_brillo_release.add_config('kayle-release',
   _base_configs['kayle'],
   paygen=False,
   signer_tests=False,
-  images=['base', 'test'],
 )
 
 _non_testable_brillo_release.add_config('cosmos-release',
