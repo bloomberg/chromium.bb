@@ -28,9 +28,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 DevToolsAPI = {};
 
-// FIXME: remove once embedders switch to new API.
-InspectorFrontendAPI = DevToolsAPI;
-
 InspectorTest = {};
 InspectorTest._dispatchTable = [];
 InspectorTest._requestId = -1;
@@ -79,7 +76,7 @@ InspectorTest.sendCommand = function(method, params, handler)
         InspectorTest._collectedMessages.push({"side": "frontend", "message": JSON.stringify(messageObject)});
     if (InspectorTest._dumpInspectorProtocolMessages)
         testRunner.logToStderr("frontend: " + JSON.stringify(messageObject));
-    InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
+    DevToolsHost.sendMessageToBackend(JSON.stringify(messageObject));
 
     return this._requestId;
 }
@@ -156,7 +153,7 @@ InspectorTest.wrapCallback = function(callback)
 InspectorTest.sendRawCommand = function(command, handler)
 {
     this._dispatchTable[++this._requestId] = handler;
-    InspectorFrontendHost.sendMessageToBackend(command);
+    DevToolsHost.sendMessageToBackend(command);
     return this._requestId;
 }
 

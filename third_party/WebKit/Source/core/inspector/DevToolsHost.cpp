@@ -59,9 +59,9 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
 public:
-    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
+    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, ScriptValue devtoolsApiObject, const Vector<ContextMenuItem>& items)
     {
-        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, frontendApiObject, items));
+        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, devtoolsApiObject, items));
     }
 
     virtual ~FrontendMenuProvider()
@@ -78,14 +78,14 @@ public:
 
     void disconnect()
     {
-        m_frontendApiObject = ScriptValue();
+        m_devtoolsApiObject = ScriptValue();
         m_devtoolsHost = nullptr;
     }
 
     virtual void contextMenuCleared() override
     {
         if (m_devtoolsHost) {
-            ScriptFunctionCall function(m_frontendApiObject, "contextMenuCleared");
+            ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuCleared");
             function.call();
 
             m_devtoolsHost->clearMenuProvider();
@@ -108,21 +108,21 @@ public:
         UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
         int itemNumber = item->action() - ContextMenuItemBaseCustomTag;
 
-        ScriptFunctionCall function(m_frontendApiObject, "contextMenuItemSelected");
+        ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuItemSelected");
         function.appendArgument(itemNumber);
         function.call();
     }
 
 private:
-    FrontendMenuProvider(DevToolsHost* devtoolsHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
+    FrontendMenuProvider(DevToolsHost* devtoolsHost, ScriptValue devtoolsApiObject, const Vector<ContextMenuItem>& items)
         : m_devtoolsHost(devtoolsHost)
-        , m_frontendApiObject(frontendApiObject)
+        , m_devtoolsApiObject(devtoolsApiObject)
         , m_items(items)
     {
     }
 
     RawPtrWillBeMember<DevToolsHost> m_devtoolsHost;
-    ScriptValue m_frontendApiObject;
+    ScriptValue m_devtoolsApiObject;
 
     // FIXME: Oilpan: remove when http://crbug.com/424962 Blink GC plugin
     // changes have been deployed. ContextMenuItem triggers looping behavior.
@@ -220,10 +220,10 @@ void DevToolsHost::showContextMenu(Page* page, float x, float y, const Vector<Co
 {
     ASSERT(m_frontendPage);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
-    ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
-    ASSERT(frontendApiObject.isObject());
+    ScriptValue devtoolsApiObject = frontendScriptState->getFromGlobalObject("DevToolsAPI");
+    ASSERT(devtoolsApiObject.isObject());
 
-    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
+    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, devtoolsApiObject, items);
     m_menuProvider = menuProvider.get();
     float zoom = page->deprecatedLocalMainFrame()->pageZoomFactor();
     page->inspectorController().showContextMenu(x * zoom, y * zoom, menuProvider);
@@ -236,8 +236,8 @@ void DevToolsHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& 
 
     ASSERT(m_frontendPage);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
-    ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
-    ASSERT(frontendApiObject.isObject());
+    ScriptValue devtoolsApiObject = frontendScriptState->getFromGlobalObject("DevToolsAPI");
+    ASSERT(devtoolsApiObject.isObject());
 
     Page* targetPage = m_frontendPage;
     if (event->target() && event->target()->executionContext() && event->target()->executionContext()->executingWindow()) {
@@ -246,7 +246,7 @@ void DevToolsHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& 
             targetPage = window->document()->page();
     }
 
-    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
+    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, devtoolsApiObject, items);
     targetPage->contextMenuController().showContextMenu(event, menuProvider);
     m_menuProvider = menuProvider.get();
 }

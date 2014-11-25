@@ -88,8 +88,6 @@ void WebDevToolsFrontendImpl::windowObjectCleared()
     v8::Handle<v8::Object> global = scriptState->context()->Global();
     v8::Handle<v8::Value> devtoolsHostObj = toV8(m_devtoolsHost.get(), global, scriptState->isolate());
     global->Set(v8::String::NewFromUtf8(isolate, "DevToolsHost"), devtoolsHostObj);
-    // FIXME: remove once all usages are eliminated.
-    global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), devtoolsHostObj);
 }
 
 void WebDevToolsFrontendImpl::sendMessageToBackend(const String& message)
