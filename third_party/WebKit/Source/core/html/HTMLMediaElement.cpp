@@ -737,9 +737,16 @@ void HTMLMediaElement::load()
 {
     WTF_LOG(Media, "HTMLMediaElement::load(%p)", this);
 
-    if (UserGestureIndicator::processingUserGesture()) {
+    if (m_initialPlayWithoutUserGestures && m_playing)
+        gesturelessInitialPlayHalted();
+
+    if (UserGestureIndicator::processingUserGesture() && m_userGestureRequiredForPlay) {
         recordAutoplayMetric(AutoplayEnabledThroughLoad);
         m_userGestureRequiredForPlay = false;
+        // While usergesture-initiated load()s technically count as autoplayed,
+        // they don't feel like such to the users and hence we don't want to
+        // count them for the purposes of metrics.
+        m_autoplayMediaCounted = true;
     }
 
     prepareForLoad();
@@ -1895,7 +1902,6 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures)) {
             autoplayMediaEncountered();
             if (!m_userGestureRequiredForPlay) {
-                m_initialPlayWithoutUserGestures = true;
                 m_paused = false;
                 invalidateCachedTime();
                 scheduleEvent(EventTypeNames::play);
@@ -2269,11 +2275,8 @@ void HTMLMediaElement::play()
         autoplayMediaEncountered();
         if (m_userGestureRequiredForPlay)
             return;
-        if (m_autoplaying)
-            m_initialPlayWithoutUserGestures = true;
-    } else {
-        if (m_userGestureRequiredForPlay)
-            recordAutoplayMetric(AutoplayManualStart);
+    } else if (m_userGestureRequiredForPlay) {
+        recordAutoplayMetric(AutoplayManualStart);
         m_userGestureRequiredForPlay = false;
     }
 
@@ -2315,6 +2318,9 @@ void HTMLMediaElement::autoplayMediaEncountered()
     if (!m_autoplayMediaCounted) {
         m_autoplayMediaCounted = true;
         recordAutoplayMetric(AutoplayMediaFound);
+
+        if (!m_userGestureRequiredForPlay)
+            m_initialPlayWithoutUserGestures = true;
     }
 }
 
