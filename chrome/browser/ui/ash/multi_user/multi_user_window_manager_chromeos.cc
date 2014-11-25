@@ -382,12 +382,6 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
     if ((*browser_it)->profile()->GetOriginalProfile() == profile)
       AddBrowserWindow(*browser_it);
   }
-  // When adding another user to the session, we auto switch users.
-  if (user_id_to_app_observer_.size() == 1)
-    return;
-  base::AutoReset<AnimationSpeed> animation_speed(&animation_speed_,
-                                                  ANIMATION_SPEED_DISABLED);
-  ActiveUserChanged(user_id);
 }
 
 void MultiUserWindowManagerChromeOS::AddObserver(Observer* observer) {
@@ -400,8 +394,7 @@ void MultiUserWindowManagerChromeOS::RemoveObserver(Observer* observer) {
 
 void MultiUserWindowManagerChromeOS::ActiveUserChanged(
     const std::string& user_id) {
-  if (user_id == current_user_id_)
-    return;
+  DCHECK(user_id != current_user_id_);
   // This needs to be set before the animation starts.
   current_user_id_ = user_id;
 

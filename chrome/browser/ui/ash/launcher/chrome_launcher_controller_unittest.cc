@@ -1486,8 +1486,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Transfer the window to another user's desktop and check that activating it
   // does pull it back to that user.
-  manager->ShowWindowForUser(window,
-                             multi_user_util::GetUserIDFromProfile(profile2));
+  manager->ShowWindowForUser(window, user2);
   EXPECT_FALSE(manager->IsWindowOnDesktopOfUser(window, current_user));
   launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window.get(),
                                                          false);
