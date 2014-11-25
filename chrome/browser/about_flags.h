@@ -25,15 +25,6 @@ namespace about_flags {
 
 class FlagsStorage;
 
-// This value is reported as switch histogram ID if switch name has unknown
-// format.
-extern const base::HistogramBase::Sample kBadSwitchFormatHistogramId;
-
-// Enumeration of OSs.
-// This is exposed only for testing.
-enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 , kOsCrOS = 1 << 3,
-       kOsAndroid = 1 << 4, kOsCrOSOwnerOnly = 1 << 5 };
-
 // Experiment is used internally by about_flags to describe an experiment (and
 // for testing).
 // This is exposed only for testing.
@@ -94,7 +85,7 @@ struct Experiment {
   // Simple switches that have no value should use "" for command_line_value.
   const char* command_line_value;
 
-  // For ENABLE_DISABLE_VALUE, the command line switch and value to explictly
+  // For ENABLE_DISABLE_VALUE, the command line switch and value to explicitly
   // disable the feature.
   const char* disable_command_line_switch;
   const char* disable_command_line_value;
@@ -196,6 +187,10 @@ const Experiment* GetExperiments(size_t* count);
 // Separator used for multi values. Multi values are represented in prefs as
 // name-of-experiment + kMultiSeparator + selected_index.
 extern const char kMultiSeparator[];
+
+// This value is reported as switch histogram ID if switch name has unknown
+// format.
+extern const base::HistogramBase::Sample kBadSwitchFormatHistogramId;
 
 }  // namespace testing
 

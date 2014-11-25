@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
@@ -715,57 +716,53 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   // Build reverse map {switch_name => id} from login_custom_flags.
   SwitchToIdMap histograms_xml_switches_ids;
 
-  EXPECT_TRUE(login_custom_flags.count(kBadSwitchFormatHistogramId))
+  EXPECT_TRUE(login_custom_flags.count(testing::kBadSwitchFormatHistogramId))
       << "Entry for UMA ID of incorrect command-line flag is not found in "
          "histograms.xml enum LoginCustomFlags. "
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
-  for (std::map<Sample, std::string>::const_iterator it =
-           login_custom_flags.begin();
-       it != login_custom_flags.end();
-       ++it) {
-    if (it->first == kBadSwitchFormatHistogramId) {
-      // Add eror value with empty name.
-      SetSwitchToHistogramIdMapping(
-          "", it->first, &histograms_xml_switches_ids);
+  for (const auto& entry : login_custom_flags) {
+    if (entry.first == testing::kBadSwitchFormatHistogramId) {
+      // Add error value with empty name.
+      SetSwitchToHistogramIdMapping(std::string(), entry.first,
+                                    &histograms_xml_switches_ids);
       continue;
     }
-    const Sample uma_id = GetSwitchUMAId(it->second);
-    EXPECT_EQ(uma_id, it->first)
+    const Sample uma_id = GetSwitchUMAId(entry.second);
+    EXPECT_EQ(uma_id, entry.first)
         << "histograms.xml enum LoginCustomFlags "
-           "entry '" << it->second << "' has incorrect value=" << it->first
+           "entry '" << entry.second << "' has incorrect value=" << entry.first
         << ", but " << uma_id << " is expected. Consider changing entry to:\n"
-        << "  " << GetHistogramEnumEntryText(it->second, uma_id);
-    SetSwitchToHistogramIdMapping(
-        it->second, it->first, &histograms_xml_switches_ids);
+        << "  " << GetHistogramEnumEntryText(entry.second, uma_id);
+    SetSwitchToHistogramIdMapping(entry.second, entry.first,
+                                  &histograms_xml_switches_ids);
   }
 
   // Check that all flags in about_flags.cc have entries in login_custom_flags.
   std::set<std::string> all_switches = GetAllSwitchesForTesting();
-  for (std::set<std::string>::const_iterator it = all_switches.begin();
-       it != all_switches.end();
-       ++it) {
+  for (const std::string& flag : all_switches) {
     // Skip empty placeholders.
-    if (it->empty())
+    if (flag.empty())
       continue;
-    const Sample uma_id = GetSwitchUMAId(*it);
-    EXPECT_NE(kBadSwitchFormatHistogramId, uma_id)
-        << "Command-line switch '" << *it
+    const Sample uma_id = GetSwitchUMAId(flag);
+    EXPECT_NE(testing::kBadSwitchFormatHistogramId, uma_id)
+        << "Command-line switch '" << flag
         << "' from about_flags.cc has UMA ID equal to reserved value "
-           "kBadSwitchFormatHistogramId=" << kBadSwitchFormatHistogramId
+           "kBadSwitchFormatHistogramId="
+        << testing::kBadSwitchFormatHistogramId
         << ". Please modify switch name.";
     SwitchToIdMap::iterator enum_entry =
-        histograms_xml_switches_ids.lower_bound(*it);
+        histograms_xml_switches_ids.lower_bound(flag);
 
     // Ignore case here when switch ID is incorrect - it has already been
     // reported in the previous loop.
     EXPECT_TRUE(enum_entry != histograms_xml_switches_ids.end() &&
-                enum_entry->first == *it)
+                enum_entry->first == flag)
         << "histograms.xml enum LoginCustomFlags doesn't contain switch '"
-        << *it << "' (value=" << uma_id
+        << flag << "' (value=" << uma_id
         << " expected). Consider adding entry:\n"
-        << "  " << GetHistogramEnumEntryText(*it, uma_id);
+        << "  " << GetHistogramEnumEntryText(flag, uma_id);
   }
 }
 
