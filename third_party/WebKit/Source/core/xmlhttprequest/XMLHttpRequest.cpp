@@ -120,7 +120,7 @@ using Result = WebDataConsumerHandle::Result;
 class XMLHttpRequest::ReadableStreamSource final : public GarbageCollectedFinalized<ReadableStreamSource>, public UnderlyingSource, public WebDataConsumerHandle::Client {
     USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
 public:
-    ReadableStreamSource(XMLHttpRequest* owner, PassOwnPtr<WebDataConsumerHandle> body) : m_owner(owner), m_body(body)
+    ReadableStreamSource(XMLHttpRequest* owner, PassOwnPtr<WebDataConsumerHandle> body) : m_owner(owner), m_body(body), m_needsMore(false)
     {
         if (m_body) {
             // |m_body| has |this| as a raw pointer, but it is not a problem
@@ -135,8 +135,10 @@ public:
     // UnderlyingSource
     void pullSource() override
     {
-        if (m_body)
+        if (m_body) {
+            m_needsMore = true;
             enqueueToStreamFromHandle();
+        }
     }
 
     ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) override
@@ -149,8 +151,7 @@ public:
     void didGetReadable() override
     {
         ASSERT(m_body);
-        if (m_stream->isPulling())
-            enqueueToStreamFromHandle();
+        enqueueToStreamFromHandle();
     }
 
     void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >* stream)
@@ -188,7 +189,7 @@ private:
     void enqueueToStreamFromHandle()
     {
         ASSERT(m_body);
-        while (true) {
+        while (m_needsMore) {
             const void* buffer = nullptr;
             size_t size = 0;
             Result result = m_body->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &size);
@@ -200,11 +201,13 @@ private:
                 // |close| does nothing when errored, so we don't have to worry
                 // about it.
                 m_stream->close();
+                m_needsMore = false;
                 return;
             }
             if (result != WebDataConsumerHandle::Ok) {
                 m_stream->error(DOMException::create(NetworkError));
                 m_owner->abort();
+                m_needsMore = false;
                 return;
             }
             RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(size, 1);
@@ -213,9 +216,10 @@ private:
             if (result != WebDataConsumerHandle::Ok) {
                 m_stream->error(DOMException::create(NetworkError));
                 m_owner->abort();
+                m_needsMore = false;
                 return;
             }
-            m_stream->enqueue(arrayBuffer.release());
+            m_needsMore = m_stream->enqueue(arrayBuffer.release());
         }
     }
 
@@ -225,6 +229,7 @@ private:
     RawPtrWillBeMember<XMLHttpRequest> m_owner;
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
     OwnPtr<WebDataConsumerHandle> m_body;
+    bool m_needsMore;
 };
 
 class XMLHttpRequest::BlobLoader final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequest::BlobLoader>, public FileReaderLoaderClient {
