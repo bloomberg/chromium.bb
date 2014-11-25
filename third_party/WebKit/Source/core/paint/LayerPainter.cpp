@@ -417,10 +417,11 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
 
     if (!transform.isIdentity()) {
         OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = adoptPtr(new BeginTransformDisplayItem(m_renderLayer.renderer(), transform));
+        // FIXME: we shouldn't be calling replay when Slimming Paint is on. However, replay() currently has an important side-effect that it stores
+        // the current matrix on the GraphicsContext, which is used for making conditional painting decisions such as anti-aliasing rotated borders.
+        beginTransformDisplayItem->replay(context);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             m_renderLayer.renderer()->view()->viewDisplayList().add(beginTransformDisplayItem.release());
-        else
-            beginTransformDisplayItem->replay(context);
     }
 
     // Now do a paint with the root layer shifted to be us.
@@ -430,10 +431,10 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
 
     if (!transform.isIdentity()) {
         OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()));
+        // FIXME: the same fix applies are as in the FIXME for BeginTransformDisplayItem above.
+        endTransformDisplayItem->replay(context);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             m_renderLayer.renderer()->view()->viewDisplayList().add(endTransformDisplayItem.release());
-        else
-            endTransformDisplayItem->replay(context);
     }
 }
 
