@@ -332,10 +332,10 @@ if (is_linux) {
         "-Wno-incompatible-pointer-types",
         # nspr passes "int*" through "unsigned int*".
         "-Wno-pointer-sign",
-
-        "-Wno-incompatible-pointer-types",
-        "-Wno-pointer-sign",
       ]
+
+      # nspr uses assert(!"foo") instead of assert(false && "foo").
+      configs -= [ "//build/config/clang:extra_warnings" ]
     }
   }
 
