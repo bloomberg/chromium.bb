@@ -46,17 +46,17 @@ void NamedNodeMap::deref()
 }
 #endif
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::getNamedItem(const AtomicString& name) const
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::getNamedItem(const AtomicString& name) const
 {
     return m_element->getAttributeNode(name);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const
 {
     return m_element->getAttributeNodeNS(namespaceURI, localName);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
 {
     size_t index = m_element->attributes().findIndex(name, m_element->shouldIgnoreAttributeCase());
     if (index == kNotFound) {
@@ -66,7 +66,7 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& n
     return m_element->detachAttribute(index);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
 {
     size_t index = m_element->attributes().findIndex(QualifiedName(nullAtom, localName, namespaceURI));
     if (index == kNotFound) {
@@ -76,28 +76,19 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString&
     return m_element->detachAttribute(index);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState)
 {
-    if (!node) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
-        return nullptr;
-    }
-
-    // Not mentioned in spec: throw a HIERARCHY_REQUEST_ERROR if the user passes in a non-attribute node
-    if (!node->isAttributeNode()) {
-        exceptionState.throwDOMException(HierarchyRequestError, "The node provided is not an attribute node.");
-        return nullptr;
-    }
-
-    return m_element->setAttributeNode(toAttr(node), exceptionState);
+    ASSERT(attr);
+    return m_element->setAttributeNode(attr, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState)
 {
-    return setNamedItem(node, exceptionState);
+    ASSERT(attr);
+    return m_element->setAttributeNodeNS(attr, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<Node> NamedNodeMap::item(unsigned index) const
+PassRefPtrWillBeRawPtr<Attr> NamedNodeMap::item(unsigned index) const
 {
     AttributeCollection attributes = m_element->attributes();
     if (index >= attributes.size())

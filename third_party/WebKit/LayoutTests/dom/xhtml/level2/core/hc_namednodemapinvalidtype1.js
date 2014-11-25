@@ -109,9 +109,9 @@ function hc_namednodemapinvalidtype1() {
             retval = attributes.setNamedItem(newElem);
         }
 		catch(ex) {
-      success = (typeof(ex.code) != 'undefined' && ex.code == 3);
+      success = ex.name == 'TypeError';
 		}
-		assertTrue("throw_HIERARCHY_REQUEST_ERR",success);
+		assertTrue("throw_TYPE_ERR",success);
 	}
 
 }

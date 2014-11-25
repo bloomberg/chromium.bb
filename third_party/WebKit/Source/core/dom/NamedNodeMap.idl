@@ -20,30 +20,30 @@
 
 [
     SetWrapperReferenceFrom=element,
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface NamedNodeMap {
 
-    [MeasureAs=NamedNodeMapGetNamedItem] Node getNamedItem([Default=Undefined] optional DOMString name);
-    [NotEnumerable, ImplementedAs=getNamedItem] getter Node ([Default=Undefined] optional DOMString name);
+    [MeasureAs=NamedNodeMapGetNamedItem] Attr getNamedItem([Default=Undefined] optional DOMString name);
+    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr ([Default=Undefined] optional DOMString name);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Node setNamedItem([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr setNamedItem(Attr attr);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Node removeNamedItem([Default=Undefined] optional DOMString name);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem([Default=Undefined] optional DOMString name);
 
-    [MeasureAs=NamedNodeMapItem] getter Node item([Default=Undefined] optional unsigned long index);
+    [MeasureAs=NamedNodeMapItem] getter Attr item([Default=Undefined] optional unsigned long index);
 
     readonly attribute unsigned long length;
 
 
     // Introduced in DOM Level 2:
 
-    [MeasureAs=NamedNodeMapGetNamedItemNS] Node getNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
+    [MeasureAs=NamedNodeMapGetNamedItemNS] Attr getNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
                                                                [Default=Undefined] optional DOMString localName);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Node setNamedItemNS([Default=Undefined] optional Node node);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr setNamedItemNS(Attr attr);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Node removeNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
                                                                                                               [Default=Undefined] optional DOMString localName);
 
 };
-

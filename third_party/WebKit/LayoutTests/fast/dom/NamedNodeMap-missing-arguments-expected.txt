@@ -1,0 +1,6 @@
+PASS attributes.setNamedItem() threw exception TypeError: Failed to execute 'setNamedItem' on 'NamedNodeMap': 1 argument required, but only 0 present..
+PASS attributes.setNamedItemNS() threw exception TypeError: Failed to execute 'setNamedItemNS' on 'NamedNodeMap': 1 argument required, but only 0 present..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
