@@ -4,10 +4,12 @@
 
 #include "content/browser/android/overscroll_refresh.h"
 
+#include "cc/animation/timing_function.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/animation_utils.h"
 #include "ui/base/android/system_ui_resource_manager.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 using std::abs;
 using std::max;
@@ -36,7 +38,7 @@ const int kActivationTimeMs = 1000;
 const int kMaxActivationTimeMs = kActivationTimeMs * 3;
 
 // Animation duration after the refresh activated phase has completed.
-const int kActivationRecedeTimeMs = 300;
+const int kActivationRecedeTimeMs = 250;
 
 // Input threshold required to start glowing.
 const float kGlowActivationThreshold = 0.85f;
@@ -57,19 +59,17 @@ const float kEpsilon = 0.005f;
 void UpdateLayer(cc::UIResourceLayer* layer,
                  cc::Layer* parent,
                  cc::UIResourceId res_id,
-                 const gfx::SizeF& viewport_size,
-                 float offset,
+                 const gfx::Size& size,
+                 const gfx::Vector2dF& offset,
                  float opacity,
                  float rotation) {
+  DCHECK(layer);
+  DCHECK(parent);
+  DCHECK(parent->layer_tree_host());
   if (layer->parent() != parent)
     parent->AddChild(layer);
 
-  if (!layer->layer_tree_host())
-    return;
-
-  // An empty window size, while meaningless, is also relatively harmless, and
-  // will simply prevent any drawing of the layers.
-  if (viewport_size.IsEmpty()) {
+  if (size.IsEmpty()) {
     layer->SetIsDrawable(false);
     return;
   }
@@ -85,17 +85,16 @@ void UpdateLayer(cc::UIResourceLayer* layer,
     return;
   }
 
-  gfx::Size image_size = layer->layer_tree_host()->GetUIResourceSize(res_id);
   layer->SetUIResourceId(res_id);
   layer->SetIsDrawable(true);
   layer->SetTransformOrigin(
-      gfx::Point3F(image_size.width() * 0.5f, image_size.height() * 0.5f, 0));
-  layer->SetBounds(image_size);
+      gfx::Point3F(size.width() * 0.5f, size.height() * 0.5f, 0));
+  layer->SetBounds(size);
   layer->SetContentsOpaque(false);
   layer->SetOpacity(Clamp(opacity, 0.f, 1.f));
 
-  float offset_x = (viewport_size.width() - image_size.width()) * 0.5f;
-  float offset_y = offset - image_size.height();
+  float offset_x = offset.x() - size.width() * 0.5f;
+  float offset_y = offset.y() - size.height() * 0.5f;
   gfx::Transform transform;
   transform.Translate(offset_x, offset_y);
   transform.Rotate(rotation);
@@ -116,6 +115,7 @@ class OverscrollRefresh::Effect {
         active_alpha_(0),
         offset_(0),
         rotation_(0),
+        size_scale_(1),
         idle_alpha_start_(0),
         idle_alpha_finish_(0),
         active_alpha_start_(0),
@@ -124,7 +124,11 @@ class OverscrollRefresh::Effect {
         offset_finish_(0),
         rotation_start_(0),
         rotation_finish_(0),
-        state_(STATE_IDLE) {
+        size_scale_start_(1),
+        size_scale_finish_(1),
+        state_(STATE_IDLE),
+        ease_out_(cc::EaseOutTimingFunction::Create()),
+        ease_in_out_(cc::EaseInOutTimingFunction::Create()) {
     DCHECK(target_drag_);
     idle_layer_->SetIsDrawable(false);
     active_layer_->SetIsDrawable(false);
@@ -170,6 +174,8 @@ class OverscrollRefresh::Effect {
                     (1.f - kGlowActivationThreshold);
     idle_alpha_ = Clamp(idle_alpha_, 0.f, 1.f);
     active_alpha_ = Clamp(active_alpha_, 0.f, 1.f);
+
+    size_scale_ = 1;
   }
 
   bool Animate(base::TimeTicks current_time, bool still_refreshing) {
@@ -181,12 +187,21 @@ class OverscrollRefresh::Effect {
 
     const double dt = (current_time - start_time_).InMilliseconds();
     const double t = dt / duration_.InMilliseconds();
-    const float interp = static_cast<float>(Damp(min(t, 1.), 1.));
+    const float interp = ease_out_->GetValue(min(t, 1.));
 
     idle_alpha_ = Lerp(idle_alpha_start_, idle_alpha_finish_, interp);
     active_alpha_ = Lerp(active_alpha_start_, active_alpha_finish_, interp);
     offset_ = Lerp(offset_start_, offset_finish_, interp);
-    rotation_ = Lerp(rotation_start_, rotation_finish_, interp);
+    size_scale_ = Lerp(size_scale_start_, size_scale_finish_, interp);
+
+    if (state_ == STATE_ACTIVATED || state_ == STATE_ACTIVATED_RECEDE) {
+      float adjusted_interp = ease_in_out_->GetValue(min(t, 1.));
+      rotation_ = Lerp(rotation_start_, rotation_finish_, adjusted_interp);
+      // Add a small constant rotational velocity during activation.
+      rotation_ += dt * 90.f / kActivationTimeMs;
+    } else {
+      rotation_ = Lerp(rotation_start_, rotation_finish_, interp);
+    }
 
     if (t < 1.f - kEpsilon)
       return true;
@@ -206,7 +221,8 @@ class OverscrollRefresh::Effect {
         activated_start_time_ = current_time;
         offset_start_ = offset_finish_ = offset_;
         rotation_start_ = rotation_;
-        rotation_finish_ = rotation_start_ + 360.f;
+        rotation_finish_ = rotation_start_ + 270.f;
+        size_scale_start_ = size_scale_finish_ = size_scale_;
         break;
       case STATE_ACTIVATED:
         start_time_ = current_time;
@@ -215,17 +231,15 @@ class OverscrollRefresh::Effect {
              base::TimeDelta::FromMilliseconds(kMaxActivationTimeMs))) {
           offset_start_ = offset_finish_ = offset_;
           rotation_start_ = rotation_;
-          rotation_finish_ = rotation_start_ + 360.f;
+          rotation_finish_ = rotation_start_ + 270.f;
           break;
         }
         state_ = STATE_ACTIVATED_RECEDE;
         duration_ = base::TimeDelta::FromMilliseconds(kActivationRecedeTimeMs);
-        idle_alpha_start_ = idle_alpha_;
-        active_alpha_start_ = active_alpha_;
-        idle_alpha_finish_ = 0;
-        active_alpha_finish_ = 0;
         rotation_start_ = rotation_finish_ = rotation_;
         offset_start_ = offset_finish_ = offset_;
+        size_scale_start_ = size_scale_;
+        size_scale_finish_ = 0;
         break;
       case STATE_ACTIVATED_RECEDE:
         Finish();
@@ -262,6 +276,7 @@ class OverscrollRefresh::Effect {
     active_alpha_start_ = active_alpha_;
     offset_start_ = offset_;
     rotation_start_ = rotation_;
+    size_scale_start_ = size_scale_finish_ = size_scale_;
 
     if (drag_ < target_drag_ || !allow_activation) {
       state_ = STATE_RECEDE;
@@ -291,19 +306,48 @@ class OverscrollRefresh::Effect {
     idle_alpha_ = 0;
     active_alpha_ = 0;
     rotation_ = 0;
+    size_scale_ = 1;
     state_ = STATE_IDLE;
   }
 
-  void ApplyToLayers(const gfx::SizeF& size, cc::Layer* parent) {
+  void ApplyToLayers(const gfx::SizeF& viewport_size, cc::Layer* parent) {
     if (IsFinished())
       return;
 
-    UpdateLayer(idle_layer_.get(), parent,
-                resource_manager_->GetUIResourceId(kIdleResourceType), size,
-                offset_, idle_alpha_, rotation_);
-    UpdateLayer(active_layer_.get(), parent,
-                resource_manager_->GetUIResourceId(kActiveResourceType), size,
-                offset_, active_alpha_, rotation_);
+    if (!parent->layer_tree_host())
+      return;
+
+    // An empty window size, while meaningless, is also relatively harmless, and
+    // will simply prevent any drawing of the layers.
+    if (viewport_size.IsEmpty()) {
+      idle_layer_->SetIsDrawable(false);
+      active_layer_->SetIsDrawable(false);
+      return;
+    }
+
+    cc::UIResourceId idle_resource =
+        resource_manager_->GetUIResourceId(kIdleResourceType);
+    cc::UIResourceId active_resource =
+        resource_manager_->GetUIResourceId(kActiveResourceType);
+
+    gfx::Size idle_size =
+        parent->layer_tree_host()->GetUIResourceSize(idle_resource);
+    gfx::Size active_size =
+        parent->layer_tree_host()->GetUIResourceSize(active_resource);
+    gfx::Size scaled_idle_size =
+        gfx::ToRoundedSize(gfx::ScaleSize(idle_size, size_scale_));
+    gfx::Size scaled_active_size =
+        gfx::ToRoundedSize(gfx::ScaleSize(active_size, size_scale_));
+
+    gfx::Vector2dF idle_offset(viewport_size.width() * 0.5f,
+                               offset_ - idle_size.height() * 0.5f);
+    gfx::Vector2dF active_offset(viewport_size.width() * 0.5f,
+                                 offset_ - active_size.height() * 0.5f);
+
+    UpdateLayer(idle_layer_.get(), parent, idle_resource, scaled_idle_size,
+                idle_offset, idle_alpha_, rotation_);
+    UpdateLayer(active_layer_.get(), parent, active_resource,
+                scaled_active_size, active_offset, active_alpha_, rotation_);
   }
 
   bool IsFinished() const { return state_ == STATE_IDLE; }
@@ -334,6 +378,7 @@ class OverscrollRefresh::Effect {
   float active_alpha_;
   float offset_;
   float rotation_;
+  float size_scale_;
 
   float idle_alpha_start_;
   float idle_alpha_finish_;
@@ -343,12 +388,19 @@ class OverscrollRefresh::Effect {
   float offset_finish_;
   float rotation_start_;
   float rotation_finish_;
+  float size_scale_start_;
+  float size_scale_finish_;
 
   base::TimeTicks start_time_;
   base::TimeTicks activated_start_time_;
   base::TimeDelta duration_;
 
   State state_;
+
+  scoped_ptr<cc::TimingFunction> ease_out_;
+  scoped_ptr<cc::TimingFunction> ease_in_out_;
+
+  DISALLOW_COPY_AND_ASSIGN(Effect);
 };
 
 OverscrollRefresh::OverscrollRefresh(
