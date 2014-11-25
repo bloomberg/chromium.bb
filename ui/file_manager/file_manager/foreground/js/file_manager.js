@@ -122,13 +122,6 @@ function FileManager() {
    */
   this.launchParams_ = null;
 
-  /**
-   * Startup preference about the view.
-   * @type {Object}
-   * @private
-   */
-  this.viewOptions_ = {};
-
   // --------------------------------------------------------------------------
   // Controllers.
 
@@ -180,6 +173,13 @@ function FileManager() {
    * @private
    */
   this.gearMenuController_ = null;
+
+  /**
+   * App state controller.
+   * @type {AppStateController}
+   * @private
+   */
+  this.appStateController_ = null;
 
   // --------------------------------------------------------------------------
   // DOM elements.
@@ -275,13 +275,6 @@ function FileManager() {
    * @private
    */
   this.closeOnUnmount_ = false;
-
-  /**
-   * The key for storing startup preference.
-   * @type {string}
-   * @private
-   */
-  this.startupPrefName_ = '';
 
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
@@ -472,32 +465,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.initSettings_ = function(callback) {
-    var group = new AsyncUtil.Group();
-
-    // Get startup preferences.
-    group.add(function(done) {
-      chrome.storage.local.get(this.startupPrefName_, function(values) {
-        var value = values[this.startupPrefName_];
-        if (!value) {
-          done();
-          return;
-        }
-        // Load the global default options.
-        try {
-          this.viewOptions_ = JSON.parse(value);
-        } catch (ignore) {}
-        // Override with window-specific options.
-        if (window.appState && window.appState.viewOptions) {
-          for (var key in window.appState.viewOptions) {
-            if (window.appState.viewOptions.hasOwnProperty(key))
-              this.viewOptions_[key] = window.appState.viewOptions[key];
-          }
-        }
-        done();
-      }.bind(this));
-    }.bind(this));
-
-    group.run(callback);
+    this.appStateController_ = new AppStateController(this.dialogType);
+    this.appStateController_.loadInitialViewOptions().then(callback);
   };
 
   /**
@@ -755,8 +724,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Initialize the member variables that depend this.launchParams_.
     this.dialogType = this.launchParams_.type;
-    this.startupPrefName_ = 'file-manager-' + this.dialogType;
-
     callback();
   };
 
@@ -988,10 +955,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.selectionHandler_ = new FileSelectionHandler(this);
 
-    var dataModel = this.directoryModel_.getFileList();
-    dataModel.addEventListener('permuted',
-                               this.updateStartupPrefs_.bind(this));
-
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
@@ -1011,26 +974,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // attach the directory model.
     this.initDirectoryTree_();
 
-    this.ui_.listContainer.table.addEventListener('column-resize-end',
-                                 this.updateStartupPrefs_.bind(this));
-
-    // Restore preferences.
-    this.directoryModel_.getFileList().sort(
-        this.viewOptions_.sortField || 'modificationTime',
-        this.viewOptions_.sortDirection || 'desc');
-    if (this.viewOptions_.columns) {
-      var cm = this.ui_.listContainer.table.columnModel;
-      for (var i = 0; i < cm.size; i++) {
-        if (this.viewOptions_.columns[i] > 0)
-          cm.setWidth(i, this.viewOptions_.columns[i]);
-      }
-    }
-
     this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();
     this.ui_.listContainer.selectionModel =
         this.directoryModel_.getFileListSelection();
-    this.setListType(
-        this.viewOptions_.listType || ListContainer.ListType.DETAIL);
+
+    this.appStateController_.initialize(this.ui_, this.directoryModel_);
 
     this.closeOnUnmount_ = (this.launchParams_.action == 'auto-open');
 
@@ -1108,33 +1056,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @private
-   */
-  FileManager.prototype.updateStartupPrefs_ = function() {
-    var sortStatus = this.directoryModel_.getFileList().sortStatus;
-    var prefs = {
-      sortField: sortStatus.field,
-      sortDirection: sortStatus.direction,
-      columns: [],
-      listType: this.ui_.listContainer.currentListType
-    };
-    var cm = this.ui_.listContainer.table.columnModel;
-    for (var i = 0; i < cm.size; i++) {
-      prefs.columns.push(cm.getWidth(i));
-    }
-    // Save the global default.
-    var items = {};
-    items[this.startupPrefName_] = JSON.stringify(prefs);
-    chrome.storage.local.set(items);
-
-    // Save the window-specific preference.
-    if (window.appState) {
-      window.appState.viewOptions = prefs;
-      util.saveAppState();
-    }
-  };
-
-  /**
    * File list focus handler. Used to select the top most element on the list
    * if nothing was selected.
    *
@@ -1160,7 +1081,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.ui_.setCurrentListType(type);
-    this.updateStartupPrefs_();
+    this.appStateController_.saveViewOptions();
   };
 
   /**
@@ -1855,12 +1776,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.selectionHandler_.onFileSelectionChanged();
     this.searchController_.clear();
-    // TODO(mtomasz): Consider remembering the selection.
-    util.updateAppState(
-        this.getCurrentDirectoryEntry() ?
-        this.getCurrentDirectoryEntry().toURL() : '',
-        '' /* selectionURL */,
-        '' /* opt_param */);
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();

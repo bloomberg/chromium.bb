@@ -62,6 +62,7 @@
           './ui/commandbutton.js',
           './ui/file_manager_dialog_base.js',
           './app_installer.js',
+          './app_state_controller.js',
           './cws_container_client.js',
           './dialog_action_controller.js',
           './directory_contents.js',
