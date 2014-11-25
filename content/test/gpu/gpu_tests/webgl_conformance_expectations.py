@@ -310,3 +310,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['chromeos', ('intel', 0xa011)], bug=375554)
     self.Skip('conformance/uniforms/uniform-default-values.html',
         ['chromeos', ('intel', 0xa011)], bug=375554)
+
+    # Flaky on Mac & Linux
+    self.Fail('conformance/textures/texture-upload-size.html',
+        ['mac'], bug=436493)
+    self.Fail('conformance/textures/texture-upload-size.html',
+        ['linux'], bug=436493)
