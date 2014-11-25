@@ -101,17 +101,31 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
   def __init__(self, options, spec, root):
     super(GclientGitCheckout, self).__init__(options, spec, root)
     assert 'solutions' in self.spec
-    keys = ['solutions', 'target_os', 'target_os_only']
-    gclient_spec = '\n'.join('%s = %s' % (key, self.spec[key])
-                             for key in keys if key in self.spec)
-    self.spec['gclient_spec'] = gclient_spec
+
+  def _format_spec(self):
+    def _format_literal(lit):
+      if isinstance(lit, basestring):
+        return '"%s"' % lit
+      if isinstance(lit, list):
+        return '[%s]' % ', '.join(_format_literal(i) for i in lit)
+      return '%r' % lit
+    soln_strings = []
+    for soln in self.spec['solutions']:
+      soln_string= '\n'.join('    "%s": %s,' % (key, _format_literal(value))
+                             for key, value in soln.iteritems())
+      soln_strings.append('  {\n%s\n  },' % soln_string)
+    gclient_spec = 'solutions = [\n%s\n]\n' % '\n'.join(soln_strings)
+    extra_keys = ['target_os', 'target_os_only']
+    gclient_spec += ''.join('%s = %s\n' % (key, _format_literal(self.spec[key]))
+                             for key in extra_keys if key in self.spec)
+    return gclient_spec
 
   def exists(self):
     return os.path.exists(os.path.join(os.getcwd(), self.root))
 
   def init(self):
     # Configure and do the gclient checkout.
-    self.run_gclient('config', '--spec', self.spec['gclient_spec'])
+    self.run_gclient('config', '--spec', self._format_spec())
     sync_cmd = ['sync']
     if self.options.nohooks:
       sync_cmd.append('--nohooks')
