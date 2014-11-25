@@ -18,6 +18,17 @@ namespace csp_validator {
 // will cause problems when we transmit the policy in an HTTP header.
 bool ContentSecurityPolicyIsLegal(const std::string& policy);
 
+// This specifies options for configuring which CSP directives are permitted in
+// extensions.
+enum Options {
+  OPTIONS_NONE = 0,
+  // Allows 'unsafe-eval' to be specified as a source in a directive.
+  OPTIONS_ALLOW_UNSAFE_EVAL = 1 << 0,
+  // Allow an object-src to be specified with any sources (i.e. it may contain
+  // wildcards or http sources).
+  OPTIONS_ALLOW_INSECURE_OBJECT_SRC = 1 << 1,
+};
+
 // Checks whether the given |policy| meets the minimum security requirements
 // for use in the extension system.
 //
@@ -28,8 +39,10 @@ bool ContentSecurityPolicyIsLegal(const std::string& policy);
 // However, we found that it broke too many deployed extensions to limit
 // 'unsafe-eval' in the script-src directive, so that is allowed as a special
 // case for extensions. Platform apps disallow it.
+//
+// |options| is a bitmask of Options.
 bool ContentSecurityPolicyIsSecure(
-    const std::string& policy, Manifest::Type type);
+    const std::string& policy, int options);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as
 // defined by http://www.whatwg.org/specs/web-apps/current-work/multipage/

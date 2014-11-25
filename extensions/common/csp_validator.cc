@@ -107,7 +107,7 @@ bool isNonWildcardTLD(const std::string& url,
 }
 
 bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
-                         Manifest::Type type) {
+                         int options) {
   while (tokenizer.GetNext()) {
     std::string source = tokenizer.token();
     base::StringToLowerASCII(&source);
@@ -131,9 +131,7 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
       continue;
     }
 
-    // crbug.com/146487
-    if (type == Manifest::TYPE_EXTENSION ||
-        type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
+    if (options & OPTIONS_ALLOW_UNSAFE_EVAL) {
       if (source == "'unsafe-eval'")
         continue;
     }
@@ -148,13 +146,13 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
 bool UpdateStatus(const std::string& directive_name,
                   base::StringTokenizer& tokenizer,
                   DirectiveStatus* status,
-                  Manifest::Type type) {
+                  int options) {
   if (status->seen_in_policy)
     return false;
   if (directive_name != status->directive_name)
     return false;
   status->seen_in_policy = true;
-  status->is_secure = HasOnlySecureTokens(tokenizer, type);
+  status->is_secure = HasOnlySecureTokens(tokenizer, options);
   return true;
 }
 
@@ -170,7 +168,7 @@ bool ContentSecurityPolicyIsLegal(const std::string& policy) {
 }
 
 bool ContentSecurityPolicyIsSecure(const std::string& policy,
-                                   Manifest::Type type) {
+                                   int options) {
   // See http://www.w3.org/TR/CSP/#parse-a-csp-policy for parsing algorithm.
   std::vector<std::string> directives;
   base::SplitString(policy, ';', &directives);
@@ -188,19 +186,23 @@ bool ContentSecurityPolicyIsSecure(const std::string& policy,
     std::string directive_name = tokenizer.token();
     base::StringToLowerASCII(&directive_name);
 
-    if (UpdateStatus(directive_name, tokenizer, &default_src_status, type))
+    if (UpdateStatus(directive_name, tokenizer, &default_src_status, options))
       continue;
-    if (UpdateStatus(directive_name, tokenizer, &script_src_status, type))
+    if (UpdateStatus(directive_name, tokenizer, &script_src_status, options))
       continue;
-    if (UpdateStatus(directive_name, tokenizer, &object_src_status, type))
+    if (UpdateStatus(directive_name, tokenizer, &object_src_status, options))
       continue;
   }
 
   if (script_src_status.seen_in_policy && !script_src_status.is_secure)
     return false;
 
-  if (object_src_status.seen_in_policy && !object_src_status.is_secure)
-    return false;
+  if (object_src_status.seen_in_policy && !object_src_status.is_secure) {
+    // Note that this does not fully check the object-src source list for
+    // validity but Blink will do this anyway.
+    if (!(options & OPTIONS_ALLOW_INSECURE_OBJECT_SRC))
+      return false;
+  }
 
   if (default_src_status.seen_in_policy && !default_src_status.is_secure) {
     return script_src_status.seen_in_policy &&

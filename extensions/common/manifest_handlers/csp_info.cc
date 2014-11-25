@@ -44,6 +44,27 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     //    streaming or partial buffering.
     "media-src *;";
 
+int GetValidatorOptions(Extension* extension) {
+  int options = csp_validator::OPTIONS_NONE;
+
+  // crbug.com/146487
+  if (extension->GetType() == Manifest::TYPE_EXTENSION ||
+      extension->GetType() == Manifest::TYPE_LEGACY_PACKAGED_APP) {
+    options |= csp_validator::OPTIONS_ALLOW_UNSAFE_EVAL;
+  }
+
+  // Component extensions can specify an insecure object-src directive. This
+  // should be safe because non-NPAPI plugins should load in a sandboxed process
+  // and only allow communication via postMessage. Flash is an exception since
+  // it allows scripting into the embedder page, but even then it should
+  // disallow cross-origin scripting. At some point we may want to consider
+  // allowing this publicly.
+  if (extensions::Manifest::IsComponentLocation(extension->location()))
+    options |= csp_validator::OPTIONS_ALLOW_INSECURE_OBJECT_SRC;
+
+  return options;
+}
+
 }  // namespace
 
 CSPInfo::CSPInfo(const std::string& security_policy)
@@ -88,7 +109,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
           kDefaultContentSecurityPolicy;
 
       CHECK(ContentSecurityPolicyIsSecure(content_security_policy,
-                                          extension->GetType()));
+                                          GetValidatorOptions(extension)));
       extension->SetManifestData(keys::kContentSecurityPolicy,
                                  new CSPInfo(content_security_policy));
     }
@@ -106,7 +127,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   }
   if (extension->manifest_version() >= 2 &&
       !ContentSecurityPolicyIsSecure(content_security_policy,
-                                     extension->GetType())) {
+                                     GetValidatorOptions(extension))) {
     *error = base::ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
     return false;
   }
