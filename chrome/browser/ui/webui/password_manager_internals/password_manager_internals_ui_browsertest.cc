@@ -124,3 +124,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   // The text should still be there.
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
+
+// Test that navigation away from the internals page works OK.
+IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
+                       LogSavePasswordProgress_NavigateAway) {
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(browser()->profile());
+  ASSERT_TRUE(service);
+  service->ProcessLog("<script> text for testing");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://version"), CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+}

@@ -26,7 +26,7 @@ class PasswordManagerInternalsUI : public content::WebUIController,
  private:
   // If currently registered with PasswordManagerInternalsService, unregisters
   // |this|. Otherwise this is a no-op.
-  void UnregisterFromLoggingService();
+  void UnregisterFromLoggingServiceIfNecessary();
 
   // Whether |this| registered as a log receiver with the
   // PasswordManagerInternalsService.
