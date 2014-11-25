@@ -6,6 +6,7 @@
 #define TransformDisplayItem_h
 
 #include "core/paint/ViewDisplayList.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
 
@@ -19,7 +20,7 @@ public:
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif
-    const TransformationMatrix& m_transform;
+    const TransformationMatrix m_transform;
 };
 
 class EndTransformDisplayItem : public DisplayItem {
