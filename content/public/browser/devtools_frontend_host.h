@@ -11,7 +11,7 @@
 
 namespace content {
 
-class RenderViewHost;
+class WebContents;
 
 // This class dispatches messages between DevTools frontend and Delegate
 // which is implemented by the embedder.
@@ -35,10 +35,11 @@ class DevToolsFrontendHost {
         const std::string& message) = 0;
   };
 
-  // Creates a new DevToolsFrontendHost for RenderViewHost where DevTools
+  // Creates a new DevToolsFrontendHost for WebContents where DevTools
   // frontend is loaded.
   CONTENT_EXPORT static DevToolsFrontendHost* Create(
-      RenderViewHost* frontend_rvh, Delegate* delegate);
+      WebContents* frontend_web_contents,
+      Delegate* delegate);
 
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
 };

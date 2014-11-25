@@ -83,7 +83,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void RenderProcessGone(base::TerminationStatus status) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;

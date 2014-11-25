@@ -286,10 +286,11 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
     AboutToNavigateRenderFrame(content::RenderFrameHost* render_frame_host) {
-  // TODO(creis): Create should be refactored to operate on RenderFrameHosts.
+  if (render_frame_host->GetParent())
+    return;
   devtools_bindings_->frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(
-          render_frame_host->GetRenderViewHost(), devtools_bindings_));
+      content::DevToolsFrontendHost::Create(devtools_bindings_->web_contents(),
+                                            devtools_bindings_));
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -374,8 +375,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(this));
 
   frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(
-          web_contents_->GetRenderViewHost(), this));
+      content::DevToolsFrontendHost::Create(web_contents_, this));
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {

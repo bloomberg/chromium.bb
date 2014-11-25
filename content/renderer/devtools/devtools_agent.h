@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/common/console_message_level.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
 namespace blink {
@@ -23,17 +23,18 @@ class WebDevToolsAgent;
 struct GpuTaskInfo;
 
 namespace content {
+
 class RenderViewImpl;
 
 // DevToolsAgent belongs to the inspectable RenderView and provides Glue's
 // agents with the communication capabilities. All messages from/to Glue's
 // agents infrastructure are flowing through this communication agent.
 // There is a corresponding DevToolsClient object on the client side.
-class DevToolsAgent : public RenderViewObserver,
+class DevToolsAgent : public RenderFrameObserver,
                       public base::SupportsWeakPtr<DevToolsAgent>,
                       public blink::WebDevToolsAgentClient {
  public:
-  explicit DevToolsAgent(RenderViewImpl* render_view);
+  explicit DevToolsAgent(RenderFrame* main_render_frame);
   ~DevToolsAgent() override;
 
   // Returns agent instance for its routing id.
@@ -87,6 +88,8 @@ class DevToolsAgent : public RenderViewObserver,
   void ContinueProgram();
   void OnSetupDevToolsClient();
 
+  RenderViewImpl* GetRenderViewImpl();
+
   static void TraceEventCallbackWrapper(
       base::TimeTicks timestamp,
       char phase,
@@ -103,6 +106,7 @@ class DevToolsAgent : public RenderViewObserver,
   bool is_devtools_client_;
   int32 gpu_route_id_;
   bool paused_in_mouse_move_;
+  RenderFrame* main_render_frame_;
 
   static base::subtle::AtomicWord /* TraceEventCallback */ event_callback_;
 

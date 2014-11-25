@@ -806,7 +806,7 @@ void RenderViewImpl::Initialize(
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
-  devtools_agent_ = new DevToolsAgent(this);
+  devtools_agent_ = new DevToolsAgent(main_render_frame_.get());
   if (RenderWidgetCompositor* rwc = compositor()) {
     webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
   }

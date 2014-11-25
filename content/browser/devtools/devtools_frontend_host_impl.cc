@@ -6,32 +6,35 @@
 
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
 
 // static
 DevToolsFrontendHost* DevToolsFrontendHost::Create(
-    RenderViewHost* frontend_rvh,
+    WebContents* frontend_web_contents,
     DevToolsFrontendHost::Delegate* delegate) {
-  return new DevToolsFrontendHostImpl(frontend_rvh, delegate);
+  return new DevToolsFrontendHostImpl(frontend_web_contents, delegate);
 }
 
 DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
-    RenderViewHost* frontend_rvh,
+    WebContents* frontend_web_contents,
     DevToolsFrontendHost::Delegate* delegate)
-    : WebContentsObserver(WebContents::FromRenderViewHost(frontend_rvh)),
-      delegate_(delegate) {
-  frontend_rvh->Send(new DevToolsMsg_SetupDevToolsClient(
-      frontend_rvh->GetRoutingID()));
+    : WebContentsObserver(frontend_web_contents), delegate_(delegate) {
+  RenderFrameHost* main_frame_host = web_contents()->GetMainFrame();
+  main_frame_host->Send(
+      new DevToolsMsg_SetupDevToolsClient(main_frame_host->GetRoutingID()));
 }
 
 DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {
 }
 
 bool DevToolsFrontendHostImpl::OnMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
+  if (render_frame_host != web_contents()->GetMainFrame())
+    return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsFrontendHostImpl, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,

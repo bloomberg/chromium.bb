@@ -76,15 +76,17 @@ base::LazyInstance<IdToAgentMap>::Leaky
 
 } //  namespace
 
-DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
+DevToolsAgent::DevToolsAgent(RenderFrame* main_render_frame)
+    : RenderFrameObserver(main_render_frame),
       is_attached_(false),
       is_devtools_client_(false),
       gpu_route_id_(MSG_ROUTING_NONE),
-      paused_in_mouse_move_(false) {
+      paused_in_mouse_move_(false),
+      main_render_frame_(main_render_frame) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
 
-  render_view->webview()->setDevToolsAgentClient(this);
+  main_render_frame_->GetRenderView()->GetWebView()->setDevToolsAgentClient(
+      this);
 }
 
 DevToolsAgent::~DevToolsAgent() {
@@ -152,14 +154,13 @@ blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
 }
 
 void DevToolsAgent::willEnterDebugLoop() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
-  paused_in_mouse_move_ = impl->SendAckForMouseMoveFromDebugger();
+  paused_in_mouse_move_ =
+      GetRenderViewImpl()->SendAckForMouseMoveFromDebugger();
 }
 
 void DevToolsAgent::didExitDebugLoop() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
   if (paused_in_mouse_move_) {
-    impl->IgnoreAckForMouseMoveFromDebugger();
+    GetRenderViewImpl()->IgnoreAckForMouseMoveFromDebugger();
     paused_in_mouse_move_ = false;
   }
 }
@@ -258,13 +259,11 @@ void DevToolsAgent::OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks) {
 
 void DevToolsAgent::enableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
-  impl->EnableScreenMetricsEmulation(params);
+  GetRenderViewImpl()->EnableScreenMetricsEmulation(params);
 }
 
 void DevToolsAgent::disableDeviceEmulation() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
-  impl->DisableScreenMetricsEmulation();
+  GetRenderViewImpl()->DisableScreenMetricsEmulation();
 }
 
 // static
@@ -321,7 +320,7 @@ void DevToolsAgent::OnInspectElement(
 
 void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
                                           const std::string& message) {
-  WebView* web_view = render_view()->GetWebView();
+  WebView* web_view = main_render_frame_->GetRenderView()->GetWebView();
   if (!web_view)
     return;
 
@@ -359,14 +358,18 @@ void DevToolsAgent::OnSetupDevToolsClient() {
   if (is_devtools_client_)
     return;
   is_devtools_client_ = true;
-  new DevToolsClient(static_cast<RenderViewImpl*>(render_view()));
+  new DevToolsClient(main_render_frame_);
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
-  WebView* web_view = render_view()->GetWebView();
+  WebView* web_view = main_render_frame_->GetRenderView()->GetWebView();
   if (!web_view)
     return NULL;
   return web_view->devToolsAgent();
+}
+
+RenderViewImpl* DevToolsAgent::GetRenderViewImpl() {
+  return static_cast<RenderViewImpl*>(main_render_frame_->GetRenderView());
 }
 
 bool DevToolsAgent::IsAttached() {

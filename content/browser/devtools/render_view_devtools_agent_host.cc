@@ -186,8 +186,9 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   if (!render_view_host_)
     return;
-  msg->set_routing_id(render_view_host_->GetRoutingID());
-  render_view_host_->Send(msg);
+  RenderFrameHost* main_frame_host = render_view_host_->GetMainFrame();
+  msg->set_routing_id(main_frame_host->GetRoutingID());
+  main_frame_host->Send(msg);
 }
 
 void RenderViewDevToolsAgentHost::OnClientAttached() {
@@ -334,11 +335,11 @@ void RenderViewDevToolsAgentHost::RenderProcessGone(
 bool RenderViewDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
-  return DispatchIPCMessage(message);
-}
-
-bool RenderViewDevToolsAgentHost::OnMessageReceived(
-    const IPC::Message& message) {
+  if (!render_view_host_)
+    return false;
+  if (render_frame_host != render_view_host_->GetMainFrame()) {
+    return false;
+  }
   return DispatchIPCMessage(message);
 }
 
