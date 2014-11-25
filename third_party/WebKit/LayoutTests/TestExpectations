@@ -1058,6 +1058,8 @@ crbug.com/377476 fast/js/function-name.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRebaseline ]
 
+crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
+
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
 crbug.com/381373 [ Win ] virtual/implsidepainting/inspector/tracing/decode-resize.html [ Pass Failure Slow ]
 
