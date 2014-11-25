@@ -8,10 +8,14 @@
 #include <shlwapi.h>  // For SHDeleteKey.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/fake_installation_state.h"
@@ -35,6 +39,11 @@ const wchar_t kTestExperimentLabel[] = L"test_label_value";
 class GoogleUpdateSettingsTest : public testing::Test {
  protected:
   virtual void SetUp() override {
+    base::FilePath program_files_path;
+    PathService::Get(base::DIR_PROGRAM_FILES, &program_files_path);
+    program_files_override_.reset(new base::ScopedPathOverride(
+        base::DIR_PROGRAM_FILES, program_files_path));
+
     registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
     registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
   }
@@ -297,6 +306,8 @@ class GoogleUpdateSettingsTest : public testing::Test {
                time_in_minutes) == ERROR_SUCCESS;
   }
 
+  // Keep Program Files path so InstallUtil::IsPerUserInstall doesn't crash.
+  scoped_ptr<base::ScopedPathOverride> program_files_override_;
   registry_util::RegistryOverrideManager registry_overrides_;
 };
 
@@ -626,6 +637,113 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
+}
+
+TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
+  // Pretend to be a system install for GoogleUpdateSettings::IsSystemInstall().
+  base::FilePath program_files_path;
+  PathService::Get(base::DIR_PROGRAM_FILES, &program_files_path);
+  base::ScopedPathOverride dir_module_override(base::DIR_MODULE,
+                                               program_files_path);
+
+  // No profile count keys present yet.
+  const base::string16& state_key = BrowserDistribution::GetDistribution()->
+      GetAppRegistrationData().GetStateMediumKey();
+  base::string16 num_profiles_path(state_key);
+  num_profiles_path.append(L"\\");
+  num_profiles_path.append(google_update::kRegProfilesActive);
+  base::string16 num_signed_in_path(state_key);
+  num_signed_in_path.append(L"\\");
+  num_signed_in_path.append(google_update::kRegProfilesSignedIn);
+
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          num_profiles_path.c_str(),
+                          KEY_QUERY_VALUE));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          num_signed_in_path.c_str(),
+                          KEY_QUERY_VALUE));
+
+  // Show time! Write the values.
+  GoogleUpdateSettings::UpdateProfileCounts(3, 2);
+
+  // Verify the keys were created.
+  EXPECT_EQ(ERROR_SUCCESS,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          num_profiles_path.c_str(),
+                          KEY_QUERY_VALUE));
+  EXPECT_EQ(ERROR_SUCCESS,
+            RegKey().Open(HKEY_LOCAL_MACHINE,
+                          num_signed_in_path.c_str(),
+                          KEY_QUERY_VALUE));
+
+  base::string16 uniquename;
+  EXPECT_TRUE(base::win::GetUserSidString(&uniquename));
+
+  // Verify the values are accessible.
+  DWORD num_profiles = 0;
+  DWORD num_signed_in = 0;
+  base::string16 aggregate;
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(HKEY_LOCAL_MACHINE, num_profiles_path.c_str(),
+             KEY_QUERY_VALUE).ReadValueDW(uniquename.c_str(),
+                                          &num_profiles));
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(HKEY_LOCAL_MACHINE, num_signed_in_path.c_str(),
+             KEY_QUERY_VALUE).ReadValueDW(uniquename.c_str(),
+                                          &num_signed_in));
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(HKEY_LOCAL_MACHINE, num_signed_in_path.c_str(),
+             KEY_QUERY_VALUE).ReadValue(google_update::kRegAggregateMethod,
+                                        &aggregate));
+
+  // Verify the correct values were written.
+  EXPECT_EQ(3, num_profiles);
+  EXPECT_EQ(2, num_signed_in);
+  EXPECT_EQ(L"sum()", aggregate);
+}
+
+TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsUserInstall) {
+  // Unit tests never operate as an installed application, so will never
+  // be a system install.
+
+  // No profile count values present yet.
+  const base::string16& state_key = BrowserDistribution::GetDistribution()->
+      GetAppRegistrationData().GetStateKey();
+
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            RegKey().Open(HKEY_CURRENT_USER,
+                          state_key.c_str(),
+                          KEY_QUERY_VALUE));
+
+  // Show time! Write the values.
+  GoogleUpdateSettings::UpdateProfileCounts(4, 1);
+
+  // Verify the key was created.
+  EXPECT_EQ(ERROR_SUCCESS,
+            RegKey().Open(HKEY_CURRENT_USER,
+                          state_key.c_str(),
+                          KEY_QUERY_VALUE));
+
+  // Verify the values are accessible.
+  base::string16 num_profiles;
+  base::string16 num_signed_in;
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(HKEY_CURRENT_USER, state_key.c_str(), KEY_QUERY_VALUE).
+          ReadValue(google_update::kRegProfilesActive, &num_profiles));
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      RegKey(HKEY_CURRENT_USER, state_key.c_str(), KEY_QUERY_VALUE).
+          ReadValue(google_update::kRegProfilesSignedIn, &num_signed_in));
+
+  // Verify the correct values were written.
+  EXPECT_EQ(L"4", num_profiles);
+  EXPECT_EQ(L"1", num_signed_in);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)

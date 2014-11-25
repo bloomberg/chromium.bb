@@ -64,45 +64,49 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
   return true;
 }
 
-// Updates a registry key |name| to be |value| for the given |app_reg_data|.
-// If this is a |system_install|, then update the value under HKLM (istead of
-// HKCU for user-installs) using a group of keys (one for each OS user) and also
-// include the method to |aggregate| these values when reporting.
-bool WriteGoogleUpdateStrKeyInternal(const AppRegistrationData& app_reg_data,
-                                     bool system_install,
-                                     const wchar_t* const name,
-                                     const base::string16& value,
-                                     const wchar_t* const aggregate) {
+// Writes |value| into a user-specific value in the key |name| under
+// |app_reg_data|'s ClientStateMedium key in HKLM along with the aggregation
+// method |aggregate|. This function is solely for use by system-level installs.
+bool WriteGoogleUpdateAggregateNumKeyInternal(
+    const AppRegistrationData& app_reg_data,
+    const wchar_t* const name,
+    int value,
+    const wchar_t* const aggregate) {
+  DCHECK(aggregate);
+  DCHECK(GoogleUpdateSettings::IsSystemInstall());
   const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
-  if (system_install) {
-    DCHECK(aggregate);
-    // Machine installs require each OS user to write a unique key under a
-    // named key in HKLM as well as an "aggregation" function that describes
-    // how the values of multiple users are to be combined.
-    base::string16 uniquename;
-    if (!base::win::GetUserSidString(&uniquename)) {
-      NOTREACHED();
-      return false;
-    }
 
-    base::string16 reg_path(app_reg_data.GetStateMediumKey());
-    reg_path.append(L"\\");
-    reg_path.append(name);
-    RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), kAccess);
-    key.WriteValue(google_update::kRegAggregateMethod, aggregate);
-    return (key.WriteValue(uniquename.c_str(), value.c_str()) == ERROR_SUCCESS);
-  } else {
-    // User installs are easy: just write the values to HKCU tree.
-    RegKey key(HKEY_CURRENT_USER, app_reg_data.GetStateKey().c_str(), kAccess);
-    return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+  // Machine installs require each OS user to write a unique key under a
+  // named key in HKLM as well as an "aggregation" function that describes
+  // how the values of multiple users are to be combined.
+  base::string16 uniquename;
+  if (!base::win::GetUserSidString(&uniquename)) {
+    NOTREACHED();
+    return false;
   }
+
+  base::string16 reg_path(app_reg_data.GetStateMediumKey());
+  reg_path.append(L"\\");
+  reg_path.append(name);
+  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), kAccess);
+  key.WriteValue(google_update::kRegAggregateMethod, aggregate);
+  return (key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS);
+}
+
+// Updates a registry key |name| to be |value| for the given |app_reg_data|.
+bool WriteGoogleUpdateStrKeyInternal(const AppRegistrationData& app_reg_data,
+                                     const wchar_t* const name,
+                                     const base::string16& value) {
+  const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
+  RegKey key(HKEY_CURRENT_USER, app_reg_data.GetStateKey().c_str(), kAccess);
+  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
 }
 
 bool WriteGoogleUpdateStrKey(const wchar_t* const name,
                              const base::string16& value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   return WriteGoogleUpdateStrKeyInternal(
-      dist->GetAppRegistrationData(), false, name, value, NULL);
+      dist->GetAppRegistrationData(), name, value);
 }
 
 bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
@@ -434,10 +438,8 @@ bool GoogleUpdateSettings::UpdateDidRunStateForApp(
     const AppRegistrationData& app_reg_data,
     bool did_run) {
   return WriteGoogleUpdateStrKeyInternal(app_reg_data,
-                                         false, // user level.
                                          google_update::kRegDidRunField,
-                                         did_run ? L"1" : L"0",
-                                         NULL);
+                                         did_run ? L"1" : L"0");
 }
 
 bool GoogleUpdateSettings::UpdateDidRunState(bool did_run, bool system_level) {
@@ -547,17 +549,31 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
 void GoogleUpdateSettings::UpdateProfileCounts(int profiles_active,
                                                int profiles_signedin) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  bool system_install = IsSystemInstall();
-  WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
-                                  system_install,
-                                  google_update::kRegProfilesActive,
-                                  base::Int64ToString16(profiles_active),
-                                  L"sum()");
-  WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
-                                  system_install,
-                                  google_update::kRegProfilesSignedIn,
-                                  base::Int64ToString16(profiles_signedin),
-                                  L"sum()");
+  // System-level installs must write into the ClientStateMedium key shared by
+  // all users. Special treatment is used to aggregate across those users.
+  if (IsSystemInstall()) {
+    // Write the counts as ints that get aggregated across all users via
+    // summation for system-level installs.
+    WriteGoogleUpdateAggregateNumKeyInternal(
+        dist->GetAppRegistrationData(),
+        google_update::kRegProfilesActive,
+        profiles_active,
+        L"sum()");
+    WriteGoogleUpdateAggregateNumKeyInternal(
+        dist->GetAppRegistrationData(),
+        google_update::kRegProfilesSignedIn,
+        profiles_signedin,
+        L"sum()");
+  } else {
+    // Write the counts as strings since no aggregation function is needed for
+    // user-level installs.
+    WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
+                                    google_update::kRegProfilesActive,
+                                    base::IntToString16(profiles_active));
+    WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
+                                    google_update::kRegProfilesSignedIn,
+                                    base::IntToString16(profiles_signedin));
+  }
 }
 
 int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
