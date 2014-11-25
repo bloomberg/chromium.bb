@@ -43,6 +43,8 @@ PasswordManagerInternalsWebUIBrowserTest::
 void PasswordManagerInternalsWebUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
   OpenInternalsPage(CURRENT_TAB);
+  AddLibrary(base::FilePath(
+      FILE_PATH_LITERAL("password_manager_internals_browsertest.js")));
 }
 
 content::WebContents*
@@ -61,8 +63,6 @@ void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPage(
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   controller_ = static_cast<PasswordManagerInternalsUI*>(
       GetWebContents()->GetWebUI()->GetController());
-  AddLibrary(base::FilePath(
-      FILE_PATH_LITERAL("password_manager_internals_browsertest.js")));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
