@@ -50,10 +50,29 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* 
     bool shouldSmoothFonts = true;
     bool shouldAntialias = true;
 
-    shouldAntialias = shouldAntialias && (!LayoutTestSupport::isRunningLayoutTest()
-        || LayoutTestSupport::isFontAntialiasingEnabledForTest());
+    if (font) {
+        switch (font->fontDescription().fontSmoothing()) {
+        case Antialiased:
+            shouldSmoothFonts = false;
+            break;
+        case SubpixelAntialiased:
+            break;
+        case NoSmoothing:
+            shouldAntialias = false;
+            shouldSmoothFonts = false;
+            break;
+        case AutoSmoothing:
+            // For the AutoSmooth case, don't do anything! Keep the default settings.
+            break;
+        }
+    }
+
+    if (LayoutTestSupport::isRunningLayoutTest()) {
+        shouldSmoothFonts = false;
+        shouldAntialias = shouldAntialias && LayoutTestSupport::isFontAntialiasingEnabledForTest();
+    }
+
     bool useSubpixelText = RuntimeEnabledFeatures::subpixelFontScalingEnabled();
-    shouldSmoothFonts = shouldSmoothFonts && !LayoutTestSupport::isRunningLayoutTest();
 
     paint->setAntiAlias(shouldAntialias);
     paint->setEmbeddedBitmapText(false);
