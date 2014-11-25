@@ -31,3 +31,24 @@
    fun:_ZThn784_N7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
    fun:_ZN7content16WebKitTestRunner5ResetEv
 }
+{
+   bug_436292
+   Memcheck:Param
+   sendmsg(msg.msg_iov[0])
+   ...
+   fun:MojoWriteMessage
+   fun:_ZN3IPC8internal13MessageReader4SendE10scoped_ptrINS_7MessageEN4base14DefaultDeleterIS3_EEE
+   fun:_ZN3IPC11ChannelMojo4SendEPNS_7MessageE
+   fun:_ZN7content20BrowserMessageFilter4SendEPN3IPC7MessageE
+   fun:_ZN7content17AudioRendererHost18DoCompleteCreationEi
+}
+{
+   bug_436292_b
+   Memcheck:Param
+   sendmsg(msg.msg_iov[0])
+   ...
+   fun:MojoWriteMessage
+   fun:_ZN3IPC8internal13MessageReader4SendE10scoped_ptrINS_7MessageEN4base14DefaultDeleterIS3_EEE
+   fun:_ZN3IPC11ChannelMojo17InitMessageReaderEN4mojo16ScopedHandleBaseINS1_17MessagePipeHandleEEEi
+   fun:_ZN3IPC12_GLOBAL__N_117ServerChannelMojo27ClientChannelWasInitializedEi
+}
