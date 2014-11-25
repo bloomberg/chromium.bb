@@ -13,9 +13,10 @@
     ['OS!="ios" and OS!="win"', {
       'targets': [
         {
-          # GN version: //breakpad:minidump_stackwalk
-          'target_name': 'minidump_stackwalk',
-          'type': 'executable',
+          # code shared by both {micro,mini}dump_stackwalk
+          # GN version: //breakpad:stackwalk_common
+          'target_name': 'stackwalk_common',
+          'type': 'static_library',
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
           'sources': [
@@ -32,16 +33,8 @@
             'src/processor/disassembler_x86.h',
             'src/processor/dump_context.cc',
             'src/processor/dump_object.cc',
-            'src/processor/exploitability.cc',
-            'src/processor/exploitability_linux.cc',
-            'src/processor/exploitability_linux.h',
-            'src/processor/exploitability_win.cc',
-            'src/processor/exploitability_win.h',
             'src/processor/logging.cc',
             'src/processor/logging.h',
-            'src/processor/minidump.cc',
-            'src/processor/minidump_processor.cc',
-            'src/processor/minidump_stackwalk.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
             'src/processor/process_state.cc',
@@ -50,6 +43,7 @@
             'src/processor/source_line_resolver_base.cc',
             'src/processor/stack_frame_cpu.cc',
             'src/processor/stack_frame_symbolizer.cc',
+            'src/processor/stackwalk_common.cc',
             'src/processor/stackwalker.cc',
             'src/processor/stackwalker_amd64.cc',
             'src/processor/stackwalker_amd64.h',
@@ -96,6 +90,37 @@
             'src/third_party/libdisasm/x86_misc.c',
             'src/third_party/libdisasm/x86_operand_list.c',
             'src/third_party/libdisasm/x86_operand_list.h',
+          ],
+        },
+        {
+          # GN version: //breakpad:microdump_stackwalk
+          'target_name': 'microdump_stackwalk',
+          'type': 'executable',
+          'dependencies': ['stackwalk_common'],
+          'includes': ['breakpad_tools.gypi'],
+          'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
+          'sources': [
+            'src/processor/microdump.cc',
+            'src/processor/microdump_processor.cc',
+            'src/processor/microdump_stackwalk.cc',
+          ],
+        },
+        {
+          # GN version: //breakpad:minidump_stackwalk
+          'target_name': 'minidump_stackwalk',
+          'type': 'executable',
+          'dependencies': ['stackwalk_common'],
+          'includes': ['breakpad_tools.gypi'],
+          'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
+          'sources': [
+            'src/processor/exploitability.cc',
+            'src/processor/exploitability_linux.cc',
+            'src/processor/exploitability_linux.h',
+            'src/processor/exploitability_win.cc',
+            'src/processor/exploitability_win.h',
+            'src/processor/minidump.cc',
+            'src/processor/minidump_processor.cc',
+            'src/processor/minidump_stackwalk.cc',
           ],
         },
         {
