@@ -182,6 +182,9 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
 {
+    // Prevent onScriptLoaderFinished from deleting 'this'.
+    m_askedToTerminate = true;
+
     if (m_workerThread)
         m_workerThread->terminateAndWait();
 
