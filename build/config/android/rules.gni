@@ -848,6 +848,7 @@ template("android_library") {
     if (defined(invoker.srcjar_deps)) { srcjar_deps = invoker.srcjar_deps }
     if (defined(invoker.srcjars)) { srcjars = invoker.srcjars }
     if (defined(invoker.testonly)) { testonly = invoker.testonly }
+    if (defined(invoker.visibility)) { visibility = invoker.visibility }
     if (defined(invoker.dex_path)) { dex_path = invoker.dex_path }
 
     supports_android = true

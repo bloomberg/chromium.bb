@@ -814,6 +814,9 @@ template("java_library_impl") {
   }
 
   group(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     deps = _final_deps
     datadeps = _final_datadeps
   }
