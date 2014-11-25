@@ -432,7 +432,7 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
   if (id) {
     base::FundamentalValue id_value(id);
     base::StringValue error_value(error);
-    CallClientFunction("InspectorFrontendAPI.embedderMessageAck",
+    CallClientFunction("DevToolsAPI.embedderMessageAck",
                        &id_value, &error_value, NULL);
   }
 }
@@ -450,7 +450,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
 
   if (message.length() < kMaxMessageChunkSize) {
     base::StringValue message_value(message);
-    CallClientFunction("InspectorFrontendAPI.dispatchMessage",
+    CallClientFunction("DevToolsAPI.dispatchMessage",
                        &message_value, NULL, NULL);
     return;
   }
@@ -458,7 +458,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
   base::FundamentalValue total_size(static_cast<int>(message.length()));
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
     base::StringValue message_value(message.substr(pos, kMaxMessageChunkSize));
-    CallClientFunction("InspectorFrontendAPI.dispatchMessageChunk",
+    CallClientFunction("DevToolsAPI.dispatchMessageChunk",
                        &message_value, pos ? NULL : &total_size, NULL);
   }
 }
@@ -546,7 +546,7 @@ void DevToolsUIBindings::RemoveFileSystem(
   CHECK(web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
   base::StringValue file_system_path_value(file_system_path);
-  CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
+  CallClientFunction("DevToolsAPI.fileSystemRemoved",
                      &file_system_path_value, NULL, NULL);
 }
 
@@ -687,31 +687,31 @@ void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
   base::FundamentalValue value(count);
-  CallClientFunction("InspectorFrontendAPI.deviceCountUpdated", &value, NULL,
+  CallClientFunction("DevToolsAPI.deviceCountUpdated", &value, NULL,
                      NULL);
 }
 
 void DevToolsUIBindings::DevicesUpdated(
     const std::string& source,
     const base::ListValue& targets) {
-  CallClientFunction("InspectorFrontendAPI.devicesUpdated", &targets, NULL,
+  CallClientFunction("DevToolsAPI.devicesUpdated", &targets, NULL,
                      NULL);
 }
 
 void DevToolsUIBindings::FileSavedAs(const std::string& url) {
   base::StringValue url_value(url);
-  CallClientFunction("InspectorFrontendAPI.savedURL", &url_value, NULL, NULL);
+  CallClientFunction("DevToolsAPI.savedURL", &url_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::CanceledFileSaveAs(const std::string& url) {
   base::StringValue url_value(url);
-  CallClientFunction("InspectorFrontendAPI.canceledSaveURL",
+  CallClientFunction("DevToolsAPI.canceledSaveURL",
                      &url_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::AppendedTo(const std::string& url) {
   base::StringValue url_value(url);
-  CallClientFunction("InspectorFrontendAPI.appendedToURL", &url_value, NULL,
+  CallClientFunction("DevToolsAPI.appendedToURL", &url_value, NULL,
                      NULL);
 }
 
@@ -720,7 +720,7 @@ void DevToolsUIBindings::FileSystemsLoaded(
   base::ListValue file_systems_value;
   for (size_t i = 0; i < file_systems.size(); ++i)
     file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
-  CallClientFunction("InspectorFrontendAPI.fileSystemsLoaded",
+  CallClientFunction("DevToolsAPI.fileSystemsLoaded",
                      &file_systems_value, NULL, NULL);
 }
 
@@ -731,7 +731,7 @@ void DevToolsUIBindings::FileSystemAdded(
   scoped_ptr<base::DictionaryValue> file_system_value;
   if (!file_system.file_system_path.empty())
     file_system_value.reset(CreateFileSystemValue(file_system));
-  CallClientFunction("InspectorFrontendAPI.fileSystemAdded",
+  CallClientFunction("DevToolsAPI.fileSystemAdded",
                      error_string_value.get(), file_system_value.get(), NULL);
 }
 
@@ -743,7 +743,7 @@ void DevToolsUIBindings::IndexingTotalWorkCalculated(
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue total_work_value(total_work);
-  CallClientFunction("InspectorFrontendAPI.indexingTotalWorkCalculated",
+  CallClientFunction("DevToolsAPI.indexingTotalWorkCalculated",
                      &request_id_value, &file_system_path_value,
                      &total_work_value);
 }
@@ -755,7 +755,7 @@ void DevToolsUIBindings::IndexingWorked(int request_id,
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue worked_value(worked);
-  CallClientFunction("InspectorFrontendAPI.indexingWorked", &request_id_value,
+  CallClientFunction("DevToolsAPI.indexingWorked", &request_id_value,
                      &file_system_path_value, &worked_value);
 }
 
@@ -765,7 +765,7 @@ void DevToolsUIBindings::IndexingDone(int request_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
-  CallClientFunction("InspectorFrontendAPI.indexingDone", &request_id_value,
+  CallClientFunction("DevToolsAPI.indexingDone", &request_id_value,
                      &file_system_path_value, NULL);
 }
 
@@ -781,7 +781,7 @@ void DevToolsUIBindings::SearchCompleted(
   }
   base::FundamentalValue request_id_value(request_id);
   base::StringValue file_system_path_value(file_system_path);
-  CallClientFunction("InspectorFrontendAPI.searchCompleted", &request_id_value,
+  CallClientFunction("DevToolsAPI.searchCompleted", &request_id_value,
                      &file_system_path_value, &file_paths_value);
 }
 
@@ -796,7 +796,7 @@ void DevToolsUIBindings::UpdateTheme() {
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile_);
   DCHECK(tp);
 
-  std::string command("InspectorFrontendAPI.setToolbarColors(\"" +
+  std::string command("DevToolsAPI.setToolbarColors(\"" +
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_TOOLBAR)) +
       "\", \"" +
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) +
@@ -828,7 +828,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
                                 extensions::APIPermission::kExperimental)));
     results.Append(extension_info);
   }
-  CallClientFunction("InspectorFrontendAPI.addExtensions",
+  CallClientFunction("DevToolsAPI.addExtensions",
                      &results, NULL, NULL);
 }
 

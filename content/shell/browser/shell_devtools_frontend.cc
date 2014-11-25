@@ -107,14 +107,14 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     agent_host_->DispatchProtocolMessage(browser_message);
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScript(
-        base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
+        base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
   } else {
     return;
   }
 
   dict->GetInteger("id", &id);
   if (id) {
-    std::string code = "InspectorFrontendAPI.embedderMessageAck(" +
+    std::string code = "DevToolsAPI.embedderMessageAck(" +
         base::IntToString(id) + ",\"\");";
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
@@ -131,7 +131,7 @@ void ShellDevToolsFrontend::DispatchProtocolMessage(
   base::StringValue message_value(message);
   std::string param;
   base::JSONWriter::Write(&message_value, &param);
-  std::string code = "InspectorFrontendAPI.dispatchMessage(" + param + ");";
+  std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
   base::string16 javascript = base::UTF8ToUTF16(code);
   web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
 }

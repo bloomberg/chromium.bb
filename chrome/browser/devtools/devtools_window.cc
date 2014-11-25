@@ -249,7 +249,7 @@ bool DevToolsEventForwarder::ForwardEvent(
   event_data.SetInteger("keyCode", key_code);
   event_data.SetInteger("modifiers", event.modifiers);
   devtools_window_->bindings_->CallClientFunction(
-      "InspectorFrontendAPI.keyEventUnhandled", &event_data, NULL, NULL);
+      "DevToolsAPI.keyEventUnhandled", &event_data, NULL, NULL);
   return true;
 }
 
@@ -1105,7 +1105,7 @@ void DevToolsWindow::OnLoadCompleted() {
         SessionTabHelper::FromWebContents(inspected_web_contents);
     if (session_tab_helper) {
       base::FundamentalValue tabId(session_tab_helper->session_id().id());
-      bindings_->CallClientFunction("InspectorFrontendAPI.setInspectedTabId",
+      bindings_->CallClientFunction("DevToolsAPI.setInspectedTabId",
                                     &tabId, NULL, NULL);
     }
   }
@@ -1160,12 +1160,12 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
   switch (action.type()) {
     case DevToolsToggleAction::kShowConsole:
       bindings_->CallClientFunction(
-          "InspectorFrontendAPI.showConsole", NULL, NULL, NULL);
+          "DevToolsAPI.showConsole", NULL, NULL, NULL);
       break;
 
     case DevToolsToggleAction::kInspect:
       bindings_->CallClientFunction(
-          "InspectorFrontendAPI.enterInspectElementMode", NULL, NULL, NULL);
+          "DevToolsAPI.enterInspectElementMode", NULL, NULL, NULL);
       break;
 
     case DevToolsToggleAction::kShow:
@@ -1181,7 +1181,7 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
       base::FundamentalValue line_value(static_cast<int>(params->line_number));
       base::FundamentalValue column_value(
           static_cast<int>(params->column_number));
-      bindings_->CallClientFunction("InspectorFrontendAPI.revealSourceLine",
+      bindings_->CallClientFunction("DevToolsAPI.revealSourceLine",
                                     &url_value, &line_value, &column_value);
       break;
     }
