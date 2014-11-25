@@ -12,38 +12,9 @@
 
 namespace cc {
 
-std::string ManagedTileBinToString(ManagedTileBin bin) {
-  switch (bin) {
-    case NOW_AND_READY_TO_DRAW_BIN:
-      return "NOW_AND_READY_TO_DRAW_BIN";
-    case NOW_BIN:
-      return "NOW_BIN";
-    case SOON_BIN:
-      return "SOON_BIN";
-    case EVENTUALLY_AND_ACTIVE_BIN:
-      return "EVENTUALLY_AND_ACTIVE_BIN";
-    case EVENTUALLY_BIN:
-      return "EVENTUALLY_BIN";
-    case AT_LAST_AND_ACTIVE_BIN:
-      return "AT_LAST_AND_ACTIVE_BIN";
-    case AT_LAST_BIN:
-      return "AT_LAST_BIN";
-    case NEVER_BIN:
-      return "NEVER_BIN";
-    case NUM_BINS:
-      NOTREACHED();
-      return "Invalid Bin (NUM_BINS)";
-  }
-  return "Invalid Bin (UNKNOWN)";
-}
-
 ManagedTileState::ManagedTileState()
-    : bin(NEVER_BIN),
-      resolution(NON_IDEAL_RESOLUTION),
-      required_for_activation(false),
+    : resolution(NON_IDEAL_RESOLUTION),
       priority_bin(TilePriority::EVENTUALLY),
-      distance_to_visible(std::numeric_limits<float>::infinity()),
-      visible_and_ready_to_draw(false),
       scheduled_priority(0) {
 }
 
@@ -77,12 +48,8 @@ void ManagedTileState::AsValueInto(base::debug::TracedValue* state) const {
 
   state->SetBoolean("has_resource", has_resource);
   state->SetBoolean("is_using_gpu_memory", is_using_gpu_memory);
-  state->SetString("bin", ManagedTileBinToString(bin));
   state->SetString("resolution", TileResolutionToString(resolution));
   state->SetString("priority_bin", TilePriorityBinToString(priority_bin));
-  state->SetDouble("distance_to_visible",
-                   MathUtil::AsFloatSafely(distance_to_visible));
-  state->SetBoolean("required_for_activation", required_for_activation);
   state->SetBoolean("is_solid_color",
                     draw_info.mode_ == DrawInfo::SOLID_COLOR_MODE);
   state->SetBoolean("is_transparent",

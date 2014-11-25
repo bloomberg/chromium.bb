@@ -15,24 +15,6 @@
 
 namespace cc {
 
-class TileManager;
-
-// Tile manager classifying tiles into a few basic bins:
-enum ManagedTileBin {
-  NOW_AND_READY_TO_DRAW_BIN = 0,  // Ready to draw and within viewport.
-  NOW_BIN = 1,                    // Needed ASAP.
-  SOON_BIN = 2,                   // Impl-side version of prepainting.
-  EVENTUALLY_AND_ACTIVE_BIN = 3,  // Nice to have, and has a task or resource.
-  EVENTUALLY_BIN = 4,             // Nice to have, if we've got memory and time.
-  AT_LAST_AND_ACTIVE_BIN = 5,     // Only do this after all other bins.
-  AT_LAST_BIN = 6,                // Only do this after all other bins.
-  NEVER_BIN = 7,                  // Dont bother.
-  NUM_BINS = 8
-  // NOTE: Be sure to update ManagedTileBinAsValue and kBinPolicyMap when adding
-  // or reordering fields.
-};
-scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin);
-
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
@@ -107,13 +89,8 @@ class CC_EXPORT ManagedTileState {
   DrawInfo draw_info;
   scoped_refptr<RasterTask> raster_task;
 
-  ManagedTileBin bin;
-
   TileResolution resolution;
-  bool required_for_activation;
   TilePriority::PriorityBin priority_bin;
-  float distance_to_visible;
-  bool visible_and_ready_to_draw;
 
   // Priority for this state from the last time we assigned memory.
   unsigned scheduled_priority;

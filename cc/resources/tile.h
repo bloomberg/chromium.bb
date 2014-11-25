@@ -15,6 +15,8 @@
 
 namespace cc {
 
+class TileManager;
+
 class CC_EXPORT Tile : public RefCountedManaged<Tile> {
  public:
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0 };
