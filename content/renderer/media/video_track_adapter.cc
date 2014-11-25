@@ -27,7 +27,8 @@ const float kNormalFrameTimeoutInFrameIntervals = 25.0f;
 
 // Min delta time between two frames allowed without being dropped if a max
 // frame rate is specified.
-const int kMinTimeInMsBetweenFrames = 5;
+const base::TimeDelta kMinTimeBetweenFrames =
+    base::TimeDelta::FromMilliseconds(5);
 
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
@@ -128,6 +129,7 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       min_aspect_ratio_(min_aspect_ratio),
       max_aspect_ratio_(max_aspect_ratio),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
+      last_time_stamp_(base::TimeDelta::Max()),
       max_frame_rate_(max_frame_rate),
       keep_frame_counter_(0.0f) {
   DCHECK(renderer_task_runner_.get());
@@ -238,8 +240,13 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     return false;
   }
 
+  if (last_time_stamp_.is_max()) {  // First received frame.
+    last_time_stamp_ = frame->timestamp();
+    return false;
+  }
+
   base::TimeDelta delta = frame->timestamp() - last_time_stamp_;
-  if (delta.InMilliseconds() < kMinTimeInMsBetweenFrames) {
+  if (delta < kMinTimeBetweenFrames) {
     // We have seen video frames being delivered from camera devices back to
     // back. The simple AR filter for frame rate calculation is too short to
     // handle that. http://crbug/394315
@@ -253,8 +260,6 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     return true;
   }
   last_time_stamp_ = frame->timestamp();
-  if (delta == last_time_stamp_)  // First received frame.
-    return false;
   // Calculate the frame rate using a simple AR filter.
   // Use a simple filter with 0.1 weight of the current sample.
   frame_rate_ = 100 / delta.InMillisecondsF() + 0.9 * frame_rate_;
