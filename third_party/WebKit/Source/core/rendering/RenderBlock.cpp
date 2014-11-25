@@ -2585,7 +2585,7 @@ void RenderBlock::offsetForContents(LayoutPoint& offset) const
     offset = flipForWritingMode(offset);
 
     if (hasOverflowClip())
-        offset += scrolledContentOffset();
+        offset += LayoutSize(scrolledContentOffset());
 
     if (hasColumns())
         adjustPointToColumnContents(offset);

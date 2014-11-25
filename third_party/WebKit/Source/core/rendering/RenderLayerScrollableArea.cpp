@@ -1350,7 +1350,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
 
     float zoomFactor = box().style()->effectiveZoom();
 
-    LayoutSize newOffset = offsetFromResizeCorner(document.view()->windowToContents(pos));
+    IntSize newOffset = offsetFromResizeCorner(document.view()->windowToContents(pos));
     newOffset.setWidth(newOffset.width() / zoomFactor);
     newOffset.setHeight(newOffset.height() / zoomFactor);
 
@@ -1364,7 +1364,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
         adjustedOldOffset.setWidth(-adjustedOldOffset.width());
     }
 
-    LayoutSize difference = (currentSize + newOffset - adjustedOldOffset).expandedTo(minimumSize) - currentSize;
+    LayoutSize difference((currentSize + newOffset - adjustedOldOffset).expandedTo(minimumSize) - currentSize);
 
     bool isBoxSizingBorder = box().style()->boxSizing() == BORDER_BOX;
 

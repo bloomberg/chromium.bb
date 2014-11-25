@@ -88,6 +88,10 @@ public:
     }
 
     void move(const LayoutSize&, TransformAccumulation = FlattenTransform);
+    void move(const IntSize& size, TransformAccumulation accumulate = FlattenTransform)
+    {
+        move(LayoutSize(size), accumulate);
+    }
     void applyTransform(const AffineTransform& transformFromContainer, TransformAccumulation = FlattenTransform, bool* wasClamped = 0);
     void applyTransform(const TransformationMatrix& transformFromContainer, TransformAccumulation = FlattenTransform, bool* wasClamped = 0);
     void flatten(bool* wasClamped = 0);

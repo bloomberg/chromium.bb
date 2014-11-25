@@ -1970,7 +1970,7 @@ const RenderObject* RenderObject::pushMappingToContainer(const RenderLayerModelO
     // FIXME: this should call offsetFromContainer to share code, but I'm not sure it's ever called.
     LayoutSize offset;
     if (container->hasOverflowClip())
-        offset = -toRenderBox(container)->scrolledContentOffset();
+        offset = -LayoutSize(toRenderBox(container)->scrolledContentOffset());
 
     geometryMap.push(this, offset, hasColumns());
 

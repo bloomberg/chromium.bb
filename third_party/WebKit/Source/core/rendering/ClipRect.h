@@ -60,6 +60,7 @@ public:
             m_hasRadius = true;
     }
     void move(const LayoutSize& size) { m_rect.move(size); }
+    void move(const IntSize& size) { m_rect.move(size); }
     void moveBy(const LayoutPoint& point) { m_rect.moveBy(point); }
 
     bool isEmpty() const { return m_rect.isEmpty(); }

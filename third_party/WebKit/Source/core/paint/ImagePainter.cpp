@@ -122,7 +122,7 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
                 if (centerY < 0)
                     centerY = 0;
                 imageOffset = LayoutSize(leftBorder + leftPad + centerX + borderWidth, topBorder + topPad + centerY + borderWidth);
-                context->drawImage(image.get(), pixelSnappedIntRect(LayoutRect(paintOffset + imageOffset, imageSize)), CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
+                context->drawImage(image.get(), pixelSnappedIntRect(LayoutRect(paintOffset + imageOffset, LayoutSize(imageSize))), CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
                 errorPictureDrawn = true;
             }
 
@@ -186,7 +186,7 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
         return;
 
     // FIXME: why is interpolation quality selection not included in the Instrumentation reported cost of drawing an image?
-    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image.get(), image.get(), alignedRect.size());
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image.get(), image.get(), LayoutSize(alignedRect.size()));
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_renderImage));
     // FIXME: crbug.com/361045 remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.

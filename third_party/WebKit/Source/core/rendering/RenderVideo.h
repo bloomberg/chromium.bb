@@ -39,7 +39,7 @@ public:
 
     IntRect videoBox() const;
 
-    static IntSize defaultSize();
+    static LayoutSize defaultSize();
 
     bool supportsAcceleratedRendering() const;
 

@@ -133,7 +133,7 @@ public:
     LayoutPoint location() const;
     IntSize size() const;
 
-    LayoutRect rect() const { return LayoutRect(location(), size()); }
+    LayoutRect rect() const { return LayoutRect(location(), LayoutSize(size())); }
 
     bool isRootLayer() const { return m_isRootLayer; }
 

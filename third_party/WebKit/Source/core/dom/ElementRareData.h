@@ -154,9 +154,9 @@ private:
     explicit ElementRareData(RenderObject*);
 };
 
-inline IntSize defaultMinimumSizeForResizing()
+inline LayoutSize defaultMinimumSizeForResizing()
 {
-    return IntSize(LayoutUnit::max(), LayoutUnit::max());
+    return LayoutSize(LayoutUnit::max(), LayoutUnit::max());
 }
 
 inline ElementRareData::ElementRareData(RenderObject* renderer)

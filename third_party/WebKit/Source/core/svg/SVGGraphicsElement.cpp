@@ -150,7 +150,7 @@ AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
         // SVGTextElements need special handling for the text positioning code.
         if (isSVGTextElement(this)) {
             // Do not take into account SVG's zoom rules, transform-origin, or percentage values.
-            style->applyTransform(transform, IntSize(0, 0), RenderStyle::ExcludeTransformOrigin);
+            style->applyTransform(transform, LayoutSize(0, 0), RenderStyle::ExcludeTransformOrigin);
         } else {
             // CSS transforms operate with pre-scaled lengths. To make this work with SVG
             // (which applies the zoom factor globally, at the root level) we

@@ -307,7 +307,7 @@ void RenderLayer::updateTransformationMatrix()
         RenderBox* box = renderBox();
         ASSERT(box);
         m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::IncludeTransformOrigin);
+        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), RenderStyle::IncludeTransformOrigin);
         makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
     }
 }
@@ -370,7 +370,7 @@ TransformationMatrix RenderLayer::currentTransform(RenderStyle::ApplyTransformOr
     if (applyOrigin == RenderStyle::ExcludeTransformOrigin) {
         RenderBox* box = renderBox();
         TransformationMatrix currTransform;
-        box->style()->applyTransform(currTransform, box->pixelSnappedBorderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
+        box->style()->applyTransform(currTransform, LayoutSize(box->pixelSnappedSize()), RenderStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(currTransform, compositor()->hasAcceleratedCompositing());
         return currTransform;
     }
@@ -831,7 +831,7 @@ LayoutPoint RenderLayer::location() const
 
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
         if (positionedParent->renderer()->hasOverflowClip()) {
-            LayoutSize offset = positionedParent->renderBox()->scrolledContentOffset();
+            IntSize offset = positionedParent->renderBox()->scrolledContentOffset();
             localPoint -= offset;
         }
 

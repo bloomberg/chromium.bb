@@ -474,9 +474,9 @@ bool canScrollInDirection(const LocalFrame* frame, FocusType type)
         return false;
     if ((type == FocusTypeUp || type == FocusTypeDown) &&  ScrollbarAlwaysOff == verticalMode)
         return false;
-    LayoutSize size = frame->view()->contentsSize();
-    LayoutSize offset = frame->view()->scrollOffset();
-    LayoutRect rect = frame->view()->visibleContentRect(IncludeScrollbars);
+    LayoutSize size(frame->view()->contentsSize());
+    LayoutSize offset(frame->view()->scrollOffset());
+    LayoutRect rect(frame->view()->visibleContentRect(IncludeScrollbars));
 
     switch (type) {
     case FocusTypeLeft:
@@ -689,7 +689,7 @@ void distanceDataForNode(FocusType type, const FocusCandidate& current, FocusCan
     // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
     candidate.distance = sqrt(euclidianDistancePow2) + navigationAxisDistance+ orthogonalAxisDistance * 2 - sqrt(overlap);
 
-    LayoutSize viewSize = candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->view()->visibleContentRect().size();
+    LayoutSize viewSize = LayoutSize(candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->view()->visibleContentRect().size());
     candidate.alignment = alignmentForRects(type, currentRect, nodeRect, viewSize);
 }
 

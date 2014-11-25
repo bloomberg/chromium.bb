@@ -263,7 +263,7 @@ void CompositedLayerMapping::updateTransform(const RenderStyle* style)
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style->applyTransform(t, toRenderBox(renderer())->pixelSnappedBorderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
+        style->applyTransform(t, LayoutSize(toRenderBox(renderer())->pixelSnappedSize()), RenderStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 

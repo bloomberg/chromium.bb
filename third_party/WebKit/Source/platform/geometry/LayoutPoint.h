@@ -54,6 +54,7 @@ public:
     void setY(LayoutUnit y) { m_y = y; }
 
     void move(const LayoutSize& s) { move(s.width(), s.height()); }
+    void move(const IntSize& s) { move(s.width(), s.height()); }
     void moveBy(const LayoutPoint& offset) { move(offset.x(), offset.y()); }
     void move(LayoutUnit dx, LayoutUnit dy) { m_x += dx; m_y += dy; }
     void scale(float sx, float sy)
@@ -98,7 +99,19 @@ ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutPoint& b)
     return a;
 }
 
+inline LayoutPoint& operator+=(LayoutPoint& a, const IntSize& b)
+{
+    a.move(b.width(), b.height());
+    return a;
+}
+
 ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b)
+{
+    a.move(-b.width(), -b.height());
+    return a;
+}
+
+inline LayoutPoint& operator-=(LayoutPoint& a, const IntSize& b)
 {
     a.move(-b.width(), -b.height());
     return a;
@@ -125,6 +138,11 @@ ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const IntPoint& b)
 }
 
 inline LayoutPoint operator-(const LayoutPoint& a, const LayoutSize& b)
+{
+    return LayoutPoint(a.x() - b.width(), a.y() - b.height());
+}
+
+inline LayoutPoint operator-(const LayoutPoint& a, const IntSize& b)
 {
     return LayoutPoint(a.x() - b.width(), a.y() - b.height());
 }

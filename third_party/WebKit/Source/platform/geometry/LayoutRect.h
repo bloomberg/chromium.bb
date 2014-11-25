@@ -88,6 +88,7 @@ public:
     LayoutPoint center() const { return LayoutPoint(x() + width() / 2, y() + height() / 2); }
 
     void move(const LayoutSize& size) { m_location += size; }
+    void move(const IntSize& size) { m_location.move(size.width(), size.height()); }
     void moveBy(const LayoutPoint& offset) { m_location.move(offset.x(), offset.y()); }
     void move(LayoutUnit dx, LayoutUnit dy) { m_location.move(dx, dy); }
 

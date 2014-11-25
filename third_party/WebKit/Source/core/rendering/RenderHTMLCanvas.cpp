@@ -40,7 +40,7 @@ namespace blink {
 using namespace HTMLNames;
 
 RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
-    : RenderReplaced(element, element->size())
+    : RenderReplaced(element, LayoutSize(element->size()))
 {
     view()->frameView()->setIsVisuallyNonEmpty();
 }

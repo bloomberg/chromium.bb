@@ -229,7 +229,7 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& context, const L
         offset = *offsetFromRoot;
     else
         m_renderer.layer()->convertToLayerCoords(context.rootLayer, offset);
-    layerBounds = LayoutRect(offset, m_renderer.layer()->size());
+    layerBounds = LayoutRect(offset, LayoutSize(m_renderer.layer()->size()));
 
     // Update the clip rects that will be passed to child layers.
     if (m_renderer.hasOverflowClip()) {

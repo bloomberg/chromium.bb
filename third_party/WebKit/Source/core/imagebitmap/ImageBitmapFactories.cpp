@@ -55,7 +55,7 @@ static LayoutSize sizeFor(HTMLImageElement* image)
 {
     if (ImageResource* cachedImage = image->cachedImage())
         return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
-    return IntSize();
+    return LayoutSize();
 }
 
 static IntSize sizeFor(HTMLVideoElement* video)

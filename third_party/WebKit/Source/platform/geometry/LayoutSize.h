@@ -47,7 +47,7 @@ enum AspectRatioFit {
 class LayoutSize {
 public:
     LayoutSize() { }
-    LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
+    explicit LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
     LayoutSize(LayoutUnit width, LayoutUnit height) : m_width(width), m_height(height) { }
 
     explicit LayoutSize(const FloatSize& size) : m_width(size.width()), m_height(size.height()) { }
@@ -92,6 +92,13 @@ public:
     {
         return LayoutSize(m_width > other.m_width ? m_width : other.m_width,
             m_height > other.m_height ? m_height : other.m_height);
+    }
+
+    LayoutSize expandedTo(const IntSize& other) const
+    {
+        return LayoutSize(
+            m_width > other.width() ? m_width : LayoutUnit(other.width()),
+            m_height > other.height() ? m_height : LayoutUnit(other.height()));
     }
 
     LayoutSize shrunkTo(const LayoutSize& other) const
@@ -150,7 +157,19 @@ inline LayoutSize& operator-=(LayoutSize& a, const LayoutSize& b)
     return a;
 }
 
+inline LayoutSize& operator-=(LayoutSize& a, const IntSize& b)
+{
+    a.setWidth(a.width() - b.width());
+    a.setHeight(a.height() - b.height());
+    return a;
+}
+
 inline LayoutSize operator+(const LayoutSize& a, const LayoutSize& b)
+{
+    return LayoutSize(a.width() + b.width(), a.height() + b.height());
+}
+
+inline LayoutSize operator+(const LayoutSize& a, const IntSize& b)
 {
     return LayoutSize(a.width() + b.width(), a.height() + b.height());
 }
@@ -166,6 +185,11 @@ inline LayoutSize operator-(const LayoutSize& size)
 }
 
 inline bool operator==(const LayoutSize& a, const LayoutSize& b)
+{
+    return a.width() == b.width() && a.height() == b.height();
+}
+
+inline bool operator==(const LayoutSize& a, const IntSize& b)
 {
     return a.width() == b.width() && a.height() == b.height();
 }

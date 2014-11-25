@@ -263,12 +263,12 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
     RenderObject* container = 0;
 
     if (m_frameView)
-        offsetForFixedPosition = m_frameView->scrollOffsetForFixedPosition();
+        offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForFixedPosition());
 
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
-            offset = -m_frameView->scrollOffset();
-            offset += parentDocRenderer->contentBoxOffset();
+            offset = -LayoutSize(m_frameView->scrollOffset());
+            offset += toLayoutSize(parentDocRenderer->contentBoxRect().location());
             container = parentDocRenderer;
         }
     }
@@ -305,7 +305,7 @@ void RenderView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layout
     // Record the entire size of the contents of the frame. Note that we don't just
     // use the viewport size (containing block) here because we want to ensure this includes
     // all children (so we can avoid walking them explicitly).
-    rects.append(LayoutRect(LayoutPoint::zero(), frameView()->contentsSize()));
+    rects.append(LayoutRect(LayoutPoint::zero(), LayoutSize(frameView()->contentsSize())));
 }
 
 void RenderView::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -426,7 +426,7 @@ void RenderView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConst
 
 void RenderView::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
 {
-    rects.append(pixelSnappedIntRect(accumulatedOffset, layer()->size()));
+    rects.append(pixelSnappedIntRect(accumulatedOffset, LayoutSize(layer()->size())));
 }
 
 void RenderView::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const

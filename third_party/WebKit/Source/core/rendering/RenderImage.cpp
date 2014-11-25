@@ -54,7 +54,7 @@ namespace blink {
 using namespace HTMLNames;
 
 RenderImage::RenderImage(Element* element)
-    : RenderReplaced(element, IntSize())
+    : RenderReplaced(element, LayoutSize())
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)
     , m_imageDevicePixelRatio(1.0f)
@@ -117,12 +117,12 @@ IntSize RenderImage::imageSizeForError(ImageResource* newImage) const
 // image size changed.
 bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
 {
-    IntSize imageSize;
+    LayoutSize imageSize;
     if (newImage && newImage->imageForRenderer(this)) {
-        imageSize = imageSizeForError(newImage);
+        imageSize = LayoutSize(imageSizeForError(newImage));
     } else if (!m_altText.isEmpty() || newImage) {
         // If we'll be displaying either text or an image, add a little padding.
-        imageSize = IntSize(paddingWidth, paddingHeight);
+        imageSize = LayoutSize(paddingWidth, paddingHeight);
     }
 
     // we have an alt and the user meant it (its not a text we invented)
@@ -130,7 +130,7 @@ bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
         FontCachePurgePreventer fontCachePurgePreventer;
 
         const Font& font = style()->font();
-        IntSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
+        LayoutSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
         imageSize = imageSize.expandedTo(paddedTextSize);
     }
 

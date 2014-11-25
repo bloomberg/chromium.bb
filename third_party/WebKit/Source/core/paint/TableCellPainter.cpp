@@ -255,7 +255,7 @@ LayoutRect TableCellPainter::paintBounds(const LayoutPoint& paintOffset, PaintBo
     LayoutPoint adjustedPaintOffset = paintOffset;
     if (paintBoundOffsetBehavior == AddOffsetFromParent)
         adjustedPaintOffset.moveBy(m_renderTableCell.location());
-    return LayoutRect(adjustedPaintOffset, m_renderTableCell.pixelSnappedSize());
+    return LayoutRect(adjustedPaintOffset, LayoutSize(m_renderTableCell.pixelSnappedSize()));
 }
 
 } // namespace blink

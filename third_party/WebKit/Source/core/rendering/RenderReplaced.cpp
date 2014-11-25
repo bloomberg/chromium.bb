@@ -99,7 +99,7 @@ void RenderReplaced::intrinsicSizeChanged()
 {
     int scaledWidth = static_cast<int>(defaultWidth * style()->effectiveZoom());
     int scaledHeight = static_cast<int>(defaultHeight * style()->effectiveZoom());
-    m_intrinsicSize = IntSize(scaledWidth, scaledHeight);
+    m_intrinsicSize = LayoutSize(scaledWidth, scaledHeight);
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 

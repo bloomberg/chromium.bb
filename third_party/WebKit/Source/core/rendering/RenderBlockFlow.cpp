@@ -1776,7 +1776,7 @@ void RenderBlockFlow::addOverflowFromFloats()
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         FloatingObject* floatingObject = it->get();
         if (floatingObject->isDescendant())
-            addOverflowFromChild(floatingObject->renderer(), IntSize(xPositionForFloatIncludingMargin(floatingObject), yPositionForFloatIncludingMargin(floatingObject)));
+            addOverflowFromChild(floatingObject->renderer(), LayoutSize(xPositionForFloatIncludingMargin(floatingObject), yPositionForFloatIncludingMargin(floatingObject)));
     }
 }
 
@@ -2684,7 +2684,7 @@ GapRects RenderBlockFlow::selectionGapRectsForPaintInvalidation(const RenderLaye
     LayoutUnit lastLeft = logicalLeftSelectionOffset(this, lastTop);
     LayoutUnit lastRight = logicalRightSelectionOffset(this, lastTop);
 
-    return selectionGaps(this, offsetFromPaintInvalidationContainer, IntSize(), lastTop, lastLeft, lastRight);
+    return selectionGaps(this, offsetFromPaintInvalidationContainer, LayoutSize(), lastTop, lastLeft, lastRight);
 }
 
 static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoint& offset, TrackedRendererListHashSet* positionedObjects)

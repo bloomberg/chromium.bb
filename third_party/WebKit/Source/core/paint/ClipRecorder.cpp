@@ -74,7 +74,7 @@ void ClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const Layer
         if (layer->renderer()->hasOverflowClip() && layer->renderer()->style()->hasBorderRadius() && inContainingBlockChain(&renderLayer, layer)) {
             LayoutPoint delta(fragmentOffset);
             layer->convertToLayerCoords(localPaintingInfo.rootLayer, delta);
-            roundedRectClips.append(layer->renderer()->style()->getRoundedInnerBorderFor(LayoutRect(delta, layer->size())));
+            roundedRectClips.append(layer->renderer()->style()->getRoundedInnerBorderFor(LayoutRect(delta, LayoutSize(layer->size()))));
         }
 
         if (layer == localPaintingInfo.rootLayer)

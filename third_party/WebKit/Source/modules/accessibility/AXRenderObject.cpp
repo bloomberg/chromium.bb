@@ -2449,7 +2449,7 @@ LayoutRect AXRenderObject::computeElementRect() const
 
     // The size of the web area should be the content size, not the clipped size.
     if (isWebArea() && obj->frame()->view())
-        result.setSize(obj->frame()->view()->contentsSize());
+        result.setSize(LayoutSize(obj->frame()->view()->contentsSize()));
 
     // Checkboxes and radio buttons include their label as part of their rect.
     if (isCheckboxOrRadio()) {

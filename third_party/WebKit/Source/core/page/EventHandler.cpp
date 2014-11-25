@@ -1283,7 +1283,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
-            m_offsetFromResizeCorner = m_resizeScrollableArea->offsetFromResizeCorner(p);
+            m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             invalidateClick();
             return true;
         }
@@ -2376,7 +2376,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
-            m_offsetFromResizeCorner = m_resizeScrollableArea->offsetFromResizeCorner(p);
+            m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             return true;
         }
     } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate ||
@@ -2577,7 +2577,7 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& resu
 bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode)
 {
     IntPoint hitTestPoint = m_frame->view()->windowToContents(touchCenter);
-    HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, touchRadius);
+    HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(touchRadius));
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
     WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
@@ -2634,7 +2634,7 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(const 
     IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
     LayoutSize padding;
     if (shouldApplyTouchAdjustment(gestureEvent)) {
-        padding = gestureEvent.area();
+        padding = LayoutSize(gestureEvent.area());
         padding.scale(1.f / 2);
     }
     HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, padding);

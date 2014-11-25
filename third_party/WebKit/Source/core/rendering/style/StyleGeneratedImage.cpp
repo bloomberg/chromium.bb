@@ -45,7 +45,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
 LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float multiplier) const
 {
     if (m_fixedSize) {
-        IntSize fixedSize = m_imageGeneratorValue->fixedSize(renderer);
+        LayoutSize fixedSize(m_imageGeneratorValue->fixedSize(renderer));
         if (multiplier == 1.0f)
             return fixedSize;
 
@@ -62,7 +62,7 @@ LayoutSize StyleGeneratedImage::imageSize(const RenderObject* renderer, float mu
         return LayoutSize(width, height);
     }
 
-    return m_containerSize;
+    return LayoutSize(m_containerSize);
 }
 
 void StyleGeneratedImage::computeIntrinsicDimensions(const RenderObject* renderer, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)

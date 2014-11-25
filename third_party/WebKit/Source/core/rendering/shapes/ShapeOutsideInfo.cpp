@@ -124,7 +124,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
     const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
     const LayoutRect& imageRect = (m_renderer.isRenderImage())
         ? toRenderImage(m_renderer).replacedContentRect()
-        : LayoutRect(LayoutPoint(), imageSize);
+        : LayoutRect(LayoutPoint(), LayoutSize(imageSize));
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {
         m_renderer.document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large."));

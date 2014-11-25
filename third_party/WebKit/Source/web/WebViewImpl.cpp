@@ -1085,7 +1085,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
     // Use the rect-based hit test to find the node.
     IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
-    HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
+    HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType, LayoutSize(rect.width, rect.height));
     result.setToShadowHostIfInUserAgentShadowRoot();
 
     Node* node = result.innerNonSharedNode();

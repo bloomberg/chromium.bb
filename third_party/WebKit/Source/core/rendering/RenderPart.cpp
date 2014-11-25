@@ -175,7 +175,7 @@ bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
 
     if (childRoot) {
         LayoutPoint adjustedLocation = accumulatedOffset + location();
-        LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - childFrameView->scrollOffset();
+        LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - LayoutSize(childFrameView->scrollOffset());
         HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
         HitTestRequest newHitTestRequest(request.type() | HitTestRequest::ChildFrameHitTest);
         HitTestResult childFrameResult(newHitTestLocation);

@@ -261,16 +261,16 @@ LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, flo
     ASSERT(!isPurgeable());
 
     if (!m_image)
-        return IntSize();
+        return LayoutSize();
 
     LayoutSize imageSize;
 
     if (m_image->isBitmapImage() && (renderer && renderer->shouldRespectImageOrientation() == RespectImageOrientation))
-        imageSize = toBitmapImage(m_image.get())->sizeRespectingOrientation();
+        imageSize = LayoutSize(toBitmapImage(m_image.get())->sizeRespectingOrientation());
     else if (m_image->isSVGImage() && sizeType == NormalSize)
-        imageSize = m_svgImageCache->imageSizeForRenderer(renderer);
+        imageSize = LayoutSize(m_svgImageCache->imageSizeForRenderer(renderer));
     else
-        imageSize = m_image->size();
+        imageSize = LayoutSize(m_image->size());
 
     if (multiplier == 1.0f)
         return imageSize;

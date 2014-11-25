@@ -467,7 +467,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer.composite() : op;
             RenderObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.tileSize());
-            InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, context, image.get(), &bgLayer, geometry.tileSize());
+            InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context->setColorFilter(ColorFilterLuminanceToAlpha);
             InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
@@ -818,7 +818,7 @@ IntSize BoxPainter::calculateFillTileSize(const RenderBoxModelObject& obj, const
     imageIntrinsicSize.scale(1 / image->imageScaleFactor(), 1 / image->imageScaleFactor());
     switch (type) {
     case SizeLength: {
-        LayoutSize tileSize = positioningAreaSize;
+        LayoutSize tileSize(positioningAreaSize);
 
         Length layerWidth = fillLayer.size().size.width();
         Length layerHeight = fillLayer.size().size.height();
@@ -853,7 +853,7 @@ IntSize BoxPainter::calculateFillTileSize(const RenderBoxModelObject& obj, const
             }
         } else if (layerWidth.isAuto() && layerHeight.isAuto()) {
             // If both width and height are auto, use the image's intrinsic size.
-            tileSize = imageIntrinsicSize;
+            tileSize = LayoutSize(imageIntrinsicSize);
         }
 
         tileSize.clampNegativeToZero();
@@ -1167,7 +1167,7 @@ bool BoxPainter::shouldAntialiasLines(GraphicsContext* context)
     return !context->getCTM().isIdentityOrTranslationOrFlipped();
 }
 
-static bool borderWillArcInnerEdge(const LayoutSize& firstRadius, const FloatSize& secondRadius)
+static bool borderWillArcInnerEdge(const IntSize& firstRadius, const FloatSize& secondRadius)
 {
     return !firstRadius.isZero() || !secondRadius.isZero();
 }
@@ -1352,21 +1352,21 @@ static bool allCornersClippedOut(const RoundedRect& border, const LayoutRect& cl
 
     RoundedRect::Radii radii = border.radii();
 
-    LayoutRect topLeftRect(boundingRect.location(), radii.topLeft());
+    LayoutRect topLeftRect(boundingRect.location(), LayoutSize(radii.topLeft()));
     if (clipRect.intersects(topLeftRect))
         return false;
 
-    LayoutRect topRightRect(boundingRect.location(), radii.topRight());
+    LayoutRect topRightRect(boundingRect.location(), LayoutSize(radii.topRight()));
     topRightRect.setX(boundingRect.maxX() - topRightRect.width());
     if (clipRect.intersects(topRightRect))
         return false;
 
-    LayoutRect bottomLeftRect(boundingRect.location(), radii.bottomLeft());
+    LayoutRect bottomLeftRect(boundingRect.location(), LayoutSize(radii.bottomLeft()));
     bottomLeftRect.setY(boundingRect.maxY() - bottomLeftRect.height());
     if (clipRect.intersects(bottomLeftRect))
         return false;
 
-    LayoutRect bottomRightRect(boundingRect.location(), radii.bottomRight());
+    LayoutRect bottomRightRect(boundingRect.location(), LayoutSize(radii.bottomRight()));
     bottomRightRect.setX(boundingRect.maxX() - bottomRightRect.width());
     bottomRightRect.setY(boundingRect.maxY() - bottomRightRect.height());
     if (clipRect.intersects(bottomRightRect))

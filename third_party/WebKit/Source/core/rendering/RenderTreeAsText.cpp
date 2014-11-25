@@ -584,7 +584,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
 
     // FIXME: Apply overflow to the root layer to not break every test. Complete hack. Sigh.
     if (rootLayer == layer)
-        layerBounds.setSize(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0))));
+        layerBounds.setSize(LayoutSize(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0)))));
 
     // Ensure our lists are up-to-date.
     layer->stackingNode()->updateLayerListsIfNeeded();

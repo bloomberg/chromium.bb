@@ -52,9 +52,9 @@ RenderVideo::~RenderVideo()
 {
 }
 
-IntSize RenderVideo::defaultSize()
+LayoutSize RenderVideo::defaultSize()
 {
-    return IntSize(defaultWidth, defaultHeight);
+    return LayoutSize(defaultWidth, defaultHeight);
 }
 
 void RenderVideo::intrinsicSizeChanged()
@@ -98,7 +98,7 @@ LayoutSize RenderVideo::calculateIntrinsicSize()
     if (webMediaPlayer && video->readyState() >= HTMLVideoElement::HAVE_METADATA) {
         IntSize size = webMediaPlayer->naturalSize();
         if (!size.isEmpty())
-            return size;
+            return LayoutSize(size);
     }
 
     if (video->shouldDisplayPosterImage() && !m_cachedImageSize.isEmpty() && !imageResource()->errorOccurred())

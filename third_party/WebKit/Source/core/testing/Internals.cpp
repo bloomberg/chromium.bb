@@ -1011,7 +1011,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(long x, long y, lo
 
     EventHandler& eventHandler = document->frame()->eventHandler();
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
-    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(radius));
 
     Node* targetNode = 0;
     IntPoint adjustedPoint;
@@ -1038,7 +1038,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
 
     EventHandler& eventHandler = document->frame()->eventHandler();
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
-    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(radius));
 
     Node* targetNode = 0;
     IntPoint adjustedPoint;
@@ -1061,7 +1061,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, 
 
     EventHandler& eventHandler = document->frame()->eventHandler();
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
-    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(radius));
 
     Node* targetNode = 0;
     IntPoint adjustedPoint;
@@ -1088,7 +1088,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
 
     EventHandler& eventHandler = document->frame()->eventHandler();
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
-    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
+    HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(radius));
 
     Node* targetNode = 0;
     IntPoint adjustedPoint;

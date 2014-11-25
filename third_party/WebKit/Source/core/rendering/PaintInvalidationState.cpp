@@ -81,7 +81,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
         const RenderSVGRoot& svgRoot = toRenderSVGRoot(renderer);
         m_svgTransform = adoptPtr(new AffineTransform(svgRoot.localToBorderBoxTransform()));
         if (svgRoot.shouldApplyViewportClip())
-            addClipRectRelativeToPaintOffset(svgRoot.pixelSnappedSize());
+            addClipRectRelativeToPaintOffset(LayoutSize(svgRoot.pixelSnappedSize()));
     }
 
     applyClipIfNeeded(renderer);
@@ -126,7 +126,7 @@ void PaintInvalidationState::applyClipIfNeeded(const RenderObject& renderer)
     if (box.usesCompositedScrolling())
         ASSERT(!m_clipped); // The box should establish paint invalidation container, so no m_clipped inherited.
     else
-        addClipRectRelativeToPaintOffset(box.layer()->size());
+        addClipRectRelativeToPaintOffset(LayoutSize(box.layer()->size()));
 
     m_paintOffset -= box.scrolledContentOffset();
 }
