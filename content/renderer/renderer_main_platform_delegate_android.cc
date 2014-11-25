@@ -38,7 +38,8 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
 
   sandbox::SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new SandboxBPFBasePolicyAndroid());
-  CHECK(sandbox.StartSandbox(sandbox::SandboxBPF::PROCESS_MULTI_THREADED));
+  CHECK(
+      sandbox.StartSandbox(sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
 #endif
   return true;
 }

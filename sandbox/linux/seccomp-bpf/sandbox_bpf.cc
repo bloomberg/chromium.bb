@@ -52,79 +52,37 @@ namespace sandbox {
 
 namespace {
 
-const int kExpectedExitCode = 100;
-
-#if !defined(NDEBUG)
-void WriteFailedStderrSetupMessage(int out_fd) {
-  const char* error_string = strerror(errno);
-  static const char msg[] =
-      "You have reproduced a puzzling issue.\n"
-      "Please, report to crbug.com/152530!\n"
-      "Failed to set up stderr: ";
-  if (HANDLE_EINTR(write(out_fd, msg, sizeof(msg) - 1)) > 0 && error_string &&
-      HANDLE_EINTR(write(out_fd, error_string, strlen(error_string))) > 0 &&
-      HANDLE_EINTR(write(out_fd, "\n", 1))) {
-  }
-}
-#endif  // !defined(NDEBUG)
-
-// We define a really simple sandbox policy. It is just good enough for us
-// to tell that the sandbox has actually been activated.
-class ProbePolicy : public bpf_dsl::Policy {
- public:
-  ProbePolicy() {}
-  virtual ~ProbePolicy() {}
-
-  virtual ResultExpr EvaluateSyscall(int sysnum) const override {
-    switch (sysnum) {
-      case __NR_getpid:
-        // Return EPERM so that we can check that the filter actually ran.
-        return Error(EPERM);
-      case __NR_exit_group:
-        // Allow exit() with a non-default return code.
-        return Allow();
-      default:
-        // Make everything else fail in an easily recognizable way.
-        return Error(EINVAL);
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProbePolicy);
-};
-
-void ProbeProcess(void) {
-  if (sys_getpid() < 0 && errno == EPERM) {
-    sys_exit_group(kExpectedExitCode);
-  }
-}
-
-class AllowAllPolicy : public bpf_dsl::Policy {
- public:
-  AllowAllPolicy() {}
-  virtual ~AllowAllPolicy() {}
-
-  virtual ResultExpr EvaluateSyscall(int sysnum) const override {
-    DCHECK(SandboxBPF::IsValidSyscallNumber(sysnum));
-    return Allow();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
-};
-
-void TryVsyscallProcess(void) {
-  time_t current_time;
-  // time() is implemented as a vsyscall. With an older glibc, with
-  // vsyscall=emulate and some versions of the seccomp BPF patch
-  // we may get SIGKILL-ed. Detect this!
-  if (time(&current_time) != static_cast<time_t>(-1)) {
-    sys_exit_group(kExpectedExitCode);
-  }
-}
-
 bool IsSingleThreaded(int proc_task_fd) {
   return ThreadHelpers::IsSingleThreaded(proc_task_fd);
+}
+
+// Check if the kernel supports seccomp-filter (a.k.a. seccomp mode 2) via
+// prctl().
+bool KernelSupportsSeccompBPF() {
+  errno = 0;
+  const int rv = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, nullptr);
+
+  if (rv == -1 && EFAULT == errno) {
+    return true;
+  }
+  return false;
+}
+
+// Check if the kernel supports seccomp-filter via the seccomp system call
+// and the TSYNC feature to enable seccomp on all threads.
+bool KernelSupportsSeccompTsync() {
+  errno = 0;
+  const int rv =
+      sys_seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, nullptr);
+
+  if (rv == -1 && errno == EFAULT) {
+    return true;
+  } else {
+    // TODO(jln): turn these into DCHECK after 417888 is considered fixed.
+    CHECK_EQ(-1, rv);
+    CHECK(ENOSYS == errno || EINVAL == errno);
+    return false;
+  }
 }
 
 }  // namespace
@@ -142,205 +100,41 @@ bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
   return SyscallSet::IsValid(sysnum);
 }
 
-bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
-                                     scoped_ptr<bpf_dsl::Policy> policy) {
-  // Block all signals before forking a child process. This prevents an
-  // attacker from manipulating our test by sending us an unexpected signal.
-  sigset_t old_mask, new_mask;
-  if (sigfillset(&new_mask) || sigprocmask(SIG_BLOCK, &new_mask, &old_mask)) {
-    SANDBOX_DIE("sigprocmask() failed");
-  }
-  int fds[2];
-  if (pipe2(fds, O_NONBLOCK | O_CLOEXEC)) {
-    SANDBOX_DIE("pipe() failed");
-  }
-
-  if (fds[0] <= 2 || fds[1] <= 2) {
-    SANDBOX_DIE("Process started without standard file descriptors");
-  }
-
-  // This code is using fork() and should only ever run single-threaded.
-  // Most of the code below is "async-signal-safe" and only minor changes
-  // would be needed to support threads.
-  DCHECK(IsSingleThreaded(proc_task_fd_));
-  pid_t pid = fork();
-  if (pid < 0) {
-    // Die if we cannot fork(). We would probably fail a little later
-    // anyway, as the machine is likely very close to running out of
-    // memory.
-    // But what we don't want to do is return "false", as a crafty
-    // attacker might cause fork() to fail at will and could trick us
-    // into running without a sandbox.
-    sigprocmask(SIG_SETMASK, &old_mask, NULL);  // OK, if it fails
-    SANDBOX_DIE("fork() failed unexpectedly");
-  }
-
-  // In the child process
-  if (!pid) {
-    // Test a very simple sandbox policy to verify that we can
-    // successfully turn on sandboxing.
-    Die::EnableSimpleExit();
-
-    errno = 0;
-    if (IGNORE_EINTR(close(fds[0]))) {
-      // This call to close() has been failing in strange ways. See
-      // crbug.com/152530. So we only fail in debug mode now.
-#if !defined(NDEBUG)
-      WriteFailedStderrSetupMessage(fds[1]);
-      SANDBOX_DIE(NULL);
-#endif
-    }
-    if (HANDLE_EINTR(dup2(fds[1], 2)) != 2) {
-      // Stderr could very well be a file descriptor to .xsession-errors, or
-      // another file, which could be backed by a file system that could cause
-      // dup2 to fail while trying to close stderr. It's important that we do
-      // not fail on trying to close stderr.
-      // If dup2 fails here, we will continue normally, this means that our
-      // parent won't cause a fatal failure if something writes to stderr in
-      // this child.
-#if !defined(NDEBUG)
-      // In DEBUG builds, we still want to get a report.
-      WriteFailedStderrSetupMessage(fds[1]);
-      SANDBOX_DIE(NULL);
-#endif
-    }
-    if (IGNORE_EINTR(close(fds[1]))) {
-      // This call to close() has been failing in strange ways. See
-      // crbug.com/152530. So we only fail in debug mode now.
-#if !defined(NDEBUG)
-      WriteFailedStderrSetupMessage(fds[1]);
-      SANDBOX_DIE(NULL);
-#endif
-    }
-
-    SetSandboxPolicy(policy.release());
-    if (!StartSandbox(PROCESS_SINGLE_THREADED)) {
-      SANDBOX_DIE(NULL);
-    }
-
-    // Run our code in the sandbox.
-    code_in_sandbox();
-
-    // code_in_sandbox() is not supposed to return here.
-    SANDBOX_DIE(NULL);
-  }
-
-  // In the parent process.
-  if (IGNORE_EINTR(close(fds[1]))) {
-    SANDBOX_DIE("close() failed");
-  }
-  if (sigprocmask(SIG_SETMASK, &old_mask, NULL)) {
-    SANDBOX_DIE("sigprocmask() failed");
-  }
-  int status;
-  if (HANDLE_EINTR(waitpid(pid, &status, 0)) != pid) {
-    SANDBOX_DIE("waitpid() failed unexpectedly");
-  }
-  bool rc = WIFEXITED(status) && WEXITSTATUS(status) == kExpectedExitCode;
-
-  // If we fail to support sandboxing, there might be an additional
-  // error message. If so, this was an entirely unexpected and fatal
-  // failure. We should report the failure and somebody must fix
-  // things. This is probably a security-critical bug in the sandboxing
-  // code.
-  if (!rc) {
-    char buf[4096];
-    ssize_t len = HANDLE_EINTR(read(fds[0], buf, sizeof(buf) - 1));
-    if (len > 0) {
-      while (len > 1 && buf[len - 1] == '\n') {
-        --len;
-      }
-      buf[len] = '\000';
-      SANDBOX_DIE(buf);
-    }
-  }
-  if (IGNORE_EINTR(close(fds[0]))) {
-    SANDBOX_DIE("close() failed");
-  }
-
-  return rc;
-}
-
-bool SandboxBPF::KernelSupportSeccompBPF() {
-  return RunFunctionInPolicy(ProbeProcess,
-                             scoped_ptr<bpf_dsl::Policy>(new ProbePolicy())) &&
-         RunFunctionInPolicy(TryVsyscallProcess,
-                             scoped_ptr<bpf_dsl::Policy>(new AllowAllPolicy()));
-}
-
 // static
-SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox() {
-  if (status_ != STATUS_UNKNOWN) {
-    return status_;
+bool SandboxBPF::SupportsSeccompSandbox(SeccompLevel level) {
+  switch (level) {
+    case SeccompLevel::SINGLE_THREADED:
+      return KernelSupportsSeccompBPF();
+    case SeccompLevel::MULTI_THREADED:
+      return KernelSupportsSeccompTsync();
   }
-
-  // If we have not previously checked for availability of the sandbox or if
-  // we otherwise don't believe to have a good cached value, we have to
-  // perform a thorough check now.
-
-  // We create our own private copy of a "Sandbox" object. This ensures that
-  // the object does not have any policies configured, that might interfere
-  // with the tests done by "KernelSupportSeccompBPF()".
-  SandboxBPF sandbox;
-
-  // By setting "quiet_ = true" we suppress messages for expected and benign
-  // failures (e.g. if the current kernel lacks support for BPF filters).
-  // TODO(jln): use kernel API to check for seccomp support now that things
-  // have stabilized.
-  sandbox.quiet_ = true;
-  status_ =
-      sandbox.KernelSupportSeccompBPF() ? STATUS_AVAILABLE : STATUS_UNSUPPORTED;
-
-  return status_;
-}
-
-// static
-SandboxBPF::SandboxStatus
-SandboxBPF::SupportsSeccompThreadFilterSynchronization() {
-  // Applying NO_NEW_PRIVS, a BPF filter, and synchronizing the filter across
-  // the thread group are all handled atomically by this syscall.
-  const int rv = syscall(
-      __NR_seccomp, SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, NULL);
-
-  if (rv == -1 && errno == EFAULT) {
-    return STATUS_AVAILABLE;
-  } else {
-    // TODO(jln): turn these into DCHECK after 417888 is considered fixed.
-    CHECK_EQ(-1, rv);
-    CHECK(ENOSYS == errno || EINVAL == errno);
-    return STATUS_UNSUPPORTED;
-  }
+  NOTREACHED();
+  return false;
 }
 
 void SandboxBPF::set_proc_task_fd(int proc_task_fd) {
   proc_task_fd_ = proc_task_fd;
 }
 
-bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
-  CHECK(thread_state == PROCESS_SINGLE_THREADED ||
-        thread_state == PROCESS_MULTI_THREADED);
+bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
+  CHECK(seccomp_level == SeccompLevel::SINGLE_THREADED ||
+        seccomp_level == SeccompLevel::MULTI_THREADED);
 
-  if (status_ == STATUS_UNSUPPORTED || status_ == STATUS_UNAVAILABLE) {
-    SANDBOX_DIE(
-        "Trying to start sandbox, even though it is known to be "
-        "unavailable");
-    return false;
-  } else if (sandbox_has_started_) {
+  if (sandbox_has_started_) {
     SANDBOX_DIE(
         "Cannot repeatedly start sandbox. Create a separate Sandbox "
         "object instead.");
     return false;
   }
 
-  bool supports_tsync =
-      SupportsSeccompThreadFilterSynchronization() == STATUS_AVAILABLE;
+  const bool supports_tsync = KernelSupportsSeccompTsync();
 
-  if (thread_state == PROCESS_SINGLE_THREADED) {
+  if (seccomp_level == SeccompLevel::SINGLE_THREADED) {
     if (!IsSingleThreaded(proc_task_fd_)) {
       SANDBOX_DIE("Cannot start sandbox; process is already multi-threaded");
       return false;
     }
-  } else if (thread_state == PROCESS_MULTI_THREADED) {
+  } else if (seccomp_level == SeccompLevel::MULTI_THREADED) {
     if (IsSingleThreaded(proc_task_fd_)) {
       SANDBOX_DIE("Cannot start sandbox; "
                   "process may be single-threaded when reported as not");
@@ -365,10 +159,8 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
   }
 
   // Install the filters.
-  InstallFilter(supports_tsync || thread_state == PROCESS_MULTI_THREADED);
-
-  // We are now inside the sandbox.
-  status_ = STATUS_ENABLED;
+  InstallFilter(supports_tsync ||
+                seccomp_level == SeccompLevel::MULTI_THREADED);
 
   return true;
 }
@@ -415,8 +207,8 @@ void SandboxBPF::InstallFilter(bool must_sync_threads) {
   // support, then the kernel hass the seccomp system call. Otherwise, fall
   // back on prctl, which requires the process to be single-threaded.
   if (must_sync_threads) {
-    int rv = syscall(__NR_seccomp, SECCOMP_SET_MODE_FILTER,
-        SECCOMP_FILTER_FLAG_TSYNC, reinterpret_cast<const char*>(&prog));
+    int rv =
+        sys_seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, &prog);
     if (rv) {
       SANDBOX_DIE(quiet_ ? NULL :
           "Kernel refuses to turn on and synchronize threads for BPF filters");
@@ -470,7 +262,5 @@ intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
                        static_cast<intptr_t>(args.args[4]),
                        static_cast<intptr_t>(args.args[5]));
 }
-
-SandboxBPF::SandboxStatus SandboxBPF::status_ = STATUS_UNKNOWN;
 
 }  // namespace sandbox

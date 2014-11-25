@@ -21,36 +21,15 @@ class Policy;
 
 class SANDBOX_EXPORT SandboxBPF {
  public:
-  enum SandboxStatus {
-    STATUS_UNKNOWN,      // Status prior to calling supportsSeccompSandbox()
-    STATUS_UNSUPPORTED,  // The kernel does not appear to support sandboxing
-    STATUS_UNAVAILABLE,  // Currently unavailable but might work again later
-    STATUS_AVAILABLE,    // Sandboxing is available but not currently active
-    STATUS_ENABLED       // The sandbox is now active
-  };
-
-  // Depending on the level of kernel support, seccomp-bpf may require the
-  // process to be single-threaded in order to enable it. When calling
-  // StartSandbox(), the program should indicate whether or not the sandbox
-  // should try and engage with multi-thread support.
-  enum SandboxThreadState {
-    PROCESS_INVALID,
-    PROCESS_SINGLE_THREADED,  // The program is currently single-threaded.
-    // Note: PROCESS_MULTI_THREADED requires experimental kernel support that
-    // has not been contributed to upstream Linux.
-    PROCESS_MULTI_THREADED,   // The program may be multi-threaded.
+  enum class SeccompLevel {
+    SINGLE_THREADED,
+    MULTI_THREADED,
   };
 
   // Constructors and destructors.
   // NOTE: Setting a policy and starting the sandbox is a one-way operation.
-  //       The kernel does not provide any option for unloading a loaded
-  //       sandbox. Strictly speaking, that means we should disallow calling
-  //       the destructor, if StartSandbox() has ever been called. In practice,
-  //       this makes it needlessly complicated to operate on "Sandbox"
-  //       objects. So, we instead opted to allow object destruction. But it
-  //       should be noted that during its lifetime, the object probably made
-  //       irreversible state changes to the runtime environment. These changes
-  //       stay in effect even after the destructor has been run.
+  // The kernel does not provide any option for unloading a loaded sandbox. The
+  // sandbox remains engaged even when the object is destructed.
   SandboxBPF();
   ~SandboxBPF();
 
@@ -59,14 +38,9 @@ class SANDBOX_EXPORT SandboxBPF {
   // system calls.
   static bool IsValidSyscallNumber(int sysnum);
 
-  // Detect if the kernel supports the seccomp sandbox. The result of calling
-  // this function will be cached. The first time this function is called, the
-  // running process must be unsandboxed (able to use /proc) and monothreaded.
-  static SandboxStatus SupportsSeccompSandbox();
-
-  // Determines if the kernel has support for the seccomp() system call to
-  // synchronize BPF filters across a thread group.
-  static SandboxStatus SupportsSeccompThreadFilterSynchronization();
+  // Detect if the kernel supports the specified seccomp level.
+  // See StartSandbox() for a description of these.
+  static bool SupportsSeccompSandbox(SeccompLevel level);
 
   // The sandbox needs to be able to access files in "/proc/self/task/". If
   // this directory is not accessible when "startSandbox()" gets called, the
@@ -94,11 +68,18 @@ class SANDBOX_EXPORT SandboxBPF {
   // directly suitable as a return value for a trap handler.
   static intptr_t ForwardSyscall(const struct arch_seccomp_data& args);
 
-  // This is the main public entry point. It finds all system calls that
-  // need rewriting, sets up the resources needed by the sandbox, and
-  // enters Seccomp mode.
-  // The calling process must specify its current SandboxThreadState, as a way
-  // to tell the sandbox which type of kernel support it should engage.
+  // This is the main public entry point. It sets up the resources needed by
+  // the sandbox, and enters Seccomp mode.
+  // The calling process must provide a |level| to tell the sandbox which type
+  // of kernel support it should engage.
+  // SINGLE_THREADED will only sandbox the calling thread. Since it would be a
+  // security risk, the sandbox will also check that the current process is
+  // single threaded.
+  // MULTI_THREADED requires more recent kernel support and allows to sandbox
+  // all the threads of the current process. Be mindful of potential races,
+  // with other threads using disallowed system calls either before or after
+  // the sandbox is engaged.
+  //
   // It is possible to stack multiple sandboxes by creating separate "Sandbox"
   // objects and calling "StartSandbox()" on each of them. Please note, that
   // this requires special care, though, as newly stacked sandboxes can never
@@ -107,7 +88,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // disallowed.
   // Finally, stacking does add more kernel overhead than having a single
   // combined policy. So, it should only be used if there are no alternatives.
-  bool StartSandbox(SandboxThreadState thread_state) WARN_UNUSED_RESULT;
+  bool StartSandbox(SeccompLevel level) WARN_UNUSED_RESULT;
 
   // Assembles a BPF filter program from the current policy. After calling this
   // function, you must not call any other sandboxing function.
@@ -129,12 +110,6 @@ class SANDBOX_EXPORT SandboxBPF {
   bool RunFunctionInPolicy(void (*code_in_sandbox)(),
                            scoped_ptr<bpf_dsl::Policy> policy);
 
-  // Performs a couple of sanity checks to verify that the kernel supports the
-  // features that we need for successful sandboxing.
-  // The caller has to make sure that "this" has not yet been initialized with
-  // any other policies.
-  bool KernelSupportSeccompBPF();
-
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
   void InstallFilter(bool must_sync_threads);
@@ -143,8 +118,6 @@ class SANDBOX_EXPORT SandboxBPF {
   // current policy. This function should only ever be called by unit tests and
   // by the sandbox internals. It should not be used by production code.
   void VerifyProgram(const CodeGen::Program& program);
-
-  static SandboxStatus status_;
 
   bool quiet_;
   int proc_task_fd_;

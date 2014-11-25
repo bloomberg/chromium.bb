@@ -9,6 +9,8 @@
 
 #include "sandbox/sandbox_export.h"
 
+struct sock_fprog;
+
 namespace sandbox {
 
 // Provide direct system call wrappers for a few common system calls.
@@ -29,6 +31,12 @@ SANDBOX_EXPORT long sys_clone(unsigned long flags,
                               decltype(nullptr) regs);
 
 SANDBOX_EXPORT void sys_exit_group(int status);
+
+// The official system call takes |args| as void*  (in order to be extensible),
+// but add more typing for the cases that are currently used.
+SANDBOX_EXPORT int sys_seccomp(unsigned int operation,
+                               unsigned int flags,
+                               const struct sock_fprog* args);
 
 }  // namespace sandbox
 

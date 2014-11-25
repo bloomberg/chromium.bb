@@ -158,7 +158,7 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
   sandbox.SetSandboxPolicy(policy);
 
   sandbox.set_proc_task_fd(proc_task_fd.release());
-  CHECK(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+  CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 
 // nacl_helper needs to be tiny and includes only part of content/
@@ -253,11 +253,8 @@ bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
 
 bool SandboxSeccompBPF::SupportsSandbox() {
 #if defined(USE_SECCOMP_BPF)
-  SandboxBPF::SandboxStatus bpf_sandbox_status =
-      SandboxBPF::SupportsSeccompSandbox();
-  if (bpf_sandbox_status == SandboxBPF::STATUS_AVAILABLE) {
-    return true;
-  }
+  return SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::SINGLE_THREADED);
 #endif
   return false;
 }

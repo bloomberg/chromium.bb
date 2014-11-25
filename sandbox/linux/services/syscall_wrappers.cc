@@ -56,4 +56,10 @@ void sys_exit_group(int status) {
   syscall(__NR_exit_group, status);
 }
 
+int sys_seccomp(unsigned int operation,
+                unsigned int flags,
+                const struct sock_fprog* args) {
+  return syscall(__NR_seccomp, operation, flags, args);
+}
+
 }  // namespace sandbox

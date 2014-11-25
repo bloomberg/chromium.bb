@@ -80,21 +80,35 @@ void EnableUnsafeTraps() {
 TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupports)) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
-  bool seccomp_bpf_supported =
-      SandboxBPF::SupportsSeccompSandbox() == SandboxBPF::STATUS_AVAILABLE;
+  bool seccomp_bpf_supported = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::SINGLE_THREADED);
+  bool seccomp_bpf_tsync_supported = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
   // We want to log whether or not seccomp BPF is actually supported
   // since actual test coverage depends on it.
-  RecordProperty("SeccompBPFSupported",
-                 seccomp_bpf_supported ? "true." : "false.");
-  std::cout << "Seccomp BPF supported: "
+  std::cout << "Seccomp BPF supported (single thread): "
             << (seccomp_bpf_supported ? "true." : "false.") << "\n";
-  RecordProperty("PointerSize", sizeof(void*));
+  std::cout << "Seccomp BPF supported (multi thread): "
+            << (seccomp_bpf_tsync_supported ? "true." : "false.") << "\n";
   std::cout << "Pointer size: " << sizeof(void*) << "\n";
 }
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupportsTwice)) {
-  SandboxBPF::SupportsSeccompSandbox();
-  SandboxBPF::SupportsSeccompSandbox();
+  bool single1 = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::SINGLE_THREADED);
+  bool single2 = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::SINGLE_THREADED);
+  ASSERT_EQ(single1, single2);
+  bool multi1 = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
+  bool multi2 = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
+  ASSERT_EQ(multi1, multi2);
+
+  // Multi threaded support implies single threaded support.
+  if (multi1) {
+    ASSERT_TRUE(single1);
+  }
 }
 
 // BPF_TEST does a lot of the boiler-plate code around setting up a
@@ -131,13 +145,13 @@ class VerboseAPITestingPolicy : public Policy {
 };
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
-  if (SandboxBPF::SupportsSeccompSandbox() ==
-      sandbox::SandboxBPF::STATUS_AVAILABLE) {
+  if (SandboxBPF::SupportsSeccompSandbox(
+          SandboxBPF::SeccompLevel::SINGLE_THREADED)) {
     static int counter = 0;
 
     SandboxBPF sandbox;
     sandbox.SetSandboxPolicy(new VerboseAPITestingPolicy(&counter));
-    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
     BPF_ASSERT_EQ(0, counter);
     BPF_ASSERT_EQ(0, syscall(__NR_uname, 0));
@@ -177,6 +191,14 @@ class BlacklistNanosleepPolicy : public Policy {
 
 BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
   BlacklistNanosleepPolicy::AssertNanosleepFails();
+}
+
+BPF_TEST_C(SandboxBPF, UseVsyscall, BlacklistNanosleepPolicy) {
+  time_t current_time;
+  // time() is implemented as a vsyscall. With an older glibc, with
+  // vsyscall=emulate and some versions of the seccomp BPF patch
+  // we may get SIGKILL-ed. Detect this!
+  BPF_ASSERT_NE(static_cast<time_t>(-1), time(&current_time));
 }
 
 // Now do a simple whitelist test
@@ -398,7 +420,7 @@ BPF_TEST_C(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
   // restrict filters, but we cannot relax existing filters.
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new StackingPolicyPartTwo());
-  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
   errno = 0;
   BPF_ASSERT(syscall(__NR_getppid, 0) == -1);
@@ -2069,8 +2091,8 @@ class TraceAllPolicy : public Policy {
 };
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
-  if (SandboxBPF::SupportsSeccompSandbox() !=
-      sandbox::SandboxBPF::STATUS_AVAILABLE) {
+  if (!SandboxBPF::SupportsSeccompSandbox(
+          SandboxBPF::SeccompLevel::SINGLE_THREADED)) {
     return;
   }
 
@@ -2096,7 +2118,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     BPF_ASSERT_EQ(0, raise(SIGSTOP));
     SandboxBPF sandbox;
     sandbox.SetSandboxPolicy(new TraceAllPolicy);
-    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+    BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
     // getpid is allowed.
     BPF_ASSERT_EQ(my_pid, sys_getpid());
@@ -2267,8 +2289,8 @@ void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
 }
 
 SANDBOX_TEST(SandboxBPF, Tsync) {
-  if (SandboxBPF::SupportsSeccompThreadFilterSynchronization() !=
-      SandboxBPF::STATUS_AVAILABLE) {
+  if (!(SandboxBPF::SupportsSeccompSandbox(
+          SandboxBPF::SeccompLevel::MULTI_THREADED))) {
     return;
   }
 
@@ -2286,7 +2308,7 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   // Engage the sandbox.
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new BlacklistNanosleepPolicy());
-  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
+  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
 
   // This thread should have the filter applied as well.
   BlacklistNanosleepPolicy::AssertNanosleepFails();
@@ -2318,7 +2340,7 @@ SANDBOX_DEATH_TEST(
 
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new AllowAllPolicy());
-  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 
 // http://crbug.com/407357
@@ -2331,7 +2353,7 @@ SANDBOX_DEATH_TEST(
         "reported as not")) {
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(new AllowAllPolicy());
-  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
+  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
 }
 #endif  // !defined(THREAD_SANITIZER)
 

@@ -62,9 +62,6 @@ NaClSandbox::NaClSandbox()
   proc_fd_.reset(
       HANDLE_EINTR(open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC)));
   PCHECK(proc_fd_.is_valid());
-  // Determine if the kernel supports seccomp-bpf and let it cache the
-  // result. This must be done before any sandbox is engaged.
-  sandbox::SandboxBPF::SupportsSeccompSandbox();
 }
 
 NaClSandbox::~NaClSandbox() {

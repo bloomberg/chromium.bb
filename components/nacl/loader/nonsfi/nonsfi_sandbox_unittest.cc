@@ -59,9 +59,9 @@ void DoSocketpair(base::ScopedFD* fds) {
 }
 
 TEST(NaClNonSfiSandboxTest, BPFIsSupported) {
-  bool seccomp_bpf_supported = (
-      sandbox::SandboxBPF::SupportsSeccompSandbox() ==
-      sandbox::SandboxBPF::STATUS_AVAILABLE);
+  bool seccomp_bpf_supported = sandbox::SandboxBPF::SupportsSeccompSandbox(
+      sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);
+
   if (!seccomp_bpf_supported) {
     LOG(ERROR) << "Seccomp BPF is not supported, these tests "
                << "will pass without running";
