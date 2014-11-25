@@ -17,10 +17,6 @@
 #include "base/threading/thread_collision_warner.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_ANDROID) || defined(OS_WIN)
-#define DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR
-#endif
-
 namespace base {
 
 namespace subtle {
@@ -297,12 +293,6 @@ class scoped_refptr {
 
   T* get() const { return ptr_; }
 
-#if !defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
-  // Allow scoped_refptr<C> to be used in boolean expression
-  // and comparison operations.
-  operator T*() const { return ptr_; }
-#endif
-
   T& operator*() const {
     assert(ptr_ != NULL);
     return *ptr_;
@@ -343,7 +333,6 @@ class scoped_refptr {
     swap(&r.ptr_);
   }
 
-#if defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
   template <typename U>
   bool operator==(const scoped_refptr<U>& rhs) const {
     return ptr_ == rhs.get();
@@ -358,7 +347,6 @@ class scoped_refptr {
   bool operator<(const scoped_refptr<U>& rhs) const {
     return ptr_ < rhs.get();
   }
-#endif
 
  protected:
   T* ptr_;
@@ -389,8 +377,8 @@ scoped_refptr<T> make_scoped_refptr(T* t) {
   return scoped_refptr<T>(t);
 }
 
-#if defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
-// Temporary operator overloads to facilitate the transition...
+// Temporary operator overloads to facilitate the transition. See
+// https://crbug.com/110610.
 template <typename T, typename U>
 bool operator==(const scoped_refptr<T>& lhs, const U* rhs) {
   return lhs.get() == rhs;
@@ -415,6 +403,5 @@ template <typename T>
 std::ostream& operator<<(std::ostream& out, const scoped_refptr<T>& p) {
   return out << p.get();
 }
-#endif  // defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
 
 #endif  // BASE_MEMORY_REF_COUNTED_H_
