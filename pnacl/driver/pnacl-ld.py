@@ -380,16 +380,18 @@ def main(argv):
     # it requires '-expand-constant-expr' to be able to handle
     # 'landingpad' instructions.
     # However, if we aren't using biased bitcode, then at least -expand-byval
-    # must be run to work with the PPAPI shim calling convention.
-    # This assumes that PPAPI does not use var-args, so passes like
-    # -expand-varargs and other calling-convention-changing passes are
-    # not needed.
+    # must be run to work with the PPAPI shim calling convention, and
+    # -expand-varargs is needed because after LLVM 3.5 the x86-32 backend does
+    # not expand the llvm.va_arg intrinsic correctly.
+    # (see https://code.google.com/p/nativeclient/issues/detail?id=3913#c24)
     abi_simplify = (env.getbool('STATIC') and
                     len(native_objects) == 0 and
                     env.getone('CXX_EH_MODE') != 'zerocost' and
                     not env.getbool('ALLOW_NEXE_BUILD_ID') and
                     IsPortable())
     still_need_expand_byval = IsPortable()
+    still_need_expand_varargs = (still_need_expand_byval and
+                                 len(native_objects) == 0)
 
     # A list of groups of args. Each group should contain a pass to run
     # along with relevant flags that go with that pass.
@@ -429,6 +431,8 @@ def main(argv):
       # We may still need -expand-byval to match the PPAPI shim
       # calling convention.
       opt_args.append(['-expand-byval'])
+      if still_need_expand_varargs:
+        opt_args.append(['-expand-varargs'])
     if len(opt_args) != 0:
       if env.getbool('RUN_PASSES_SEPARATELY'):
         for i, group in enumerate(opt_args):

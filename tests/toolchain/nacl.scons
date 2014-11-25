@@ -381,6 +381,17 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                        exit_status='55')
   env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                          'run_eh_separate_files_bc_test')
+
+  # Test that vararg functions which get double arguments work in
+  # allow-exceptions mode.
+  if exc_env['TOOLCHAIN_FEATURE_VERSION'] >= 10:
+    nexe = exc_env.ComponentProgram('vaarg_allow_exceptions',
+                                    'vaarg_allow_exceptions.cc',
+                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = exc_env.CommandSelLdrTestNacl('vaarg_allow_exceptions.out', nexe)
+    env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                           'run_vaarg_allow_exceptions_test')
+
   # Also test ahead of time translation, which may be used when debugging.
   if not env.Bit('pnacl_generate_pexe'):
     native_env = exc_env.Clone()

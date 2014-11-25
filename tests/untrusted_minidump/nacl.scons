@@ -7,16 +7,13 @@ import os
 Import('env')
 
 # Preserve debugging info (which is not ABI-stable under PNaCl).
-if not env.AllowNonStableBitcode():
+if not env.AllowNonStableBitcode() or not env.Bit('pnacl_generate_pexe'):
   Return()
 
 if env.Bit('bitcode'):
   # With the PNaCl toolchain, special flags are required to get a build ID.
   env.Append(LINKFLAGS=['--pnacl-allow-nexe-build-id'])
-  if env.Bit('pnacl_generate_pexe'):
-    env.Append(TRANSLATEFLAGS=['--build-id'])
-  else:
-    env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wn,--build-id'])
+  env.Append(TRANSLATEFLAGS=['--build-id'])
 
 env['COMPONENT_STATIC'] = env.Bit('nacl_static_link')
 env.ComponentLibrary('minidump_test_lib', 'minidump_test_lib.c')
