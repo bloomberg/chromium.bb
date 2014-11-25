@@ -1834,8 +1834,6 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     computedValues.m_margins.m_end = marginEnd();
 
     if (isOutOfFlowPositioned()) {
-        // FIXME: This calculation is not patched for block-flow yet.
-        // https://bugs.webkit.org/show_bug.cgi?id=46500
         computePositionedLogicalWidth(computedValues);
         return;
     }
@@ -1846,14 +1844,14 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
 
     // The parent box is flexing us, so it has increased or decreased our
     // width.  Use the width from the style context.
-    // FIXME: Account for block-flow in flexible boxes.
+    // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (hasOverrideWidth() && parent()->isFlexibleBoxIncludingDeprecated()) {
         computedValues.m_extent = overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
         return;
     }
 
-    // FIXME: Account for block-flow in flexible boxes.
+    // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     bool inVerticalBox = parent()->isDeprecatedFlexibleBox() && (parent()->style()->boxOrient() == VERTICAL);
     bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
@@ -2019,14 +2017,14 @@ bool RenderBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
 
     // Flexible horizontal boxes lay out children at their intrinsic widths.  Also vertical boxes
     // that don't stretch their kids lay out their children at their intrinsic widths.
-    // FIXME: Think about block-flow here.
+    // FIXME: Think about writing-mode here.
     // https://bugs.webkit.org/show_bug.cgi?id=46473
     if (parent()->isDeprecatedFlexibleBox() && (parent()->style()->boxOrient() == HORIZONTAL || parent()->style()->boxAlign() != BSTRETCH))
         return true;
 
     // Button, input, select, textarea, and legend treat width value of 'auto' as 'intrinsic' unless it's in a
     // stretching column flexbox.
-    // FIXME: Think about block-flow here.
+    // FIXME: Think about writing-mode here.
     // https://bugs.webkit.org/show_bug.cgi?id=46473
     if (logicalWidth.isAuto() && !isStretchingColumnFlexItem(this) && autoWidthShouldFitContent())
         return true;
@@ -2163,7 +2161,7 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
             return;
         }
 
-        // FIXME: Account for block-flow in flexible boxes.
+        // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         bool inHorizontalBox = parent()->isDeprecatedFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL;
         bool stretching = parent()->style()->boxAlign() == BSTRETCH;
@@ -2172,7 +2170,7 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
 
         // The parent box is flexing us, so it has increased or decreased our height.  We have to
         // grab our cached flexible height.
-        // FIXME: Account for block-flow in flexible boxes.
+        // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         if (hasOverrideHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isRenderGrid()))
             h = Length(overrideLogicalContentHeight(), Fixed);
@@ -2184,7 +2182,7 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         }
 
         // Block children of horizontal flexible boxes fill the height of the box.
-        // FIXME: Account for block-flow in flexible boxes.
+        // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         if (h.isAuto() && inHorizontalBox && toRenderDeprecatedFlexibleBox(parent())->isStretchingChildren()) {
             h = Length(parentBox()->contentLogicalHeight() - marginBefore() - marginAfter() - borderAndPaddingLogicalHeight(), Fixed);
@@ -2413,8 +2411,8 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(const Length& logicalWidt
         case FillAvailable:
         case Percent:
         case Calculated: {
-            // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced element's block-flow is perpendicular to the
-            // containing block's block-flow.
+            // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced element's writing-mode is perpendicular to the
+            // containing block's writing-mode.
             // https://bugs.webkit.org/show_bug.cgi?id=46496
             const LayoutUnit cw = isOutOfFlowPositioned() ? containingBlockLogicalWidthForPositioned(toRenderBoxModelObject(container())) : containingBlockLogicalWidthForContent();
             Length containerLogicalWidth = containingBlock()->style()->logicalWidth();
@@ -2487,8 +2485,6 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
             if (cb->isRenderBlock())
                 toRenderBlock(cb)->addPercentHeightDescendant(const_cast<RenderBox*>(this));
 
-            // FIXME: This calculation is not patched for block-flow yet.
-            // https://bugs.webkit.org/show_bug.cgi?id=46500
             if (cb->isOutOfFlowPositioned() && cb->style()->height().isAuto() && !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
                 ASSERT_WITH_SECURITY_IMPLICATION(cb->isRenderBlock());
                 RenderBlock* block = toRenderBlock(cb);
@@ -2499,8 +2495,8 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
                 return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeight, newHeight));
             }
 
-            // FIXME: availableLogicalHeight() is wrong if the replaced element's block-flow is perpendicular to the
-            // containing block's block-flow.
+            // FIXME: availableLogicalHeight() is wrong if the replaced element's writing-mode is perpendicular to the
+            // containing block's writing-mode.
             // https://bugs.webkit.org/show_bug.cgi?id=46496
             LayoutUnit availableHeight;
             if (isOutOfFlowPositioned())
@@ -2510,7 +2506,7 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
                 // It is necessary to use the border-box to match WinIE's broken
                 // box model.  This is essential for sizing inside
                 // table cells using percentage heights.
-                // FIXME: This needs to be made block-flow-aware.  If the cell and image are perpendicular block-flows, this isn't right.
+                // FIXME: This needs to be made writing-mode-aware. If the cell and image are perpendicular writing-modes, this isn't right.
                 // https://bugs.webkit.org/show_bug.cgi?id=46997
                 while (cb && !cb->isRenderView() && (cb->style()->logicalHeight().isAuto() || cb->style()->logicalHeight().isPercent())) {
                     if (cb->isTableCell()) {
