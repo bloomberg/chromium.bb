@@ -1327,7 +1327,7 @@ public class ContentViewCore
     }
 
     private void clearUserSelection() {
-        if (isSelectionEditable()) {
+        if (mFocusedNodeEditable) {
             if (mInputConnection != null) {
                 int selectionEnd = Selection.getSelectionEnd(mEditable);
                 mInputConnection.setSelection(selectionEnd, selectionEnd);
