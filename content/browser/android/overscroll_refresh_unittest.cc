@@ -260,7 +260,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
   EXPECT_FALSE(GetAndResetRefreshTriggered());
 }
 
-TEST_F(OverscrollRefreshTest, NotTriggeredIfPinched) {
+TEST_F(OverscrollRefreshTest, NotTriggeredIfReleasedWithoutActivation) {
   OverscrollRefresh effect(this, this, kDragTargetPixels);
   effect.UpdateDisplay(DefaultViewportSize(), gfx::Vector2dF());
   effect.OnScrollBegin();
@@ -277,12 +277,12 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfPinched) {
   EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
   EXPECT_TRUE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 50)));
 
-  // A pinch gesture should prevent the refresh action from firing.
-  effect.OnPinchBegin();
+  // An early release should prevent the refresh action from firing.
+  effect.ReleaseWithoutActivation();
   effect.OnScrollEnd(gfx::Vector2dF());
   EXPECT_FALSE(GetAndResetRefreshTriggered());
 
-  // The pinch should trigger a dismissal animation.
+  // The early release should trigger a dismissal animation.
   EXPECT_TRUE(effect.IsActive());
   base::TimeTicks initial_time = base::TimeTicks::Now();
   base::TimeTicks current_time = initial_time;

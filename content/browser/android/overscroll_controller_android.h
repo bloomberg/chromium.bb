@@ -68,6 +68,7 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
   // WebContentsObserver implementation.
   void DidNavigateMainFrame(const LoadCommittedDetails& details,
                             const FrameNavigateParams& params) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
 
   // OverscrollRefreshClient implementation.
   void TriggerRefresh() override;
@@ -87,6 +88,7 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
   scoped_ptr<OverscrollGlow> glow_effect_;
   scoped_ptr<OverscrollRefresh> refresh_effect_;
   bool triggered_refresh_active_;
+  bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerAndroid);
 };

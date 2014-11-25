@@ -423,19 +423,13 @@ void OverscrollRefresh::Reset() {
 }
 
 void OverscrollRefresh::OnScrollBegin() {
-  bool allow_activation = false;
-  Release(allow_activation);
+  ReleaseWithoutActivation();
   if (scrolled_to_top_)
     scroll_consumption_state_ = AWAITING_SCROLL_UPDATE_ACK;
 }
 
 void OverscrollRefresh::OnScrollEnd(const gfx::Vector2dF& scroll_velocity) {
   bool allow_activation = scroll_velocity.y() > kMinFlingVelocityForActivation;
-  Release(allow_activation);
-}
-
-void OverscrollRefresh::OnPinchBegin() {
-  bool allow_activation = false;
   Release(allow_activation);
 }
 
@@ -469,6 +463,11 @@ bool OverscrollRefresh::WillHandleScrollUpdate(
 
   NOTREACHED() << "Invalid overscroll state: " << scroll_consumption_state_;
   return false;
+}
+
+void OverscrollRefresh::ReleaseWithoutActivation() {
+  bool allow_activation = false;
+  Release(allow_activation);
 }
 
 bool OverscrollRefresh::Animate(base::TimeTicks current_time,

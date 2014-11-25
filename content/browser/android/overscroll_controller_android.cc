@@ -10,8 +10,8 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/android/edge_effect.h"
 #include "content/browser/android/edge_effect_l.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/did_overscroll_params.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/android/window_android_compositor.h"
@@ -74,7 +74,9 @@ OverscrollControllerAndroid::OverscrollControllerAndroid(
       enabled_(true),
       glow_effect_(CreateGlowEffect(this, dpi_scale)),
       refresh_effect_(CreateRefreshEffect(compositor, this, dpi_scale)),
-      triggered_refresh_active_(false) {
+      triggered_refresh_active_(false),
+      is_fullscreen_(static_cast<WebContentsImpl*>(web_contents)
+                         ->IsFullscreenForCurrentTab()) {
   DCHECK(web_contents);
   DCHECK(compositor);
   if (refresh_effect_)
@@ -89,7 +91,8 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
   if (!enabled_)
     return false;
 
-  if (!refresh_effect_)
+  // Suppress refresh detection for fullscreen web apps.
+  if (!refresh_effect_ || is_fullscreen_)
     return false;
 
   bool handled = false;
@@ -134,7 +137,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
     } break;
 
     case blink::WebInputEvent::GesturePinchBegin:
-      refresh_effect_->OnPinchBegin();
+      refresh_effect_->ReleaseWithoutActivation();
       break;
 
     default:
@@ -255,6 +258,15 @@ void OverscrollControllerAndroid::DidNavigateMainFrame(
   // the reload effect. Note that the effect will naturally time out should the
   // reload be interruped for any reason.
   triggered_refresh_active_ = false;
+}
+
+void OverscrollControllerAndroid::DidToggleFullscreenModeForTab(
+    bool entered_fullscreen) {
+  if (is_fullscreen_ == entered_fullscreen)
+    return;
+  is_fullscreen_ = entered_fullscreen;
+  if (is_fullscreen_)
+    refresh_effect_->ReleaseWithoutActivation();
 }
 
 void OverscrollControllerAndroid::TriggerRefresh() {
