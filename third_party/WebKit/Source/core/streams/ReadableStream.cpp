@@ -66,7 +66,7 @@ String ReadableStream::stateString() const
     return String();
 }
 
-bool ReadableStream::enqueuePreliminaryCheck(size_t chunkSize)
+bool ReadableStream::enqueuePreliminaryCheck()
 {
     // This is a bit different from what spec says: it says we should throw
     // an exception here. But sometimes a caller is not in any JavaScript
@@ -77,12 +77,14 @@ bool ReadableStream::enqueuePreliminaryCheck(size_t chunkSize)
     return true;
 }
 
-bool ReadableStream::enqueuePostAction(size_t totalQueueSize)
+bool ReadableStream::enqueuePostAction()
 {
     m_isPulling = false;
 
-    // FIXME: Set |shouldApplyBackpressure| correctly.
-    bool shouldApplyBackpressure = false;
+    bool shouldApplyBackpressure = this->shouldApplyBackpressure();
+    // this->shouldApplyBackpressure may call this->error().
+    if (m_state == Errored)
+        return false;
 
     if (m_state == Waiting) {
         m_state = Readable;
@@ -192,9 +194,10 @@ void ReadableStream::callPullIfNeeded()
 {
     if (m_isPulling || m_isDraining || !m_isStarted || m_state == Closed || m_state == Errored)
         return;
-    // FIXME: Set shouldApplyBackpressure correctly.
-    bool shouldApplyBackpressure = false;
-    if (shouldApplyBackpressure)
+
+    bool shouldApplyBackpressure = this->shouldApplyBackpressure();
+    // this->shouldApplyBackpressure may call this->error().
+    if (shouldApplyBackpressure || m_state == Errored)
         return;
     m_isPulling = true;
     m_source->pullSource();

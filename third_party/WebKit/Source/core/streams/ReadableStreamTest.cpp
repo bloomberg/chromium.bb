@@ -46,7 +46,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue value) override
+    ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
         *m_value = toCoreString(value.v8Value()->ToString(scriptState()->isolate()));
@@ -59,10 +59,23 @@ private:
 class MockUnderlyingSource : public GarbageCollectedFinalized<MockUnderlyingSource>, public UnderlyingSource {
     USING_GARBAGE_COLLECTED_MIXIN(MockUnderlyingSource);
 public:
-    virtual ~MockUnderlyingSource() { }
+    ~MockUnderlyingSource() override { }
 
     MOCK_METHOD0(pullSource, void());
     MOCK_METHOD2(cancelSource, ScriptPromise(ScriptState*, ScriptValue));
+};
+
+class PermissiveStrategy : public StringStream::Strategy {
+public:
+    bool shouldApplyBackpressure(size_t, ReadableStream*) override { return false; }
+};
+
+class MockStrategy : public StringStream::Strategy {
+public:
+    static ::testing::StrictMock<MockStrategy>* create() { return new ::testing::StrictMock<MockStrategy>; }
+
+    MOCK_METHOD2(shouldApplyBackpressure, bool(size_t, ReadableStream*));
+    MOCK_METHOD2(size, size_t(const String&, ReadableStream*));
 };
 
 class ThrowError {
@@ -91,7 +104,7 @@ public:
     {
     }
 
-    virtual ~ReadableStreamTest()
+    ~ReadableStreamTest() override
     {
     }
 
@@ -103,6 +116,21 @@ public:
         return StringCapturingFunction::createFunction(scriptState(), value);
     }
 
+    StringStream* construct(MockStrategy* strategy)
+    {
+        Checkpoint checkpoint;
+        {
+            InSequence s;
+            EXPECT_CALL(checkpoint, Call(0));
+            EXPECT_CALL(*strategy, shouldApplyBackpressure(0, _)).WillOnce(Return(true));
+            EXPECT_CALL(checkpoint, Call(1));
+        }
+        StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, strategy);
+        checkpoint.Call(0);
+        stream->didSourceStart();
+        checkpoint.Call(1);
+        return stream;
+    }
     StringStream* construct()
     {
         Checkpoint checkpoint;
@@ -112,7 +140,7 @@ public:
             EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
             EXPECT_CALL(checkpoint, Call(1));
         }
-        StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource);
+        StringStream* stream = new StringStream(scriptState()->executionContext(), m_underlyingSource, new PermissiveStrategy);
         checkpoint.Call(0);
         stream->didSourceStart();
         checkpoint.Call(1);
@@ -641,6 +669,86 @@ TEST_F(ReadableStreamTest, ReadableArrayBufferCompileTest)
 {
     // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be instantiated.
     new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(scriptState()->executionContext(), m_underlyingSource);
+}
+
+TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
+{
+    auto strategy = MockStrategy::create();
+    Checkpoint checkpoint;
+
+    StringStream* stream = construct(strategy);
+    String onFulfilled, onRejected;
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+
+    {
+        InSequence s;
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(*strategy, size(String("hello"), stream)).WillOnce(Return(1));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(1, stream)).WillOnce(Return(false));
+        EXPECT_CALL(checkpoint, Call(1));
+        EXPECT_CALL(checkpoint, Call(2));
+        EXPECT_CALL(*strategy, size(String("world"), stream)).WillOnce(Return(2));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(3, stream)).WillOnce(Return(true));
+        EXPECT_CALL(checkpoint, Call(3));
+    }
+    checkpoint.Call(0);
+    bool result = stream->enqueue("hello");
+    checkpoint.Call(1);
+    EXPECT_TRUE(result);
+
+    checkpoint.Call(2);
+    result = stream->enqueue("world");
+    checkpoint.Call(3);
+    EXPECT_FALSE(result);
+}
+
+TEST_F(ReadableStreamTest, BackpressureOnReading)
+{
+    auto strategy = MockStrategy::create();
+    Checkpoint checkpoint;
+
+    StringStream* stream = construct(strategy);
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+
+    {
+        InSequence s;
+        EXPECT_CALL(*strategy, size(String("hello"), stream)).WillOnce(Return(2));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(2, stream)).WillOnce(Return(false));
+        EXPECT_CALL(*strategy, size(String("world"), stream)).WillOnce(Return(3));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(5, stream)).WillOnce(Return(false));
+
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(3, stream)).WillOnce(Return(false));
+        EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
+        EXPECT_CALL(checkpoint, Call(1));
+        // shouldApplyBackpressure and pullSource are not called because the
+        // stream is pulling.
+        EXPECT_CALL(checkpoint, Call(2));
+        EXPECT_CALL(*strategy, size(String("foo"), stream)).WillOnce(Return(4));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(4, stream)).WillOnce(Return(true));
+        EXPECT_CALL(*strategy, size(String("bar"), stream)).WillOnce(Return(5));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(9, stream)).WillOnce(Return(true));
+        EXPECT_CALL(checkpoint, Call(3));
+        EXPECT_CALL(*strategy, shouldApplyBackpressure(5, stream)).WillOnce(Return(true));
+        EXPECT_CALL(checkpoint, Call(4));
+    }
+    stream->enqueue("hello");
+    stream->enqueue("world");
+
+    String chunk;
+    checkpoint.Call(0);
+    EXPECT_TRUE(stream->read(scriptState(), m_exceptionState).toString(chunk));
+    EXPECT_EQ("hello", chunk);
+    checkpoint.Call(1);
+    EXPECT_TRUE(stream->read(scriptState(), m_exceptionState).toString(chunk));
+    EXPECT_EQ("world", chunk);
+    checkpoint.Call(2);
+    stream->enqueue("foo");
+    stream->enqueue("bar");
+    checkpoint.Call(3);
+    EXPECT_TRUE(stream->read(scriptState(), m_exceptionState).toString(chunk));
+    EXPECT_EQ("foo", chunk);
+    checkpoint.Call(4);
 }
 
 } // namespace blink

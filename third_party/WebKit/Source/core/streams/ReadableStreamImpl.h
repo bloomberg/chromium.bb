@@ -14,6 +14,7 @@
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <utility>
 
 namespace blink {
 
@@ -27,7 +28,7 @@ public:
     typedef String HoldType;
     typedef const String& PassType;
 
-    static size_t size(const String& value) { return value.length(); }
+    static size_t size(const String& chunk) { return chunk.length(); }
     static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)
     {
         return ScriptValue(scriptState, v8String(scriptState->isolate(), value));
@@ -40,8 +41,7 @@ public:
     typedef RefPtr<DOMArrayBuffer> HoldType;
     typedef PassRefPtr<DOMArrayBuffer> PassType;
 
-    static size_t size(const PassType& value) { return value->byteLength(); }
-    static size_t size(const HoldType& value) { return value->byteLength(); }
+    static size_t size(const PassType& chunk) { return chunk->byteLength(); }
     static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)
     {
         return ScriptValue(scriptState, toV8NoInline(value.get(), scriptState->context()->Global(), scriptState->isolate()));
@@ -54,43 +54,70 @@ public:
 template <typename ChunkTypeTraits>
 class ReadableStreamImpl : public ReadableStream {
 public:
+    class Strategy : public GarbageCollectedFinalized<Strategy> {
+    public:
+        virtual ~Strategy() { }
+
+        // These functions call ReadableStream::error on error.
+        virtual size_t size(const typename ChunkTypeTraits::PassType& chunk, ReadableStream*) { return ChunkTypeTraits::size(chunk); }
+        virtual bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) = 0;
+
+        virtual void trace(Visitor*) { }
+    };
+
+    class DefaultStrategy : public Strategy {
+    public:
+        ~DefaultStrategy() override { }
+        size_t size(const typename ChunkTypeTraits::PassType& chunk, ReadableStream*) override { return 1; }
+        bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) override { return totalQueueSize > 1; }
+    };
+
     ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source)
+        : ReadableStreamImpl(executionContext, source, new DefaultStrategy) { }
+    ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source, Strategy* strategy)
         : ReadableStream(executionContext, source)
+        , m_strategy(strategy)
         , m_totalQueueSize(0) { }
-    virtual ~ReadableStreamImpl() { }
+    ~ReadableStreamImpl() override { }
 
     // ReadableStream methods
-    virtual ScriptValue read(ScriptState*, ExceptionState&) override;
+    ScriptValue read(ScriptState*, ExceptionState&) override;
 
     bool enqueue(typename ChunkTypeTraits::PassType);
 
-    virtual void trace(Visitor* visitor) override
+    void trace(Visitor* visitor) override
     {
+        visitor->trace(m_strategy);
         ReadableStream::trace(visitor);
     }
 
 private:
     // ReadableStream methods
-    virtual bool isQueueEmpty() const override { return m_queue.isEmpty(); }
-    virtual void clearQueue() override
+    bool isQueueEmpty() const override { return m_queue.isEmpty(); }
+    void clearQueue() override
     {
         m_queue.clear();
         m_totalQueueSize = 0;
     }
+    bool shouldApplyBackpressure() override
+    {
+        return m_strategy->shouldApplyBackpressure(m_totalQueueSize, this);
+    }
 
-    Deque<typename ChunkTypeTraits::HoldType> m_queue;
+    Member<Strategy> m_strategy;
+    Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t> > m_queue;
     size_t m_totalQueueSize;
 };
 
 template <typename ChunkTypeTraits>
 bool ReadableStreamImpl<ChunkTypeTraits>::enqueue(typename ChunkTypeTraits::PassType chunk)
 {
-    size_t size = ChunkTypeTraits::size(chunk);
-    if (!enqueuePreliminaryCheck(size))
+    size_t size = m_strategy->size(chunk, this);
+    if (!enqueuePreliminaryCheck())
         return false;
-    m_queue.append(chunk);
+    m_queue.append(std::make_pair(chunk, size));
     m_totalQueueSize += size;
-    return enqueuePostAction(m_totalQueueSize);
+    return enqueuePostAction();
 }
 
 template <typename ChunkTypeTraits>
@@ -101,8 +128,11 @@ ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, 
         return ScriptValue();
     ASSERT(state() == Readable);
     ASSERT(!m_queue.isEmpty());
-    typename ChunkTypeTraits::HoldType chunk = m_queue.takeFirst();
-    m_totalQueueSize -= ChunkTypeTraits::size(chunk);
+    auto pair = m_queue.takeFirst();
+    typename ChunkTypeTraits::HoldType chunk = pair.first;
+    size_t size = pair.second;
+    ASSERT(m_totalQueueSize >= size);
+    m_totalQueueSize -= size;
     readPostAction();
     return ChunkTypeTraits::toScriptValue(scriptState, chunk);
 }

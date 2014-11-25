@@ -33,8 +33,6 @@ public:
         Errored,
     };
 
-    // FIXME: Define Strategy here.
-    // FIXME: Add |strategy| constructor parameter.
     // After ReadableStream construction, |didSourceStart| must be called when
     // |source| initialization succeeds and |error| must be called when
     // |source| initialization fails.
@@ -60,8 +58,8 @@ public:
     virtual void trace(Visitor*);
 
 protected:
-    bool enqueuePreliminaryCheck(size_t chunkSize);
-    bool enqueuePostAction(size_t totalQueueSize);
+    bool enqueuePreliminaryCheck();
+    bool enqueuePostAction();
     void readPreliminaryCheck(ExceptionState&);
     void readPostAction();
 
@@ -71,6 +69,8 @@ private:
 
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;
+    // This function will call ReadableStream::error on error.
+    virtual bool shouldApplyBackpressure() = 0;
 
     void callPullIfNeeded();
 
