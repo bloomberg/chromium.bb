@@ -63,11 +63,7 @@ bool NotificationDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool NotificationDispatcher::ShouldHandleMessage(const IPC::Message& msg) {
-  // The thread-safe message filter is responsible for handling all the messages
-  // except for the routed permission-request-completed message, which will be
-  // picked up by the RenderFrameImpl instead.
-  return IPC_MESSAGE_CLASS(msg) == PlatformNotificationMsgStart &&
-         msg.type() != PlatformNotificationMsg_PermissionRequestComplete::ID;
+  return IPC_MESSAGE_CLASS(msg) == PlatformNotificationMsgStart;
 }
 
 }  // namespace content

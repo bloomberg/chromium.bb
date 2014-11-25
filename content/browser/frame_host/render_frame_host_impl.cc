@@ -41,7 +41,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
-#include "content/common/platform_notification_messages.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -50,7 +49,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/stream_handle.h"
@@ -325,8 +323,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
                         OnBeginNavigation)
-    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_RequestPermission,
-                        OnRequestPlatformNotificationPermission)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
@@ -936,26 +932,6 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
-void RenderFrameHostImpl::OnRequestPlatformNotificationPermission(
-    const GURL& origin, int request_id) {
-  base::Callback<void(bool)> done_callback = base::Bind(
-      &RenderFrameHostImpl::PlatformNotificationPermissionRequestDone,
-      weak_ptr_factory_.GetWeakPtr(),
-      request_id);
-
-  if (!delegate()->GetAsWebContents())
-    return;
-
-  // TODO(peter): plumb user_gesture and bridge_id.
-  GetContentClient()->browser()->RequestPermission(
-      content::PERMISSION_NOTIFICATIONS,
-      delegate()->GetAsWebContents(),
-      routing_id_,
-      origin,
-      true,  // user_gesture,
-      done_callback);
-}
-
 void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
     const base::string16& content,
     size_t start_offset,
@@ -1418,17 +1394,6 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 #endif
 
   service_registry_.reset();
-}
-
-void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
-    int request_id,
-    bool granted) {
-  blink::WebNotificationPermission permission =
-      granted ? blink::WebNotificationPermissionAllowed
-              : blink::WebNotificationPermissionDenied;
-
-  Send(new PlatformNotificationMsg_PermissionRequestComplete(
-      routing_id_, request_id, permission));
 }
 
 void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(

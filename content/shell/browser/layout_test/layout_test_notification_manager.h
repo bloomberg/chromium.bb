@@ -27,14 +27,12 @@ class LayoutTestNotificationManager {
 
   // Checks whether |origin| has permission to display notifications in tests.
   // Must be called on the IO thread.
-  blink::WebNotificationPermission CheckPermission(
-      const GURL& origin);
+  blink::WebNotificationPermission CheckPermission(const GURL& origin);
 
   // Requests permission for |origin| to display notifications in layout tests.
   // Must be called on the IO thread.
-  void RequestPermission(
-      const GURL& origin,
-      const base::Callback<void(bool)>& callback);
+  // Returns whether the permission is granted.
+  bool RequestPermission(const GURL& origin);
 
   // Sets the permission to display notifications for |origin| to |permission|.
   // Must be called on the IO thread.

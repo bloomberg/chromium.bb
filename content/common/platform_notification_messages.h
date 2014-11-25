@@ -8,7 +8,6 @@
 #include "content/public/common/show_desktop_notification_params.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
-#include "url/gurl.h"
 
 #define IPC_MESSAGE_START PlatformNotificationMsgStart
 
@@ -26,12 +25,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-// Informs the renderer that the permission request for |request_id| is done,
-// and has been settled with |result|.
-IPC_MESSAGE_ROUTED2(PlatformNotificationMsg_PermissionRequestComplete,
-                    int /* request_id */,
-                    blink::WebNotificationPermission /* result */)
-
 // Informs the renderer that the browser has displayed the notification.
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow,
                      int /* notification_id */)
@@ -45,11 +38,6 @@ IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClick,
                      int /* notification_id */)
 
 // Messages sent from the renderer to the browser.
-
-// Requests permission to display platform notifications for |origin|.
-IPC_MESSAGE_ROUTED2(PlatformNotificationHostMsg_RequestPermission,
-                    GURL /* origin */,
-                    int /* request_id */)
 
 IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_Show,
                      int /* notification_id */,

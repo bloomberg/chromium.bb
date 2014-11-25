@@ -16,6 +16,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
       return PERMISSION_GEOLOCATION;
     case PERMISSION_NAME_MIDI_SYSEX:
       return PERMISSION_MIDI_SYSEX;
+    case PERMISSION_NAME_NOTIFICATIONS:
+      return PERMISSION_NOTIFICATIONS;
   }
 
   NOTREACHED();

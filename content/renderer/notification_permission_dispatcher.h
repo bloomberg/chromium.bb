@@ -6,9 +6,8 @@
 #define CONTENT_RENDERER_NOTIFICATION_PERMISSION_DISPATCHER_H_
 
 #include "base/id_map.h"
+#include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "ipc/ipc_message.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 
 namespace blink {
 class WebNotificationPermissionCallback;
@@ -31,16 +30,15 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
       blink::WebNotificationPermissionCallback* callback);
 
  private:
-  // RenderFrameObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   void OnPermissionRequestComplete(
-      int request_id, blink::WebNotificationPermission result);
+      int request_id, PermissionStatus status);
 
   // Tracks the active notification permission requests. This class takes
   // ownership of the created WebNotificationPermissionCallback objects.
   IDMap<blink::WebNotificationPermissionCallback, IDMapOwnPointer>
       pending_requests_;
+
+  PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPermissionDispatcher);
 };

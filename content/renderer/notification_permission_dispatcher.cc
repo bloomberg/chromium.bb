@@ -4,11 +4,12 @@
 
 #include "content/renderer/notification_permission_dispatcher.h"
 
-#include "content/common/platform_notification_messages.h"
+#include "base/bind.h"
+#include "content/public/common/service_registry.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -22,30 +23,36 @@ NotificationPermissionDispatcher::~NotificationPermissionDispatcher() {
 void NotificationPermissionDispatcher::RequestPermission(
     const blink::WebSecurityOrigin& origin,
     blink::WebNotificationPermissionCallback* callback) {
+  if (!permission_service_.get()) {
+    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
+        &permission_service_);
+  }
+
   int request_id = pending_requests_.Add(callback);
-  Send(new PlatformNotificationHostMsg_RequestPermission(
-      routing_id(), GURL(origin.toString()), request_id));
-}
 
-bool NotificationPermissionDispatcher::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NotificationPermissionDispatcher, message)
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_PermissionRequestComplete,
-                        OnPermissionRequestComplete);
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
+  permission_service_->RequestPermission(
+      PERMISSION_NAME_NOTIFICATIONS,
+      origin.toString().utf8(),
+      base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
+                 base::Unretained(this),
+                 request_id));
 }
 
 void NotificationPermissionDispatcher::OnPermissionRequestComplete(
-    int request_id, blink::WebNotificationPermission result) {
+    int request_id, PermissionStatus status) {
   blink::WebNotificationPermissionCallback* callback =
       pending_requests_.Lookup(request_id);
   DCHECK(callback);
 
-  callback->permissionRequestComplete(result);
+  // TODO(mlamouri): we should have a switch to handle all cases but for now,
+  // the Notification code is assuming allowed/denied.
+  // See http://crbug.com/434547 and http://crbug.com/436414
+  blink::WebNotificationPermission permission =
+      status == PERMISSION_STATUS_GRANTED
+          ? blink::WebNotificationPermissionAllowed
+          : blink::WebNotificationPermissionDenied;
+
+  callback->permissionRequestComplete(permission);
   pending_requests_.Remove(request_id);
 }
 

@@ -13,6 +13,7 @@ enum PermissionStatus {
 enum PermissionName {
   GEOLOCATION,
   MIDI_SYSEX,
+  NOTIFICATIONS,
 };
 
 // The Permission service provides permission handling capabilities by exposing

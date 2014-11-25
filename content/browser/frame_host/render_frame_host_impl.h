@@ -67,7 +67,6 @@ struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
 struct ResourceResponse;
-struct ShowDesktopNotificationHostMsgParams;
 struct TransitionLayerData;
 
 // Flag arguments for RenderFrameHost creation.
@@ -437,12 +436,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 const base::string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
-  void OnRequestPlatformNotificationPermission(const GURL& origin,
-                                               int request_id);
-  void OnShowDesktopNotification(
-      int notification_id,
-      const ShowDesktopNotificationHostMsgParams& params);
-  void OnCancelDesktopNotification(int notification_id);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           size_t start_offset,
                                           size_t end_offset);
@@ -478,8 +471,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This is a more conservative check than RenderProcessHost::FilterURL, since
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
-
-  void PlatformNotificationPermissionRequestDone(int request_id, bool granted);
 
   // Update the the singleton FrameAccessibility instance with a map
   // from accessibility node id to the frame routing id of a cross-process
