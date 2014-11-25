@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
@@ -362,6 +363,10 @@ int ViewCacheHelper::DoReadDataComplete(int result) {
 }
 
 void ViewCacheHelper::OnIOComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 ViewCacheHelper::OnIOComplete"));
+
   DoLoop(result);
 }
 

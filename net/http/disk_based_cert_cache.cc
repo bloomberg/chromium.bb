@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
@@ -397,6 +398,11 @@ void DiskBasedCertCache::ReadWorker::Cancel() {
 }
 
 void DiskBasedCertCache::ReadWorker::OnIOComplete(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 DiskBasedCertCache::ReadWorker::OnIOComplete"));
+
   if (canceled_) {
     Finish(ERR_FAILED);
     return;

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "components/nacl/common/pnacl_types.h"
@@ -240,6 +241,11 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
 }
 
 void PnaclTranslationCacheEntry::DispatchNext(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 PnaclTranslationCacheEntry::DispatchNext"));
+
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!cache_)
     return;

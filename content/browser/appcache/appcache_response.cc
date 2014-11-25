@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "net/base/completion_callback.h"
@@ -129,6 +130,11 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
 }
 
 void AppCacheResponseIO::OnRawIOComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 AppCacheResponseIO::OnRawIOComplete"));
+
   DCHECK_NE(net::ERR_IO_PENDING, result);
   OnIOComplete(result);
 }
