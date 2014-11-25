@@ -241,19 +241,6 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // are loaded on startup.
   OneShotEvent ready_;
 
-  // The factory needs to be declared before |cache_delegate_|, so that it can
-  // produce a pointer as a construction argument for |cache_delegate_|.
-  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_;
-
-  // |cache_delegate_| is owned by the registry service. If |cache_delegate_| is
-  // NULL, then the storage functionality is disabled (this is used in tests).
-  // This registry cannot own |cache_delegate_| because during the time after
-  // rules registry service shuts down on UI thread, and the registry is
-  // destroyed on its thread, the use of the |cache_delegate_| would not be
-  // safe. The registry only ever associates with one RulesCacheDelegate
-  // instance.
-  base::WeakPtr<RulesCacheDelegate> cache_delegate_;
-
   ProcessStateMap process_changed_rules_requested_;
 
   // Returns whether any existing rule is registered with identifier |rule_id|
@@ -287,6 +274,19 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   typedef std::map<ExtensionId, std::set<RuleIdentifier> > RuleIdentifiersMap;
   RuleIdentifiersMap used_rule_identifiers_;
   int last_generated_rule_identifier_id_;
+
+  // The factory needs to be declared before |cache_delegate_|, so that it can
+  // produce a pointer as a construction argument for |cache_delegate_|.
+  base::WeakPtrFactory<RulesRegistry> weak_ptr_factory_;
+
+  // |cache_delegate_| is owned by the registry service. If |cache_delegate_| is
+  // NULL, then the storage functionality is disabled (this is used in tests).
+  // This registry cannot own |cache_delegate_| because during the time after
+  // rules registry service shuts down on UI thread, and the registry is
+  // destroyed on its thread, the use of the |cache_delegate_| would not be
+  // safe. The registry only ever associates with one RulesCacheDelegate
+  // instance.
+  base::WeakPtr<RulesCacheDelegate> cache_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistry);
 };

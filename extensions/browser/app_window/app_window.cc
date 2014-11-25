@@ -234,7 +234,6 @@ AppWindow::AppWindow(BrowserContext* context,
       extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
       app_delegate_(app_delegate),
-      image_loader_ptr_factory_(this),
       fullscreen_types_(FULLSCREEN_TYPE_NONE),
       show_on_first_paint_(false),
       first_paint_complete_(false),
@@ -242,7 +241,8 @@ AppWindow::AppWindow(BrowserContext* context,
       can_send_events_(false),
       is_hidden_(false),
       cached_always_on_top_(false),
-      requested_alpha_enabled_(false) {
+      requested_alpha_enabled_(false),
+      image_loader_ptr_factory_(this) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
       << "Only off the record window may be opened in the guest mode.";

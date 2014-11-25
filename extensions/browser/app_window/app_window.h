@@ -509,8 +509,6 @@ class AppWindow : public content::NotificationObserver,
   // app window.
   scoped_ptr<web_modal::PopupManager> popup_manager_;
 
-  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
-
   // Bit field of FullscreenType.
   int fullscreen_types_;
 
@@ -547,6 +545,8 @@ class AppWindow : public content::NotificationObserver,
 
   // Whether |alpha_enabled| was set in the CreateParams.
   bool requested_alpha_enabled_;
+
+  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
