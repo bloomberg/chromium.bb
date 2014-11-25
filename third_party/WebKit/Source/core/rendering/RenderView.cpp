@@ -249,7 +249,7 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* paintInvalida
         if (RenderObject* parentDocRenderer = frame()->ownerRenderer()) {
             transformState.move(-frame()->view()->scrollOffset());
             if (parentDocRenderer->isBox())
-                transformState.move(toLayoutSize(toRenderBox(parentDocRenderer)->contentBoxRect().location()));
+                transformState.move(toRenderBox(parentDocRenderer)->contentBoxOffset());
             parentDocRenderer->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
             return;
         }
@@ -268,7 +268,7 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
             offset = -m_frameView->scrollOffset();
-            offset += toLayoutSize(parentDocRenderer->contentBoxRect().location());
+            offset += parentDocRenderer->contentBoxOffset();
             container = parentDocRenderer;
         }
     }
@@ -402,7 +402,7 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
         rect.moveBy(-viewRectangle.location());
 
         // Adjust for frame border.
-        rect.moveBy(obj->contentBoxRect().location());
+        rect.move(obj->contentBoxOffset());
         obj->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     }
 }

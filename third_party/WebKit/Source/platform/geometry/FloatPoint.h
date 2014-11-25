@@ -240,6 +240,11 @@ inline IntPoint roundedIntPoint(const FloatPoint& p)
     return IntPoint(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
 }
 
+inline IntSize roundedIntSize(const FloatPoint& p)
+{
+    return IntSize(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
+}
+
 inline IntPoint flooredIntPoint(const FloatPoint& p)
 {
     return IntPoint(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));

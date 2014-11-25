@@ -1491,8 +1491,9 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
     if (pinchVirtualViewportEnabled) {
         PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
 
-        IntSize pinchViewportSize = expandedIntSize(pinchViewport.visibleRect().size());
-        targetRect.moveBy(ceiledIntPoint(pinchViewport.visibleRect().location()));
+        FloatRect visibleRect = pinchViewport.visibleRect();
+        IntSize pinchViewportSize = expandedIntSize(visibleRect.size());
+        targetRect.moveBy(ceiledIntPoint(visibleRect.location()));
         targetRect.setSize(pinchViewportSize.shrunkTo(targetRect.size()));
     }
 

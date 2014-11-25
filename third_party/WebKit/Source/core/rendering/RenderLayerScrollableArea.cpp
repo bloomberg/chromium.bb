@@ -1403,7 +1403,7 @@ LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const S
     LayoutRect layerBounds(0, 0, box().clientWidth(), box().clientHeight());
     LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 
-    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
+    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset() + roundedIntSize(r.location()));
     if (clampedScrollOffset == adjustedScrollOffset())
         return rect;
 

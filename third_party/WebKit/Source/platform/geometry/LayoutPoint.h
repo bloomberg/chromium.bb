@@ -92,6 +92,12 @@ ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutSize& b)
     return a;
 }
 
+ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutPoint& b)
+{
+    a.move(b.x(), b.y());
+    return a;
+}
+
 ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b)
 {
     a.move(-b.width(), -b.height());
@@ -191,6 +197,11 @@ inline IntSize pixelSnappedIntSize(const LayoutSize& s, const LayoutPoint& p)
 inline LayoutPoint roundedLayoutPoint(const FloatPoint& p)
 {
     return LayoutPoint(p);
+}
+
+inline IntSize roundedIntSize(const LayoutPoint& p)
+{
+    return IntSize(p.x().round(), p.y().round());
 }
 
 inline LayoutSize toLayoutSize(const LayoutPoint& p)
