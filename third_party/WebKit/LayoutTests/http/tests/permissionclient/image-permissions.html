@@ -1,23 +1,16 @@
-<html>
-<head>
-<script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.dumpPermissionClientCallbacks();
-}
-
-function log(a)
-{
-    document.getElementById("results").innerHTML += a + "<br>";
-}
-</script>
-</head>
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
 <body>
-<p>
-This test checks that all URLs in a redirect chain are passed to the
-PermissionClient.
-</p>
-<img src="http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/permissionclient/resources/boston.gif" onerror="log('FAIL: error event for first image')">
-<div id="results"></div>
-</body>
-</html>
+<script>
+description("This test checks that all URLs in a redirect chain are passed to the PermissionClient.");
+window.jsTestIsAsync = true;
+
+if (window.testRunner)
+    testRunner.dumpPermissionClientCallbacks();
+
+var img = new Image();
+img.src = "http://127.0.0.1:8000/permissionclient/resources/redir.php?url=http://127.0.0.1:8000/permissionclient/resources/boston.gif";
+img.onerror = function() { testFailed('error event for image'); finishJSTest(); };
+img.onload = function() { finishJSTest(); }; 
+document.body.appendChild(img);
+</script>
