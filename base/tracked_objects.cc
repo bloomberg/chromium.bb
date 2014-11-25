@@ -76,10 +76,10 @@ inline bool IsProfilerTimingEnabled() {
   base::subtle::Atomic32 current_timing_enabled =
       base::subtle::NoBarrier_Load(&g_profiler_timing_enabled);
   if (current_timing_enabled == UNDEFINED_TIMING) {
-    if (!CommandLine::InitializedForCurrentProcess())
+    if (!base::CommandLine::InitializedForCurrentProcess())
       return true;
     current_timing_enabled =
-        (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
              switches::kProfilerTiming) ==
          switches::kProfilerTimingDisabledValue)
             ? DISABLED_TIMING

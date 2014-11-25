@@ -41,9 +41,9 @@ const int kAlmostInfiniteTimeoutMs = 100000000;
 // by kTimeoutMultiplier.
 void InitializeTimeout(const char* switch_name, int min_value, int* value) {
   DCHECK(value);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
-    std::string string_value(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
+    std::string string_value(base::CommandLine::ForCurrentProcess()->
+         GetSwitchValueASCII(switch_name));
     int timeout;
     base::StringToInt(string_value, &timeout);
     *value = std::max(*value, timeout);

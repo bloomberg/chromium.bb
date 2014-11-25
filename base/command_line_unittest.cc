@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::FilePath;
+namespace base {
 
 // To test Windows quoting behavior, we use a string that has some backslashes
 // and quotes.
@@ -200,15 +200,11 @@ TEST(CommandLineTest, GetArgumentsString) {
   cl.AppendArg(kFifthArgName);
 
 #if defined(OS_WIN)
-  CommandLine::StringType expected_first_arg(
-      base::UTF8ToUTF16(kFirstArgName));
-  CommandLine::StringType expected_second_arg(
-      base::UTF8ToUTF16(kSecondArgName));
-  CommandLine::StringType expected_third_arg(
-      base::UTF8ToUTF16(kThirdArgName));
-  CommandLine::StringType expected_fourth_arg(
-      base::UTF8ToUTF16(kFourthArgName));
-  CommandLine::StringType expected_fifth_arg(base::UTF8ToUTF16(kFifthArgName));
+  CommandLine::StringType expected_first_arg(UTF8ToUTF16(kFirstArgName));
+  CommandLine::StringType expected_second_arg(UTF8ToUTF16(kSecondArgName));
+  CommandLine::StringType expected_third_arg(UTF8ToUTF16(kThirdArgName));
+  CommandLine::StringType expected_fourth_arg(UTF8ToUTF16(kFourthArgName));
+  CommandLine::StringType expected_fifth_arg(UTF8ToUTF16(kFifthArgName));
 #elif defined(OS_POSIX)
   CommandLine::StringType expected_first_arg(kFirstArgName);
   CommandLine::StringType expected_second_arg(kSecondArgName);
@@ -368,7 +364,7 @@ TEST(CommandLineTest, ProgramQuotes) {
   EXPECT_EQ(L"\"Program Path\"", cmd_string);
 
   // Check the optional quoting of placeholders in programs.
-  CommandLine cl_quote_placeholder(base::FilePath(L"%1"));
+  CommandLine cl_quote_placeholder(FilePath(L"%1"));
   EXPECT_EQ(L"%1", cl_quote_placeholder.GetCommandLineString());
   EXPECT_EQ(L"\"%1\"",
             cl_quote_placeholder.GetCommandLineStringWithPlaceholders());
@@ -382,3 +378,5 @@ TEST(CommandLineTest, Init) {
   CommandLine* current = CommandLine::ForCurrentProcess();
   EXPECT_EQ(initial, current);
 }
+
+} // namespace base

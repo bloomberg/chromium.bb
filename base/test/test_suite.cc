@@ -58,19 +58,19 @@ class MaybeTestDisabler : public testing::EmptyTestEventListener {
 class TestClientInitializer : public testing::EmptyTestEventListener {
  public:
   TestClientInitializer()
-      : old_command_line_(CommandLine::NO_PROGRAM) {
+      : old_command_line_(base::CommandLine::NO_PROGRAM) {
   }
 
   virtual void OnTestStart(const testing::TestInfo& test_info) override {
-    old_command_line_ = *CommandLine::ForCurrentProcess();
+    old_command_line_ = *base::CommandLine::ForCurrentProcess();
   }
 
   virtual void OnTestEnd(const testing::TestInfo& test_info) override {
-    *CommandLine::ForCurrentProcess() = old_command_line_;
+    *base::CommandLine::ForCurrentProcess() = old_command_line_;
   }
 
  private:
-  CommandLine old_command_line_;
+  base::CommandLine old_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientInitializer);
 };
@@ -108,11 +108,11 @@ TestSuite::TestSuite(int argc, char** argv, bool create_at_exit_manager)
 
 TestSuite::~TestSuite() {
   if (initialized_command_line_)
-    CommandLine::Reset();
+    base::CommandLine::Reset();
 }
 
 void TestSuite::InitializeFromCommandLine(int argc, char** argv) {
-  initialized_command_line_ = CommandLine::Init(argc, argv);
+  initialized_command_line_ = base::CommandLine::Init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   testing::InitGoogleMock(&argc, argv);
 
@@ -124,7 +124,7 @@ void TestSuite::InitializeFromCommandLine(int argc, char** argv) {
 #if defined(OS_WIN)
 void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
   // Windows CommandLine::Init ignores argv anyway.
-  initialized_command_line_ = CommandLine::Init(argc, NULL);
+  initialized_command_line_ = base::CommandLine::Init(argc, NULL);
   testing::InitGoogleTest(&argc, argv);
   testing::InitGoogleMock(&argc, argv);
 }
@@ -174,13 +174,13 @@ void TestSuite::ResetCommandLine() {
 #if !defined(OS_IOS)
 void TestSuite::AddTestLauncherResultPrinter() {
   // Only add the custom printer if requested.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestLauncherOutput)) {
     return;
   }
 
-  FilePath output_path(CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-                           switches::kTestLauncherOutput));
+  FilePath output_path(base::CommandLine::ForCurrentProcess()->
+                           GetSwitchValuePath(switches::kTestLauncherOutput));
 
   // Do not add the result printer if output path already exists. It's an
   // indicator there is a process printing to that file, and we're likely
@@ -212,7 +212,7 @@ int TestSuite::Run() {
 
   Initialize();
   std::string client_func =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTestChildProcess);
 
   // Check to see if we are being run as a client process.
@@ -315,7 +315,8 @@ void TestSuite::Initialize() {
 
   // In some cases, we do not want to see standard error dialogs.
   if (!base::debug::BeingDebugged() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch("show-error-dialogs")) {
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "show-error-dialogs")) {
     SuppressErrorDialogs();
     base::debug::SetSuppressDebugUI(true);
     logging::SetLogAssertHandler(UnitTestAssertHandler);
