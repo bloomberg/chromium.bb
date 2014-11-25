@@ -89,7 +89,7 @@ public:
 
     const KURL& url() const;
     State readyState() const;
-    unsigned long bufferedAmount() const;
+    unsigned bufferedAmount() const;
 
     String protocol() const;
     String extensions() const;
@@ -120,7 +120,7 @@ public:
     virtual void didReceiveTextMessage(const String& message) override;
     virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
     virtual void didError() override;
-    virtual void didConsumeBufferedAmount(unsigned long) override;
+    virtual void didConsumeBufferedAmount(unsigned) override;
     virtual void didStartClosingHandshake() override;
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
 
@@ -215,11 +215,11 @@ private:
 
     State m_state;
     KURL m_url;
-    unsigned long m_bufferedAmount;
+    unsigned m_bufferedAmount;
     // The consumed buffered amount that will be reflected to m_bufferedAmount
     // later. It will be cleared once reflected.
-    unsigned long m_consumedBufferedAmount;
-    unsigned long m_bufferedAmountAfterClose;
+    unsigned m_consumedBufferedAmount;
+    unsigned m_bufferedAmountAfterClose;
     BinaryType m_binaryType;
     // The subprotocol the server selected.
     String m_subprotocol;

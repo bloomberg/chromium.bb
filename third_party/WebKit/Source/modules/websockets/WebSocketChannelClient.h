@@ -45,7 +45,7 @@ public:
     virtual void didReceiveTextMessage(const String&) { }
     virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) { }
     virtual void didError() { }
-    virtual void didConsumeBufferedAmount(unsigned long consumed) { }
+    virtual void didConsumeBufferedAmount(unsigned consumed) { }
     virtual void didStartClosingHandshake() { }
     enum ClosingHandshakeCompletionStatus {
         ClosingHandshakeIncomplete,

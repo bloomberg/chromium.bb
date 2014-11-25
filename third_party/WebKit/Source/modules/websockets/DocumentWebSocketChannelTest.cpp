@@ -59,7 +59,7 @@ public:
     }
     MOCK_METHOD1(didReceiveBinaryMessageMock, void(const Vector<char>&));
     MOCK_METHOD0(didError, void());
-    MOCK_METHOD1(didConsumeBufferedAmount, void(unsigned long));
+    MOCK_METHOD1(didConsumeBufferedAmount, void(unsigned));
     MOCK_METHOD0(didStartClosingHandshake, void());
     MOCK_METHOD3(didClose, void(ClosingHandshakeCompletionStatus, unsigned short, const String&));
 

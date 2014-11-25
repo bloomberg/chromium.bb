@@ -49,7 +49,7 @@ public:
     MOCK_METHOD3(send, void(const DOMArrayBuffer&, unsigned, unsigned));
     MOCK_METHOD1(send, void(PassRefPtr<BlobDataHandle>));
     MOCK_METHOD1(send, void(PassOwnPtr<Vector<char> >));
-    MOCK_CONST_METHOD0(bufferedAmount, unsigned long());
+    MOCK_CONST_METHOD0(bufferedAmount, unsigned());
     MOCK_METHOD2(close, void(int, const String&));
     MOCK_METHOD4(fail, void(const String&, MessageLevel, const String&, unsigned));
     MOCK_METHOD0(disconnect, void());

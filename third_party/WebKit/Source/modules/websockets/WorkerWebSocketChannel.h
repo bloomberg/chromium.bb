@@ -109,7 +109,7 @@ public:
         virtual void didConnect(const String& subprotocol, const String& extensions) override;
         virtual void didReceiveTextMessage(const String& payload) override;
         virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
-        virtual void didConsumeBufferedAmount(unsigned long) override;
+        virtual void didConsumeBufferedAmount(unsigned) override;
         virtual void didStartClosingHandshake() override;
         virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
         virtual void didError() override;

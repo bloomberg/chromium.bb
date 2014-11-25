@@ -43,7 +43,7 @@ public:
     {
         m_impl->didError();
     }
-    virtual void didConsumeBufferedAmount(unsigned long consumed) override
+    virtual void didConsumeBufferedAmount(unsigned consumed) override
     {
         m_impl->didConsumeBufferedAmount(consumed);
     }

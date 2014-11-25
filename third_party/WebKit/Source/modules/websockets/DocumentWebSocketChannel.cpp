@@ -302,7 +302,7 @@ DocumentWebSocketChannel::Message::Message(unsigned short code, const String& re
 void DocumentWebSocketChannel::sendInternal()
 {
     ASSERT(m_handle);
-    unsigned long consumedBufferedAmount = 0;
+    unsigned consumedBufferedAmount = 0;
     while (!m_messages.isEmpty() && !m_blobLoader) {
         bool final = false;
         Message* message = m_messages.first().get();

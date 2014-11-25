@@ -205,10 +205,10 @@ static String joinStrings(const Vector<String>& strings, const char* separator)
     return builder.toString();
 }
 
-static unsigned long saturateAdd(unsigned long a, unsigned long b)
+static unsigned saturateAdd(unsigned a, unsigned long b)
 {
-    if (std::numeric_limits<unsigned long>::max() - a < b)
-        return std::numeric_limits<unsigned long>::max();
+    if (std::numeric_limits<unsigned>::max() - a < b)
+        return std::numeric_limits<unsigned>::max();
     return a + b;
 }
 
@@ -360,7 +360,7 @@ void DOMWebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
 void DOMWebSocket::reflectBufferedAmountConsumption(Timer<DOMWebSocket>*)
 {
     ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
-    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %lu => %lu", this, m_bufferedAmount, m_bufferedAmount - m_consumedBufferedAmount);
+    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %u => %u", this, m_bufferedAmount, m_bufferedAmount - m_consumedBufferedAmount);
 
     m_bufferedAmount -= m_consumedBufferedAmount;
     m_consumedBufferedAmount = 0;
@@ -499,7 +499,7 @@ DOMWebSocket::State DOMWebSocket::readyState() const
     return m_state;
 }
 
-unsigned long DOMWebSocket::bufferedAmount() const
+unsigned DOMWebSocket::bufferedAmount() const
 {
     return saturateAdd(m_bufferedAmount, m_bufferedAmountAfterClose);
 }
@@ -634,10 +634,10 @@ void DOMWebSocket::didError()
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }
 
-void DOMWebSocket::didConsumeBufferedAmount(unsigned long consumed)
+void DOMWebSocket::didConsumeBufferedAmount(unsigned consumed)
 {
     ASSERT(m_bufferedAmount >= consumed);
-    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%lu)", this, consumed);
+    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%u)", this, consumed);
     if (m_state == CLOSED)
         return;
     m_consumedBufferedAmount += consumed;
