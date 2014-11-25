@@ -229,13 +229,15 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
 
 const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash);
 
-// This function decodes unpadded 'base64url' encoded data, as described in
-// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
+// This decodes JWK's flavor of base64 encoding, as described by:
+// https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
+//
+// In essence it is RFC 4648 'base64url' encoding where padding is omitted.
 CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
                                         std::string* output);
 
-// Returns an unpadded 'base64url' encoding of the input data, the opposite of
-// Base64DecodeUrlSafe() above.
+// Encodes |input| using JWK's flavor of base64 encoding. See the description
+// above for details.
 CONTENT_EXPORT std::string Base64EncodeUrlSafe(const base::StringPiece& input);
 CONTENT_EXPORT std::string Base64EncodeUrlSafe(
     const std::vector<uint8_t>& input);
