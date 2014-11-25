@@ -303,16 +303,18 @@ message PolicyData {
   optional string policy_token = 15;
 
   // Indicates the management mode of the device. Note that old policies do not
-  // have this field.
+  // have this field. If this field is not set but request_token is set, assume
+  // the management mode is ENTERPRISE_MANAGED. If both this field and
+  // request_token are not set, assume the management mode is LOCAL_OWNER.
   enum ManagementMode {
-    // The device is not managed. The policies are set locally by the owner of
+    // The device is owned locally. The policies are set by the local owner of
     // the device.
-    NOT_MANAGED = 0;
+    LOCAL_OWNER = 0;
     // The device is enterprise-managed. The policies come from the enterprise
-    // server.
+    // server. See the comment above for backward compatibility.
     ENTERPRISE_MANAGED = 1;
     // The device is consumer-managed. The policies currently can only be set
-    // locally by the owner of the device.
+    // by the local owner of the device.
     CONSUMER_MANAGED = 2;
   }
   optional ManagementMode management_mode = 16;

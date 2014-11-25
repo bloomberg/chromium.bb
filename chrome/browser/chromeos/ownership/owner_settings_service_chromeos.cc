@@ -323,8 +323,8 @@ scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
       policy->set_device_id(policy_data->device_id());
   } else {
     // If there's no previous policy data, this is the first time the device
-    // setting is set. We set the management mode to NOT_MANAGED initially.
-    policy->set_management_mode(em::PolicyData::NOT_MANAGED);
+    // setting is set. We set the management mode to LOCAL_OWNER initially.
+    policy->set_management_mode(em::PolicyData::LOCAL_OWNER);
   }
   policy->set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
   policy->set_timestamp(

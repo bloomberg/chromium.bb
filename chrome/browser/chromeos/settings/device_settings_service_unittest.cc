@@ -151,11 +151,11 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
   InitOwner(device_policy_.policy_data().username(), true);
   FlushDeviceSettings();
 
-  // The initial management mode should be NOT_MANAGED.
-  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+  // The initial management mode should be LOCAL_OWNER.
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
             device_settings_service_.policy_data()->management_mode());
 
-  // NOT_MANAGED -> CONSUMER_MANAGED: Okay.
+  // LOCAL_OWNER -> CONSUMER_MANAGED: Okay.
   device_settings_service_.SetManagementSettings(
       em::PolicyData::CONSUMER_MANAGED,
       "fake_request_token",
@@ -185,9 +185,9 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
   EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED,
             device_settings_service_.policy_data()->management_mode());
 
-  // CONSUMER_MANAGED -> NOT_MANAGED: Okay.
+  // CONSUMER_MANAGED -> LOCAL_OWNER: Okay.
   device_settings_service_.SetManagementSettings(
-      em::PolicyData::NOT_MANAGED,
+      em::PolicyData::LOCAL_OWNER,
       "fake_request_token",
       "fake_device_id",
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
@@ -197,10 +197,10 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
   EXPECT_TRUE(operation_completed_);
   EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
             device_settings_service_.status());
-  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
             device_settings_service_.policy_data()->management_mode());
 
-  // NOT_MANAGED -> ENTERPRISE_MANAGED: Invalid.
+  // LOCAL_OWNER -> ENTERPRISE_MANAGED: Invalid.
   device_settings_service_.SetManagementSettings(
       em::PolicyData::ENTERPRISE_MANAGED,
       "fake_request_token",
@@ -212,7 +212,7 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
   EXPECT_TRUE(operation_completed_);
   EXPECT_EQ(DeviceSettingsService::STORE_POLICY_ERROR,
             device_settings_service_.status());
-  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
             device_settings_service_.policy_data()->management_mode());
 
   // Inject a policy data with management mode set to ENTERPRISE_MANAGED.
@@ -224,9 +224,9 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
   EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
             device_settings_service_.policy_data()->management_mode());
 
-  // ENTERPRISE_MANAGED -> NOT_MANAGED: Invalid.
+  // ENTERPRISE_MANAGED -> LOCAL_OWNER: Invalid.
   device_settings_service_.SetManagementSettings(
-      em::PolicyData::NOT_MANAGED,
+      em::PolicyData::LOCAL_OWNER,
       "fake_request_token",
       "fake_device_id",
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,

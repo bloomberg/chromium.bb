@@ -225,7 +225,7 @@ TEST_F(ConsumerManagementServiceStatusTest,
   EXPECT_EQ(ConsumerManagementService::STATUS_UNKNOWN, service_.GetStatus());
   EXPECT_EQ("StatusUnknown", service_.GetStatusString());
 
-  SetManagementMode(em::PolicyData::NOT_MANAGED);
+  SetManagementMode(em::PolicyData::LOCAL_OWNER);
   SetEnrollmentStage(ConsumerManagementService::ENROLLMENT_STAGE_NONE);
 
   EXPECT_EQ(ConsumerManagementService::STATUS_UNENROLLED, service_.GetStatus());

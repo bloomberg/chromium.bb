@@ -45,7 +45,7 @@ bool CheckManagementModeTransition(em::PolicyData::ManagementMode current_mode,
     return true;
 
   switch (current_mode) {
-    case em::PolicyData::NOT_MANAGED:
+    case em::PolicyData::LOCAL_OWNER:
       // For consumer management enrollment.
       return new_mode == em::PolicyData::CONSUMER_MANAGED;
 
@@ -55,7 +55,7 @@ bool CheckManagementModeTransition(em::PolicyData::ManagementMode current_mode,
 
     case em::PolicyData::CONSUMER_MANAGED:
       // For consumer management unenrollment.
-      return new_mode == em::PolicyData::NOT_MANAGED;
+      return new_mode == em::PolicyData::LOCAL_OWNER;
   }
 
   NOTREACHED();
@@ -149,7 +149,7 @@ void DeviceSettingsService::SetManagementSettings(
     return;
   }
 
-  em::PolicyData::ManagementMode current_mode = em::PolicyData::NOT_MANAGED;
+  em::PolicyData::ManagementMode current_mode = em::PolicyData::LOCAL_OWNER;
   if (policy_data() && policy_data()->has_management_mode())
     current_mode = policy_data()->management_mode();
 
