@@ -20,8 +20,9 @@
 // files don't know that "resources.pak" now has a dependency to
 // "whatever.js". You should rerun gyp to let the build files know.
 //
-// //metrics.js initiates load performance tracking
-// //so we want to parse it as early as possible.
+// metrics_base.js and metrics.js initiates load performance tracking
+// so we want to parse it as early as possible.
+//<include src="metrics_base.js">
 //<include src="metrics.js">
 //
 //<include src="../../../image_loader/image_loader_client.js">

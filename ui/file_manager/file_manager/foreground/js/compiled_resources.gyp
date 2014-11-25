@@ -57,6 +57,7 @@
           '../../background/js/background_base.js',
           '../../background/js/background.js',
           '../../../image_loader/image_loader_client.js',
+          './metrics_base.js',
           './metrics.js',
           './ui/combobutton.js',
           './ui/commandbutton.js',
