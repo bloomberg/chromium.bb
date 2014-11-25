@@ -99,9 +99,23 @@ TEST(DecoderBufferTest, ReadingWriting) {
   EXPECT_FALSE(buffer->end_of_stream());
 }
 
-TEST(DecoderBufferTest, GetDecryptConfig) {
+TEST(DecoderBufferTest, DecryptConfig) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
   EXPECT_FALSE(buffer->decrypt_config());
+
+  const char kKeyId[] = "key id";
+  const char kIv[] = "0123456789abcdef";
+  std::vector<SubsampleEntry> subsamples;
+  subsamples.push_back(SubsampleEntry(10, 5));
+  subsamples.push_back(SubsampleEntry(15, 7));
+
+  DecryptConfig decrypt_config(kKeyId, kIv, subsamples);
+
+  buffer->set_decrypt_config(
+      make_scoped_ptr(new DecryptConfig(kKeyId, kIv, subsamples)));
+
+  EXPECT_TRUE(buffer->decrypt_config());
+  EXPECT_TRUE(buffer->decrypt_config()->Matches(decrypt_config));
 }
 
 TEST(DecoderBufferTest, IsKeyFrame) {

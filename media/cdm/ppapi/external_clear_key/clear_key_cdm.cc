@@ -107,10 +107,9 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
 
   std::vector<media::SubsampleEntry> subsamples;
   for (uint32_t i = 0; i < input_buffer.num_subsamples; ++i) {
-    media::SubsampleEntry subsample;
-    subsample.clear_bytes = input_buffer.subsamples[i].clear_bytes;
-    subsample.cypher_bytes = input_buffer.subsamples[i].cipher_bytes;
-    subsamples.push_back(subsample);
+    subsamples.push_back(
+        media::SubsampleEntry(input_buffer.subsamples[i].clear_bytes,
+                              input_buffer.subsamples[i].cipher_bytes));
   }
 
   scoped_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(

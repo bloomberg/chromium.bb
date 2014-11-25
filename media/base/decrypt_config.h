@@ -24,6 +24,9 @@ namespace media {
 // result, and then copying each byte from the decrypted block over the
 // position of the corresponding encrypted byte.
 struct SubsampleEntry {
+  SubsampleEntry() : clear_bytes(0), cypher_bytes(0) {}
+  SubsampleEntry(uint32 clear_bytes, uint32 cypher_bytes)
+      : clear_bytes(clear_bytes), cypher_bytes(cypher_bytes) {}
   uint32 clear_bytes;
   uint32 cypher_bytes;
 };
@@ -49,6 +52,9 @@ class MEDIA_EXPORT DecryptConfig {
   const std::string& key_id() const { return key_id_; }
   const std::string& iv() const { return iv_; }
   const std::vector<SubsampleEntry>& subsamples() const { return subsamples_; }
+
+  // Returns true if all fields in |config| match this config.
+  bool Matches(const DecryptConfig& config) const;
 
  private:
   const std::string key_id_;

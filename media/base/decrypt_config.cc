@@ -21,4 +21,20 @@ DecryptConfig::DecryptConfig(const std::string& key_id,
 
 DecryptConfig::~DecryptConfig() {}
 
+bool DecryptConfig::Matches(const DecryptConfig& config) const {
+  if (key_id() != config.key_id() || iv() != config.iv() ||
+      subsamples().size() != config.subsamples().size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < subsamples().size(); ++i) {
+    if ((subsamples()[i].clear_bytes != config.subsamples()[i].clear_bytes) ||
+        (subsamples()[i].cypher_bytes != config.subsamples()[i].cypher_bytes)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace media

@@ -395,10 +395,8 @@ bool MP4StreamParser::PrepareAACBuffer(
   // As above, adjust subsample information to account for the headers. AAC is
   // not required to use subsample encryption, so we may need to add an entry.
   if (subsamples->empty()) {
-    SubsampleEntry entry;
-    entry.clear_bytes = kADTSHeaderMinSize;
-    entry.cypher_bytes = frame_buf->size() - kADTSHeaderMinSize;
-    subsamples->push_back(entry);
+    subsamples->push_back(SubsampleEntry(
+        kADTSHeaderMinSize, frame_buf->size() - kADTSHeaderMinSize));
   } else {
     (*subsamples)[0].clear_bytes += kADTSHeaderMinSize;
   }
