@@ -53,6 +53,9 @@ AutomationNodeImpl.prototype = {
   },
 
   children: function() {
+    if (this.childTree)
+      return [this.childTree];
+
     var children = [];
     for (var i = 0, childID; childID = this.childIds[i]; i++) {
       logging.CHECK(this.rootImpl.get(childID));

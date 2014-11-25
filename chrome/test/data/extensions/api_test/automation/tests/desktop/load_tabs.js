@@ -28,6 +28,7 @@ var allTests = [
     function childrenChangedListener(evt) {
       var subroot = webViews[1].firstChild();
       assertEq(evt.target, subroot.parent());
+      assertEq(subroot, subroot.parent().children()[0]);
 
       var button = subroot.firstChild().firstChild();
       assertEq(chrome.automation.RoleType.button, button.role);
