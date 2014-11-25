@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright (c) 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
  */
 
 /**
@@ -17,27 +17,14 @@ var MSG_NO_TITLE = chrome.i18n.getMessage('noTitle');
 // Time between server polls = 30 minutes.
 var POLL_INTERVAL = 30 * 60 * 1000;
 
-// Redraw interval is 1 min.
-var DRAW_INTERVAL = 60 * 1000;
-
-// The time when we last polled.
-var lastPollTime_ = 0;
+// Redraw interval is 5 min.
+var DRAW_INTERVAL_MINUTES = 5.0;
 
 // Object for BadgeAnimation
 var badgeAnimation_;
 
 //Object for CanvasAnimation
 var canvasAnimation_;
-
-// Object containing the event.
-var nextEvent_ = null;
-
-// Storing events.
-var eventList = [];
-var nextEvents = [];
-
-// Storing calendars.
-var calendars = [];
 
 var pollUnderProgress = false;
 var defaultAuthor = '';
@@ -60,6 +47,30 @@ var DECLINED_URL = 'http://schemas.google.com/g/2005#event.declined';
 //This is used to poll only once per second at most, and delay that if
 //we keep hitting pages that would otherwise force a load.
 var pendingLoadId_ = null;
+
+/**
+ * Sets |key| as |value| in localStorage. |value| may be any JavaScript object;
+ * this method will automatically stringify to JSON if needed.
+ */
+function localStorageSet(key, value) {
+  if (typeof value == 'undefined') {
+    // Don't try to stringify undefined, or bad things may happen (particularly
+    // in localStorageGet, so let's be consistent).
+    delete localStorage[key];
+  } else {
+    localStorage[key] = JSON.stringify(value);
+  }
+}
+
+/**
+ * Gets the JavaScript object at |key| from localStorage. Assumes that the
+ * value was written by localStorageSet (i.e. stored as JSON).
+ * If the value is missing or undefined, returns undefined.
+ */
+function localStorageGet(key) {
+  var value = localStorage[key];
+  return (typeof value == 'undefined') ? undefined : JSON.parse(value);
+}
 
 /**
  * A "loading" animation displayed while we wait for the first response from
@@ -181,21 +192,21 @@ CanvasAnimation.prototype.getSector = function(sector) {
  */
 CanvasAnimation.prototype.drawFinal = function() {
   badgeAnimation_.stop();
-
-  if (!nextEvent_) {
+  var nextEvent = localStorageGet('nextEvent');
+  if (!nextEvent) {
     this.showLoggedOut();
   } else {
     this.drawIconAtRotation();
     this.rotation_ = 0;
 
-    var ms = nextEvent_.startTime.getTime() - getCurrentTime();
+    var ms = (new Date(nextEvent.startTime)).getTime() - getCurrentTime();
     var nextEventMin = ms / (1000 * 60);
     var bgColor = (nextEventMin < 60) ? this.RED : this.BLUE;
 
     chrome.browserAction.setBadgeBackgroundColor({color: bgColor});
-    currentBadge_ = this.getBadgeText(nextEvent_);
+    currentBadge_ = this.getBadgeText(nextEvent);
     chrome.browserAction.setBadgeText({text: currentBadge_});
-
+    var nextEvents = localStorageGet('nextEvents');
     if (nextEvents.length > 0) {
       var text = '';
       for (var i = 0, event; event = nextEvents[i]; i++) {
@@ -219,11 +230,6 @@ CanvasAnimation.prototype.drawFinal = function() {
   }
   pollUnderProgress = false;
 
-  chrome.extension.sendRequest({
-    message: 'enableSave'
-  }, function() {
-  });
-
   return;
 };
 
@@ -240,15 +246,15 @@ CanvasAnimation.prototype.showLoggedOut = function() {
 
 /**
  * Gets the badge text.
- * @param {Object} nextEvent_ next event in the calendar.
+ * @param {Object} nextEvent next event in the calendar.
  * @return {String} text Badge text to be shown in extension icon.
  */
-CanvasAnimation.prototype.getBadgeText = function(nextEvent_) {
-  if (!nextEvent_) {
+CanvasAnimation.prototype.getBadgeText = function(nextEvent) {
+  if (!nextEvent) {
     return '';
   }
 
-  var ms = nextEvent_.startTime.getTime() - getCurrentTime();
+  var ms = (new Date(nextEvent.startTime)).getTime() - getCurrentTime();
   var nextEventMin = Math.ceil(ms / (1000 * 60));
 
   var text = '';
@@ -320,18 +326,18 @@ CalendarManager.extractEvent = function(elem, mailId) {
  */
 CalendarManager.pollServer = function() {
   if (! pollUnderProgress) {
-    eventList = [];
+    localStorageSet('eventList', []);
     pollUnderProgress = true;
     pendingLoadId_ = null;
-    calendars = [];
-    lastPollTime_ = getCurrentTime();
+    localStorageSet('calendars', []);
+    localStorageSet('lastPollTime', getCurrentTime());
     var url;
     var xhr = new XMLHttpRequest();
     try {
       xhr.onreadystatechange = CalendarManager.genResponseChangeFunc(xhr);
       xhr.onerror = function(error) {
         console.log('error: ' + error);
-        nextEvent_ = null;
+        localStorageSet('nextEvent', null);
         canvasAnimation_.drawFinal();
       };
       if (isMultiCalendar) {
@@ -344,7 +350,7 @@ CalendarManager.pollServer = function() {
       xhr.send(null);
     } catch (e) {
       console.log('ex: ' + e);
-      nextEvent_ = null;
+      localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
     }
   }
@@ -363,14 +369,14 @@ CalendarManager.genResponseChangeFunc = function(xhr) {
     }
     if (!xhr.responseXML) {
       console.log('No responseXML');
-      nextEvent_ = null;
+      localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
       return;
     }
     if (isMultiCalendar) {
       var entry_ = xhr.responseXML.getElementsByTagName('entry');
       if (entry_ && entry_.length > 0) {
-        calendars = [];
+        var calendars = [];
         for (var i = 0, entry; entry = entry_[i]; ++i) {
           if (!i) {
             defaultAuthor = entry.querySelector('title').textContent;
@@ -387,18 +393,20 @@ CalendarManager.genResponseChangeFunc = function(xhr) {
             }
           }
         }
+        localStorageSet('calendars', calendars);
         CalendarManager.getCalendarFeed(0);
         return;
       }
     } else {
-      calendars = [];
+      var calendars = [];
       calendars.push(SINGLE_CALENDAR_SUPPORT_URL);
+      localStorageSet('calendars', calendars);
       CalendarManager.parseCalendarEntry(xhr.responseXML, 0);
       return;
     }
 
     console.error('Error: feed retrieved, but no event found');
-    nextEvent_ = null;
+    localStorageSet('nextEvent', null);
     canvasAnimation_.drawFinal();
   };
 };
@@ -414,16 +422,16 @@ CalendarManager.getCalendarFeed = function(calendarId) {
                                      calendarId);
     xmlhttp.onerror = function(error) {
       console.log('error: ' + error);
-      nextEvent_ = null;
+      localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
     };
 
-    xmlhttp.open('GET', calendars[calendarId]);
+    xmlhttp.open('GET', localStorageGet('calendars)[calendarId]'));
     xmlhttp.send(null);
   }
   catch (e) {
     console.log('ex: ' + e);
-    nextEvent_ = null;
+    localStorageSet('nextEvent', null);
     canvasAnimation_.drawFinal();
   }
 };
@@ -443,7 +451,7 @@ CalendarManager.onCalendarResponse = function(xmlhttp, calendarId) {
     }
     if (!xmlhttp.responseXML) {
       console.log('No responseXML');
-      nextEvent_ = null;
+      localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
       return;
     }
@@ -469,6 +477,7 @@ CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
   }
 
   if (entry_ && entry_.length > 0) {
+    var eventList = localStorageGet('eventList');
     for (var i = 0, entry; entry = entry_[i]; ++i) {
      var event_ = CalendarManager.extractEvent(entry, mailId);
 
@@ -483,14 +492,15 @@ CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
         }
       }
     }
+    localStorageSet('eventList', eventList);
   }
 
   calendarId++;
   //get the next calendar
-  if (calendarId < calendars.length) {
+  if (calendarId < localStorageGet('calendars).length')) {
     CalendarManager.getCalendarFeed(calendarId);
   } else {
-    CalendarManager.populateLatestEvent(eventList);
+    CalendarManager.populateLatestEvent(localStorageGet('eventList)'));
   }
 };
 
@@ -500,18 +510,19 @@ CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
  * @param {Array} eventList List of all events.
  */
 CalendarManager.populateLatestEvent = function(eventList) {
-  nextEvents = [];
+  var nextEvents = [];
   if (isMultiCalendar) {
     eventList.sort(sortByDate);
   }
 
   //populating next events array.
   if (eventList.length > 0) {
-    nextEvent_ = eventList[0];
-    nextEvents.push(nextEvent_);
-    var startTime = nextEvent_.startTime.setSeconds(0, 0);
+    nextEvent = localStorageGet('nextEvent');
+    nextEvent = eventList[0];
+    nextEvents.push(nextEvent);
+    var startTime = (new Date(nextEvent.startTime)).setSeconds(0, 0);
     for (var i = 1, event; event = eventList[i]; i++) {
-      var time = event.startTime.setSeconds(0, 0);
+      var time = (new Date(event.startTime)).setSeconds(0, 0);
       if (time == startTime) {
         nextEvents.push(event);
       } else {
@@ -521,11 +532,14 @@ CalendarManager.populateLatestEvent = function(eventList) {
     if (nextEvents.length > 1 && isMultiCalendar) {
       nextEvents.sort(sortByAuthor);
     }
+    localStorageSet('nextEvents', nextEvents);
+    localStorageSet('nextEvent', nextEvent);
     canvasAnimation_.animate();
     return;
   } else {
     console.error('Error: feed retrieved, but no event found');
-    nextEvent_ = null;
+    localStorageSet('nextEvent', null);
+    localStorageSet('nextEvents', nextEvents);
     canvasAnimation_.drawFinal();
   }
 };
@@ -582,7 +596,8 @@ function rfc3339StringToDate(rfc3339) {
  * @return {integer} timeDiff Difference in time.
  */
 function sortByDate(event_1, event_2) {
-  return (event_1.startTime.getTime() - event_2.startTime.getTime());
+  return ((new Date(event_1.startTime)).getTime() -
+          (new Date(event_2.startTime)).getTime());
 };
 
 /**
@@ -606,17 +621,18 @@ function sortByAuthor(event_1, event_2) {
  */
 function redraw() {
   // If the next event just passed, re-poll.
-  if (nextEvent_) {
-    var t = nextEvent_.startTime.getTime() - getCurrentTime();
+  var nextEvent = localStorageGet('nextEvent');
+  if (nextEvent) {
+    var t = (new Date(nextEvent.startTime)).getTime() - getCurrentTime();
     if (t <= 0) {
       CalendarManager.pollServer();
       return;
     }
   }
-  canvasAnimation_.animate();
+  canvasAnimation_.drawFinal();
 
   // if 30 minutes have passed re-poll
-  if (getCurrentTime() - lastPollTime_ >= POLL_INTERVAL) {
+  if (getCurrentTime() - localStorageGet('lastPollTime') >= POLL_INTERVAL) {
     CalendarManager.pollServer();
   }
 };
@@ -651,32 +667,22 @@ function filterSpecialChar(data) {
  * Called from options.js page on saving the settings
  */
 function onSettingsChange() {
-  isMultiCalendar = JSON.parse(localStorage.multiCalendar);
+  isMultiCalendar = localStorageGet('multiCalendar');
   badgeAnimation_.start();
   CalendarManager.pollServer();
 };
 
 /**
- * Function runs on updating a tab having url of google applications.
- * @param {integer} tabId Id of the tab which is updated.
- * @param {String} changeInfo Gives the information of change in url.
- * @param {String} tab Gives the url of the tab updated.
+ * Function runs on completed navigation with a url of google applications.
+ * @param {details} details of the completed web navigation.
  */
-function onTabUpdated(tabId, changeInfo, tab) {
-  var url = tab.url;
-  if (!url) {
-    return;
-  }
+function onCompleted(details) {
+  var url = details.url;
 
   if ((url.indexOf('www.google.com/calendar/') != -1) ||
       ((url.indexOf('www.google.com/a/') != -1) &&
       (url.lastIndexOf('/acs') == url.length - 4)) ||
       (url.indexOf('www.google.com/accounts/') != -1)) {
-
-    // The login screen isn't helpful
-    if (url.indexOf('https://www.google.com/accounts/ServiceLogin?') == 0) {
-      return;
-    }
 
     if (pendingLoadId_) {
       clearTimeout(pendingLoadId_);
@@ -715,26 +721,26 @@ function isCalendarUrl(url) {
   return url.indexOf('www.google.com/calendar') != -1 ? true : false;
 };
 
-/**
- * Initializes everything.
- */
-function init() {
-  badgeAnimation_ = new BadgeAnimation();
-  canvasAnimation_ = new CanvasAnimation();
-
-  isMultiCalendar = JSON.parse(localStorage.multiCalendar || false);
-
-  chrome.browserAction.setIcon({path: '../images/icon-16.gif'});
+function onInstalled() {
   badgeAnimation_.start();
   CalendarManager.pollServer();
-  window.setInterval(redraw, DRAW_INTERVAL);
+  localStorageSet('lastPollTime', 0);
+  localStorageSet('nextEvent', null);
+}
 
-  chrome.tabs.onUpdated.addListener(onTabUpdated);
-
-  chrome.browserAction.onClicked.addListener(function(tab) {
-    onClickAction();
-  });
-};
-
-//Adding listener when body is loaded to call init function.
-window.addEventListener('load', init, false);
+/*
+ * Load animation contexts and add listeners.
+ */
+badgeAnimation_ = new BadgeAnimation();
+canvasAnimation_ = new CanvasAnimation();
+isMultiCalendar = localStorageGet('multiCalendar || false');
+chrome.browserAction.setIcon({path: '../images/icon-16.gif'});
+chrome.runtime.onInstalled.addListener(onInstalled);
+chrome.alarms.onAlarm.addListener(redraw)
+chrome.alarms.create('redraw', {periodInMinutes: DRAW_INTERVAL_MINUTES});
+chrome.webNavigation.onCompleted.addListener(onCompleted,
+    {url: [{hostSuffix: 'www.google.com', pathPrefix: '/calendar'},
+           {hostSuffix: 'www.google.com', pathPrefix: '/accounts'},
+           {hostSuffix: 'www.google.com', pathPrefix: '/a'}]});
+chrome.browserAction.onClicked.addListener(onClickAction);
+redraw();

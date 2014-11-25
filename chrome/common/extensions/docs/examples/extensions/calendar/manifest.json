@@ -1,14 +1,16 @@
 {
   "name": "__MSG_name__",
   "description": "__MSG_description__",
+  "manifest_version": 2,
   "default_locale":"en",
   "options_page": "views/options.html",
-  "version": "1.2.2",
+  "version": "1.4.0",
   "background": {
-    "page": "views/background.html"
-  },
+    "page": "views/background.html",
+    "persistent": false
+    },
   "permissions": [
-    "tabs", "http://*.google.com/", "https://*.google.com/"
+    "alarms", "tabs", "webNavigation", "http://*.google.com/", "https://*.google.com/"
    ],
   "browser_action": {
     "default_title": "__MSG_title__"
@@ -16,7 +18,5 @@
   "icons": {
     "128": "images/icon-128.gif",
     "16":"images/icon-16.gif"
-  },
-
-  "manifest_version": 2
+  }
 }
