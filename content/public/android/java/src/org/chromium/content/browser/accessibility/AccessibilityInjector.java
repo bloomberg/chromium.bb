@@ -95,10 +95,12 @@ public class AccessibilityInjector extends WebContentsObserver {
      * @return An instance of a {@link AccessibilityInjector}.
      */
     public static AccessibilityInjector newInstance(ContentViewCore view) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return new AccessibilityInjector(view);
-        } else {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return new LollipopAccessibilityInjector(view);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             return new JellyBeanAccessibilityInjector(view);
+        } else {
+            return new AccessibilityInjector(view);
         }
     }
 
@@ -275,7 +277,7 @@ public class AccessibilityInjector extends WebContentsObserver {
         if (context != null) {
             // Enabled, we should try to add if we have to.
             if (mTextToSpeech == null) {
-                mTextToSpeech = new TextToSpeechWrapper(mContentViewCore.getContainerView(),
+                mTextToSpeech = createTextToSpeechWrapper(mContentViewCore.getContainerView(),
                         context);
                 mContentViewCore.addJavascriptInterface(mTextToSpeech,
                         ALIAS_ACCESSIBILITY_JS_INTERFACE);
@@ -390,15 +392,19 @@ public class AccessibilityInjector extends WebContentsObserver {
         }
     }
 
+    protected TextToSpeechWrapper createTextToSpeechWrapper(View view, Context context) {
+        return new TextToSpeechWrapper(view, context);
+    }
+
     /**
      * Used to protect the TextToSpeech class, only exposing the methods we want to expose.
      */
-    private static class TextToSpeechWrapper {
-        private final TextToSpeech mTextToSpeech;
+    protected static class TextToSpeechWrapper {
+        protected final TextToSpeech mTextToSpeech;
         private final SelfBrailleClient mSelfBrailleClient;
         private final View mView;
 
-        public TextToSpeechWrapper(View view, Context context) {
+        protected TextToSpeechWrapper(View view, Context context) {
             mView = view;
             mTextToSpeech = new TextToSpeech(context, null, null);
             mSelfBrailleClient = new SelfBrailleClient(context, CommandLine.getInstance().hasSwitch(
@@ -412,7 +418,7 @@ public class AccessibilityInjector extends WebContentsObserver {
         }
 
         @JavascriptInterface
-        @SuppressWarnings("unused")
+        @SuppressWarnings({"unused", "deprecation"})
         public int speak(String text, int queueMode, String jsonParams) {
             // Try to pull the params from the JSON string.
             HashMap<String, String> params = null;

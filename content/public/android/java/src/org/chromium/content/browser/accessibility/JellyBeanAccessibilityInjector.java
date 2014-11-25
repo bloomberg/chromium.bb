@@ -41,6 +41,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         info.setMovementGranularities(AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER
                 | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
