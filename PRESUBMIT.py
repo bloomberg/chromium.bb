@@ -1692,7 +1692,7 @@ def GetPreferredTryMasters(project, change):
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'win_chromium_dbg',
-        'win_chromium_rel_ng',
+        'win_chromium_rel',
         'win8_chromium_rel',
     ])
   if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
@@ -1721,8 +1721,8 @@ def GetPreferredTryMasters(project, change):
       'mac_chromium_rel_ng',
       'mac_gpu',
       'win_chromium_compile_dbg',
-      'win_chromium_rel_ng',
-      'win_chromium_x64_rel_ng',
+      'win_chromium_rel',
+      'win_chromium_x64_rel',
       'win_gpu',
       'win8_chromium_rel',
   ]
