@@ -1212,17 +1212,24 @@ template("android_apk") {
       version_name = invoker.version_name
     }
 
-    if (defined(invoker.asset_location)) {
-      asset_location = invoker.asset_location
-    }
-
     keystore_name = _keystore_name
     keystore_path = _keystore_path
     keystore_password = _keystore_password
 
+    deps = []
+    if (defined(invoker.asset_location)) {
+      asset_location = invoker.asset_location
+      # We don't know the exact dependencies that create the assets in
+      # |asset_location|; we depend on all caller deps until a better solution
+      # is figured out (http://crbug.com/433330).
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
+    }
+
     if (_native_libs != []) {
       native_libs_dir = _native_libs_dir
-      deps = [":${_template_name}__prepare_native"]
+      deps += [":${_template_name}__prepare_native"]
     }
   }
 
