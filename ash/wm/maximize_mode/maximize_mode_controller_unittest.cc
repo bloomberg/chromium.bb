@@ -76,8 +76,14 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     return Shell::GetInstance()->maximize_mode_controller();
   }
 
-  void TriggerAccelerometerUpdate(const gfx::Vector3dF& base,
-                                  const gfx::Vector3dF& lid) {
+  void TriggerLidUpdate(const gfx::Vector3dF& lid) {
+    ui::AccelerometerUpdate update;
+    update.Set(ui::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+    maximize_mode_controller()->OnAccelerometerUpdated(update);
+  }
+
+  void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
+                               const gfx::Vector3dF& lid) {
     ui::AccelerometerUpdate update;
     update.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
         base.x(), base.y(), base.z());
@@ -123,7 +129,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     gfx::Vector3dF lid_vector(0.0f,
                               kMeanGravity * cos(radians),
                               kMeanGravity * sin(radians));
-    TriggerAccelerometerUpdate(base_vector, lid_vector);
+    TriggerBaseAndLidUpdate(base_vector, lid_vector);
   }
 
 #if defined(OS_CHROMEOS)
@@ -278,52 +284,69 @@ TEST_F(MaximizeModeControllerTest, UnstableHingeAnglesWithLidOpened) {
 // persists as the computed angle is highly inaccurate in this orientation.
 TEST_F(MaximizeModeControllerTest, HingeAligned) {
   // Laptop in normal orientation lid open 90 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
 
   // Completely vertical.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
-                             gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
+                          gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
 
   // Close to vertical but with hinge appearing to be open 270 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
-                             gfx::Vector3dF(kMeanGravity, 0.1f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
+                          gfx::Vector3dF(kMeanGravity, 0.1f, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
 
   // Flat and open 270 degrees should start maximize mode.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                             gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
+                          gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_TRUE(IsMaximizeModeStarted());
 
   // Normal 90 degree orientation but near vertical should stay in maximize
   // mode.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
-                             gfx::Vector3dF(kMeanGravity, -0.1f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
+                          gfx::Vector3dF(kMeanGravity, -0.1f, 0.0f));
   EXPECT_TRUE(IsMaximizeModeStarted());
+}
+
+// Tests that only getting a lid accelerometer update will enter maximize
+// mode and rotate the screen.
+TEST_F(MaximizeModeControllerTest, LidOnlyDisplayRotation) {
+  ASSERT_FALSE(IsMaximizeModeStarted());
+  // Test rotating in all directions.
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  // The first update should have entered maximize mode.
+  ASSERT_TRUE(IsMaximizeModeStarted());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_180, GetInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
 // Tests that accelerometer readings in each of the screen angles will trigger a
 // rotation of the internal display.
 TEST_F(MaximizeModeControllerTest, DisplayRotation) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   // Now test rotating in all directions.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
-                             gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
+                          gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f),
-                             gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f),
+                          gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_180, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
-                             gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
+                          gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
@@ -331,25 +354,24 @@ TEST_F(MaximizeModeControllerTest, DisplayRotation) {
 // is almost laying flat).
 TEST_F(MaximizeModeControllerTest, RotationIgnoresLowAngles) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
-  TriggerAccelerometerUpdate(
-      gfx::Vector3dF(0.0f, kMeanGravity, kMeanGravity),
-      gfx::Vector3dF(0.0f, -kMeanGravity, -kMeanGravity));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, -kMeanGravity));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-2.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(-2.0f, 0.0f, -kMeanGravity));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-2.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(-2.0f, 0.0f, -kMeanGravity));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, -2.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, 2.0f, -kMeanGravity));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, -2.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, 2.0f, -kMeanGravity));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(2.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(2.0f, 0.0f, -kMeanGravity));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(2.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(2.0f, 0.0f, -kMeanGravity));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 2.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -2.0f, -kMeanGravity));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 2.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -2.0f, -kMeanGravity));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
@@ -357,12 +379,12 @@ TEST_F(MaximizeModeControllerTest, RotationIgnoresLowAngles) {
 // halfway point, preventing frequent updates back and forth.
 TEST_F(MaximizeModeControllerTest, RotationSticky) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   gfx::Vector3dF gravity(0.0f, -kMeanGravity, 0.0f);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
   // Turn past half-way point to next direction and rotation should remain
@@ -370,14 +392,14 @@ TEST_F(MaximizeModeControllerTest, RotationSticky) {
   float degrees = 50.0;
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
   // Turn more and the screen should rotate.
   degrees = 70.0;
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 
   // Turn back just beyond the half-way point and the new rotation should
@@ -385,7 +407,7 @@ TEST_F(MaximizeModeControllerTest, RotationSticky) {
   degrees = 40.0;
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 
@@ -393,20 +415,20 @@ TEST_F(MaximizeModeControllerTest, RotationSticky) {
 // return to the standard orientation on exiting maximize mode.
 TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
   // Rotate on side with lid only open 90 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-9.5f, 0.0f, -3.5f),
-                             gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-9.5f, 0.0f, -3.5f),
+                          gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
   ASSERT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
   // Open lid, screen should now rotate to match orientation.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-9.5f, 0.0f, 3.5f),
-                             gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-9.5f, 0.0f, 3.5f),
+                          gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 
   // Close lid back to 90, screen should rotate back.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-9.5f, 0.0f, -3.5f),
-                             gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-9.5f, 0.0f, -3.5f),
+                          gfx::Vector3dF(-9.5f, -3.5f, 0.0f));
   ASSERT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
@@ -427,7 +449,7 @@ TEST_F(MaximizeModeControllerTest, LaptopTest) {
                        kAccelerometerLaptopModeTestData[i * 6 + 3],
                        kAccelerometerLaptopModeTestData[i * 6 + 5]);
     lid.Scale(kMeanGravity);
-    TriggerAccelerometerUpdate(base, lid);
+    TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
     ASSERT_FALSE(IsMaximizeModeStarted());
@@ -436,8 +458,8 @@ TEST_F(MaximizeModeControllerTest, LaptopTest) {
 
 TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
   // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   // Feeds in sample accelerometer data and verifies that there are no
@@ -454,7 +476,7 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
                        kAccelerometerFullyOpenTestData[i * 6 + 3],
                        kAccelerometerFullyOpenTestData[i * 6 + 5]);
     lid.Scale(kMeanGravity);
-    TriggerAccelerometerUpdate(base, lid);
+    TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
     ASSERT_TRUE(IsMaximizeModeStarted());
@@ -465,8 +487,8 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
 // rotation lock has been set.
 TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   gfx::Vector3dF gravity(-kMeanGravity, 0.0f, 0.0f);
@@ -477,11 +499,11 @@ TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
   float degrees = 90.0;
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
   maximize_mode_controller()->SetRotationLocked(false);
-  TriggerAccelerometerUpdate(gravity, gravity);
+  TriggerBaseAndLidUpdate(gravity, gravity);
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 
@@ -532,8 +554,8 @@ TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
   // Clear all notifications
   message_center->RemoveAllNotifications(false);
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_TRUE(IsMaximizeModeStarted());
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
@@ -556,8 +578,8 @@ TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
   // via the accelerometer while in maximize mode
   // Rotate the screen 90 degrees
   ASSERT_NE(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
-                             gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
+                          gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
   ASSERT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
@@ -572,17 +594,17 @@ TEST_F(MaximizeModeControllerTest, ResetUserRotationUponExit) {
                                       gfx::Display::ROTATE_90);
 
   // Trigger maximize mode
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f),
-                             gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f),
+                          gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_180, GetInternalDisplayRotation());
 
   // Exit maximize mode
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
@@ -592,8 +614,8 @@ TEST_F(MaximizeModeControllerTest, ResetUserRotationUponExit) {
 TEST_F(MaximizeModeControllerTest,
        NonAccelerometerRotationChangesLockRotation) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   ASSERT_FALSE(maximize_mode_controller()->rotation_locked());
   SetInternalDisplayRotation(gfx::Display::ROTATE_270);
   EXPECT_TRUE(maximize_mode_controller()->rotation_locked());
@@ -604,15 +626,15 @@ TEST_F(MaximizeModeControllerTest,
 // rotation should be applied.
 TEST_F(MaximizeModeControllerTest, UpdateUserRotationWhileRotationLocked) {
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   SetInternalDisplayRotation(gfx::Display::ROTATE_270);
   // User sets rotation to the same rotation that the display was at when
   // maximize mode was activated.
   SetInternalDisplayRotation(gfx::Display::ROTATE_0);
   // Exit maximize mode
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                             gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
+                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
@@ -640,8 +662,8 @@ TEST_F(MaximizeModeControllerSwitchesTest, IgnoreHingeAngles) {
   OpenLidToAngle(90.0f);
   EXPECT_TRUE(IsMaximizeModeStarted());
 
-  TriggerAccelerometerUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
-                             gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
+                          gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 

@@ -210,26 +210,32 @@ void MaximizeModeController::OnAccelerometerUpdated(
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity and/or the magnitude of the
   // reading from the lid differs too much from the reading from the base.
-  float base_magnitude =
-      update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) ?
-      update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD).Length() :
-      0.0f;
   float lid_magnitude = update.has(ui::ACCELEROMETER_SOURCE_SCREEN) ?
       update.get(ui::ACCELEROMETER_SOURCE_SCREEN).Length() : 0.0f;
   bool lid_stable = update.has(ui::ACCELEROMETER_SOURCE_SCREEN) &&
       std::abs(lid_magnitude - kMeanGravity) <= kDeviationFromGravityThreshold;
-  bool base_angle_stable = lid_stable &&
-      update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
-      std::abs(base_magnitude - lid_magnitude) <= kNoisyMagnitudeDeviation &&
-      std::abs(base_magnitude - kMeanGravity) <= kDeviationFromGravityThreshold;
 
-  if (base_angle_stable) {
-    // Responding to the hinge rotation can change the maximize mode state which
-    // affects screen rotation, so we handle hinge rotation first.
-    HandleHingeRotation(
-        update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD),
-        update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
+  // Whether or not we enter maximize mode affects whether we handle screen
+  // rotation, so determine whether to enter maximize mode first.
+  if (!update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+    if (first_accelerometer_update &&
+        update.has(ui::ACCELEROMETER_SOURCE_SCREEN)) {
+      EnterMaximizeMode();
+    }
+  } else {  // update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
+    float base_magnitude =
+        update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD).Length();
+    bool base_angle_stable = lid_stable &&
+        std::abs(base_magnitude - lid_magnitude) <= kNoisyMagnitudeDeviation &&
+        std::abs(base_magnitude - kMeanGravity) <=
+            kDeviationFromGravityThreshold;
+    if (base_angle_stable) {
+      HandleHingeRotation(
+          update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD),
+          update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
+    }
   }
+
   if (lid_stable)
     HandleScreenRotation(update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
 
