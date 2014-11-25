@@ -1198,7 +1198,7 @@ crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html
 crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
-crbug.com/436395 media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Pass Timeout ]
+crbug.com/436395 media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Pass Timeout Failure ]
 
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
