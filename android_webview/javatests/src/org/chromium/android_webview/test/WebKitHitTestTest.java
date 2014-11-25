@@ -15,7 +15,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -309,12 +308,8 @@ public class WebKitHitTestTest extends AwTestBase {
         srcImgeAnchorTypeRelativeUrlTestBody(false);
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "WebKitHitTest"})
-    http://crbug.com/435946
-    */
-    @DisabledTest
     public void testImgeType() throws Throwable {
         String relImageSrc = "/nonexistent2.jpg";
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
@@ -394,12 +389,8 @@ public class WebKitHitTestTest extends AwTestBase {
         pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null);
     }
 
-    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebKitHitTest"})
-    http://crbug.com/435946
-    */
-    @DisabledTest
     public void testUnfocusedNodeAndTouchRace() throws Throwable {
         // Test when the touch and focus paths racing with setting different
         // results.
