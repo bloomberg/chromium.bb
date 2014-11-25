@@ -441,6 +441,11 @@ list:not([disabled]) > .network-group[selected] {
   vertical-align: baseline;
 }
 
+.loading #timezone-value select {
+  color: transparent;
+  text-shadow: none;
+}
+
 #privacy-explanation {
   line-height: 1.8em;
 }
