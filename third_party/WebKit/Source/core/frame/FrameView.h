@@ -403,6 +403,11 @@ public:
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntSize visibleSize() const { return visibleContentRect().size(); }
 
+    // The visual viewport in the document. For subframes, this will be the visibleContentRect.
+    // For the main frame, we delegate to the PinchViewport as the visual viewport will be affected
+    // by page scale.
+    IntRect visualViewportRect() const;
+
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
     IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;

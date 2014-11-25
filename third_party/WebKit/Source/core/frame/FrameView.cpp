@@ -3180,6 +3180,17 @@ IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion)
     return IntRect(flooredIntPoint(m_scrollPosition), expandedIntSize(visibleContentSize));
 }
 
+IntRect FrameView::visualViewportRect() const
+{
+    if (!m_frame->isMainFrame()
+        || !m_frame->settings()
+        || !m_frame->settings()->pinchVirtualViewportEnabled())
+        return visibleContentRect();
+
+    PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
+    return enclosingIntRect(pinchViewport.visibleRectInDocument());
+}
+
 IntSize FrameView::contentsSize() const
 {
     return m_contentsSize;

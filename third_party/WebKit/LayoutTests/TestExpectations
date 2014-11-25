@@ -17,9 +17,10 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
-# This test requires virtual-viewport mode to be enabled. Remove this expectation once virtual-viewport
+# These tests require virtual-viewport mode to be enabled. Remove this expectation once virtual-viewport
 # lands on desktop platforms.
 crbug.com/148816 [ Mac Win Linux ] fast/dom/Window/window-scaled-viewport-properties.html [ Pass Failure ]
+crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relative-to-viewport.html [ Pass Failure ]
 
 crbug.com/437743 virtual/slimmingpaint/fast/block/basic/013.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/positioning/window-height-change.html [ ImageOnlyFailure ]
