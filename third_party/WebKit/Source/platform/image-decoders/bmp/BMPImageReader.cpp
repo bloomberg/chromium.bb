@@ -138,7 +138,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
     // If the image has an AND mask and there was no alpha data, process the
     // mask.
-    if (m_isInICO && !m_decodingAndMask && !m_buffer->hasAlpha()) {
+    if (m_isInICO && !m_decodingAndMask && (!m_bitMasks[3] || !m_seenNonZeroAlphaPixel)) {
         // Reset decoding coordinates to start of image.
         m_coord.setX(0);
         m_coord.setY(m_isTopDown ? 0 : (m_parent->size().height() - 1));
