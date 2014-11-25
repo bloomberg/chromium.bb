@@ -185,7 +185,7 @@ class GCContext(object):
     if machine_type:
       cmd += ['--machine-type', machine_type]
     if scopes:
-      cmd = cmd + ['--scopes'] + list(scopes)
+      cmd += ['--scopes'] + list(scopes)
 
     ret = self.DoZoneSpecificCommand(cmd, **kwargs)
     if wait_until_sshable:

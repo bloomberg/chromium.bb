@@ -122,7 +122,7 @@ def _SetupTreeStatus():
   """Copies credentials for updating tree status."""
   RunCommand(
       ['cp',
-       os.path.join(BOT_CREDS_PATH,bot_constants.TREE_STATUS_PASSWORD_FILE),
+       os.path.join(BOT_CREDS_PATH, bot_constants.TREE_STATUS_PASSWORD_FILE),
        HOME_DIR])
 
 
@@ -136,6 +136,15 @@ def SetupCredentials():
 
 def SetupBuildbotEnvironment():
   """Sets up the buildbot environment."""
+
+  # Append host entries to /etc/hosts. This includes the buildbot
+  # master IP address.
+  host_entries = RunCommand(
+      ['cat', os.path.join(BOT_CREDS_PATH, bot_constants.HOST_ENTRIES)],
+      capture_output=True).output
+  SudoRunCommand(['tee', '-a', '/etc/hosts'], input=host_entries)
+
+  # Create the buildbot directory.
   SudoRunCommand(['mkdir', '-p', bot_constants.BUILDBOT_DIR])
   SudoRunCommand(['chown', '-R', '%s:%s' % (bot_constants.BUILDBOT_USER,
                                             bot_constants.BUILDBOT_USER),
@@ -157,15 +166,16 @@ def SetupBuildbotEnvironment():
                redirect_stdout=True, extra_env={'PATH': path_env})
 
   # Set up buildbot password.
+  config_dir = os.path.join(bot_constants.BUILDBOT_DIR, 'build', 'site_config')
   RunCommand(['cp', os.path.join(BOT_CREDS_PATH,
                                  bot_constants.BUILDBOT_PASSWORD_FILE),
-              os.path.join(bot_constants.BUILDBOT_DIR, 'build', 'site-config')])
+              os.path.join(config_dir,
+                           bot_constants.BUILDBOT_PASSWORD_FILE)])
+
   # Update the environment variable.
   depot_tools_path = os.path.join(bot_constants.BUILDBOT_DIR, 'depot_tools')
   RunCommand(['bash', '-c', r'echo export PATH=\$PATH:%s >> ~/.bashrc'
               % depot_tools_path])
-  # host_file_path = os.path.join(BUILDBOT_DIR, 'build/slave/info/host')
-  # run('hostname -s > %s' % host_file_path)
 
 
 def main(_argv):

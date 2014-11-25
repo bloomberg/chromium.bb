@@ -26,11 +26,13 @@ GCOMPUTE_TOOLS_URL = 'https://gerrit.googlesource.com/gcompute-tools'
 #   - TREE_STATUS_PASSWORD_FILE: password for updating tree status.
 #   - CIDB_CREDS_DIR: A directory containing cidb credentials.
 #   - BUILDBOT_PASSWORD_FILE: password for buildbot.
+#   - HOST_ENTRIES: entries to append to /etc/hosts
 BOT_CREDS_DIR_ENV_VAR = 'BOT_CREDENTIALS_DIR'
 SVN_PASSWORD_FILE = 'svn_password'
 TREE_STATUS_PASSWORD_FILE = '.status_password_chromiumos'
 CIDB_CREDS_DIR = '.cidb_creds'
 BUILDBOT_PASSWORD_FILE = '.bot_password'
+HOST_ENTRIES = 'host_entries'
 
 # This path is used to store credentials on the GCE machine during botifying.
 BOT_CREDS_TMP_PATH = os.path.join(os.path.sep, 'tmp', 'bot-credentials')

@@ -206,6 +206,9 @@ def main(argv):
       '--zone', type=str, default=compute_configs.DEFAULT_ZONE,
       help='Zone to run the command against')
   parser.add_argument(
+      '--address', type=str, default=None,
+      help='IP to assign to the instance')
+  parser.add_argument(
       '--config', type=str, default=None,
       help='Config to create the instance from')
   parser.add_argument(
@@ -258,7 +261,7 @@ def main(argv):
         config = compute_configs.configs.get(opts.config, None)
         if not config:
           cros_build_lib.Die('Unkown config %s' % opts.config)
-        gcctx.CreateInstance(opts.instance, **config)
+        gcctx.CreateInstance(opts.instance, address=opts.address, **config)
     elif opts.operation == 'delete':
       cros_build_lib.Die('Please specify the instance name (--instance)')
       gcctx.DeleteInstance(opts.instance)
