@@ -236,14 +236,13 @@ void SMILTimeContainer::setElapsed(SMILTime time)
 #if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = true;
 #endif
-    GroupedAnimationsMap::iterator end = m_scheduledAnimations.end();
-    for (GroupedAnimationsMap::iterator it = m_scheduledAnimations.begin(); it != end; ++it) {
-        if (!it->key.first)
+    for (const auto& entry : m_scheduledAnimations) {
+        if (!entry.key.first)
             continue;
 
-        AnimationsLinkedHashSet* scheduled = it->value.get();
-        for (AnimationsLinkedHashSet::const_iterator itAnimation = scheduled->begin(), itAnimationEnd = scheduled->end(); itAnimation != itAnimationEnd; ++itAnimation)
-            (*itAnimation)->reset();
+        AnimationsLinkedHashSet* scheduled = entry.value.get();
+        for (SVGSMILElement* element : *scheduled)
+            element->reset();
     }
 #if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = false;
@@ -382,15 +381,15 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
         updateDocumentOrderIndexes();
 
     WillBeHeapHashSet<ElementAttributePair> invalidKeys;
-    typedef WillBeHeapVector<RefPtrWillBeMember<SVGSMILElement> > AnimationsVector;
+    using AnimationsVector = WillBeHeapVector<RefPtrWillBeMember<SVGSMILElement>>;
     AnimationsVector animationsToApply;
-    for (GroupedAnimationsMap::iterator it = m_scheduledAnimations.begin(), end = m_scheduledAnimations.end(); it != end; ++it) {
-        if (!it->key.first || it->value->isEmpty()) {
-            invalidKeys.add(it->key);
+    for (const auto& entry : m_scheduledAnimations) {
+        if (!entry.key.first || entry.value->isEmpty()) {
+            invalidKeys.add(entry.key);
             continue;
         }
 
-        AnimationsLinkedHashSet* scheduled = it->value.get();
+        AnimationsLinkedHashSet* scheduled = entry.value.get();
 
         // Sort according to priority. Elements with later begin time have higher priority.
         // In case of a tie, document order decides.
@@ -400,9 +399,9 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
         copyToVector(*scheduled, scheduledAnimations);
         std::sort(scheduledAnimations.begin(), scheduledAnimations.end(), PriorityCompare(elapsed));
 
-        SVGSMILElement* resultElement = 0;
-        for (AnimationsVector::const_iterator itAnimation = scheduledAnimations.begin(), itAnimationEnd = scheduledAnimations.end(); itAnimation != itAnimationEnd; ++itAnimation) {
-            SVGSMILElement* animation = itAnimation->get();
+        SVGSMILElement* resultElement = nullptr;
+        for (const auto& itAnimation : scheduledAnimations) {
+            SVGSMILElement* animation = itAnimation.get();
             ASSERT(animation->timeContainer() == this);
             ASSERT(animation->targetElement());
             ASSERT(animation->hasValidAttributeName());
@@ -417,7 +416,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
             // This will calculate the contribution from the animation and add it to the resultsElement.
             if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation)
-                resultElement = 0;
+                resultElement = nullptr;
 
             SMILTime nextFireTime = animation->nextProgressTime();
             if (nextFireTime.isFinite())

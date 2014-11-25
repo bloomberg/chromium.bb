@@ -111,9 +111,9 @@ private:
 
     Timer<SMILTimeContainer> m_wakeupTimer;
 
-    typedef pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName> ElementAttributePair;
-    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<SVGSMILElement> > AnimationsLinkedHashSet;
-    typedef WillBeHeapHashMap<ElementAttributePair, OwnPtrWillBeMember<AnimationsLinkedHashSet> > GroupedAnimationsMap;
+    using ElementAttributePair = pair<RawPtrWillBeWeakMember<SVGElement>, QualifiedName>;
+    using AnimationsLinkedHashSet = WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<SVGSMILElement>>;
+    using GroupedAnimationsMap = WillBeHeapHashMap<ElementAttributePair, OwnPtrWillBeMember<AnimationsLinkedHashSet>>;
     GroupedAnimationsMap m_scheduledAnimations;
 
     SVGSVGElement& m_ownerSVGElement;

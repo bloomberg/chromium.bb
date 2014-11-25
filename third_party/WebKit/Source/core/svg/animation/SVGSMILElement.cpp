@@ -116,14 +116,14 @@ public:
     {
         return listener->type() == ConditionEventListenerType
             ? static_cast<const ConditionEventListener*>(listener)
-            : 0;
+            : nullptr;
     }
 
     virtual bool operator==(const EventListener& other) override;
 
     void disconnectAnimation()
     {
-        m_animation = 0;
+        m_animation = nullptr;
     }
 
 private:
@@ -236,13 +236,13 @@ void SVGSMILElement::buildPendingResource()
     AtomicString href = getAttribute(XLinkNames::hrefAttr);
     Element* target;
     if (href.isEmpty())
-        target = parentNode() && parentNode()->isElementNode() ? toElement(parentNode()) : 0;
+        target = parentNode() && parentNode()->isElementNode() ? toElement(parentNode()) : nullptr;
     else
         target = SVGURIReference::targetElementFromIRIString(href, treeScope(), &id);
-    SVGElement* svgTarget = target && target->isSVGElement() ? toSVGElement(target) : 0;
+    SVGElement* svgTarget = target && target->isSVGElement() ? toSVGElement(target) : nullptr;
 
     if (svgTarget && !svgTarget->inDocument())
-        svgTarget = 0;
+        svgTarget = nullptr;
 
     if (svgTarget != targetElement())
         setTargetElement(svgTarget);
@@ -593,7 +593,7 @@ inline SVGElement* SVGSMILElement::eventBaseFor(const Condition& condition)
     Element* eventBase = condition.baseID().isEmpty() ? targetElement() : treeScope().getElementById(AtomicString(condition.baseID()));
     if (eventBase && eventBase->isSVGElement())
         return toSVGElement(eventBase);
-    return 0;
+    return nullptr;
 }
 
 void SVGSMILElement::connectSyncBaseConditions()
@@ -1248,15 +1248,12 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
     // |loopBreaker| is used to avoid infinite recursions which may be caused from:
     // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
     // |loopBreaker| is defined as a Persistent<HeapHashSet<Member<SVGSMILElement> > >. This won't cause leaks because it is guaranteed to be empty after the root |notifyDependentsIntervalChanged| has exited.
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> > >, loopBreaker, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> >())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>>, loopBreaker, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>())));
     if (!loopBreaker->add(this).isNewEntry)
         return;
 
-    TimeDependentSet::iterator end = m_syncBaseDependents.end();
-    for (TimeDependentSet::iterator it = m_syncBaseDependents.begin(); it != end; ++it) {
-        SVGSMILElement* dependent = *it;
-        dependent->createInstanceTimesFromSyncbase(this);
-    }
+    for (SVGSMILElement* element : m_syncBaseDependents)
+        element->createInstanceTimesFromSyncbase(this);
 
     loopBreaker->remove(this);
 }

@@ -238,13 +238,13 @@ private:
 
     RawPtrWillBeMember<SVGElement> m_targetElement;
 
-    WillBeHeapVector<OwnPtrWillBeMember<Condition> > m_conditions;
+    WillBeHeapVector<OwnPtrWillBeMember<Condition>> m_conditions;
     bool m_syncBaseConditionsConnected;
     bool m_hasEndEventConditions;
 
     bool m_isWaitingForFirstInterval;
 
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> > TimeDependentSet;
+    using TimeDependentSet = WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>;
     TimeDependentSet m_syncBaseDependents;
 
     // Instance time lists
