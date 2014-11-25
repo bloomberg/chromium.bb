@@ -33,7 +33,8 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
       auto_enrollment_state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
-      histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")) {
+      histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
+      weak_ptr_factory_(this) {
   if (actor_)
     actor_->SetDelegate(this);
 }
@@ -67,16 +68,16 @@ void AutoEnrollmentCheckScreen::Start() {
 
 void AutoEnrollmentCheckScreen::ClearState() {
    auto_enrollment_state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
+   captive_portal_status_ =
+       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 }
 
 bool AutoEnrollmentCheckScreen::IsStartNeeded() {
   // Check that forced reenrollment is wanted and if the check is needed or we
   // already know the outcome.
   if (AutoEnrollmentController::GetMode() !=
-      AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT ||
-      auto_enrollment_state_ ==
-      policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT ||
-      auto_enrollment_state_ == policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT) {
+          AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT ||
+      IsCompleted()) {
     SignalCompletion();
     return false;
   }
@@ -89,6 +90,11 @@ void AutoEnrollmentCheckScreen::PrepareToShow() {
 void AutoEnrollmentCheckScreen::Show() {
   if (IsStartNeeded()) {
     Start();
+    // It's possible that Start() has already made a decision and called
+    // SignalCompletion(). In this case we shouldn't call Show(), becase screen
+    // will be switched to the next one soon.
+    if (IsCompleted())
+      return;
     if (actor_)
       actor_->Show();
     histogram_helper_->OnScreenShow();
@@ -145,21 +151,10 @@ void AutoEnrollmentCheckScreen::UpdateState(
   captive_portal_status_ = new_captive_portal_status;
   auto_enrollment_state_ = new_auto_enrollment_state;
 
-  // Check whether a decision got made.
-  switch (new_auto_enrollment_state) {
-    case policy::AUTO_ENROLLMENT_STATE_IDLE:
-      NOTREACHED();
-      // fall through.
-    case policy::AUTO_ENROLLMENT_STATE_PENDING:
-    case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
-      break;
-    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
-      // Server errors don't block OOBE.
-    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
-    case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
-      // Decision made, ready to proceed.
-      SignalCompletion();
-      return;
+  DCHECK_NE(auto_enrollment_state_, policy::AUTO_ENROLLMENT_STATE_IDLE);
+  if (IsCompleted()) {
+    SignalCompletion();
+    return;
   }
 
   // Retry if applicable. This is last so eventual callbacks find consistent
@@ -233,7 +228,31 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 void AutoEnrollmentCheckScreen::SignalCompletion() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
   auto_enrollment_progress_subscription_.reset();
-  Finish(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+  // Calling Finish() can cause |this| destruction, so let other methods finish
+  // their work before.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &AutoEnrollmentCheckScreen::Finish, weak_ptr_factory_.GetWeakPtr(),
+          BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED));
+}
+
+bool AutoEnrollmentCheckScreen::IsCompleted() const {
+  switch (auto_enrollment_state_) {
+    case policy::AUTO_ENROLLMENT_STATE_IDLE:
+    case policy::AUTO_ENROLLMENT_STATE_PENDING:
+    case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
+      return false;
+    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+      // Server errors don't block OOBE.
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+      // Decision made, ready to proceed.
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace chromeos

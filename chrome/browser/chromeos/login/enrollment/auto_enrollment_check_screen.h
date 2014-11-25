@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -84,9 +85,13 @@ class AutoEnrollmentCheckScreen
   // Configures the error screen.
   void ShowErrorScreen(ErrorScreen::ErrorState error_state);
 
-  // Signals completion. No further code should run after a call to this
-  // function as the owner might destroy |this| in response.
+  // Asynchronously signals completion. The owner might destroy |this| in
+  // response, so no code should be run after the completion of a message loop
+  // task, in which this function was called.
   void SignalCompletion();
+
+  // Returns whether enrollment check was completed and decision was made.
+  bool IsCompleted() const;
 
   // Checks if the enrollment status check is needed. It can be disabled either
   // by command line flags, build configuration or might have finished already.
@@ -102,6 +107,8 @@ class AutoEnrollmentCheckScreen
   policy::AutoEnrollmentState auto_enrollment_state_;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  base::WeakPtrFactory<AutoEnrollmentCheckScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentCheckScreen);
 };
