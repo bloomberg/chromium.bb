@@ -94,6 +94,10 @@ _auth_lock = threading.Lock()
 _auth_method = None
 _auth_method_config = None
 
+# A class to use to send HTTP requests. Can be changed by 'set_engine_class'.
+# Default is RequestsLibEngine.
+_request_engine_cls = None
+
 
 class NetError(IOError):
   """Generic network related error."""
@@ -106,11 +110,7 @@ class NetError(IOError):
     """Human readable description with detailed information about the error."""
     out = [str(self.inner_exc)]
     if verbose:
-      headers = None
-      body = None
-      if isinstance(self.inner_exc, requests.HTTPError):
-        headers = self.inner_exc.response.headers.items()
-        body = self.inner_exc.response.content
+      headers, body = get_engine_class().parse_request_exception(self.inner_exc)
       if headers or body:
         out.append('----------')
         if headers:
@@ -137,6 +137,24 @@ class HttpError(NetError):
   def __init__(self, code, inner_exc=None):
     super(HttpError, self).__init__(inner_exc)
     self.code = code
+
+
+def set_engine_class(engine_cls):
+  """Globally changes a class to use to execute HTTP requests.
+
+  Default engine is RequestsLibEngine that uses 'requests' library. Changing the
+  engine on the fly is not supported. It must be set before the first request.
+
+  Custom engine class should support same public interface as RequestsLibEngine.
+  """
+  global _request_engine_cls
+  assert _request_engine_cls is None
+  _request_engine_cls = engine_cls
+
+
+def get_engine_class():
+  """Returns a class to use to execute HTTP requests."""
+  return _request_engine_cls or RequestsLibEngine
 
 
 def url_open(url, **kwargs):  # pylint: disable=W0621
@@ -223,10 +241,12 @@ def get_http_service(urlhost, allow_cached=True):
   requests to given base urlhost.
   """
   def new_service():
+    engine_cls = get_engine_class()
+    auth = None if engine_cls.provides_auth else create_authenticator(urlhost)
     return HttpService(
         urlhost,
-        engine=RequestsLibEngine(),
-        authenticator=create_authenticator(urlhost))
+        engine=engine_cls(),
+        authenticator=auth)
 
   # Ensure consistency in url naming.
   urlhost = str(urlhost).lower().rstrip('/')
@@ -249,6 +269,9 @@ def get_default_auth_config():
 
   Returns pair (auth method name, auth method config).
   """
+  engine = get_engine_class()
+  if engine.provides_auth:
+    return 'none', None
   if tools.is_headless():
     return 'bot', None
   else:
@@ -257,6 +280,9 @@ def get_default_auth_config():
 
 def configure_auth(method, config=None):
   """Defines what authentication methods to use.
+
+  If request engine (see get_engine_class) provides authentication already (as
+  indicated by its 'provides_auth=True' class property) this setting is ignored.
 
   Possible authentication methods are:
     'bot' - use HMAC authentication based on a secret key.
@@ -294,7 +320,14 @@ def get_auth_method():
 
 
 def create_authenticator(urlhost):
-  """Makes Authenticator instance used by HttpService to access |urlhost|."""
+  """Makes Authenticator instance used by HttpService to access |urlhost|.
+
+  Used only if request engine (see get_engine_class) doesn't provide
+  authentication already (as indicated by its 'provides_auth=True' class
+  property).
+  """
+  assert not get_engine_class().provides_auth
+
   # We use signed URL for Google Storage, no need for special authentication.
   if GS_STORAGE_HOST_URL_RE.match(urlhost):
     return None
@@ -511,9 +544,11 @@ class HttpService(object):
               continue
           # Authentication attempt was unsuccessful.
           logging.error(
-              'Unable to authenticate to %s (%s). Use auth.py to login: '
-              'python auth.py login --service=%s',
-              self.urlhost, e.format(), self.urlhost)
+              'Unable to authenticate to %s (%s).', self.urlhost, e.format())
+          if self.authenticator:
+            logging.error(
+                'Use auth.py to login: python auth.py login --service=%s',
+                self.urlhost)
           return None
 
         # Hit a error that can not be retried -> stop retry loop.
@@ -633,12 +668,15 @@ class HttpResponse(object):
 
     Raises TimeoutError on read timeout.
     """
+    exception_classes = get_engine_class().timeout_exception_classes()
+    assert isinstance(exception_classes, tuple)
+    assert all(issubclass(e, Exception) for e in exception_classes)
     try:
       # cStringIO has a bug: stream.read(None) is not the same as stream.read().
       data = self._stream.read() if size is None else self._stream.read(size)
       self._read += len(data)
       return data
-    except (socket.timeout, ssl.SSLError, requests.Timeout) as e:
+    except exception_classes as e:
       logging.error('Timeout while reading from %s, read %d of %s: %s',
           self._url, self._read, self.content_length, e)
       raise TimeoutError(e)
@@ -668,12 +706,24 @@ class Authenticator(object):
 class RequestsLibEngine(object):
   """Class that knows how to execute HttpRequests via requests library."""
 
-  # Preferred number of connections in a connection pool.
-  CONNECTION_POOL_SIZE = 64
-  # If True will not open more than CONNECTION_POOL_SIZE connections.
-  CONNECTION_POOL_BLOCK = False
-  # Maximum number of internal connection retries in a connection pool.
-  CONNECTION_RETRIES = 0
+  # This engine doesn't know how to authenticate requests on transport level.
+  provides_auth = False
+
+  @classmethod
+  def parse_request_exception(cls, exc):
+    """Extracts HTTP headers and body from inner exceptions put in HttpError."""
+    if isinstance(exc, requests.HTTPError):
+      return exc.response.headers.items(), exc.response.content
+    return None, None
+
+  @classmethod
+  def timeout_exception_classes(cls):
+    """A tuple of exception classes that represent timeout.
+
+    Will be caught while reading a streaming response in HttpResponse.read and
+    transformed to TimeoutError.
+    """
+    return (socket.timeout, ssl.SSLError, requests.Timeout)
 
   def __init__(self):
     super(RequestsLibEngine, self).__init__()
@@ -684,10 +734,10 @@ class RequestsLibEngine(object):
     # Configure connection pools.
     for protocol in ('https://', 'http://'):
       self.session.mount(protocol, adapters.HTTPAdapter(
-          pool_connections=self.CONNECTION_POOL_SIZE,
-          pool_maxsize=self.CONNECTION_POOL_SIZE,
-          max_retries=self.CONNECTION_RETRIES,
-          pool_block=self.CONNECTION_POOL_BLOCK))
+          pool_connections=64,
+          pool_maxsize=64,
+          max_retries=0,
+          pool_block=False))
 
   def perform_request(self, request):
     """Sends a HttpRequest to the server and reads back the response.
