@@ -1112,19 +1112,23 @@ class GerritTestCase(MockTempDirTestCase):
 
   def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
-    # Create gerrit instance.
-    gi = self.gerrit_instance = self._create_gerrit_instance(self.tempdir)
     old_home = os.environ['HOME']
     os.environ['HOME'] = self.tempdir
-    self._populate_netrc(os.path.join(old_home, '.netrc'))
+
+    # Create gerrit instance.
+    gi = self.gerrit_instance = self._create_gerrit_instance(self.tempdir)
+
+    netrc_path = os.path.join(old_home, '.netrc')
+    if os.path.exists(netrc_path):
+      self._populate_netrc(netrc_path)
+      # Set netrc file for http authentication.
+      self.PatchObject(gob_util, 'NETRC', netrc.netrc(gi.netrc_file))
 
     if gi.cookies_path:
       cros_build_lib.RunCommand(
           ['git', 'config', '--global', 'http.cookiefile', gi.cookies_path],
           quiet=True)
 
-    # Set netrc file for http authentication.
-    self.PatchObject(gob_util, 'NETRC', netrc.netrc(gi.netrc_file))
 
     # Set cookie file for http authentication
     if gi.cookies_path:
