@@ -84,12 +84,12 @@ AllowTransparencyAttribute.prototype.__proto__ = BooleanAttribute.prototype;
 
 AllowTransparencyAttribute.prototype.handleMutation = function(oldValue,
                                                                newValue) {
-  if (!this.webViewImpl.guestInstanceId) {
+  if (!this.webViewImpl.guest.getId()) {
     return;
   }
 
   WebViewInternal.setAllowTransparency(
-      this.webViewImpl.guestInstanceId,
+      this.webViewImpl.guest.getId(),
       this.webViewImpl.attributes[
           WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue());
 };
@@ -107,10 +107,10 @@ AutosizeDimensionAttribute.prototype.getValue = function() {
 
 AutosizeDimensionAttribute.prototype.handleMutation = function(
     oldValue, newValue) {
-  if (!this.webViewImpl.guestInstanceId) {
+  if (!this.webViewImpl.guest.getId()) {
     return;
   }
-  GuestViewInternal.setAutoSize(this.webViewImpl.guestInstanceId, {
+  GuestViewInternal.setAutoSize(this.webViewImpl.guest.getId(), {
     'enableAutoSize': this.webViewImpl.attributes[
       WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'min': {
@@ -149,11 +149,11 @@ NameAttribute.prototype.__proto__ = WebViewAttribute.prototype
 NameAttribute.prototype.handleMutation = function(oldValue, newValue) {
   oldValue = oldValue || '';
   newValue = newValue || '';
-  if (oldValue === newValue || !this.webViewImpl.guestInstanceId) {
+  if (oldValue === newValue || !this.webViewImpl.guest.getId()) {
     return;
   }
 
-  WebViewInternal.setName(this.webViewImpl.guestInstanceId, newValue);
+  WebViewInternal.setName(this.webViewImpl.guest.getId(), newValue);
 };
 
 // Attribute representing the state of the storage partition.

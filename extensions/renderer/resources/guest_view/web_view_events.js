@@ -323,7 +323,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
 
   var getGuestInstanceId = function() {
-    return this.webViewImpl.guestInstanceId;
+    return this.webViewImpl.guest.getId();
   }.bind(this);
 
   var dialog = {
@@ -410,7 +410,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   var requestId = event.requestId;
   var actionTaken = false;
   var getGuestInstanceId = function() {
-    return this.webViewImpl.guestInstanceId;
+    return this.webViewImpl.guest.getId();
   }.bind(this);
 
   var validateCall = function() {
@@ -425,9 +425,6 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       validateCall();
       if (!webview || !webview.tagName || webview.tagName != 'WEBVIEW')
         throw new Error(ERROR_MSG_WEBVIEW_EXPECTED);
-      // Attach happens asynchronously to give the tagWatcher an opportunity
-      // to pick up the new webview before attach operates on it, if it hasn't
-      // been attached to the DOM already.
       // Note: Any subsequent errors cannot be exceptions because they happen
       // asynchronously.
       setTimeout(function() {
@@ -526,7 +523,7 @@ WebViewEvents.prototype.handlePermissionEvent =
 
   var requestId = event.requestId;
   var getGuestInstanceId = function() {
-    return this.webViewImpl.guestInstanceId;
+    return this.webViewImpl.guest.getId();
   }.bind(this);
 
   if (this.permissionTypes.indexOf(event.permission) < 0) {

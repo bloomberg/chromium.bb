@@ -7,6 +7,7 @@
 // the shadow DOM of the WebView element.
 
 var DocumentNatives = requireNative('document_natives');
+var GuestView = require('guestView').GuestView;
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var guestViewInternalNatives = requireNative('guest_view_internal');
@@ -19,12 +20,9 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 function WebViewImpl(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
-  this.attached = false;
-  this.pendingGuestCreation = false;
-  this.elementAttached = false;
+  this.guest = new GuestView('webview');
 
   this.beforeFirstNavigation = true;
-  this.contentWindow = null;
 
   // on* Event handlers.
   this.on = {};
@@ -52,19 +50,18 @@ WebViewImpl.prototype.createBrowserPluginNode = function() {
 
 // Resets some state upon reattaching <webview> element to the DOM.
 WebViewImpl.prototype.reset = function() {
-  // If guestInstanceId is defined then the <webview> has navigated and has
+  // If the guest's ID is defined then the <webview> has navigated and has
   // already picked up a partition ID. Thus, we need to reset the initialization
   // state. However, it may be the case that beforeFirstNavigation is false BUT
-  // guestInstanceId has yet to be initialized. This means that we have not
+  // the guest's ID has yet to be initialized. This means that we have not
   // heard back from createGuest yet. We will not reset the flag in this case so
   // that we don't end up allocating a second guest.
-  if (this.guestInstanceId) {
-    GuestViewInternal.destroyGuest(this.guestInstanceId);
-    this.guestInstanceId = undefined;
+  if (this.guest.getId()) {
+    this.guest.destroy();
+    this.guest = new GuestView('webview');
     this.beforeFirstNavigation = true;
     this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
         true;
-    this.contentWindow = null;
   }
   this.internalInstanceId = 0;
 };
@@ -104,8 +101,8 @@ WebViewImpl.prototype.setupWebviewNodeProperties = function() {
   // dynamic getter value.
   Object.defineProperty(this.webviewNode, 'contentWindow', {
     get: function() {
-      if (this.contentWindow) {
-        return this.contentWindow;
+      if (this.guest.getContentWindow()) {
+        return this.guest.getContentWindow();
       }
       window.console.error(
           WebViewConstants.ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
@@ -139,17 +136,10 @@ WebViewImpl.prototype.handleBrowserPluginAttributeMutation =
         WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID);
     this.internalInstanceId = parseInt(newValue);
 
-    if (!this.guestInstanceId) {
+    if (!this.guest.getId()) {
       return;
     }
-    guestViewInternalNatives.AttachGuest(
-        this.internalInstanceId,
-        this.guestInstanceId,
-        this.buildAttachParams(),
-        function(w) {
-          this.contentWindow = w;
-        }.bind(this)
-    );
+    this.guest.attach(this.internalInstanceId, this.buildAttachParams());
   }
 };
 
@@ -195,7 +185,9 @@ WebViewImpl.prototype.parseSrcAttribute = function() {
     return;
   }
 
-  if (this.guestInstanceId == undefined) {
+  // TODO(paulmeyer): this is ignoring all src attribute changes while the guest
+  // is being created. The last change to src should probably be handled.
+  if (!this.guest.getId()) {
     if (this.beforeFirstNavigation) {
       this.beforeFirstNavigation = false;
       this.createGuest();
@@ -205,31 +197,20 @@ WebViewImpl.prototype.parseSrcAttribute = function() {
 
   // Navigate to |this.src|.
   WebViewInternal.navigate(
-      this.guestInstanceId,
+      this.guest.getId(),
       this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue());
 };
 
 WebViewImpl.prototype.createGuest = function() {
-  if (this.pendingGuestCreation) {
-    return;
-  }
   var params = {
     'storagePartitionId': this.attributes[
-        WebViewConstants.ATTRIBUTE_PARTITION].getValue()
+      WebViewConstants.ATTRIBUTE_PARTITION].getValue()
   };
-  GuestViewInternal.createGuest(
-      'webview',
-      params,
-      function(guestInstanceId) {
-        this.pendingGuestCreation = false;
-        if (!this.elementAttached) {
-          GuestViewInternal.destroyGuest(guestInstanceId);
-          return;
-        }
-        this.attachWindow(guestInstanceId);
-      }.bind(this)
-  );
-  this.pendingGuestCreation = true;
+
+  this.guest.create(params,
+                    function() {
+                      this.attachWindow();
+                    }.bind(this));
 };
 
 WebViewImpl.prototype.onFrameNameChanged = function(name) {
@@ -300,25 +281,24 @@ WebViewImpl.prototype.buildAttachParams = function() {
 };
 
 WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
-  this.guestInstanceId = guestInstanceId;
-  var params = this.buildAttachParams();
+  if (guestInstanceId) {
+    if (this.guest.getId() && this.guest.getId() != guestInstanceId) {
+      this.guest.destroy();
+    }
+    this.guest = new GuestView('webview', guestInstanceId);
+  }
 
   if (!this.internalInstanceId) {
     return true;
   }
 
-  return guestViewInternalNatives.AttachGuest(
-      this.internalInstanceId,
-      this.guestInstanceId,
-      params, function(w) {
-        this.contentWindow = w;
-      }.bind(this)
-  );
+  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
+  return true;
 };
 
 // Shared implementation of executeScript() and insertCSS().
 WebViewImpl.prototype.executeCode = function(func, args) {
-  if (!this.guestInstanceId) {
+  if (!this.guest.getId()) {
     window.console.error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
     return false;
   }
@@ -328,7 +308,7 @@ WebViewImpl.prototype.executeCode = function(func, args) {
     webviewSrc = this.baseUrlForDataUrl;
   }
 
-  args = $Array.concat([this.guestInstanceId, webviewSrc],
+  args = $Array.concat([this.guest.getId(), webviewSrc],
                        $Array.slice(args));
   $Function.apply(func, null, args);
   return true;
@@ -390,7 +370,6 @@ function registerWebViewElement() {
     if (!internal) {
       return;
     }
-    internal.elementAttached = false;
     internal.reset();
   };
 
@@ -399,10 +378,7 @@ function registerWebViewElement() {
     if (!internal) {
       return;
     }
-    if (!internal.elementAttached) {
-      internal.elementAttached = true;
-      internal.parseSrcAttribute();
-    }
+    internal.parseSrcAttribute();
   };
 
   // Public-facing API methods.
@@ -416,10 +392,10 @@ function registerWebViewElement() {
   // Create default implementations for undefined API methods.
   var createDefaultApiMethod = function(m) {
     return function(var_args) {
-      if (!this.guestInstanceId) {
+      if (!this.guest.getId()) {
         return false;
       }
-      var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
+      var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
       $Function.apply(WebViewInternal[m], null, args);
       return true;
     };

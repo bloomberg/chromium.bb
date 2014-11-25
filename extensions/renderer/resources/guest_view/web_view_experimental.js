@@ -16,11 +16,11 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 // of the data URL.
 WebViewImpl.prototype.loadDataWithBaseUrl = function(
     dataUrl, baseUrl, virtualUrl) {
-  if (!this.guestInstanceId) {
+  if (!this.guest.getId()) {
     return;
   }
   WebViewInternal.loadDataWithBaseUrl(
-      this.guestInstanceId, dataUrl, baseUrl, virtualUrl, function() {
+      this.guest.getId(), dataUrl, baseUrl, virtualUrl, function() {
         // Report any errors.
         if (chrome.runtime.lastError != undefined) {
           window.console.error(

@@ -112,7 +112,7 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
       validateCall();
       // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
       // with |items|, implement.
-      ChromeWebView.showContextMenu(this.guestInstanceId, requestId, items);
+      ChromeWebView.showContextMenu(this.guest.getId(), requestId, items);
     }.bind(this)
   };
   webViewEvent.menu = menu;
@@ -124,7 +124,7 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   if (!defaultPrevented) {
     actionTaken = true;
     // The default action is equivalent to just showing the context menu as is.
-    ChromeWebView.showContextMenu(this.guestInstanceId, requestId, undefined);
+    ChromeWebView.showContextMenu(this.guest.getId(), requestId, undefined);
 
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.

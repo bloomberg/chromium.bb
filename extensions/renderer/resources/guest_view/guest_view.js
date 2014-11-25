@@ -27,12 +27,18 @@ var ERROR_MSG_NOT_CREATED = 'The guest has not been created.';
 // Contains and hides the internal implementation details of |GuestView|,
 // including maintaining its state and enforcing the proper usage of its API
 // fucntions.
-function GuestViewImpl(viewType) {
-  this.contentWindow = null;
+
+function GuestViewImpl(viewType, guestInstanceId) {
+  if (guestInstanceId) {
+    this.id = guestInstanceId;
+    this.state = GUEST_STATE_CREATED;
+  } else {
+    this.id = 0;
+    this.state = GUEST_STATE_START;
+  }
   this.actionQueue = [];
+  this.contentWindow = null;
   this.pendingAction = null;
-  this.id = 0;
-  this.state = GUEST_STATE_START;
   this.viewType = viewType;
 }
 
@@ -123,7 +129,7 @@ GuestViewImpl.prototype.createImpl = function(createParams, callback) {
 };
 
 // Internal implementation of destroy().
-GuestViewImpl.prototype.destroyImpl = function() {
+GuestViewImpl.prototype.destroyImpl = function(callback) {
   // Check the current state.
   switch (this.state) {
     case GUEST_STATE_DESTROYED:
@@ -140,10 +146,10 @@ GuestViewImpl.prototype.destroyImpl = function() {
       return;
   }
 
-  GuestViewInternal.destroyGuest(this.id);
+  GuestViewInternal.destroyGuest(this.id,
+                                 this.handleCallback.bind(this, callback));
   this.contentWindow = null;
   this.id = 0;
-  this.handleCallback();
 
   this.state = GUEST_STATE_DESTROYED;
 };
@@ -151,8 +157,9 @@ GuestViewImpl.prototype.destroyImpl = function() {
 // The exposed interface to a guestview. Exposes in its API the functions
 // attach(), create(), destroy(), and getId(). All other implementation details
 // are hidden.
-function GuestView(viewType) {
-  privates(this).internal = new GuestViewImpl(viewType);
+
+function GuestView(viewType, guestInstanceId) {
+  privates(this).internal = new GuestViewImpl(viewType, guestInstanceId);
 }
 
 // Attaches the guestview to the container with ID |internalInstanceId|.
@@ -174,9 +181,9 @@ GuestView.prototype.create = function(createParams, callback) {
 
 // Destroys the guestview. Nothing can be done with the guestview after it has
 // been destroyed.
-GuestView.prototype.destroy = function() {
+GuestView.prototype.destroy = function(callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push(internal.destroyImpl.bind(internal));
+  internal.actionQueue.push(internal.destroyImpl.bind(internal, callback));
   internal.performNextAction();
 };
 

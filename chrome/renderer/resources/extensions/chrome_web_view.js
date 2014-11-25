@@ -39,5 +39,5 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   // Setting |params| = undefined will show the context menu unmodified, hence
   // the 'contextmenu' API is disabled for stable channel.
   var params = undefined;
-  ChromeWebView.showContextMenu(this.guestInstanceId, requestId, params);
+  ChromeWebView.showContextMenu(this.guest.getId(), requestId, params);
 };

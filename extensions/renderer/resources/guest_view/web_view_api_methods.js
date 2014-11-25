@@ -123,12 +123,12 @@ WebViewImpl.prototype.print = function() {
 
 WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {
   this.userAgentOverride = userAgentOverride;
-  if (!this.guestInstanceId) {
+  if (!this.guest.getId()) {
     // If we are not attached yet, then we will pick up the user agent on
     // attachment.
     return false;
   }
-  WebViewInternal.overrideUserAgent(this.guestInstanceId, userAgentOverride);
+  WebViewInternal.overrideUserAgent(this.guest.getId(), userAgentOverride);
   return true;
 };
 
