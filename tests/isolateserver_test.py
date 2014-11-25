@@ -9,7 +9,6 @@ import hashlib
 import json
 import logging
 import os
-import shutil
 import StringIO
 import sys
 import tempfile
@@ -25,26 +24,49 @@ import isolated_format
 import isolateserver
 import test_utils
 from depot_tools import auto_stub
+from utils import file_path
 from utils import threading_utils
 
 
 ALGO = hashlib.sha1
 
 
+CONTENTS = {
+  'empty_file.txt': '',
+  'small_file.txt': 'small file\n',
+  # TODO(maruel): symlinks.
+}
+
+
 class TestCase(net_utils.TestCase):
   """Mocks out url_open() calls and sys.stdout/stderr."""
+  _tempdir = None
+
   def setUp(self):
     super(TestCase, self).setUp()
     self.mock(auth, 'ensure_logged_in', lambda _: None)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
+    self.old_cwd = os.getcwd()
 
   def tearDown(self):
     try:
+      os.chdir(self.old_cwd)
+      if self._tempdir:
+        file_path.rmtree(self._tempdir)
       if not self.has_failed():
         self.checkOutput('', '')
     finally:
       super(TestCase, self).tearDown()
+
+  @property
+  def tempdir(self):
+    if not self._tempdir:
+      self._tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    return self._tempdir
+
+  def make_tree(self, contents):
+    test_utils.make_tree(self.tempdir, contents)
 
   def checkOutput(self, expected_out, expected_err):
     try:
@@ -653,16 +675,16 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
   def setUp(self):
     super(IsolateServerStorageSmokeTest, self).setUp()
-    self.rootdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
 
   def tearDown(self):
     try:
-      shutil.rmtree(self.rootdir)
+      file_path.rmtree(self.tempdir)
     finally:
       super(IsolateServerStorageSmokeTest, self).tearDown()
 
   def run_synchronous_push_test(self, namespace):
-    storage = isolateserver.get_storage(self.rootdir, namespace)
+    storage = isolateserver.get_storage(self.tempdir, namespace)
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -685,7 +707,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_synchronous_push_test('default-gzip')
 
   def run_upload_items_test(self, namespace):
-    storage = isolateserver.get_storage(self.rootdir, namespace)
+    storage = isolateserver.get_storage(self.tempdir, namespace)
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -711,7 +733,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_upload_items_test('default-gzip')
 
   def run_push_and_fetch_test(self, namespace):
-    storage = isolateserver.get_storage(self.rootdir, namespace)
+    storage = isolateserver.get_storage(self.tempdir, namespace)
 
     # Upload items.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -746,15 +768,6 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
 
 class IsolateServerDownloadTest(TestCase):
-  tempdir = None
-
-  def tearDown(self):
-    try:
-      if self.tempdir:
-        shutil.rmtree(self.tempdir)
-    finally:
-      super(IsolateServerDownloadTest, self).tearDown()
-
   def test_download_two_files(self):
     # Test downloading two files.
     actual = {}
@@ -793,7 +806,6 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated(self):
     # Test downloading an isolated tree.
-    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
     actual = {}
     def file_write_mock(key, generator):
       actual[key] = ''.join(generator)
@@ -990,38 +1002,41 @@ class TestArchive(TestCase):
         '%(prog)s: error: Duplicate entries found.\n' % {'prog': prog})
 
   def test_archive_files(self):
-    old_cwd = os.getcwd()
-    try:
-      os.chdir(os.path.join(net_utils.TEST_DIR, 'isolateserver'))
-      self.mock(isolateserver, 'get_storage', get_storage)
-      f = ['empty_file.txt', 'small_file.txt']
-      isolateserver.main(
-          ['archive', '--isolate-server', 'https://localhost:1'] + f)
-      self.checkOutput(
-          'da39a3ee5e6b4b0d3255bfef95601890afd80709 empty_file.txt\n'
-          '0491bd1da8087ad10fcdd7c9634e308804b72158 small_file.txt\n',
-          '')
-    finally:
-      os.chdir(old_cwd)
+    self.mock(isolateserver, 'get_storage', get_storage)
+    self.make_tree(CONTENTS)
+    f = ['empty_file.txt', 'small_file.txt']
+    os.chdir(self.tempdir)
+    isolateserver.main(
+        ['archive', '--isolate-server', 'https://localhost:1'] + f)
+    self.checkOutput(
+        'da39a3ee5e6b4b0d3255bfef95601890afd80709 empty_file.txt\n'
+        '0491bd1da8087ad10fcdd7c9634e308804b72158 small_file.txt\n',
+        '')
 
   def help_test_archive(self, cmd_line_prefix):
-    old_cwd = os.getcwd()
-    try:
-      os.chdir(net_utils.ROOT_DIR)
-      self.mock(isolateserver, 'get_storage', get_storage)
-      p = os.path.join(net_utils.TEST_DIR, 'isolateserver')
-      isolateserver.main(cmd_line_prefix + [p])
-      # TODO(maruel): The problem here is that the test depends on the file mode
-      # of the files in this directory.
-      # Fix is to copy the files in a temporary directory with known file modes.
-      #
-      # If you modify isolated_format.ISOLATED_FILE_VERSION, you'll have to
-      # update the hash below. Sorry about that.
-      self.checkOutput(
-          '1501166255279df1509408567340798d1cf089e7 %s\n' % p,
-          '')
-    finally:
-      os.chdir(old_cwd)
+    self.mock(isolateserver, 'get_storage', get_storage)
+    self.make_tree(CONTENTS)
+    isolateserver.main(cmd_line_prefix + [self.tempdir])
+    # If you modify isolated_format.ISOLATED_FILE_VERSION, you'll have to update
+    # the hash below. Sorry about that but this ensures the .isolated format is
+    # stable.
+    isolated = {
+      'algo': 'sha-1',
+      'files': {},
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    for k, v in CONTENTS.iteritems():
+      isolated['files'][k] = {
+        'h': hashlib.sha1(v).hexdigest(),
+        's': len(v),
+      }
+      if sys.platform != 'win32':
+        isolated['files'][k]['m'] = 0600
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_hash = ALGO(isolated_data).hexdigest()
+    self.checkOutput(
+        '%s %s\n' % (isolated_hash, self.tempdir),
+        '')
 
   def test_archive_directory(self):
     self.help_test_archive(['archive', '--isolate-server',

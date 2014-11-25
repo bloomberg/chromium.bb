@@ -291,7 +291,7 @@ def extract_resource(package, resource, temp_dir=None):
     raise ValueError('No such resource in zipped %s: %s' % (package, resource))
 
   if temp_dir:
-    filepath = _write_temp_data(data, os.path.basename(resource), temp_dir)
+    filepath = _write_temp_data(os.path.basename(resource), data, temp_dir)
     if filepath:
       return filepath
 

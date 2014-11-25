@@ -311,23 +311,25 @@ class RunIsolatedTest(auto_stub.TestCase):
       'import sys\n'
       'open(sys.argv[1], "w").write("bar")\n')
     script_hash = ALGO(script).hexdigest()
-    isolated = json_dumps(
-        {
-          'algo': 'sha-1',
-          'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
-          'files': {
-            'cmd.py': {
-              'h': script_hash,
-              'm': 0700,
-              's': len(script),
-            },
-          },
-          'version': isolated_format.ISOLATED_FILE_VERSION,
-        })
-    isolated_hash = ALGO(isolated).hexdigest()
+    isolated = {
+      'algo': 'sha-1',
+      'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
+      'files': {
+        'cmd.py': {
+          'h': script_hash,
+          'm': 0700,
+          's': len(script),
+        },
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    if sys.platform == 'win32':
+      isolated['files']['cmd.py'].pop('m')
+    isolated_data = json_dumps(isolated)
+    isolated_hash = ALGO(isolated_data).hexdigest()
     contents = {
-        isolated_hash: isolated,
-        script_hash: script,
+      isolated_hash: isolated_data,
+      script_hash: script,
     }
 
     path = os.path.join(self.tempdir, 'store')
@@ -349,27 +351,29 @@ class RunIsolatedTest(auto_stub.TestCase):
     hashes = set(contents)
     output_hash = ALGO('bar').hexdigest()
     hashes.add(output_hash)
-    uploaded = json_dumps(
-        {
-          'algo': 'sha-1',
-          'files': {
-            'foo': {
-              'h': output_hash,
-              # TODO(maruel): Handle umask.
-              'm': 0640,
-              's': 3,
-            },
-          },
-          'version': isolated_format.ISOLATED_FILE_VERSION,
-        })
+    isolated =  {
+      'algo': 'sha-1',
+      'files': {
+        'foo': {
+          'h': output_hash,
+          # TODO(maruel): Handle umask.
+          'm': 0640,
+          's': 3,
+        },
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    if sys.platform == 'win32':
+      isolated['files']['foo'].pop('m')
+    uploaded = json_dumps(isolated)
     uploaded_hash = ALGO(uploaded).hexdigest()
     hashes.add(uploaded_hash)
     self.assertEqual(hashes, set(os.listdir(path)))
 
     expected = ''.join([
       '[run_isolated_out_hack]',
-      '{"hash":"%s","namespace":"default-store","storage":"%s"}' % (
-          uploaded_hash, path),
+      '{"hash":"%s","namespace":"default-store","storage":%s}' % (
+          uploaded_hash, json.dumps(path)),
       '[/run_isolated_out_hack]'
     ]) + '\n'
     self.assertEqual(expected, sys.stdout.getvalue())

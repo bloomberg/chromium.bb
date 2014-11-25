@@ -17,6 +17,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
+import test_utils
+from utils import file_path
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,7 +26,13 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 
 # The directory containing the test data files.
-TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver')
+
+
+CONTENTS = {
+  'empty_file.txt': '',
+  'small_file.txt': 'small file\n',
+  # TODO(maruel): symlinks.
+}
 
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
@@ -36,11 +44,14 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     # transport/storage detail.
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
-    self.rootdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.rootdir = os.path.join(self.tempdir, 'rootdir')
+    self.test_data = os.path.join(self.tempdir, 'test_data')
+    test_utils.make_tree(self.test_data, CONTENTS)
 
   def tearDown(self):
     try:
-      shutil.rmtree(self.rootdir)
+      file_path.rmtree(self.tempdir)
     finally:
       super(IsolateServerArchiveSmokeTest, self).tearDown()
 
@@ -65,7 +76,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver.py with them. Then
     verify they are all on the server."""
-    files = [os.path.join(TEST_DATA_DIR, filename) for filename in files]
+    files = [os.path.join(self.test_data, filename) for filename in files]
     self._run(['archive'] + files)
     self._download_given_files(files)
 

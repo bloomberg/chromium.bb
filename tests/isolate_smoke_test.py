@@ -9,7 +9,6 @@ import json
 import logging
 import os
 import re
-import shutil
 import stat
 import subprocess
 import sys
@@ -47,61 +46,369 @@ RELATIVE_CWD = {
 }
 
 DEPENDENCIES = {
-  'all_items_invalid' : ['empty.py'],
-  'fail': ['fail.py'],
-  'missing_trailing_slash': [],
-  'no_run': [
-    'no_run.isolate',
-    os.path.join('files1', 'subdir', '42.txt'),
-    os.path.join('files1', 'test_file1.txt'),
-    os.path.join('files1', 'test_file2.txt'),
-  ],
-  'non_existent': [],
-  'split': [
-    os.path.join('files1', 'subdir', '42.txt'),
-    os.path.join('test', 'data', 'foo.txt'),
-    'split.py',
-  ],
-  'symlink_full': [
-    os.path.join('files1', 'subdir', '42.txt'),
-    os.path.join('files1', 'test_file1.txt'),
-    os.path.join('files1', 'test_file2.txt'),
-    # files2 is a symlink to files1.
-    'files2',
-    'symlink_full.py',
-  ],
-  'symlink_partial': [
-    os.path.join('files1', 'test_file2.txt'),
-    # files2 is a symlink to files1.
-    'files2',
-    'symlink_partial.py',
-  ],
-  'symlink_outside_build_root': [
-    os.path.join('link_outside_build_root', 'test_file3.txt'),
-    'symlink_outside_build_root.py',
-  ],
-  'touch_only': [
-    'touch_only.py',
-    os.path.join('files1', 'test_file1.txt'),
-  ],
-  'touch_root': [
-    os.path.join('tests', 'isolate', 'touch_root.py'),
-    'isolate.py',
-  ],
-  'with_flag': [
-    'with_flag.py',
-    os.path.join('files1', 'subdir', '42.txt'),
-    os.path.join('files1', 'test_file1.txt'),
-    os.path.join('files1', 'test_file2.txt'),
-  ],
+  'all_items_invalid': (
+    {
+      'tests/isolate/all_items_invalid.isolate':
+        """{
+          'variables': {
+            'command': ['python', 'empty.py'],
+            'files': [
+              # A single valid file so the command is valid and exits without
+              # an error.
+              'empty.py',
+              # File doesn't exist.
+              'A_file_that_does_not_exist',
+              # Directory missing trailing slash.
+              'files1',
+              # File doesn't exist.
+              'A_file_that_does_not_exist_either',
+            ],
+          },
+        }""",
+      'tests/isolate/empty.py': 'import sys; sys.exit(0)',
+    },
+    ['empty.py'],
+  ),
+  'fail': (
+    {
+      'tests/isolate/fail.isolate':
+        """{
+        'conditions': [
+          ['(OS=="linux" and chromeos==1) or '
+           '((OS=="mac" or OS=="win") and chromeos==0)', {
+            'variables': {
+              'command': ['python', 'fail.py'],
+              'files': ['fail.py'],
+            },
+          }],
+        ],
+      }""",
+      'tests/isolate/fail.py': 'import sys\nprint(\'Failing\')\nsys.exit(1)',
+    },
+    ['fail.py'],
+  ),
+  'missing_trailing_slash': (
+    {
+      # Directory missing trailing slash.
+      'tests/isolate/missing_trailing_slash.isolate':
+        "{'variables': {'files': ['files1']}}",
+      'tests/isolate/files1/foo': 'bar',
+    },
+    [],
+  ),
+  'no_run': (
+    {
+      'tests/isolate/files1/subdir/42.txt':
+          'the answer to life the universe and everything\n',
+      'tests/isolate/files1/test_file1.txt': 'Foo\n',
+      'tests/isolate/files1/test_file2.txt': 'Bar\n',
+      'tests/isolate/no_run.isolate':
+        """{
+            # Includes itself.
+          'variables': {'files': ['no_run.isolate', 'files1/']},
+        }""",
+    },
+    [
+      'no_run.isolate',
+      os.path.join('files1', 'subdir', '42.txt'),
+      os.path.join('files1', 'test_file1.txt'),
+      os.path.join('files1', 'test_file2.txt'),
+    ],
+  ),
+  'non_existent': (
+    {
+      'tests/isolate/non_existent.isolate':
+        "{'variables': {'files': ['A_file_that_do_not_exist']}}",
+    },
+    [],
+  ),
+  'split': (
+    {
+      'tests/isolate/files1/subdir/42.txt':
+          'the answer to life the universe and everything',
+      'tests/isolate/split.isolate':
+        """{
+          'variables': {
+            'command': ['python', 'split.py'],
+            'files': [
+              '<(DEPTH)/split.py',
+              '<(PRODUCT_DIR)/subdir/42.txt',
+              'test/data/foo.txt',
+            ],
+          },
+        }""",
+      'tests/isolate/split.py': "import sys; sys.exit(1)",
+      'tests/isolate/test/data/foo.txt': 'Split',
+    },
+    [
+      os.path.join('files1', 'subdir', '42.txt'),
+      os.path.join('test', 'data', 'foo.txt'),
+      'split.py',
+    ],
+  ),
+  'symlink_full': (
+    {
+      'tests/isolate/files1/subdir/42.txt':
+          'the answer to life the universe and everything\n',
+      'tests/isolate/files1/test_file1.txt': 'Foo\n',
+      'tests/isolate/files1/test_file2.txt': 'Bar\n',
+      'tests/isolate/files2': test_utils.SymLink('files1'),
+      'tests/isolate/symlink_full.isolate':
+        """{
+          'conditions': [
+            ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
+             'chromeos==0)', {
+              'variables': {
+                'command': ['python', 'symlink_full.py'],
+                'files': ['files2/', 'symlink_full.py'],
+              },
+            }],
+          ],
+        }""",
+      'tests/isolate/symlink_full.py':
+        """if __name__ == '__main__':
+        import os, sys
+        print('symlink: touches files2/')
+        assert len(sys.argv) == 1
+        expected = {
+          os.path.join('subdir', '42.txt'):
+              'the answer to life the universe and everything\\n',
+          'test_file1.txt': 'Foo\\n',
+          'test_file2.txt': 'Bar\\n',
+        }
+        root = 'files2'
+        actual = {}
+        for relroot, dirnames, filenames in os.walk(root):
+          for filename in filenames:
+            fullpath = os.path.join(relroot, filename)
+            actual[fullpath[len(root)+1:]] = open(fullpath, 'rb').read()
+          if '.svn' in dirnames:
+            dirnames.remove('.svn')
+        if actual != expected:
+          print('Failure')
+          print(actual)
+          print(expected)
+          sys.exit(1)
+        """,
+    },
+    [
+      os.path.join('files1', 'subdir', '42.txt'),
+      os.path.join('files1', 'test_file1.txt'),
+      os.path.join('files1', 'test_file2.txt'),
+      # files2 is a symlink to files1.
+      'files2',
+      'symlink_full.py',
+    ],
+  ),
+  'symlink_partial': (
+    {
+      'tests/isolate/files1/subdir/42.txt':
+          'the answer to life the universe and everything\n',
+      'tests/isolate/files1/test_file1.txt': 'Foo\n',
+      'tests/isolate/files1/test_file2.txt': 'Bar\n',
+      'tests/isolate/files2': test_utils.SymLink('files1'),
+      'tests/isolate/symlink_partial.isolate':
+        """{
+          'conditions': [
+            ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
+             'chromeos==0)', {
+              'variables': {
+                'command': ['python', 'symlink_partial.py'],
+                'files': ['files2/test_file2.txt', 'symlink_partial.py'],
+              },
+            }],
+          ],
+        }""",
+      'tests/isolate/symlink_partial.py':
+        """if __name__ == '__main__':
+        import os, sys
+        print('symlink: touches files2/test_file2.txt')
+        assert len(sys.argv) == 1
+        with open(os.path.join('files2', 'test_file2.txt'), 'rb') as f:
+          if 'Bar\\n' != f.read():
+            print('Failed')
+            sys.exit(1)
+        """,
+    },
+    [
+      os.path.join('files1', 'test_file2.txt'),
+      # files2 is a symlink to files1.
+      'files2',
+      'symlink_partial.py',
+    ],
+  ),
+  'symlink_outside_build_root': (
+    {
+      'tests/directory_outside_build_root/test_file3.txt': 'asdf\n',
+      'tests/isolate/link_outside_build_root':
+          test_utils.SymLink('../directory_outside_build_root'),
+      'tests/isolate/symlink_outside_build_root.isolate':
+        """{
+          'conditions': [
+            ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
+             'chromeos==0)', {
+              'variables': {
+                'command': ['python', 'symlink_outside_build_root.py'],
+                'files': [
+                  'link_outside_build_root/',
+                  'symlink_outside_build_root.py',
+                ],
+              },
+            }],
+          ],
+        }""",
+      'tests/isolate/symlink_outside_build_root.py':
+        """if __name__ == '__main__':
+        import os, sys
+        print('symlink: touches link_outside_build_root/')
+        assert len(sys.argv) == 1
+        p = os.path.join('link_outside_build_root', 'test_file3.txt')
+        with open(p, 'rb') as f:
+          if 'asdf\\n' != f.read():
+            print('Failed')
+            sys.exit(1)
+        """,
+    },
+    [
+      os.path.join('link_outside_build_root', 'test_file3.txt'),
+      'symlink_outside_build_root.py',
+    ],
+  ),
+  'touch_only': (
+    {
+    },
+    [
+      'touch_only.py',
+      os.path.join('files1', 'test_file1.txt'),
+    ],
+  ),
+  'touch_root': (
+    {
+      'tests/isolate/touch_root.isolate':
+        """{
+          'conditions': [
+            ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
+             'chromeos==0)', {
+              'variables': {
+                'command': ['python', 'touch_root.py'],
+                'files': ['../../at_root', 'touch_root.py'],
+              },
+            }],
+          ],
+        }""",
+      'tests/isolate/touch_root.py':
+        """if __name__ == '__main__':
+        import os, sys
+        print('child_touch_root: Verify the relative directories')
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir, base = os.path.split(root_dir)
+        parent_dir, base2 = os.path.split(parent_dir)
+        if base != 'isolate' or base2 != 'tests':
+          print('Invalid root dir %s' % root_dir)
+          sys.exit(4)
+        content = open(os.path.join(parent_dir, 'at_root'), 'r').read()
+        sys.exit(int(content != 'foo'))""",
+      'at_root': 'foo',
+    },
+    [
+      os.path.join('tests', 'isolate', 'touch_root.py'),
+      'at_root',
+    ],
+  ),
+  'with_flag': (
+    {
+      'tests/isolate/files1/subdir/42.txt':
+          'the answer to life the universe and everything\n',
+      'tests/isolate/files1/test_file1.txt': 'Foo\n',
+      'tests/isolate/files1/test_file2.txt': 'Bar\n',
+      'tests/isolate/with_flag.isolate':
+        """{
+        'conditions': [
+          ['(OS=="linux" and chromeos==1) or ((OS=="mac" or OS=="win") and '
+           'chromeos==0)', {
+            'variables': {
+              'command': ['python', 'with_flag.py', '<(FLAG)'],
+              'files': ['files1/', 'with_flag.py'],
+            },
+          }],
+        ],
+      }""",
+      'tests/isolate/with_flag.py':
+        """if __name__ == '__main__':
+        import os, sys
+        print('with_flag: Verify the test data files were mapped properly')
+        assert len(sys.argv) == 2
+        mode = sys.argv[1]
+        assert mode in ('run', 'trace')
+        expected = {
+          os.path.join('subdir', '42.txt'):
+              'the answer to life the universe and everything\\n',
+          'test_file1.txt': 'Foo\\n',
+          'test_file2.txt': 'Bar\\n',
+        }
+        root = 'files1'
+        actual = {}
+        for relroot, dirnames, filenames in os.walk(root):
+          for filename in filenames:
+            fullpath = os.path.join(relroot, filename)
+            actual[fullpath[len(root)+1:]] = open(fullpath, 'r').read()
+          if mode == 'trace' and '.svn' in dirnames:
+            dirnames.remove('.svn')
+        if actual != expected:
+          print('Failure')
+          print(actual)
+          print(expected)
+          sys.exit(1)
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir, base = os.path.split(root_dir)
+        if mode == 'trace':
+          # Verify the parent directory.
+          parent_dir, base2 = os.path.split(parent_dir)
+          if base != 'isolate' or base2 != 'tests':
+            print('mode trace: Invalid root dir %s' % root_dir)
+            sys.exit(4)
+        else:
+          # Verify that we are not inside a checkout.
+          if base == 'tests':
+            print('mode run: Invalid root dir %s' % root_dir)
+            sys.exit(5)
+        """,
+    },
+    [
+      'with_flag.py',
+      os.path.join('files1', 'subdir', '42.txt'),
+      os.path.join('files1', 'test_file1.txt'),
+      os.path.join('files1', 'test_file2.txt'),
+    ],
+  ),
+}
+
+
+SIMPLE_ISOLATE = {
+  'simple.isolate':
+    """{
+      'variables': {
+        'command': ['python', 'simple.py'],
+        'files': ['simple.py'],
+      },
+    }""",
+  'simple.py':
+    """if __name__ == '__main__':
+    import os, sys
+    actual = set(os.listdir('.'))
+    expected = set(['simple.py'])
+    if expected != actual:
+      print('Unexpected files: %s' % ', '.join(sorted(actual- expected)))
+      sys.exit(1)
+    print('Simply works.')
+    """,
 }
 
 
 class CalledProcessError(subprocess.CalledProcessError):
-  """Makes 2.6 version act like 2.7"""
+  """Adds stderr data."""
   def __init__(self, returncode, cmd, output, stderr, cwd):
-    super(CalledProcessError, self).__init__(returncode, cmd)
-    self.output = output
+    super(CalledProcessError, self).__init__(returncode, cmd, output)
     self.stderr = stderr
     self.cwd = cwd
 
@@ -150,11 +457,11 @@ def _wrap_in_condition(variables):
 
 
 def _fix_file_mode(filename, read_only):
-  """4 modes are supported, 0750 (rwx), 0640 (rw), 0550 (rx), 0440 (r)."""
-  min_mode = 0440
+  """4 modes are supported, 0700 (rwx), 0600 (rw), 0500 (rx), 0400 (r)."""
+  min_mode = 0400
   if not read_only:
     min_mode |= 0200
-  return (min_mode | 0110) if filename.endswith('.py') else min_mode
+  return (min_mode | 0100) if filename.endswith('.py') else min_mode
 
 
 class Isolate(unittest.TestCase):
@@ -184,18 +491,26 @@ class Isolate(unittest.TestCase):
     self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
 
 
-class IsolateTempdir(unittest.TestCase):
+class IsolateTempdirBase(unittest.TestCase):
   def setUp(self):
-    super(IsolateTempdir, self).setUp()
-    self.tempdir = tempfile.mkdtemp(prefix='isolate_smoke_')
+    super(IsolateTempdirBase, self).setUp()
+    self.tempdir = file_path.get_native_path_case(
+        unicode(tempfile.mkdtemp(prefix='isolate_smoke_')))
     self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
+    self.isolate_dir = os.path.join(self.tempdir, 'isolate')
 
   def tearDown(self):
     try:
       logging.debug(self.tempdir)
-      shutil.rmtree(self.tempdir)
+      file_path.rmtree(self.tempdir)
     finally:
-      super(IsolateTempdir, self).tearDown()
+      super(IsolateTempdirBase, self).tearDown()
+
+  def make_tree(self, case=None):
+    case = case or self.case()
+    if not case:
+      return
+    test_utils.make_tree(self.isolate_dir, DEPENDENCIES[case][0])
 
   def _gen_files(self, read_only, empty_file, with_time):
     """Returns a dict of files like calling isolate.files_to_metadata() on each
@@ -206,18 +521,17 @@ class IsolateTempdir(unittest.TestCase):
     - empty_file: Add a specific empty file (size 0).
     - with_time: Include 't' timestamps. For saved state .state files.
     """
-    root_dir = ROOT_DIR
+    root_dir = self.isolate_dir
     if RELATIVE_CWD[self.case()] == '.':
       root_dir = os.path.join(root_dir, 'tests', 'isolate')
 
-    files = dict((unicode(f), {}) for f in DEPENDENCIES[self.case()])
-
+    files = {unicode(f): {} for f in DEPENDENCIES[self.case()][1]}
     for relfile, v in files.iteritems():
       filepath = os.path.join(root_dir, relfile)
       filestats = os.lstat(filepath)
       is_link = stat.S_ISLNK(filestats.st_mode)
       if not is_link:
-        v[u's'] = filestats.st_size
+        v[u's'] = int(filestats.st_size)
         if sys.platform != 'win32':
           v[u'm'] = _fix_file_mode(relfile, read_only)
       if with_time:
@@ -236,7 +550,7 @@ class IsolateTempdir(unittest.TestCase):
       item = files[empty_file]
       item['h'] = unicode(HASH_NULL)
       if sys.platform != 'win32':
-        item['m'] = 288
+        item['m'] = 0400
       item['s'] = 0
       if with_time:
         item.pop('t', None)
@@ -255,7 +569,8 @@ class IsolateTempdir(unittest.TestCase):
       expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    self.assertEqual(expected, json.load(open(self.isolated, 'r')))
+    with open(self.isolated, 'r') as f:
+      self.assertEqual(expected, json.load(f))
 
   def _expected_saved_state(
       self, args, read_only, empty_file, extra_vars, root_dir):
@@ -283,7 +598,8 @@ class IsolateTempdir(unittest.TestCase):
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     expected['extra_variables'].update(extra_vars or {})
-    self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
+    with open(self.saved_state(), 'r') as f:
+      self.assertEqual(expected, json.load(f))
 
   def _expect_results(
       self, args, read_only, extra_vars, empty_file, root_dir=None):
@@ -307,7 +623,7 @@ class IsolateTempdir(unittest.TestCase):
       '--config-variable', 'chromeos', '0',
     ]
 
-  def _execute(self, mode, case, args, need_output, cwd=ROOT_DIR):
+  def _execute(self, mode, case, args, cwd=ROOT_DIR):
     """Executes isolate.py."""
     self.assertEqual(
         case,
@@ -319,20 +635,11 @@ class IsolateTempdir(unittest.TestCase):
     env = os.environ.copy()
     if 'ISOLATE_DEBUG' in env:
       del env['ISOLATE_DEBUG']
-
-    if need_output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.PIPE
-    else:
-      cmd.extend(['-v'] * 3)
-      stdout = None
-      stderr = None
-
     logging.debug(cmd)
     p = subprocess.Popen(
         cmd,
-        stdout=stdout,
-        stderr=stderr,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         cwd=cwd,
         env=env,
         universal_newlines=True)
@@ -353,7 +660,7 @@ class IsolateTempdir(unittest.TestCase):
   def filename(self):
     """Returns the filename corresponding to this test case."""
     filename = os.path.join(
-        ROOT_DIR, 'tests', 'isolate', self.case() + '.isolate')
+        self.isolate_dir, 'tests', 'isolate', self.case() + '.isolate')
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
@@ -361,21 +668,21 @@ class IsolateTempdir(unittest.TestCase):
     return isolate.isolatedfile_to_state(self.isolated)
 
   def _test_all_items_invalid(self, mode):
-    out = self._execute(mode, 'all_items_invalid.isolate',
-                        ['--ignore_broken_item'], True)
+    out = self._execute(
+        mode, 'all_items_invalid.isolate', ['--ignore_broken_item'])
     self._expect_results(['empty.py'], None, None, None)
 
     return out or ''
 
   def _test_missing_trailing_slash(self, mode):
     try:
-      self._execute(mode, 'missing_trailing_slash.isolate', [], True)
+      self._execute(mode, 'missing_trailing_slash.isolate', [])
       self.fail()
     except subprocess.CalledProcessError as e:
       self.assertEqual('', e.output)
       out = e.stderr
     self._expect_no_result()
-    root = file_path.get_native_path_case(unicode(ROOT_DIR))
+    root = file_path.get_native_path_case(unicode(self.isolate_dir))
     expected = (
       'Input directory %s must have a trailing slash' %
           os.path.join(root, 'tests', 'isolate', 'files1')
@@ -384,13 +691,13 @@ class IsolateTempdir(unittest.TestCase):
 
   def _test_non_existent(self, mode):
     try:
-      self._execute(mode, 'non_existent.isolate', [], True)
+      self._execute(mode, 'non_existent.isolate', [])
       self.fail()
     except subprocess.CalledProcessError as e:
       self.assertEqual('', e.output)
       out = e.stderr
     self._expect_no_result()
-    root = file_path.get_native_path_case(unicode(ROOT_DIR))
+    root = file_path.get_native_path_case(unicode(self.isolate_dir))
     expected = (
       'Input file %s doesn\'t exist' %
           os.path.join(root, 'tests', 'isolate', 'A_file_that_do_not_exist')
@@ -398,12 +705,18 @@ class IsolateTempdir(unittest.TestCase):
     self.assertIn(expected, out)
 
 
-class IsolateOutdir(IsolateTempdir):
+class IsolateOutdir(IsolateTempdirBase):
   def setUp(self):
     super(IsolateOutdir, self).setUp()
     # The tests assume the current directory is the file's directory.
-    os.chdir(ROOT_DIR)
+    os.mkdir(self.isolate_dir, 0700)
+    self.old_cwd = os.getcwd()
+    os.chdir(self.isolate_dir)
     self.outdir = os.path.join(self.tempdir, 'isolated')
+
+  def tearDown(self):
+    os.chdir(self.old_cwd)
+    super(IsolateOutdir, self).tearDown()
 
   def _expect_no_tree(self):
     # No outdir was created.
@@ -414,7 +727,8 @@ class IsolateOutdir(IsolateTempdir):
 
   def _expected_tree(self):
     """Verifies the files written in the temporary directory."""
-    self.assertEqual(sorted(DEPENDENCIES[self.case()]), self._result_tree())
+    self.assertEqual(
+        sorted(f for f in DEPENDENCIES[self.case()][1]), self._result_tree())
 
   def _get_cmd(self, mode):
     """Adds --outdir for the commands supporting it."""
@@ -431,9 +745,13 @@ class IsolateOutdir(IsolateTempdir):
     self._expect_no_tree()
 
 
-class Isolate_check(IsolateTempdir):
+class Isolate_check(IsolateTempdirBase):
+  def setUp(self):
+    super(Isolate_check, self).setUp()
+    self.make_tree()
+
   def test_fail(self):
-    self._execute('check', 'fail.isolate', [], False)
+    self._execute('check', 'fail.isolate', [])
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
@@ -447,45 +765,47 @@ class Isolate_check(IsolateTempdir):
     self.assertEqual('', out)
 
   def test_no_run(self):
-    self._execute('check', 'no_run.isolate', [], False)
+    self._execute('check', 'no_run.isolate', [])
     self._expect_results([], None, None, None)
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'check', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
-        False)
+        'check', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'])
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
-    self._execute('check', 'touch_root.isolate', [], False)
-    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
+    self._execute('check', 'touch_root.isolate', [])
+    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
 
   def test_with_flag(self):
     self._execute(
-        'check', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
-        False)
+        'check', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'])
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
-      self._execute('check', 'symlink_full.isolate', [], False)
+      self._execute('check', 'symlink_full.isolate', [])
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
-      self._execute('check', 'symlink_partial.isolate', [], False)
+      self._execute('check', 'symlink_partial.isolate', [])
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
-      self._execute('check', 'symlink_outside_build_root.isolate', [], False)
+      self._execute('check', 'symlink_outside_build_root.isolate', [])
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
 class Isolate_remap(IsolateOutdir):
+  def setUp(self):
+    super(Isolate_remap, self).setUp()
+    self.make_tree()
+
   def test_fail(self):
-    self._execute('remap', 'fail.isolate', [], False)
+    self._execute('remap', 'fail.isolate', [])
     self._expected_tree()
     self._expect_results(['fail.py'], None, None, None)
 
@@ -501,54 +821,56 @@ class Isolate_remap(IsolateOutdir):
     self._expected_tree()
 
   def test_no_run(self):
-    self._execute('remap', 'no_run.isolate', [], False)
+    self._execute('remap', 'no_run.isolate', [])
     self._expected_tree()
     self._expect_results([], None, None, None)
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'remap', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
-        False)
+        'remap', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'])
     self._expected_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
         ['touch_only.py', 'gyp'], None, {u'FLAG': u'gyp'}, empty)
 
   def test_touch_root(self):
-    self._execute('remap', 'touch_root.isolate', [], False)
+    self._execute('remap', 'touch_root.isolate', [])
     self._expected_tree()
-    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
+    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
 
   def test_with_flag(self):
     self._execute(
-        'remap', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
-        False)
+        'remap', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'])
     self._expected_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
-      self._execute('remap', 'symlink_full.isolate', [], False)
+      self._execute('remap', 'symlink_full.isolate', [])
       self._expected_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
-      self._execute('remap', 'symlink_partial.isolate', [], False)
+      self._execute('remap', 'symlink_partial.isolate', [])
       self._expected_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
-      self._execute('remap', 'symlink_outside_build_root.isolate', [], False)
+      self._execute('remap', 'symlink_outside_build_root.isolate', [])
       self._expected_tree()
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_run(IsolateTempdir):
+class Isolate_run(IsolateTempdirBase):
+  def setUp(self):
+    super(Isolate_run, self).setUp()
+    self.make_tree()
+
   def test_fail(self):
     try:
-      self._execute('run', 'fail.isolate', [], False)
+      self._execute('run', 'fail.isolate', [])
       self.fail()
     except subprocess.CalledProcessError:
       pass
@@ -566,7 +888,7 @@ class Isolate_run(IsolateTempdir):
 
   def test_no_run(self):
     try:
-      self._execute('run', 'no_run.isolate', [], False)
+      self._execute('run', 'no_run.isolate', [])
       self.fail()
     except subprocess.CalledProcessError:
       pass
@@ -575,54 +897,44 @@ class Isolate_run(IsolateTempdir):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'run', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'run'],
-        False)
+        'run', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'run'])
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
         ['touch_only.py', 'run'], None, {u'FLAG': u'run'}, empty)
 
   def test_touch_root(self):
-    self._execute('run', 'touch_root.isolate', [], False)
-    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
+    self._execute('run', 'touch_root.isolate', [])
+    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
 
   def test_with_flag(self):
     self._execute(
-        'run', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'run'],
-        False)
+        'run', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'run'])
     self._expect_results(
         ['with_flag.py', 'run'], None, {u'FLAG': u'run'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
-      self._execute('run', 'symlink_full.isolate', [], False)
+      self._execute('run', 'symlink_full.isolate', [])
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
-      self._execute('run', 'symlink_partial.isolate', [], False)
+      self._execute('run', 'symlink_partial.isolate', [])
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
-      self._execute('run', 'symlink_outside_build_root.isolate', [], False)
+      self._execute('run', 'symlink_outside_build_root.isolate', [])
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class IsolateNoOutdir(IsolateTempdir):
+class IsolateNoOutdir(IsolateTempdirBase):
   # Test without the --outdir flag.
   # So all the files are first copied in the tempdir and the test is run from
   # there.
   def setUp(self):
     super(IsolateNoOutdir, self).setUp()
-    self.root = os.path.join(self.tempdir, 'root')
-    os.makedirs(os.path.join(self.root, 'tests', 'isolate'))
-    for i in ('touch_root.isolate', 'touch_root.py'):
-      shutil.copy(
-          os.path.join(ROOT_DIR, 'tests', 'isolate', i),
-          os.path.join(self.root, 'tests', 'isolate', i))
-      shutil.copy(
-          os.path.join(ROOT_DIR, 'isolate.py'),
-          os.path.join(self.root, 'isolate.py'))
+    self.make_tree('touch_root')
 
-  def _execute(self, mode, args, need_output):  # pylint: disable=W0221
+  def _execute(self, mode, args):  # pylint: disable=W0221
     """Executes isolate.py."""
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
@@ -636,21 +948,12 @@ class IsolateNoOutdir(IsolateTempdir):
     env = os.environ.copy()
     if 'ISOLATE_DEBUG' in env:
       del env['ISOLATE_DEBUG']
-
-    if need_output:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-    else:
-      cmd.extend(['-v'] * 3)
-      stdout = None
-      stderr = None
-
     logging.debug(cmd)
     cwd = self.tempdir
     p = subprocess.Popen(
         cmd,
-        stdout=stdout,
-        stderr=stderr,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         cwd=cwd,
         env=env,
         universal_newlines=True)
@@ -668,47 +971,44 @@ class IsolateNoOutdir(IsolateTempdir):
 
   def filename(self):
     """Returns the filename corresponding to this test case."""
-    filename = os.path.join(self.root, 'tests', 'isolate', 'touch_root.isolate')
+    filename = os.path.join(
+        self.isolate_dir, 'tests', 'isolate', 'touch_root.isolate')
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
   def test_check(self):
-    self._execute('check', ['--isolate', self.filename()], False)
+    self._execute('check', ['--isolate', self.filename()])
     files = sorted([
       'isolate_smoke_test.isolated',
       'isolate_smoke_test.isolated.state',
-      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
-      os.path.join('root', 'isolate.py'),
+      os.path.join('isolate', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('isolate', 'tests', 'isolate', 'touch_root.py'),
+      os.path.join('isolate', 'at_root'),
     ])
     self.assertEqual(files, list_files_tree(self.tempdir))
 
   def test_remap(self):
     with self.assertRaises(CalledProcessError):
-      self._execute('remap', ['--isolate', self.filename()], False)
+      self._execute('remap', ['--isolate', self.filename()])
 
   def test_run(self):
-    self._execute('run', ['--isolate', self.filename()], False)
+    self._execute('run', ['--isolate', self.filename()])
     files = sorted([
       'isolate_smoke_test.isolated',
       'isolate_smoke_test.isolated.state',
-      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
-      os.path.join('root', 'isolate.py'),
+      os.path.join('isolate', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('isolate', 'tests', 'isolate', 'touch_root.py'),
+      os.path.join('isolate', 'at_root'),
     ])
     self.assertEqual(files, list_files_tree(self.tempdir))
 
 
-class IsolateOther(IsolateTempdir):
+class IsolateOther(IsolateTempdirBase):
   def test_run_mixed(self):
     # Test when a user mapped from a directory and then replay from another
     # directory. This is a very rare corner case.
     indir = os.path.join(self.tempdir, 'input')
-    os.mkdir(indir)
-    for i in ('simple.py', 'simple.isolate'):
-      shutil.copy(
-          os.path.join(ROOT_DIR, 'tests', 'isolate', i),
-          os.path.join(indir, i))
+    test_utils.make_tree(indir, SIMPLE_ISOLATE)
     proc = subprocess.Popen(
         [
           sys.executable, 'isolate.py',

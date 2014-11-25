@@ -264,6 +264,45 @@ class FilePathTest(auto_stub.TestCase):
       finally:
         proc.wait()
 
+    def test_filter_processes_dir_win(self):
+      python_dir = os.path.dirname(sys.executable)
+      processes = file_path.filter_processes_dir_win(
+          file_path.enum_processes_win(), python_dir)
+      self.assertTrue(processes)
+      proc_names = [proc.ExecutablePath for proc in processes]
+      # Try to find at least one python process.
+      self.assertTrue(
+          any(proc == sys.executable for proc in proc_names), proc_names)
+
+    def test_filter_processes_tree_win(self):
+      # Create a grand-child.
+      script = (
+        'import subprocess,sys;'
+        'proc = subprocess.Popen('
+          '[sys.executable, \'-u\', \'-c\', \'import time; print(1); '
+          'time.sleep(60)\'], stdout=subprocess.PIPE); '
+        # Signal grand child is ready.
+        'print(proc.stdout.read(1)); '
+        # Wait for parent to have completed the test.
+        'sys.stdin.read(1); '
+        'proc.kill()'
+      )
+      proc = subprocess.Popen(
+          [sys.executable, '-u', '-c', script],
+          stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE)
+      try:
+        proc.stdout.read(1)
+        processes = file_path.filter_processes_tree_win(
+            file_path.enum_processes_win())
+        self.assertEqual(3, len(processes), processes)
+        proc.stdin.write('a')
+        proc.wait()
+      except Exception:
+        proc.kill()
+      finally:
+        proc.wait()
+
   if sys.platform != 'win32':
     def test_symlink(self):
       # This test will fail if the checkout is in a symlink.

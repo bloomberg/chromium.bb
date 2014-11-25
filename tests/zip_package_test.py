@@ -277,7 +277,7 @@ class ZipPackageTest(unittest.TestCase):
     actual = check_output([sys.executable, zip_file]).strip()
     expected = os.path.join(
         self.temp_dir,
-        '6c97fb9ae4b9c51b0c87a18716debddcb9acbaac-Certificate')
+        '321690737f78d081937f88c3fd0e625dd48ae07d-cert.pem')
     self.assertEqual(expected, actual)
 
 

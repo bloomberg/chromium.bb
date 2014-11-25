@@ -244,7 +244,11 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
 
   symlinks = []
   if follow_symlinks:
-    relfile, symlinks = expand_symlinks(indir, relfile)
+    try:
+      relfile, symlinks = expand_symlinks(indir, relfile)
+    except OSError:
+      # The file doesn't exist, it will throw below.
+      pass
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
@@ -346,7 +350,8 @@ def file_to_metadata(filepath, prevdict, read_only, algo):
     filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
     if read_only:
       filemode &= ~stat.S_IWUSR
-    if filemode & stat.S_IXUSR:
+    if filemode & (stat.S_IXUSR|stat.S_IRGRP) == (stat.S_IXUSR|stat.S_IRGRP):
+      # Only keep x group bit if both x user bit and group read bit are set.
       filemode |= stat.S_IXGRP
     else:
       filemode &= ~stat.S_IXGRP
