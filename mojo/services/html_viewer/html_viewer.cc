@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
@@ -31,7 +34,7 @@ namespace mojo {
 
 // Enable mojo::MediaRenderer in media pipeline instead of using the internal
 // media::Renderer implementation.
-const char kEnableMojoMediaRenderer[] = "--enable-mojo-media-renderer";
+const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 
 class HTMLViewer;
 
@@ -80,13 +83,23 @@ class HTMLViewer : public ApplicationDelegate,
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 #endif
 
-    bool enable_mojo_media_renderer = false;
-    for (const auto& arg : app->args()) {
-      if (arg == kEnableMojoMediaRenderer) {
-        enable_mojo_media_renderer = true;
-        break;
-      }
-    }
+    base::CommandLine::StringVector command_line_args;
+#if defined(OS_WIN)
+    for (const auto& arg : app->args())
+      command_line_args.push_back(base::UTF8ToUTF16(arg));
+#elif defined(OS_POSIX)
+    command_line_args = app->args();
+#endif
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->InitFromArgv(command_line_args);
+
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
+
+    bool enable_mojo_media_renderer =
+        command_line->HasSwitch(kEnableMojoMediaRenderer);
 
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(
