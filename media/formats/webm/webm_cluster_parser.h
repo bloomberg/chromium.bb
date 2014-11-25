@@ -240,8 +240,12 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   int block_data_size_;
   int64 block_duration_;
   int64 block_add_id_;
+
   scoped_ptr<uint8[]> block_additional_data_;
+  // Must be 0 if |block_additional_data_| is null. Must be > 0 if
+  // |block_additional_data_| is NOT null.
   int block_additional_data_size_;
+
   int64 discard_padding_;
   bool discard_padding_set_;
 

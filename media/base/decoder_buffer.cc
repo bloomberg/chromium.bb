@@ -29,9 +29,17 @@ DecoderBuffer::DecoderBuffer(const uint8* data, int size,
   }
 
   Initialize();
+
+  DCHECK_GE(size_, 0);
   memcpy(data_.get(), data, size_);
-  if (side_data)
-    memcpy(side_data_.get(), side_data, side_data_size_);
+
+  if (!side_data) {
+    CHECK_EQ(side_data_size, 0);
+    return;
+  }
+
+  DCHECK_GT(side_data_size_, 0);
+  memcpy(side_data_.get(), side_data, side_data_size_);
 }
 
 DecoderBuffer::~DecoderBuffer() {}
