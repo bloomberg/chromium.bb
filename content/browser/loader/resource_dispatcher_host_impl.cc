@@ -65,6 +65,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
@@ -98,10 +99,6 @@
 #include "storage/common/blob/blob_data.h"
 #include "storage/common/blob/shareable_file_reference.h"
 #include "url/url_constants.h"
-
-#if defined(ENABLE_PLUGINS)
-#include "content/browser/plugin_service_impl.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -1356,9 +1353,15 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
     int child_id,
     int route_id,
     scoped_ptr<ResourceHandler> handler) {
+
+  PluginService* plugin_service = nullptr;
+#if defined(ENABLE_PLUGINS)
+  plugin_service = PluginService::GetInstance();
+#endif
   // Insert a buffered event handler before the actual one.
   handler.reset(
-      new BufferedResourceHandler(handler.Pass(), this, request));
+      new BufferedResourceHandler(
+          handler.Pass(), this, plugin_service, request));
 
   ScopedVector<ResourceThrottle> throttles;
   if (delegate_) {

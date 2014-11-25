@@ -20,6 +20,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
@@ -30,10 +31,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
-
-#if defined(ENABLE_PLUGINS)
-#include "content/browser/plugin_service_impl.h"
-#endif
 
 namespace content {
 
@@ -83,10 +80,12 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 BufferedResourceHandler::BufferedResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     ResourceDispatcherHostImpl* host,
+    PluginService* plugin_service,
     net::URLRequest* request)
     : LayeredResourceHandler(request, next_handler.Pass()),
       state_(STATE_STARTING),
       host_(host),
+      plugin_service_(plugin_service),
       read_buffer_size_(0),
       bytes_read_(0),
       must_download_(false),
@@ -350,7 +349,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     bool has_plugin = HasSupportingPlugin(&stale);
     if (stale) {
       // Refresh the plugins asynchronously.
-      PluginServiceImpl::GetInstance()->GetPlugins(
+      plugin_service_->GetPlugins(
           base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
       request()->LogBlockedBy("BufferedResourceHandler");
@@ -482,7 +481,7 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
 
   bool allow_wildcard = false;
   WebPluginInfo plugin;
-  return PluginServiceImpl::GetInstance()->GetPluginInfo(
+  return plugin_service_->GetPluginInfo(
       info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
       request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
       stale, &plugin, NULL);

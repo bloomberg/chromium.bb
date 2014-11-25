@@ -18,6 +18,7 @@ class URLRequest;
 }
 
 namespace content {
+class PluginService;
 class ResourceDispatcherHostImpl;
 struct WebPluginInfo;
 
@@ -26,8 +27,10 @@ class CONTENT_EXPORT BufferedResourceHandler
     : public LayeredResourceHandler,
       public ResourceController {
  public:
+  // If ENABLE_PLUGINS is defined, |plugin_service| must not be NULL.
   BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                           ResourceDispatcherHostImpl* host,
+                          PluginService* plugin_service,
                           net::URLRequest* request);
   ~BufferedResourceHandler() override;
 
@@ -93,6 +96,7 @@ class CONTENT_EXPORT BufferedResourceHandler
 
   scoped_refptr<ResourceResponse> response_;
   ResourceDispatcherHostImpl* host_;
+  PluginService* plugin_service_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   int bytes_read_;

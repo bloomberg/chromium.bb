@@ -113,6 +113,8 @@
       'test/content_browser_test_utils_internal.h',
       'test/content_test_suite.cc',
       'test/content_test_suite.h',
+      'test/fake_plugin_service.cc',
+      'test/fake_plugin_service.h',
       'test/mock_google_streaming_server.cc',
       'test/mock_google_streaming_server.h',
       'test/mock_keyboard.cc',

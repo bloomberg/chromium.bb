@@ -10,6 +10,3 @@ DevToolsManagerTest.TestObserver
 
 # http://crbug.com/430391
 WebDataConsumerHandleImplTest.*
-
-# http://crbug.com/435441
-PluginLoaderPosixTest.*

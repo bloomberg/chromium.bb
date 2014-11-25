@@ -14,6 +14,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/fake_plugin_service.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -193,10 +194,13 @@ bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
   TestResourceDispatcherHostDelegate host_delegate(must_download);
   host.SetDelegate(&host_delegate);
 
+  FakePluginService plugin_service;
   scoped_ptr<ResourceHandler> buffered_handler(
       new BufferedResourceHandler(
           scoped_ptr<ResourceHandler>(new TestResourceHandler()).Pass(),
-          &host, request.get()));
+          &host,
+          &plugin_service,
+          request.get()));
   TestResourceController resource_controller;
   buffered_handler->SetController(&resource_controller);
 
@@ -212,16 +216,9 @@ bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
   return host.intercepted_as_stream();
 }
 
-// TODO(raymes): Currently fails on Mac due to dependency on plugin
-// initialization.
-#if defined(OS_MACOSX)
-#define MAYBE_StreamHandling DISABLED_StreamHandling
-#else
-#define MAYBE_StreamHandling StreamHandling
-#endif
 // Test that stream requests are correctly intercepted under the right
 // circumstances.
-TEST_F(BufferedResourceHandlerTest, MAYBE_StreamHandling) {
+TEST_F(BufferedResourceHandlerTest, StreamHandling) {
   bool allow_download;
   bool must_download;
   ResourceType resource_type;
