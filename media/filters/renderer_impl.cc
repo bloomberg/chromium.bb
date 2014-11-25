@@ -89,6 +89,12 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
 
+  if (cdm_context_) {
+    DVLOG(1) << "Switching CDM not supported.";
+    cdm_attached_cb.Run(false);
+    return;
+  }
+
   cdm_context_ = cdm_context;
 
   if (decryptor_ready_cb_.is_null()) {

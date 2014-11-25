@@ -27,6 +27,7 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline.h"
@@ -181,6 +182,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+
+  if (params.initial_cdm()) {
+    SetCdm(
+        ToWebContentDecryptionModuleImpl(params.initial_cdm())->GetCdmContext(),
+        base::Bind(&IgnoreCdmAttached));
+  }
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
   // e.g. GetCurrentFrameFromCompositor(). Fix this in a future CL.
