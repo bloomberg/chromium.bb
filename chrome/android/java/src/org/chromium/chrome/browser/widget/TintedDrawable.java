@@ -25,7 +25,7 @@ public class TintedDrawable extends BitmapDrawable {
 
     public TintedDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
-        mTint = res.getColorStateList(R.color.default_button_tint);
+        mTint = res.getColorStateList(R.color.dark_mode_tint);
     }
 
     @Override

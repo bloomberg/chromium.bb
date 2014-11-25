@@ -20,7 +20,7 @@
         <item name="colorPrimaryDark">@color/material_deep_teal_500</item>
 
         <!-- Default TintedImageButton tint -->
-        <item name="tint">@color/default_button_tint</item>
+        <item name="tint">@color/dark_mode_tint</item>
     </style>
 
 </resources>
