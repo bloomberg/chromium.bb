@@ -133,8 +133,7 @@ class ScopedComPtr : public scoped_refptr<Interface> {
     ScopedComPtr<IUnknown> other_identity;
     other->QueryInterface(other_identity.Receive());
 
-    return static_cast<IUnknown*>(my_identity) ==
-           static_cast<IUnknown*>(other_identity);
+    return my_identity == other_identity;
   }
 
   // Provides direct access to the interface.
