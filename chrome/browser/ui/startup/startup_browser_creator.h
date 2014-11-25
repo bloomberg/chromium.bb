@@ -131,6 +131,16 @@ class StartupBrowserCreator {
                                  int* return_code,
                                  StartupBrowserCreator* browser_creator);
 
+  // This function performs command-line handling and is invoked only after
+  // start up (for example when we get a start request for another process).
+  // |command_line| holds the command line being processed.
+  // |cur_dir| is the current working directory that the original process was
+  // invoked from.
+  // |profile| is the profile the apps will be launched in.
+  static bool ProcessLoadApps(const base::CommandLine& command_line,
+                              const base::FilePath& cur_dir,
+                              Profile* profile);
+
   // Callback after a profile has been created.
   static void ProcessCommandLineOnProfileCreated(
       const base::CommandLine& command_line,

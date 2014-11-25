@@ -61,6 +61,10 @@ class AppLoadService : public KeyedService,
                      const base::CommandLine& command_line,
                      const base::FilePath& current_dir);
 
+  // Loads (or reloads) the app with |extension_path|. Returns true if loading
+  // the app has begun successfully.
+  bool Load(const base::FilePath& extension_path);
+
   static AppLoadService* Get(Profile* profile);
 
  private:

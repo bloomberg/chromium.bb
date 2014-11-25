@@ -77,6 +77,14 @@ bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
   return true;
 }
 
+bool AppLoadService::Load(const base::FilePath& extension_path) {
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  std::string extension_id;
+  return extensions::UnpackedInstaller::Create(extension_service)->
+      LoadFromCommandLine(base::FilePath(extension_path), &extension_id);
+}
+
 // static
 AppLoadService* AppLoadService::Get(Profile* profile) {
   return apps::AppLoadServiceFactory::GetForProfile(profile);

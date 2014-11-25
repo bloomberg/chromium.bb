@@ -24,6 +24,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -63,6 +64,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
+#include "extensions/common/switches.h"
 #include "net/base/net_util.h"
 
 #if defined(USE_ASH)
@@ -609,7 +611,23 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   if (silent_launch)
     return true;
 
-  VLOG(2) << "ProcessCmdLineImpl: PLACE 4";
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 4.A";
+  if (command_line.HasSwitch(extensions::switches::kLoadApps) &&
+      !IncognitoModePrefs::ShouldLaunchIncognito(
+          command_line, last_used_profile->GetPrefs())) {
+    if (!ProcessLoadApps(command_line, cur_dir, last_used_profile))
+      return false;
+
+    // Return early here to avoid opening a browser window.
+    // The exception is when there are no browser windows, since we don't want
+    // chrome to shut down.
+    // TODO(jackhou): Do this properly once keep-alive is handled by the
+    // background page of apps. Tracked at http://crbug.com/175381
+    if (chrome::GetTotalBrowserCountForProfile(last_used_profile) != 0)
+      return true;
+  }
+
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 4.B";
   // Check for --load-and-launch-app.
   if (command_line.HasSwitch(apps::kLoadAndLaunchApp) &&
       !IncognitoModePrefs::ShouldLaunchIncognito(
@@ -752,6 +770,39 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
   }
   VLOG(2) << "ProcessCmdLineImpl: END";
+  return true;
+}
+
+// static
+bool StartupBrowserCreator::ProcessLoadApps(const CommandLine& command_line,
+                                            const base::FilePath& cur_dir,
+                                            Profile* profile) {
+  CommandLine::StringType path_list =
+      command_line.GetSwitchValueNative(extensions::switches::kLoadApps);
+
+  base::StringTokenizerT<CommandLine::StringType,
+                         CommandLine::StringType::const_iterator>
+      tokenizer(path_list, FILE_PATH_LITERAL(","));
+
+  if (!tokenizer.GetNext())
+    return false;
+
+  base::FilePath app_absolute_dir =
+      base::MakeAbsoluteFilePath(base::FilePath(tokenizer.token()));
+  if (!apps::AppLoadService::Get(profile)->LoadAndLaunch(
+          app_absolute_dir, command_line, cur_dir)) {
+    return false;
+  }
+
+  while (tokenizer.GetNext()) {
+    app_absolute_dir =
+        base::MakeAbsoluteFilePath(base::FilePath(tokenizer.token()));
+
+    if (!apps::AppLoadService::Get(profile)->Load(app_absolute_dir)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
