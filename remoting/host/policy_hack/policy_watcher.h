@@ -26,17 +26,33 @@ class PolicyWatcher {
  public:
   // Called first with all policies, and subsequently with any changed policies.
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
-      PolicyCallback;
+      PolicyUpdatedCallback;
+
+  // Called after detecting malformed policies.
+  typedef base::Callback<void()> PolicyErrorCallback;
 
   explicit PolicyWatcher(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~PolicyWatcher();
 
-  // This guarantees that the |policy_callback| is called at least once with
-  // the current policies.  After that, |policy_callback| will be called
-  // whenever a change to any policy is detected. It will then be called only
-  // with the changed policies.
-  virtual void StartWatching(const PolicyCallback& policy_callback);
+  // This guarantees that the |policy_updated_callback| is called at least once
+  // with the current policies.  After that, |policy_updated_callback| will be
+  // called whenever a change to any policy is detected. It will then be called
+  // only with the changed policies.
+  //
+  // |policy_error_callback| will be called when malformed policies are detected
+  // (i.e. wrong type of policy value, or unparseable files under
+  // /etc/opt/chrome/policies/managed).
+  // When called, the |policy_error_callback| is responsible for mitigating the
+  // security risk of running with incorrectly formulated policies (by either
+  // shutting down or locking down the host).
+  // After calling |policy_error_callback| PolicyWatcher will continue watching
+  // for policy changes and will call |policy_updated_callback| when the error
+  // is recovered from and may call |policy_error_callback| when new errors are
+  // found.
+  virtual void StartWatching(
+      const PolicyUpdatedCallback& policy_updated_callback,
+      const PolicyErrorCallback& policy_error_callback);
 
   // Should be called after StartWatching() before the object is deleted. Calls
   // should wait for |stopped_callback| to be called before deleting it.
@@ -102,6 +118,15 @@ class PolicyWatcher {
   // relevant policies.
   void UpdatePolicies(const base::DictionaryValue* new_policy);
 
+  // Signals policy error to the registered |PolicyErrorCallback|.
+  void SignalPolicyError();
+
+  // Called whenever a transient error occurs during reading of policy files.
+  // This will increment a counter, and will trigger a call to
+  // SignalPolicyError() only after a threshold count is reached.
+  // The counter is reset whenever policy has been successfully read.
+  void SignalTransientPolicyError();
+
   // Used for time-based reloads in case something goes wrong with the
   // notification system.
   void ScheduleFallbackReloadTask();
@@ -114,7 +139,9 @@ class PolicyWatcher {
   void StopWatchingOnPolicyWatcherThread();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  PolicyCallback policy_callback_;
+  PolicyUpdatedCallback policy_updated_callback_;
+  PolicyErrorCallback policy_error_callback_;
+  int transient_policy_error_retry_counter_;
 
   scoped_ptr<base::DictionaryValue> old_policies_;
   scoped_ptr<base::DictionaryValue> default_values_;
