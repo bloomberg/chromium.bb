@@ -9,6 +9,8 @@ function test()
     function createAndShowSplitView(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode)
     {
         var splitView = new WebInspector.SplitView(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight);
+        splitView.setMainView(new WebInspector.View());
+        splitView.setSidebarView(new WebInspector.View());
         if (shouldSaveShowMode)
             splitView.enableShowModeSaving();
         splitView.element.style.position = "absolute";
@@ -23,7 +25,7 @@ function test()
 
     function dumpSplitViewOrientationShowModeAndSidebarSize(splitView)
     {
-        var sidebarSize = splitView.isVertical() ? splitView.sidebarElement().offsetWidth : splitView.sidebarElement().offsetHeight;
+        var sidebarSize = splitView.isVertical() ? splitView.sidebarView().element.offsetWidth : splitView.sidebarView().element.offsetHeight;
         var orientation = splitView.isVertical() ? "vertical" : "horizontal";
         InspectorTest.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitView.showMode() + ", " + orientation);
         InspectorTest.addResult("    Setting value: " + localStorage[splitView._settingName]);

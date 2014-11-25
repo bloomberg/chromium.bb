@@ -31,11 +31,11 @@ function test()
 
     var mainView = new WebInspector.View();
     mainView.setMinimumSize(100, 80);
-    mainView.show(splitView.mainElement());
+    splitView.setMainView(mainView);
 
     var firstSidebarView = new WebInspector.View();
     firstSidebarView.setMinimumSize(40, 70);
-    firstSidebarView.show(splitView.sidebarElement());
+    splitView.setSidebarView(firstSidebarView);
 
     var views = {"splitView": splitView, "mainView": mainView, "sidebarView": firstSidebarView};
     dumpBoundingBoxes(views);
@@ -64,15 +64,15 @@ function test()
     InspectorTest.addResult("Wrapping main view to a split view");
     var childSplitView = new WebInspector.SplitView(false, true, "splitViewStateSettingName.childSplitView", 100, 100);
     childSplitView.hideSidebar();
-    mainView.show(childSplitView.mainElement());
-    childSplitView.show(splitView.mainElement());
+    childSplitView.setMainView(mainView);
+    splitView.setMainView(childSplitView);
     views["childSplitView"] = childSplitView;
     dumpBoundingBoxes(views);
 
     InspectorTest.addResult("Adding invisble sidebar");
     var secondSidebarView = new WebInspector.View();
     secondSidebarView.setMinimumSize(60, 60);
-    secondSidebarView.show(childSplitView.sidebarElement());
+    childSplitView.setSidebarView(secondSidebarView);
     views["secondSidebarView"] = secondSidebarView;
     dumpBoundingBoxes(views);
 
@@ -88,7 +88,7 @@ function test()
     InspectorTest.addResult("Attaching another sidebar");
     var thirdSidebarView = new WebInspector.View();
     thirdSidebarView.setMinimumSize(80, 80);
-    thirdSidebarView.show(childSplitView.sidebarElement());
+    childSplitView.setSidebarView(thirdSidebarView);
     views["thirdSidebarView"] = thirdSidebarView;
     dumpBoundingBoxes(views);
 
