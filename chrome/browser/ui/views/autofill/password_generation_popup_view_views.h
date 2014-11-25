@@ -47,6 +47,7 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   // views:Views implementation.
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // views::StyledLabelListener implementation
   void StyledLabelLinkClicked(const gfx::Range& range,

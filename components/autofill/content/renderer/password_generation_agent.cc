@@ -301,6 +301,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
 
   DVLOG(2) << "Password generation eligible form found";
   generation_element_ = password_elements_[0];
+  generation_element_.setAttribute("aria-autocomplete", "list");
   password_generation::LogPasswordGenerationEvent(
       password_generation::GENERATION_AVAILABLE);
 }

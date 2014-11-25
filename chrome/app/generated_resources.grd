@@ -14449,11 +14449,6 @@ Do you accept?
         Take me back!
       </message>
 
-      <!-- Password generation strings -->
-      <message name="IDS_PASSWORD_GENERATION_ACCESSIBLE_TITLE" desc="The accessibility name of the popup asking users if they would like Chrome to generate a password for them.">
-        Password Suggestion
-      </message>
-
       <!-- Identity internals strings -->
       <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
         Identity API Token Cache

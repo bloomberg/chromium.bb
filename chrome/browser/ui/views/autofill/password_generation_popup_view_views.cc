@@ -85,10 +85,7 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
   // the text.
   void Init(const base::string16& password,
             const base::string16& suggestion,
-            const base::string16& accessible_name,
             const gfx::FontList& font_list) {
-    accessible_name_ = accessible_name;
-
     views::BoxLayout* box_layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal,
         PasswordGenerationPopupController::kHorizontalPadding,
@@ -107,8 +104,6 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
     PasswordTextBox* password_text_box = new PasswordTextBox();
     password_text_box->Init(suggestion, password, font_list);
     AddChildView(password_text_box);
-
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
 
   // views::View:
@@ -117,13 +112,7 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
     return false;
   }
 
-  void GetAccessibleState(ui::AXViewState* state) override {
-    state->role = ui::AX_ROLE_ALERT;
-    state->name = accessible_name_;
-  }
-
  private:
-  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordBox);
 };
@@ -175,7 +164,6 @@ void PasswordGenerationPopupViewViews::CreatePasswordView() {
   password_view_ = new PasswordBox();
   password_view_->Init(controller_->password(),
                        controller_->SuggestedText(),
-                       controller_->AccessibleName(),
                        font_list_);
   password_view_->SetPosition(gfx::Point(kPopupBorderThickness,
                                          kPopupBorderThickness));
@@ -214,6 +202,9 @@ void PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
 void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
   if (!password_view_)
     return;
+
+  if (controller_->password_selected())
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 
   password_view_->set_background(
       views::Background::CreateSolidBackground(
@@ -283,6 +274,12 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
     return NULL;
 
   return new PasswordGenerationPopupViewViews(controller, observing_widget);
+}
+
+void PasswordGenerationPopupViewViews::GetAccessibleState(
+    ui::AXViewState* state) {
+  state->name = controller_->SuggestedText();
+  state->role = ui::AX_ROLE_MENU_ITEM;
 }
 
 }  // namespace autofill

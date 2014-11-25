@@ -42,10 +42,6 @@ class MockPasswordGenerationPopupController
     return base::ASCIIToUTF16("Suggested by Chrome");
   }
 
-  virtual base::string16 AccessibleName() override {
-    return base::ASCIIToUTF16("Password Suggestion");
-  }
-
   virtual const base::string16& HelpText() override { return help_text_; }
 
   virtual const gfx::Range& HelpTextLinkRange() override { return link_range_; }

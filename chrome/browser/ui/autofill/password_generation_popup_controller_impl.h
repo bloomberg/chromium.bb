@@ -103,7 +103,6 @@ class PasswordGenerationPopupControllerImpl
   base::string16 password() const override;
   base::string16 SuggestedText() override;
   const base::string16& HelpText() override;
-  base::string16 AccessibleName() override;
   const gfx::Range& HelpTextLinkRange() override;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();

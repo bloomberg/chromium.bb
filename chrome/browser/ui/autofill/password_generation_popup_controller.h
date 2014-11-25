@@ -42,7 +42,6 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   // Translated strings
   virtual base::string16 SuggestedText() = 0;
   virtual const base::string16& HelpText() = 0;
-  virtual base::string16 AccessibleName() = 0;
   virtual const gfx::Range& HelpTextLinkRange() = 0;
 
  protected:
