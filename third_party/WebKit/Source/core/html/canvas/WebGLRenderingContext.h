@@ -49,6 +49,7 @@ private:
 
     // Enabled extension objects.
     RefPtrWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;
+    RefPtrWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     RefPtrWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
     RefPtrWillBeMember<EXTFragDepth> m_extFragDepth;
     RefPtrWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;

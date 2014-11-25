@@ -408,6 +408,17 @@ public:
     virtual void shallowFlushCHROMIUM() { }
     virtual void shallowFinishCHROMIUM() { }
 
+    // GL_CHROMIUM_subscribe_uniform
+    virtual void genValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids) { }
+    virtual WebGLId createValuebufferCHROMIUM() { return 0; }
+    virtual void deleteValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteValuebufferCHROMIUM(WebGLId) { }
+    virtual WGC3Dboolean isValuebufferCHROMIUM(WebGLId renderbuffer) { return false; }
+    virtual void bindValuebufferCHROMIUM(WGC3Denum target, WebGLId valuebuffer) { }
+    virtual void subscribeValueCHROMIUM(WGC3Denum target, WGC3Denum subscription) { }
+    virtual void populateSubscribedValuesCHROMIUM(WGC3Denum target) { }
+    virtual void uniformValuebufferCHROMIUM(WGC3Dint location, WGC3Denum target, WGC3Denum subscription) { }
+
     // GL_CHROMIUM_texture_mailbox
     virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { }
     virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { }

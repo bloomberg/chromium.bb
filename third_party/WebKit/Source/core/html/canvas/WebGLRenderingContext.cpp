@@ -28,6 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
+#include "core/html/canvas/CHROMIUMSubscribeUniform.h"
 #include "core/html/canvas/EXTBlendMinMax.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTShaderTextureLOD.h"
@@ -135,6 +136,7 @@ void WebGLRenderingContext::registerContextExtensions()
     static const char* const bothPrefixes[] = { "", "WEBKIT_", 0, };
 
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
+    registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
     registerExtension<EXTFragDepth>(m_extFragDepth);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD);
@@ -161,6 +163,7 @@ void WebGLRenderingContext::registerContextExtensions()
 void WebGLRenderingContext::trace(Visitor* visitor)
 {
     visitor->trace(m_angleInstancedArrays);
+    visitor->trace(m_chromiumSubscribeUniform);
     visitor->trace(m_extBlendMinMax);
     visitor->trace(m_extFragDepth);
     visitor->trace(m_extShaderTextureLOD);

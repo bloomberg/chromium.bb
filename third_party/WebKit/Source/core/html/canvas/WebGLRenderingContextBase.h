@@ -51,6 +51,8 @@ class WebLayer;
 namespace blink {
 
 class ANGLEInstancedArrays;
+class CHROMIUMSubscribeUniform;
+class CHROMIUMValuebuffer;
 class EXTBlendMinMax;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
@@ -359,6 +361,15 @@ public:
     virtual bool hasPendingActivity() const override;
     virtual void stop() override;
 
+    // GL_CHROMIUM_subscribe_uniform
+    PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> createValuebufferCHROMIUM();
+    void deleteValuebufferCHROMIUM(CHROMIUMValuebuffer*);
+    GLboolean isValuebufferCHROMIUM(CHROMIUMValuebuffer*);
+    void bindValuebufferCHROMIUM(GLenum target, CHROMIUMValuebuffer*);
+    void subscribeValueCHROMIUM(GLenum target, GLenum subscription);
+    void populateSubscribedValuesCHROMIUM(GLenum target);
+    void uniformValuebufferCHROMIUM(const WebGLUniformLocation*, GLenum target, GLenum subscription);
+
     virtual void trace(Visitor*) override;
 
     class TextureUnitState {
@@ -501,6 +512,7 @@ protected:
     RefPtrWillBeMember<WebGLProgram> m_currentProgram;
     RefPtrWillBeMember<WebGLFramebuffer> m_framebufferBinding;
     RefPtrWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
+    RefPtrWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
 
     WillBeHeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;

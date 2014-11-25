@@ -39,6 +39,8 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
+#include "core/html/canvas/CHROMIUMSubscribeUniform.h"
+#include "core/html/canvas/CHROMIUMValuebuffer.h"
 #include "core/html/canvas/EXTBlendMinMax.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTShaderTextureLOD.h"
@@ -617,6 +619,7 @@ void WebGLRenderingContextBase::initializeNewContext()
     m_currentProgram = nullptr;
     m_framebufferBinding = nullptr;
     m_renderbufferBinding = nullptr;
+    m_valuebufferBinding = nullptr;
     m_depthMask = true;
     m_stencilEnabled = false;
     m_stencilMask = 0xFFFFFFFF;
@@ -732,6 +735,7 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     m_currentProgram = nullptr;
     m_framebufferBinding = nullptr;
     m_renderbufferBinding = nullptr;
+    m_valuebufferBinding = nullptr;
 
     for (size_t i = 0; i < m_textureUnits.size(); ++i) {
         m_textureUnits[i].m_texture2DBinding = nullptr;
@@ -3333,6 +3337,66 @@ void WebGLRenderingContextBase::stencilOpSeparate(GLenum face, GLenum fail, GLen
     if (isContextLost())
         return;
     webContext()->stencilOpSeparate(face, fail, zfail, zpass);
+}
+
+PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> WebGLRenderingContextBase::createValuebufferCHROMIUM()
+{
+    if (isContextLost())
+        return nullptr;
+    RefPtrWillBeRawPtr<CHROMIUMValuebuffer> o = CHROMIUMValuebuffer::create(this);
+    addSharedObject(o.get());
+    return o.release();
+}
+
+void WebGLRenderingContextBase::deleteValuebufferCHROMIUM(CHROMIUMValuebuffer *valuebuffer)
+{
+    if (!deleteObject(valuebuffer))
+        return;
+    if (valuebuffer == m_valuebufferBinding)
+        m_valuebufferBinding = nullptr;
+}
+
+GLboolean WebGLRenderingContextBase::isValuebufferCHROMIUM(CHROMIUMValuebuffer* valuebuffer)
+{
+    if (!valuebuffer || isContextLost())
+        return 0;
+    if (!valuebuffer->hasEverBeenBound())
+        return 0;
+    return webContext()->isValuebufferCHROMIUM(valuebuffer->object());
+}
+
+void WebGLRenderingContextBase::bindValuebufferCHROMIUM(GLenum target, CHROMIUMValuebuffer* valuebuffer)
+{
+    bool deleted;
+    if (!checkObjectToBeBound("bindValuebufferCHROMIUM", valuebuffer, deleted))
+        return;
+    if (deleted)
+        valuebuffer = 0;
+    m_valuebufferBinding = valuebuffer;
+    webContext()->bindValuebufferCHROMIUM(target, objectOrZero(valuebuffer));
+    if (valuebuffer)
+        valuebuffer->setHasEverBeenBound();
+}
+
+void WebGLRenderingContextBase::subscribeValueCHROMIUM(GLenum target, GLenum subscription)
+{
+    if (isContextLost())
+        return;
+    webContext()->subscribeValueCHROMIUM(target, subscription);
+}
+
+void WebGLRenderingContextBase::populateSubscribedValuesCHROMIUM(GLenum target)
+{
+    if (isContextLost())
+        return;
+    webContext()->populateSubscribedValuesCHROMIUM(target);
+}
+
+void WebGLRenderingContextBase::uniformValuebufferCHROMIUM(const WebGLUniformLocation* location, GLenum target, GLenum subscription)
+{
+    if (isContextLost() || !location)
+        return;
+    webContext()->uniformValuebufferCHROMIUM(location->location(), target, subscription);
 }
 
 GLenum WebGLRenderingContextBase::convertTexInternalFormat(GLenum internalformat, GLenum type)
