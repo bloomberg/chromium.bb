@@ -63,6 +63,31 @@ function promiseTest3()
     }
 }
 
+function promiseTest4()
+{
+    Promise.reject(42);
+}
+
+function promiseTest5()
+{
+    Promise.reject(1e+100);
+}
+
+function promiseTest6()
+{
+    Promise.reject("foo");
+}
+
+function promiseTest7()
+{
+    Promise.reject({ foo: 42 });
+}
+
+function promiseTest8()
+{
+    Promise.reject();
+}
+
 function test()
 {
     InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
@@ -83,7 +108,12 @@ function test()
 
     function dump()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        var result = InspectorTest.dumpConsoleMessagesIntoArray(false, false, InspectorTest.textContentWithLineBreaks).join("\n");
+        // Remove the actual stacks from the output as they may contain absolute paths.
+        result = result.replace(/^(\s+stack:\s).*$/gm, "$1(...)");
+        // Remove the stack from preview.
+        result = result.replace(/(DOMException:[^{]*)\{.*\}$/gm, "$1{...<removed>...}");
+        InspectorTest.addResult(result);
         InspectorTest.completeTest();
     }
 }

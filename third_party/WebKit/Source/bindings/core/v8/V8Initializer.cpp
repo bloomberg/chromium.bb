@@ -116,6 +116,20 @@ static String extractResourceName(v8::Handle<v8::Message> message, const Documen
     return shouldUseDocumentURL ? document->url() : toCoreString(resourceName.As<v8::String>());
 }
 
+static String extractMessageForConsole(v8::Handle<v8::Value> data)
+{
+    if (V8DOMWrapper::isDOMWrapper(data)) {
+        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
+        const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
+        if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
+            DOMException* exception = V8DOMException::toImpl(obj);
+            if (exception && !exception->messageForConsole().isEmpty())
+                return exception->toStringForConsole();
+        }
+    }
+    return emptyString();
+}
+
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
     ASSERT(isMainThread());
@@ -139,15 +153,10 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     ScriptState* scriptState = ScriptState::current(isolate);
     String errorMessage = toCoreString(message->Get());
     RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, message->GetLineNumber(), message->GetStartColumn() + 1, &scriptState->world());
-    if (V8DOMWrapper::isDOMWrapper(data)) {
-        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
-        const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
-        if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
-            DOMException* exception = V8DOMException::toImpl(obj);
-            if (exception && !exception->messageForConsole().isEmpty())
-                event->setUnsanitizedMessage("Uncaught " + exception->toStringForConsole());
-        }
-    }
+
+    String messageForConsole = extractMessageForConsole(data);
+    if (!messageForConsole.isEmpty())
+        event->setUnsanitizedMessage("Uncaught " + messageForConsole);
 
     // This method might be called while we're creating a new context. In this case, we
     // avoid storing the exception object, as we can't create a wrapper during context creation.
@@ -176,8 +185,10 @@ namespace {
 class PromiseRejectMessage {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    PromiseRejectMessage(const ScriptValue& promise, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    PromiseRejectMessage(const ScriptValue& promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_promise(promise)
+        , m_exception(exception)
+        , m_errorMessage(errorMessage)
         , m_resourceName(resourceName)
         , m_scriptId(scriptId)
         , m_lineNumber(lineNumber)
@@ -192,6 +203,8 @@ public:
     }
 
     const ScriptValue m_promise;
+    const ScriptValue m_exception;
+    const String m_errorMessage;
     const String m_resourceName;
     const int m_scriptId;
     const int m_lineNumber;
@@ -232,13 +245,21 @@ void V8Initializer::reportRejectedPromises()
         if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
             continue;
 
-        const String errorMessage = "Unhandled promise rejection";
+        const String errorMessage = "Uncaught (in promise)";
         Vector<ScriptValue> args;
         args.append(ScriptValue(scriptState, v8String(scriptState->isolate(), errorMessage)));
-        args.append(message.m_promise);
+        args.append(message.m_exception);
         RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(scriptState, args);
 
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, message.m_resourceName, message.m_lineNumber, message.m_columnNumber);
+        String embedderErrorMessage = message.m_errorMessage;
+        if (embedderErrorMessage.isEmpty()) {
+            embedderErrorMessage = errorMessage;
+        } else {
+            if (embedderErrorMessage.startsWith("Uncaught "))
+                embedderErrorMessage.insert(" (in promise)", 8);
+        }
+
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, message.m_resourceName, message.m_lineNumber, message.m_columnNumber);
         consoleMessage->setScriptArguments(arguments);
         consoleMessage->setCallStack(message.m_callStack);
         consoleMessage->setScriptId(message.m_scriptId);
@@ -290,18 +311,27 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     int lineNumber = 0;
     int columnNumber = 0;
     String resourceName;
+    String errorMessage;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
 
     v8::Handle<v8::Message> message = v8::Exception::CreateMessage(exception);
     if (!message.IsEmpty()) {
         lineNumber = message->GetLineNumber();
         columnNumber = message->GetStartColumn() + 1;
-        callStack = extractCallStack(isolate, message, &scriptId);
         resourceName = extractResourceName(message, window->document());
+        errorMessage = toCoreString(message->Get());
+        callStack = extractCallStack(isolate, message, &scriptId);
+    } else if (!exception.IsEmpty() && exception->IsInt32()) {
+        // For Smi's the message would be empty.
+        errorMessage = "Uncaught " + String::number(exception.As<v8::Integer>()->Value());
     }
 
+    String messageForConsole = extractMessageForConsole(data.GetValue());
+    if (!messageForConsole.isEmpty())
+        errorMessage = "Uncaught " + messageForConsole;
+
     ScriptState* scriptState = ScriptState::from(context);
-    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), resourceName, scriptId, lineNumber, columnNumber, callStack));
+    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), ScriptValue(scriptState, data.GetValue()), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
 }
 
 static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
@@ -321,6 +351,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     int lineNumber = 0;
     int columnNumber = 0;
     String resourceName;
+    String errorMessage;
 
     v8::Handle<v8::Message> message = v8::Exception::CreateMessage(data.GetValue());
     if (!message.IsEmpty()) {
@@ -328,10 +359,11 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
         scriptId = message->GetScriptOrigin().ScriptID()->Value();
         lineNumber = message->GetLineNumber();
         columnNumber = message->GetStartColumn() + 1;
+        errorMessage = toCoreString(message->Get());
     }
 
     ScriptState* scriptState = ScriptState::from(context);
-    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), resourceName, scriptId, lineNumber, columnNumber, nullptr));
+    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), ScriptValue(scriptState, data.GetValue()), errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr));
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)

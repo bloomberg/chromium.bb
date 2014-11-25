@@ -1,5 +1,5 @@
-CONSOLE ERROR: line 35: Unhandled promise rejection
-CONSOLE ERROR: line 35: Unhandled promise rejection
+CONSOLE ERROR: line 35: Uncaught (in promise) Error: uncaught
+CONSOLE ERROR: line 35: Uncaught (in promise) Error: uncaught
 Tests that pause on promise rejection works.
 
 === Pausing only on uncaught exceptions ===

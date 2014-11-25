@@ -70,7 +70,10 @@ function test()
 
     function onExpanded()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        var result = InspectorTest.dumpConsoleMessagesIntoArray(false, false, InspectorTest.textContentWithLineBreaks).join("\n");
+        // Remove the actual stacks from the output as they may contain absolute paths.
+        result = result.replace(/^(\s+stack:\s).*$/gm, "$1(...)");
+        InspectorTest.addResult(result);
         InspectorTest.completeTest();
     }
 }
