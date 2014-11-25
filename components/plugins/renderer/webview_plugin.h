@@ -51,8 +51,8 @@ class WebViewPlugin : public blink::WebPlugin,
   };
 
   // Convenience method to set up a new WebViewPlugin using |preferences|
-  // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
-  // only used for navigation and never actually resolved.
+  // and displaying |html_data|. |url| should be a (fake) data:text/html URL;
+  // it is only used for navigation and never actually resolved.
   static WebViewPlugin* Create(Delegate* delegate,
                                const content::WebPreferences& preferences,
                                const std::string& html_data,

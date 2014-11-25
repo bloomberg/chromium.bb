@@ -45,6 +45,11 @@ struct WebPreferences;
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
  public:
+  enum CreatePluginGesture {
+    CREATE_PLUGIN_GESTURE_NO_USER_GESTURE = 0,
+    CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE = 1
+  };
+
   // Returns the RenderFrame given a WebFrame.
   static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
 
@@ -82,11 +87,12 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual blink::WebNode GetContextMenuNode() const = 0;
 
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
-  // plugin was found.
-  virtual blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
-      const WebPluginInfo& info,
-      const blink::WebPluginParams& params) = 0;
+  // plugin was found. |gesture| indicates if the plugin was launched
+  // explicitly by a user action, like in Click-to-Play.
+  virtual blink::WebPlugin* CreatePlugin(blink::WebFrame* frame,
+                                         const WebPluginInfo& info,
+                                         const blink::WebPluginParams& params,
+                                         CreatePluginGesture gesture) = 0;
 
   // The client should handle the navigation externally.
   virtual void LoadURLExternally(blink::WebLocalFrame* frame,

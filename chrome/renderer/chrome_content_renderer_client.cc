@@ -782,26 +782,28 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
 
+        GURL poster_url = ChromePluginPlaceholder::GetPluginInstancePosterImage(
+            params, frame->document().url());
+
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
         //                ChromeContentRendererClient::CreatePlugin instead, to
         //                reduce the chance of future regressions.
-        if (prerender::PrerenderHelper::IsPrerendering(render_frame)) {
+        if (prerender::PrerenderHelper::IsPrerendering(render_frame) ||
+            poster_url.is_valid()) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-              render_frame,
-              frame,
-              params,
-              plugin,
-              identifier,
-              group_name,
-              IDR_CLICK_TO_PLAY_PLUGIN_HTML,
+              render_frame, frame, params, plugin, identifier, group_name,
+              poster_url.is_valid() ? IDR_PLUGIN_POSTER_HTML
+                                    : IDR_CLICK_TO_PLAY_PLUGIN_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name));
           placeholder->set_blocked_for_prerendering(true);
           placeholder->set_allow_loading(true);
           break;
         }
 
-        return render_frame->CreatePlugin(frame, plugin, params);
+        return render_frame->CreatePlugin(
+            frame, plugin, params,
+            content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
         RenderThread::Get()->RecordAction(

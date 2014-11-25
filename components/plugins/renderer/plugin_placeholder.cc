@@ -211,8 +211,9 @@ void PluginPlaceholder::LoadPlugin() {
   // TODO(mmenke):  In the case of prerendering, feed into
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
-  WebPlugin* plugin =
-      render_frame()->CreatePlugin(frame_, plugin_info_, plugin_params_);
+  WebPlugin* plugin = render_frame()->CreatePlugin(
+      frame_, plugin_info_, plugin_params_,
+      content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
   ReplacePlugin(plugin);
 }
 

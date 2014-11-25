@@ -1588,9 +1588,15 @@ blink::WebNode RenderFrameImpl::GetContextMenuNode() const {
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
-    const blink::WebPluginParams& params) {
+    const blink::WebPluginParams& params,
+    CreatePluginGesture gesture) {
   DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
+  if (gesture == CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE) {
+    plugin_power_saver_helper_->WhitelistContentOrigin(
+        GURL(params.url).GetOrigin());
+  }
+
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
       this, info, &pepper_plugin_was_registered));
@@ -1716,7 +1722,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return CreatePlugin(frame, info, params_to_use);
+  return CreatePlugin(frame, info, params_to_use,
+                      CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
 #else
   return NULL;
 #endif  // defined(ENABLE_PLUGINS)

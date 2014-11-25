@@ -272,7 +272,8 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebNode GetContextMenuNode() const override;
   blink::WebPlugin* CreatePlugin(blink::WebFrame* frame,
                                  const WebPluginInfo& info,
-                                 const blink::WebPluginParams& params) override;
+                                 const blink::WebPluginParams& params,
+                                 CreatePluginGesture gesture) override;
   void LoadURLExternally(blink::WebLocalFrame* frame,
                          const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;

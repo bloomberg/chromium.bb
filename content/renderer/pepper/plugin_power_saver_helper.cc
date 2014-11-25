@@ -148,6 +148,7 @@ void PluginPowerSaverHelper::RegisterPeripheralPlugin(
 
 void PluginPowerSaverHelper::WhitelistContentOrigin(
     const GURL& content_origin) {
+  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   if (origin_whitelist_.insert(content_origin).second) {
     Send(new FrameHostMsg_PluginContentOriginAllowed(
         render_frame()->GetRoutingID(), content_origin));
