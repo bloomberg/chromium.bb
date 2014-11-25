@@ -66,40 +66,63 @@ void gbm_i915_close(struct gbm_device *gbm)
 	gbm->priv = NULL;
 }
 
-static int i915_get_pitch(struct gbm_device *gbm, uint32_t pitch, int tiling_mode)
+static void i915_align_dimensions(struct gbm_device *gbm, uint32_t tiling_mode, uint32_t *width, uint32_t *height, int bpp)
 {
-	struct gbm_i915_device *dev_priv = (struct gbm_i915_device *)gbm->priv;
-	if (tiling_mode == I915_TILING_NONE)
-		return ALIGN(pitch, 64);
+	struct gbm_i915_device *i915_gbm = (struct gbm_i915_device *)gbm->priv;
+	uint32_t width_alignment = 4, height_alignment = 4;
 
-	if (dev_priv->gen >= 4) {
-		uint32_t tile_width = tiling_mode == I915_TILING_X ? 512 : 128;
-		return ALIGN(pitch, tile_width);
-	} else {
-		uint32_t i = 128;
-		while(i < pitch)
-			i <<= 1;
-		return i;
+	switch(tiling_mode) {
+		default:
+		case I915_TILING_NONE:
+			width_alignment = 64 / bpp;
+			break;
+
+		case I915_TILING_X:
+			width_alignment = 512 / bpp;
+			height_alignment = 8;
+			break;
+
+		case I915_TILING_Y:
+			if (i915_gbm->gen == 3) {
+				width_alignment = 512 / bpp;
+				height_alignment = 8;
+			} else  {
+				width_alignment = 128 / bpp;
+				height_alignment = 32;
+			}
+			break;
 	}
+
+	if (i915_gbm->gen > 3) {
+		*width = ALIGN(*width, width_alignment);
+		*height = ALIGN(*height, height_alignment);
+	} else {
+		uint32_t w;
+		for (w = width_alignment; w < *width * bpp;  w <<= 1)
+			;
+		*width = w;
+		*height = ALIGN(*height, height_alignment);
+	}
+}
+
+static int i915_verify_dimensions(struct gbm_device *gbm, uint32_t stride, uint32_t height)
+{
+	struct gbm_i915_device *i915_gbm = (struct gbm_i915_device *)gbm->priv;
+	if (i915_gbm->gen <= 3 && stride > 8192)
+		return 0;
+
+	return 1;
 }
 
 int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
 {
-	size_t size = width * height * gbm_bytes_from_format(format);
+	struct gbm_device *gbm = bo->gbm;
+	int bpp = gbm_bytes_from_format(format);
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
 	uint32_t tiling_mode = I915_TILING_NONE;
+	size_t size;
 	int ret;
-
-	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = size;
-
-	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
-	if (ret)
-		return ret;
-
-	bo->handle.u32 = gem_create.handle;
-	bo->size = size;
 
 	if (flags & GBM_BO_USE_CURSOR)
 		tiling_mode = I915_TILING_NONE;
@@ -108,22 +131,36 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 	else if (flags & GBM_BO_USE_RENDERING)
 		tiling_mode = I915_TILING_Y;
 
-	bo->stride = i915_get_pitch(bo->gbm,
-		width * gbm_bytes_from_format(format),
-		tiling_mode);
+	i915_align_dimensions(gbm, tiling_mode, &width, &height, bpp);
+
+	bo->stride = width * bpp;
+
+	if (!i915_verify_dimensions(gbm, bo->stride, height))
+		return EINVAL;
+
+	memset(&gem_create, 0, sizeof(gem_create));
+	size = width * height * bpp;
+	gem_create.size = size;
+
+	ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
+	if (ret)
+		return ret;
+
+	bo->handle.u32 = gem_create.handle;
+	bo->size = size;
 
 	memset(&gem_set_tiling, 0, sizeof(gem_set_tiling));
 	do {
 		gem_set_tiling.handle = bo->handle.u32;
 		gem_set_tiling.tiling_mode = tiling_mode;
 		gem_set_tiling.stride = bo->stride;
-		ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING, &gem_set_tiling);
+		ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING, &gem_set_tiling);
 	} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 	if (ret == -1) {
 		struct drm_gem_close gem_close;
 		gem_close.handle = bo->handle.u32;
-		drmIoctl(bo->gbm->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
+		drmIoctl(gbm->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		return -errno;
 	}
 
