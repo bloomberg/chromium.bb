@@ -92,7 +92,6 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl_params.h"
 #include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
@@ -333,7 +332,7 @@ const int kDelaySecondsForContentStateSync = 1;
 const size_t kContentIntentDelayMilliseconds = 700;
 #endif
 
-static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
+static RenderViewImpl* (*g_create_render_view_impl)(const ViewMsg_New_Params&) =
     NULL;
 
 // static
@@ -641,13 +640,13 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
 
 }  // namespace
 
-RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
+RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
     : RenderWidget(blink::WebPopupTypeNone,
-                   params->initial_size.screen_info,
-                   params->swapped_out,
-                   params->hidden,
-                   params->never_visible),
-      webkit_preferences_(params->webkit_prefs),
+                   params.initial_size.screen_info,
+                   params.swapped_out,
+                   params.hidden,
+                   params.never_visible),
+      webkit_preferences_(params.web_preferences),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
@@ -657,7 +656,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
-      next_page_id_(params->next_page_id),
+      next_page_id_(params.next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
       frames_in_progress_(0),
@@ -683,21 +682,23 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       pepper_last_mouse_event_target_(NULL),
 #endif
       enumeration_completion_id_(0),
-      session_storage_namespace_id_(params->session_storage_namespace_id),
+      session_storage_namespace_id_(params.session_storage_namespace_id),
       next_snapshot_id_(0) {
 }
 
-void RenderViewImpl::Initialize(RenderViewImplParams* params) {
-  routing_id_ = params->routing_id;
-  surface_id_ = params->surface_id;
-  if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
-    opener_id_ = params->opener_id;
+void RenderViewImpl::Initialize(
+    const ViewMsg_New_Params& params,
+    bool was_created_by_renderer) {
+  routing_id_ = params.view_id;
+  surface_id_ = params.surface_id;
+  if (params.opener_route_id != MSG_ROUTING_NONE && was_created_by_renderer)
+    opener_id_ = params.opener_route_id;
 
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
   main_render_frame_.reset(RenderFrameImpl::Create(
-      this, params->main_frame_routing_id));
+      this, params.main_frame_routing_id));
   // The main frame WebLocalFrame object is closed by
   // RenderFrameImpl::frameDetached().
   WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_.get());
@@ -761,10 +762,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       command_line.HasSwitch(switches::kAllowInsecureWebSocketFromHttpsOrigin));
 
   RenderFrameProxy* proxy = NULL;
-  if (params->proxy_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params->swapped_out);
+  if (params.proxy_routing_id != MSG_ROUTING_NONE) {
+    CHECK(params.swapped_out);
     proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        main_render_frame_.get(), params->proxy_routing_id);
+        main_render_frame_.get(), params.proxy_routing_id);
     main_render_frame_->set_render_frame_proxy(proxy);
   }
 
@@ -783,19 +784,19 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   if (switches::IsTouchEditingEnabled())
     webview()->settings()->setTouchEditingEnabled(true);
 
-  if (!params->frame_name.empty())
-    webview()->mainFrame()->setName(params->frame_name);
+  if (!params.frame_name.empty())
+    webview()->mainFrame()->setName(params.frame_name);
 
   // TODO(davidben): Move this state from Blink into content.
-  if (params->window_was_created_with_opener)
+  if (params.window_was_created_with_opener)
     webview()->setOpenedByDOM();
 
-  OnSetRendererPrefs(params->renderer_prefs);
+  OnSetRendererPrefs(params.renderer_preferences);
 
-  if (!params->enable_auto_resize) {
-    OnResize(params->initial_size);
+  if (!params.enable_auto_resize) {
+    OnResize(params.initial_size);
   } else {
-    OnEnableAutoResize(params->min_size, params->max_size);
+    OnEnableAutoResize(params.min_size, params.max_size);
   }
 
   new MHTMLGenerator(this);
@@ -826,8 +827,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   // If we have an opener_id but we weren't created by a renderer, then
   // it's the browser asking us to set our opener to another RenderView.
-  if (params->opener_id != MSG_ROUTING_NONE && !params->is_renderer_created) {
-    RenderViewImpl* opener_view = FromRoutingID(params->opener_id);
+  if (params.opener_route_id != MSG_ROUTING_NONE && !was_created_by_renderer) {
+    RenderViewImpl* opener_view = FromRoutingID(params.opener_route_id);
     if (opener_view)
       webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
   }
@@ -1143,58 +1144,22 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
 /*static*/
 RenderViewImpl* RenderViewImpl::Create(
-    int32 opener_id,
-    bool window_was_created_with_opener,
-    const RendererPreferences& renderer_prefs,
-    const WebPreferences& webkit_prefs,
-    int32 routing_id,
-    int32 main_frame_routing_id,
-    int32 surface_id,
-    int64 session_storage_namespace_id,
-    const base::string16& frame_name,
-    bool is_renderer_created,
-    bool swapped_out,
-    int32 proxy_routing_id,
-    bool hidden,
-    bool never_visible,
-    int32 next_page_id,
-    const ViewMsg_Resize_Params& initial_size,
-    bool enable_auto_resize,
-    const gfx::Size& min_size,
-    const gfx::Size& max_size) {
-  DCHECK(routing_id != MSG_ROUTING_NONE);
-  RenderViewImplParams params(opener_id,
-                              window_was_created_with_opener,
-                              renderer_prefs,
-                              webkit_prefs,
-                              routing_id,
-                              main_frame_routing_id,
-                              surface_id,
-                              session_storage_namespace_id,
-                              frame_name,
-                              is_renderer_created,
-                              swapped_out,
-                              proxy_routing_id,
-                              hidden,
-                              never_visible,
-                              next_page_id,
-                              initial_size,
-                              enable_auto_resize,
-                              min_size,
-                              max_size);
+    const ViewMsg_New_Params& params,
+    bool was_created_by_renderer) {
+  DCHECK(params.view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
-    render_view = g_create_render_view_impl(&params);
+    render_view = g_create_render_view_impl(params);
   else
-    render_view = new RenderViewImpl(&params);
+    render_view = new RenderViewImpl(params);
 
-  render_view->Initialize(&params);
+  render_view->Initialize(params, was_created_by_renderer);
   return render_view;
 }
 
 // static
 void RenderViewImpl::InstallCreateHook(
-    RenderViewImpl* (*create_render_view_impl)(RenderViewImplParams*)) {
+    RenderViewImpl* (*create_render_view_impl)(const ViewMsg_New_Params&)) {
   CHECK(!g_create_render_view_impl);
   g_create_render_view_impl = create_render_view_impl;
 }
@@ -1702,27 +1667,29 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // return from this call synchronously, we just have to make our best guess
   // and rely on the browser sending a WasHidden / WasShown message if it
   // disagrees.
-  RenderViewImpl* view = RenderViewImpl::Create(
-      routing_id_,
-      true,  // window_was_created_with_opener
-      renderer_preferences_,
-      webkit_preferences_,
-      routing_id,
-      main_frame_routing_id,
-      surface_id,
-      cloned_session_storage_namespace_id,
-      base::string16(),  // WebCore will take care of setting the correct name.
-      true,              // is_renderer_created
-      false,             // swapped_out
-      MSG_ROUTING_NONE,  // proxy_routing_id
-      params.disposition == NEW_BACKGROUND_TAB,  // hidden
-      never_visible,
-      1,  // next_page_id
-      initial_size,
-      false, // enable_auto_resize
-      gfx::Size(), // min_size
-      gfx::Size() // max_size
-  );
+  ViewMsg_New_Params view_params;
+  view_params.opener_route_id = routing_id_;
+  view_params.window_was_created_with_opener = true;
+  view_params.renderer_preferences = renderer_preferences_;
+  view_params.web_preferences = webkit_preferences_;
+  view_params.view_id = routing_id;
+  view_params.main_frame_routing_id = main_frame_routing_id;
+  view_params.surface_id = surface_id;
+  view_params.session_storage_namespace_id =
+      cloned_session_storage_namespace_id;
+  // WebCore will take care of setting the correct name.
+  view_params.frame_name = base::string16();
+  view_params.swapped_out = false;
+  view_params.proxy_routing_id = MSG_ROUTING_NONE;
+  view_params.hidden = (params.disposition == NEW_BACKGROUND_TAB);
+  view_params.never_visible = never_visible;
+  view_params.next_page_id = 1;
+  view_params.initial_size = initial_size;
+  view_params.enable_auto_resize = false;
+  view_params.min_size = gfx::Size();
+  view_params.max_size = gfx::Size();
+
+  RenderViewImpl* view = RenderViewImpl::Create(view_params, true);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.

@@ -187,28 +187,28 @@ void RenderViewTest::SetUp() {
 
   mock_process_.reset(new MockRenderProcess);
 
+  ViewMsg_New_Params view_params;
+  view_params.opener_route_id = kOpenerId;
+  view_params.window_was_created_with_opener = false;
+  view_params.renderer_preferences = RendererPreferences();
+  view_params.web_preferences = WebPreferences();
+  view_params.view_id = kRouteId;
+  view_params.main_frame_routing_id = kMainFrameRouteId;
+  view_params.surface_id = kSurfaceId;
+  view_params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
+  view_params.frame_name = base::string16();
+  view_params.swapped_out = false;
+  view_params.proxy_routing_id = MSG_ROUTING_NONE;
+  view_params.hidden = false;
+  view_params.never_visible = false;
+  view_params.next_page_id = 1;
+  view_params.initial_size = *InitialSizeParams();
+  view_params.enable_auto_resize = false;
+  view_params.min_size = gfx::Size();
+  view_params.max_size = gfx::Size();
+
   // This needs to pass the mock render thread to the view.
-  RenderViewImpl* view =
-      RenderViewImpl::Create(kOpenerId,
-                             false,  // window_was_created_with_opener
-                             RendererPreferences(),
-                             WebPreferences(),
-                             kRouteId,
-                             kMainFrameRouteId,
-                             kSurfaceId,
-                             kInvalidSessionStorageNamespaceId,
-                             base::string16(),
-                             false,  // is_renderer_created
-                             false,  // swapped_out
-                             MSG_ROUTING_NONE, // proxy_routing_id
-                             false,  // hidden
-                             false,  // never_visible
-                             1,      // next_page_id
-                             *InitialSizeParams(),
-                             false, // enable_auto_resize
-                             gfx::Size(), // min_size
-                             gfx::Size() // max_size
-                            );
+  RenderViewImpl* view = RenderViewImpl::Create(view_params, false);
   view->AddRef();
   view_ = view;
 }

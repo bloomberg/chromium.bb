@@ -48,8 +48,8 @@ namespace {
 base::LazyInstance<base::Callback<void(RenderView*, WebTestProxyBase*)> >::Leaky
     g_callback = LAZY_INSTANCE_INITIALIZER;
 
-RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
-  typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ProxyType;
+RenderViewImpl* CreateWebTestProxy(const ViewMsg_New_Params& params) {
+  typedef WebTestProxy<RenderViewImpl, const ViewMsg_New_Params&> ProxyType;
   ProxyType* render_view_proxy = new ProxyType(params);
   if (g_callback == 0)
     return render_view_proxy;
@@ -58,7 +58,7 @@ RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
 }
 
 WebTestProxyBase* GetWebTestProxyBase(RenderViewImpl* render_view) {
-  typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ViewProxy;
+  typedef WebTestProxy<RenderViewImpl, ViewMsg_New_Params*> ViewProxy;
 
   ViewProxy* render_view_proxy = static_cast<ViewProxy*>(render_view);
   return static_cast<WebTestProxyBase*>(render_view_proxy);
