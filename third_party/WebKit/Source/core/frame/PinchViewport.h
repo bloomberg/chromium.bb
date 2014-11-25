@@ -134,6 +134,10 @@ public:
     // necessary adjustments so that we don't incorrectly clamp scroll offsets
     // coming from the compositor. crbug.com/422328
     void setTopControlsAdjustment(float);
+
+    // Adjust the viewport's offset so that it remains bounded by the outer
+    // viepwort.
+    void clampToBoundaries();
 private:
     explicit PinchViewport(FrameHost&);
 
@@ -166,7 +170,6 @@ private:
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
-    void clampToBoundaries();
 
     LocalFrame* mainFrame() const;
 

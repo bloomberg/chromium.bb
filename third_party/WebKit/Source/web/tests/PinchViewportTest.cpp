@@ -354,6 +354,7 @@ TEST_F(PinchViewportTest, TestWebViewResizedBeforeAttachment)
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), pinchViewport.containerLayer()->size());
 }
+
 // Make sure that the visibleRect method acurately reflects the scale and scroll location
 // of the viewport.
 TEST_F(PinchViewportTest, TestVisibleRect)
@@ -1207,6 +1208,28 @@ TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
     webViewImpl()->setTopControlsLayoutHeight(0);
     webViewImpl()->resize(IntSize(1000, 1500));
     EXPECT_EQ(500, frameView.scrollPositionDouble().y());
+}
+
+// Tests that resizing the pinch viepwort keeps its bounds within the outer
+// viewport.
+TEST_F(PinchViewportTest, ResizePinchViewportStaysWithinOuterViewport)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(100, 200));
+
+    navigateTo("about:blank");
+    webViewImpl()->layout();
+
+    webViewImpl()->resizePinchViewport(IntSize(100, 100));
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.move(FloatPoint(0, 100));
+
+    EXPECT_EQ(100, pinchViewport.location().y());
+
+    webViewImpl()->resizePinchViewport(IntSize(100, 200));
+
+    EXPECT_EQ(0, pinchViewport.location().y());
 }
 
 // Tests that when a new frame is created, it is created with the intended
