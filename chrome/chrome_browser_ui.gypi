@@ -1043,6 +1043,8 @@
       'browser/ui/webui/invalidations_message_handler.h',
       'browser/ui/webui/invalidations_ui.cc',
       'browser/ui/webui/invalidations_ui.h',
+      'browser/ui/webui/local_state/local_state_ui.cc',
+      'browser/ui/webui/local_state/local_state_ui.h',
       'browser/ui/webui/memory_internals/memory_internals_handler.cc',
       'browser/ui/webui/memory_internals/memory_internals_handler.h',
       'browser/ui/webui/memory_internals/memory_internals_proxy.cc',

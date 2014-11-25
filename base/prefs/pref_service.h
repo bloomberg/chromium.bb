@@ -227,9 +227,12 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // this checks if a value exists for the path.
   bool HasPrefPath(const char* path) const;
 
-  // Returns a dictionary with effective preference values. The ownership
-  // is passed to the caller.
+  // Returns a dictionary with effective preference values.
   scoped_ptr<base::DictionaryValue> GetPreferenceValues() const;
+
+  // Returns a dictionary with effective preference values, omitting prefs that
+  // are at their default values.
+  scoped_ptr<base::DictionaryValue> GetPreferenceValuesOmitDefaults() const;
 
   // Returns a dictionary with effective preference values. Contrary to
   // GetPreferenceValues(), the paths of registered preferences are not split on
@@ -238,7 +241,6 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // For example, if "foo.bar" is a registered preference, the result could look
   // like this:
   //   {"foo.bar": {"a": {"b": true}}}.
-  // The ownership is passed to the caller.
   scoped_ptr<base::DictionaryValue> GetPreferenceValuesWithoutPathExpansion()
       const;
 

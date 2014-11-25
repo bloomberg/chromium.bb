@@ -13,7 +13,7 @@
  */
 
 cr.define('userActions', function() {
-  'user strict';
+  'use strict';
 
   /**
    * Appends a row to the output table listing the user action observed

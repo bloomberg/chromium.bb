@@ -197,6 +197,7 @@ const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIInterstitialHost[] = "interstitials";
 const char kChromeUIInvalidationsHost[] = "invalidations";
 const char kChromeUIKillHost[] = "kill";
+const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUIMemoryHost[] = "memory";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
 const char kChromeUIMemoryRedirectHost[] = "memory-redirect";
@@ -574,6 +575,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUIFlagsHost,
   kChromeUIHistoryHost,
   kChromeUIInvalidationsHost,
+  kChromeUILocalStateHost,
   kChromeUIMemoryHost,
   kChromeUIMemoryInternalsHost,
   kChromeUINetInternalsHost,
