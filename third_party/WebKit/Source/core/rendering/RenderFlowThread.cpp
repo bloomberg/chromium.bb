@@ -31,16 +31,10 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-#include "core/dom/Node.h"
 #include "core/rendering/FlowThreadController.h"
-#include "core/rendering/HitTestRequest.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
-#include "platform/PODIntervalTree.h"
-#include "platform/geometry/TransformState.h"
 
 namespace blink {
 

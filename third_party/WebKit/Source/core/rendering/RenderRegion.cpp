@@ -30,12 +30,7 @@
 #include "config.h"
 #include "core/rendering/RenderRegion.h"
 
-#include "core/css/resolver/StyleResolver.h"
-#include "core/rendering/FlowThreadController.h"
-#include "core/rendering/HitTestLocation.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFlowThread.h"
-#include "core/rendering/RenderView.h"
 
 namespace blink {
 

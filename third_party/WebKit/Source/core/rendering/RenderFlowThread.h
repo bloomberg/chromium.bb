@@ -30,17 +30,12 @@
 #ifndef RenderFlowThread_h
 #define RenderFlowThread_h
 
-
+#include "core/rendering/LayerFragment.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "wtf/HashCountedSet.h"
 #include "wtf/ListHashSet.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-struct LayerFragment;
-typedef Vector<LayerFragment, 1> LayerFragments;
-class RenderFlowThread;
 class RenderMultiColumnSet;
 class RenderRegion;
 

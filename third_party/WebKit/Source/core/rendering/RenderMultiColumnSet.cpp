@@ -26,11 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 
-#include "core/paint/BoxPainter.h"
 #include "core/paint/MultiColumnSetPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
 namespace blink {

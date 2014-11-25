@@ -31,12 +31,9 @@
 #define RenderRegion_h
 
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace blink {
 
-struct LayerFragment;
-typedef Vector<LayerFragment, 1> LayerFragments;
 class RenderFlowThread;
 
 class RenderRegion : public RenderBlockFlow {
