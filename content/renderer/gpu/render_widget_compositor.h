@@ -118,11 +118,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const blink::WebLayer* pageScaleLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
-  // TODO(ccameron): Remove this when Blink no longer calls it.
-  virtual void registerViewportLayers(
-      const blink::WebLayer* pageScaleLayer,
-      const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer) override;
   virtual void clearViewportLayers() override;
   virtual void registerSelection(const blink::WebSelectionBound& start,
                                  const blink::WebSelectionBound& end) override;

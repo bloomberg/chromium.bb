@@ -59,11 +59,6 @@ class WebLayerTreeViewImplForTesting
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
-  // TODO(ccameron): Remove this when Blink no longer calls it.
-  virtual void registerViewportLayers(
-      const blink::WebLayer* pageScaleLayerLayer,
-      const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer) override;
   virtual void clearViewportLayers() override;
   virtual void registerSelection(
       const blink::WebSelectionBound& start,

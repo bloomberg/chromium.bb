@@ -681,22 +681,6 @@ void RenderWidgetCompositor::registerForAnimations(blink::WebLayer* layer) {
 }
 
 void RenderWidgetCompositor::registerViewportLayers(
-    const blink::WebLayer* pageScaleLayer,
-    const blink::WebLayer* innerViewportScrollLayer,
-    const blink::WebLayer* outerViewportScrollLayer) {
-  layer_tree_host_->RegisterViewportLayers(
-      NULL, static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
-      static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
-          ->layer(),
-      // The outer viewport layer will only exist when using pinch virtual
-      // viewports.
-      outerViewportScrollLayer
-          ? static_cast<const cc_blink::WebLayerImpl*>(outerViewportScrollLayer)
-                ->layer()
-          : NULL);
-}
-
-void RenderWidgetCompositor::registerViewportLayers(
     const blink::WebLayer* overscrollElasticityLayer,
     const blink::WebLayer* pageScaleLayer,
     const blink::WebLayer* innerViewportScrollLayer,
