@@ -76,7 +76,7 @@ function test()
             // If there is no nickname, then skip it.
             if (colorFormat === cf.Nickname && !color.nickname())
                 continue;
-            InspectorTest.addResult('  ' + colorFormat + ": " + color.toString(colorFormat));
+            InspectorTest.addResult('  ' + colorFormat + ": " + color.asString(colorFormat));
         }
     }
 }
