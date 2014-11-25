@@ -79,6 +79,7 @@ public class VideoCaptureCamera2 {
         final int[] formats = streamMap.getOutputFormats();
         for (int format : formats) {
             final Size[] sizes = streamMap.getOutputSizes(format);
+            if (sizes == null) continue;
             for (Size size : sizes) {
                 double minFrameRate = 0.0f;
                 if (minFrameDurationAvailable) {
