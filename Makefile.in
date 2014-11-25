@@ -198,12 +198,16 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_17 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_18 = src/common/android/breakpad_getcontext.S \
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_18 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
+
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_19 = \
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_20 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
+
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog
 
 noinst_PROGRAMS =
@@ -582,9 +586,10 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/processor/logging.cc src/processor/minidump.cc \
 	src/processor/pathname_stripper.cc \
 	src/common/android/breakpad_getcontext.S \
+	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 	src/common/android/breakpad_getcontext_unittest.cc
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_2 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT) \
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.$(OBJEXT)
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_2 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT)
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_3 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_linux_client_unittest_shlib_OBJECTS = src/client/linux/handler/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest_shlib-directory_reader_unittest.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest_shlib-cpu_set_unittest.$(OBJEXT) \
@@ -609,7 +614,9 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-logging.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-minidump.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.$(OBJEXT) \
-@LINUX_HOST_TRUE@	$(am__objects_2)
+@LINUX_HOST_TRUE@	$(am__objects_2) \
+@LINUX_HOST_TRUE@	src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.$(OBJEXT) \
+@LINUX_HOST_TRUE@	$(am__objects_3)
 src_client_linux_linux_client_unittest_shlib_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_shlib_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -2092,7 +2099,9 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/logging.cc \
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
-@LINUX_HOST_TRUE@	$(am__append_18)
+@LINUX_HOST_TRUE@	$(am__append_18) \
+@LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
+@LINUX_HOST_TRUE@	$(am__append_19)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 @LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
 @LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
@@ -2102,7 +2111,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-shared -Wl,-h,linux_client_unittest_shlib \
-@LINUX_HOST_TRUE@	$(am__append_19)
+@LINUX_HOST_TRUE@	$(am__append_20)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/seccomp_unwinder.o \
@@ -2134,7 +2143,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
-@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_20)
+@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_21)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
 
@@ -3529,6 +3538,9 @@ src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.$(O
 src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT):  \
 	src/common/android/$(am__dirstamp) \
 	src/common/android/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.$(OBJEXT):  \
+	src/client/linux/microdump_writer/$(am__dirstamp) \
+	src/client/linux/microdump_writer/$(DEPDIR)/$(am__dirstamp)
 src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.$(OBJEXT):  \
 	src/common/android/$(am__dirstamp) \
 	src/common/android/$(DEPDIR)/$(am__dirstamp)
@@ -4255,6 +4267,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/log/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/microdump_writer/$(DEPDIR)/microdump_writer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_core_dumper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_dumper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_ptrace_dumper.Po@am__quote@
@@ -4910,6 +4923,20 @@ src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/pathname_stripper.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.obj `if test -f 'src/processor/pathname_stripper.cc'; then $(CYGPATH_W) 'src/processor/pathname_stripper.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/pathname_stripper.cc'; fi`
+
+src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o: src/client/linux/microdump_writer/microdump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o -MD -MP -MF src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Tpo -c -o src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o `test -f 'src/client/linux/microdump_writer/microdump_writer_unittest.cc' || echo '$(srcdir)/'`src/client/linux/microdump_writer/microdump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Tpo src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/client/linux/microdump_writer/microdump_writer_unittest.cc' object='src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.o `test -f 'src/client/linux/microdump_writer/microdump_writer_unittest.cc' || echo '$(srcdir)/'`src/client/linux/microdump_writer/microdump_writer_unittest.cc
+
+src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.obj: src/client/linux/microdump_writer/microdump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.obj -MD -MP -MF src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Tpo -c -o src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.obj `if test -f 'src/client/linux/microdump_writer/microdump_writer_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/microdump_writer/microdump_writer_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/microdump_writer/microdump_writer_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Tpo src/client/linux/microdump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/client/linux/microdump_writer/microdump_writer_unittest.cc' object='src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/microdump_writer/src_client_linux_linux_client_unittest_shlib-microdump_writer_unittest.obj `if test -f 'src/client/linux/microdump_writer/microdump_writer_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/microdump_writer/microdump_writer_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/microdump_writer/microdump_writer_unittest.cc'; fi`
 
 src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.o: src/common/android/breakpad_getcontext_unittest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.o -MD -MP -MF src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.Tpo -c -o src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.o `test -f 'src/common/android/breakpad_getcontext_unittest.cc' || echo '$(srcdir)/'`src/common/android/breakpad_getcontext_unittest.cc

@@ -435,6 +435,10 @@ if ANDROID_HOST
 src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext.S
 endif
+if LINUX_HOST
+src_client_linux_linux_client_unittest_shlib_SOURCES += \
+	src/client/linux/microdump_writer/microdump_writer_unittest.cc
+endif
 
 src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 	-I$(top_srcdir)/src \

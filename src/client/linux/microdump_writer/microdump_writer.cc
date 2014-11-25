@@ -38,9 +38,10 @@
 #include "client/linux/dump_writer_common/thread_info.h"
 #include "client/linux/dump_writer_common/ucontext_reader.h"
 #include "client/linux/handler/exception_handler.h"
+#include "client/linux/log/log.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include "common/linux/linux_libc_support.h"
-#include "client/linux/log/log.h"
+#include "common/scoped_ptr.h"
 
 namespace {
 
@@ -50,9 +51,12 @@ using google_breakpad::LinuxPtraceDumper;
 using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
 using google_breakpad::RawContextCPU;
+using google_breakpad::scoped_array;
 using google_breakpad::SeccompUnwinder;
 using google_breakpad::ThreadInfo;
 using google_breakpad::UContextReader;
+
+const size_t kLineBufferSize = 2048;
 
 class MicrodumpWriter {
  public:
@@ -64,7 +68,10 @@ class MicrodumpWriter {
         float_state_(context ? &context->float_state : NULL),
 #endif
         dumper_(dumper),
-        mapping_list_(mappings) { }
+        mapping_list_(mappings),
+        log_line_(new char[kLineBufferSize]) {
+    log_line_.get()[0] = '\0';  // Clear out the log line buffer.
+  }
 
   ~MicrodumpWriter() { dumper_->ThreadsResume(); }
 
@@ -91,11 +98,14 @@ class MicrodumpWriter {
   // Writes one line to the system log.
   void LogLine(const char* msg) {
     logger::write(msg, my_strlen(msg));
+#if !defined(__ANDROID__)
+    logger::write("\n", 1);  // Android logger appends the \n. Linux's doesn't.
+#endif
   }
 
   // Stages the given string in the current line buffer.
   void LogAppend(const char* str) {
-    my_strlcat(log_line_, str, sizeof(log_line_));
+    my_strlcat(log_line_.get(), str, kLineBufferSize);
   }
 
   // As above (required to take precedence over template specialization below).
@@ -125,8 +135,8 @@ class MicrodumpWriter {
 
   // Writes out the current line buffer on the system log.
   void LogCommitLine() {
-    logger::write(log_line_, my_strlen(log_line_));
-    my_strlcpy(log_line_, "", sizeof(log_line_));
+    LogLine(log_line_.get());
+    my_strlcpy(log_line_.get(), "", kLineBufferSize);
   }
 
   bool DumpOSInformation() {
@@ -139,7 +149,6 @@ class MicrodumpWriter {
 #else
     const char kOSId[] = "L";
 #endif
-
     LogAppend("O ");
     LogAppend(kOSId);
     LogAppend(" \"");
@@ -162,8 +171,9 @@ class MicrodumpWriter {
     size_t stack_len;
 
     if (!dumper_->GetStackInfo(&stack, &stack_len, stack_pointer)) {
-      assert(false);
-      return false;
+      // The stack pointer might not be available. In this case we don't hard
+      // fail, just produce a (almost useless) microdump w/o a stack section.
+      return true;
     }
 
     LogAppend("S 0 ");
@@ -296,7 +306,7 @@ class MicrodumpWriter {
     LogAppend(module_identifier.data4[5]);
     LogAppend(module_identifier.data4[6]);
     LogAppend(module_identifier.data4[7]);
-    LogAppend(" ");
+    LogAppend("0 ");  // Age is always 0 on Linux.
     LogAppend(file_name);
     LogCommitLine();
   }
@@ -334,7 +344,7 @@ class MicrodumpWriter {
 #endif
   LinuxDumper* dumper_;
   const MappingList& mapping_list_;
-  char log_line_[512];
+  scoped_array<char> log_line_;
 };
 }  // namespace
 
