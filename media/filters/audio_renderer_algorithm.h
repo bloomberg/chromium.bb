@@ -45,8 +45,13 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   //
   // Data from |audio_buffer_| is consumed in proportion to the playback rate.
   //
+  // |dest_offset| is the offset in frames for writing into |dest|.
+  //
   // Returns the number of frames copied into |dest|.
-  int FillBuffer(AudioBus* dest, int requested_frames, float playback_rate);
+  int FillBuffer(AudioBus* dest,
+                 int dest_offset,
+                 int requested_frames,
+                 float playback_rate);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();

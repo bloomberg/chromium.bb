@@ -142,6 +142,7 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
 }
 
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
+                                       int dest_offset,
                                        int requested_frames,
                                        float playback_rate) {
   if (playback_rate == 0)
@@ -162,7 +163,7 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     // time.
     muted_partial_frame_ += frames_to_render * playback_rate;
     int seek_frames = static_cast<int>(muted_partial_frame_);
-    dest->ZeroFrames(frames_to_render);
+    dest->ZeroFramesPartial(dest_offset, frames_to_render);
     audio_buffer_.SeekFrames(seek_frames);
 
     // Determine the partial frame that remains to be skipped for next call. If
@@ -182,15 +183,17 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   if (ola_window_size_ <= faster_step && slower_step >= ola_window_size_) {
     const int frames_to_copy =
         std::min(audio_buffer_.frames(), requested_frames);
-    const int frames_read = audio_buffer_.ReadFrames(frames_to_copy, 0, dest);
+    const int frames_read =
+        audio_buffer_.ReadFrames(frames_to_copy, dest_offset, dest);
     DCHECK_EQ(frames_read, frames_to_copy);
     return frames_read;
   }
 
   int rendered_frames = 0;
   do {
-    rendered_frames += WriteCompletedFramesTo(
-        requested_frames - rendered_frames, rendered_frames, dest);
+    rendered_frames +=
+        WriteCompletedFramesTo(requested_frames - rendered_frames,
+                               dest_offset + rendered_frames, dest);
   } while (rendered_frames < requested_frames &&
            RunOneWsolaIteration(playback_rate));
   return rendered_frames;

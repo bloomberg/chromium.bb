@@ -257,6 +257,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // CurrentMediaTimeForSyncingVideo().
   base::TimeTicks last_render_ticks_;
 
+  // Set upon receipt of the first decoded buffer after a StartPlayingFrom().
+  // Used to determine how long to delay playback.
+  base::TimeDelta first_packet_timestamp_;
+
   // End variables which must be accessed under |lock_|. ----------------------
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

@@ -148,6 +148,7 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   start_timestamp_ = time;
   ended_timestamp_ = kInfiniteDuration();
   last_render_ticks_ = base::TimeTicks();
+  first_packet_timestamp_ = kNoTimestamp();
   audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
 
@@ -461,6 +462,11 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
       algorithm_->EnqueueBuffer(buffer);
   }
 
+  // Store the timestamp of the first packet so we know when to start actual
+  // audio playback.
+  if (first_packet_timestamp_ == kNoTimestamp())
+    first_packet_timestamp_ = buffer->timestamp();
+
   switch (state_) {
     case kUninitialized:
     case kInitializing:
@@ -585,6 +591,30 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       return 0;
     }
 
+    // Delay playback by writing silence if we haven't reached the first
+    // timestamp yet; this can occur if the video starts before the audio.
+    if (algorithm_->frames_buffered() > 0) {
+      DCHECK(first_packet_timestamp_ != kNoTimestamp());
+      const base::TimeDelta play_delay =
+          first_packet_timestamp_ - audio_clock_->back_timestamp();
+      if (play_delay > base::TimeDelta()) {
+        DCHECK_EQ(frames_written, 0);
+        frames_written =
+            std::min(static_cast<int>(play_delay.InSecondsF() *
+                                      audio_parameters_.sample_rate()),
+                     requested_frames);
+        audio_bus->ZeroFramesPartial(0, frames_written);
+      }
+
+      // If there's any space left, actually render the audio; this is where the
+      // aural magic happens.
+      if (frames_written < requested_frames) {
+        frames_written += algorithm_->FillBuffer(
+            audio_bus, frames_written, requested_frames - frames_written,
+            playback_rate_);
+      }
+    }
+
     // We use the following conditions to determine end of playback:
     //   1) Algorithm can not fill the audio callback buffer
     //   2) We received an end of stream buffer
@@ -597,11 +627,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //   3) We are in the kPlaying state
     //
     // Otherwise the buffer has data we can send to the device.
-    if (algorithm_->frames_buffered() > 0) {
-      frames_written =
-          algorithm_->FillBuffer(audio_bus, requested_frames, playback_rate_);
-    }
-
+    //
     // Per the TimeSource API the media time should always increase even after
     // we've rendered all known audio data. Doing so simplifies scenarios where
     // we have other sources of media data that need to be scheduled after audio

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/format_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer_converter.h"
@@ -186,17 +187,19 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void Preroll() {
-    Preroll(0, PIPELINE_OK);
+    Preroll(base::TimeDelta(), base::TimeDelta(), PIPELINE_OK);
   }
 
-  void Preroll(int timestamp_ms, PipelineStatus expected) {
-    SCOPED_TRACE(base::StringPrintf("Preroll(%d, %d)", timestamp_ms, expected));
-
-    TimeDelta timestamp = TimeDelta::FromMilliseconds(timestamp_ms);
-    next_timestamp_->SetBaseTimestamp(timestamp);
+  void Preroll(base::TimeDelta start_timestamp,
+               base::TimeDelta first_timestamp,
+               PipelineStatus expected) {
+    SCOPED_TRACE(base::StringPrintf("Preroll(%" PRId64 ", %d)",
+                                    first_timestamp.InMilliseconds(),
+                                    expected));
+    next_timestamp_->SetBaseTimestamp(first_timestamp);
 
     // Fill entire buffer to complete prerolling.
-    renderer_->SetMediaTime(timestamp);
+    renderer_->SetMediaTime(start_timestamp);
     renderer_->StartPlaying();
     WaitForPendingRead();
     EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
@@ -535,7 +538,9 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   FlushDuringPendingRead();
 
   // Preroll again to a different timestamp and verify it completed normally.
-  Preroll(1000, PIPELINE_OK);
+  const base::TimeDelta seek_timestamp =
+      base::TimeDelta::FromMilliseconds(1000);
+  Preroll(seek_timestamp, seek_timestamp, PIPELINE_OK);
 }
 
 TEST_F(AudioRendererImplTest, PendingRead_Destroy) {
@@ -636,6 +641,44 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   // Now time should change now that the audio hardware has called back.
   timestamp_helper.AddFrames(frames_to_consume.value);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
+}
+
+TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
+  Initialize();
+
+  // Choose a first timestamp a few buffers into the future, which ends halfway
+  // through the desired output buffer; this allows for maximum test coverage.
+  const double kBuffers = 4.5;
+  const base::TimeDelta first_timestamp = base::TimeDelta::FromSecondsD(
+      hardware_config_.GetOutputBufferSize() * kBuffers /
+      hardware_config_.GetOutputSampleRate());
+
+  Preroll(base::TimeDelta(), first_timestamp, PIPELINE_OK);
+  StartTicking();
+
+  // Verify the first few buffers are silent.
+  scoped_ptr<AudioBus> bus =
+      AudioBus::Create(hardware_config_.GetOutputConfig());
+  int frames_read = 0;
+  for (int i = 0; i < std::floor(kBuffers); ++i) {
+    EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+    EXPECT_EQ(frames_read, bus->frames());
+    for (int j = 0; j < bus->frames(); ++j)
+      ASSERT_FLOAT_EQ(0.0f, bus->channel(0)[j]);
+    WaitForPendingRead();
+    DeliverRemainingAudio();
+  }
+
+  // Verify the last buffer is half silence and half real data.
+  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_EQ(frames_read, bus->frames());
+  const int zero_frames =
+      bus->frames() * (kBuffers - static_cast<int>(kBuffers));
+
+  for (int i = 0; i < zero_frames; ++i)
+    ASSERT_FLOAT_EQ(0.0f, bus->channel(0)[i]);
+  for (int i = zero_frames; i < bus->frames(); ++i)
+    ASSERT_NE(0.0f, bus->channel(0)[i]);
 }
 
 TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
