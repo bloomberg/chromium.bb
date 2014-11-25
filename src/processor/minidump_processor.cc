@@ -87,6 +87,9 @@ ProcessResult MinidumpProcessor::Process(
   }
   process_state->time_date_stamp_ = header->time_date_stamp;
 
+  bool has_process_create_time =
+      GetProcessCreateTime(dump, &process_state->process_create_time_);
+
   bool has_cpu_info = GetCPUInfo(dump, &process_state->system_info_);
   bool has_os_info = GetOSInfo(dump, &process_state->system_info_);
 
@@ -135,14 +138,15 @@ ProcessResult MinidumpProcessor::Process(
   }
 
   BPLOG(INFO) << "Minidump " << dump->path() << " has " <<
-      (has_cpu_info           ? "" : "no ") << "CPU info, " <<
-      (has_os_info            ? "" : "no ") << "OS info, " <<
-      (breakpad_info != NULL  ? "" : "no ") << "Breakpad info, " <<
-      (exception != NULL      ? "" : "no ") << "exception, " <<
-      (module_list != NULL    ? "" : "no ") << "module list, " <<
-      (threads != NULL        ? "" : "no ") << "thread list, " <<
-      (has_dump_thread        ? "" : "no ") << "dump thread, and " <<
-      (has_requesting_thread  ? "" : "no ") << "requesting thread";
+      (has_cpu_info            ? "" : "no ") << "CPU info, " <<
+      (has_os_info             ? "" : "no ") << "OS info, " <<
+      (breakpad_info != NULL   ? "" : "no ") << "Breakpad info, " <<
+      (exception != NULL       ? "" : "no ") << "exception, " <<
+      (module_list != NULL     ? "" : "no ") << "module list, " <<
+      (threads != NULL         ? "" : "no ") << "thread list, " <<
+      (has_dump_thread         ? "" : "no ") << "dump thread, " <<
+      (has_requesting_thread   ? "" : "no ") << "requesting thread, and " <<
+      (has_process_create_time ? "" : "no ") << "process create time";
 
   bool interrupted = false;
   bool found_requesting_thread = false;
@@ -615,6 +619,32 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
     info->os_version.append(*csd_version);
   }
 
+  return true;
+}
+
+// static
+bool MinidumpProcessor::GetProcessCreateTime(Minidump* dump,
+                                             uint32_t* process_create_time) {
+  assert(dump);
+  assert(process_create_time);
+
+  *process_create_time = 0;
+
+  MinidumpMiscInfo* minidump_misc_info = dump->GetMiscInfo();
+  if (!minidump_misc_info) {
+    return false;
+  }
+
+  const MDRawMiscInfo* md_raw_misc_info = minidump_misc_info->misc_info();
+  if (!md_raw_misc_info) {
+    return false;
+  }
+
+  if (!(md_raw_misc_info->flags1 & MD_MISCINFO_FLAGS1_PROCESS_TIMES)) {
+    return false;
+  }
+
+  *process_create_time = md_raw_misc_info->process_create_time;
   return true;
 }
 

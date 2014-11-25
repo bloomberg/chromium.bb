@@ -5,6 +5,7 @@ CPU:
 
 Crash reason:  
 Crash address: 0x0
+Process uptime: not available
 
 Thread 0 (crashed)
  0  libchromeshell.so!content::::CrashIntentionally [render_frame_impl.cc : 267 + 0x2]

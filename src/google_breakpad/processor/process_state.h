@@ -97,6 +97,7 @@ class ProcessState {
 
   // Accessors.  See the data declarations below.
   uint32_t time_date_stamp() const { return time_date_stamp_; }
+  uint32_t process_create_time() const { return process_create_time_; }
   bool crashed() const { return crashed_; }
   string crash_reason() const { return crash_reason_; }
   uint64_t crash_address() const { return crash_address_; }
@@ -124,6 +125,9 @@ class ProcessState {
 
   // The time-date stamp of the minidump (time_t format)
   uint32_t time_date_stamp_;
+
+  // The time-date stamp when the process was created (time_t format)
+  uint32_t process_create_time_;
 
   // True if the process crashed, false if the dump was produced outside
   // of an exception handler.

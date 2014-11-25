@@ -672,6 +672,18 @@ void PrintProcessState(const ProcessState& process_state) {
     printf("Assertion: %s\n", assertion.c_str());
   }
 
+  // Compute process uptime if the process creation and crash times are
+  // available in the dump.
+  if (process_state.time_date_stamp() != 0 &&
+      process_state.process_create_time() != 0 &&
+      process_state.time_date_stamp() >= process_state.process_create_time()) {
+    printf("Process uptime: %d seconds\n",
+           process_state.time_date_stamp() -
+               process_state.process_create_time());
+  } else {
+    printf("Process uptime: not available\n");
+  }
+
   // If the thread that requested the dump is known, print it first.
   int requesting_thread = process_state.requesting_thread();
   if (requesting_thread != -1) {

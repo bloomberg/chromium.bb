@@ -732,6 +732,7 @@ class MinidumpMiscInfo : public MinidumpStream {
 
  private:
   friend class Minidump;
+  friend class TestMinidumpMiscInfo;
 
   static const uint32_t kStreamType = MD_MISC_INFO_STREAM;
 
@@ -902,14 +903,14 @@ class Minidump {
   // to avoid exposing an ugly API (GetStream needs to accept a garbage
   // parameter).
   virtual MinidumpThreadList* GetThreadList();
-  MinidumpModuleList* GetModuleList();
+  virtual MinidumpModuleList* GetModuleList();
   virtual MinidumpMemoryList* GetMemoryList();
-  MinidumpException* GetException();
-  MinidumpAssertion* GetAssertion();
+  virtual MinidumpException* GetException();
+  virtual MinidumpAssertion* GetAssertion();
   virtual MinidumpSystemInfo* GetSystemInfo();
-  MinidumpMiscInfo* GetMiscInfo();
-  MinidumpBreakpadInfo* GetBreakpadInfo();
-  MinidumpMemoryInfoList* GetMemoryInfoList();
+  virtual MinidumpMiscInfo* GetMiscInfo();
+  virtual MinidumpBreakpadInfo* GetBreakpadInfo();
+  virtual MinidumpMemoryInfoList* GetMemoryInfoList();
 
   // The next set of methods are provided for users who wish to access
   // data in minidump files directly, while leveraging the rest of

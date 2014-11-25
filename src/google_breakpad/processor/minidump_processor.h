@@ -89,6 +89,12 @@ class MinidumpProcessor {
   // the minidump.
   static bool GetOSInfo(Minidump* dump, SystemInfo* info);
 
+  // Populates the |process_create_time| parameter with the create time of the
+  // crashed process.  Returns false if this information is not available in
+  // the minidump |dump|.
+  static bool GetProcessCreateTime(Minidump* dump,
+                                   uint32_t* process_create_time);
+
   // Returns a textual representation of the reason that a crash occurred,
   // if the minidump in dump was produced as a result of a crash.  Returns
   // an empty string if this information cannot be determined.  If address
