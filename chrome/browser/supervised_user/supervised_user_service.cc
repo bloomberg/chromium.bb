@@ -83,10 +83,6 @@ std::string SupervisedUserService::Delegate::GetSafeSitesCx() const {
   return std::string();
 }
 
-std::string SupervisedUserService::Delegate::GetSafeSitesApiKey() const {
-  return std::string();
-}
-
 SupervisedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new SupervisedUserURLFilter),
       io_url_filter_(new SupervisedUserURLFilter) {}

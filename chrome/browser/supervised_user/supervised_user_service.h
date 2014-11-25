@@ -91,8 +91,6 @@ class SupervisedUserService : public KeyedService,
     // experimental "SafeSites" feature, or the empty string to disable the
     // feature.
     virtual std::string GetSafeSitesCx() const;
-    // TODO(treib): Unused, remove this!
-    virtual std::string GetSafeSitesApiKey() const;
   };
 
   ~SupervisedUserService() override;
