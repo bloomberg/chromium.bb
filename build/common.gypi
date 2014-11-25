@@ -567,6 +567,9 @@
       # cross-compile builds.
       'clang%': 0,
 
+      # Use experimental lld linker instead of the platform's default linker.
+      'use_lld%': 0,
+
       # Enable plug-in installation by default.
       'enable_plugin_installation%': 1,
 
@@ -1302,6 +1305,7 @@
     'clang%': '<(clang)',
     'host_clang%': '<(host_clang)',
     'make_clang_dir%': '<(make_clang_dir)',
+    'use_lld%': '<(use_lld)',
 
     # Control which version of clang to use when building for iOS.  If set to
     # '1', uses the version of clang that ships with Xcode.  If set to '0', uses
@@ -5734,6 +5738,13 @@
       'make_global_settings': [
         # On Windows, gyp's ninja generator only looks at CC.
         ['CC', '<(make_clang_dir)/bin/clang-cl'],
+      ],
+    }],
+    ['use_lld==1 and OS=="win"', {
+      'make_global_settings': [
+        # Limited to Windows because lld-link is the driver that is compatible
+        # to link.exe.
+        ['LD', '<(make_clang_dir)/bin/lld-link'],
       ],
     }],
     ['OS=="android" and clang==0', {
