@@ -9,9 +9,9 @@
 #include "base/debug/alias.h"
 #include "base/numerics/safe_math.h"
 #include "cc/resources/shared_bitmap.h"
-#include "content/browser/renderer_host/dip_util.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace {
 
@@ -166,8 +166,8 @@ gfx::Size SoftwareFrameManager::GetCurrentFrameSizeInPixels() const {
 
 gfx::Size SoftwareFrameManager::GetCurrentFrameSizeInDIP() const {
   DCHECK(HasCurrentFrame());
-  return ConvertSizeToDIP(current_frame_->frame_device_scale_factor_,
-                          current_frame_->frame_size_pixels_);
+  return gfx::ConvertSizeToDIP(current_frame_->frame_device_scale_factor_,
+                               current_frame_->frame_size_pixels_);
 }
 
 void SoftwareFrameManager::EvictCurrentFrame() {

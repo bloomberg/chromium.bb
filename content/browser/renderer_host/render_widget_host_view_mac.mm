@@ -72,6 +72,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -1434,8 +1435,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     cc::RenderPass* root_pass =
         frame->delegated_frame_data->render_pass_list.back();
     gfx::Size pixel_size = root_pass->output_rect.size();
-    gfx::Size dip_size =
-        ConvertSizeToDIP(scale_factor, pixel_size);
+    gfx::Size dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
     root_layer_->SetBounds(gfx::Rect(dip_size));
     if (!render_widget_host_->is_hidden()) {

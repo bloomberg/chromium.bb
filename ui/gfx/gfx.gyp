@@ -21,6 +21,8 @@
         'geometry/box_f.h',
         'geometry/cubic_bezier.h',
         'geometry/cubic_bezier.cc',
+        'geometry/dip_util.h',
+        'geometry/dip_util.cc',
         'geometry/insets.cc',
         'geometry/insets.h',
         'geometry/insets_base.h',

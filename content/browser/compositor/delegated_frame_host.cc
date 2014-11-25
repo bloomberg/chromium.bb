@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
 
@@ -325,12 +326,12 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 
   gfx::Size frame_size = root_pass->output_rect.size();
   gfx::Size frame_size_in_dip =
-      ConvertSizeToDIP(frame_device_scale_factor, frame_size);
+      gfx::ConvertSizeToDIP(frame_device_scale_factor, frame_size);
 
   gfx::Rect damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
   damage_rect.Intersect(gfx::Rect(frame_size));
   gfx::Rect damage_rect_in_dip =
-      ConvertRectToDIP(frame_device_scale_factor, damage_rect);
+      gfx::ConvertRectToDIP(frame_device_scale_factor, damage_rect);
 
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;

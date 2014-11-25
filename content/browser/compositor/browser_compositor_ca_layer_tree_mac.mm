@@ -12,10 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "content/browser/compositor/io_surface_layer_mac.h"
 #include "content/browser/compositor/software_layer_mac.h"
-#include "content/browser/renderer_host/dip_util.h"
 #include "content/common/gpu/surface_handle_types_mac.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
 
 namespace content {
@@ -145,7 +145,7 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
 
-  last_swap_size_dip_ = ConvertSizeToDIP(scale_factor, pixel_size);
+  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
   switch (GetSurfaceHandleType(surface_handle)) {
     case kSurfaceHandleTypeIOSurface: {
       IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
@@ -291,7 +291,7 @@ void AcceleratedWidgetMac::GotSoftwareFrame(
                         withRowBytes:row_bytes
                        withPixelSize:pixel_size
                      withScaleFactor:scale_factor];
-  last_swap_size_dip_ = ConvertSizeToDIP(scale_factor, pixel_size);
+  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);

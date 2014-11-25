@@ -74,6 +74,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 
@@ -791,9 +792,9 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   gfx::Size dst_size_in_pixel =
-      ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
+      gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
   gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(device_scale_factor, src_subrect);
+      gfx::ConvertRectToPixel(device_scale_factor, src_subrect);
 
   if (using_synchronous_compositor_) {
     SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,

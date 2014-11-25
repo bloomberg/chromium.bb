@@ -29,15 +29,6 @@ CONTENT_EXPORT gfx::Size ConvertViewSizeToPixel(
 CONTENT_EXPORT gfx::Rect ConvertViewRectToPixel(
     const RenderWidgetHostView* view, const gfx::Rect& rect_in_dip);
 
-CONTENT_EXPORT gfx::Size ConvertSizeToDIP(
-    float scale_factor, const gfx::Size& size_in_pixel);
-CONTENT_EXPORT gfx::Rect ConvertRectToDIP(
-    float scale_factor, const gfx::Rect& rect_in_pixel);
-CONTENT_EXPORT gfx::Size ConvertSizeToPixel(
-    float scale_factor, const gfx::Size& size_in_pixel);
-CONTENT_EXPORT gfx::Rect ConvertRectToPixel(
-    float scale_factor, const gfx::Rect& rect_in_dip);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_DIP_UTIL_H_

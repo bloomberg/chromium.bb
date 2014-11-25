@@ -10,7 +10,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
@@ -30,50 +30,37 @@ float GetDeviceScaleFactor(const Layer* layer) {
 
 gfx::Point ConvertPointToDIP(const Layer* layer,
                              const gfx::Point& point_in_pixel) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(point_in_pixel, 1.0f / GetDeviceScaleFactor(layer)));
+  return gfx::ConvertPointToDIP(GetDeviceScaleFactor(layer), point_in_pixel);
 }
 
 gfx::PointF ConvertPointToDIP(const Layer* layer,
                               const gfx::PointF& point_in_pixel) {
-  return gfx::ScalePoint(point_in_pixel, 1.0f / GetDeviceScaleFactor(layer));
+  return gfx::ConvertPointToDIP(GetDeviceScaleFactor(layer), point_in_pixel);
 }
 
 gfx::Size ConvertSizeToDIP(const Layer* layer,
                            const gfx::Size& size_in_pixel) {
-  return gfx::ToFlooredSize(
-      gfx::ScaleSize(size_in_pixel, 1.0f / GetDeviceScaleFactor(layer)));
+  return gfx::ConvertSizeToDIP(GetDeviceScaleFactor(layer), size_in_pixel);
 }
 
 gfx::Rect ConvertRectToDIP(const Layer* layer,
                            const gfx::Rect& rect_in_pixel) {
-  float scale = 1.0f / GetDeviceScaleFactor(layer);
-  return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_pixel, scale));
+  return gfx::ConvertRectToDIP(GetDeviceScaleFactor(layer), rect_in_pixel);
 }
 
 gfx::Point ConvertPointToPixel(const Layer* layer,
                                const gfx::Point& point_in_dip) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(point_in_dip, GetDeviceScaleFactor(layer)));
+  return gfx::ConvertPointToPixel(GetDeviceScaleFactor(layer), point_in_dip);
 }
 
 gfx::Size ConvertSizeToPixel(const Layer* layer,
                              const gfx::Size& size_in_dip) {
-  return gfx::ToFlooredSize(
-      gfx::ScaleSize(size_in_dip, GetDeviceScaleFactor(layer)));
+  return gfx::ConvertSizeToPixel(GetDeviceScaleFactor(layer), size_in_dip);
 }
 
 gfx::Rect ConvertRectToPixel(const Layer* layer,
                              const gfx::Rect& rect_in_dip) {
-  float scale = GetDeviceScaleFactor(layer);
-  // Use ToEnclosingRect() to ensure we paint all the possible pixels
-  // touched. ToEnclosingRect() floors the origin, and ceils the max
-  // coordinate. To do otherwise (such as flooring the size) potentially
-  // results in rounding down and not drawing all the pixels that are
-  // touched.
-  return gfx::ToEnclosingRect(
-      gfx::RectF(gfx::ScalePoint(rect_in_dip.origin(), scale),
-                 gfx::ScaleSize(rect_in_dip.size(), scale)));
+  return gfx::ConvertRectToPixel(GetDeviceScaleFactor(layer), rect_in_dip);
 }
 
 #if DCHECK_IS_ON

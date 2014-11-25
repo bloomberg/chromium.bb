@@ -9,6 +9,8 @@ component("geometry") {
     "box_f.h",
     "cubic_bezier.h",
     "cubic_bezier.cc",
+    "dip_util.h",
+    "dip_util.cc",
     "insets.cc",
     "insets.h",
     "insets_base.h",
