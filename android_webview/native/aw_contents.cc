@@ -16,7 +16,6 @@
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_hit_test_data.h"
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
@@ -878,8 +877,7 @@ bool AwContents::OnDraw(JNIEnv* env,
   browser_view_renderer_.PrepareToDraw(
       scroll, gfx::Rect(visible_left, visible_top, visible_right - visible_left,
                         visible_bottom - visible_top));
-  if (is_hardware_accelerated && browser_view_renderer_.attached_to_window() &&
-      !switches::ForceAuxiliaryBitmap()) {
+  if (is_hardware_accelerated && browser_view_renderer_.attached_to_window()) {
     return browser_view_renderer_.OnDrawHardware();
   }
 

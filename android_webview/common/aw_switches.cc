@@ -3,16 +3,6 @@
 // found in the LICENSE file.
 
 #include "android_webview/common/aw_switches.h"
-#include "base/command_line.h"
 
 namespace switches {
-
-const char kForceAuxiliaryBitmap[] = "force-auxiliary-bitmap";
-
-bool ForceAuxiliaryBitmap() {
-  static bool force_auxiliary_bitmap =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kForceAuxiliaryBitmap);
-  return force_auxiliary_bitmap;
-}
-
 }  // namespace switches

@@ -6,7 +6,6 @@
 
 #include <android/bitmap.h>
 
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/debug/trace_event.h"
@@ -43,7 +42,7 @@ JavaCanvasHolder::JavaCanvasHolder(JNIEnv* env,
                                    jobject java_canvas,
                                    const gfx::Vector2d& scroll)
     : pixels_(nullptr) {
-  if (!g_sw_draw_functions || switches::ForceAuxiliaryBitmap())
+  if (!g_sw_draw_functions)
     return;
   pixels_ = g_sw_draw_functions->access_pixels(env, java_canvas);
   if (!pixels_ || !pixels_->state)

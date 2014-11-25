@@ -7,15 +7,7 @@
 
 namespace switches {
 
-// Disable the record whole document workaround which is used to support
-// teleporting software draws.
-extern const char kDisableRecordDocumentWorkaround[];
-
-// Always use software auxiliary bitmap rendering path. This is temporary
-// until Android L is released to AOSP.
-extern const char kForceAuxiliaryBitmap[];
-
-bool ForceAuxiliaryBitmap();
+// Intentionally empty in case Android WebView needs switches in the future.
 
 }  // namespace switches
 

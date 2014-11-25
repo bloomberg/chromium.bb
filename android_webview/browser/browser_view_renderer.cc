@@ -5,7 +5,6 @@
 #include "android_webview/browser/browser_view_renderer.h"
 
 #include "android_webview/browser/browser_view_renderer_client.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event_argument.h"
