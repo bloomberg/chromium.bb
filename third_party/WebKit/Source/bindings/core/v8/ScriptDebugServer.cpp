@@ -463,7 +463,10 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::H
     m_pausedScriptState.clear();
     m_executionState.Clear();
 
-    if (result == ScriptDebugListener::StepInto) {
+    if (result == ScriptDebugListener::StepFrame) {
+        v8::Handle<v8::Value> argv[] = { executionState };
+        callDebuggerMethod("stepFrameStatement", 1, argv);
+    } else if (result == ScriptDebugListener::StepInto) {
         v8::Handle<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepIntoV8MethodName, 1, argv);
     } else if (result == ScriptDebugListener::StepOut) {

@@ -94,7 +94,7 @@ static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload
 
 };
 
-static const int maxSkipStepInCount = 20;
+static const int maxSkipStepFrameCount = 50;
 
 const char InspectorDebuggerAgent::backtraceObjectGroup[] = "backtrace";
 
@@ -127,7 +127,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
     , m_listener(nullptr)
-    , m_skippedStepInCount(0)
+    , m_skippedStepFrameCount(0)
     , m_minFrameCountForSkip(0)
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
@@ -567,26 +567,26 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
     if (!topFrame || !isBlackboxed)
         return ScriptDebugListener::NoSkip;
 
-    if (m_skippedStepInCount == 0) {
+    if (m_skippedStepFrameCount == 0) {
         m_minFrameCountForSkip = scriptDebugServer().frameCount();
-        m_skippedStepInCount = 1;
-        return ScriptDebugListener::StepInto;
+        m_skippedStepFrameCount = 1;
+        return ScriptDebugListener::StepFrame;
     }
 
-    if (m_skippedStepInCount < maxSkipStepInCount && topFrame->isAtReturn() && scriptDebugServer().frameCount() <= m_minFrameCountForSkip)
-        m_skippedStepInCount = maxSkipStepInCount;
+    if (m_skippedStepFrameCount < maxSkipStepFrameCount && topFrame->isAtReturn() && scriptDebugServer().frameCount() <= m_minFrameCountForSkip)
+        m_skippedStepFrameCount = maxSkipStepFrameCount;
 
-    if (m_skippedStepInCount >= maxSkipStepInCount) {
+    if (m_skippedStepFrameCount >= maxSkipStepFrameCount) {
         if (m_pausingOnNativeEvent) {
             m_pausingOnNativeEvent = false;
-            m_skippedStepInCount = 0;
+            m_skippedStepFrameCount = 0;
             return ScriptDebugListener::Continue;
         }
         return ScriptDebugListener::StepOut;
     }
 
-    ++m_skippedStepInCount;
-    return ScriptDebugListener::StepInto;
+    ++m_skippedStepFrameCount;
+    return ScriptDebugListener::StepFrame;
 }
 
 bool InspectorDebuggerAgent::isTopCallFrameInFramework()
@@ -730,7 +730,7 @@ void InspectorDebuggerAgent::schedulePauseOnNextStatementIfSteppingInto()
         return;
     clearBreakDetails();
     m_pausingOnNativeEvent = false;
-    m_skippedStepInCount = 0;
+    m_skippedStepFrameCount = 0;
     scriptDebugServer().setPauseOnNextStatement(true);
 }
 
@@ -1465,7 +1465,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
-    m_skippedStepInCount = 0;
+    m_skippedStepFrameCount = 0;
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {
         scriptDebugServer().removeBreakpoint(m_continueToLocationBreakpointId);

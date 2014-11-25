@@ -261,6 +261,11 @@ DebuggerScript.stepIntoStatement = function(execState)
     execState.prepareStep(Debug.StepAction.StepIn, 1);
 }
 
+DebuggerScript.stepFrameStatement = function(execState)
+{
+    execState.prepareStep(Debug.StepAction.StepFrame, 1);
+}
+
 DebuggerScript.stepOverStatement = function(execState, callFrame)
 {
     execState.prepareStep(Debug.StepAction.StepNext, 1);

@@ -277,7 +277,7 @@ private:
     bool m_pausingOnNativeEvent;
     RawPtrWillBeMember<Listener> m_listener;
 
-    int m_skippedStepInCount;
+    int m_skippedStepFrameCount;
     int m_minFrameCountForSkip;
     bool m_skipAllPauses;
     bool m_skipContentScripts;

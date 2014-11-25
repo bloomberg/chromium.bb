@@ -71,7 +71,8 @@ public:
         NoSkip,
         Continue,
         StepInto,
-        StepOut
+        StepOut,
+        StepFrame
     };
 
     virtual ~ScriptDebugListener() { }

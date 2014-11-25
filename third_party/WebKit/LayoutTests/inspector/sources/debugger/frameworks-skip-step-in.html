@@ -46,10 +46,16 @@ function test5()
     Framework.safeRun(Framework.empty, Framework.throwFrameworkException, callback); // Should be enough to step into callback
 }
 
+function test6()
+{
+    debugger;
+    Framework.safeRun(Framework.doSomeWorkDoNotChangeTopCallFrame, callback);
+}
+
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    var totalDebuggerStatements = 5;
+    var totalDebuggerStatements = 6;
 
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 

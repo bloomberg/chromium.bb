@@ -29,4 +29,11 @@ Call stack:
     4) test5 (frameworks-skip-step-in.html:46)
     5) testFunction (frameworks-skip-step-in.html:11)
 
+Call stack:
+    0) callback (frameworks-skip-step-in.html:16)
+  * 1) Framework.safeRun (framework.js:8)
+  * 2) Framework.safeRun (framework.js:10)
+    3) test6 (frameworks-skip-step-in.html:52)
+    4) testFunction (frameworks-skip-step-in.html:11)
+
 
