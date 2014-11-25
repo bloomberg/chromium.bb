@@ -13,7 +13,7 @@ namespace content {
 class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
                                  public WebContentsObserver {
  public:
-  DevToolsFrontendHostImpl(WebContents* frontend_web_contents,
+  DevToolsFrontendHostImpl(RenderFrameHost* frontend_main_frame,
                            DevToolsFrontendHost::Delegate* delegate);
   ~DevToolsFrontendHostImpl() override;
 

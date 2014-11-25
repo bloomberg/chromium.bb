@@ -77,7 +77,8 @@ ShellDevToolsFrontend::~ShellDevToolsFrontend() {
 void ShellDevToolsFrontend::RenderViewCreated(
     RenderViewHost* render_view_host) {
   if (!frontend_host_) {
-    frontend_host_.reset(DevToolsFrontendHost::Create(web_contents(), this));
+    frontend_host_.reset(
+        DevToolsFrontendHost::Create(web_contents()->GetMainFrame(), this));
     agent_host_->AttachClient(this);
   }
 }

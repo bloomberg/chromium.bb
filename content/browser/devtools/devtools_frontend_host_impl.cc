@@ -13,18 +13,19 @@ namespace content {
 
 // static
 DevToolsFrontendHost* DevToolsFrontendHost::Create(
-    WebContents* frontend_web_contents,
+    RenderFrameHost* frontend_main_frame,
     DevToolsFrontendHost::Delegate* delegate) {
-  return new DevToolsFrontendHostImpl(frontend_web_contents, delegate);
+  return new DevToolsFrontendHostImpl(frontend_main_frame, delegate);
 }
 
 DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
-    WebContents* frontend_web_contents,
+    RenderFrameHost* frontend_main_frame,
     DevToolsFrontendHost::Delegate* delegate)
-    : WebContentsObserver(frontend_web_contents), delegate_(delegate) {
-  RenderFrameHost* main_frame_host = web_contents()->GetMainFrame();
-  main_frame_host->Send(
-      new DevToolsMsg_SetupDevToolsClient(main_frame_host->GetRoutingID()));
+    : WebContentsObserver(
+          WebContents::FromRenderFrameHost(frontend_main_frame)),
+      delegate_(delegate) {
+  frontend_main_frame->Send(
+      new DevToolsMsg_SetupDevToolsClient(frontend_main_frame->GetRoutingID()));
 }
 
 DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {

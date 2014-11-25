@@ -289,7 +289,7 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
   if (render_frame_host->GetParent())
     return;
   devtools_bindings_->frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(devtools_bindings_->web_contents(),
+      content::DevToolsFrontendHost::Create(render_frame_host,
                                             devtools_bindings_));
 }
 
@@ -374,8 +374,8 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
   embedder_message_dispatcher_.reset(
       DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(this));
 
-  frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(web_contents_, this));
+  frontend_host_.reset(content::DevToolsFrontendHost::Create(
+      web_contents_->GetMainFrame(), this));
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
