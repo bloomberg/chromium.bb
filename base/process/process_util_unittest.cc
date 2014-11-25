@@ -363,7 +363,8 @@ MULTIPROCESS_TEST_MAIN(TriggerEventChildProcess) {
   uint64 handle_value_uint64;
   CHECK(base::StringToUint64(handle_value_string, &handle_value_uint64));
   // Give ownership of the handle to |event|.
-  base::WaitableEvent event(reinterpret_cast<HANDLE>(handle_value_uint64));
+  base::WaitableEvent event(base::win::ScopedHandle(
+      reinterpret_cast<HANDLE>(handle_value_uint64)));
 
   event.Signal();
 
@@ -378,8 +379,8 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   security_attributes.bInheritHandle = true;
 
   // Takes ownership of the event handle.
-  base::WaitableEvent event(
-      CreateEvent(&security_attributes, true, false, NULL));
+  base::WaitableEvent event(base::win::ScopedHandle(
+      CreateEvent(&security_attributes, true, false, NULL)));
   base::HandlesToInheritVector handles_to_inherit;
   handles_to_inherit.push_back(event.handle());
   base::LaunchOptions options;

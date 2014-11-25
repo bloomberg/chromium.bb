@@ -58,6 +58,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
 #include "content/public/common/sandbox_init.h"
 #endif
 
@@ -897,10 +898,12 @@ void WebPluginDelegateProxy::WillDestroyWindow() {
 
 #if defined(OS_WIN)
 void WebPluginDelegateProxy::OnSetWindowlessData(
-      HANDLE modal_loop_pump_messages_event,
+      HANDLE modal_loop_pump_messages_event_handle,
       gfx::NativeViewId dummy_activation_window) {
-  DCHECK(modal_loop_pump_messages_event_ == NULL);
-  DCHECK(dummy_activation_window_ == NULL);
+  DCHECK(!modal_loop_pump_messages_event_.get());
+  DCHECK(!dummy_activation_window_);
+  base::win::ScopedHandle modal_loop_pump_messages_event(
+      modal_loop_pump_messages_event_handle);
 
   dummy_activation_window_ = dummy_activation_window;
   render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowCreated(
@@ -908,11 +911,11 @@ void WebPluginDelegateProxy::OnSetWindowlessData(
 
   // Bug 25583: this can be null because some "virus scanners" block the
   // DuplicateHandle call in the plugin process.
-  if (!modal_loop_pump_messages_event)
+  if (!modal_loop_pump_messages_event.IsValid())
     return;
 
   modal_loop_pump_messages_event_.reset(
-      new base::WaitableEvent(modal_loop_pump_messages_event));
+      new base::WaitableEvent(modal_loop_pump_messages_event.Pass()));
 }
 
 void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,

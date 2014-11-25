@@ -195,7 +195,7 @@ class WebPluginDelegateProxy
   void OnAcceleratedPluginSwappedIOSurface();
 #endif
 #if defined(OS_WIN)
-  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event,
+  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event_handle,
                            gfx::NativeViewId dummy_activation_window);
   void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
 #endif

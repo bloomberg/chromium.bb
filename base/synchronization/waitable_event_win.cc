@@ -20,16 +20,12 @@ WaitableEvent::WaitableEvent(bool manual_reset, bool signaled)
   CHECK(handle_.IsValid());
 }
 
-WaitableEvent::WaitableEvent(HANDLE handle)
-    : handle_(handle) {
+WaitableEvent::WaitableEvent(win::ScopedHandle handle)
+    : handle_(handle.Pass()) {
   CHECK(handle_.IsValid()) << "Tried to create WaitableEvent from NULL handle";
 }
 
 WaitableEvent::~WaitableEvent() {
-}
-
-HANDLE WaitableEvent::Release() {
-  return handle_.Take();
 }
 
 void WaitableEvent::Reset() {

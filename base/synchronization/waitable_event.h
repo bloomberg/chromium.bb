@@ -53,11 +53,7 @@ class BASE_EXPORT WaitableEvent {
   // Create a WaitableEvent from an Event HANDLE which has already been
   // created. This objects takes ownership of the HANDLE and will close it when
   // deleted.
-  // TODO(rvargas): Pass ScopedHandle instead (and on Release).
-  explicit WaitableEvent(HANDLE event_handle);
-
-  // Releases ownership of the handle from this object.
-  HANDLE Release();
+  explicit WaitableEvent(win::ScopedHandle event_handle);
 #endif
 
   ~WaitableEvent();
