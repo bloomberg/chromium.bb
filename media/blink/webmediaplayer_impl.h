@@ -156,10 +156,6 @@ class MEDIA_EXPORT WebMediaPlayerImpl
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
-  // TODO(jrummell): Remove this method once Blink updated to use the other
-  // method.
-  virtual void setContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm);
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result);
@@ -212,6 +208,12 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
+
+  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+
+  // Called when a CDM has been attached to the |pipeline_|.
+  void OnCdmAttached(blink::WebContentDecryptionModuleResult result,
+                     bool success);
 
   blink::WebLocalFrame* frame_;
 

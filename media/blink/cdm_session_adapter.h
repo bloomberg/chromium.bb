@@ -20,7 +20,6 @@ class GURL;
 namespace media {
 
 class CdmFactory;
-class Decryptor;
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.
@@ -89,20 +88,13 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void GetUsableKeyIds(const std::string& web_session_id,
                        scoped_ptr<KeyIdsPromise> promise);
 
-  // Returns the Decryptor associated with this CDM. May be NULL if no
-  // Decryptor is associated with the MediaKeys object.
+  // Returns the CdmContext associated with |media_keys_|.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
-  Decryptor* GetDecryptor();
+  CdmContext* GetCdmContext();
 
   // Returns a prefix to use for UMAs.
   const std::string& GetKeySystemUMAPrefix() const;
-
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM ID associated with the |media_keys_|. May be kInvalidCdmId
-  // if no CDM ID is associated.
-  int GetCdmId() const;
-#endif
 
  private:
   friend class base::RefCounted<CdmSessionAdapter>;

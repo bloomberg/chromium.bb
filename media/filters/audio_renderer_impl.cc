@@ -44,16 +44,13 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const AudioHardwareConfig& hardware_config,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
-      audio_buffer_stream_(new AudioBufferStream(task_runner,
-                                                 decoders.Pass(),
-                                                 set_decryptor_ready_cb,
-                                                 media_log)),
+      audio_buffer_stream_(
+          new AudioBufferStream(task_runner, decoders.Pass(), media_log)),
       hardware_config_(hardware_config),
       playback_rate_(0),
       state_(kUninitialized),
@@ -253,12 +250,14 @@ void AudioRendererImpl::StartPlaying() {
   AttemptRead_Locked();
 }
 
-void AudioRendererImpl::Initialize(DemuxerStream* stream,
-                                   const PipelineStatusCB& init_cb,
-                                   const StatisticsCB& statistics_cb,
-                                   const BufferingStateCB& buffering_state_cb,
-                                   const base::Closure& ended_cb,
-                                   const PipelineStatusCB& error_cb) {
+void AudioRendererImpl::Initialize(
+    DemuxerStream* stream,
+    const PipelineStatusCB& init_cb,
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const StatisticsCB& statistics_cb,
+    const BufferingStateCB& buffering_state_cb,
+    const base::Closure& ended_cb,
+    const PipelineStatusCB& error_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
@@ -316,9 +315,9 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
       new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
 
   audio_buffer_stream_->Initialize(
-      stream, statistics_cb,
-      base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
-                 weak_factory_.GetWeakPtr()));
+      stream, base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
+                         weak_factory_.GetWeakPtr()),
+      set_decryptor_ready_cb, statistics_cb);
 }
 
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {

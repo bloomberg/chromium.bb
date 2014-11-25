@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/demuxer.h"
 #include "media/cdm/proxy_decryptor.h"
@@ -27,12 +29,20 @@ namespace media {
 
 class WebContentDecryptionModuleImpl;
 
+// Provides support to prefixed EME implementation.
+// Do NOT add unprefixed EME functionality to this class!
+// TODO(xhwang): Move CreateNeedKeyCB() outside this class. Then when we
+// deprecate prefixed EME support, drop this whole file.
+
 class EncryptedMediaPlayerSupport
     : public base::SupportsWeakPtr<EncryptedMediaPlayerSupport> {
  public:
+  typedef base::Callback<void(CdmContext*, const CdmAttachedCB&)>
+      SetCdmContextCB;
+
   EncryptedMediaPlayerSupport(scoped_ptr<CdmFactory> cdm_factory,
                               blink::WebMediaPlayerClient* client,
-                              blink::WebContentDecryptionModule* initial_cdm);
+                              const SetCdmContextCB& set_cdm_context_cb);
   ~EncryptedMediaPlayerSupport();
 
   blink::WebMediaPlayer::MediaKeyException GenerateKeyRequest(
@@ -53,24 +63,11 @@ class EncryptedMediaPlayerSupport
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
-  void SetContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm);
-  void SetContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm,
-      blink::WebContentDecryptionModuleResult result);
-
-  SetDecryptorReadyCB CreateSetDecryptorReadyCB();
   Demuxer::NeedKeyCB CreateNeedKeyCB();
 
   void OnPipelineDecryptError();
 
  private:
-  // Requests that this object notifies when a decryptor is ready through the
-  // |decryptor_ready_cb| provided.
-  // If |decryptor_ready_cb| is null, the existing callback will be fired with
-  // NULL immediately and reset.
-  void SetDecryptorReadyCallback(const DecryptorReadyCB& decryptor_ready_cb);
-
   blink::WebMediaPlayer::MediaKeyException GenerateKeyRequestInternal(
       blink::WebLocalFrame* frame,
       const std::string& key_system,
@@ -100,10 +97,6 @@ class EncryptedMediaPlayerSupport
                     const std::vector<uint8>& message,
                     const GURL& destination_url);
 
-  void ContentDecryptionModuleAttached(
-      blink::WebContentDecryptionModuleResult result,
-      bool success);
-
   scoped_ptr<CdmFactory> cdm_factory_;
 
   blink::WebMediaPlayerClient* client_;
@@ -116,14 +109,10 @@ class EncryptedMediaPlayerSupport
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
 
+  SetCdmContextCB set_cdm_context_cb_;
+
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> proxy_decryptor_;
-
-  // Non-owned pointer to the CDM. Updated via calls to
-  // setContentDecryptionModule().
-  WebContentDecryptionModuleImpl* web_cdm_;
-
-  DecryptorReadyCB decryptor_ready_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(EncryptedMediaPlayerSupport);
 };

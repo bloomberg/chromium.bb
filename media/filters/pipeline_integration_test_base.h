@@ -25,7 +25,7 @@ class FilePath;
 
 namespace media {
 
-class Decryptor;
+class CdmContext;
 
 // Empty MD5 hash string.  Used to verify empty video tracks.
 extern const char kNullVideoHash[];
@@ -72,7 +72,7 @@ class PipelineIntegrationTestBase {
   // Initialize the pipeline and ignore any status updates.  Useful for testing
   // invalid audio/video clips which don't have deterministic results.
   bool Start(const base::FilePath& file_path);
-  bool Start(const base::FilePath& file_path, Decryptor* decryptor);
+  bool Start(const base::FilePath& file_path, CdmContext* cdm_context);
 
   void Play();
   void Pause();
@@ -132,10 +132,8 @@ class PipelineIntegrationTestBase {
   void CreateDemuxer(const base::FilePath& file_path);
 
   // Creates and returns a Renderer.
-  scoped_ptr<Renderer> CreateRenderer(Decryptor* decryptor);
+  scoped_ptr<Renderer> CreateRenderer();
 
-  void SetDecryptor(Decryptor* decryptor,
-                    const DecryptorReadyCB& decryptor_ready_cb);
   void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
 
   MOCK_METHOD1(OnMetadata, void(PipelineMetadata));

@@ -39,7 +39,6 @@ class MEDIA_EXPORT VideoRendererImpl
  public:
   // |decoders| contains the VideoDecoders to use when initializing.
   //
-  //
   // Implementors should avoid doing any sort of heavy work in this method and
   // instead post a task to a common/worker thread to handle rendering.  Slowing
   // down the video thread may result in losing synchronization with audio.
@@ -48,7 +47,6 @@ class MEDIA_EXPORT VideoRendererImpl
   VideoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       ScopedVector<VideoDecoder> decoders,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb,
       bool drop_frames,
       const scoped_refptr<MediaLog>& media_log);
   ~VideoRendererImpl() override;
@@ -56,6 +54,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // VideoRenderer implementation.
   void Initialize(DemuxerStream* stream,
                   const PipelineStatusCB& init_cb,
+                  const SetDecryptorReadyCB& set_decryptor_ready_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,

@@ -80,6 +80,14 @@ void MojoRendererImpl::Initialize(
                                    weak_factory_.GetWeakPtr())));
 }
 
+void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
+                              const CdmAttachedCB& cdm_attached_cb) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  NOTIMPLEMENTED();
+  cdm_attached_cb.Run(false);
+}
+
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -127,12 +135,6 @@ bool MojoRendererImpl::HasVideo() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
-}
-
-void MojoRendererImpl::SetCdm(MediaKeys* cdm) {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
 }
 
 void MojoRendererImpl::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {

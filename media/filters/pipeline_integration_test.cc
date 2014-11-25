@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
@@ -145,11 +146,10 @@ class FakeEncryptedMedia {
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
                               base::Unretained(this))),
+        cdm_context_(&decryptor_),
         app_(app) {}
 
-  AesDecryptor* decryptor() {
-    return &decryptor_;
-  }
+  CdmContext* GetCdmContext() { return &cdm_context_; }
 
   // Callbacks for firing session events. Delegate to |app_|.
   void OnSessionMessage(const std::string& web_session_id,
@@ -181,7 +181,22 @@ class FakeEncryptedMedia {
   }
 
  private:
+  class TestCdmContext : public CdmContext {
+   public:
+    TestCdmContext(Decryptor* decryptor) : decryptor_(decryptor) {}
+
+    Decryptor* GetDecryptor() final { return decryptor_; }
+
+#if defined(ENABLE_BROWSER_CDMS)
+    int GetCdmId() const final { return kInvalidCdmId; }
+#endif
+
+   private:
+    Decryptor* decryptor_;
+  };
+
   AesDecryptor decryptor_;
+  TestCdmContext cdm_context_;
   scoped_ptr<AppBase> app_;
 };
 
@@ -560,8 +575,7 @@ class PipelineIntegrationTest
         .Times(AtMost(1));
     demuxer_ = source->GetDemuxer().Pass();
     pipeline_->Start(
-        demuxer_.get(),
-        CreateRenderer(NULL),
+        demuxer_.get(), CreateRenderer(),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
@@ -571,9 +585,8 @@ class PipelineIntegrationTest
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
                    base::Unretained(this)),
-        base::Closure(),
-        base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
-                   base::Unretained(this)));
+        base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
+                                    base::Unretained(this)));
     message_loop_.Run();
   }
 
@@ -591,10 +604,16 @@ class PipelineIntegrationTest
         .WillRepeatedly(SaveArg<0>(&metadata_));
     EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
         .Times(AtMost(1));
+    EXPECT_CALL(*this, DecryptorAttached(true));
+
     demuxer_ = source->GetDemuxer().Pass();
+
+    pipeline_->SetCdm(encrypted_media->GetCdmContext(),
+                      base::Bind(&PipelineIntegrationTest::DecryptorAttached,
+                                 base::Unretained(this)));
+
     pipeline_->Start(
-        demuxer_.get(),
-        CreateRenderer(encrypted_media->decryptor()),
+        demuxer_.get(), CreateRenderer(),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
@@ -604,9 +623,8 @@ class PipelineIntegrationTest
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
                    base::Unretained(this)),
-        base::Closure(),
-        base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
-                   base::Unretained(this)));
+        base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
+                                    base::Unretained(this)));
 
     source->set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
                                        base::Unretained(encrypted_media)));
@@ -707,7 +725,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
                              base::Unretained(&encrypted_media)));
 
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-av_enc-av.webm"),
-                    encrypted_media.decryptor()));
+                    encrypted_media.GetCdmContext()));
 
   Play();
 

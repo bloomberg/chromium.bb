@@ -42,15 +42,9 @@ ProxyDecryptor::~ProxyDecryptor() {
   media_keys_.reset();
 }
 
-Decryptor* ProxyDecryptor::GetDecryptor() {
-  return media_keys_ ? media_keys_->GetCdmContext()->GetDecryptor() : NULL;
+CdmContext* ProxyDecryptor::GetCdmContext() {
+  return media_keys_ ? media_keys_->GetCdmContext() : nullptr;
 }
-
-#if defined(ENABLE_BROWSER_CDMS)
-int ProxyDecryptor::GetCdmId() {
-  return media_keys_->GetCdmContext()->GetCdmId();
-}
-#endif
 
 bool ProxyDecryptor::InitializeCDM(CdmFactory* cdm_factory,
                                    const std::string& key_system,

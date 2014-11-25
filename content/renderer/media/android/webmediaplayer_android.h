@@ -57,6 +57,7 @@ struct MailboxHolder;
 }
 
 namespace media {
+class CdmContext;
 class MediaLog;
 class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
@@ -238,10 +239,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual MediaKeyException cancelKeyRequest(
       const blink::WebString& key_system,
       const blink::WebString& session_id);
-  // TODO(jrummell): Remove this method once Blink updated to use the other
-  // two methods.
-  virtual void setContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm);
+
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result);
@@ -475,9 +473,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<media::ProxyDecryptor> proxy_decryptor_;
 
-  // Non-owned pointer to the CDM. Updated via calls to
-  // setContentDecryptionModule().
-  media::WebContentDecryptionModuleImpl* web_cdm_;
+  // Non-owned pointer to the CdmContext. Updated via calls to
+  // generateKeyRequest() or setContentDecryptionModule().
+  media::CdmContext* cdm_context_;
 
   // This is only Used by Clear Key key system implementation, where a renderer
   // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key

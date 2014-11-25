@@ -36,6 +36,7 @@
 #include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/texttrack_impl.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webinbandtexttrack_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -168,9 +169,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       text_track_index_(0),
-      encrypted_media_support_(cdm_factory.Pass(),
-                               client,
-                               params.initial_cdm()),
+      encrypted_media_support_(
+          cdm_factory.Pass(),
+          client,
+          base::Bind(&WebMediaPlayerImpl::SetCdm, AsWeakPtr())),
       audio_hardware_config_(params.audio_hardware_config()),
       renderer_(renderer.Pass()) {
   // Threaded compositing isn't enabled universally yet.
@@ -674,18 +676,38 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
-    blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  encrypted_media_support_.SetContentDecryptionModule(cdm);
-}
-
-void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  encrypted_media_support_.SetContentDecryptionModule(cdm, result);
+  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
+  if (!cdm) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
+        "Null MediaKeys object is not supported.");
+    return;
+  }
+
+  SetCdm(ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext(),
+         BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
+}
+
+void WebMediaPlayerImpl::SetCdm(CdmContext* cdm_context,
+                                const CdmAttachedCB& cdm_attached_cb) {
+  pipeline_.SetCdm(cdm_context, cdm_attached_cb);
+}
+
+void WebMediaPlayerImpl::OnCdmAttached(
+    blink::WebContentDecryptionModuleResult result,
+    bool success) {
+  if (success) {
+    result.complete();
+    return;
+  }
+
+  result.completeWithError(
+      blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
+      "Unable to set MediaKeys object");
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
@@ -841,9 +863,6 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 // TODO(xhwang): Move this to a factory class so that we can create different
 // renderers.
 scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
-  SetDecryptorReadyCB set_decryptor_ready_cb =
-      encrypted_media_support_.CreateSetDecryptorReadyCB();
-
   // Create our audio decoders and renderer.
   ScopedVector<AudioDecoder> audio_decoders;
 
@@ -851,13 +870,9 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
       media_task_runner_, base::Bind(&LogMediaSourceError, media_log_)));
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner_));
 
-  scoped_ptr<AudioRenderer> audio_renderer(
-      new AudioRendererImpl(media_task_runner_,
-                            audio_source_provider_.get(),
-                            audio_decoders.Pass(),
-                            set_decryptor_ready_cb,
-                            audio_hardware_config_,
-                            media_log_));
+  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
+      media_task_runner_, audio_source_provider_.get(), audio_decoders.Pass(),
+      audio_hardware_config_, media_log_));
 
   // Create our video decoders and renderer.
   ScopedVector<VideoDecoder> video_decoders;
@@ -872,11 +887,7 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner_));
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      media_task_runner_,
-      video_decoders.Pass(),
-      set_decryptor_ready_cb,
-      true,
-      media_log_));
+      media_task_runner_, video_decoders.Pass(), true, media_log_));
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(

@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/buffering_state.h"
+#include "media/base/cdm_context.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
@@ -180,6 +181,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Gets the current pipeline statistics.
   PipelineStatistics GetStatistics() const;
 
+  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+
   void SetErrorForTesting(PipelineStatus status);
   bool HasWeakPtrsForTesting() const;
 
@@ -246,6 +249,13 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   // Carries out notifying filters that we are seeking to a new timestamp.
   void SeekTask(base::TimeDelta time, const PipelineStatusCB& seek_cb);
+
+  // Carries out setting the |cdm_context| in |renderer_|, and then fires
+  // |cdm_attached_cb| with the result. If |renderer_| is null,
+  // |cdm_attached_cb| will be fired immediately with true, and |cdm_context|
+  // will be set in |renderer_| later when |renderer_| is created.
+  void SetCdmTask(CdmContext* cdm_context,
+                  const CdmAttachedCB& cdm_attached_cb);
 
   // Callbacks executed when a renderer has ended.
   void OnRendererEnded();
@@ -365,6 +375,11 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   PipelineStatistics statistics_;
 
   scoped_ptr<SerialRunner> pending_callbacks_;
+
+  // CdmContext to be used to decrypt (and decode) encrypted stream in this
+  // pipeline. Non-null only when SetCdm() is called and the pipeline has not
+  // been started. Then during Start(), this value will be set on |renderer_|.
+  CdmContext* pending_cdm_context_;
 
   base::ThreadChecker thread_checker_;
 

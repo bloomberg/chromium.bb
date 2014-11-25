@@ -9,13 +9,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
+#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
 
 class DemuxerStreamProvider;
-class MediaKeys;
 class VideoFrame;
 
 class MEDIA_EXPORT Renderer {
@@ -49,6 +49,11 @@ class MEDIA_EXPORT Renderer {
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) = 0;
 
+  // Associates the |cdm_context| with this Renderer for decryption (and
+  // decoding) of media data, then fires |cdm_attached_cb| with the result.
+  virtual void SetCdm(CdmContext* cdm_context,
+                      const CdmAttachedCB& cdm_attached_cb) = 0;
+
   // The following functions must be called after Initialize().
 
   // Discards any buffered data, executing |flush_cb| when completed.
@@ -71,9 +76,6 @@ class MEDIA_EXPORT Renderer {
 
   // Returns whether |this| renders video.
   virtual bool HasVideo() = 0;
-
-  // Associates the |cdm| with this Renderer.
-  virtual void SetCdm(MediaKeys* cdm) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);

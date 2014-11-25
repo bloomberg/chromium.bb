@@ -51,13 +51,12 @@ static bool IsStreamEncrypted(DemuxerStream* stream) {
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::DecoderSelector(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    ScopedVector<Decoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    ScopedVector<Decoder> decoders)
     : task_runner_(task_runner),
       decoders_(decoders.Pass()),
-      set_decryptor_ready_cb_(set_decryptor_ready_cb),
       input_stream_(NULL),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::~DecoderSelector() {
@@ -74,11 +73,16 @@ DecoderSelector<StreamType>::~DecoderSelector() {
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::SelectDecoder(
     DemuxerStream* stream,
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const SelectDecoderCB& select_decoder_cb,
     const typename Decoder::OutputCB& output_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
+  DCHECK(set_decryptor_ready_cb_.is_null());
+  DCHECK(select_decoder_cb_.is_null());
+
+  set_decryptor_ready_cb_ = set_decryptor_ready_cb;
 
   // Make sure |select_decoder_cb| runs on a different execution stack.
   select_decoder_cb_ = BindToCurrentLoop(select_decoder_cb);

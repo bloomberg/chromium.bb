@@ -88,20 +88,18 @@ class RendererImplTest : public ::testing::Test {
   // Sets up expectations to allow the audio renderer to initialize.
   void SetAudioRendererInitializeExpectations(PipelineStatus status) {
     EXPECT_CALL(*audio_renderer_,
-                Initialize(audio_stream_.get(), _,  _, _, _, _))
-        .WillOnce(DoAll(SaveArg<3>(&audio_buffering_state_cb_),
-                        SaveArg<4>(&audio_ended_cb_),
-                        SaveArg<5>(&audio_error_cb_),
-                        RunCallback<1>(status)));
+                Initialize(audio_stream_.get(), _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<4>(&audio_buffering_state_cb_),
+                        SaveArg<5>(&audio_ended_cb_),
+                        SaveArg<6>(&audio_error_cb_), RunCallback<1>(status)));
   }
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetVideoRendererInitializeExpectations(PipelineStatus status) {
     EXPECT_CALL(*video_renderer_,
-                Initialize(video_stream_.get(), _, _, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<3>(&video_buffering_state_cb_),
-                        SaveArg<5>(&video_ended_cb_),
-                        RunCallback<1>(status)));
+                Initialize(video_stream_.get(), _, _, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<4>(&video_buffering_state_cb_),
+                        SaveArg<6>(&video_ended_cb_), RunCallback<1>(status)));
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
@@ -438,10 +436,10 @@ TEST_F(RendererImplTest, ErrorDuringInitialize) {
 
   // Force an audio error to occur during video renderer initialization.
   EXPECT_CALL(*video_renderer_,
-              Initialize(video_stream_.get(),  _, _, _, _, _, _, _))
+              Initialize(video_stream_.get(), _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(AudioError(&audio_error_cb_, PIPELINE_ERROR_DECODE),
-                      SaveArg<3>(&video_buffering_state_cb_),
-                      SaveArg<5>(&video_ended_cb_),
+                      SaveArg<4>(&video_buffering_state_cb_),
+                      SaveArg<6>(&video_ended_cb_),
                       RunCallback<1>(PIPELINE_OK)));
 
   InitializeAndExpect(PIPELINE_ERROR_DECODE);

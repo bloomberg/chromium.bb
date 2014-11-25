@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_CDM_CONTEXT_H_
 #define MEDIA_BASE_CDM_CONTEXT_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
@@ -39,6 +40,13 @@ class MEDIA_EXPORT CdmContext {
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmContext);
 };
+
+// Callback to notify that the CdmContext has been completely attached to
+// the media pipeline. Parameter indicates whether the operation succeeded.
+typedef base::Callback<void(bool)> CdmAttachedCB;
+
+// A dummy implementation of CdmAttachedCB.
+MEDIA_EXPORT void IgnoreCdmAttached(bool success);
 
 }  // namespace media
 

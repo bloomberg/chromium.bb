@@ -91,14 +91,8 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
           new CdmResultPromise<>(result, std::string())));
 }
 
-Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
-  return adapter_->GetDecryptor();
+CdmContext* WebContentDecryptionModuleImpl::GetCdmContext() {
+  return adapter_->GetCdmContext();
 }
-
-#if defined(ENABLE_BROWSER_CDMS)
-int WebContentDecryptionModuleImpl::GetCdmId() const {
-  return adapter_->GetCdmId();
-}
-#endif  // defined(ENABLE_BROWSER_CDMS)
 
 }  // namespace media

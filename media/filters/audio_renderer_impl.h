@@ -57,14 +57,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // |sink| is used as the destination for the rendered audio.
   //
   // |decoders| contains the AudioDecoders to use when initializing.
-  //
-  // |set_decryptor_ready_cb| is fired when the audio decryptor is available
-  // (only applicable if the stream is encrypted and we have a decryptor).
   AudioRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const AudioHardwareConfig& hardware_params,
       const scoped_refptr<MediaLog>& media_log);
   ~AudioRendererImpl() override;
@@ -80,6 +76,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // AudioRenderer implementation.
   void Initialize(DemuxerStream* stream,
                   const PipelineStatusCB& init_cb,
+                  const SetDecryptorReadyCB& set_decryptor_ready_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
                   const base::Closure& ended_cb,

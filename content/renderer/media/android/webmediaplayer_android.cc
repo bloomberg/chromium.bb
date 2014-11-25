@@ -101,10 +101,6 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
   blink::WebGraphicsContext3D* web_graphics_context_;
 };
 
-// Used for calls to decryptor_ready_cb_ where the result can be ignored.
-void DoNothing(bool) {
-}
-
 }  // namespace
 
 namespace content {
@@ -150,7 +146,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
       media_log_(media_log),
-      web_cdm_(NULL),
+      cdm_context_(NULL),
       allow_stored_credentials_(false),
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
@@ -178,9 +174,10 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   // Set the initial CDM, if specified.
   if (initial_cdm) {
-    web_cdm_ = media::ToWebContentDecryptionModuleImpl(initial_cdm);
-    if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-      player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
+    cdm_context_ =
+        media::ToWebContentDecryptionModuleImpl(initial_cdm)->GetCdmContext();
+    if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
+      player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
   }
 }
 
@@ -1528,15 +1525,19 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }
 
+    // Set the CDM onto the media player.
+    cdm_context_ = proxy_decryptor_->GetCdmContext();
+
     if (!decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(proxy_decryptor_->GetDecryptor(), base::Bind(DoNothing));
+          .Run(cdm_context_->GetDecryptor(),
+               base::Bind(&media::IgnoreCdmAttached));
     }
 
     // Only browser CDMs have CDM ID. Render side CDMs (e.g. ClearKey CDM) do
     // not have a CDM ID and there is no need to call player_manager_->SetCdm().
-    if (proxy_decryptor_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-      player_manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
+    if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
+      player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
 
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {
@@ -1638,27 +1639,6 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(const std::string& key_system,
 }
 
 void WebMediaPlayerAndroid::setContentDecryptionModule(
-    blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm)
-    return;
-
-  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
-  if (!web_cdm_)
-    return;
-
-  if (!decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
-  }
-
-  if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-    player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
-}
-
-void WebMediaPlayerAndroid::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -1672,24 +1652,22 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     return;
   }
 
-  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
-  DCHECK(web_cdm_);
+  cdm_context_ = media::ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext();
 
   if (!decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_).Run(
-        web_cdm_->GetDecryptor(),
-        media::BindToCurrentLoop(
-            base::Bind(&WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
-                       weak_factory_.GetWeakPtr(),
-                       result)));
+    base::ResetAndReturn(&decryptor_ready_cb_)
+        .Run(cdm_context_->GetDecryptor(),
+             media::BindToCurrentLoop(base::Bind(
+                 &WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
+                 weak_factory_.GetWeakPtr(), result)));
   } else {
     // No pipeline/decoder connected, so resolve the promise. When something
     // is connected, setting the CDM will happen in SetDecryptorReadyCB().
     ContentDecryptionModuleAttached(result, true);
   }
 
-  if (web_cdm_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-    player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
+  if (cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
+    player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
 }
 
 void WebMediaPlayerAndroid::ContentDecryptionModuleAttached(
@@ -1782,7 +1760,7 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   if (decryptor_ready_cb.is_null()) {
     if (!decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(NULL, base::Bind(DoNothing));
+          .Run(NULL, base::Bind(&media::IgnoreCdmAttached));
     }
     return;
   }
@@ -1794,17 +1772,9 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   // detail.
   DCHECK(decryptor_ready_cb_.is_null());
 
-  // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
-  DCHECK(!proxy_decryptor_ || !web_cdm_);
-
-  if (proxy_decryptor_) {
-    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor(),
-                           base::Bind(DoNothing));
-    return;
-  }
-
-  if (web_cdm_) {
-    decryptor_ready_cb.Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
+  if (cdm_context_) {
+    decryptor_ready_cb.Run(cdm_context_->GetDecryptor(),
+                           base::Bind(&media::IgnoreCdmAttached));
     return;
   }
 

@@ -37,10 +37,6 @@ namespace media {
 // Prefix for histograms related to Encrypted Media Extensions.
 static const char* kMediaEme = "Media.EME.";
 
-// Used for calls to decryptor_ready_cb where the result can be ignored.
-static void DoNothing(bool success) {
-}
-
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 static std::string ToASCIIOrEmpty(const WebString& string) {
@@ -120,10 +116,10 @@ static std::string GuessInitDataType(const unsigned char* init_data,
 EncryptedMediaPlayerSupport::EncryptedMediaPlayerSupport(
     scoped_ptr<CdmFactory> cdm_factory,
     blink::WebMediaPlayerClient* client,
-    blink::WebContentDecryptionModule* initial_cdm)
+    const SetCdmContextCB& set_cdm_context_cb)
     : cdm_factory_(cdm_factory.Pass()),
       client_(client),
-      web_cdm_(ToWebContentDecryptionModuleImpl(initial_cdm)) {
+      set_cdm_context_cb_(set_cdm_context_cb) {
 }
 
 EncryptedMediaPlayerSupport::~EncryptedMediaPlayerSupport() {
@@ -174,9 +170,10 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }
 
-    if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(proxy_decryptor_->GetDecryptor(), base::Bind(DoNothing));
+    if (proxy_decryptor_ && !set_cdm_context_cb_.is_null()) {
+      base::ResetAndReturn(&set_cdm_context_cb_)
+          .Run(proxy_decryptor_->GetCdmContext(),
+               base::Bind(&IgnoreCdmAttached));
     }
 
     current_key_system_ = key_system;
@@ -281,64 +278,6 @@ EncryptedMediaPlayerSupport::CancelKeyRequestInternal(
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-void EncryptedMediaPlayerSupport::SetContentDecryptionModule(
-    blink::WebContentDecryptionModule* cdm) {
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm)
-    return;
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-
-  if (web_cdm_ && !decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
-}
-
-void EncryptedMediaPlayerSupport::SetContentDecryptionModule(
-    blink::WebContentDecryptionModule* cdm,
-    blink::WebContentDecryptionModuleResult result) {
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm) {
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError,
-        0,
-        "Null MediaKeys object is not supported.");
-    return;
-  }
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-
-  if (web_cdm_ && !decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(web_cdm_->GetDecryptor(), BIND_TO_RENDER_LOOP1(
-            &EncryptedMediaPlayerSupport::ContentDecryptionModuleAttached,
-            result));
-  } else {
-    // No pipeline/decoder connected, so resolve the promise. When something
-    // is connected, setting the CDM will happen in SetDecryptorReadyCallback().
-    ContentDecryptionModuleAttached(result, true);
-  }
-}
-
-void EncryptedMediaPlayerSupport::ContentDecryptionModuleAttached(
-    blink::WebContentDecryptionModuleResult result,
-    bool success) {
-  if (success) {
-    result.complete();
-    return;
-  }
-
-  result.completeWithError(
-      blink::WebContentDecryptionModuleExceptionNotSupportedError,
-      0,
-      "Unable to set MediaKeys object");
-}
-
-SetDecryptorReadyCB EncryptedMediaPlayerSupport::CreateSetDecryptorReadyCB() {
-  return BIND_TO_RENDER_LOOP(
-      &EncryptedMediaPlayerSupport::SetDecryptorReadyCallback);
-}
-
 Demuxer::NeedKeyCB EncryptedMediaPlayerSupport::CreateNeedKeyCB() {
   return BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnNeedKey);
 }
@@ -407,41 +346,6 @@ void EncryptedMediaPlayerSupport::OnKeyMessage(
       message.empty() ? NULL : &message[0],
       base::saturated_cast<unsigned int>(message.size()),
       destination_url);
-}
-
-void EncryptedMediaPlayerSupport::SetDecryptorReadyCallback(
-    const DecryptorReadyCB& decryptor_ready_cb) {
-  // Cancels the previous decryptor request.
-  if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(NULL, base::Bind(DoNothing));
-    }
-    return;
-  }
-
-  // TODO(xhwang): Support multiple decryptor notification request (e.g. from
-  // video and audio). The current implementation is okay for the current
-  // media pipeline since we initialize audio and video decoders in sequence.
-  // But WebMediaPlayerImpl should not depend on media pipeline's implementation
-  // detail.
-  DCHECK(decryptor_ready_cb_.is_null());
-
-  // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
-  DCHECK(!proxy_decryptor_ || !web_cdm_);
-
-  if (proxy_decryptor_) {
-    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor(),
-                           base::Bind(DoNothing));
-    return;
-  }
-
-  if (web_cdm_) {
-    decryptor_ready_cb.Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
-    return;
-  }
-
-  decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
 }  // namespace media

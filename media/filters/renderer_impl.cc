@@ -32,6 +32,7 @@ RendererImpl::RendererImpl(
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
       audio_ended_(false),
       video_ended_(false),
+      cdm_context_(nullptr),
       underflow_disabled_for_testing_(false),
       clockless_video_playback_enabled_for_testing_(false),
       weak_factory_(this),
@@ -80,6 +81,23 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   init_cb_ = init_cb;
   state_ = STATE_INITIALIZING;
   InitializeAudioRenderer();
+}
+
+void RendererImpl::SetCdm(CdmContext* cdm_context,
+                          const CdmAttachedCB& cdm_attached_cb) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(cdm_context);
+
+  cdm_context_ = cdm_context;
+
+  if (decryptor_ready_cb_.is_null()) {
+    cdm_attached_cb.Run(true);
+    return;
+  }
+
+  base::ResetAndReturn(&decryptor_ready_cb_)
+      .Run(cdm_context->GetDecryptor(), cdm_attached_cb);
 }
 
 void RendererImpl::Flush(const base::Closure& flush_cb) {
@@ -153,14 +171,6 @@ bool RendererImpl::HasVideo() {
   return video_renderer_ != NULL;
 }
 
-void RendererImpl::SetCdm(MediaKeys* cdm) {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  // TODO(xhwang): Explore to possibility to move CDM setting from
-  // WebMediaPlayerImpl to this class. See http://crbug.com/401264
-  NOTREACHED();
-}
-
 void RendererImpl::DisableUnderflowForTesting() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -191,6 +201,29 @@ base::TimeDelta RendererImpl::GetMediaTimeForSyncingVideo() {
   return time_source_->CurrentMediaTimeForSyncingVideo();
 }
 
+void RendererImpl::SetDecryptorReadyCallback(
+    const DecryptorReadyCB& decryptor_ready_cb) {
+  // Cancels the previous decryptor request.
+  if (decryptor_ready_cb.is_null()) {
+    if (!decryptor_ready_cb_.is_null()) {
+      base::ResetAndReturn(&decryptor_ready_cb_)
+          .Run(nullptr, base::Bind(IgnoreCdmAttached));
+    }
+    return;
+  }
+
+  // We initialize audio and video decoders in sequence.
+  DCHECK(decryptor_ready_cb_.is_null());
+
+  if (cdm_context_) {
+    decryptor_ready_cb.Run(cdm_context_->GetDecryptor(),
+                           base::Bind(IgnoreCdmAttached));
+    return;
+  }
+
+  decryptor_ready_cb_ = decryptor_ready_cb;
+}
+
 void RendererImpl::InitializeAudioRenderer() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -209,8 +242,8 @@ void RendererImpl::InitializeAudioRenderer() {
   // Note: After the initialization of a renderer, error events from it may
   // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO),
-      done_cb,
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), done_cb,
+      base::Bind(&RendererImpl::SetDecryptorReadyCallback, weak_this_),
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &audio_buffering_state_),
@@ -252,11 +285,10 @@ void RendererImpl::InitializeVideoRenderer() {
   }
 
   video_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO),
-      done_cb,
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), done_cb,
+      base::Bind(&RendererImpl::SetDecryptorReadyCallback, weak_this_),
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&RendererImpl::OnBufferingStateChanged,
-                 weak_this_,
+      base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &video_buffering_state_),
       base::ResetAndReturn(&paint_cb_),
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),

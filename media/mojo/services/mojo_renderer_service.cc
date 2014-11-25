@@ -74,23 +74,18 @@ MojoRendererService::MojoRendererService()
   audio_renderer_sink_ = renderer_config->GetAudioRendererSink();
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      task_runner,
-      audio_renderer_sink_.get(),
+      task_runner, audio_renderer_sink_.get(),
       renderer_config->GetAudioDecoders(
                            task_runner,
                            base::Bind(&LogMediaSourceError, media_log)).Pass(),
-      SetDecryptorReadyCB(),
-      renderer_config->GetAudioHardwareConfig(),
-      media_log));
+      renderer_config->GetAudioHardwareConfig(), media_log));
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       task_runner,
       renderer_config->GetVideoDecoders(
                            task_runner,
                            base::Bind(&LogMediaSourceError, media_log)).Pass(),
-      SetDecryptorReadyCB(),
-      true,
-      media_log));
+      true, media_log));
 
   // Create renderer.
   renderer_.reset(new RendererImpl(

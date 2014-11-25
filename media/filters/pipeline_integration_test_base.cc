@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
+#include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
@@ -116,7 +117,7 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       .Times(AtMost(1));
   CreateDemuxer(file_path);
   pipeline_->Start(
-      demuxer_.get(), CreateRenderer(NULL),
+      demuxer_.get(), CreateRenderer(),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
@@ -145,17 +146,21 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
 }
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
-                                        Decryptor* decryptor) {
+                                        CdmContext* cdm_context) {
   EXPECT_CALL(*this, OnMetadata(_))
       .Times(AtMost(1))
       .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
       .Times(AtMost(1));
+  EXPECT_CALL(*this, DecryptorAttached(true));
 
   CreateDemuxer(file_path);
+
+  pipeline_->SetCdm(cdm_context,
+                    base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
+                               base::Unretained(this)));
   pipeline_->Start(
-      demuxer_.get(),
-      CreateRenderer(decryptor),
+      demuxer_.get(), CreateRenderer(),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
@@ -166,9 +171,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
                  base::Unretained(this)),
-      base::Closure(),
-      base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
-                 base::Unretained(this)));
+      base::Closure(), base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
+                                  base::Unretained(this)));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -246,8 +250,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
                                             new MediaLog()));
 }
 
-scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
-    Decryptor* decryptor) {
+scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   ScopedVector<VideoDecoder> video_decoders;
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(
@@ -257,14 +260,9 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
   // Disable frame dropping if hashing is enabled.
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      message_loop_.message_loop_proxy(),
-      video_decoders.Pass(),
-      base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                 base::Unretained(this),
-                 decryptor),
-      false,
-      new MediaLog()));
+  scoped_ptr<VideoRenderer> video_renderer(
+      new VideoRendererImpl(message_loop_.message_loop_proxy(),
+                            video_decoders.Pass(), false, new MediaLog()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
@@ -290,12 +288,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
-      audio_decoders.Pass(),
-      base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                 base::Unretained(this),
-                 decryptor),
-      hardware_config_,
-      new MediaLog()));
+      audio_decoders.Pass(), hardware_config_, new MediaLog()));
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();
 
@@ -312,16 +305,6 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
     renderer_impl->EnableClocklessVideoPlaybackForTesting();
 
   return renderer_impl.Pass();
-}
-
-void PipelineIntegrationTestBase::SetDecryptor(
-    Decryptor* decryptor,
-    const DecryptorReadyCB& decryptor_ready_cb) {
-  decryptor_ready_cb.Run(
-      decryptor,
-      base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
-                 base::Unretained(this)));
-  EXPECT_CALL(*this, DecryptorAttached(true));
 }
 
 void PipelineIntegrationTestBase::OnVideoFramePaint(

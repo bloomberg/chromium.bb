@@ -10,4 +10,7 @@ CdmContext::CdmContext() {}
 
 CdmContext::~CdmContext() {}
 
+void IgnoreCdmAttached(bool success) {
+}
+
 }  // namespace media

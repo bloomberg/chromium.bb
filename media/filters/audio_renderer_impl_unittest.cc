@@ -95,7 +95,6 @@ class AudioRendererImplTest : public ::testing::Test {
     renderer_.reset(new AudioRendererImpl(message_loop_.message_loop_proxy(),
                                           sink_.get(),
                                           decoders.Pass(),
-                                          SetDecryptorReadyCB(),
                                           hardware_config_,
                                           new MediaLog()));
   }
@@ -116,16 +115,13 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
     renderer_->Initialize(
-        &demuxer_stream_,
-        pipeline_status_cb,
+        &demuxer_stream_, pipeline_status_cb, SetDecryptorReadyCB(),
         base::Bind(&AudioRendererImplTest::OnStatistics,
                    base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnBufferingStateChange,
                    base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnEnded,
-                   base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnError,
-                   base::Unretained(this)));
+        base::Bind(&AudioRendererImplTest::OnEnded, base::Unretained(this)),
+        base::Bind(&AudioRendererImplTest::OnError, base::Unretained(this)));
   }
 
   void Initialize() {

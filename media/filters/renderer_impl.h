@@ -13,6 +13,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
+#include "media/base/decryptor.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
@@ -39,7 +40,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                scoped_ptr<AudioRenderer> audio_renderer,
                scoped_ptr<VideoRenderer> video_renderer);
 
-  ~RendererImpl() override;
+  ~RendererImpl() final;
 
   // Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
@@ -48,15 +49,16 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                   const BufferingStateCB& buffering_state_cb,
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
-  void StartPlayingFrom(base::TimeDelta time) override;
-  void SetPlaybackRate(float playback_rate) override;
-  void SetVolume(float volume) override;
-  base::TimeDelta GetMediaTime() override;
-  bool HasAudio() override;
-  bool HasVideo() override;
-  void SetCdm(MediaKeys* cdm) override;
+                  const PipelineStatusCB& error_cb) final;
+  void SetCdm(CdmContext* cdm_context,
+              const CdmAttachedCB& cdm_attached_cb) final;
+  void Flush(const base::Closure& flush_cb) final;
+  void StartPlayingFrom(base::TimeDelta time) final;
+  void SetPlaybackRate(float playback_rate) final;
+  void SetVolume(float volume) final;
+  base::TimeDelta GetMediaTime() final;
+  bool HasAudio() final;
+  bool HasVideo() final;
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
@@ -72,6 +74,12 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   };
 
   base::TimeDelta GetMediaTimeForSyncingVideo();
+
+  // Requests that this object notifies when a decryptor is ready through the
+  // |decryptor_ready_cb| provided.
+  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // nullptr immediately and reset.
+  void SetDecryptorReadyCallback(const DecryptorReadyCB& decryptor_ready_cb);
 
   // Helper functions and callbacks for Initialize().
   void InitializeAudioRenderer();
@@ -149,6 +157,16 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Whether we've received the audio/video ended events.
   bool audio_ended_;
   bool video_ended_;
+
+  CdmContext* cdm_context_;
+
+  // Callback registered by filters (decoder or demuxer) to be informed of a
+  // Decryptor.
+  // Note: We could have multiple filters registering this callback. One
+  // callback is okay because:
+  // 1, We always initialize filters in sequence.
+  // 2, Filter initialization will not finish until this callback is satisfied.
+  DecryptorReadyCB decryptor_ready_cb_;
 
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;

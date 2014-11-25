@@ -42,20 +42,18 @@ template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::DecoderStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<Decoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
       decoder_selector_(
-          new DecoderSelector<StreamType>(task_runner,
-                                          decoders.Pass(),
-                                          set_decryptor_ready_cb)),
+          new DecoderSelector<StreamType>(task_runner, decoders.Pass())),
       active_splice_(false),
       decoding_eos_(false),
       pending_decode_requests_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::~DecoderStream() {
@@ -81,9 +79,11 @@ DecoderStream<StreamType>::~DecoderStream() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
-                                           const StatisticsCB& statistics_cb,
-                                           const InitCB& init_cb) {
+void DecoderStream<StreamType>::Initialize(
+    DemuxerStream* stream,
+    const InitCB& init_cb,
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    const StatisticsCB& statistics_cb) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED) << state_;
@@ -97,7 +97,7 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
   state_ = STATE_INITIALIZING;
   // TODO(xhwang): DecoderSelector only needs a config to select a decoder.
   decoder_selector_->SelectDecoder(
-      stream,
+      stream, set_decryptor_ready_cb,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,

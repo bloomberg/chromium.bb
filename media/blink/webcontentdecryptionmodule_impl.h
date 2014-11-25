@@ -21,10 +21,9 @@ class WebSecurityOrigin;
 
 namespace media {
 
+class CdmContext;
 class CdmFactory;
 class CdmSessionAdapter;
-class Decryptor;
-class MediaKeys;
 class WebContentDecryptionModuleSessionImpl;
 
 class MEDIA_EXPORT WebContentDecryptionModuleImpl
@@ -37,18 +36,6 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
 
   virtual ~WebContentDecryptionModuleImpl();
 
-  // Returns the Decryptor associated with this CDM. May be NULL if no
-  // Decryptor associated with the MediaKeys object.
-  // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
-  // after WebContentDecryptionModule is freed. http://crbug.com/330324
-  Decryptor* GetDecryptor();
-
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
-  // CDM ID is associated, such as when Clear Key is used.
-  int GetCdmId() const;
-#endif  // defined(ENABLE_BROWSER_CDMS)
-
   // blink::WebContentDecryptionModule implementation.
   virtual blink::WebContentDecryptionModuleSession* createSession();
   // TODO(jrummell): Remove this method once blink updated.
@@ -59,6 +46,11 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
       const uint8* server_certificate,
       size_t server_certificate_length,
       blink::WebContentDecryptionModuleResult result);
+
+  // Returns the CdmContext associated with this CDM, which must not be nullptr.
+  // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
+  // after WebContentDecryptionModule is freed. http://crbug.com/330324
+  CdmContext* GetCdmContext();
 
  private:
   // Takes reference to |adapter|.

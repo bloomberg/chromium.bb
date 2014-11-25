@@ -45,6 +45,8 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
                   const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb) override;
+  void SetCdm(CdmContext* cdm_context,
+              const CdmAttachedCB& cdm_attached_cb) override;
   void Flush(const base::Closure& flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(float playback_rate) override;
@@ -52,7 +54,6 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   base::TimeDelta GetMediaTime() override;
   bool HasAudio() override;
   bool HasVideo() override;
-  void SetCdm(MediaKeys* cdm) override;
 
   // mojo::MediaRendererClient implementation.
   void OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) override;

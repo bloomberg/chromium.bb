@@ -46,15 +46,8 @@ class MEDIA_EXPORT ProxyDecryptor {
                  const KeyMessageCB& key_message_cb);
   virtual ~ProxyDecryptor();
 
-  // Returns the Decryptor associated with this object. May be NULL if no
-  // Decryptor is associated.
-  Decryptor* GetDecryptor();
-
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
-  // CDM ID is associated, such as when Clear Key is used.
-  int GetCdmId();
-#endif
+  // Returns the CdmContext associated with this object.
+  CdmContext* GetCdmContext();
 
   // Only call this once.
   bool InitializeCDM(CdmFactory* cdm_factory,
@@ -114,10 +107,6 @@ class MEDIA_EXPORT ProxyDecryptor {
   base::hash_map<std::string, bool> active_sessions_;
 
   bool is_clear_key_;
-
-#if defined(ENABLE_BROWSER_CDMS)
-  int cdm_id_;
-#endif
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;

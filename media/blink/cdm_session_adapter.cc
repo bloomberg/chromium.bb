@@ -127,19 +127,13 @@ void CdmSessionAdapter::GetUsableKeyIds(
   media_keys_->GetUsableKeyIds(web_session_id, promise.Pass());
 }
 
-Decryptor* CdmSessionAdapter::GetDecryptor() {
-  return media_keys_->GetCdmContext()->GetDecryptor();
+CdmContext* CdmSessionAdapter::GetCdmContext() {
+  return media_keys_->GetCdmContext();
 }
 
 const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
   return key_system_uma_prefix_;
 }
-
-#if defined(ENABLE_BROWSER_CDMS)
-int CdmSessionAdapter::GetCdmId() const {
-  return media_keys_->GetCdmContext()->GetCdmId();
-}
-#endif  // defined(ENABLE_BROWSER_CDMS)
 
 void CdmSessionAdapter::OnSessionMessage(const std::string& web_session_id,
                                          const std::vector<uint8>& message,

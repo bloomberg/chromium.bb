@@ -87,13 +87,6 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   void InitializeDecoderSelector(DecryptorCapability decryptor_capability,
                                  int num_decoders) {
-    SetDecryptorReadyCB set_decryptor_ready_cb;
-    if (decryptor_capability != kNoDecryptor) {
-      set_decryptor_ready_cb =
-          base::Bind(&VideoDecoderSelectorTest::SetDecryptorReadyCallback,
-                     base::Unretained(this));
-    }
-
     if (decryptor_capability == kDecryptOnly ||
         decryptor_capability == kDecryptAndDecode) {
       EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
@@ -116,6 +109,10 @@ class VideoDecoderSelectorTest : public ::testing::Test {
       // Set and cancel DecryptorReadyCB but the callback is never fired.
       EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
           .Times(2);
+    } else if (decryptor_capability == kNoDecryptor) {
+      EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+          .WillRepeatedly(
+              RunCallback<0>(nullptr, base::Bind(&IgnoreCdmAttached)));
     }
 
     DCHECK_GE(all_decoders_.size(), static_cast<size_t>(num_decoders));
@@ -123,14 +120,14 @@ class VideoDecoderSelectorTest : public ::testing::Test {
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
     decoder_selector_.reset(new VideoDecoderSelector(
-        message_loop_.message_loop_proxy(),
-        all_decoders_.Pass(),
-        set_decryptor_ready_cb));
+        message_loop_.message_loop_proxy(), all_decoders_.Pass()));
   }
 
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
+        base::Bind(&VideoDecoderSelectorTest::SetDecryptorReadyCallback,
+                   base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::FrameReady,
