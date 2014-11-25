@@ -43485,6 +43485,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Try out"/>
   <int value="4" label="Enable"/>
   <int value="5" label="Disable"/>
+  <int value="6" label="Dismiss ('done')"/>
 </enum>
 
 <enum name="EasyUnlockLoginEvent" type="int">
