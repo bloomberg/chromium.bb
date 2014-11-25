@@ -49,6 +49,8 @@ bool BlinkTestPlatformInitialize() {
   base::FilePath garuda_path("/usr/share/fonts/truetype/thai/Garuda.ttf");
   if (!base::PathExists(garuda_path))
     garuda_path = base::FilePath("/usr/share/fonts/truetype/tlwg/Garuda.ttf");
+  if (!base::PathExists(garuda_path))
+    garuda_path = base::FilePath("/usr/share/fonts/opentype/tlwg/Garuda.otf");
   if (!gfx::LoadFontIntoFontconfig(garuda_path))
     return false;
 
