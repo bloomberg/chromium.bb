@@ -59,7 +59,8 @@ class MimeUtil : public PlatformMimeUtil {
     MPEG2_AAC_MAIN,
     MPEG2_AAC_SSR,
     MPEG4_AAC_LC,
-    MPEG4_AAC_SBRv1,
+    MPEG4_AAC_SBR_v1,
+    MPEG4_AAC_SBR_PS_v2,
     VORBIS,
     OPUS,
     H264_BASELINE,
@@ -475,7 +476,8 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
     case MimeUtil::PCM:
     case MimeUtil::MP3:
     case MimeUtil::MPEG4_AAC_LC:
-    case MimeUtil::MPEG4_AAC_SBRv1:
+    case MimeUtil::MPEG4_AAC_SBR_v1:
+    case MimeUtil::MPEG4_AAC_SBR_PS_v2:
     case MimeUtil::H264_BASELINE:
     case MimeUtil::H264_MAIN:
     case MimeUtil::H264_HIGH:
@@ -528,16 +530,17 @@ struct MediaFormatStrict {
 //   mp4a.69     - MPEG-2 extension to MPEG-1
 //   mp4a.6B     - MPEG-1 audio
 //   mp4a.40.2   - MPEG-4 AAC LC
-//   mp4a.40.5   - MPEG-4 AAC SBRv1
+//   mp4a.40.5   - MPEG-4 HE-AAC v1 (AAC LC + SBR)
+//   mp4a.40.29  - MPEG-4 HE-AAC v2 (AAC LC + SBR + PS)
 //
 //   avc1.42E0xx - H.264 Baseline
 //   avc1.4D40xx - H.264 Main
 //   avc1.6400xx - H.264 High
 static const char kMP4AudioCodecsExpression[] =
-    "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.5";
+    "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.5,mp4a.40.29";
 static const char kMP4VideoCodecsExpression[] =
     "avc1.42E00A,avc1.4D400A,avc1.64000A," \
-    "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.5";
+    "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.5,mp4a.40.29";
 
 static const MediaFormatStrict format_codec_mappings[] = {
   { "video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0" },
@@ -576,7 +579,8 @@ static const CodecIDMappings kUnambiguousCodecIDs[] = {
   { "mp4a.69", MimeUtil::MP3 },
   { "mp4a.6B", MimeUtil::MP3 },
   { "mp4a.40.2", MimeUtil::MPEG4_AAC_LC },
-  { "mp4a.40.5", MimeUtil::MPEG4_AAC_SBRv1 },
+  { "mp4a.40.5", MimeUtil::MPEG4_AAC_SBR_v1 },
+  { "mp4a.40.29", MimeUtil::MPEG4_AAC_SBR_PS_v2 },
   { "vorbis", MimeUtil::VORBIS },
   { "opus", MimeUtil::OPUS },
   { "vp8", MimeUtil::VP8 },
@@ -1044,7 +1048,8 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case MPEG2_AAC_MAIN:
     case MPEG2_AAC_SSR:
     case MPEG4_AAC_LC:
-    case MPEG4_AAC_SBRv1:
+    case MPEG4_AAC_SBR_v1:
+    case MPEG4_AAC_SBR_PS_v2:
     case H264_BASELINE:
     case H264_MAIN:
     case H264_HIGH:

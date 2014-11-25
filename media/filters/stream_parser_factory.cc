@@ -102,14 +102,24 @@ static StreamParser* BuildWebMParser(
 // AAC Object Type IDs that Chrome supports.
 static const int kAACLCObjectType = 2;
 static const int kAACSBRObjectType = 5;
+static const int kAACPSObjectType = 29;
 
 static int GetMP4AudioObjectType(const std::string& codec_id,
                                  const LogCB& log_cb) {
+  // From RFC 6381 section 3.3 (ISO Base Media File Format Name Space):
+  // When the first element of a ['codecs' parameter value] is 'mp4a' ...,
+  // the second element is a hexadecimal representation of the MP4 Registration
+  // Authority ObjectTypeIndication (OTI). Note that MP4RA uses a leading "0x"
+  // with these values, which is omitted here and hence implied.
   std::vector<std::string> tokens;
   if (Tokenize(codec_id, ".", &tokens) == 3 &&
       tokens[0] == "mp4a" && tokens[1] == "40") {
+    // From RFC 6381 section 3.3:
+    // One of the OTI values for 'mp4a' is 40 (identifying MPEG-4 audio). For
+    // this value, the third element identifies the audio ObjectTypeIndication
+    // (OTI) ... expressed as a decimal number.
     int audio_object_type;
-    if (base::HexStringToInt(tokens[2], &audio_object_type))
+    if (base::StringToInt(tokens[2], &audio_object_type))
       return audio_object_type;
   }
 
@@ -120,12 +130,12 @@ static int GetMP4AudioObjectType(const std::string& codec_id,
 bool ValidateMP4ACodecID(const std::string& codec_id, const LogCB& log_cb) {
   int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
   if (audio_object_type == kAACLCObjectType ||
-      audio_object_type == kAACSBRObjectType) {
+      audio_object_type == kAACSBRObjectType ||
+      audio_object_type == kAACPSObjectType) {
     return true;
   }
 
-  MEDIA_LOG(log_cb) << "Unsupported audio object type "
-                    << "0x" << std::hex << audio_object_type
+  MEDIA_LOG(log_cb) << "Unsupported audio object type " << audio_object_type
                     << " in codec '" << codec_id << "'";
   return false;
 }
@@ -170,7 +180,8 @@ static StreamParser* BuildMP4Parser(
 
       audio_object_types.insert(mp4::kISO_14496_3);
 
-      if (audio_object_type == kAACSBRObjectType) {
+      if (audio_object_type == kAACSBRObjectType ||
+          audio_object_type == kAACPSObjectType) {
         has_sbr = true;
         break;
       }
@@ -219,9 +230,12 @@ static StreamParser* BuildMP2TParser(
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
-    if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern) &&
-        GetMP4AudioObjectType(codec_id, log_cb) == kAACSBRObjectType) {
-      has_sbr = true;
+    if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
+      int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
+      if (audio_object_type == kAACSBRObjectType ||
+          audio_object_type == kAACPSObjectType) {
+        has_sbr = true;
+      }
     }
   }
 
