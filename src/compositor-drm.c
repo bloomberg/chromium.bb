@@ -47,7 +47,7 @@
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "pixman-renderer.h"
-#include "udev-input.h"
+#include "libinput-seat.h"
 #include "launcher-util.h"
 #include "vaapi-recorder.h"
 

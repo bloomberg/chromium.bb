@@ -46,7 +46,7 @@
 #include "compositor.h"
 #include "rpi-renderer.h"
 #include "launcher-util.h"
-#include "udev-input.h"
+#include "libinput-seat.h"
 
 #if 0
 #define DBG(...) \

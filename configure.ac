@@ -155,15 +155,7 @@ if test x$enable_drm_compositor = xyes; then
 fi
 
 
-AC_ARG_ENABLE(libinput-backend, [  --disable-libinput-backend],,
-	      enable_libinput_backend=yes)
-AM_CONDITIONAL([ENABLE_LIBINPUT_BACKEND], [test x$enable_libinput_backend = xyes])
-if test x$enable_libinput_backend = xyes; then
-  AC_DEFINE([BUILD_LIBINPUT_BACKEND], [1], [Build the libinput input device backend])
-  PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.6.0])
-fi
-
-
+PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.6.0])
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
 
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,

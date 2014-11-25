@@ -42,7 +42,7 @@
 #include "compositor.h"
 #include "launcher-util.h"
 #include "pixman-renderer.h"
-#include "udev-input.h"
+#include "libinput-seat.h"
 #include "gl-renderer.h"
 
 struct fbdev_compositor {
