@@ -11,6 +11,7 @@ var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
 var rootNode = null;
+var url = '';
 
 function createTab(url, callback) {
   chrome.tabs.create({"url": url}, function(tab) {
@@ -24,7 +25,7 @@ function setUpAndRunTests(allTests, opt_path) {
     createTab(url, function(unused_tab) {
       chrome.automation.getTree(function (returnedRootNode) {
         rootNode = returnedRootNode;
-        if (rootNode.attributes.docLoaded) {
+        if (rootNode.docLoaded) {
           chrome.test.runTests(allTests);
           return;
         }
@@ -39,7 +40,7 @@ function setUpAndRunTests(allTests, opt_path) {
 function getUrlFromConfig(path, callback) {
   chrome.test.getConfig(function(config) {
     assertTrue('testServer' in config, 'Expected testServer in config');
-    var url = ('http://a.com:PORT/' + path)
+    url = ('http://a.com:PORT/' + path)
         .replace(/PORT/, config.testServer.port);
     callback(url)
   });

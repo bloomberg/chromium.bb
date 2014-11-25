@@ -5,6 +5,7 @@
 var group;
 var h1;
 var p1;
+var link;
 var main;
 var p2;
 var p3;
@@ -23,6 +24,9 @@ function initializeNodes(rootNode) {
   p1 = group.lastChild();
   assertEq(RoleType.paragraph, p1.role);
 
+  link = p1.children()[1];
+  assertEq(RoleType.link, link.role);
+
   main = rootNode.children()[1];
   assertEq(RoleType.main, main.role);
 
@@ -37,12 +41,12 @@ function initializeNodes(rootNode) {
 
   okButton = anonGroup.firstChild();
   assertEq(RoleType.button, okButton.role);
-  assertEq('Ok', okButton.attributes.name);
+  assertEq('Ok', okButton.name);
   assertFalse(StateType.enabled in okButton.state);
 
   cancelButton = anonGroup.lastChild();
   assertEq(RoleType.button, cancelButton.role);
-  assertEq('Cancel', cancelButton.attributes.name);
+  assertEq('Cancel', cancelButton.name);
   assertTrue(StateType.enabled in cancelButton.state);
 }
 
@@ -86,8 +90,8 @@ var allTests = [
     initializeNodes(rootNode);
 
     // Find all focusable elements (disabled button is not focusable).
-    assertEq(cancelButton, rootNode.find({ state: { focusable: true }}));
-    assertEq([cancelButton],
+    assertEq(link, rootNode.find({ state: { focusable: true }}));
+    assertEq([link, cancelButton],
              rootNode.findAll({ state: { focusable: true }}));
 
     // Find disabled buttons.

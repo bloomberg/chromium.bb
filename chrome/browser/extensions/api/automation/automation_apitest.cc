@@ -187,6 +187,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Find) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Mixins) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "mixins.html"))
+      << message_;
+}
+
+
 static const int kPid = 1;
 static const int kTab0Rid = 1;
 static const int kTab1Rid = 2;

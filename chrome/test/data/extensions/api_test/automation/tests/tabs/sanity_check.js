@@ -12,7 +12,7 @@ var RemoveUntestedStates = function(state) {
 
 var allTests = [
   function testSimplePage() {
-    var title = rootNode.attributes.docTitle;
+    var title = rootNode.docTitle;
     assertEq('Automation Tests', title);
     RemoveUntestedStates(rootNode.state);
     assertEq(
@@ -31,19 +31,19 @@ var allTests = [
     var contentChildren = body.children();
     assertEq(3, contentChildren.length);
     var okButton = contentChildren[0];
-    assertEq('Ok', okButton.attributes.name);
+    assertEq('Ok', okButton.name);
     RemoveUntestedStates(okButton.state);
     assertEq({enabled: true, focusable: true, readOnly: true},
              okButton.state);
     var userNameInput = contentChildren[1];
     assertEq('Username',
-             userNameInput.attributes.description);
+             userNameInput.description);
     RemoveUntestedStates(userNameInput.state);
     assertEq({enabled: true, focusable: true},
              userNameInput.state);
     var cancelButton = contentChildren[2];
     assertEq('Cancel',
-             cancelButton.attributes.name);
+             cancelButton.name);
     RemoveUntestedStates(cancelButton.state);
     assertEq({enabled: true, focusable: true, readOnly: true},
              cancelButton.state);

@@ -346,14 +346,13 @@ var AutomationAttributeTypes = [
   'stringAttributes'
 ];
 
-
 /**
  * Maps an attribute name to another attribute who's value is an id or an array
  * of ids referencing an AutomationNode.
  * @param {!Object.<string, string>}
  * @const
  */
-var ATTRIBUTE_NAME_TO_ATTRIBUTE_ID = {
+var ATTRIBUTE_NAME_TO_ID_ATTRIBUTE = {
   'aria-activedescendant': 'activedescendantId',
   'aria-controls': 'controlsIds',
   'aria-describedby': 'describedbyIds',
@@ -376,6 +375,112 @@ var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
                            'ownsIds': true
 };
 
+function defaultStringAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : '';
+  return { default: defaultVal, reflectFrom: 'stringAttributes' };
+}
+
+function defaultIntAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : 0;
+  return { default: defaultVal, reflectFrom: 'intAttributes' };
+}
+
+function defaultFloatAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : 0;
+  return { default: defaultVal, reflectFrom: 'floatAttributes' };
+}
+
+function defaultBoolAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : false;
+  return { default: defaultVal, reflectFrom: 'boolAttributes' };
+}
+
+function defaultHtmlAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : '';
+  return { default: defaultVal, reflectFrom: 'htmlAttributes' };
+}
+
+function defaultIntListAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : [];
+  return { default: defaultVal, reflectFrom: 'intlistAttributes' };
+}
+
+function defaultNodeRefAttribute(idAttribute, opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : null;
+  return { default: defaultVal,
+           idFrom: 'intAttributes',
+           idAttribute: idAttribute,
+           isRef: true };
+}
+
+function defaultNodeRefListAttribute(idAttribute, opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : [];
+  return { default: [],
+           idFrom: 'intlistAttributes',
+           idAttribute: idAttribute,
+           isRef: true };
+}
+
+// Maps an attribute to its default value in an invalidated node.
+// These attributes are taken directly from the Automation idl.
+var DefaultMixinAttributes = {
+  description: defaultStringAttribute(),
+  help: defaultStringAttribute(),
+  name: defaultStringAttribute(),
+  value: defaultStringAttribute(),
+  controls: defaultNodeRefListAttribute('controlsIds'),
+  describedby: defaultNodeRefListAttribute('describedbyIds'),
+  flowto: defaultNodeRefListAttribute('flowtoIds'),
+  labelledby: defaultNodeRefListAttribute('labelledbyIds'),
+  owns: defaultNodeRefListAttribute('ownsIds')
+};
+
+var ActiveDescendantMixinAttribute = {
+  activedescendant: defaultNodeRefAttribute('activedescendantId')
+};
+
+var LinkMixinAttributes = {
+  url: defaultStringAttribute()
+};
+
+var DocumentMixinAttributes = {
+  docUrl: defaultStringAttribute(),
+  docTitle: defaultStringAttribute(),
+  docLoaded: defaultStringAttribute(),
+  docLoadingProgress: defaultFloatAttribute()
+};
+
+var ScrollableMixinAttributes = {
+  scrollX: defaultIntAttribute(),
+  scrollXMin: defaultIntAttribute(),
+  scrollXMax: defaultIntAttribute(),
+  scrollY: defaultIntAttribute(),
+  scrollYMin: defaultIntAttribute(),
+  scrollYMax: defaultIntAttribute()
+};
+
+var EditableTextMixinAttributes = {
+  textSelStart: defaultIntAttribute(-1),
+  textSelEnd: defaultIntAttribute(-1)
+};
+
+var RangeMixinAttributes = {
+  valueForRange: defaultFloatAttribute(),
+  minValueForRange: defaultFloatAttribute(),
+  maxValueForRange: defaultFloatAttribute()
+};
+
+var TableMixinAttributes = {
+  tableRowCount: defaultIntAttribute(),
+  tableColumnCount: defaultIntAttribute()
+};
+
+var TableCellMixinAttributes = {
+  tableCellColumnIndex: defaultIntAttribute(),
+  tableCellColumnSpan: defaultIntAttribute(1),
+  tableCellRowIndex: defaultIntAttribute(),
+  tableCellRowSpan: defaultIntAttribute(1)
+};
 
 /**
  * AutomationRootNode.
@@ -404,6 +509,7 @@ AutomationRootNodeImpl.prototype = {
   __proto__: AutomationNodeImpl.prototype,
 
   isRootNode: true,
+  treeID: -1,
 
   get: function(id) {
     if (id == undefined)
@@ -522,6 +628,13 @@ AutomationRootNodeImpl.prototype = {
     for (var key in AutomationAttributeDefaults) {
       nodeImpl[key] = AutomationAttributeDefaults[key];
     }
+
+    nodeImpl.attributesInternal = {};
+    for (var key in DefaultMixinAttributes) {
+      var mixinAttribute = DefaultMixinAttributes[key];
+      if (!mixinAttribute.isRef)
+        nodeImpl.attributesInternal[key] = mixinAttribute.default;
+    }
     nodeImpl.childIds = [];
     nodeImpl.id = id;
     delete this.axNodeDataCache_[id];
@@ -627,6 +740,61 @@ AutomationRootNodeImpl.prototype = {
       else
         nodeImpl[key] = AutomationAttributeDefaults[key];
     }
+
+    // Set all basic attributes.
+    this.mixinAttributes_(nodeImpl, DefaultMixinAttributes, nodeData);
+
+    // If this is a rootWebArea or webArea, set document attributes.
+    if (nodeData.role == schema.RoleType.rootWebArea ||
+        nodeData.role == schema.RoleType.webArea) {
+      this.mixinAttributes_(nodeImpl, DocumentMixinAttributes, nodeData);
+    }
+
+    // If this is a scrollable area, set scrollable attributes.
+    for (var scrollAttr in ScrollableMixinAttributes) {
+      var spec = ScrollableMixinAttributes[scrollAttr];
+      if (this.findAttribute_(scrollAttr, spec, nodeData) !== undefined) {
+        this.mixinAttributes_(nodeImpl, ScrollableMixinAttributes, nodeData);
+        break;
+      }
+    }
+
+    // If this is a link, set link attributes
+    if (nodeData.role == 'link') {
+      this.mixinAttributes_(nodeImpl, LinkMixinAttributes, nodeData);
+    }
+
+    // If this is an editable text area, set editable text attributes.
+    if (nodeData.role == schema.RoleType.editableText ||
+        nodeData.role == schema.RoleType.textField ||
+        nodeData.role == schema.RoleType.textArea) {
+      this.mixinAttributes_(nodeImpl, EditableTextMixinAttributes, nodeData);
+    }
+
+    // If this is a range type, set range attributes.
+    if (nodeData.role == schema.RoleType.progressIndicator ||
+        nodeData.role == schema.RoleType.scrollBar ||
+        nodeData.role == schema.RoleType.slider ||
+        nodeData.role == schema.RoleType.spinButton) {
+      this.mixinAttributes_(nodeImpl, RangeMixinAttributes, nodeData);
+    }
+
+    // If this is a table, set table attributes.
+    if (nodeData.role == schema.RoleType.table) {
+      this.mixinAttributes_(nodeImpl, TableMixinAttributes, nodeData);
+    }
+
+    // If this is a table cell, set table cell attributes.
+    if (nodeData.role == schema.RoleType.cell) {
+      this.mixinAttributes_(nodeImpl, TableCellMixinAttributes, nodeData);
+    }
+
+    // If this has an active descendant, expose it.
+    if ('intAttributes' in nodeData &&
+        'activedescendantId' in nodeData.intAttributes) {
+      this.mixinAttributes_(nodeImpl, ActiveDescendantMixinAttribute, nodeData);
+    }
+
     for (var i = 0; i < AutomationAttributeTypes.length; i++) {
       var attributeType = AutomationAttributeTypes[i];
       for (var attributeName in nodeData[attributeType]) {
@@ -636,35 +804,105 @@ AutomationRootNodeImpl.prototype = {
             nodeImpl.attributes.hasOwnProperty(attributeName)) {
           continue;
         } else if (
-            ATTRIBUTE_NAME_TO_ATTRIBUTE_ID.hasOwnProperty(attributeName)) {
+          ATTRIBUTE_NAME_TO_ID_ATTRIBUTE.hasOwnProperty(attributeName)) {
           this.defineReadonlyAttribute_(nodeImpl,
-              attributeName,
-              true);
+                                        nodeImpl.attributes,
+                                        attributeName,
+                                        true);
         } else {
           this.defineReadonlyAttribute_(nodeImpl,
+                                        nodeImpl.attributes,
                                         attributeName);
         }
       }
     }
   },
 
-  defineReadonlyAttribute_: function(node, attributeName, opt_isIDRef) {
-    $Object.defineProperty(node.attributes, attributeName, {
-      enumerable: true,
-      get: function() {
-        if (opt_isIDRef) {
-          var attributeId = node.attributesInternal[
-              ATTRIBUTE_NAME_TO_ATTRIBUTE_ID[attributeName]];
-          if (Array.isArray(attributeId)) {
-            return attributeId.map(function(current) {
+  mixinAttributes_: function(nodeImpl, attributes, nodeData) {
+    for (var attribute in attributes) {
+      var spec = attributes[attribute];
+      if (spec.isRef)
+        this.mixinRelationshipAttribute_(nodeImpl, attribute, spec, nodeData);
+      else
+        this.mixinAttribute_(nodeImpl, attribute, spec, nodeData);
+    }
+  },
+
+  mixinAttribute_: function(nodeImpl, attribute, spec, nodeData) {
+    var value = this.findAttribute_(attribute, spec, nodeData);
+    if (value === undefined)
+      value = spec.default;
+    nodeImpl.attributesInternal[attribute] = value;
+    this.defineReadonlyAttribute_(nodeImpl, nodeImpl, attribute);
+  },
+
+  mixinRelationshipAttribute_: function(nodeImpl, attribute, spec, nodeData) {
+    var idAttribute = spec.idAttribute;
+    var idValue = spec.default;
+    if (spec.idFrom in nodeData) {
+      idValue = idAttribute in nodeData[spec.idFrom]
+          ? nodeData[spec.idFrom][idAttribute] : idValue;
+    }
+
+    // Ok to define a list attribute with an empty list, but not a
+    // single ref with a null ID.
+    if (idValue === null)
+      return;
+
+    nodeImpl.attributesInternal[idAttribute] = idValue;
+    this.defineReadonlyAttribute_(
+      nodeImpl, nodeImpl, attribute, true, idAttribute);
+  },
+
+  findAttribute_: function(attribute, spec, nodeData) {
+    if (!('reflectFrom' in spec))
+      return;
+    var attributeGroup = spec.reflectFrom;
+    if (!(attributeGroup in nodeData))
+      return;
+
+    return nodeData[attributeGroup][attribute];
+  },
+
+  defineReadonlyAttribute_: function(
+      node, object, attributeName, opt_isIDRef, opt_idAttribute) {
+    if (attributeName in object)
+      return;
+
+    if (opt_isIDRef) {
+      $Object.defineProperty(object, attributeName, {
+        enumerable: true,
+        get: function() {
+          var idAttribute = opt_idAttribute ||
+                            ATTRIBUTE_NAME_TO_ID_ATTRIBUTE[attributeName];
+          var idValue = node.attributesInternal[idAttribute];
+          if (Array.isArray(idValue)) {
+            return idValue.map(function(current) {
               return node.rootImpl.get(current);
             }, this);
           }
-          return node.rootImpl.get(attributeId);
-        }
-        return node.attributesInternal[attributeName];
-      }.bind(this),
-    });
+          return node.rootImpl.get(idValue);
+        }.bind(this),
+      });
+    } else {
+      $Object.defineProperty(object, attributeName, {
+        enumerable: true,
+        get: function() {
+          return node.attributesInternal[attributeName];
+        }.bind(this),
+      });
+    }
+
+    if (object instanceof AutomationNodeImpl) {
+      // Also expose attribute publicly on the wrapper.
+      $Object.defineProperty(object.wrapper, attributeName, {
+        enumerable: true,
+        get: function() {
+          return object[attributeName];
+        },
+      });
+
+    }
   },
 
   updateNode_: function(nodeData, updateState) {
@@ -730,7 +968,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'addEventListener',
                                                 'removeEventListener',
                                                 'domQuerySelector',
-                                                'toJSON'],
+                                                'toJSON' ],
                                     readonly: ['isRootNode',
                                                'role',
                                                'state',

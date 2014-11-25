@@ -16,7 +16,7 @@ function createBackgroundTab(url, callback) {
 }
 
 function assertCorrectTab(rootNode) {
-  var title = rootNode.attributes.docTitle;
+  var title = rootNode.docTitle;
   chrome.test.assertEq('Automation Tests', title);
   chrome.test.succeed();
 }
@@ -28,7 +28,7 @@ var allTests = [
       // tab by ID rather than just getting the active tab still.
       createBackgroundTab(url, function(tab) {
         chrome.automation.getTree(tab.id, function(rootNode) {
-          if (rootNode.attributes.docLoaded) {
+          if (rootNode.docLoaded) {
             assertCorrectTab(rootNode);
             return;
           }

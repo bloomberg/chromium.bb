@@ -276,11 +276,53 @@
     // The role of this node.
     automation.RoleType role;
 
+    // TODO(aboxhall): expose states as mixins instead
+
     // The $(ref:automation.StateType)s describing this node.
     object state;
 
     // The rendered location (as a bounding box) of this node within the frame.
     automation.Rect location;
+
+    // The purpose of the node, other than the role, if any.
+    DOMString description;
+
+    // The help text for the node, if any.
+    DOMString help;
+
+    // The accessible name for this node, via the
+    // <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation">
+    // Accessible Name Calculation</a> process.
+    DOMString name;
+
+    // The value for this node: for example the <code>value</code> attribute of
+    // an <code>&lt;input&gt; element.
+    DOMString value;
+
+    // The nodes, if any, which this node is specified to control via
+    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
+    // <code>aria-controls</code></a>.
+    AutomationNode[] controls;
+
+    // The nodes, if any, which form a description for this node.
+    AutomationNode[] describedBy;
+
+    // The nodes, if any, which may optionally be navigated to after this
+    // one. See
+    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-flowto">
+    // <code>aria-flowto</code></a>.
+    AutomationNode[] flowTo;
+
+    // The nodes, if any, which form a label for this element. Generally, the
+    // text from these elements will also be exposed as the element's accessible
+    // name, via the $(ref:automation.AutomationNode.name) attribute.
+    AutomationNode[] labelledBy;
+
+    // The nodes, if any, which are to be considered children of this node but
+    // are not children in the DOM tree.
+    AutomationNode[] owns;
+
+    // TODO(aboxhall): Make this private?
 
     // A collection of this node's other attributes.
     object? attributes;
@@ -345,6 +387,97 @@
 
     // Returns whether this node matches the given $(ref:automation.FindParams).
     static boolean matches(FindParams params);
+  };
+
+  dictionary ActiveDescendantMixin {
+    // The node referred to by <code>aria-activedescendant</code>, where
+    // applicable
+    AutomationNode activedescendant;
+  };
+
+  // Attributes which are mixed in to an AutomationNode if it is a link.
+  dictionary LinkMixins {
+    // TODO(aboxhall): Add visited state
+
+    // The URL that this link will navigate to.
+    DOMString url;
+  };
+
+  // Attributes which are mixed in to an AutomationNode if it is a document.
+  dictionary DocumentMixins {
+    // The URL of this document.
+    DOMString docUrl;
+
+    // The title of this document.
+    DOMString docTitle;
+
+    // Whether this document has finished loading.
+    boolean docLoaded;
+
+    // The proportion (out of 1.0) that this doc has completed loading.
+    double docLoadingProgress;
+  };
+
+  // TODO(aboxhall): document ScrollableMixins (e.g. what is scrollXMin? is it
+  // ever not 0?)
+
+  // Attributes which are mixed in to an AutomationNode if it is scrollable.
+  dictionary ScrollableMixins {
+    long scrollX;
+    long scrollXMin;
+    long scrollXMax;
+    long scrollY;
+    long scrollYMin;
+    long scrollYMax;
+  };
+
+  // Attributes which are mixed in to an AutomationNode if it is editable text.
+  dictionary EditableTextMixins {
+    // The character index of the start of the selection within this editable
+    // text element; -1 if no selection.
+    long textSelStart;
+
+    // The character index of the end of the selection within this editable
+    // text element; -1 if no selection.
+    long textSelEnd;
+  };
+
+  // Attributes which are mixed in to an AutomationNode if it is a range.
+  dictionary RangeMixins {
+    // The current value for this range.
+    double valueForRange;
+
+    // The minimum possible value for this range.
+    double minValueForRange;
+
+    // The maximum possible value for this range.
+    double maxValueForRange;
+  };
+
+  // TODO(aboxhall): live region mixins.
+
+  // Attributes which are mixed in to an AutomationNode if it is a table.
+  dictionary TableMixins {
+    // The number of rows in this table.
+    long tableRowCount;
+
+    // The number of columns in this table.
+    long tableColumnCount;
+  };
+
+  // Attributes which are mixed in to an AutomationNode if it is a table cell.
+  dictionary TableCellMixins {
+    // The zero-based index of the column that this cell is in.
+    long tableCellColumnIndex;
+
+    // The number of columns that this cell spans (default is 1).
+    long tableCellColumnSpan;
+
+    // The zero-based index of the row that this cell is in.
+    long tableCellRowIndex;
+
+    // The number of rows that this cell spans (default is 1).
+    long tableCellRowSpan;
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.

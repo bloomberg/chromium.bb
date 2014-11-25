@@ -16,7 +16,7 @@ function setUpAndRunTests(allTests) {
 
     function gotTree(returnedRootNode) {
       rootNode = returnedRootNode;
-      if (rootNode.attributes.docLoaded) {
+      if (rootNode.docLoaded) {
         chrome.test.runTests(allTests);
         return;
       }
