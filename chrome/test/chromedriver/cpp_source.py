@@ -4,6 +4,7 @@
 
 """Writes C++ header/cc source files for embedding resources into C++."""
 
+import datetime
 import os
 
 
@@ -22,10 +23,10 @@ def WriteSource(base_name,
           variables will be available as globals.
   """
   copyright = '\n'.join([
-      '// Copyright 2013 The Chromium Authors. All rights reserved.',
+      '// Copyright %s The Chromium Authors. All rights reserved.',
       '// Use of this source code is governed by a BSD-style license that '
           'can be',
-      '// found in the LICENSE file.'])
+      '// found in the LICENSE file.']) % datetime.date.today().year
 
   # Write header file.
   externs = []
