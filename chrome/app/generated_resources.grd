@@ -15128,7 +15128,7 @@ Do you accept?
         Say "Ok Google" when your screen is on and unlocked
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to enable Google Audio History and train your Chromebook in the following steps.
+        To make this happen, you'll need to enable Voice and Audio Activity and train your Chromebook in the following steps.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED" desc="Description explaining the steps required to continue through the hotword opt-in process.">
         To make this happen, you'll need to train your Chromebook in the following step.
@@ -15137,19 +15137,25 @@ Do you accept?
         GET STARTED
       </message>
       <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE" desc="Title of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        Enable Audio History
+        Enable Voice &amp; Audio Activity
       </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
-        When you use voice activation commands, such as "Ok Google" or touching a microphone icon, a recording of the next thing you say, plus a few seconds before, may be used and stored by Google and associated with your Google Account to help recognize your voice and improve speech recognition.
+      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_1" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
+        When you use audio activation commands, such as "Ok Google" or touching a microphone icon, your private Voice &amp; Audio Activity stores some voice and other audio to your account. A recording of the following speech/audio, plus a few seconds before, will be stored.
       </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_LEARN_MORE" desc="The text indicating where the user can learn more about Audio History.">
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/websearch?p=chromebook_audiohistory"&gt;</ph>LEARN MORE<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_2" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
+        This helps Google recognize your voice and improve speech and audio recognition in order to give you results faster and with fewer hassles. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/websearch?p=chromebook_audiohistory"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
-      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DECLINE" desc="Text on the decline button for the Audio History section of the 'Ok Google' hotword opt-in dialog.">
-        NO THANKS
+      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_3" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
+        You can change this setting or <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://history.google.com/history/audio"&gt;</ph>manage your private data<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> whenever you like. Please remember that when Voice &amp; Audio Activity is on, this data may be saved from any of your signed-in devices.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_AGREE" desc="Text on the agree button for the Audio History section of the 'Ok Google' hotword opt-in dialog.">
-        I AGREE
+        Enable
+      </message>
+      <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_WAIT" desc="Text displayed when waiting for Audio History setting in the 'Ok Google' hotword opt-in dialog.">
+        Enabling Voice &amp; Audio Activity ...
+      </message>
+      <message name="IDS_HOTWORD_OPT_IN_ERROR" desc="Text displayed on error setting Audio History and training in the 'Ok Google' hotword opt-in dialog.">
+        Something went wrong. Please try again.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_TITLE" desc="Title of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
         Let's train your Chromebook
@@ -15169,8 +15175,8 @@ Do you accept?
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_LAST_PROMPT" desc="The last prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
         Say "Ok Google" one last time
       </message>
-      <message name="IDS_HOTWORD_OPT_IN_TRAINING_RECORDED" desc="The message displayed when an 'Ok Google' utterance has been recorded.">
-        Recorded
+      <message name="IDS_HOTWORD_OPT_IN_TRAINING_RECORDED" desc="The message displayed when an 'Ok Google' utterance has been completed.">
+        Complete
       </message>
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_TIMEOUT" desc="The message displayed when an 'Ok Google' training has time out.">
         Training timed out
@@ -15197,10 +15203,10 @@ Do you accept?
         Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.google.com/settings/accounthistory"&gt;</ph>Account History<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISH" desc="Text on the finish button for the 'Ok Google' hotword opt-in dialog.">
-        FINISH
+        OK
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete. ">
-        Please wait ...
+        Processing ...
       </message>
     </messages>
   </release>

@@ -5,15 +5,16 @@
     <title></title>
     <link type="text/css" rel="stylesheet" href="style.css">
     <script src="chrome://resources/js/action_link.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
     <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://resources/js/i18n_template_no_process.js"></script>
     <script src="flow.js"></script>
     <script src="main.js"></script>
   </head>
   <body>
     <div id="steps">
-      <!-- TODO(kcarattini): Localize the strings in the following files. -->
-      <include src="steps/hotword_only_step.html">
-      <include src="steps/hotword_audio_history_step.html">
+      <include src="steps/start_step.html">
+      <include src="steps/audio_history_step.html">
       <include src="steps/speech_training_step.html">
       <include src="steps/finished_step.html">
     </div>

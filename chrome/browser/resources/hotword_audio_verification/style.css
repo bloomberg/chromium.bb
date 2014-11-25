@@ -4,15 +4,65 @@
 
 * {
   box-sizing: border-box;
-  color: rgba(0, 0, 0, .87);
-  font-family: Helvetica, sans-serif;
-  font-size: 14px;
+  color: rgba(0, 0, 0, .54);
+  font-family: Roboto, 'Noto Sans', sans-serif;
+  font-size: 13px;
   margin: 0;
   padding: 0;
 }
 
+#start-container * {
+  color: #fff;
+}
+
+#start-container h2 {
+  font-size: 15px;
+  font-weight: normal;
+  line-height: 24px;
+  margin-top: 16px;
+}
+
+#start-container h3 {
+  font-weight: normal;
+  margin: 42px 16px 24px 16px;
+}
+
+#start-container div.container {
+  background: rgb(66, 133, 244);
+}
+
+div.intro-image {
+  background: -webkit-image-set(
+      url(../images/intro-1x.png) 1x,
+      url(../images/intro-2x.png) 2x)
+      no-repeat;
+  height: 152px;
+  left: 24px;
+  position: absolute;
+  top: 122px;
+  width: 304px;
+}
+
+div.intro-text {
+  left: 328px;
+  position: absolute;
+  text-align: center;
+  top: 116px;
+  width: 432px;
+}
+
+#start-container div.buttonbar {
+  background-color: rgb(51, 103, 214);
+  height: 56px;
+  text-align: center;
+}
+
+#start-container .buttonbar button {
+  padding: 0 8px;
+}
+
 a {
-  color: rgb(67, 133, 244);
+  color: rgb(66, 133, 244);
   text-decoration: none;
 }
 
@@ -21,98 +71,61 @@ body {
 }
 
 h1 {
-  font-size: 34px;
+  font-size: 20px;
   font-weight: normal;
-  line-height: 40px;
+  line-height: 32px;
 }
 
-h2 {
-  font-size: 16px;
-  font-weight: normal;
-}
-
-h4 {
-  font-size: 14px;
+h3 {
+  font-size: 13px;
+  line-height: 20px;
 }
 
 div.container {
   background: #fff;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-  height: 600px;
-  width: 800px;
+  height: 448px;
+  position: relative;
+  width: 784px;
 }
 
 div.header {
   background: -webkit-image-set(
-      url(../images/header-optin-1x.png) 1x,
-      url(../images/header-optin-2x.png) 2x)
+      url(../images/gradient-1x.png) 1x,
+      url(../images/gradient-2x.png) 2x)
       no-repeat;
-  height: 240px;
-  vertical-align: bottom;
+  height: 128px;
+  padding: 70px 42px 0 42px;
 }
 
-div.header-text {
-  height: 240px;
-  padding: 60px;
-}
-
-div.header-text h1 {
+div.header h1 {
   color: #fff;
-  margin-top: 44px;
-}
-
-div.header-text h2 {
-  color: #fff;
-  margin-top: 20px;
 }
 
 div.content {
-  height: 240px;
-  margin: 60px 60px auto 60px;
+  height: 264px;
+  line-height: 20px;
+  padding: 32px 42px 0 42px;
 }
 
-.close {
-  background: -webkit-image-set(
-      url(../images/bt-close-1x.png) 1x,
-      url(../images/bt-close-2x.png) 2x);
-  float: right;
-  height: 60px;
+div.content h3 {
+  color: rgba(0, 0, 0, .87);
+  margin-bottom: 16px;
+}
+
+div.col-2 {
+  color: rgba(0, 0, 0, .54);
+  float: left;
+  width: 320px;
+}
+
+div.col-spacing {
+  float: left;
+  height: 216px;
   width: 60px;
 }
 
-
-.buttonbar button.grayed-out {
-  color: rgba(0, 0, 0, .28);
-  text-transform: none;
-}
-
-.col-3 {
-  color: rgba(0, 0, 0, .54);
-  line-height: 24px;
-  width: 504px;
-}
-
-.col-3 h4 {
-  line-height: 100%;
-  margin-bottom: 27px;
-}
-
-.col-2 {
-  color: rgba(0, 0, 0, .54);
-  float: left;
-  line-height: 24px;
-  width: 332px;
-}
-
-.col-2 h4 {
-  line-height: 100%;
-  margin-top: 27px;
-}
-
-.col-spacing {
-  float: left;
-  height: 160px;
-  width: 16px;
+div.v-spacing {
+  height: 8px;
 }
 
 a[is='action-link'] {
@@ -123,67 +136,30 @@ a[is='action-link'] {
   text-transform: uppercase;
 }
 
-div.buttonbar {
-  background: rgba(0, 0, 0, .06);
-  height: 60px;
-  padding: 12px 60px;
-}
-
-.buttonbar button {
-  background: none;
-  border: none;
-  border-radius: 2px;
-  float: right;
-  height: 36px;
-  margin-left: 8px;
-  min-width: 88px;
-  padding: 8px;
-  text-transform: uppercase;
-}
-
-button.primary {
-  color: rgb(67, 133, 244);
-}
-
-.v-spacing-for-no-subheading {
-  height: 43px;
-}
-
 .train {
   clear: both;
+  line-height: 18px;
   margin-bottom: 24px;
-  white-space: nowrap;
 }
 
 .train .icon {
   display: inline-block;
-  height: 24px;
-  margin-right: 16px;
+  height: 18px;
+  margin-right: 8px;
   vertical-align: top;
-  width: 24px;
+  width: 18px;
 }
 
 .train .text {
-  display: inline-block;
-  line-height: 24px;
-  vertical-align: top;
-  width: 292px;
-}
-
-.train.listening .text {
-  color: rgba(0, 0, 0, .87);
-}
-
-.train.not-started .text {
   color: rgba(0, 0, 0, .54);
+  display: inline-block;
+  line-height: 13px;
+  padding-top: 3px;
+  vertical-align: top;
 }
 
 .train.recorded .text {
   color: rgba(66, 133, 244, 1);
-}
-
-.train.error .text {
-  color: rgb(213, 0, 0);
 }
 
 @-webkit-keyframes rotate {
@@ -213,28 +189,9 @@ button.primary {
       no-repeat;
 }
 
-.train.error .icon {
-  background: -webkit-image-set(
-      url(../images/ic-error-1x.png) 1x,
-      url(../images/ic-error-2x.png) 2x)
-      no-repeat;
-}
-
-.mic {
-  background: -webkit-image-set(
-      url(../images/mic-1x.png) 1x,
-      url(../images/mic-2x.png) 2x)
-      no-repeat;
-  height: 80px;
-  left: 666px;
-  position: absolute;
-  top: 200px;
-  width: 80px;
-}
-
 .check {
   clear: both;
-  height: 24px;
+  height: 18px;
   margin-bottom: 24px;
 }
 
@@ -244,16 +201,148 @@ button.primary {
       url(../images/ic-check-blue-2x.png) 2x)
       no-repeat;
   display: inline-block;
-  height: 24px;
-  margin-right: 16px;
+  height: 18px;
+  margin-right: 8px;
   vertical-align: top;
-  width: 24px;
+  width: 18px;
 }
 
 .check .text {
   color: rgba(0, 0, 0, .54);
   display: inline-block;
-  height: 24px;
-  line-height: 24px;
+  height: 18px;
+  line-height: 18px;
+  padding-top: 2px;
   vertical-align: top;
+}
+
+div.buttonbar {
+  background-color: rgba(236,239, 241, 1);
+  bottom: 0;
+  height: 56px;
+  padding: 12px;
+  position: absolute;
+  width: 100%;
+}
+
+.buttonbar button {
+  background: none;
+  border: none;
+  display: inline-block;
+  font-weight: 700;
+  height: 32px;
+  line-height: 32px;
+  margin-left: 8px;
+  min-width: 56px;
+  padding: 1px 8px 0 8px;
+  text-transform: uppercase;
+}
+
+.buttonbar button:disabled {
+  opacity: .5;
+}
+
+.buttonbar button.grayed-out {
+  color: rgba(0, 0, 0, .28);
+  text-transform: none;
+}
+
+.buttonbar button.primary {
+  color: rgb(66, 133, 244);
+}
+
+.buttonbar .left {
+  float: left;
+  text-align: left;
+}
+
+.buttonbar .left button:first-child {
+  margin-left: 0;
+}
+
+.buttonbar .right {
+  float: right;
+  text-align: right;
+}
+
+.buttonbar .message {
+  margin: 7px 0 0 2px;
+}
+
+.buttonbar .message .icon {
+  display: inline-block;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: top;
+  width: 18px;
+}
+
+.buttonbar .message.wait .icon {
+  -webkit-animation: rotate 2s linear infinite;
+  background: -webkit-image-set(
+      url(../images/placeholder-loader-1x.png) 1x,
+      url(../images/placeholder-loader-2x.png) 2x)
+      no-repeat;
+}
+
+.buttonbar .message.error .icon {
+  background: -webkit-image-set(
+      url(../images/ic-error-1x.png) 1x,
+      url(../images/ic-error-2x.png) 2x)
+      no-repeat;
+}
+
+.buttonbar .message .text {
+  color: rgba(0, 0, 0, .54);
+  display: inline-block;
+  line-height: 18px;
+  padding-top: 2px;
+  vertical-align: top;
+}
+
+.buttonbar .message.error .text {
+  color: rgb(219, 68, 55);
+}
+
+.close {
+  background: -webkit-image-set(
+      url(../images/ic-x-white-1x.png) 1x,
+      url(../images/ic-x-white-2x.png) 2x)
+      center center no-repeat;
+  border: none;
+  float: right;
+  height: 42px;
+  opacity: .54;
+  width: 42px;
+}
+
+.close:hover {
+  opacity: 1;
+}
+
+.toast {
+  background-color: rgb(38, 50, 56);
+  bottom: 0;
+  height: 52px;
+  padding: 10px 12px 0 42px;
+  position: absolute;
+  width: 100%;
+}
+
+.toast .message {
+  color: #fff;
+  float: left;
+  padding: 9px 0 0 0;
+}
+
+.toast button {
+  background: none;
+  border: none;
+  color: rgb(58, 218, 255);
+  float: right;
+  height: 32px;
+  margin-left: 18px;
+  min-width: 56px;
+  padding: 0 8px 0 8px;
+  text-transform: uppercase;
 }

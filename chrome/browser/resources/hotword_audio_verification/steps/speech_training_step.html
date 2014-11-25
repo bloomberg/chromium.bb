@@ -1,44 +1,53 @@
 <div id="speech-training-container" hidden>
-  <div class="mic"></div>
   <div class="container">
+    <span class="close"></span>
     <div class="header">
-      <span class="close"></span>
-      <div class="header-text">
-        <div class="v-spacing-for-no-subheading"></div>
-        <h1>Let's train your Chromebook</h1>
-      </div>
+      <h1 i18n-content="trainingTitle"></h1>
     </div>
     <div id="speech-training-training" class="content">
       <div class="col-2">
-        To help Google respond to you and for reliable and easy access to
-        voice search, you need to teach Google the sound of your voice.
+        <div i18n-content="trainingDescription"></div>
         <br>
-        <h4>Just say 'Ok Google' three times</h4>
+        <h3 i18n-content="trainingSpeak"></h3>
       </div>
       <div class="col-spacing"></div>
       <div class="col-2">
         <div class="train listening">
           <span class="icon"></span>
-          <span class="text">Say 'Ok Google'</span>
+          <span i18n-content="trainingFirstPrompt"
+              class="text"></span>
         </div>
         <div class="train not-started">
           <span class="icon"></span>
-          <span class="text">Say 'Ok Google' again</span>
+          <span i18n-content="trainingMiddlePrompt"
+              class="text"></span>
         </div>
         <div class="train not-started">
           <span class="icon"></span>
-          <span class="text">Say 'Ok Google' one last time</span>
-        </div>
-        <div id="speech-training-timeout" hidden>
-          <span class="text">Training timed out</span>
-          <button id="speech-training-retry"
-              class="retry-button">RETRY</button>
+          <span i18n-content="trainingLastPrompt"
+              class="text"></span>
         </div>
       </div>
     </div>
-    <div class="buttonbar">
-      <button id="speech-training-cancel-button"
-          class="finish-button">CANCEL</button>
+    <div id="speech-training-toast" class="toast" hidden>
+      <span i18n-content="trainingTimeout" class="message"></span>
+      <button i18n-content="trainingRetry" class="retry-button"></button>
+    </div>
+    <div id="speech-training-processing" class="buttonbar" hidden>
+      <div id="speech-training-retry" class="right" hidden>
+        <button i18n-content="trainingRetry" class="primary retry-button">
+        </button>
+      </div>
+      <div class="left">
+        <div id="speech-training-wait" class="message wait">
+          <span class="icon"></span>
+          <span i18n-content="finishedWait" class="text"></span>
+        </div>
+        <div id="speech-training-error" class="message error" hidden>
+          <span class="icon"></span>
+          <span i18n-content="error" class="text"></span>
+        </div>
+      </div>
     </div>
   </div>
 </div>

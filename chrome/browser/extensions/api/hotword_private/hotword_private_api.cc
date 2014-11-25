@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 
+#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -286,17 +287,26 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       "audioHistoryTitle",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE));
   localized_strings->SetString(
-      "audioHistoryDescription",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION));
+      "audioHistoryDescription1",
+      l10n_util::GetStringUTF16(
+          IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_1));
   localized_strings->SetString(
-      "audioHistoryLearnMore",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_LEARN_MORE));
+      "audioHistoryDescription2",
+      l10n_util::GetStringUTF16(
+          IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_2));
   localized_strings->SetString(
-      "audioHistoryDecline",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DECLINE));
+      "audioHistoryDescription3",
+      l10n_util::GetStringUTF16(
+          IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION_3));
   localized_strings->SetString(
       "audioHistoryAgree",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_AGREE));
+  localized_strings->SetString(
+      "audioHistoryWait",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_WAIT));
+  localized_strings->SetString(
+      "error",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_ERROR));
   localized_strings->SetString(
       "trainingTitle",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_TITLE));
@@ -349,6 +359,9 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
   localized_strings->SetString(
       "finishedWait",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_WAIT));
+
+  localized_strings->SetString("textdirection",
+      base::i18n::IsRTL() ? "rtl" : "ltr");
 
   SetResult(localized_strings);
   return true;

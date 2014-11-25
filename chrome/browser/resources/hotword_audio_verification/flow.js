@@ -5,10 +5,10 @@
 (function() {
 
   // Correspond to steps in the hotword opt-in flow.
-  /** @const */ var HOTWORD_AUDIO_HISTORY = 'hotword-audio-history-container';
-  /** @const */ var HOTWORD_ONLY_START = 'hotword-only-container';
+  /** @const */ var START = 'start-container';
+  /** @const */ var AUDIO_HISTORY = 'audio-history-container';
   /** @const */ var SPEECH_TRAINING = 'speech-training-container';
-  /** @const */ var FINISHED = 'finished-container';
+  /** @const */ var FINISH = 'finish-container';
 
   /**
    * These flows correspond to the three LaunchModes as defined in
@@ -17,9 +17,9 @@
    * @const
    */
   var FLOWS = [
-    [HOTWORD_ONLY_START, FINISHED],
-    [HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED],
-    [SPEECH_TRAINING, FINISHED]
+    [START, SPEECH_TRAINING, FINISH],
+    [START, AUDIO_HISTORY, SPEECH_TRAINING, FINISH],
+    [SPEECH_TRAINING, FINISH]
   ];
 
   /**
@@ -40,6 +40,7 @@
   var TrainingState = {
     RESET: 'reset',
     TIMEOUT: 'timeout',
+    ERROR: 'error',
   };
 
   /**
@@ -52,7 +53,7 @@
     this.currentFlow_ = [];
 
     /**
-     * Whether this flow is currently in the process of training a voice model.
+     * The mode that this app was launched in.
      * @private {LaunchMode}
      */
     this.launchMode_ = LaunchMode.HOTWORD_AND_AUDIO_HISTORY;
@@ -80,7 +81,13 @@
      * Prefix of the element ids for the page that is currently training.
      * @private {string}
      */
-    this.trainingPagePrefix_ = '';
+    this.trainingPagePrefix_ = 'speech-training';
+
+    /**
+     * Whether the speaker model for this flow has been finalized.
+     * @private {boolean}
+     */
+    this.speakerModelFinalized_ = false;
 
     /**
      * Listener for the speakerModelSaved event.
@@ -98,12 +105,16 @@
   }
 
   /**
-   * Advances the current step.
+   * Advances the current step. Begins training if the speech-training
+   * page has been reached.
    */
   Flow.prototype.advanceStep = function() {
     this.currentStepIndex_++;
-    if (this.currentStepIndex_ < this.currentFlow_.length)
+    if (this.currentStepIndex_ < this.currentFlow_.length) {
+      if (this.currentFlow_[this.currentStepIndex_] == SPEECH_TRAINING)
+        this.startTraining();
       this.showStep_.apply(this);
+    }
   };
 
   /**
@@ -123,12 +134,6 @@
       return;
 
     this.training_ = true;
-    if (this.launchMode_ == LaunchMode.HOTWORD_ONLY) {
-      this.trainingPagePrefix_ = 'hotword-only';
-    } else if (this.launchMode_ == LaunchMode.HOTWORD_AND_AUDIO_HISTORY ||
-               this.launchMode_ == LaunchMode.RETRAIN) {
-      this.trainingPagePrefix_ = 'speech-training';
-    }
 
     if (chrome.hotwordPrivate.onHotwordTriggered &&
         !chrome.hotwordPrivate.onHotwordTriggered.hasListener(
@@ -161,16 +166,32 @@
   // ---- private methods:
 
   /**
+   * Shows an error if the speaker model has not been finalized.
+   * @private
+   */
+  Flow.prototype.handleSpeakerModelFinalizedError_ = function() {
+    if (!this.training_)
+      return;
+
+    if (this.speakerModelFinalized_)
+      return;
+
+    this.updateTrainingState_(TrainingState.ERROR);
+    this.stopTraining();
+  };
+
+  /**
    * Handles the speaker model finalized event.
    * @private
    */
   Flow.prototype.onSpeakerModelFinalized_ = function() {
+    this.speakerModelFinalized_ = true;
     if (chrome.hotwordPrivate.onSpeakerModelSaved) {
       chrome.hotwordPrivate.onSpeakerModelSaved.removeListener(
           this.speakerModelFinalizedListener_);
     }
     this.stopTraining();
-    setTimeout(this.finishFlow_.bind(this), 1000);
+    setTimeout(this.finishFlow_.bind(this), 2000);
   };
 
   /**
@@ -188,7 +209,8 @@
    * Handles a user clicking on the retry button.
    */
   Flow.prototype.handleRetry = function() {
-    if (this.trainingState_ != TrainingState.TIMEOUT)
+    if (!(this.trainingState_ == TrainingState.TIMEOUT ||
+        this.trainingState_ == TrainingState.ERROR))
       return;
 
     this.startTraining();
@@ -213,6 +235,8 @@
           this.speakerModelFinalizedListener_);
     }
 
+    this.speakerModelFinalized_ = false;
+    setTimeout(this.handleSpeakerModelFinalizedError_.bind(this), 30000);
     if (chrome.hotwordPrivate.finalizeSpeakerModel)
       chrome.hotwordPrivate.finalizeSpeakerModel();
   };
@@ -290,9 +314,7 @@
       // We reset the training to begin at the first step.
       // The first step is reset to 'listening', while the rest
       // are reset to 'not-started'.
-
-      // TODO(kcarattini): Localize strings.
-      var prompt = 'Say "Ok Google"';
+      var prompt = loadTimeData.getString('trainingFirstPrompt');
       for (var i = 0; i < steps.length; ++i) {
         steps[i].classList.remove('recorded');
         if (i == 0) {
@@ -301,20 +323,32 @@
         } else {
           steps[i].classList.add('not-started');
           if (i == steps.length - 1)
-            prompt += ' one last time';
+            prompt = loadTimeData.getString('trainingLastPrompt');
           else
-            prompt += ' again';
+            prompt = loadTimeData.getString('trainingMiddlePrompt');
         }
         steps[i].querySelector('.text').textContent = prompt;
       }
+
+      // Reset the buttonbar.
+      $(this.trainingPagePrefix_ + '-processing').hidden = true;
+      $(this.trainingPagePrefix_ + '-wait').hidden = false;
+      $(this.trainingPagePrefix_ + '-error').hidden = true;
+      $(this.trainingPagePrefix_ + '-retry').hidden = true;
     } else if (this.trainingState_ == TrainingState.TIMEOUT) {
       var curStep = trainingSteps.current;
       if (curStep) {
         curStep.classList.remove('listening');
         curStep.classList.add('not-started');
       }
+    } else if (this.trainingState_ == TrainingState.ERROR) {
+      // Update the buttonbar.
+      $(this.trainingPagePrefix_ + '-wait').hidden = true;
+      $(this.trainingPagePrefix_ + '-error').hidden = false;
+      $(this.trainingPagePrefix_ + '-retry').hidden = false;
+      $(this.trainingPagePrefix_ + '-processing').hidden = false;
     }
-    $(this.trainingPagePrefix_ + '-timeout').hidden =
+    $(this.trainingPagePrefix_ + '-toast').hidden =
         !(this.trainingState_ == TrainingState.TIMEOUT);
   };
 
@@ -331,8 +365,8 @@
     var index = trainingSteps.index;
     this.hotwordTriggerReceived_[index] = true;
 
-    // TODO(kcarattini): Localize this string.
-    trainingSteps.current.querySelector('.text').textContent = 'Recorded';
+    trainingSteps.current.querySelector('.text').textContent =
+        loadTimeData.getString('trainingRecorded');
     trainingSteps.current.classList.remove('listening');
     trainingSteps.current.classList.add('recorded');
 
@@ -344,12 +378,7 @@
     }
 
     // Only the last step makes it here.
-    var buttonElem = $(this.trainingPagePrefix_ + '-cancel-button');
-    // TODO(kcarattini): Localize this string.
-    buttonElem.textContent = 'Please wait ...';
-    buttonElem.classList.add('grayed-out');
-    buttonElem.classList.remove('finish-button');
-
+    var buttonElem = $(this.trainingPagePrefix_ + '-processing').hidden = false;
     this.finalizeSpeakerModel_();
   };
 
@@ -364,12 +393,13 @@
     assert(state.launchMode >= 0 && state.launchMode < FLOWS.length,
            'Invalid Launch Mode.');
     this.currentFlow_ = FLOWS[state.launchMode];
-    this.advanceStep();
-    // If the flow begins with a a training step, then start the training flow.
-    if (state.launchMode == LaunchMode.HOTWORD_ONLY ||
-        state.launchMode == LaunchMode.RETRAIN) {
-      this.startTraining();
+    if (state.launchMode == LaunchMode.HOTWORD_ONLY) {
+      $('intro-description-audio-history-enabled').hidden = false;
+    } else if (state.launchMode == LaunchMode.HOTWORD_AND_AUDIO_HISTORY) {
+      $('intro-description').hidden = false;
     }
+
+    this.advanceStep();
   };
 
   /**

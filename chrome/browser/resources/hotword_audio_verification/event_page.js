@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var appId = 'hotword_audio_verification_app';
+var appId = 'hotword_audio_verification';
 
 chrome.app.runtime.onLaunched.addListener(function() {
   // We need to focus the window if it already exists, since it
@@ -22,9 +22,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
     'resizable': false,
     'hidden': true,
     'id': appId,
-    'bounds': {
-      'width': 800,
-      'height': 600
+    'innerBounds': {
+      'width': 784,
+      'height': 448
     }
   });
 });

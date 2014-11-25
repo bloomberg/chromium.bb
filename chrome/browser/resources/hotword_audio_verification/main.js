@@ -5,37 +5,42 @@
 var appWindow = chrome.app.window.current();
 
 document.addEventListener('DOMContentLoaded', function() {
-  var flow = new Flow();
-  flow.startFlow();
+  chrome.hotwordPrivate.getLocalizedStrings(function(strings) {
+    loadTimeData.data = strings;
+    i18nTemplate.process(document, loadTimeData);
 
-  var closeAppWindow = function(e) {
-    var classes = e.target.classList;
-    if (classes.contains('close') || classes.contains('finish-button')) {
-      flow.stopTraining();
-      appWindow.close();
+    var flow = new Flow();
+    flow.startFlow();
+
+    $('steps').addEventListener('click', function(e) {
+      var classes = e.target.classList;
+      if (classes.contains('close') || classes.contains('finish-button')) {
+        flow.stopTraining();
+        appWindow.close();
+        e.preventDefault();
+      }
+      if (classes.contains('retry-button')) {
+        flow.handleRetry();
+        e.preventDefault();
+      }
+    });
+
+    // TODO(kcarattini): Change this to update the setting instead of
+    // advancing the flow.
+    $('audio-history-agree').addEventListener('click', function(e) {
+      flow.advanceStep();
       e.preventDefault();
-    }
-  };
+    });
 
-  var retry = function(e) {
-    var classes = e.target.classList;
-    if (classes.contains('retry-button')) {
-      flow.handleRetry();
+    $('hotword-start').addEventListener('click', function(e) {
+      flow.advanceStep();
       e.preventDefault();
-    }
-  };
+    });
 
-  $('steps').addEventListener('click', closeAppWindow);
-  $('steps').addEventListener('click', retry);
+    $('settings-link').addEventListener('click', function(e) {
+      chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
+      e.preventDefault();
+    });
 
-  $('hw-agree-button').addEventListener('click', function(e) {
-    flow.advanceStep();
-    flow.startTraining();
-    e.preventDefault();
-  });
-
-  $('settings-link').addEventListener('click', function(e) {
-    chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
-    e.preventDefault();
   });
 });
