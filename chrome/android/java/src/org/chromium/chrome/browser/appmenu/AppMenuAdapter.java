@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
@@ -314,12 +313,15 @@ class AppMenuAdapter extends BaseAdapter {
         return convertView;
     }
 
-    private void setupImageButton(ImageButton button, final MenuItem item) {
+    private void setupImageButton(TintedImageButton button, final MenuItem item) {
         // Store and recover the level of image as button.setimageDrawable
         // resets drawable to default level.
         int currentLevel = item.getIcon().getLevel();
         button.setImageDrawable(item.getIcon());
         item.getIcon().setLevel(currentLevel);
+        if (item.isChecked()) {
+            button.setTint(button.getResources().getColorStateList(R.color.blue_mode_tint));
+        }
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());
         button.setContentDescription(item.getTitleCondensed());
