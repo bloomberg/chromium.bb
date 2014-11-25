@@ -1761,14 +1761,14 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_frame_id,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       render_process_id, render_frame_id);
   WebContents* tab = WebContents::FromRenderFrameHost(rfh);
   if (!tab) {
-    // TODO(davidben): This makes the request hang, but returning no certificate
-    // also breaks. It should abort the request. See https://crbug.com/417092
+    NOTREACHED();
     return;
   }
 
@@ -1814,7 +1814,8 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  chrome::ShowSSLClientCertificateSelector(tab, cert_request_info, callback);
+  chrome::ShowSSLClientCertificateSelector(tab, network_session,
+                                           cert_request_info, callback);
 }
 
 void ChromeContentBrowserClient::AddCertificate(

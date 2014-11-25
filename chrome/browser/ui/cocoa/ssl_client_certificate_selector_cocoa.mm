@@ -40,11 +40,11 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
                                          public ConstrainedWindowMacDelegate {
  public:
   SSLClientAuthObserverCocoaBridge(
-      const content::BrowserContext* browser_context,
+      const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const chrome::SelectCertificateCallback& callback,
       SSLClientCertificateSelectorCocoa* controller)
-      : SSLClientAuthObserver(browser_context, cert_request_info, callback),
+      : SSLClientAuthObserver(network_session, cert_request_info, callback),
         controller_(controller) {
   }
 
@@ -71,13 +71,14 @@ namespace chrome {
 
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const SelectCertificateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The dialog manages its own lifetime.
   SSLClientCertificateSelectorCocoa* selector =
       [[SSLClientCertificateSelectorCocoa alloc]
-          initWithBrowserContext:contents->GetBrowserContext()
+          initWithNetworkSession:network_session
                  certRequestInfo:cert_request_info
                         callback:callback];
   [selector displayForWebContents:contents];
@@ -87,14 +88,14 @@ void ShowSSLClientCertificateSelector(
 
 @implementation SSLClientCertificateSelectorCocoa
 
-- (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
+- (id)initWithNetworkSession:(const net::HttpNetworkSession*)networkSession
     certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
            callback:(const chrome::SelectCertificateCallback&)callback {
-  DCHECK(browserContext);
+  DCHECK(networkSession);
   DCHECK(certRequestInfo);
   if ((self = [super init])) {
     observer_.reset(new SSLClientAuthObserverCocoaBridge(
-        browserContext, certRequestInfo, callback, self));
+        networkSession, certRequestInfo, callback, self));
   }
   return self;
 }

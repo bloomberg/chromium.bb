@@ -58,6 +58,7 @@ class ImageSkia;
 namespace net {
 class CookieOptions;
 class CookieStore;
+class HttpNetworkSession;
 class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
@@ -401,8 +402,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_frame_id,
+      const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback);
+      const base::Callback<void(net::X509Certificate*)>& callback) {}
 
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.

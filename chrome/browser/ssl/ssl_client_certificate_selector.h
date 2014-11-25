@@ -12,6 +12,7 @@ class WebContents;
 }
 
 namespace net {
+class HttpNetworkSession;
 class SSLCertRequestInfo;
 class X509Certificate;
 }
@@ -27,6 +28,7 @@ typedef base::Callback<void(net::X509Certificate*)> SelectCertificateCallback;
 // with a NULL certificate.
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const SelectCertificateCallback& callback);
 

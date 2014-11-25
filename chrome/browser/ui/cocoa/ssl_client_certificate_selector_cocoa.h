@@ -16,10 +16,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 
-namespace content {
-class BrowserContext;
-}
-
 class ConstrainedWindowMac;
 @class SFChooseIdentityPanel;
 class SSLClientAuthObserverCocoaBridge;
@@ -45,7 +41,7 @@ class SSLClientAuthObserverCocoaBridge;
 
 @property (readonly, nonatomic) SFChooseIdentityPanel* panel;
 
-- (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
+- (id)initWithNetworkSession:(const net::HttpNetworkSession*)networkSession
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
                     callback:(const chrome::SelectCertificateCallback&)callback;
 - (void)displayForWebContents:(content::WebContents*)webContents;
