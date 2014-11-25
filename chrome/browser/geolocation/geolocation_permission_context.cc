@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/web_contents.h"
 
 
@@ -78,4 +79,9 @@ void GeolocationPermissionContext::UpdateTabContext(
   if (content_settings)
     content_settings->OnGeolocationPermissionSet(
         requesting_frame.GetOrigin(), allowed);
+
+  if (allowed) {
+    content::GeolocationProvider::GetInstance()
+        ->UserDidOptIntoLocationServices();
+  }
 }

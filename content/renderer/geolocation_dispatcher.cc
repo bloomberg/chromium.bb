@@ -81,10 +81,8 @@ void GeolocationDispatcher::requestPermission(
 
   int permission_request_id = pending_permissions_->add(permissionRequest);
 
-  PermissionName permission = PERMISSION_NAME_GEOLOCATION;
-
   permission_service_->RequestPermission(
-      permission,
+      PERMISSION_NAME_GEOLOCATION,
       permissionRequest.securityOrigin().toString().utf8(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
                  base::Unretained(this),

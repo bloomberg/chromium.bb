@@ -4,9 +4,7 @@
 
 #include "content/browser/permissions/permission_service_impl.h"
 
-#include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
@@ -83,14 +81,6 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
     const mojo::Callback<void(PermissionStatus)>& callback,
     int request_id,
     bool allowed) {
-  // TODO(mlamouri): we might want a generic way to handle those things.
-  // TODO(mlamouri): could that move to <name>_permission_context.cc?
-  if (allowed &&
-      pending_requests_.Lookup(request_id)->permission ==
-          PERMISSION_GEOLOCATION) {
-    GeolocationProviderImpl::GetInstance()->UserDidOptIntoLocationServices();
-  }
-
   pending_requests_.Remove(request_id);
 
   // TODO(mlamouri): for now, we only get a boolean back, but we would ideally
