@@ -37,6 +37,7 @@ bool FakePluginService::GetPluginInfo(int render_process_id,
                                       bool* is_stale,
                                       WebPluginInfo* info,
                                       std::string* actual_mime_type) {
+  *is_stale = false;
   return false;
 }
 
