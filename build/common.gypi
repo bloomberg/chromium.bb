@@ -3633,6 +3633,7 @@
                 'cflags': ['-funwind-tables'],
               }, {
                 'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
+                'defines': ['NO_UNWIND_TABLES'],
               }],
               # TODO(mostynb): shuffle clang/gcc_version/binutils_version
               # definitions in to the right scope to use them when setting
@@ -3714,6 +3715,7 @@
                 'cflags': ['-funwind-tables'],
               }, {
                 'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
+                'defines': ['NO_UNWIND_TABLES'],
               }],
             ],
           },

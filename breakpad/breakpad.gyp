@@ -481,6 +481,8 @@
             'src/client/linux/dump_writer_common/thread_info.h',
             'src/client/linux/dump_writer_common/ucontext_reader.cc',
             'src/client/linux/dump_writer_common/ucontext_reader.h',
+            'src/client/linux/microdump_writer/microdump_writer.cc',
+            'src/client/linux/microdump_writer/microdump_writer.h',
             'src/client/linux/minidump_writer/cpu_set.h',
             'src/client/linux/minidump_writer/directory_reader.h',
             'src/client/linux/minidump_writer/line_reader.h',

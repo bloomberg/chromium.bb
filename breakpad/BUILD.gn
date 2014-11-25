@@ -257,7 +257,7 @@ if (is_mac) {
     ]
 
     configs += [ ":internal_config" ]
-    
+
     # There are some warnings in this code.
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -424,6 +424,8 @@ if (is_linux || is_android) {
       "src/client/linux/handler/minidump_descriptor.h",
       "src/client/linux/log/log.cc",
       "src/client/linux/log/log.h",
+      "src/client/linux/microdump_writer/microdump_writer.cc",
+      "src/client/linux/microdump_writer/microdump_writer.h",
       "src/client/linux/minidump_writer/cpu_set.h",
       "src/client/linux/minidump_writer/directory_reader.h",
       "src/client/linux/minidump_writer/line_reader.h",
