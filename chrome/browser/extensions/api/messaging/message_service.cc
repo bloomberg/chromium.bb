@@ -749,9 +749,10 @@ void MessageService::OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params,
   if (params->include_tls_channel_id) {
     // Transfer pending messages to the next pending channel list.
     pending_tls_channel_id_channels_[channel_id].swap(pending_messages);
-
+    // Capture this reference before params is invalidated by base::Passed().
+    const GURL& source_url = params->source_url;
     property_provider_.GetChannelID(
-        Profile::FromBrowserContext(context), params->source_url,
+        Profile::FromBrowserContext(context), source_url,
         base::Bind(&MessageService::GotChannelID, weak_factory_.GetWeakPtr(),
                    base::Passed(&params)));
     return;
