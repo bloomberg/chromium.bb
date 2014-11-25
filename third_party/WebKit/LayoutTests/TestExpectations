@@ -1,3 +1,6 @@
+crbug.com/423834 fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
+crbug.com/423834 fast/replaced/selection-rect-transform.html [ NeedsRebaseline ]
+
 crbug.com/408544 [ Win Mac ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
 crbug.com/408544 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
 crbug.com/408544 [ Win Mac ] virtual/textblob/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]

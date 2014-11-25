@@ -83,6 +83,8 @@ public:
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
+    virtual bool backgroundShouldAlwaysBeClipped() const { return false; }
+
     // Use this with caution! No type checking is done!
     RenderBox* firstChildBox() const;
     RenderBox* lastChildBox() const;

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-BoxDecorationData::BoxDecorationData(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, GraphicsContext* context)
+BoxDecorationData::BoxDecorationData(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext* context)
 {
     backgroundColor = style.visitedDependentColor(CSSPropertyBackgroundColor);
     hasBackground = backgroundColor.alpha() || style.hasBackgroundImage();
@@ -19,13 +19,19 @@ BoxDecorationData::BoxDecorationData(const RenderStyle& style, bool canRenderBor
     hasBorder = style.hasBorder();
     hasAppearance = style.hasAppearance();
 
-    m_bleedAvoidance = determineBackgroundBleedAvoidance(style, canRenderBorderImage, backgroundHasOpaqueTopLayer, context);
+    m_bleedAvoidance = determineBackgroundBleedAvoidance(style, canRenderBorderImage, backgroundHasOpaqueTopLayer, backgroundShouldAlwaysBeClipped, context);
 }
 
-BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, GraphicsContext* context)
+BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const RenderStyle& style, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext* context)
 {
-    if (!hasBackground || !hasBorder || !style.hasBorderRadius() || canRenderBorderImage)
+    if (!hasBackground)
         return BackgroundBleedNone;
+
+    if (!hasBorder || !style.hasBorderRadius() || canRenderBorderImage) {
+        if (backgroundShouldAlwaysBeClipped)
+            return BackgroundBleedClipBackground;
+        return BackgroundBleedNone;
+    }
 
     // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
     // rasterized, and should not be relied on to make decisions about bleeding.

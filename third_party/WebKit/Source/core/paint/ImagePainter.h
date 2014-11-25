@@ -20,7 +20,6 @@ public:
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintIntoRect(GraphicsContext*, const LayoutRect& paintOffset);
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     void paintAreaElementFocusRing(const PaintInfo&);

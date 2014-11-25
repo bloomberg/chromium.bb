@@ -280,11 +280,6 @@ void RenderImage::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     ImagePainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderImage::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    ImagePainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
-}
-
 void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
 {
     ASSERT(areaElement->imageElement() == node());

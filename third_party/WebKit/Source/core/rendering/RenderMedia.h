@@ -71,6 +71,8 @@ private:
     virtual bool isImage() const override final { return false; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
+    virtual bool backgroundShouldAlwaysBeClipped() const override final { return false; }
+
     RenderObjectChildList m_children;
 };
 

@@ -36,7 +36,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
         paintRect.setX(paintRect.x() + xOff);
     }
 
-    BoxDecorationData boxDecorationData(*m_renderFieldset.style(), m_renderFieldset.canRenderBorderImage(), m_renderFieldset.backgroundHasOpaqueTopLayer(), paintInfo.context);
+    BoxDecorationData boxDecorationData(*m_renderFieldset.style(), m_renderFieldset.canRenderBorderImage(), m_renderFieldset.backgroundHasOpaqueTopLayer(), m_renderFieldset.backgroundShouldAlwaysBeClipped(), paintInfo.context);
     DrawingRecorder recorder(paintInfo.context, &m_renderFieldset, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
 
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)

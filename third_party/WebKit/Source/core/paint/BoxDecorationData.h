@@ -16,7 +16,7 @@ class GraphicsContext;
 // Information extracted from RenderStyle for box painting.
 class BoxDecorationData {
 public:
-    BoxDecorationData(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, GraphicsContext*);
+    BoxDecorationData(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext*);
 
     Color backgroundColor;
     bool hasBackground;
@@ -25,7 +25,7 @@ public:
     BackgroundBleedAvoidance bleedAvoidance() { return static_cast<BackgroundBleedAvoidance>(m_bleedAvoidance); }
 
 private:
-    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, GraphicsContext*);
+    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const RenderStyle&, bool canRenderBorderImage, bool backgroundHasOpaqueTopLayer, bool backgroundShouldAlwaysBeClipped, GraphicsContext*);
     bool borderObscuresBackgroundEdge(const RenderStyle&, const FloatSize& contextScale) const;
     unsigned m_bleedAvoidance : 2; // BackgroundBleedAvoidance
 };
