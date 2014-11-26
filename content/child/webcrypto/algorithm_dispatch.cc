@@ -241,6 +241,24 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
                    key);
 }
 
+Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
+                  const blink::WebCryptoKey& base_key,
+                  unsigned int length_bits,
+                  std::vector<uint8_t>* derived_bytes) {
+  if (!KeyUsageAllows(base_key, blink::WebCryptoKeyUsageDeriveBits))
+    return Status::ErrorUnexpected();
+
+  if (algorithm.id() != base_key.algorithm().id())
+    return Status::ErrorUnexpected();
+
+  const AlgorithmImplementation* impl = NULL;
+  Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
+  if (status.IsError())
+    return status;
+
+  return impl->DeriveBits(algorithm, base_key, length_bits, derived_bytes);
+}
+
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm) {
   PlatformInit();

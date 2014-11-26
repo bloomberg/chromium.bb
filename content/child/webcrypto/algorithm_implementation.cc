@@ -60,6 +60,14 @@ Status AlgorithmImplementation::GenerateKey(
   return Status::ErrorUnsupported();
 }
 
+Status AlgorithmImplementation::DeriveBits(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& base_key,
+    unsigned int length_bits,
+    std::vector<uint8_t>* derived_bytes) const {
+  return Status::ErrorUnsupported();
+}
+
 Status AlgorithmImplementation::VerifyKeyUsagesBeforeImportKey(
     blink::WebCryptoKeyFormat format,
     blink::WebCryptoKeyUsageMask usages) const {

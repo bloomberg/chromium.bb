@@ -333,6 +333,23 @@ struct UnwrapKeyState : public BaseState {
   blink::WebCryptoKey unwrapped_key;
 };
 
+struct DeriveBitsState : public BaseState {
+  DeriveBitsState(const blink::WebCryptoAlgorithm& algorithm,
+                  const blink::WebCryptoKey& base_key,
+                  unsigned int length_bits,
+                  const blink::WebCryptoResult& result)
+      : BaseState(result),
+        algorithm(algorithm),
+        base_key(base_key),
+        length_bits(length_bits) {}
+
+  const blink::WebCryptoAlgorithm algorithm;
+  const blink::WebCryptoKey base_key;
+  const unsigned int length_bits;
+
+  std::vector<uint8_t> derived_bytes;
+};
+
 // --------------------------------------------------------------------
 // Wrapper functions
 // --------------------------------------------------------------------
@@ -519,6 +536,22 @@ void DoUnwrapKey(scoped_ptr<UnwrapKeyState> passed_state) {
       FROM_HERE, base::Bind(DoUnwrapKeyReply, Passed(&passed_state)));
 }
 
+void DoDeriveBitsReply(scoped_ptr<DeriveBitsState> state) {
+  CompleteWithBufferOrError(state->status, state->derived_bytes,
+                            &state->result);
+}
+
+void DoDeriveBits(scoped_ptr<DeriveBitsState> passed_state) {
+  DeriveBitsState* state = passed_state.get();
+  if (state->cancelled())
+    return;
+  state->status =
+      webcrypto::DeriveBits(state->algorithm, state->base_key,
+                            state->length_bits, &state->derived_bytes);
+  state->origin_thread->PostTask(
+      FROM_HERE, base::Bind(DoDeriveBitsReply, Passed(&passed_state)));
+}
+
 }  // namespace
 
 WebCryptoImpl::WebCryptoImpl() {
@@ -666,6 +699,18 @@ void WebCryptoImpl::unwrapKey(
       unwrapped_key_algorithm, extractable, usages, result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoUnwrapKey, Passed(&state)))) {
+    CompleteWithThreadPoolError(&result);
+  }
+}
+
+void WebCryptoImpl::deriveBits(const blink::WebCryptoAlgorithm& algorithm,
+                               const blink::WebCryptoKey& base_key,
+                               unsigned int length_bits,
+                               blink::WebCryptoResult result) {
+  scoped_ptr<DeriveBitsState> state(
+      new DeriveBitsState(algorithm, base_key, length_bits, result));
+  if (!CryptoThreadPool::PostTask(FROM_HERE,
+                                  base::Bind(DoDeriveBits, Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
   }
 }

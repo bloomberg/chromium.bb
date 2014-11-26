@@ -87,6 +87,11 @@ UnwrapKey(blink::WebCryptoKeyFormat format,
           blink::WebCryptoKeyUsageMask usages,
           blink::WebCryptoKey* key);
 
+CONTENT_EXPORT Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
+                                 const blink::WebCryptoKey& base_key,
+                                 unsigned int length_bits,
+                                 std::vector<uint8_t>* derived_bytes);
+
 CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm);
 

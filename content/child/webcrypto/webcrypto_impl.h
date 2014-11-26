@@ -84,6 +84,11 @@ class WebCryptoImpl : public blink::WebCrypto {
       blink::WebCryptoKeyUsageMask usages,
       blink::WebCryptoResult result);
 
+  virtual void deriveBits(const blink::WebCryptoAlgorithm& algorithm,
+                          const blink::WebCryptoKey& base_key,
+                          unsigned int length_bits,
+                          blink::WebCryptoResult result);
+
   // This method returns a digestor object that can be used to synchronously
   // compute a digest one chunk at a time. Thus, the consume does not need to
   // hold onto a large buffer with all the data to digest. Chunks can be given

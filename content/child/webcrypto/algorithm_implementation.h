@@ -81,6 +81,12 @@ class AlgorithmImplementation {
                              blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const;
 
+  // This method corresponds to Web Crypto's "derive bits" operation.
+  virtual Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
+                            const blink::WebCryptoKey& base_key,
+                            unsigned int length_bits,
+                            std::vector<uint8_t>* derived_bytes) const;
+
   // -----------------------------------------------
   // Key import
   // -----------------------------------------------
