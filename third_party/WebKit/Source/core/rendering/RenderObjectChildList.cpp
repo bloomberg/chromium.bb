@@ -61,6 +61,7 @@ void RenderObjectChildList::destroyLeftoverChildren()
 RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, RenderObject* oldChild, bool notifyRenderer)
 {
     ASSERT(oldChild->parent() == owner);
+    ASSERT(this == owner->virtualChildren());
 
     if (oldChild->isFloatingOrOutOfFlowPositioned())
         toRenderBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
@@ -124,6 +125,7 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
 void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* newChild, RenderObject* beforeChild, bool notifyRenderer)
 {
     ASSERT(!newChild->parent());
+    ASSERT(this == owner->virtualChildren());
     ASSERT(!owner->isRenderBlockFlow() || (!newChild->isTableSection() && !newChild->isTableRow() && !newChild->isTableCell()));
 
     while (beforeChild && beforeChild->parent() && beforeChild->parent() != owner)
