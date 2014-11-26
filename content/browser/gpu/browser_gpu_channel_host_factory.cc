@@ -448,7 +448,7 @@ bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
   // Return early if usage is not enabled.
-  if (IsGpuMemoryBufferFactoryUsageEnabled(usage))
+  if (!IsGpuMemoryBufferFactoryUsageEnabled(usage))
     return false;
 
   // Preferred type is always used by factory.
