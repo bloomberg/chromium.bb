@@ -67,8 +67,8 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
         root.attributes.name.indexOf('Status tray') != -1) {
       return root;
     }
-    for (var i = 0; i < root.children().length; i++) {
-      var found = findStatusTray(root.children()[i]);
+    for (var i = 0; i < root.children.length; i++) {
+      var found = findStatusTray(root.children[i]);
       if (found)
         return found;
     }

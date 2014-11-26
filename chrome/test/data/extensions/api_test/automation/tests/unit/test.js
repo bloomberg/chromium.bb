@@ -92,7 +92,7 @@ var tests = [
       console.log(e.stack);
     }
 
-    var activedescendant = tree.firstChild();
+    var activedescendant = tree.firstChild;
     assertIsDef(activedescendant);
     assertEq('activedescendant', activedescendant.attributes.id);
     assertEq(
@@ -106,7 +106,7 @@ var tests = [
         activedescendant.activedescendant.attributes.id);
     assertIsNotDef(activedescendant.attributes.activedescendantId);
 
-    var controlledBy = activedescendant.nextSibling();
+    var controlledBy = activedescendant.nextSibling;
     assertIsDef(controlledBy);
     assertEq('controlledBy', controlledBy.attributes.id);
     assertEq(1, controlledBy.attributes['aria-controls'].length);
@@ -116,7 +116,7 @@ var tests = [
     assertEq('target', controlledBy.controls[0].attributes.id);
     assertIsNotDef(controlledBy.attributes.controlledbyIds);
 
-    var describedBy = controlledBy.nextSibling();
+    var describedBy = controlledBy.nextSibling;
     assertIsDef(describedBy);
     assertEq('describedBy', describedBy.attributes.id);
     assertEq(2, describedBy.attributes['aria-describedby'].length);
@@ -130,7 +130,7 @@ var tests = [
              describedBy.describedby[1].attributes.id);
     assertIsNotDef(describedBy.attributes.describedbyIds);
 
-    var flowTo = describedBy.nextSibling();
+    var flowTo = describedBy.nextSibling;
     assertIsDef(flowTo);
     assertEq('flowTo', flowTo.attributes.id);
     assertEq(1, flowTo.attributes['aria-flowto'].length);
@@ -140,7 +140,7 @@ var tests = [
     assertEq('target', flowTo.flowto[0].attributes.id);
     assertIsNotDef(flowTo.attributes.flowtoIds);
 
-    var labelledBy = flowTo.nextSibling();
+    var labelledBy = flowTo.nextSibling;
     assertIsDef(labelledBy);
     assertEq('labelledBy', labelledBy.attributes.id);
     assertEq(1, labelledBy.attributes['aria-labelledby'].length);
@@ -151,7 +151,7 @@ var tests = [
              labelledBy.labelledby[0].attributes.id);
     assertIsNotDef(labelledBy.attributes.labelledbyIds);
 
-    var owns = labelledBy.nextSibling();
+    var owns = labelledBy.nextSibling;
     assertIsDef(owns);
     assertEq('owns', owns.attributes.id);
     assertEq(1, owns.attributes['aria-owns'].length);
@@ -181,7 +181,7 @@ var tests = [
 
     var tree = new AutomationRootNode();
     assertTrue(privates(tree).impl.unserialize(update));
-    var button = tree.firstChild();
+    var button = tree.firstChild;
     assertEq('button', button.role);
     assertEq('foo', button.name);
     button.name = 'bar';
@@ -228,7 +228,7 @@ var tests = [
     // First, setup the initial tree.
     var tree = new AutomationRootNode();
     assertTrue(privates(tree).impl.unserialize(update));
-    var button = tree.firstChild();
+    var button = tree.firstChild;
     assertEq('button', button.role);
     assertEq('foo', button.name);
 
@@ -312,13 +312,13 @@ var tests = [
     assertEq(true, tree.docLoaded);
     assertFalse('textSelStart' in tree);
     assertFalse('textSelEnd' in tree);
-    var editableText = tree.firstChild();
+    var editableText = tree.firstChild;
     assertEq(-1, editableText.textSelStart);
     assertEq(-1, editableText.textSelEnd);
-    var textField = editableText.nextSibling();
+    var textField = editableText.nextSibling;
     assertEq(10, textField.textSelStart);
     assertEq(20, textField.textSelEnd);
-    var textArea = textField.nextSibling();
+    var textArea = textField.nextSibling;
     assertEq(-1, textArea.textSelStart);
     assertEq(-1, textArea.textSelEnd);
 
@@ -373,22 +373,22 @@ var tests = [
     assertFalse('minValueForRange' in tree);
     assertFalse('maxValueForRange' in tree);
 
-    var progressIndicator = tree.firstChild();
+    var progressIndicator = tree.firstChild;
     assertEq(1.0, progressIndicator.valueForRange);
     assertEq(0.0, progressIndicator.minValueForRange);
     assertEq(1.0, progressIndicator.maxValueForRange);
 
-    var scrollBar = progressIndicator.nextSibling();
+    var scrollBar = progressIndicator.nextSibling;
     assertEq(0.3, scrollBar.valueForRange);
     assertEq(0.0, scrollBar.minValueForRange);
     assertEq(1.0, scrollBar.maxValueForRange);
 
-    var slider = scrollBar.nextSibling();
+    var slider = scrollBar.nextSibling;
     assertEq(3.0, slider.valueForRange);
     assertEq(1.0, slider.minValueForRange);
     assertEq(5.0, slider.maxValueForRange);
 
-    var spinButton = slider.nextSibling();
+    var spinButton = slider.nextSibling;
     assertEq(14.0, spinButton.valueForRange);
     assertEq(1.0, spinButton.minValueForRange);
     assertEq(31.0, spinButton.maxValueForRange);
@@ -476,31 +476,31 @@ var tests = [
     for (var attribute in TableCellMixinAttributes)
       assertFalse(attribute in tree);
 
-    var table = tree.firstChild();
+    var table = tree.firstChild;
     assertEq(2, table.tableRowCount);
     assertEq(3, table.tableColumnCount);
 
-    var row1 = table.firstChild();
-    var cell1 = row1.firstChild();
+    var row1 = table.firstChild;
+    var cell1 = row1.firstChild;
     assertEq(0, cell1.tableCellColumnIndex);
     assertEq(2, cell1.tableCellColumnSpan);
     assertEq(0, cell1.tableCellRowIndex);
     assertEq(1, cell1.tableCellRowSpan);
 
-    var cell2 = cell1.nextSibling();
+    var cell2 = cell1.nextSibling;
     assertEq(2, cell2.tableCellColumnIndex);
     assertEq(1, cell2.tableCellColumnSpan);
     assertEq(0, cell2.tableCellRowIndex);
     assertEq(2, cell2.tableCellRowSpan);
 
-    var row2 = row1.nextSibling();
-    var cell3 = row2.firstChild();
+    var row2 = row1.nextSibling;
+    var cell3 = row2.firstChild;
     assertEq(0, cell3.tableCellColumnIndex);
     assertEq(1, cell3.tableCellColumnSpan);
     assertEq(1, cell3.tableCellRowIndex);
     assertEq(1, cell3.tableCellRowSpan);
 
-    var cell4 = cell3.nextSibling();
+    var cell4 = cell3.nextSibling;
     assertEq(1, cell4.tableCellColumnIndex);
     assertEq(1, cell4.tableCellColumnSpan);
     assertEq(1, cell4.tableCellRowIndex);

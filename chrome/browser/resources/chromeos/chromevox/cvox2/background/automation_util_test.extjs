@@ -33,7 +33,7 @@ TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
       while (root) {
         var ancestors = AutomationUtil.getAncestors(root);
         assertEquals(expectedLength++, ancestors.length);
-        root = root.firstChild();
+        root = root.firstChild;
       }
     testDone();
   }.bind(this));
@@ -42,10 +42,10 @@ TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
 TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
   this.runWithAutomation(this.basicDoc, function(root) {
     var leftmost = root, rightmost = root;
-    while (leftmost.firstChild())
-      leftmost = leftmost.firstChild();
-    while (rightmost.lastChild())
-      rightmost = rightmost.lastChild();
+    while (leftmost.firstChild)
+      leftmost = leftmost.firstChild;
+    while (rightmost.lastChild)
+      rightmost = rightmost.lastChild;
 
     var leftAncestors = AutomationUtil.getAncestors(leftmost);
     var rightAncestors = AutomationUtil.getAncestors(rightmost);
@@ -90,12 +90,12 @@ TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
 
     // Ancestor.
-    left = left.firstChild();
+    left = left.firstChild;
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(right, left));
 
     // Ordered.
-    right = right.lastChild();
+    right = right.lastChild;
     assertEquals(Dir.BACKWARD, AutomationUtil.getDirection(right, left));
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
 

@@ -45,13 +45,13 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
   if (pred(cur))
     return cur;
 
-  var child = dir == Dir.BACKWARD ? cur.lastChild() : cur.firstChild();
+  var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
   while (child) {
     var ret = AutomationUtil.findNodePre(child, dir, pred);
     if (ret)
       return ret;
     child = dir == Dir.BACKWARD ?
-        child.previousSibling() : child.nextSibling();
+        child.previousSibling : child.nextSibling;
   }
 };
 
@@ -64,13 +64,13 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
  * @return {AutomationNode}
  */
 AutomationUtil.findNodePost = function(cur, dir, pred) {
-  var child = dir == Dir.BACKWARD ? cur.lastChild() : cur.firstChild();
+  var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
   while (child) {
     var ret = AutomationUtil.findNodePost(child, dir, pred);
     if (ret)
       return ret;
     child = dir == Dir.BACKWARD ?
-        child.previousSibling() : child.nextSibling();
+        child.previousSibling : child.nextSibling;
   }
 
   if (pred(cur))
@@ -87,10 +87,10 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
 AutomationUtil.findNextSubtree = function(cur, dir) {
   while (cur) {
     var next = dir == Dir.BACKWARD ?
-        cur.previousSibling() : cur.nextSibling();
+        cur.previousSibling : cur.nextSibling;
     if (next)
       return next;
-    cur = cur.parent();
+    cur = cur.parent;
   }
 };
 
@@ -164,7 +164,7 @@ AutomationUtil.getAncestors = function(node) {
   var candidate = node;
   while (candidate) {
     ret.push(candidate);
-    candidate = candidate.parent();
+    candidate = candidate.parent;
   }
   return ret.reverse();
 };
@@ -218,7 +218,7 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
 
   // One of the nodes is an ancestor of the other. Don't distinguish and just
   // consider it Dir.FORWARD.
-  if (!divA || !divB || divA.parent() === nodeB || divB.parent() === nodeA)
+  if (!divA || !divB || divA.parent === nodeB || divB.parent === nodeA)
     return Dir.FORWARD;
 
   return divA.indexInParent <= divB.indexInParent ? Dir.FORWARD : Dir.BACKWARD;

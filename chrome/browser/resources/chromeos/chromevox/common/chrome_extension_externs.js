@@ -1260,39 +1260,39 @@ chrome.automation.AutomationNode.prototype.root;
 
 
 /**
- * @return {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
-chrome.automation.AutomationNode.prototype.firstChild = function() {};
+chrome.automation.AutomationNode.prototype.firstChild;
 
 
 /**
- * @return {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
-chrome.automation.AutomationNode.prototype.lastChild = function() {};
+chrome.automation.AutomationNode.prototype.lastChild;
 
 
 /**
- * @return {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
-chrome.automation.AutomationNode.prototype.nextSibling = function() {};
+chrome.automation.AutomationNode.prototype.nextSibling;
 
 
 /**
- * @return {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
-chrome.automation.AutomationNode.prototype.previousSibling = function() {};
+chrome.automation.AutomationNode.prototype.previousSibling;
 
 
 /**
- * @return {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationNode}
  */
-chrome.automation.AutomationNode.prototype.parent = function() {};
+chrome.automation.AutomationNode.prototype.parent;
 
 
 /**
- * @return {!Array.<chrome.automation.AutomationNode>}
+ * @type {!Array.<chrome.automation.AutomationNode>}
  */
-chrome.automation.AutomationNode.prototype.children = function() {};
+chrome.automation.AutomationNode.prototype.children;
 
 
 /**

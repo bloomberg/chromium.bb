@@ -5,7 +5,7 @@
 var allTests = [
   function testLocation() {
     function assertOkButtonLocation(event) {
-      var okButton = rootNode.firstChild().firstChild();
+      var okButton = rootNode.firstChild.firstChild;
       assertTrue('location' in okButton);
 
       // We can't assert the left and top positions because they're
@@ -16,7 +16,7 @@ var allTests = [
       chrome.test.succeed();
     };
 
-    var okButton = rootNode.firstChild().firstChild();
+    var okButton = rootNode.firstChild.firstChild;
     assertTrue('location' in okButton, 'no location in okButton');
     assertTrue('left' in okButton.location, 'no left in location');
     assertTrue('top' in okButton.location, 'no top in location');

@@ -324,12 +324,12 @@
     // the root node, this will be undefined.
     long? indexInParent;
 
-    static AutomationNode[] children();
-    static AutomationNode parent();
-    static AutomationNode firstChild();
-    static AutomationNode lastChild();
-    static AutomationNode previousSibling();
-    static AutomationNode nextSibling();
+    AutomationNode[] children;
+    AutomationNode parent;
+    AutomationNode firstChild;
+    AutomationNode lastChild;
+    AutomationNode previousSibling;
+    AutomationNode nextSibling;
 
     // Does the default action based on this node's role. This is generally
     // the same action that would result from clicking the node such as

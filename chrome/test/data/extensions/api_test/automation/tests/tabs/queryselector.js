@@ -5,7 +5,7 @@
 var allTests = [
   // Basic query from root node.
   function testQuerySelector() {
-    var cancelButton = rootNode.lastChild().lastChild();
+    var cancelButton = rootNode.lastChild.lastChild;
     function assertCorrectResult(queryResult) {
       assertEq(queryResult, cancelButton);
       chrome.test.succeed();
@@ -26,9 +26,9 @@ var allTests = [
   // Demonstrates that a query from a non-root element queries inside that
   // element.
   function testQuerySelectorFromMain() {
-    var main = rootNode.children()[1];
+    var main = rootNode.children[1];
     // paragraph inside "main" element - not the first <p> on the page
-    var p = main.firstChild();
+    var p = main.firstChild;
     function assertCorrectResult(queryResult) {
       assertEq(queryResult, p);
       chrome.test.succeed();
@@ -39,7 +39,7 @@ var allTests = [
   // Demonstrates that a query for an element which is ignored for accessibility
   // returns its nearest ancestor.
   function testQuerySelectorForSpanInsideButtonReturnsButton() {
-    var okButton = rootNode.lastChild().firstChild();
+    var okButton = rootNode.lastChild.firstChild;
     function assertCorrectResult(queryResult) {
       assertEq(queryResult, okButton);
       chrome.test.succeed();
@@ -50,8 +50,8 @@ var allTests = [
   // Demonstrates that querying from an anonymous node may have unexpected
   // results.
   function testQuerySelectorFromAnonymousGroup() {
-    var h1 = rootNode.firstChild().firstChild();
-    var group = rootNode.lastChild();
+    var h1 = rootNode.firstChild.firstChild;
+    var group = rootNode.lastChild;
     function assertCorrectResult(queryResult) {
       assertEq(h1, queryResult);
       chrome.test.succeed();
@@ -60,7 +60,7 @@ var allTests = [
   },
 
   function testQuerySelectorFromRemovedNode() {
-    var group = rootNode.firstChild();
+    var group = rootNode.firstChild;
     function assertCorrectResult(queryResult) {
       assertEq(null, queryResult);
       var errorMsg =

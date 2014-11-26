@@ -62,7 +62,7 @@ var allTests = [
 
     assertTrue('activedescendant' in combobox,
                'combobox should have an activedescendant attribute');
-    var opt6 = listbox.children()[5];
+    var opt6 = listbox.children[5];
     assertEq(opt6, combobox.activedescendant);
     chrome.test.succeed();
   },
@@ -178,46 +178,46 @@ var allTests = [
     assertEq(3, table.tableRowCount);
     assertEq(3, table.tableColumnCount);
 
-    var row1 = table.firstChild();
-    var cell1 = row1.firstChild();
+    var row1 = table.firstChild;
+    var cell1 = row1.firstChild;
     assertEq(0, cell1.tableCellColumnIndex);
     assertEq(1, cell1.tableCellColumnSpan);
     assertEq(0, cell1.tableCellRowIndex);
     assertEq(1, cell1.tableCellRowSpan);
 
-    var cell2 = cell1.nextSibling();
+    var cell2 = cell1.nextSibling;
     assertEq(1, cell2.tableCellColumnIndex);
     assertEq(1, cell2.tableCellColumnSpan);
     assertEq(0, cell2.tableCellRowIndex);
     assertEq(1, cell2.tableCellRowSpan);
 
-    var cell3 = cell2.nextSibling();
+    var cell3 = cell2.nextSibling;
     assertEq(2, cell3.tableCellColumnIndex);
     assertEq(1, cell3.tableCellColumnSpan);
     assertEq(0, cell3.tableCellRowIndex);
     assertEq(1, cell3.tableCellRowSpan);
 
-    var row2 = row1.nextSibling();
-    var cell4 = row2.firstChild();
+    var row2 = row1.nextSibling;
+    var cell4 = row2.firstChild;
     assertEq(0, cell4.tableCellColumnIndex);
     assertEq(2, cell4.tableCellColumnSpan);
     assertEq(1, cell4.tableCellRowIndex);
     assertEq(1, cell4.tableCellRowSpan);
 
-    var cell5 = cell4.nextSibling();
+    var cell5 = cell4.nextSibling;
     assertEq(2, cell5.tableCellColumnIndex);
     assertEq(1, cell5.tableCellColumnSpan);
     assertEq(1, cell5.tableCellRowIndex);
     assertEq(2, cell5.tableCellRowSpan);
 
-    var row3 = row2.nextSibling();
-    var cell6 = row3.firstChild();
+    var row3 = row2.nextSibling;
+    var cell6 = row3.firstChild;
     assertEq(0, cell6.tableCellColumnIndex);
     assertEq(1, cell6.tableCellColumnSpan);
     assertEq(2, cell6.tableCellRowIndex);
     assertEq(1, cell6.tableCellRowSpan);
 
-    var cell7 = cell6.nextSibling();
+    var cell7 = cell6.nextSibling;
     assertEq(1, cell7.tableCellColumnIndex);
     assertEq(1, cell7.tableCellColumnSpan);
     assertEq(2, cell7.tableCellRowIndex);
@@ -243,5 +243,5 @@ var allTests = [
     chrome.test.succeed();
   }
 ];
-var things = Object.keys(chrome.automation);;
+
 setUpAndRunTests(allTests, 'mixins.html');

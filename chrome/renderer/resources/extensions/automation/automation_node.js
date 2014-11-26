@@ -39,20 +39,20 @@ AutomationNodeImpl.prototype = {
     return this.rootImpl.wrapper;
   },
 
-  parent: function() {
+  get parent() {
     return this.hostTree || this.rootImpl.get(this.parentID);
   },
 
-  firstChild: function() {
+  get firstChild() {
     return this.childTree || this.rootImpl.get(this.childIds[0]);
   },
 
-  lastChild: function() {
+  get lastChild() {
     var childIds = this.childIds;
     return this.childTree || this.rootImpl.get(childIds[childIds.length - 1]);
   },
 
-  children: function() {
+  get children() {
     if (this.childTree)
       return [this.childTree];
 
@@ -64,17 +64,17 @@ AutomationNodeImpl.prototype = {
     return children;
   },
 
-  previousSibling: function() {
-    var parent = this.parent();
+  get previousSibling() {
+    var parent = this.parent;
     if (parent && this.indexInParent > 0)
-      return parent.children()[this.indexInParent - 1];
+      return parent.children[this.indexInParent - 1];
     return undefined;
   },
 
-  nextSibling: function() {
-    var parent = this.parent();
-    if (parent && this.indexInParent < parent.children().length)
-      return parent.children()[this.indexInParent + 1];
+  get nextSibling() {
+    var parent = this.parent;
+    if (parent && this.indexInParent < parent.children.length)
+      return parent.children[this.indexInParent + 1];
     return undefined;
   },
 
@@ -143,10 +143,10 @@ AutomationNodeImpl.prototype = {
 
   dispatchEvent: function(eventType) {
     var path = [];
-    var parent = this.parent();
+    var parent = this.parent;
     while (parent) {
       path.push(parent);
-      parent = parent.parent();
+      parent = parent.parent;
     }
     var event = new AutomationEvent(eventType, this.wrapper);
 
@@ -281,13 +281,13 @@ AutomationNodeImpl.prototype = {
    *     for each node. Return true to early-out the traversal.
    */
   forAllDescendants_: function(closure) {
-    var stack = this.wrapper.children().reverse();
+    var stack = this.wrapper.children.reverse();
     while (stack.length > 0) {
       var node = stack.pop();
       if (closure(node))
         return;
 
-      var children = node.children();
+      var children = node.children;
       for (var i = children.length - 1; i >= 0; i--)
         stack.push(children[i]);
     }
@@ -546,7 +546,7 @@ AutomationRootNodeImpl.prototype = {
       if (nodeToClear === this.wrapper) {
         this.invalidate_(nodeToClear);
       } else {
-        var children = nodeToClear.children();
+        var children = nodeToClear.children;
         for (var i = 0; i < children.length; i++)
           this.invalidate_(children[i]);
         var nodeToClearImpl = privates(nodeToClear).impl;
@@ -608,8 +608,8 @@ AutomationRootNodeImpl.prototype = {
           AutomationNodeImpl.prototype.toString.call(node) +
           '\n';
       indent += 2;
-      for (var i = 0; i < node.children().length; i++)
-        output += toStringInternal(node.children()[i], indent);
+      for (var i = 0; i < node.children.length; i++)
+        output += toStringInternal(node.children[i], indent);
       return output;
     }
     return toStringInternal(this, 0);
@@ -618,7 +618,7 @@ AutomationRootNodeImpl.prototype = {
   invalidate_: function(node) {
     if (!node)
       return;
-    var children = node.children();
+    var children = node.children;
 
     for (var i = 0, child; child = children[i]; i++) {
       // Do not invalidate into subrooted nodes.
@@ -691,10 +691,10 @@ AutomationRootNodeImpl.prototype = {
       var childId = newChildIds[i];
       var childNode = this.axNodeDataCache_[childId];
       if (childNode) {
-        if (childNode.parent() != node) {
+        if (childNode.parent != node) {
           var parentId = -1;
-          if (childNode.parent()) {
-            var parentImpl = privates(childNode.parent()).impl;
+          if (childNode.parent) {
+            var parentImpl = privates(childNode.parent).impl;
             parentId = parentImpl.id;
           }
           // This is a serious error - nodes should never be reparented.
@@ -960,13 +960,7 @@ AutomationRootNodeImpl.prototype = {
 
 var AutomationNode = utils.expose('AutomationNode',
                                   AutomationNodeImpl,
-                                  { functions: ['parent',
-                                                'firstChild',
-                                                'lastChild',
-                                                'children',
-                                                'previousSibling',
-                                                'nextSibling',
-                                                'doDefault',
+                                  { functions: ['doDefault',
                                                 'find',
                                                 'findAll',
                                                 'focus',
@@ -977,7 +971,13 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'removeEventListener',
                                                 'domQuerySelector',
                                                 'toJSON' ],
-                                    readonly: ['isRootNode',
+                                    readonly: ['parent',
+                                               'firstChild',
+                                               'lastChild',
+                                               'children',
+                                               'previousSibling',
+                                               'nextSibling',
+                                               'isRootNode',
                                                'role',
                                                'state',
                                                'location',

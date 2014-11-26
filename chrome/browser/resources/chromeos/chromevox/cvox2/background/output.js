@@ -324,8 +324,8 @@ Output.prototype = {
         } else if (token == 'indexInParent') {
           this.addToSpannable_(buff, node.indexInParent + 1);
         } else if (token == 'parentChildCount') {
-          if (node.parent())
-          this.addToSpannable_(buff, node.parent().children().length);
+          if (node.parent)
+          this.addToSpannable_(buff, node.parent.children.length);
         } else if (token == 'state') {
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
             this.addToSpannable_(buff, s, options);
@@ -456,8 +456,8 @@ Output.prototype = {
 
     if (!opt_exclude.stay) {
       var commonFormatNode = uniqueAncestors[0];
-      while (commonFormatNode && commonFormatNode.parent()) {
-        commonFormatNode = commonFormatNode.parent();
+      while (commonFormatNode && commonFormatNode.parent) {
+        commonFormatNode = commonFormatNode.parent;
         var roleBlock =
             eventBlock[commonFormatNode.role] || eventBlock['default'];
         if (roleBlock.stay)

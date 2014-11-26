@@ -14,37 +14,37 @@ var okButton;
 var cancelButton;
 
 function initializeNodes(rootNode) {
-  group = rootNode.firstChild();
+  group = rootNode.firstChild;
   assertEq(RoleType.group, group.role);
 
-  h1 = group.firstChild();
+  h1 = group.firstChild;
   assertEq(RoleType.heading, h1.role);
   assertEq(1, h1.attributes.hierarchicalLevel);
 
-  p1 = group.lastChild();
+  p1 = group.lastChild;
   assertEq(RoleType.paragraph, p1.role);
 
-  link = p1.children()[1];
+  link = p1.children[1];
   assertEq(RoleType.link, link.role);
 
-  main = rootNode.children()[1];
+  main = rootNode.children[1];
   assertEq(RoleType.main, main.role);
 
-  p2 = main.firstChild();
+  p2 = main.firstChild;
   assertEq(RoleType.paragraph, p2.role);
 
-  p3 = main.lastChild();
+  p3 = main.lastChild;
   assertEq(RoleType.paragraph, p3.role);
 
-  anonGroup = rootNode.lastChild();
+  anonGroup = rootNode.lastChild;
   assertEq(RoleType.group, anonGroup.role);
 
-  okButton = anonGroup.firstChild();
+  okButton = anonGroup.firstChild;
   assertEq(RoleType.button, okButton.role);
   assertEq('Ok', okButton.name);
   assertFalse(StateType.enabled in okButton.state);
 
-  cancelButton = anonGroup.lastChild();
+  cancelButton = anonGroup.lastChild;
   assertEq(RoleType.button, cancelButton.role);
   assertEq('Cancel', cancelButton.name);
   assertTrue(StateType.enabled in cancelButton.state);
@@ -127,7 +127,7 @@ var allTests = [
 
     // Find by value attribute - regexp.
     var query = { attributes: { value: /relationship/ }};
-    assertEq(p2, rootNode.find(query).parent());
+    assertEq(p2, rootNode.find(query).parent);
 
     // Find by role and hierarchicalLevel attribute.
     assertEq(h1, rootNode.find({ role: RoleType.heading,
@@ -162,7 +162,7 @@ var allTests = [
                             attributes: { hierarchicalLevel: 1 } }),
                'h1 should match focusable: false');
 
-    var p2StaticText = p2.firstChild();
+    var p2StaticText = p2.firstChild;
     assertTrue(
         p2StaticText.matches({ role: RoleType.staticText,
                                attributes: { value: /relationship/ } }),

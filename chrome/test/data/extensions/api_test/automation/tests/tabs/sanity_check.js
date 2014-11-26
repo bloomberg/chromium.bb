@@ -18,7 +18,7 @@ var allTests = [
     assertEq(
       {enabled: true, focusable: true, readOnly: true},
       rootNode.state);
-    var children = rootNode.children();
+    var children = rootNode.children;
     assertEq(RoleType.rootWebArea, rootNode.role);
     assertEq(1, children.length);
     var body = children[0];
@@ -28,7 +28,7 @@ var allTests = [
     assertEq({enabled: true, readOnly: true},
                body.state);
 
-    var contentChildren = body.children();
+    var contentChildren = body.children;
     assertEq(3, contentChildren.length);
     var okButton = contentChildren[0];
     assertEq('Ok', okButton.name);
@@ -49,35 +49,35 @@ var allTests = [
              cancelButton.state);
 
     // Traversal.
-    assertEq(undefined, rootNode.parent());
-    assertEq(rootNode, body.parent());
+    assertEq(undefined, rootNode.parent);
+    assertEq(rootNode, body.parent);
 
-    assertEq(body, rootNode.firstChild());
-    assertEq(body, rootNode.lastChild());
+    assertEq(body, rootNode.firstChild);
+    assertEq(body, rootNode.lastChild);
 
-    assertEq(okButton, body.firstChild());
-    assertEq(cancelButton, body.lastChild());
+    assertEq(okButton, body.firstChild);
+    assertEq(cancelButton, body.lastChild);
 
-    assertEq(body, okButton.parent());
-    assertEq(body, userNameInput.parent());
-    assertEq(body, cancelButton.parent());
+    assertEq(body, okButton.parent);
+    assertEq(body, userNameInput.parent);
+    assertEq(body, cancelButton.parent);
 
-    assertEq(undefined, okButton.previousSibling());
-    assertEq(undefined, okButton.firstChild());
-    assertEq(userNameInput, okButton.nextSibling());
-    assertEq(undefined, okButton.lastChild());
+    assertEq(undefined, okButton.previousSibling);
+    assertEq(undefined, okButton.firstChild);
+    assertEq(userNameInput, okButton.nextSibling);
+    assertEq(undefined, okButton.lastChild);
 
-    assertEq(okButton, userNameInput.previousSibling());
-    assertEq(cancelButton, userNameInput.nextSibling());
+    assertEq(okButton, userNameInput.previousSibling);
+    assertEq(cancelButton, userNameInput.nextSibling);
 
-    assertEq(userNameInput, cancelButton.previousSibling());
-    assertEq(undefined, cancelButton.nextSibling());
+    assertEq(userNameInput, cancelButton.previousSibling);
+    assertEq(undefined, cancelButton.nextSibling);
 
     chrome.test.succeed();
   },
   function testIsRoot() {
     assertTrue(rootNode.isRootNode);
-    assertFalse(rootNode.firstChild().isRootNode);
+    assertFalse(rootNode.firstChild.isRootNode);
     chrome.test.succeed();
   }
 ];

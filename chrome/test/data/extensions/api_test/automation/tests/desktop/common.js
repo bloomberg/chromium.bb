@@ -16,7 +16,7 @@ function findAutomationNode(root, condition) {
   if (condition(root))
     return root;
 
-  var children = root.children();
+  var children = root.children;
   for (var i = 0; i < children.length; i++) {
     var result = findAutomationNode(children[i], condition);
     if (result)
