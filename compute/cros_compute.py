@@ -4,8 +4,6 @@
 
 """Script to run Chrome OS-specific GCE commands ."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -58,14 +56,14 @@ def BotifyInstance(instance, project, zone):
   gcctx.SSH(instance, cmd='umask 0022')
   # Set up buildbot user and grant it sudo rights.
   gcctx.SSH(instance,
-            cmd='sudo adduser --disabled-password --gecos "" %s'
-                 % bot_constants.BUILDBOT_USER)
+            cmd=('sudo adduser --disabled-password --gecos "" %s'
+                 % bot_constants.BUILDBOT_USER))
   gcctx.SSH(instance,
             cmd='sudo adduser %s sudo' % bot_constants.BUILDBOT_USER)
   gcctx.SSH(
       instance,
-      cmd='sudo awk \'BEGIN{print "%%%s ALL=NOPASSWD: ALL" >>"/etc/sudoers"}\''
-          % bot_constants.BUILDBOT_USER)
+      cmd=('sudo awk \'BEGIN{print "%%%s ALL=NOPASSWD: ALL" >>"/etc/sudoers"}\''
+           % bot_constants.BUILDBOT_USER))
 
   # Copy bot credentials to a temporay location.
   dest_path = bot_constants.BOT_CREDS_TMP_PATH

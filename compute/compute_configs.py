@@ -4,8 +4,6 @@
 
 """This module contains Google Compute Engine configurations."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 from chromite.cbuildbot import constants
@@ -33,16 +31,16 @@ configs = {}
 
 # The default config for Chrome OS builders.
 configs['cros-bot'] = dict(
-    machine_type = 'n1-highmem-16',
-    zone = DEFAULT_ZONE,
-    image = DEFAULT_IMAGE_NAME,
-    scopes= DEFAULT_SCOPES,
+    machine_type='n1-highmem-16',
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
 )
 
 # A wimpy config for testing purposes.
 configs['cros-test'] = dict(
-    machine_type = 'n1-standard-1',
-    zone = DEFAULT_ZONE,
-    image = DEFAULT_IMAGE_NAME,
-    scopes= DEFAULT_SCOPES,
+    machine_type='n1-standard-1',
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
 )

@@ -4,8 +4,6 @@
 
 """Library for gcloud operations."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import logging
@@ -136,7 +134,7 @@ class GCContext(object):
     """Lists all instances."""
     return self.DoCommand(['images', 'list'], **kwargs)
 
-  def CreateImage(self, image,  source_uri=None, disk=None, **kwargs):
+  def CreateImage(self, image, source_uri=None, disk=None, **kwargs):
     """Creates an image from |source_uri| or |disk|.
 
     Args:

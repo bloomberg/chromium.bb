@@ -4,9 +4,6 @@
 
 """Should be run on a GCE instance to set up the build environment."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import getpass
@@ -16,6 +13,7 @@ from chromite.compute import compute_configs
 from chromite.compute import bot_constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+
 
 # Make the script more readable.
 RunCommand = cros_build_lib.RunCommand
@@ -114,7 +112,7 @@ def _SetupGoB():
 def _SetupCIDB():
   """Copies cidb credentials."""
   RunCommand(
-      ['cp','-r',  os.path.join(BOT_CREDS_PATH, bot_constants.CIDB_CREDS_DIR),
+      ['cp', '-r', os.path.join(BOT_CREDS_PATH, bot_constants.CIDB_CREDS_DIR),
        HOME_DIR])
 
 
@@ -181,7 +179,7 @@ def SetupBuildbotEnvironment():
 def main(_argv):
   assert getpass.getuser() == bot_constants.BUILDBOT_USER, (
       'This script should be run by %s instead of %s!' % (
-            bot_constants.BUILDBOT_USER, getpass.getuser()))
+          bot_constants.BUILDBOT_USER, getpass.getuser()))
   SetupPrerequisites()
   InstallChromeDependencies()
   SetupCredentials()
