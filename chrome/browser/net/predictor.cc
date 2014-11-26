@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -691,17 +692,32 @@ void Predictor::FinalizeInitializationOnIOThread(
     base::ListValue* referral_list,
     IOThread* io_thread,
     ProfileIOData* profile_io_data) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::FinalizeInitializationOnIOThread1"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   profile_io_data_ = profile_io_data;
   initial_observer_.reset(new InitialObserver());
   host_resolver_ = io_thread->globals()->host_resolver.get();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::FinalizeInitializationOnIOThread2"));
+
   net::URLRequestContext* context =
       url_request_context_getter_->GetURLRequestContext();
   transport_security_state_ = context->transport_security_state();
   ssl_config_service_ = context->ssl_config_service();
   proxy_service_ = context->proxy_service();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::FinalizeInitializationOnIOThread3"));
 
   // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. The predictor lives on the IO thread and will die
@@ -710,8 +726,19 @@ void Predictor::FinalizeInitializationOnIOThread(
   // TODO(groby): Check if WeakPtrFactory has the same constraint.
   weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::FinalizeInitializationOnIOThread4"));
+
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::FinalizeInitializationOnIOThread5"));
+
   DeserializeReferrersThenDelete(referral_list);
 }
 
