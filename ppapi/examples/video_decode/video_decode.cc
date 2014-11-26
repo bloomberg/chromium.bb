@@ -484,8 +484,8 @@ void MyInstance::PaintNextPicture() {
     gles2_if_->UseProgram(graphics_3d, shader_rectangle_arb_.program);
     gles2_if_->Uniform2f(graphics_3d,
                          shader_rectangle_arb_.texcoord_scale_location,
-                         picture.texture_size.width,
-                         picture.texture_size.height);
+                         static_cast<GLfloat>(picture.texture_size.width),
+                         static_cast<GLfloat>(picture.texture_size.height));
   } else {
     assert(picture.texture_target == GL_TEXTURE_EXTERNAL_OES);
     CreateExternalOESProgramOnce();

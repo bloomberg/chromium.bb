@@ -19,7 +19,7 @@ void ConvertWebKitGamepadData(const WebKitGamepads& webkit_data,
       COMPILE_ASSERT(sizeof(output_pad.id) == sizeof(webkit_pad.id),
                      id_size_does_not_match);
       memcpy(output_pad.id, webkit_pad.id, sizeof(output_pad.id));
-      output_pad.timestamp = webkit_pad.timestamp;
+      output_pad.timestamp = static_cast<double>(webkit_pad.timestamp);
       output_pad.axes_length = webkit_pad.axes_length;
       for (unsigned j = 0; j < webkit_pad.axes_length; ++j)
         output_pad.axes[j] = static_cast<float>(webkit_pad.axes[j]);

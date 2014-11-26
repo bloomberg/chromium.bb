@@ -156,9 +156,9 @@ void GLES2DemoInstance::InitGL(int32_t result) {
 void GLES2DemoInstance::FlickerAndPaint(int32_t result, bool paint_blue) {
   if (result != 0 || !context_)
     return;
-  float r = paint_blue ? 0 : 1;
+  float r = paint_blue ? 0 : 1.f;
   float g = 0;
-  float b = paint_blue ? 1 : 0;
+  float b = paint_blue ? 1.f : 0;
   float a = 0.75;
   gles2_if_->ClearColor(context_->pp_resource(), r, g, b, a);
   gles2_if_->Clear(context_->pp_resource(), GL_COLOR_BUFFER_BIT);

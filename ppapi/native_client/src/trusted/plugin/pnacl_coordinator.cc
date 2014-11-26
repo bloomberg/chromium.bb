@@ -46,7 +46,7 @@ void HistogramRatio(pp::UMAPrivate& uma,
                     const std::string& name, int64_t a, int64_t b) {
   if (a < 0 || b <= 0) return;
   uma.HistogramCustomCounts(name,
-                            100 * a / b,
+                            static_cast<int32_t>(100 * a / b),
                             kRatioMin, kRatioMax,
                             kRatioBuckets);
 }
@@ -230,7 +230,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     size_t nexe_size = stbuf.nacl_abi_st_size;
     HistogramSizeKB(plugin_->uma_interface(),
                     "NaCl.Perf.Size.PNaClTranslatedNexe",
-                    static_cast<int64_t>(nexe_size / 1024));
+                    static_cast<int32_t>(nexe_size / 1024));
     HistogramRatio(plugin_->uma_interface(),
                    "NaCl.Perf.Size.PexeNexeSizePct", pexe_size_, nexe_size);
   }

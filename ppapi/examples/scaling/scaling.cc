@@ -51,8 +51,8 @@ class MyInstance : public pp::Instance {
     device_scale_ = view.GetDeviceScale();
     css_scale_ = view.GetCSSScale();
 
-    pixel_width_ = width_ * device_scale_;
-    pixel_height_ = height_ * device_scale_;
+    pixel_width_ = static_cast<int>(width_ * device_scale_);
+    pixel_height_ = static_cast<int>(height_ * device_scale_);
 
     SetupGraphics();
   }
@@ -94,15 +94,16 @@ class MyInstance : public pp::Instance {
   void HandleMouseDown(const pp::InputEvent& event) {
     pp::MouseInputEvent mouse_event(event);
     pp::Point position(mouse_event.GetPosition());
-    pp::Point position_device(position.x() * device_scale_,
-                              position.y() * device_scale_);
+    pp::Point position_device(
+        static_cast<int32_t>(position.x() * device_scale_),
+        static_cast<int32_t>(position.y() * device_scale_));
     std::stringstream stream;
     stream << "Mousedown at DIP (" << position.x() << ", " << position.y()
            << "), device pixel (" << position_device.x() << ", "
            << position_device.y() << ")";
     if (css_scale_ > 0.0f) {
-      pp::Point position_css(position.x() / css_scale_,
-                             position.y() / css_scale_);
+      pp::Point position_css(static_cast<int32_t>(position.x() / css_scale_),
+                             static_cast<int32_t>(position.y() / css_scale_));
       stream << ", CSS pixel (" << position_css.x() << ", " << position_css.y()
              <<")";
     } else {
@@ -179,7 +180,7 @@ class MyInstance : public pp::Instance {
       for (int x = 0; x < width; ++x) {
         int dx = (width / 2) - x;
         int dy = (height / 2) - y;
-        float dist_squared = (dx * dx) + (dy * dy);
+        float dist_squared = static_cast<float>((dx * dx) + (dy * dy));
         if (x == 0 || y == 0 || x == width - 1 || y == width - 1 || x == y ||
             width - x - 1 == y) {
           *pixel++ = 0xFF0000FF;

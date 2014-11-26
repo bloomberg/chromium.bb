@@ -285,8 +285,8 @@ void DemoInstance::Paint(int32_t result, int32_t frame) {
 
 void DemoInstance::PrepareLayers(int32_t frame) {
   int32_t rv;
-  float factor_sin = sin(M_PI / 180 * frame);
-  float factor_cos = cos(M_PI / 180 * frame);
+  float factor_sin = sin(static_cast<float>(M_PI) / 180 * frame);
+  float factor_cos = cos(static_cast<float>(M_PI) / 180 * frame);
   {
     // Set the background color layer.
     if (color_layer_.is_null()) {
@@ -315,7 +315,7 @@ void DemoInstance::PrepareLayers(int32_t frame) {
       image_layer_ = compositor_.AddLayer();
       assert(!image_layer_.is_null());
     }
-    float x = frame % 800;
+    float x = static_cast<float>(frame % 800);
     float y = 200 - 200 * factor_sin;
     const float transform[16] = {
       fabsf(factor_sin) + 0.2f, 0.0f, 0.0f, 0.0f,
@@ -330,9 +330,9 @@ void DemoInstance::PrepareLayers(int32_t frame) {
     uint8_t *p = static_cast<uint8_t*>(image.data());
     for (int x = 0; x < kImageWidth; ++x) {
       for (int y = 0; y < kImageHeight; ++y) {
-        *(p++) = frame;
-        *(p++) = frame * x;
-        *(p++) = frame * y;
+        *(p++) = static_cast<uint8_t>(frame);
+        *(p++) = static_cast<uint8_t>(frame * x);
+        *(p++) = static_cast<uint8_t>(frame * y);
         *(p++) = 255;
       }
     }
@@ -361,7 +361,7 @@ void DemoInstance::PrepareLayers(int32_t frame) {
       assert(rv == PP_OK);
     }
 
-    int32_t delta = 200 * fabsf(factor_sin);
+    int32_t delta = static_cast<int32_t>(200 * fabsf(factor_sin));
     if (delta != 0) {
       int32_t x_y = 25 + delta;
       int32_t w_h =  650 - delta - delta;

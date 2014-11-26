@@ -441,8 +441,8 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
         context_->pp_resource(), shader_rectangle_arb_.program);
     gles2_if_->Uniform2f(context_->pp_resource(),
                          shader_rectangle_arb_.texcoord_scale_location,
-                         info.buffer.size.width,
-                         info.buffer.size.height);
+                         static_cast<GLfloat>(info.buffer.size.width),
+                         static_cast<GLfloat>(info.buffer.size.height));
   }
 
   gles2_if_->Viewport(context_->pp_resource(), x, y,

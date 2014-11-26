@@ -196,8 +196,8 @@ class MyInstance : public pp::Instance {
 
       // Draw the latency as a red bar at the bottom.
       PP_DCHECK(latency_ >= 0);
-      int latency_bar_length =
-          latency_ < 1 ? size.width() * latency_ : size.width();
+      int latency_bar_length = latency_ < 1 ?
+          static_cast<int>(size.width() * latency_) : size.width();
       for (int x = 0; x < latency_bar_length; ++x) {
         *image.GetAddr32(pp::Point(x, mid_height + max_amplitude)) = 0xffff0000;
       }
