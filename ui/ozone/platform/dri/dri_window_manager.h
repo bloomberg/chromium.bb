@@ -13,14 +13,14 @@
 namespace ui {
 
 class DriCursor;
+class DriGpuPlatformSupportHost;
 class DriWindow;
-class HardwareCursorDelegate;
 
 // Responsible for keeping the mapping between the allocated widgets and
 // windows.
 class DriWindowManager {
  public:
-  explicit DriWindowManager(HardwareCursorDelegate* cursor_delegate);
+  explicit DriWindowManager(DriGpuPlatformSupportHost* sender);
   ~DriWindowManager();
 
   gfx::AcceleratedWidget NextAcceleratedWidget();

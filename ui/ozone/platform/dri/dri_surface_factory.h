@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -25,8 +24,7 @@ class SurfaceOzoneCanvas;
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class DriSurfaceFactory : public SurfaceFactoryOzone,
-                          public HardwareCursorDelegate {
+class DriSurfaceFactory : public SurfaceFactoryOzone {
  public:
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 
@@ -55,13 +53,13 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
-  // HardwareCursorDelegate:
+  // Cursor-related methods.
   void SetHardwareCursor(gfx::AcceleratedWidget widget,
                          const std::vector<SkBitmap>& bitmaps,
                          const gfx::Point& location,
-                         int frame_delay_ms) override;
+                         int frame_delay_ms);
   void MoveHardwareCursor(gfx::AcceleratedWidget window,
-                          const gfx::Point& location) override;
+                          const gfx::Point& location);
 
  protected:
   // Draw the last set cursor & update the cursor plane.

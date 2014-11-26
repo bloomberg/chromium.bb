@@ -20,13 +20,13 @@ namespace ui {
 
 class BitmapCursorOzone;
 class BitmapCursorFactoryOzone;
+class DriGpuPlatformSupportHost;
 class DriWindowManager;
-class HardwareCursorDelegate;
 
 class DriCursor : public CursorDelegateEvdev {
  public:
-  explicit DriCursor(HardwareCursorDelegate* hardware,
-                     DriWindowManager* window_manager);
+  explicit DriCursor(DriWindowManager* window_manager,
+                     DriGpuPlatformSupportHost* sender);
   ~DriCursor() override;
 
   // Set's platform_cursor for widget. SetCursor is not responsible for showing
@@ -50,10 +50,8 @@ class DriCursor : public CursorDelegateEvdev {
   // The location of the bitmap (the cursor location is the hotspot location).
   gfx::Point bitmap_location();
 
-  // The DRI implementation for setting the hardware cursor.
-  HardwareCursorDelegate* hardware_;
-
-  DriWindowManager* window_manager_;  // Not owned.
+  DriWindowManager* window_manager_;   // Not owned.
+  DriGpuPlatformSupportHost* sender_;  // Not owned.
 
   // The current cursor bitmap.
   scoped_refptr<BitmapCursorOzone> cursor_;

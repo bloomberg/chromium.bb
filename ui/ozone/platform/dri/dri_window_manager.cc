@@ -19,8 +19,8 @@ gfx::PointF GetDefaultCursorLocation(DriWindow* window) {
 
 }  // namespace
 
-DriWindowManager::DriWindowManager(HardwareCursorDelegate* cursor_delegate)
-    : last_allocated_widget_(0), cursor_(new DriCursor(cursor_delegate, this)) {
+DriWindowManager::DriWindowManager(DriGpuPlatformSupportHost* sender)
+    : last_allocated_widget_(0), cursor_(new DriCursor(this, sender)) {
 }
 
 DriWindowManager::~DriWindowManager() {

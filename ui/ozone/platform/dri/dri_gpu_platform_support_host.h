@@ -10,7 +10,6 @@
 
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 class SkBitmap;
@@ -24,7 +23,6 @@ namespace ui {
 class ChannelObserver;
 
 class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
-                                  public HardwareCursorDelegate,
                                   public IPC::Sender {
  public:
   DriGpuPlatformSupportHost();
@@ -48,13 +46,13 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
   // IPC::Sender:
   bool Send(IPC::Message* message) override;
 
-  // HardwareCursorDelegate:
+  // Cursor-related methods.
   void SetHardwareCursor(gfx::AcceleratedWidget widget,
                          const std::vector<SkBitmap>& bitmaps,
                          const gfx::Point& location,
-                         int frame_delay_ms) override;
+                         int frame_delay_ms);
   void MoveHardwareCursor(gfx::AcceleratedWidget widget,
-                          const gfx::Point& location) override;
+                          const gfx::Point& location);
 
  private:
   int host_id_;

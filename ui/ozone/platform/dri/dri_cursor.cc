@@ -8,10 +8,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
-#include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/events/ozone/chromeos/cursor_controller.h"
@@ -19,10 +18,10 @@
 
 namespace ui {
 
-DriCursor::DriCursor(HardwareCursorDelegate* hardware,
-                     DriWindowManager* window_manager)
-    : hardware_(hardware),
-      window_manager_(window_manager),
+DriCursor::DriCursor(DriWindowManager* window_manager,
+                     DriGpuPlatformSupportHost* sender)
+    : window_manager_(window_manager),
+      sender_(sender),
       cursor_window_(gfx::kNullAcceleratedWidget) {
 }
 
@@ -43,16 +42,16 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
 void DriCursor::ShowCursor() {
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
   if (cursor_.get())
-    hardware_->SetHardwareCursor(cursor_window_, cursor_->bitmaps(),
-                                 bitmap_location(), cursor_->frame_delay_ms());
+    sender_->SetHardwareCursor(cursor_window_, cursor_->bitmaps(),
+                               bitmap_location(), cursor_->frame_delay_ms());
   else
     HideCursor();
 }
 
 void DriCursor::HideCursor() {
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
-  hardware_->SetHardwareCursor(cursor_window_, std::vector<SkBitmap>(),
-                               gfx::Point(), 0);
+  sender_->SetHardwareCursor(cursor_window_, std::vector<SkBitmap>(),
+                             gfx::Point(), 0);
 }
 
 void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
@@ -73,7 +72,7 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
   cursor_location_.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
 
   if (cursor_.get())
-    hardware_->MoveHardwareCursor(cursor_window_, bitmap_location());
+    sender_->MoveHardwareCursor(cursor_window_, bitmap_location());
 }
 
 void DriCursor::MoveCursorTo(const gfx::PointF& location) {

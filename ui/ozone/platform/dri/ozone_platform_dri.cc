@@ -88,7 +88,8 @@ class OzonePlatformDri : public OzonePlatform {
             dri_.get(), screen_manager_.get(), NULL))));
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    window_manager_.reset(new DriWindowManager(surface_factory_ozone_.get()));
+    window_manager_.reset(
+        new DriWindowManager(gpu_platform_support_host_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
                                                      device_manager_.get()));
     if (surface_factory_ozone_->InitializeHardware() !=
