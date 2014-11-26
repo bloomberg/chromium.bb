@@ -1402,6 +1402,6 @@ crbug.com/434690 virtual/implsidepainting/inspector/tracing/worker-js-profile.ht
 
 crbug.com/435342 media/video-seeking.html [ Pass Failure ]
 
-crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
+crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsManualRebaseline ]
 
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
