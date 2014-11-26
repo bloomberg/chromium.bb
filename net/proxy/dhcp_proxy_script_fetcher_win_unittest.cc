@@ -36,11 +36,7 @@ TEST(DhcpProxyScriptFetcherWin, AdapterNamesAndPacURLFromDhcp) {
        it != adapter_names.end();
        ++it) {
     const std::string& adapter_name = *it;
-    std::string pac_url =
-        DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(adapter_name);
-    printf("Adapter '%s' has PAC URL '%s' configured in DHCP.\n",
-           adapter_name.c_str(),
-           pac_url.c_str());
+    DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(adapter_name);
   }
 }
 
@@ -84,11 +80,9 @@ class RealFetchTester {
       FAIL() << "Received completion for test in which this is error.";
     }
     finished_ = true;
-    printf("Result code %d PAC data length %d\n", result, pac_text_.size());
   }
 
   void OnTimeout() {
-    printf("Timeout!");
     OnCompletion(0);
   }
 
@@ -134,8 +128,7 @@ TEST(DhcpProxyScriptFetcherWin, RealFetch) {
   fetcher.RunTest();
 
   fetcher.WaitUntilDone();
-  printf("PAC URL was %s\n",
-      fetcher.fetcher_->GetPacURL().possibly_invalid_spec().c_str());
+  fetcher.fetcher_->GetPacURL().possibly_invalid_spec();
 
   fetcher.FinishTestAllowCleanup();
 }
