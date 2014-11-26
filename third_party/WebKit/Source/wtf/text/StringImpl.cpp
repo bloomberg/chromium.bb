@@ -689,13 +689,14 @@ typedef int32_t (*icuCaseConverter)(UChar*, int32_t, const UChar*, int32_t, cons
 static PassRefPtr<StringImpl> caseConvert(const UChar* source16, size_t length, icuCaseConverter converter, const char* locale, StringImpl* originalString)
 {
     UChar* data16;
-    int32_t targetLength = length;
+    size_t targetLength = length;
     RefPtr<StringImpl> output = StringImpl::createUninitialized(length, data16);
     do {
         UErrorCode status = U_ZERO_ERROR;
         targetLength = converter(data16, targetLength, source16, length, locale, &status);
         if (U_SUCCESS(status)) {
-            output->truncateAssumingIsolated(targetLength);
+            if (length > 0)
+                output->truncateAssumingIsolated(targetLength);
             return output.release();
         }
         if (status != U_BUFFER_OVERFLOW_ERROR)
