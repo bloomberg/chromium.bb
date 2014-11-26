@@ -62,6 +62,7 @@ def print_landmines():
     print 'Delete stale generated .java files yet again. crbug.com/349592'
     print 'Clobber to delete incompatible object binary format with NDK r10c'
   print 'Clobber to fix missing NaCl gyp dependencies (crbug.com/427427).'
+  print 'Another clobber for missing NaCl gyp deps (crbug.com/427427).'
 
 
 def main():

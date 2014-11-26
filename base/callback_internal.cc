@@ -9,6 +9,9 @@
 namespace base {
 namespace internal {
 
+CallbackBase::CallbackBase(const CallbackBase& c) = default;
+CallbackBase& CallbackBase::operator=(const CallbackBase& c) = default;
+
 void CallbackBase::Reset() {
   polymorphic_invoke_ = NULL;
   // NULL the bind_state_ last, since it may be holding the last ref to whatever

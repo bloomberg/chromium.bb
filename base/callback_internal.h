@@ -36,6 +36,9 @@ class BindStateBase : public RefCountedThreadSafe<BindStateBase> {
 // template bloat.
 class BASE_EXPORT CallbackBase {
  public:
+  CallbackBase(const CallbackBase& c);
+  CallbackBase& operator=(const CallbackBase& c);
+
   // Returns true if Callback is null (doesn't refer to anything).
   bool is_null() const { return bind_state_.get() == NULL; }
 
