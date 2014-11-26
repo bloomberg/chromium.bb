@@ -533,8 +533,6 @@ AC_MSG_RESULT([
 	RDP Compositor			${enable_rdp_compositor}
 	Screen Sharing			${enable_screen_sharing}
 
-	libinput Backend		${enable_libinput_backend}
-
 	Raspberry Pi BCM headers	${have_bcm_host}
 
 	Build Clients			${enable_clients}
