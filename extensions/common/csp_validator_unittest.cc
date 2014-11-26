@@ -180,19 +180,34 @@ TEST(ExtensionCSPValidator, IsSecure) {
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
      "script-src 'self'; object-src *", OPTIONS_NONE));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
      "script-src 'self'; object-src *", OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-     "script-src 'self'; object-src http://www.example.com",
-     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-     "object-src http://www.example.com blob:; script-src 'self'",
-     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-     "script-src 'self'; object-src http://*.example.com",
+     "script-src 'self'; object-src *; plugin-types application/pdf",
      OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-     "script-src *; object-src *;", OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+     "script-src 'self'; object-src *; "
+     "plugin-types application/x-shockwave-flash",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+     "script-src 'self'; object-src *; "
+     "plugin-types application/x-shockwave-flash application/pdf",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+     "script-src 'self'; object-src http://www.example.com; "
+     "plugin-types application/pdf",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+     "object-src http://www.example.com blob:; script-src 'self'; "
+     "plugin-types application/pdf",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+     "script-src 'self'; object-src http://*.example.com; "
+     "plugin-types application/pdf",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+     "script-src *; object-src *; plugin-types application/pdf",
+     OPTIONS_ALLOW_INSECURE_OBJECT_SRC));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
