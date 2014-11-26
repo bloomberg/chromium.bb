@@ -43,13 +43,9 @@ void RendererStartupHelper::Observe(
         break;
 
       // Platform apps need to know the system font.
-      scoped_ptr<base::DictionaryValue> fonts(new base::DictionaryValue);
-      webui::SetFontAndTextDirection(fonts.get());
-      std::string font_family, font_size;
-      fonts->GetString("fontfamily", &font_family);
-      fonts->GetString("fontsize", &font_size);
-      process->Send(new ExtensionMsg_SetSystemFont(
-          font_family, font_size));
+      // TODO(dbeam): this is not the system font in all cases.
+      process->Send(new ExtensionMsg_SetSystemFont(webui::GetFontFamily(),
+                                                   webui::GetFontSize()));
 
       // Valid extension function names, used to setup bindings in renderer.
       std::vector<std::string> function_names;

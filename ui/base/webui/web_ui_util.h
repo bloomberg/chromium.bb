@@ -50,6 +50,11 @@ UI_BASE_EXPORT void ParsePathAndScale(const GURL& url,
 UI_BASE_EXPORT void SetFontAndTextDirection(
     base::DictionaryValue* localized_strings);
 
+// Get some common font styles for all of WebUI.
+UI_BASE_EXPORT std::string GetFontFamily();
+UI_BASE_EXPORT std::string GetFontSize();
+UI_BASE_EXPORT std::string GetTextDirection();
+
 }  // namespace webui
 
 #endif  // UI_BASE_WEBUI_WEB_UI_UTIL_H_

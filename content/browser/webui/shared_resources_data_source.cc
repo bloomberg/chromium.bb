@@ -6,12 +6,18 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
+#include "ui/base/layout.h"
+#include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/resources/grit/webui_resources_map.h"
+
+namespace content {
 
 namespace {
 
@@ -63,18 +69,36 @@ SharedResourcesDataSource::~SharedResourcesDataSource() {
 }
 
 std::string SharedResourcesDataSource::GetSource() const {
-  return content::kChromeUIResourcesHost;
+  return kChromeUIResourcesHost;
 }
 
 void SharedResourcesDataSource::StartDataRequest(
     const std::string& path,
     int render_process_id,
     int render_frame_id,
-    const content::URLDataSource::GotDataCallback& callback) {
+    const URLDataSource::GotDataCallback& callback) {
   int idr = PathToIDR(path);
   DCHECK_NE(-1, idr) << " path: " << path;
-  scoped_refptr<base::RefCountedStaticMemory> bytes(
-      content::GetContentClient()->GetDataResourceBytes(idr));
+  scoped_refptr<base::RefCountedMemory> bytes;
+
+  ContentClient* content_client = GetContentClient();
+
+  // TODO(dbeam): there's some comments in content/DEPS about disallowing
+  // grd-related code. Does using this IDR_* go against that spirit?
+  if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
+    std::vector<std::string> placeholders;
+    placeholders.push_back(webui::GetTextDirection());  // $1
+    placeholders.push_back(webui::GetFontFamily());  // $2
+    placeholders.push_back(webui::GetFontSize());  // $3
+
+    const std::string& chrome_shared =
+        content_client->GetDataResource(idr, ui::SCALE_FACTOR_NONE).as_string();
+    std::string replaced =
+        ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
+    bytes = base::RefCountedString::TakeString(&replaced);
+  } else {
+    bytes = content_client->GetDataResourceBytes(idr);
+  }
 
   callback.Run(bytes.get());
 }
@@ -97,9 +121,11 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   // According to CORS spec, Access-Control-Allow-Origin header doesn't support
   // wildcards, so we need to set its value explicitly by passing the |origin|
   // back.
-  std::string allowed_origin_prefix = content::kChromeUIScheme;
+  std::string allowed_origin_prefix = kChromeUIScheme;
   allowed_origin_prefix += "://";
   if (origin.find(allowed_origin_prefix) != 0)
     return "none";
   return origin;
 }
+
+}  // namespace content

@@ -10,6 +10,7 @@ html {
 
 body {
   color: rgb(76, 76, 76);
+  font-size: initial;
   height: 100%;
   margin: 0;
 }

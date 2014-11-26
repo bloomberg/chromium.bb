@@ -9,18 +9,20 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/url_data_source.h"
 
+namespace content {
+
 // A DataSource for chrome://resources/ URLs.
-class SharedResourcesDataSource : public content::URLDataSource {
+class SharedResourcesDataSource : public URLDataSource {
  public:
   SharedResourcesDataSource();
 
-  // content::URLDataSource implementation.
+  // URLDataSource implementation.
   std::string GetSource() const override;
   void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      const URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string&) const override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
@@ -30,5 +32,7 @@ class SharedResourcesDataSource : public content::URLDataSource {
 
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_

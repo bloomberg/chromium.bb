@@ -125,19 +125,13 @@ void ParsePathAndScale(const GURL& url,
   }
 }
 
-// static
-void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
-  int web_font_family_id = IDS_WEB_FONT_FAMILY;
-  int web_font_size_id = IDS_WEB_FONT_SIZE;
+std::string GetFontFamily() {
+  std::string font_family = l10n_util::GetStringUTF8(
 #if defined(OS_WIN)
-  // Vary font settings for Windows XP.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    web_font_family_id = IDS_WEB_FONT_FAMILY_XP;
-    web_font_size_id = IDS_WEB_FONT_SIZE_XP;
-  }
+      base::win::GetVersion() < base::win::VERSION_VISTA ?
+          IDS_WEB_FONT_FAMILY_XP :
 #endif
-
-  std::string font_family = l10n_util::GetStringUTF8(web_font_family_id);
+          IDS_WEB_FONT_FAMILY);
 
 // TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
 // into Ozone: crbug.com/320050
@@ -146,11 +140,26 @@ void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
       ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
 #endif
 
-  localized_strings->SetString("fontfamily", font_family);
-  localized_strings->SetString("fontsize",
-      l10n_util::GetStringUTF8(web_font_size_id));
-  localized_strings->SetString("textdirection",
-      base::i18n::IsRTL() ? "rtl" : "ltr");
+  return font_family;
+}
+
+std::string GetFontSize() {
+  return l10n_util::GetStringUTF8(
+#if defined(OS_WIN)
+      base::win::GetVersion() < base::win::VERSION_VISTA ?
+          IDS_WEB_FONT_SIZE_XP :
+#endif
+          IDS_WEB_FONT_SIZE);
+}
+
+std::string GetTextDirection() {
+  return base::i18n::IsRTL() ? "rtl" : "ltr";
+}
+
+void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
+  localized_strings->SetString("fontfamily", GetFontFamily());
+  localized_strings->SetString("fontsize", GetFontSize());
+  localized_strings->SetString("textdirection", GetTextDirection());
 }
 
 }  // namespace webui

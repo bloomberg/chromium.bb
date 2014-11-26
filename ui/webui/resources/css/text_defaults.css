@@ -1,0 +1,22 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* This file is dynamically processed by a C++ data source handler to fill in
+ * some per-platform/locale styles that dramatically alter the page. This is
+ * done to reduce flicker, as JS may not run before the page is rendered.
+ *
+ * Include this stylesheet via its chrome://resources/ URL, i.e.:
+ *
+ *   <link rel="stylesheet" href="chrome://resources/css/font_defaults.css">
+ *
+ * otherwise its $placeholders wont be expanded. */
+
+html {
+  direction: $1;
+}
+
+body {
+  font-family: $2;
+  font-size: $3;
+}

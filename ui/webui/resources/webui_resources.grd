@@ -225,6 +225,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_CHROME"
                  file="css/chrome_shared.css" type="chrome_html"
                  flattenhtml="true" />
+      <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS"
+                 file="css/text_defaults.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_OVERLAY"
                  file="css/overlay.css" type="chrome_html"
                  flattenhtml="true" />
