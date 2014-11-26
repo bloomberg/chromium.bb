@@ -47,7 +47,7 @@
             android:layout_height="match_parent"
             android:minWidth="48dp"
             android:padding="4dp"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/accessibility_tabstrip_btn_close_tab"
             android:src="@drawable/btn_tab_close"
             android:gravity="end|center_vertical" />
@@ -72,7 +72,7 @@
             android:contentDescription="@string/accessibility_tab_switcher_undo_tab_closed"
             android:textColor="@color/accessibility_close_undo_text"
             android:textSize="18sp"
-            android:background="?android:attr/selectableItemBackground" />
+            android:background="?attr/selectableItemBackground" />
     </LinearLayout>
 
 </org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem>

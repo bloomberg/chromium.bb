@@ -159,7 +159,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
         mCloseButton.setId(R.id.infobar_close_button);
         mCloseButton.setImageResource(R.drawable.infobar_close_button);
         TypedArray a = getContext().obtainStyledAttributes(
-                new int [] {android.R.attr.selectableItemBackground});
+                new int [] {R.attr.selectableItemBackground});
         Drawable closeButtonBackground = a.getDrawable(0);
         a.recycle();
         ApiCompatibilityUtils.setBackgroundForView(mCloseButton, closeButtonBackground);

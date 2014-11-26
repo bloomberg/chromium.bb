@@ -15,7 +15,7 @@
         android:layout_width="59dp"
         android:layout_height="match_parent"
         android:paddingEnd="11dp"
-        android:background="?android:attr/listChoiceBackgroundIndicator"
+        android:background="?attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <org.chromium.chrome.browser.widget.TintedImageButton
@@ -24,7 +24,7 @@
         android:layout_height="match_parent"
         android:paddingStart="11dp"
         android:paddingEnd="11dp"
-        android:background="?android:attr/listChoiceBackgroundIndicator"
+        android:background="?attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <org.chromium.chrome.browser.widget.TintedImageButton
@@ -33,7 +33,7 @@
         android:layout_height="match_parent"
         android:paddingStart="11dp"
         android:paddingEnd="11dp"
-        android:background="?android:attr/listChoiceBackgroundIndicator"
+        android:background="?attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <org.chromium.chrome.browser.widget.TintedImageButton
@@ -41,6 +41,6 @@
         android:layout_width="59dp"
         android:layout_height="match_parent"
         android:paddingStart="11dp"
-        android:background="?android:attr/listChoiceBackgroundIndicator"
+        android:background="?attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 </LinearLayout>

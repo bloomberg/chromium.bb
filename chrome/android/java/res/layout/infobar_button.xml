@@ -7,7 +7,7 @@
 <Button xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="?android:attr/selectableItemBackground"
+    android:background="?attr/selectableItemBackground"
     android:fontFamily="sans-serif-medium"
     android:minWidth="88dp"
     android:minHeight="36dp"

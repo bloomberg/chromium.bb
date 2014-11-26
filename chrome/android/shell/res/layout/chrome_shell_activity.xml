@@ -28,7 +28,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@drawable/btn_toolbar_stop"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:scaleType="center"/>
         <EditText android:id="@+id/url"
             android:layout_width="0dp"
@@ -48,7 +48,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@drawable/btn_tabswitcher"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:scaleType="center"
             android:contentDescription="@null"/>
         <org.chromium.chrome.browser.widget.TintedImageButton
@@ -56,7 +56,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@drawable/btn_menu"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="?attr/selectableItemBackground"
             android:scaleType="center"/>
     </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
