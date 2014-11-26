@@ -174,9 +174,8 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 bool ChannelMojo::ShouldBeUsed() {
-  // TODO(morrita): Once the change sticks, we whould remove this function and
-  // kill --enable-renderer-mojo-channel
-  return true;
+  // TODO(morrita): Turn this on for a set of platforms.
+  return false;
 }
 
 // static
