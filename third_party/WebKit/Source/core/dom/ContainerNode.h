@@ -50,8 +50,10 @@ enum DynamicRestyleFlags {
     ChildrenAffectedByIndirectAdjacentRules = 1 << 7,
     ChildrenAffectedByForwardPositionalRules = 1 << 8,
     ChildrenAffectedByBackwardPositionalRules = 1 << 9,
+    AffectedByFirstChildRules = 1 << 10,
+    AffectedByLastChildRules = 1 << 11,
 
-    NumberOfDynamicRestyleFlags = 10,
+    NumberOfDynamicRestyleFlags = 12,
 };
 
 enum SubtreeModificationAction {
@@ -146,6 +148,12 @@ public:
 
     bool childrenAffectedByBackwardPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
     void setChildrenAffectedByBackwardPositionalRules() { setRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
+
+    bool affectedByFirstChildRules() const { return hasRestyleFlag(AffectedByFirstChildRules); }
+    void setAffectedByFirstChildRules() { setRestyleFlag(AffectedByFirstChildRules); }
+
+    bool affectedByLastChildRules() const { return hasRestyleFlag(AffectedByLastChildRules); }
+    void setAffectedByLastChildRules() { setRestyleFlag(AffectedByLastChildRules); }
 
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.

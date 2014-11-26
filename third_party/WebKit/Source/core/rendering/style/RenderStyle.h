@@ -229,8 +229,6 @@ protected:
                 && explicitInheritance == other.explicitInheritance
                 && unique == other.unique
                 && emptyState == other.emptyState
-                && firstChildState == other.firstChildState
-                && lastChildState == other.lastChildState
                 && isLink == other.isLink;
         }
 
@@ -263,8 +261,6 @@ protected:
         unsigned unique : 1; // Style can not be shared.
 
         unsigned emptyState : 1;
-        unsigned firstChildState : 1;
-        unsigned lastChildState : 1;
 
         unsigned affectedByFocus : 1;
         unsigned affectedByHover : 1;
@@ -317,8 +313,6 @@ protected:
         noninherited_flags.explicitInheritance = false;
         noninherited_flags.unique = false;
         noninherited_flags.emptyState = false;
-        noninherited_flags.firstChildState = false;
-        noninherited_flags.lastChildState = false;
         noninherited_flags.hasViewportUnits = false;
         noninherited_flags.affectedByFocus = false;
         noninherited_flags.affectedByHover = false;
@@ -1498,10 +1492,6 @@ public:
 
     bool emptyState() const { return noninherited_flags.emptyState; }
     void setEmptyState(bool b) { setUnique(); noninherited_flags.emptyState = b; }
-    bool firstChildState() const { return noninherited_flags.firstChildState; }
-    void setFirstChildState() { setUnique(); noninherited_flags.firstChildState = true; }
-    bool lastChildState() const { return noninherited_flags.lastChildState; }
-    void setLastChildState() { setUnique(); noninherited_flags.lastChildState = true; }
 
     Color visitedDependentColor(int colorProperty) const;
 

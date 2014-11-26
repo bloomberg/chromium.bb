@@ -618,10 +618,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             bool result = siblingTraversalStrategy.isFirstChild(element);
             if (m_mode == ResolvingStyle) {
-                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                 parent->setChildrenAffectedByFirstChildRules();
-                if (result && childStyle)
-                    childStyle->setFirstChildState();
+                element.setAffectedByFirstChildRules();
             }
             return result;
         }
@@ -640,10 +638,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             bool result = parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
             if (m_mode == ResolvingStyle) {
-                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                 parent->setChildrenAffectedByLastChildRules();
-                if (result && childStyle)
-                    childStyle->setLastChildState();
+                element.setAffectedByLastChildRules();
             }
             return result;
         }
@@ -663,13 +659,10 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             bool firstChild = siblingTraversalStrategy.isFirstChild(element);
             bool onlyChild = firstChild && parent->isFinishedParsingChildren() && siblingTraversalStrategy.isLastChild(element);
             if (m_mode == ResolvingStyle) {
-                RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
                 parent->setChildrenAffectedByFirstChildRules();
                 parent->setChildrenAffectedByLastChildRules();
-                if (firstChild && childStyle)
-                    childStyle->setFirstChildState();
-                if (onlyChild && childStyle)
-                    childStyle->setLastChildState();
+                element.setAffectedByFirstChildRules();
+                element.setAffectedByLastChildRules();
             }
             return onlyChild;
         }

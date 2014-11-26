@@ -1289,20 +1289,18 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
         ASSERT(changeType != FinishedParsingChildren);
         // Find our new first child element.
         Element* firstChildElement = ElementTraversal::firstChild(*this);
-        RenderStyle* firstChildElementStyle = firstChildElement ? firstChildElement->renderStyle() : nullptr;
 
         // Find the first element after the change.
         Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
-        RenderStyle* elementAfterChangeStyle = elementAfterChange ? elementAfterChange->renderStyle() : nullptr;
 
         // This is the element insertion as first child element case.
-        if (firstChildElement != elementAfterChange && elementAfterChangeStyle && elementAfterChangeStyle->firstChildState()) {
-            ASSERT(changeType == SiblingElementInserted);
+        if (changeType == SiblingElementInserted && elementAfterChange && firstChildElement != elementAfterChange
+            && (!nodeBeforeChange || !nodeBeforeChange->isElementNode()) && elementAfterChange->affectedByFirstChildRules()) {
             elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
         }
 
         // This is the first child element removal case.
-        if (changeType == SiblingElementRemoved && firstChildElement == elementAfterChange && firstChildElement && (!firstChildElementStyle || !firstChildElementStyle->firstChildState()))
+        if (changeType == SiblingElementRemoved && firstChildElement == elementAfterChange && firstChildElement && firstChildElement->affectedByFirstChildRules())
             firstChildElement->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
     }
 
@@ -1311,21 +1309,19 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     if (childrenAffectedByLastChildRules() && nodeBeforeChange) {
         // Find our new last child element.
         Element* lastChildElement = ElementTraversal::lastChild(*this);
-        RenderStyle* lastChildElementStyle = lastChildElement ? lastChildElement->renderStyle() : nullptr;
 
         // Find the last element before the change.
         Element* elementBeforeChange = nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
-        RenderStyle* elementBeforeChangeStyle = elementBeforeChange ? elementBeforeChange->renderStyle() : nullptr;
 
         // This is the element insertion as last child element case.
-        if (lastChildElement != elementBeforeChange && elementBeforeChangeStyle && elementBeforeChangeStyle->lastChildState()) {
-            ASSERT(SiblingElementInserted);
+        if (changeType == SiblingElementInserted && elementBeforeChange && lastChildElement != elementBeforeChange
+            && (!nodeAfterChange || !nodeAfterChange->isElementNode()) && elementBeforeChange->affectedByLastChildRules()) {
             elementBeforeChange->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
         }
 
         // This is the last child element removal case. The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
-        if ((changeType == SiblingElementRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && (!lastChildElementStyle || !lastChildElementStyle->lastChildState()))
+        if ((changeType == SiblingElementRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && lastChildElement->affectedByLastChildRules())
             lastChildElement->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
     }
 
