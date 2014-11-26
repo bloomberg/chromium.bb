@@ -66,11 +66,10 @@ aaaaaaaaaaaa(aaaaaaaaaaaaaaaaaaaaaaaaaaaa + aaaaaaaaaaaaaaaaaaaaaaaaa,
 }
 
 # 80 ---------------------------------------------------------------------------
-aaaaaaaaaaaa(
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa +
-        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-    aaaaaaaaaaaa,
-    aaaaaaaaaaaa) {
+aaaaaaaaaaaa(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa +
+                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
+             aaaaaaaaaaaa,
+             aaaaaaaaaaaa) {
 }
 
 aaaaaaaaaaaa(

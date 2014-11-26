@@ -56,6 +56,11 @@ namespace {
 const int kIndentSize = 2;
 const int kMaximumWidth = 80;
 
+const int kPenaltyLineBreak = 500;
+const int kPenaltyHorizontalSeparation = 100;
+const int kPenaltyExcess = 10000;
+const int kPenaltyBrokenLineOnOneLiner = 1000;
+
 enum Precedence {
   kPrecedenceLowest,
   kPrecedenceAssign,
@@ -84,11 +89,6 @@ class Printer {
     kSequenceStyleBracedBlock,
   };
 
-  enum ExprStyle {
-    kExprStyleRegular,
-    kExprStyleComment,
-  };
-
   struct Metrics {
     Metrics() : first_length(-1), longest_length(-1), multiline(false) {}
     int first_length;
@@ -113,7 +113,8 @@ class Printer {
   // Whether there's a blank separator line at the current position.
   bool HaveBlankLine();
 
-  bool IsAssignment(const ParseNode* node);
+  // Flag assignments to sources, deps, etc. to make their RHSs multiline.
+  void AnnotatePreferedMultilineAssignment(const BinaryOpNode* binop);
 
   // Heuristics to decide if there should be a blank line added between two
   // items. For various "small" items, it doesn't look nice if there's too much
@@ -121,7 +122,10 @@ class Printer {
   bool ShouldAddBlankLineInBetween(const ParseNode* a, const ParseNode* b);
 
   // Get the 0-based x position on the current line.
-  int CurrentColumn();
+  int CurrentColumn() const;
+
+  // Get the current line in the output;
+  int CurrentLine() const;
 
   // Adds an opening ( if prec is less than the outers (to maintain evalution
   // order for a subexpression). If an opening paren is emitted, *parenthesized
@@ -132,11 +136,10 @@ class Printer {
   // added to the output. The value of outer_prec gives the precedence of the
   // operator outside this Expr. If that operator binds tighter than root's,
   // Expr must introduce parentheses.
-  ExprStyle Expr(const ParseNode* root, int outer_prec);
+  int Expr(const ParseNode* root, int outer_prec, const std::string& suffix);
 
-  // Use a sub-Printer recursively to figure out the size that an expression
-  // would be before actually adding it to the output.
-  Metrics GetLengthOfExpr(const ParseNode* expr, int outer_prec);
+  // Generic penalties for exceeding maximum width, adding more lines, etc.
+  int AssessPenalty(const std::string& output);
 
   // Format a list of values using the given style.
   // |end| holds any trailing comments to be printed just before the closing
@@ -144,13 +147,38 @@ class Printer {
   template <class PARSENODE>  // Just for const covariance.
   void Sequence(SequenceStyle style,
                 const std::vector<PARSENODE*>& list,
-                const ParseNode* end);
+                const ParseNode* end,
+                bool force_multiline);
 
-  void FunctionCall(const FunctionCallNode* func_call);
+  // Returns the penalty.
+  int FunctionCall(const FunctionCallNode* func_call);
+
+  // Create a clone of this Printer in a similar state (other than the output,
+  // but including margins, etc.) to be used for dry run measurements.
+  void InitializeSub(Printer* sub);
 
   std::string output_;           // Output buffer.
   std::vector<Token> comments_;  // Pending end-of-line comments.
-  int margin_;                   // Left margin (number of spaces).
+  int margin() const { return stack_.back().margin; }
+
+  int penalty_depth_;
+  int GetPenaltyForLineBreak() const {
+    return penalty_depth_ * kPenaltyLineBreak;
+  }
+
+  struct IndentState {
+    IndentState() : margin(0), continuation_requires_indent(false) {}
+    IndentState(int margin, bool continuation_requires_indent)
+        : margin(margin),
+          continuation_requires_indent(continuation_requires_indent) {}
+
+    // The left margin (number of spaces).
+    int margin;
+
+    bool continuation_requires_indent;
+  };
+  // Stack used to track
+  std::vector<IndentState> stack_;
 
   // Gives the precedence for operators in a BinaryOpNode.
   std::map<base::StringPiece, Precedence> precedence_;
@@ -158,7 +186,7 @@ class Printer {
   DISALLOW_COPY_AND_ASSIGN(Printer);
 };
 
-Printer::Printer() : margin_(0) {
+Printer::Printer() : penalty_depth_(0) {
   output_.reserve(100 << 10);
   precedence_["="] = kPrecedenceAssign;
   precedence_["+="] = kPrecedenceAssign;
@@ -174,6 +202,7 @@ Printer::Printer() : margin_(0) {
   precedence_["+"] = kPrecedenceAdd;
   precedence_["-"] = kPrecedenceAdd;
   precedence_["!"] = kPrecedenceUnary;
+  stack_.push_back(IndentState());
 }
 
 Printer::~Printer() {
@@ -184,7 +213,7 @@ void Printer::Print(base::StringPiece str) {
 }
 
 void Printer::PrintMargin() {
-  output_ += std::string(margin_, ' ');
+  output_ += std::string(margin(), ' ');
 }
 
 void Printer::TrimAndPrintToken(const Token& token) {
@@ -196,15 +225,13 @@ void Printer::TrimAndPrintToken(const Token& token) {
 void Printer::Newline() {
   if (!comments_.empty()) {
     Print("  ");
-    int i = 0;
     // Save the margin, and temporarily set it to where the first comment
     // starts so that multiple suffix comments are vertically aligned. This
     // will need to be fancier once we enforce 80 col.
-    int old_margin = margin_;
+    stack_.push_back(IndentState(CurrentColumn(), false));
+    int i = 0;
     for (const auto& c : comments_) {
-      if (i == 0)
-        margin_ = CurrentColumn();
-      else {
+      if (i > 0) {
         Trim();
         Print("\n");
         PrintMargin();
@@ -212,7 +239,7 @@ void Printer::Newline() {
       TrimAndPrintToken(c);
       ++i;
     }
-    margin_ = old_margin;
+    stack_.pop_back();
     comments_.clear();
   }
   Trim();
@@ -234,10 +261,20 @@ bool Printer::HaveBlankLine() {
   return n > 2 && output_[n - 1] == '\n' && output_[n - 2] == '\n';
 }
 
-bool Printer::IsAssignment(const ParseNode* node) {
-  return node->AsBinaryOp() && (node->AsBinaryOp()->op().value() == "=" ||
-                                node->AsBinaryOp()->op().value() == "+=" ||
-                                node->AsBinaryOp()->op().value() == "-=");
+void Printer::AnnotatePreferedMultilineAssignment(const BinaryOpNode* binop) {
+  const IdentifierNode* ident = binop->left()->AsIdentifier();
+  const ListNode* list = binop->right()->AsList();
+  // This is somewhat arbitrary, but we include the 'deps'- and 'sources'-like
+  // things, but not flags things.
+  if (binop->op().value() == "=" && ident && list &&
+      (ident->value().value() == "data" ||
+       ident->value().value() == "datadeps" ||
+       ident->value().value() == "deps" || ident->value().value() == "inputs" ||
+       ident->value().value() == "public" ||
+       ident->value().value() == "public_deps" ||
+       ident->value().value() == "sources")) {
+    const_cast<ListNode*>(list)->set_prefer_multiline(true);
+  }
 }
 
 bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
@@ -249,13 +286,22 @@ bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
   return b_range.begin().line_number() > a_range.end().line_number() + 1;
 }
 
-int Printer::CurrentColumn() {
+int Printer::CurrentColumn() const {
   int n = 0;
   while (n < static_cast<int>(output_.size()) &&
          output_[output_.size() - 1 - n] != '\n') {
     ++n;
   }
   return n;
+}
+
+int Printer::CurrentLine() const {
+  int count = 1;
+  for (const char* p = output_.c_str(); (p = strchr(p, '\n')) != NULL;) {
+    ++count;
+    ++p;
+  }
+  return count;
 }
 
 void Printer::Block(const ParseNode* root) {
@@ -270,7 +316,7 @@ void Printer::Block(const ParseNode* root) {
 
   size_t i = 0;
   for (const auto& stmt : block->statements()) {
-    Expr(stmt, kPrecedenceLowest);
+    Expr(stmt, kPrecedenceLowest, std::string());
     Newline();
     if (stmt->comments()) {
       // Why are before() not printed here too? before() are handled inside
@@ -299,20 +345,16 @@ void Printer::Block(const ParseNode* root) {
   }
 }
 
-Printer::Metrics Printer::GetLengthOfExpr(const ParseNode* expr,
-                                          int outer_prec) {
-  Metrics result;
-  Printer sub;
-  sub.Expr(expr, outer_prec);
+int Printer::AssessPenalty(const std::string& output) {
+  int penalty = 0;
   std::vector<std::string> lines;
-  base::SplitStringDontTrim(sub.String(), '\n', &lines);
-  result.multiline = lines.size() > 1;
-  result.first_length = static_cast<int>(lines[0].size());
+  base::SplitStringDontTrim(output, '\n', &lines);
+  penalty += static_cast<int>(lines.size() - 1) * GetPenaltyForLineBreak();
   for (const auto& line : lines) {
-    result.longest_length =
-        std::max(result.longest_length, static_cast<int>(line.size()));
+    if (line.size() > kMaximumWidth)
+      penalty += static_cast<int>(line.size() - kMaximumWidth) * kPenaltyExcess;
   }
-  return result;
+  return penalty;
 }
 
 void Printer::AddParen(int prec, int outer_prec, bool* parenthesized) {
@@ -322,8 +364,12 @@ void Printer::AddParen(int prec, int outer_prec, bool* parenthesized) {
   }
 }
 
-Printer::ExprStyle Printer::Expr(const ParseNode* root, int outer_prec) {
-  ExprStyle result = kExprStyleRegular;
+int Printer::Expr(const ParseNode* root,
+                  int outer_prec,
+                  const std::string& suffix) {
+  int penalty = 0;
+  penalty_depth_++;
+
   if (root->comments()) {
     if (!root->comments()->before().empty()) {
       Trim();
@@ -346,73 +392,103 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root, int outer_prec) {
     Print(accessor->base().value());
     if (accessor->member()) {
       Print(".");
-      Expr(accessor->member(), kPrecedenceLowest);
+      Expr(accessor->member(), kPrecedenceLowest, std::string());
     } else {
       CHECK(accessor->index());
       Print("[");
-      Expr(accessor->index(), kPrecedenceLowest);
-      Print("]");
+      Expr(accessor->index(), kPrecedenceLowest, "]");
     }
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
+    AnnotatePreferedMultilineAssignment(binop);
     Precedence prec = precedence_[binop->op().value()];
     AddParen(prec, outer_prec, &parenthesized);
-    Metrics right = GetLengthOfExpr(binop->right(), prec + 1);
-    int op_length = static_cast<int>(binop->op().value().size()) + 2;
-    Expr(binop->left(), prec);
-    if (CurrentColumn() + op_length + right.first_length <= kMaximumWidth) {
-      // If it just fits normally, put it here.
+    int start_line = CurrentLine();
+    int start_column = CurrentColumn();
+    int indent_column =
+        (binop->op().value() == "=" || binop->op().value() == "+=" ||
+         binop->op().value() == "-=")
+            ? margin() + kIndentSize * 2
+            : start_column;
+    if (stack_.back().continuation_requires_indent)
+      indent_column += kIndentSize * 2;
+
+    Expr(binop->left(),
+         prec,
+         std::string(" ") + binop->op().value().as_string());
+
+    // Single line.
+    Printer sub1;
+    InitializeSub(&sub1);
+    sub1.stack_.push_back(IndentState(indent_column, false));
+    sub1.Print(" ");
+    int penalty_current_line =
+        sub1.Expr(binop->right(), prec + 1, std::string());
+    sub1.Print(suffix);
+    penalty_current_line += AssessPenalty(sub1.String());
+
+    // Break after operator.
+    Printer sub2;
+    InitializeSub(&sub2);
+    sub2.stack_.push_back(IndentState(indent_column, false));
+    sub2.Newline();
+    int penalty_next_line = sub2.Expr(binop->right(), prec + 1, std::string());
+    sub2.Print(suffix);
+    penalty_next_line += AssessPenalty(sub2.String());
+
+    if (penalty_current_line < penalty_next_line) {
       Print(" ");
-      Print(binop->op().value());
-      Print(" ");
-      Expr(binop->right(), prec + 1);
+      Expr(binop->right(), prec + 1, std::string());
     } else {
       // Otherwise, put first argument and op, and indent next.
-      Print(" ");
-      Print(binop->op().value());
-      int old_margin = margin_;
-      margin_ += kIndentSize * 2;
+      stack_.push_back(IndentState(indent_column, false));
       Newline();
-      Expr(binop->right(), prec + 1);
-      margin_ = old_margin;
+      penalty += std::abs(CurrentColumn() - start_column) *
+                 kPenaltyHorizontalSeparation;
+      Expr(binop->right(), prec + 1, std::string());
+      stack_.pop_back();
     }
+    penalty += (CurrentLine() - start_line) * GetPenaltyForLineBreak();
   } else if (const BlockNode* block = root->AsBlock()) {
-    Sequence(kSequenceStyleBracedBlock, block->statements(), block->End());
+    Sequence(
+        kSequenceStyleBracedBlock, block->statements(), block->End(), false);
   } else if (const ConditionNode* condition = root->AsConditionNode()) {
     Print("if (");
-    Expr(condition->condition(), kPrecedenceLowest);
-    Print(") ");
+    // TODO(scottmg): The { needs to be included in the suffix here.
+    Expr(condition->condition(), kPrecedenceLowest, ") ");
     Sequence(kSequenceStyleBracedBlock,
              condition->if_true()->statements(),
-             condition->if_true()->End());
+             condition->if_true()->End(),
+             false);
     if (condition->if_false()) {
       Print(" else ");
       // If it's a block it's a bare 'else', otherwise it's an 'else if'. See
       // ConditionNode::Execute.
       bool is_else_if = condition->if_false()->AsBlock() == NULL;
       if (is_else_if) {
-        Expr(condition->if_false(), kPrecedenceLowest);
+        Expr(condition->if_false(), kPrecedenceLowest, std::string());
       } else {
         Sequence(kSequenceStyleBracedBlock,
                  condition->if_false()->AsBlock()->statements(),
-                 condition->if_false()->AsBlock()->End());
+                 condition->if_false()->AsBlock()->End(), false);
       }
     }
   } else if (const FunctionCallNode* func_call = root->AsFunctionCall()) {
-    FunctionCall(func_call);
+    penalty += FunctionCall(func_call);
   } else if (const IdentifierNode* identifier = root->AsIdentifier()) {
     Print(identifier->value().value());
   } else if (const ListNode* list = root->AsList()) {
-    Sequence(kSequenceStyleList, list->contents(), list->End());
+    bool force_multiline =
+        list->prefer_multiline() && !list->contents().empty();
+    Sequence(
+        kSequenceStyleList, list->contents(), list->End(), force_multiline);
   } else if (const LiteralNode* literal = root->AsLiteral()) {
-    // TODO(scottmg): Quoting?
     Print(literal->value().value());
   } else if (const UnaryOpNode* unaryop = root->AsUnaryOp()) {
     Print(unaryop->op().value());
-    Expr(unaryop->operand(), kPrecedenceUnary);
+    Expr(unaryop->operand(), kPrecedenceUnary, std::string());
   } else if (const BlockCommentNode* block_comment = root->AsBlockComment()) {
     Print(block_comment->comment().value());
-    result = kExprStyleComment;
   } else if (const EndNode* end = root->AsEnd()) {
     Print(end->value().value());
   } else {
@@ -429,14 +505,17 @@ Printer::ExprStyle Printer::Expr(const ParseNode* root, int outer_prec) {
               std::back_inserter(comments_));
   }
 
-  return result;
+  Print(suffix);
+
+  penalty_depth_--;
+  return penalty;
 }
 
 template <class PARSENODE>
 void Printer::Sequence(SequenceStyle style,
                        const std::vector<PARSENODE*>& list,
-                       const ParseNode* end) {
-  bool force_multiline = false;
+                       const ParseNode* end,
+                       bool force_multiline) {
   if (style == kSequenceStyleList)
     Print("[");
   else if (style == kSequenceStyleBracedBlock)
@@ -458,11 +537,12 @@ void Printer::Sequence(SequenceStyle style,
     // No elements, and not forcing newlines, print nothing.
   } else if (list.size() == 1 && !force_multiline) {
     Print(" ");
-    Expr(list[0], kPrecedenceLowest);
+    Expr(list[0], kPrecedenceLowest, std::string());
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
     Print(" ");
   } else {
-    margin_ += kIndentSize;
+    stack_.push_back(
+        IndentState(margin() + kIndentSize, style == kSequenceStyleList));
     size_t i = 0;
     for (const auto& x : list) {
       Newline();
@@ -475,12 +555,13 @@ void Printer::Sequence(SequenceStyle style,
           !HaveBlankLine()) {
         Newline();
       }
-      ExprStyle expr_style = Expr(x, kPrecedenceLowest);
+      bool body_of_list = i < list.size() - 1 || style == kSequenceStyleList;
+      bool want_comma =
+          body_of_list && (style == kSequenceStyleList && !x->AsBlockComment());
+      Expr(x, kPrecedenceLowest, want_comma ? "," : std::string());
       CHECK(!x->comments() || x->comments()->after().empty());
-      if (i < list.size() - 1 || style == kSequenceStyleList) {
-        if (style == kSequenceStyleList && expr_style == kExprStyleRegular) {
-          Print(",");
-        } else {
+      if (body_of_list) {
+        if (!want_comma) {
           if (i < list.size() - 1 &&
               ShouldAddBlankLineInBetween(list[i], list[i + 1]))
             Newline();
@@ -499,7 +580,7 @@ void Printer::Sequence(SequenceStyle style,
       }
     }
 
-    margin_ -= kIndentSize;
+    stack_.pop_back();
     Newline();
 
     // Defer any end of line comment until we reach the newline.
@@ -516,11 +597,12 @@ void Printer::Sequence(SequenceStyle style,
     Print("}");
 }
 
-void Printer::FunctionCall(const FunctionCallNode* func_call) {
+int Printer::FunctionCall(const FunctionCallNode* func_call) {
+  int start_line = CurrentLine();
+  int start_column = CurrentColumn();
   Print(func_call->function().value());
   Print("(");
 
-  int old_margin = margin_;
   bool have_block = func_call->block() != nullptr;
   bool force_multiline = false;
 
@@ -536,107 +618,146 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
       force_multiline = true;
   }
 
-  // Calculate the length of the items for function calls so we can decide to
-  // compress them in various nicer ways.
-  std::vector<int> natural_lengths;
-  bool fits_on_current_line = true;
-  int max_item_width = 0;
-  int total_length = 0;
-  natural_lengths.reserve(list.size());
+  // Calculate the penalties for 3 possible layouts:
+  // 1. all on same line;
+  // 2. starting on same line, broken at each comma but paren aligned;
+  // 3. broken to next line + 4, broken at each comma.
   std::string terminator = ")";
   if (have_block)
     terminator += " {";
+
+  // 1: Same line.
+  Printer sub1;
+  InitializeSub(&sub1);
+  sub1.stack_.push_back(IndentState(CurrentColumn(), true));
+  int penalty_one_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
-    Metrics sub = GetLengthOfExpr(list[i], kPrecedenceLowest);
-    if (sub.multiline)
-      fits_on_current_line = false;
-    natural_lengths.push_back(sub.longest_length);
-    total_length += sub.longest_length;
+    penalty_one_line += sub1.Expr(list[i], kPrecedenceLowest,
+                                  i < list.size() - 1 ? ", " : std::string());
+  }
+  sub1.Print(terminator);
+  penalty_one_line += AssessPenalty(sub1.String());
+  std::vector<std::string> lines;
+  base::SplitStringDontTrim(sub1.String(), '\n', &lines);
+  // This extra penalty prevents a short second argument from being squeezed in
+  // after a first argument that went multiline (and instead preferring a
+  // variant below).
+  if (lines.size() > 1)
+    penalty_one_line += kPenaltyBrokenLineOnOneLiner;
+
+  // 2: Starting on same line, broken at commas.
+  Printer sub2;
+  InitializeSub(&sub2);
+  sub2.stack_.push_back(IndentState(CurrentColumn(), true));
+  int penalty_multiline_start_same_line = 0;
+  for (size_t i = 0; i < list.size(); ++i) {
+    penalty_multiline_start_same_line += sub2.Expr(
+        list[i], kPrecedenceLowest, i < list.size() - 1 ? "," : std::string());
     if (i < list.size() - 1) {
-      total_length += static_cast<int>(strlen(", "));
+      sub2.Newline();
     }
   }
-  fits_on_current_line =
-      fits_on_current_line &&
-      CurrentColumn() + total_length + terminator.size() <= kMaximumWidth;
-  if (natural_lengths.size() > 0) {
-    max_item_width =
-        *std::max_element(natural_lengths.begin(), natural_lengths.end());
+  sub2.Print(terminator);
+  penalty_multiline_start_same_line += AssessPenalty(sub2.String());
+
+  // 3: Starting on next line, broken at commas.
+  Printer sub3;
+  InitializeSub(&sub3);
+  sub3.stack_.push_back(IndentState(margin() + kIndentSize * 2, true));
+  sub3.Newline();
+  int penalty_multiline_start_next_line = 0;
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (i == 0) {
+      penalty_multiline_start_next_line +=
+          std::abs(sub3.CurrentColumn() - start_column) *
+          kPenaltyHorizontalSeparation;
+    }
+    penalty_multiline_start_next_line += sub3.Expr(
+        list[i], kPrecedenceLowest, i < list.size() - 1 ? "," : std::string());
+    if (i < list.size() - 1) {
+      sub3.Newline();
+    }
+  }
+  sub3.Print(terminator);
+  penalty_multiline_start_next_line += AssessPenalty(sub3.String());
+
+  int penalty = penalty_multiline_start_next_line;
+  bool fits_on_current_line = false;
+  if (penalty_one_line < penalty_multiline_start_next_line ||
+      penalty_multiline_start_same_line < penalty_multiline_start_next_line) {
+    fits_on_current_line = true;
+    penalty = penalty_one_line;
+    if (penalty_multiline_start_same_line < penalty_one_line) {
+      penalty = penalty_multiline_start_same_line;
+      force_multiline = true;
+    }
+  } else {
+    force_multiline = true;
   }
 
   if (list.size() == 0 && !force_multiline) {
     // No elements, and not forcing newlines, print nothing.
-  } else if (list.size() == 1 && !force_multiline && fits_on_current_line) {
-    Expr(list[0], kPrecedenceLowest);
-    CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
   } else {
-    // Function calls get to be single line even with multiple arguments, if
-    // they fit inside the maximum width.
-    if (!force_multiline && fits_on_current_line) {
-      for (size_t i = 0; i < list.size(); ++i) {
-        Expr(list[i], kPrecedenceLowest);
-        if (i < list.size() - 1)
-          Print(", ");
-      }
+    if (penalty_multiline_start_next_line < penalty_multiline_start_same_line) {
+      stack_.push_back(IndentState(margin() + kIndentSize * 2, true));
+      Newline();
     } else {
-      bool should_break_to_next_line = true;
-      int indent = kIndentSize * 2;
-      if (CurrentColumn() + max_item_width + terminator.size() <=
-              kMaximumWidth ||
-          CurrentColumn() < margin_ + indent) {
-        should_break_to_next_line = false;
-        margin_ = CurrentColumn();
-      } else {
-        margin_ += indent;
-      }
-      size_t i = 0;
-      for (const auto& x : list) {
-        // Function calls where all the arguments would fit at the current
-        // position should do that instead of going back to margin+4.
-        if (i > 0 || should_break_to_next_line)
-          Newline();
-        ExprStyle expr_style = Expr(x, kPrecedenceLowest);
-        CHECK(!x->comments() || x->comments()->after().empty());
-        if (i < list.size() - 1) {
-          if (expr_style == kExprStyleRegular) {
-            Print(",");
-          } else {
-            Newline();
-          }
-        }
-        ++i;
-      }
+      stack_.push_back(IndentState(CurrentColumn(), true));
+    }
 
-      // Trailing comments.
-      if (end->comments()) {
-        if (!list.empty())
+    for (size_t i = 0; i < list.size(); ++i) {
+      const auto& x = list[i];
+      if (i > 0) {
+        if (fits_on_current_line && !force_multiline)
+          Print(" ");
+        else
           Newline();
-        for (const auto& c : end->comments()->before()) {
-          Newline();
-          TrimAndPrintToken(c);
-        }
-        if (!end->comments()->before().empty())
+      }
+      bool want_comma = i < list.size() - 1 && !x->AsBlockComment();
+      Expr(x, kPrecedenceLowest, want_comma ? "," : std::string());
+      CHECK(!x->comments() || x->comments()->after().empty());
+      if (i < list.size() - 1) {
+        if (!want_comma)
           Newline();
       }
     }
+
+    // Trailing comments.
+    if (end->comments() && !end->comments()->before().empty()) {
+      if (!list.empty())
+        Newline();
+      for (const auto& c : end->comments()->before()) {
+        Newline();
+        TrimAndPrintToken(c);
+      }
+      Newline();
+    }
+    stack_.pop_back();
   }
 
   // Defer any end of line comment until we reach the newline.
   if (end->comments() && !end->comments()->suffix().empty()) {
     std::copy(end->comments()->suffix().begin(),
-              end->comments()->suffix().end(),
-              std::back_inserter(comments_));
+              end->comments()->suffix().end(), std::back_inserter(comments_));
   }
 
   Print(")");
-  margin_ = old_margin;
 
   if (have_block) {
     Print(" ");
     Sequence(kSequenceStyleBracedBlock,
              func_call->block()->statements(),
-             func_call->block()->End());
+             func_call->block()->End(),
+             false);
   }
+  return penalty + (CurrentLine() - start_line) * GetPenaltyForLineBreak();
+}
+
+void Printer::InitializeSub(Printer* sub) {
+  sub->stack_ = stack_;
+  sub->comments_ = comments_;
+  sub->penalty_depth_ = penalty_depth_;
+  sub->Print(std::string(CurrentColumn(), 'x'));
 }
 
 void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {

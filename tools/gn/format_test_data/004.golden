@@ -7,5 +7,7 @@ executable("test") {
   ]
 
   # Comment attached to statement.
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }

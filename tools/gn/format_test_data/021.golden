@@ -43,11 +43,10 @@ aaaaaaaaaaaa(aaaaaaaaaaaaaaaaaaaaaaaaaaaa + aaaaaaaaaaaaaaaaaaaaaaaaa,
              aaaaaaaaaaaa)
 
 # 80 ---------------------------------------------------------------------------
-aaaaaaaaaaaa(
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa +
-        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-    aaaaaaaaaaaa,
-    aaaaaaaaaaaa)
+aaaaaaaaaaaa(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa +
+                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
+             aaaaaaaaaaaa,
+             aaaaaaaaaaaa)
 
 aaaaaaaaaaaa(
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,

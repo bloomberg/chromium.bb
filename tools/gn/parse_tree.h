@@ -378,11 +378,20 @@ class ListNode : public ParseNode {
   }
   const std::vector<const ParseNode*>& contents() const { return contents_; }
 
+  // During formatting, do we want this list to always be multliline? This is
+  // used to make assignments to deps, sources, etc. always be multiline lists,
+  // rather than collapsed to a single line when they're one element.
+  bool prefer_multiline() const { return prefer_multiline_; }
+  void set_prefer_multiline(bool prefer_multiline) {
+    prefer_multiline_ = prefer_multiline;
+  }
+
  private:
   // Tokens corresponding to the [ and ]. The end token is stored in inside an
   // custom parse node so that it can have comments hung off of it.
   Token begin_token_;
   scoped_ptr<EndNode> end_;
+  bool prefer_multiline_;
 
   // Owning pointers, use unique_ptr when we can use C++11.
   std::vector<const ParseNode*> contents_;

@@ -5,12 +5,18 @@
 
 if (is_win) {
   # This is some special stuff for Windows
-  sources = [ "win.cc" ]
+  sources = [
+    "win.cc",
+  ]
 } else if (is_linux) {
   # This is a block comment inside the linux block, but not attached.
 
-  sources = [ "linux.cc" ]
+  sources = [
+    "linux.cc",
+  ]
 } else {
   # A comment with trailing spaces
-  sources = [ "wha.cc" ]
+  sources = [
+    "wha.cc",
+  ]
 }

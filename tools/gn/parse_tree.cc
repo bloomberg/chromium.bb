@@ -438,7 +438,7 @@ void IdentifierNode::Print(std::ostream& out, int indent) const {
 
 // ListNode -------------------------------------------------------------------
 
-ListNode::ListNode() {
+ListNode::ListNode() : prefer_multiline_(false) {
 }
 
 ListNode::~ListNode() {
@@ -481,7 +481,8 @@ Err ListNode::MakeErrorDescribing(const std::string& msg,
 }
 
 void ListNode::Print(std::ostream& out, int indent) const {
-  out << IndentFor(indent) << "LIST\n";
+  out << IndentFor(indent) << "LIST" << (prefer_multiline_ ? " multiline" : "")
+      << "\n";
   PrintComments(out, indent);
   for (const auto& cur : contents_)
     cur->Print(out, indent + 1);

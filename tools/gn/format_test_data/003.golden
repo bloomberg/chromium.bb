@@ -4,5 +4,7 @@ executable("test") {
     "things.cc",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
