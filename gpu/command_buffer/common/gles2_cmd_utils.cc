@@ -361,6 +361,7 @@ int ElementsPerGroup(int format, int type) {
     case GL_SRGB_EXT:
        return 3;
     case GL_LUMINANCE_ALPHA:
+    case GL_RG_EXT:
        return 2;
     case GL_RGBA:
     case GL_BGRA_EXT:
@@ -374,6 +375,7 @@ int ElementsPerGroup(int format, int type) {
     case GL_DEPTH_COMPONENT16:
     case GL_DEPTH24_STENCIL8_OES:
     case GL_DEPTH_STENCIL_OES:
+    case GL_RED_EXT:
        return 1;
     default:
        return 0;
@@ -705,6 +707,10 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
     case GL_DEPTH_STENCIL_OES:
     case GL_DEPTH24_STENCIL8_OES:
       return kDepth | kStencil;
+    case GL_RED_EXT:
+      return kRed;
+    case GL_RG_EXT:
+      return kRed | kGreen;
     default:
       return 0x0000;
   }
