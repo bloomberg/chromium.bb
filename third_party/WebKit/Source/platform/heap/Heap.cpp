@@ -783,6 +783,7 @@ const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeObject(Address address)
 template<typename Header>
 void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
+    ASSERT(isConsistentForSweeping());
     size_t previousPageCount = info->pageCount;
 
     json->beginArray("pages");
@@ -1362,6 +1363,7 @@ bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
 template<typename Header>
 size_t ThreadHeap<Header>::objectPayloadSizeForTesting()
 {
+    ASSERT(isConsistentForSweeping());
     ASSERT(!m_firstPageAllocatedDuringSweeping);
     ASSERT(!m_firstLargeObjectAllocatedDuringSweeping);
     size_t objectPayloadSize = 0;

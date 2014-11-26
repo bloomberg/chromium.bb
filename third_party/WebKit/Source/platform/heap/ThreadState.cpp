@@ -840,17 +840,6 @@ void ThreadState::makeConsistentForSweeping()
         m_heaps[i]->makeConsistentForSweeping();
 }
 
-#if ENABLE(ASSERT)
-bool ThreadState::isConsistentForSweeping()
-{
-    for (int i = 0; i < NumberOfHeaps; i++) {
-        if (!m_heaps[i]->isConsistentForSweeping())
-            return false;
-    }
-    return true;
-}
-#endif
-
 void ThreadState::prepareRegionTree()
 {
     // Add the regions allocated by this thread to the region search tree.
@@ -904,7 +893,6 @@ BaseHeapPage* ThreadState::pageFromAddress(Address address)
 
 size_t ThreadState::objectPayloadSizeForTesting()
 {
-    ASSERT(isConsistentForSweeping());
     size_t objectPayloadSize = 0;
     for (int i = 0; i < NumberOfHeaps; i++)
         objectPayloadSize += m_heaps[i]->objectPayloadSizeForTesting();

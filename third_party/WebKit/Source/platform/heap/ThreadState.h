@@ -439,9 +439,6 @@ public:
     // Before performing GC the thread-specific heap state should be
     // made consistent for sweeping.
     void makeConsistentForSweeping();
-#if ENABLE(ASSERT)
-    bool isConsistentForSweeping();
-#endif
 
     // Is the thread corresponding to this thread state currently
     // performing GC?
