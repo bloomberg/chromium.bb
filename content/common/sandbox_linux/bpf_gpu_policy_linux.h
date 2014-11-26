@@ -13,6 +13,7 @@
 
 namespace sandbox {
 namespace syscall_broker {
+class BrokerFilePermission;
 class BrokerProcess;
 }
 }
@@ -34,13 +35,13 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   // Start a broker process to handle open() inside the sandbox.
   // |broker_sandboxer_allocator| is a function pointer which can allocate a
   // suitable sandbox policy for the broker process itself.
-  // |read_whitelist_extra| and |write_whitelist_extra| are lists of file
-  // names that should be whitelisted by the broker process, in addition to
+  // |permissions_extra| is a list of file permissions
+  // that should be whitelisted by the broker process, in addition to
   // the basic ones.
   void InitGpuBrokerProcess(
       sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void),
-      const std::vector<std::string>& read_whitelist_extra,
-      const std::vector<std::string>& write_whitelist_extra);
+      const std::vector<sandbox::syscall_broker::BrokerFilePermission>&
+          permissions_extra);
 
   sandbox::syscall_broker::BrokerProcess* broker_process() {
     return broker_process_;

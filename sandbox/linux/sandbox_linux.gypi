@@ -234,6 +234,8 @@
         'syscall_broker/broker_client.cc',
         'syscall_broker/broker_client.h',
         'syscall_broker/broker_common.h',
+        'syscall_broker/broker_file_permission.cc',
+        'syscall_broker/broker_file_permission.h',
         'syscall_broker/broker_host.cc',
         'syscall_broker/broker_host.h',
         'syscall_broker/broker_policy.cc',

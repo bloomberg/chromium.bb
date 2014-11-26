@@ -30,16 +30,16 @@ namespace sandbox {
 
 namespace syscall_broker {
 
-BrokerProcess::BrokerProcess(int denied_errno,
-                             const std::vector<std::string>& allowed_r_files,
-                             const std::vector<std::string>& allowed_w_files,
-                             bool fast_check_in_client,
-                             bool quiet_failures_for_tests)
+BrokerProcess::BrokerProcess(
+    int denied_errno,
+    const std::vector<syscall_broker::BrokerFilePermission>& permissions,
+    bool fast_check_in_client,
+    bool quiet_failures_for_tests)
     : initialized_(false),
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests),
       broker_pid_(-1),
-      policy_(denied_errno, allowed_r_files, allowed_w_files) {
+      policy_(denied_errno, permissions) {
 }
 
 BrokerProcess::~BrokerProcess() {

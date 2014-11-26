@@ -42,6 +42,7 @@
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -778,12 +779,14 @@ bool NoOpCallback() {
 class InitializedOpenBroker {
  public:
   InitializedOpenBroker() : initialized_(false) {
-    std::vector<std::string> allowed_files;
-    allowed_files.push_back("/proc/allowed");
-    allowed_files.push_back("/proc/cpuinfo");
+    std::vector<syscall_broker::BrokerFilePermission> permissions;
+    permissions.push_back(
+        syscall_broker::BrokerFilePermission::ReadOnly("/proc/allowed"));
+    permissions.push_back(
+        syscall_broker::BrokerFilePermission::ReadOnly("/proc/cpuinfo"));
 
-    broker_process_.reset(new syscall_broker::BrokerProcess(
-        EPERM, allowed_files, std::vector<std::string>()));
+    broker_process_.reset(
+        new syscall_broker::BrokerProcess(EPERM, permissions));
     BPF_ASSERT(broker_process() != NULL);
     BPF_ASSERT(broker_process_->Init(base::Bind(&NoOpCallback)));
 

@@ -25,13 +25,15 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/syscall_broker/broker_file_permission.h"
 
-using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Arg;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
+using sandbox::syscall_broker::BrokerFilePermission;
+using sandbox::SyscallSets;
 
 namespace content {
 
@@ -53,8 +55,7 @@ inline bool IsArchitectureArm() {
 #endif
 }
 
-void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
-                            std::vector<std::string>* write_whitelist) {
+void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // Device file needed by the ARM GPU userspace.
   static const char kMali0Path[] = "/dev/mali0";
 
@@ -65,19 +66,13 @@ void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
   // Devices needed for video encode acceleration on ARM.
   static const char kDevMfcEncPath[] = "/dev/mfc-enc";
 
-  read_whitelist->push_back(kMali0Path);
-  read_whitelist->push_back(kDevMfcDecPath);
-  read_whitelist->push_back(kDevGsc1Path);
-  read_whitelist->push_back(kDevMfcEncPath);
-
-  write_whitelist->push_back(kMali0Path);
-  write_whitelist->push_back(kDevMfcDecPath);
-  write_whitelist->push_back(kDevGsc1Path);
-  write_whitelist->push_back(kDevMfcEncPath);
+  permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevMfcDecPath));
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevGsc1Path));
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevMfcEncPath));
 }
 
-void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
-                        std::vector<std::string>* write_whitelist) {
+void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // On ARM we're enabling the sandbox before the X connection is made,
   // so we need to allow access to |.Xauthority|.
   static const char kXAuthorityPath[] = "/home/chronos/.Xauthority";
@@ -87,12 +82,12 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
   static const char kLibGlesPath[] = "/usr/lib/libGLESv2.so.2";
   static const char kLibEglPath[] = "/usr/lib/libEGL.so.1";
 
-  read_whitelist->push_back(kXAuthorityPath);
-  read_whitelist->push_back(kLdSoCache);
-  read_whitelist->push_back(kLibGlesPath);
-  read_whitelist->push_back(kLibEglPath);
+  permissions->push_back(BrokerFilePermission::ReadOnly(kXAuthorityPath));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kLdSoCache));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kLibGlesPath));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kLibEglPath));
 
-  AddArmMaliGpuWhitelist(read_whitelist, write_whitelist);
+  AddArmMaliGpuWhitelist(permissions);
 }
 
 class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
@@ -163,14 +158,11 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
   // Create a new broker process.
   DCHECK(!broker_process());
 
-  std::vector<std::string> read_whitelist_extra;
-  std::vector<std::string> write_whitelist_extra;
   // Add ARM-specific files to whitelist in the broker.
+  std::vector<BrokerFilePermission> permissions;
 
-  AddArmGpuWhitelist(&read_whitelist_extra, &write_whitelist_extra);
-  InitGpuBrokerProcess(CrosArmGpuBrokerProcessPolicy::Create,
-                       read_whitelist_extra,
-                       write_whitelist_extra);
+  AddArmGpuWhitelist(&permissions);
+  InitGpuBrokerProcess(CrosArmGpuBrokerProcessPolicy::Create, permissions);
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 

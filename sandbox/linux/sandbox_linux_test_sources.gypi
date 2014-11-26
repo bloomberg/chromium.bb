@@ -21,6 +21,7 @@
     'services/syscall_wrappers_unittest.cc',
     'services/thread_helpers_unittests.cc',
     'services/yama_unittests.cc',
+    'syscall_broker/broker_file_permission_unittest.cc',
     'syscall_broker/broker_process_unittest.cc',
     'tests/main.cc',
     'tests/scoped_temporary_file.cc',

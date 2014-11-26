@@ -21,6 +21,7 @@ namespace sandbox {
 namespace syscall_broker {
 
 class BrokerClient;
+class BrokerFilePermission;
 
 // Create a new "broker" process to which we can send requests via an IPC
 // channel by forking the current process.
@@ -42,11 +43,13 @@ class SANDBOX_EXPORT BrokerProcess {
   // A file available read-write should be listed in both.
   // |fast_check_in_client| and |quiet_failures_for_tests| are reserved for
   // unit tests, don't use it.
-  BrokerProcess(int denied_errno,
-                const std::vector<std::string>& allowed_r_files,
-                const std::vector<std::string>& allowed_w_files,
-                bool fast_check_in_client = true,
-                bool quiet_failures_for_tests = false);
+
+  BrokerProcess(
+      int denied_errno,
+      const std::vector<syscall_broker::BrokerFilePermission>& permissions,
+      bool fast_check_in_client = true,
+      bool quiet_failures_for_tests = false);
+
   ~BrokerProcess();
   // Will initialize the broker process. There should be no threads at this
   // point, since we need to fork().

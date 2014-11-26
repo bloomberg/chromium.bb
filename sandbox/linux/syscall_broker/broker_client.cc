@@ -54,7 +54,9 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
   // IPC.
   if (fast_check_in_client_) {
     if (syscall_type == COMMAND_OPEN &&
-        !broker_policy_.GetFileNameIfAllowedToOpen(pathname, flags, NULL)) {
+        !broker_policy_.GetFileNameIfAllowedToOpen(
+            pathname, flags, NULL /* file_to_open */,
+            NULL /* unlink_after_open */)) {
       return -broker_policy_.denied_errno();
     }
     if (syscall_type == COMMAND_ACCESS &&

@@ -38,8 +38,13 @@ bool IsRunningOnValgrind() {
 // make a direct system call since we want to keep in control of the broker
 // process' system calls profile to be able to loosely sandbox it.
 int sys_open(const char* pathname, int flags) {
-  // Always pass a defined |mode| in case flags mistakenly contains O_CREAT.
-  const int mode = 0;
+  // Hardcode mode to rw------- when creating files.
+  int mode;
+  if (flags & O_CREAT) {
+    mode = 0600;
+  } else {
+    mode = 0;
+  }
   if (IsRunningOnValgrind()) {
     // Valgrind does not support AT_FDCWD, just use libc's open() in this case.
     return open(pathname, flags, mode);
@@ -59,8 +64,9 @@ void OpenFileForIPC(const BrokerPolicy& policy,
   DCHECK(write_pickle);
   DCHECK(opened_files);
   const char* file_to_open = NULL;
+  bool unlink_after_open = false;
   const bool safe_to_open_file = policy.GetFileNameIfAllowedToOpen(
-      requested_filename.c_str(), flags, &file_to_open);
+      requested_filename.c_str(), flags, &file_to_open, &unlink_after_open);
 
   if (safe_to_open_file) {
     CHECK(file_to_open);
@@ -69,6 +75,9 @@ void OpenFileForIPC(const BrokerPolicy& policy,
       write_pickle->WriteInt(-errno);
     } else {
       // Success.
+      if (unlink_after_open) {
+        unlink(file_to_open);
+      }
       opened_files->push_back(opened_fd);
       write_pickle->WriteInt(0);
     }

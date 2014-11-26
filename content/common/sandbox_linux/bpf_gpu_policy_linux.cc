@@ -29,14 +29,16 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
-using sandbox::syscall_broker::BrokerProcess;
-using sandbox::SyscallSets;
 using sandbox::arch_seccomp_data;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
 using sandbox::bpf_dsl::Trap;
+using sandbox::syscall_broker::BrokerFilePermission;
+using sandbox::syscall_broker::BrokerProcess;
+using sandbox::SyscallSets;
 
 namespace content {
 
@@ -231,8 +233,7 @@ bool GpuProcessPolicy::PreSandboxHook() {
   // Create a new broker process.
   InitGpuBrokerProcess(
       GpuBrokerProcessPolicy::Create,
-      std::vector<std::string>(),  // No extra files in whitelist.
-      std::vector<std::string>());
+      std::vector<BrokerFilePermission>());  // No extra files in whitelist.
 
   if (IsArchitectureX86_64() || IsArchitectureI386()) {
     // Accelerated video dlopen()'s some shared objects
@@ -257,32 +258,23 @@ bool GpuProcessPolicy::PreSandboxHook() {
 
 void GpuProcessPolicy::InitGpuBrokerProcess(
     sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void),
-    const std::vector<std::string>& read_whitelist_extra,
-    const std::vector<std::string>& write_whitelist_extra) {
+    const std::vector<BrokerFilePermission>& permissions_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCard0Path[] = "/dev/dri/card0";
 
   CHECK(broker_process_ == NULL);
 
   // All GPU process policies need these files brokered out.
-  std::vector<std::string> read_whitelist;
-  read_whitelist.push_back(kDriCard0Path);
-  read_whitelist.push_back(kDriRcPath);
-  // Add eventual extra files from read_whitelist_extra.
-  read_whitelist.insert(read_whitelist.end(),
-                        read_whitelist_extra.begin(),
-                        read_whitelist_extra.end());
+  std::vector<BrokerFilePermission> permissions;
+  permissions.push_back(BrokerFilePermission::ReadWrite(kDriCard0Path));
+  permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
 
-  std::vector<std::string> write_whitelist;
-  write_whitelist.push_back(kDriCard0Path);
-  // Add eventual extra files from write_whitelist_extra.
-  write_whitelist.insert(write_whitelist.end(),
-                         write_whitelist_extra.begin(),
-                         write_whitelist_extra.end());
+  // Add eventual extra files from permissions_extra.
+  for (const auto& perm : permissions_extra) {
+    permissions.push_back(perm);
+  }
 
-  broker_process_ = new BrokerProcess(GetFSDeniedErrno(),
-                                      read_whitelist,
-                                      write_whitelist);
+  broker_process_ = new BrokerProcess(GetFSDeniedErrno(), permissions);
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.
   CHECK(broker_process_->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
