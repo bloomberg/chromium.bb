@@ -132,6 +132,7 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
 void ServiceWorkerScriptContext::DidHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  // TODO(johnme): Plumb through the result.
   if (result == blink::WebServiceWorkerEventResultCompleted) {
     UMA_HISTOGRAM_TIMES(
         "ServiceWorker.PushEventExecutionTime",
@@ -140,7 +141,7 @@ void ServiceWorkerScriptContext::DidHandlePushEvent(
   push_start_timings_.erase(request_id);
 
   Send(new ServiceWorkerHostMsg_PushEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {

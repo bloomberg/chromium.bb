@@ -287,8 +287,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
   void OnSyncEventFinished(int request_id);
-  void OnPushEventFinished(int request_id,
-                           blink::WebServiceWorkerEventResult result);
+  void OnPushEventFinished(int request_id);
   void OnGeofencingEventFinished(int request_id);
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,

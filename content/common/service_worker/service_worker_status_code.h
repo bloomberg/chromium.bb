@@ -48,9 +48,6 @@ enum ServiceWorkerStatusCode {
 
   // Operation is failed by security issue.
   SERVICE_WORKER_ERROR_SECURITY,
-
-  // Event handling failed (event.waitUntil Promise rejected).
-  SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
 };
 
 CONTENT_EXPORT const char* ServiceWorkerStatusToString(
