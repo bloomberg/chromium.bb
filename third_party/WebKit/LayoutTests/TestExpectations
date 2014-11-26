@@ -1324,15 +1324,6 @@ crbug.com/435223 [ Win Linux ] inspector/elements/styles/styles-cancel-editing.h
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-avoid-ruby.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/emphasis-overlap.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/justify-nbsp.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/line-initial-and-final-swashes.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/setData-dirty-lines.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ NeedsRebaseline ]
-crbug.com/435822 [ Mac ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ NeedsRebaseline ]
-
 crbug.com/433146 fast/media/mq-hover.html [ Failure ]
 crbug.com/433146 fast/media/mq-pointer.html [ Failure ]
 
