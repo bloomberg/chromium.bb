@@ -82,6 +82,9 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
     , m_isInICO(isInICO)
     , m_decodingAndMask(false)
 {
+    for (size_t i = 0; i < arraysize(m_bitMasks); i++)
+        m_bitMasks[i] = 0;
+
     // Clue-in decodeBMP() that we need to detect the correct info header size.
     memset(&m_infoHeader, 0, sizeof(m_infoHeader));
 }
