@@ -1501,6 +1501,12 @@ void RenderProcessHostImpl::Cleanup() {
     survive_for_worker_start_time_ = base::TimeTicks::Now();
   }
 
+#if defined(ENABLE_BROWSER_CDMS)
+  // |browser_cdm_manager_| needs to be cleared when the process dies so that
+  // a new one is created when the process is recreated.
+  browser_cdm_manager_ = NULL;
+#endif
+
   // When there are no other owners of this object, we can delete ourselves.
   if (listeners_.IsEmpty() && worker_ref_count_ == 0) {
     if (!survive_for_worker_start_time_.is_null()) {
