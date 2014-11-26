@@ -229,7 +229,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '6446144c7f083552f21cc4e6768e891bcb767574',
 
   'src/third_party/yasm/source/patched-yasm':
-   Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + 'c960eb11ccda80b10ed50be39df4f0663b371d1d',
+   Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + '4671120cd8558ce62ee8672ebf3eb6f5216f909b',
 
   'src/third_party/libjpeg_turbo':
    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '034e9a9747e0983bc19808ea70e469bc8342081f',
