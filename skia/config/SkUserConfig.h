@@ -222,10 +222,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
 
-// Uncomment the following line to forward skia trace events to Chrome
-// tracing.
-// #define SK_USER_TRACE_INCLUDE_FILE "skia/ext/skia_trace_shim.h"
-
 #ifndef SK_ATOMICS_PLATFORM_H
 #  if defined(SK_BUILD_FOR_WIN)
 #    define SK_ATOMICS_PLATFORM_H "third_party/skia/src/ports/SkAtomics_win.h"

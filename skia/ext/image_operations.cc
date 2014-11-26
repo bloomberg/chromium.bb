@@ -342,9 +342,9 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
                                  int dest_width, int dest_height,
                                  const SkIRect& dest_subset,
                                  SkBitmap::Allocator* allocator) {
-  TRACE_EVENT2("skia", "ImageOperations::Resize",
-               "src_pixels", source.width()*source.height(),
-               "dst_pixels", dest_width*dest_height);
+  TRACE_EVENT2("disabled-by-default-skia", "ImageOperations::Resize",
+               "src_pixels", source.width() * source.height(), "dst_pixels",
+               dest_width * dest_height);
   // Ensure that the ResizeMethod enumeration is sound.
   SkASSERT(((RESIZE_FIRST_QUALITY_METHOD <= method) &&
             (method <= RESIZE_LAST_QUALITY_METHOD)) ||

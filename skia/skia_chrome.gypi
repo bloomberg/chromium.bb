@@ -71,7 +71,6 @@
     'ext/SkDiscardableMemory_chrome.h',
     'ext/SkDiscardableMemory_chrome.cc',
     'ext/SkMemory_new_handler.cpp',
-    'ext/skia_trace_shim.h',
     'ext/skia_utils_base.cc',
     'ext/skia_utils_base.h',
     'ext/skia_utils_ios.mm',
