@@ -5,12 +5,12 @@
 
 function test()
 {
-    ProfilerAgent.start(onStart);
+    ProfilerAgent.start().then(onStart);
 
     function onStart()
     {
         InspectorTest.addResult("ProfilerAgent started.");
-        ProfilerAgent.stop(onStop);
+        ProfilerAgent.stop().then(onStop);
     }
 
     function onStop()
