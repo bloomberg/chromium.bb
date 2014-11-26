@@ -577,6 +577,7 @@ class GSContext(object):
           'Oauth 2.0 User Account',
           'InvalidAccessKeyId',
           'socket.error: [Errno 104] Connection reset by peer',
+          'Received bad request from server',
       )
       if any(x in error for x in TRANSIENT_ERROR_MESSAGE):
         return True
