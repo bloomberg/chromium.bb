@@ -105,9 +105,12 @@ GpuInProcessThread::shader_translator_cache() {
   return shader_translator_cache_;
 }
 
-base::LazyInstance<std::set<InProcessCommandBuffer*> > default_thread_clients_ =
-    LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock> default_thread_clients_lock_ =
+struct GpuInProcessThreadHolder {
+  GpuInProcessThreadHolder() : gpu_thread(new GpuInProcessThread) {}
+  scoped_refptr<InProcessCommandBuffer::Service> gpu_thread;
+};
+
+base::LazyInstance<GpuInProcessThreadHolder> g_default_service =
     LAZY_INSTANCE_INITIALIZER;
 
 class ScopedEvent {
@@ -194,20 +197,6 @@ InProcessCommandBuffer::Service::mailbox_manager() {
   return mailbox_manager_;
 }
 
-scoped_refptr<InProcessCommandBuffer::Service>
-InProcessCommandBuffer::GetDefaultService() {
-  base::AutoLock lock(default_thread_clients_lock_.Get());
-  scoped_refptr<Service> service;
-  if (!default_thread_clients_.Get().empty()) {
-    InProcessCommandBuffer* other = *default_thread_clients_.Get().begin();
-    service = other->service_;
-    DCHECK(service.get());
-  } else {
-    service = new GpuInProcessThread;
-  }
-  return service;
-}
-
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : context_lost_(false),
@@ -216,19 +205,14 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       last_put_offset_(-1),
       gpu_memory_buffer_manager_(nullptr),
       flush_event_(false, false),
-      service_(service.get() ? service : GetDefaultService()),
+      service_(service.get() ? service : g_default_service.Get().gpu_thread),
       gpu_thread_weak_ptr_factory_(this) {
-  if (!service.get()) {
-    base::AutoLock lock(default_thread_clients_lock_.Get());
-    default_thread_clients_.Get().insert(this);
-  }
+  DCHECK(service_.get());
   next_image_id_.GetNext();
 }
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
   Destroy();
-  base::AutoLock lock(default_thread_clients_lock_.Get());
-  default_thread_clients_.Get().erase(this);
 }
 
 void InProcessCommandBuffer::OnResizeView(gfx::Size size, float scale_factor) {

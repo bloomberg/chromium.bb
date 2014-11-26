@@ -207,8 +207,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void PumpCommands();
   void PerformIdleWork();
 
-  static scoped_refptr<Service> GetDefaultService();
-
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
   bool context_lost_;
