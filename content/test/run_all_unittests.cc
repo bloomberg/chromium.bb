@@ -8,7 +8,16 @@
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/test/test_file_util.h"
+#endif
+
 int main(int argc, char** argv) {
+#if defined(OS_ANDROID)
+  // Register JNI bindings for android.
+  base::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
+#endif
 #if !defined(OS_IOS)
   content::InitializeMojo();
 #endif

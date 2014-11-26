@@ -12,6 +12,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * This class provides methods to access content URI schemes.
@@ -26,11 +27,11 @@ public abstract class ContentUriUtils {
      */
     public interface FileProviderUtil {
         /**
-         * Generate a content uri from the given file.
+         * Generate a content URI from the given file.
          * @param context Application context.
          * @param file The file to be translated.
          */
-        public Uri getContentUriFromFile(Context context, File file);
+        Uri getContentUriFromFile(Context context, File file);
     }
 
     // Prevent instantiation.
@@ -54,7 +55,7 @@ public abstract class ContentUriUtils {
      *
      * @param context {@link Context} in interest
      * @param uriString the content URI to open
-     * @returns file desciptor upon sucess, or -1 otherwise.
+     * @return file desciptor upon sucess, or -1 otherwise.
      */
     @CalledByNative
     public static int openContentUriForRead(Context context, String uriString) {
@@ -70,23 +71,34 @@ public abstract class ContentUriUtils {
      *
      * @param context {@link Context} in interest.
      * @param uriString the content URI to query.
-     * @returns true if the uri exists, or false otherwise.
+     * @return true if the URI exists, or false otherwise.
      */
     @CalledByNative
     public static boolean contentUriExists(Context context, String uriString) {
-        ParcelFileDescriptor pfd = getParcelFileDescriptor(context, uriString);
-        if (pfd == null) {
-            return false;
-        }
-        return true;
+        return getParcelFileDescriptor(context, uriString) != null;
     }
 
     /**
-     * Helper method to open a content URI and return the ParcelFileDescriptor.
+     * Retrieve the MIME type for the content URI.
+     *
+     * @param context {@link Context} in interest.
+     * @param uriString the content URI to look up.
+     * @return MIME type or null if the input params are empty or invalid.
+     */
+    @CalledByNative
+    public static String getMimeType(Context context, String uriString) {
+        ContentResolver resolver = context.getContentResolver();
+        if (resolver == null) return null;
+        Uri uri = Uri.parse(uriString);
+        return resolver.getType(uri);
+    }
+
+    /**
+     * Helper method to open a content URI and returns the ParcelFileDescriptor.
      *
      * @param context {@link Context} in interest.
      * @param uriString the content URI to open.
-     * @returns ParcelFileDescriptor of the content URI, or NULL if the file does not exist.
+     * @return ParcelFileDescriptor of the content URI, or NULL if the file does not exist.
      */
     private static ParcelFileDescriptor getParcelFileDescriptor(Context context, String uriString) {
         ContentResolver resolver = context.getContentResolver();
@@ -95,8 +107,12 @@ public abstract class ContentUriUtils {
         ParcelFileDescriptor pfd = null;
         try {
             pfd = resolver.openFileDescriptor(uri, "r");
-        } catch (java.io.FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             Log.w(TAG, "Cannot find content uri: " + uriString, e);
+        } catch (SecurityException e) {
+            Log.w(TAG, "Cannot open content uri: " + uriString, e);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Unknown content uri: " + uriString, e);
         }
         return pfd;
     }
@@ -107,7 +123,7 @@ public abstract class ContentUriUtils {
      * @param uri the content URI to be resolved.
      * @param contentResolver the content resolver to query.
      * @param columnField the column field to query.
-     * @returns the display name of the @code uri if present in the database
+     * @return the display name of the @code uri if present in the database
      *  or an empty string otherwise.
      */
     public static String getDisplayName(

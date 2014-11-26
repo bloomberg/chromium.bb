@@ -35,4 +35,14 @@ File OpenContentUriForRead(const FilePath& content_uri) {
   return File(fd);
 }
 
+std::string GetContentUriMimeType(const FilePath& content_uri) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_uri =
+      ConvertUTF8ToJavaString(env, content_uri.value());
+  ScopedJavaLocalRef<jstring> j_mime =
+      Java_ContentUriUtils_getMimeType(
+          env, base::android::GetApplicationContext(), j_uri.obj());
+  return base::android::ConvertJavaStringToUTF8(env, j_mime.obj());
+}
+
 }  // namespace base

@@ -112,6 +112,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "content/public/browser/android/content_protocol_handler.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -1152,6 +1153,14 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
     DCHECK(set_protocol);
   }
 #endif  // defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  set_protocol = job_factory->SetProtocolHandler(
+      url::kContentScheme,
+      content::ContentProtocolHandler::Create(
+          content::BrowserThread::GetBlockingPool()->
+              GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+#endif
 
   job_factory->SetProtocolHandler(
       url::kAboutScheme, new chrome_browser_net::AboutProtocolHandler());

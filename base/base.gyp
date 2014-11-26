@@ -447,6 +447,7 @@
       'type': '<(gtest_target_type)',
       'sources': [
         'android/application_status_listener_unittest.cc',
+        'android/content_uri_utils_unittest.cc',
         'android/jni_android_unittest.cc',
         'android/jni_array_unittest.cc',
         'android/jni_string_unittest.cc',
