@@ -38,6 +38,10 @@ static const int kNALUHeaderLength = 4;
 // requirements are low, as we don't need the textures to be backed by storage.
 static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
 
+// TODO(sandersd): Use the configured reorder window instead.
+static const int kMinReorderQueueSize = 4;
+static const int kMaxReorderQueueSize = 16;
+
 // Route decoded frame callbacks back into the VTVideoDecodeAccelerator.
 static void OutputThunk(
     void* decompression_output_refcon,
@@ -59,11 +63,22 @@ VTVideoDecodeAccelerator::Task::~Task() {
 }
 
 VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
-    : bitstream_id(bitstream_id) {
+    : bitstream_id(bitstream_id), pic_order_cnt(0) {
 }
 
 VTVideoDecodeAccelerator::Frame::~Frame() {
 }
+
+bool VTVideoDecodeAccelerator::FrameOrder::operator()(
+    const linked_ptr<Frame>& lhs,
+    const linked_ptr<Frame>& rhs) const {
+  if (lhs->pic_order_cnt != rhs->pic_order_cnt)
+    return lhs->pic_order_cnt > rhs->pic_order_cnt;
+  // If the pic_order is the same, fallback on using the bitstream order.
+  // TODO(sandersd): Assign a sequence number in Decode().
+  return lhs->bitstream_id > rhs->bitstream_id;
+}
+
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     CGLContextObj cgl_context,
@@ -74,6 +89,8 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       state_(STATE_DECODING),
       format_(NULL),
       session_(NULL),
+      last_sps_id_(-1),
+      last_pps_id_(-1),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
@@ -262,7 +279,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
       break;
     if (result != media::H264Parser::kOk) {
       DLOG(ERROR) << "Failed to find H.264 NALU";
-      NotifyError(PLATFORM_FAILURE);
+      NotifyError(UNREADABLE_INPUT);
       return;
     }
     switch (nalu.nal_unit_type) {
@@ -270,25 +287,75 @@ void VTVideoDecodeAccelerator::DecodeTask(
         last_sps_.assign(nalu.data, nalu.data + nalu.size);
         last_spsext_.clear();
         config_changed = true;
+        if (parser_.ParseSPS(&last_sps_id_) != media::H264Parser::kOk) {
+          DLOG(ERROR) << "Could not parse SPS";
+          NotifyError(UNREADABLE_INPUT);
+          return;
+        }
         break;
+
       case media::H264NALU::kSPSExt:
         // TODO(sandersd): Check that the previous NALU was an SPS.
         last_spsext_.assign(nalu.data, nalu.data + nalu.size);
         config_changed = true;
         break;
+
       case media::H264NALU::kPPS:
         last_pps_.assign(nalu.data, nalu.data + nalu.size);
         config_changed = true;
+        if (parser_.ParsePPS(&last_pps_id_) != media::H264Parser::kOk) {
+          DLOG(ERROR) << "Could not parse PPS";
+          NotifyError(UNREADABLE_INPUT);
+          return;
+        }
         break;
+
       case media::H264NALU::kSliceDataA:
       case media::H264NALU::kSliceDataB:
       case media::H264NALU::kSliceDataC:
         DLOG(ERROR) << "Coded slide data partitions not implemented.";
         NotifyError(PLATFORM_FAILURE);
         return;
-      case media::H264NALU::kIDRSlice:
+
       case media::H264NALU::kNonIDRSlice:
-        // TODO(sandersd): Compute pic_order_count.
+        // TODO(sandersd): Check that there has been an SPS or IDR slice since
+        // the last reset.
+      case media::H264NALU::kIDRSlice:
+        {
+          // TODO(sandersd): Make sure this only happens once per frame.
+          DCHECK_EQ(frame->pic_order_cnt, 0);
+
+          media::H264SliceHeader slice_hdr;
+          result = parser_.ParseSliceHeader(nalu, &slice_hdr);
+          if (result != media::H264Parser::kOk) {
+            DLOG(ERROR) << "Could not parse slice header";
+            NotifyError(UNREADABLE_INPUT);
+            return;
+          }
+
+          // TODO(sandersd): Keep a cache of recent SPS/PPS units instead of
+          // only the most recent ones.
+          DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
+          const media::H264PPS* pps =
+              parser_.GetPPS(slice_hdr.pic_parameter_set_id);
+          if (!pps) {
+            DLOG(ERROR) << "Mising PPS referenced by slice";
+            NotifyError(UNREADABLE_INPUT);
+            return;
+          }
+
+          DCHECK_EQ(pps->seq_parameter_set_id, last_sps_id_);
+          const media::H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
+          if (!sps) {
+            DLOG(ERROR) << "Mising SPS referenced by PPS";
+            NotifyError(UNREADABLE_INPUT);
+            return;
+          }
+
+          // TODO(sandersd): Compute pic_order_cnt.
+          DCHECK(!slice_hdr.field_pic_flag);
+          frame->pic_order_cnt = 0;
+        }
       default:
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
@@ -326,6 +393,9 @@ void VTVideoDecodeAccelerator::DecodeTask(
     NotifyError(INVALID_ARGUMENT);
     return;
   }
+
+  // Update the frame metadata with configuration data.
+  frame->coded_size = coded_size_;
 
   // Create a memory-backed CMBlockBuffer for the translated data.
   // TODO(sandersd): Pool of memory blocks.
@@ -385,9 +455,6 @@ void VTVideoDecodeAccelerator::DecodeTask(
     return;
   }
 
-  // Update the frame data.
-  frame->coded_size = coded_size_;
-
   // Send the frame for decoding.
   // Asynchronous Decompression allows for parallel submission of frames
   // (without it, DecodeFrame() does not return until the frame has been
@@ -431,8 +498,8 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   Task task(TASK_FRAME);
   task.frame = pending_frames_.front();
   pending_frames_.pop();
-  pending_tasks_.push(task);
-  ProcessTasks();
+  task_queue_.push(task);
+  ProcessWorkQueues();
 }
 
 void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
@@ -447,8 +514,8 @@ void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
 
 void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
-  pending_tasks_.push(Task(type));
-  ProcessTasks();
+  task_queue_.push(Task(type));
+  ProcessWorkQueues();
 }
 
 void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
@@ -477,7 +544,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
   // they will be broken if they are used before that happens. So, schedule
   // future work after that happens.
   gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VTVideoDecodeAccelerator::ProcessTasks, weak_this_));
+      &VTVideoDecodeAccelerator::ProcessWorkQueues, weak_this_));
 }
 
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
@@ -486,60 +553,77 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   picture_bindings_.erase(picture_id);
   if (assigned_picture_ids_.count(picture_id) != 0) {
     available_picture_ids_.push_back(picture_id);
-    ProcessTasks();
+    ProcessWorkQueues();
   } else {
     client_->DismissPictureBuffer(picture_id);
   }
 }
 
-void VTVideoDecodeAccelerator::ProcessTasks() {
+void VTVideoDecodeAccelerator::ProcessWorkQueues() {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  switch (state_) {
+    case STATE_DECODING:
+      // TODO(sandersd): Batch where possible.
+      while (ProcessReorderQueue() || ProcessTaskQueue());
+      return;
 
-  while (!pending_tasks_.empty()) {
-    const Task& task = pending_tasks_.front();
+    case STATE_ERROR:
+      // Do nothing until Destroy() is called.
+      return;
 
-    switch (state_) {
-      case STATE_DECODING:
-        if (!ProcessTask(task))
-          return;
-        pending_tasks_.pop();
-        break;
-
-      case STATE_ERROR:
-        // Do nothing until Destroy() is called.
-        return;
-
-      case STATE_DESTROYING:
-        // Discard tasks until destruction is complete.
-        if (task.type == TASK_DESTROY) {
+    case STATE_DESTROYING:
+      // Drop tasks until we are ready to destruct.
+      while (!task_queue_.empty()) {
+        if (task_queue_.front().type == TASK_DESTROY) {
           delete this;
           return;
         }
-        pending_tasks_.pop();
-        break;
-    }
+        task_queue_.pop();
+      }
+      return;
   }
 }
 
-bool VTVideoDecodeAccelerator::ProcessTask(const Task& task) {
+bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_DECODING);
 
+  if (task_queue_.empty())
+    return false;
+
+  const Task& task = task_queue_.front();
   switch (task.type) {
     case TASK_FRAME:
-      return ProcessFrame(*task.frame);
+      // TODO(sandersd): Signal IDR explicitly (not using pic_order_cnt == 0).
+      if (reorder_queue_.size() < kMaxReorderQueueSize &&
+          (task.frame->pic_order_cnt != 0 || reorder_queue_.empty())) {
+        assigned_bitstream_ids_.erase(task.frame->bitstream_id);
+        client_->NotifyEndOfBitstreamBuffer(task.frame->bitstream_id);
+        reorder_queue_.push(task.frame);
+        task_queue_.pop();
+        return true;
+      }
+      return false;
 
     case TASK_FLUSH:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
-      pending_flush_tasks_.pop();
-      client_->NotifyFlushDone();
-      return true;
+      if (reorder_queue_.size() == 0) {
+        pending_flush_tasks_.pop();
+        client_->NotifyFlushDone();
+        task_queue_.pop();
+        return true;
+      }
+      return false;
 
     case TASK_RESET:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
-      pending_flush_tasks_.pop();
-      client_->NotifyResetDone();
-      return true;
+      if (reorder_queue_.size() == 0) {
+        pending_flush_tasks_.pop();
+        client_->NotifyResetDone();
+        task_queue_.pop();
+        return true;
+      }
+      return false;
 
     case TASK_DESTROY:
       NOTREACHED() << "Can't destroy while in STATE_DECODING.";
@@ -548,12 +632,37 @@ bool VTVideoDecodeAccelerator::ProcessTask(const Task& task) {
   }
 }
 
+bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
+  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, STATE_DECODING);
+
+  if (reorder_queue_.empty())
+    return false;
+
+  // If the next task is a flush (because there is a pending flush or becuase
+  // the next frame is an IDR), then we don't need a full reorder buffer to send
+  // the next frame.
+  bool flushing = !task_queue_.empty() &&
+                  (task_queue_.front().type != TASK_FRAME ||
+                   task_queue_.front().frame->pic_order_cnt == 0);
+  if (flushing || reorder_queue_.size() >= kMinReorderQueueSize) {
+    if (ProcessFrame(*reorder_queue_.top())) {
+      reorder_queue_.pop();
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_DECODING);
+
   // If the next pending flush is for a reset, then the frame will be dropped.
   bool resetting = !pending_flush_tasks_.empty() &&
                    pending_flush_tasks_.front() == TASK_RESET;
+
   if (!resetting && frame.image.get()) {
     // If the |coded_size| has changed, request new picture buffers and then
     // wait for them.
@@ -577,8 +686,7 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     if (!SendFrame(frame))
       return false;
   }
-  assigned_bitstream_ids_.erase(frame.bitstream_id);
-  client_->NotifyEndOfBitstreamBuffer(frame.bitstream_id);
+
   return true;
 }
 
@@ -643,7 +751,7 @@ void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
 
   // If this is a new flush request, see if we can make progress.
   if (pending_flush_tasks_.size() == 1)
-    ProcessTasks();
+    ProcessWorkQueues();
 }
 
 void VTVideoDecodeAccelerator::Flush() {
@@ -667,6 +775,8 @@ void VTVideoDecodeAccelerator::Destroy() {
 
   // For a graceful shutdown, return assigned buffers and flush before
   // destructing |this|.
+  // TODO(sandersd): Make sure the decoder won't try to read the buffers again
+  // before discarding them.
   for (int32_t bitstream_id : assigned_bitstream_ids_)
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);
   assigned_bitstream_ids_.clear();

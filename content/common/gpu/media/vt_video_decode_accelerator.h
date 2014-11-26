@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "content/common/gpu/media/h264_dpb.h"
 #include "content/common/gpu/media/vt.h"
 #include "media/filters/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
@@ -72,10 +73,19 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
     Frame(int32_t bitstream_id);
     ~Frame();
 
+    // ID of the bitstream buffer this Frame will be decoded from.
     int32_t bitstream_id;
-    base::ScopedCFTypeRef<CVImageBufferRef> image;
+
+    // Relative presentation order of this frame (see AVC spec).
+    // TODO(sandersd): Reorder window size.
+    int32_t pic_order_cnt;
+
+    // Size of the decoded frame.
     // TODO(sandersd): visible_rect.
     gfx::Size coded_size;
+
+    // VideoToolbox decoded image, if decoding was successful.
+    base::ScopedCFTypeRef<CVImageBufferRef> image;
   };
 
   struct Task {
@@ -89,6 +99,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   //
   // Methods for interacting with VideoToolbox. Run on |decoder_thread_|.
   //
+
   // Set up VideoToolbox using the current SPS and PPS. Returns true or calls
   // NotifyError() before returning false.
   bool ConfigureDecoder();
@@ -112,12 +123,13 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void FlushTask(TaskType type);
   void FlushDone(TaskType type);
 
-  // Attempt to make progress on |pending_tasks_|.
-  void ProcessTasks();
+  // Try to make progress on tasks in the |task_queue_| or sending frames in the
+  // |reorder_queue_|.
+  void ProcessWorkQueues();
 
-  // These methods returns true if the task was completed, false if it couldn't
-  // be completed yet.
-  bool ProcessTask(const Task& task);
+  // These methods returns true if a task was completed, false otherwise.
+  bool ProcessTaskQueue();
+  bool ProcessReorderQueue();
   bool ProcessFrame(const Frame& frame);
   bool SendFrame(const Frame& frame);
 
@@ -134,7 +146,19 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::queue<TaskType> pending_flush_tasks_;
 
   // Queue of tasks to complete in the GPU thread.
-  std::queue<Task> pending_tasks_;
+  std::queue<Task> task_queue_;
+
+  // Utility class to define the order of frames in the reorder queue.
+  struct FrameOrder {
+    bool operator()(
+        const linked_ptr<Frame>& lhs,
+        const linked_ptr<Frame>& rhs) const;
+  };
+
+  // Queue of decoded frames in presentation order.
+  std::priority_queue<linked_ptr<Frame>,
+                      std::vector<linked_ptr<Frame>>,
+                      FrameOrder> reorder_queue_;
 
   // Size of assigned picture buffers.
   gfx::Size picture_size_;
@@ -169,8 +193,10 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   media::H264Parser parser_;
   gfx::Size coded_size_;
 
+  int last_sps_id_;
   std::vector<uint8_t> last_sps_;
   std::vector<uint8_t> last_spsext_;
+  int last_pps_id_;
   std::vector<uint8_t> last_pps_;
 
   //
