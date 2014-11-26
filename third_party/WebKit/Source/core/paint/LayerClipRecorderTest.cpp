@@ -48,11 +48,11 @@ void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 
 TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)
 {
-    GraphicsContext* context = new GraphicsContext(nullptr);
+    GraphicsContext context(nullptr);
     FloatRect bound = renderView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawClip(context, renderView(), PaintPhaseForeground, bound);
+    drawClip(&context, renderView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)2, rootDisplayItemList().paintList().size());
 }
 

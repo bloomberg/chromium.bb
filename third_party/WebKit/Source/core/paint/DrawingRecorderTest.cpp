@@ -54,19 +54,19 @@ void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 
 TEST_F(DrawingRecorderTest, DrawingRecorderTest_Nothing)
 {
-    GraphicsContext* context = new GraphicsContext(nullptr);
+    GraphicsContext context(nullptr);
     FloatRect bound = renderView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 
-    drawNothing(context, renderView(), PaintPhaseForeground, bound);
+    drawNothing(&context, renderView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }
 
 TEST_F(DrawingRecorderTest, DrawingRecorderTest_Rect)
 {
-    GraphicsContext* context = new GraphicsContext(nullptr);
+    GraphicsContext context(nullptr);
     FloatRect bound = renderView()->viewRect();
-    drawRect(context, renderView(), PaintPhaseForeground, bound);
+    drawRect(&context, renderView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
 }
 
