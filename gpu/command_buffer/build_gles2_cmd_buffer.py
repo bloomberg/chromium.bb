@@ -2235,6 +2235,16 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoUniform1iv',
     'unit_test': False,
   },
+  'Uniform1ui': {
+    'type': 'PUTXn',
+    'count': 1,
+    'unsafe': True,
+  },
+  'Uniform1uiv': {
+    'type': 'PUTn',
+    'count': 1,
+    'unsafe': True,
+  },
   'Uniform2i': {'type': 'PUTXn', 'count': 2},
   'Uniform2f': {'type': 'PUTXn', 'count': 2},
   'Uniform2fv': {
@@ -2246,6 +2256,16 @@ _FUNCTION_INFO = {
     'type': 'PUTn',
     'count': 2,
     'decoder_func': 'DoUniform2iv',
+  },
+  'Uniform2ui': {
+    'type': 'PUTXn',
+    'count': 2,
+    'unsafe': True,
+  },
+  'Uniform2uiv': {
+    'type': 'PUTn',
+    'count': 2,
+    'unsafe': True,
   },
   'Uniform3i': {'type': 'PUTXn', 'count': 3},
   'Uniform3f': {'type': 'PUTXn', 'count': 3},
@@ -2259,6 +2279,16 @@ _FUNCTION_INFO = {
     'count': 3,
     'decoder_func': 'DoUniform3iv',
   },
+  'Uniform3ui': {
+    'type': 'PUTXn',
+    'count': 3,
+    'unsafe': True,
+  },
+  'Uniform3uiv': {
+    'type': 'PUTn',
+    'count': 3,
+    'unsafe': True,
+  },
   'Uniform4i': {'type': 'PUTXn', 'count': 4},
   'Uniform4f': {'type': 'PUTXn', 'count': 4},
   'Uniform4fv': {
@@ -2271,20 +2301,60 @@ _FUNCTION_INFO = {
     'count': 4,
     'decoder_func': 'DoUniform4iv',
   },
+  'Uniform4ui': {
+    'type': 'PUTXn',
+    'count': 4,
+    'unsafe': True,
+  },
+  'Uniform4uiv': {
+    'type': 'PUTn',
+    'count': 4,
+    'unsafe': True,
+  },
   'UniformMatrix2fv': {
     'type': 'PUTn',
     'count': 4,
     'decoder_func': 'DoUniformMatrix2fv',
+  },
+  'UniformMatrix2x3fv': {
+    'type': 'PUTn',
+    'count': 6,
+    'unsafe': True,
+  },
+  'UniformMatrix2x4fv': {
+    'type': 'PUTn',
+    'count': 8,
+    'unsafe': True,
   },
   'UniformMatrix3fv': {
     'type': 'PUTn',
     'count': 9,
     'decoder_func': 'DoUniformMatrix3fv',
   },
+  'UniformMatrix3x2fv': {
+    'type': 'PUTn',
+    'count': 6,
+    'unsafe': True,
+  },
+  'UniformMatrix3x4fv': {
+    'type': 'PUTn',
+    'count': 12,
+    'unsafe': True,
+  },
   'UniformMatrix4fv': {
     'type': 'PUTn',
     'count': 16,
     'decoder_func': 'DoUniformMatrix4fv',
+  },
+  'UniformMatrix4x2fv': {
+    'type': 'PUTn',
+    'count': 8,
+    'unsafe': True,
+  },
+  'UniformMatrix4x3fv': {
+    'type': 'PUTn',
+    'count': 12,
+    'unsafe': True,
   },
   'UnmapBufferCHROMIUM': {
     'gen_cmd': False,
@@ -2335,12 +2405,36 @@ _FUNCTION_INFO = {
     'count': 4,
     'decoder_func': 'DoVertexAttrib4fv',
   },
+  'VertexAttribI4i': {
+    'unsafe': True,
+  },
+  'VertexAttribI4iv': {
+    'type': 'PUT',
+    'count': 4,
+    'unsafe': True,
+  },
+  'VertexAttribI4ui': {
+    'unsafe': True,
+  },
+  'VertexAttribI4uiv': {
+    'type': 'PUT',
+    'count': 4,
+    'unsafe': True,
+  },
+  'VertexAttribIPointer': {
+    'type': 'Manual',
+    'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
+                'GLenumVertexAttribType type, GLsizei stride, '
+                'GLuint offset',
+    'client_test': False,
+    'unsafe': True,
+  },
   'VertexAttribPointer': {
-      'type': 'Manual',
-      'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
-                  'GLenumVertexAttribType type, GLboolean normalized, '
-                  'GLsizei stride, GLuint offset',
-      'client_test': False,
+    'type': 'Manual',
+    'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
+                'GLenumVertexAttribType type, GLboolean normalized, '
+                'GLsizei stride, GLuint offset',
+    'client_test': False,
   },
   'Scissor': {
     'type': 'StateSet',
@@ -2350,11 +2444,11 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoViewport',
   },
   'ResizeCHROMIUM': {
-      'type': 'Custom',
-      'impl_func': False,
-      'unit_test': False,
-      'extension': True,
-      'chromium': True,
+    'type': 'Custom',
+    'impl_func': False,
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
   },
   'GetRequestableExtensionsCHROMIUM': {
     'type': 'Custom',
@@ -5073,10 +5167,20 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(%(gl_args)s, %(data_ref)sreinterpret_cast<
-          %(data_type)s*>(ImmediateDataAddress(&cmd))));
+          %(data_type)s*>(ImmediateDataAddress(&cmd))));"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    valid_test += """
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand,
+            ExecuteImmediateCmd(cmd, sizeof(temp)));"""
+    valid_test += """
 }
 """
     gl_arg_strings = [
@@ -5342,10 +5446,20 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
-  cmd.Init(%(args)s, &temp[0]);
+  cmd.Init(%(args)s, &temp[0]);"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    valid_test += """
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand,
+            ExecuteImmediateCmd(cmd, sizeof(temp)));"""
+    valid_test += """
 }
 """
     gl_arg_strings = []
@@ -5619,7 +5733,13 @@ class PUTXnHandler(ArrayArgTypeHandler):
 
   def WriteHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    code = """  %(type)s temp[%(count)s] = { %(values)s};
+    code = """  %(type)s temp[%(count)s] = { %(values)s};"""
+    if func.IsUnsafe():
+      code += """
+  gl%(name)sv(%(location)s, 1, &temp[0]);
+"""
+    else:
+      code += """
   Do%(name)sv(%(location)s, 1, &temp[0]);
 """
     values = ""
@@ -5645,9 +5765,18 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(name)sv(%(local_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
+  cmd.Init(%(args)s);"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    valid_test += """
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
+    if func.IsUnsafe():
+      valid_test += """
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));"""
+    valid_test += """
 }
 """
     args = func.GetOriginalArgs()

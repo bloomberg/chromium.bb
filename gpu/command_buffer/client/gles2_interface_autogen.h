@@ -284,14 +284,20 @@ virtual void Uniform1f(GLint location, GLfloat x) = 0;
 virtual void Uniform1fv(GLint location, GLsizei count, const GLfloat* v) = 0;
 virtual void Uniform1i(GLint location, GLint x) = 0;
 virtual void Uniform1iv(GLint location, GLsizei count, const GLint* v) = 0;
+virtual void Uniform1ui(GLint location, GLuint x) = 0;
+virtual void Uniform1uiv(GLint location, GLsizei count, const GLuint* v) = 0;
 virtual void Uniform2f(GLint location, GLfloat x, GLfloat y) = 0;
 virtual void Uniform2fv(GLint location, GLsizei count, const GLfloat* v) = 0;
 virtual void Uniform2i(GLint location, GLint x, GLint y) = 0;
 virtual void Uniform2iv(GLint location, GLsizei count, const GLint* v) = 0;
+virtual void Uniform2ui(GLint location, GLuint x, GLuint y) = 0;
+virtual void Uniform2uiv(GLint location, GLsizei count, const GLuint* v) = 0;
 virtual void Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) = 0;
 virtual void Uniform3fv(GLint location, GLsizei count, const GLfloat* v) = 0;
 virtual void Uniform3i(GLint location, GLint x, GLint y, GLint z) = 0;
 virtual void Uniform3iv(GLint location, GLsizei count, const GLint* v) = 0;
+virtual void Uniform3ui(GLint location, GLuint x, GLuint y, GLuint z) = 0;
+virtual void Uniform3uiv(GLint location, GLsizei count, const GLuint* v) = 0;
 virtual void Uniform4f(GLint location,
                        GLfloat x,
                        GLfloat y,
@@ -300,18 +306,48 @@ virtual void Uniform4f(GLint location,
 virtual void Uniform4fv(GLint location, GLsizei count, const GLfloat* v) = 0;
 virtual void Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) = 0;
 virtual void Uniform4iv(GLint location, GLsizei count, const GLint* v) = 0;
+virtual void Uniform4ui(GLint location,
+                        GLuint x,
+                        GLuint y,
+                        GLuint z,
+                        GLuint w) = 0;
+virtual void Uniform4uiv(GLint location, GLsizei count, const GLuint* v) = 0;
 virtual void UniformMatrix2fv(GLint location,
                               GLsizei count,
                               GLboolean transpose,
                               const GLfloat* value) = 0;
+virtual void UniformMatrix2x3fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
+virtual void UniformMatrix2x4fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
 virtual void UniformMatrix3fv(GLint location,
                               GLsizei count,
                               GLboolean transpose,
                               const GLfloat* value) = 0;
+virtual void UniformMatrix3x2fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
+virtual void UniformMatrix3x4fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
 virtual void UniformMatrix4fv(GLint location,
                               GLsizei count,
                               GLboolean transpose,
                               const GLfloat* value) = 0;
+virtual void UniformMatrix4x2fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
+virtual void UniformMatrix4x3fv(GLint location,
+                                GLsizei count,
+                                GLboolean transpose,
+                                const GLfloat* value) = 0;
 virtual void UseProgram(GLuint program) = 0;
 virtual void ValidateProgram(GLuint program) = 0;
 virtual void VertexAttrib1f(GLuint indx, GLfloat x) = 0;
@@ -326,6 +362,23 @@ virtual void VertexAttrib4f(GLuint indx,
                             GLfloat z,
                             GLfloat w) = 0;
 virtual void VertexAttrib4fv(GLuint indx, const GLfloat* values) = 0;
+virtual void VertexAttribI4i(GLuint indx,
+                             GLint x,
+                             GLint y,
+                             GLint z,
+                             GLint w) = 0;
+virtual void VertexAttribI4iv(GLuint indx, const GLint* values) = 0;
+virtual void VertexAttribI4ui(GLuint indx,
+                              GLuint x,
+                              GLuint y,
+                              GLuint z,
+                              GLuint w) = 0;
+virtual void VertexAttribI4uiv(GLuint indx, const GLuint* values) = 0;
+virtual void VertexAttribIPointer(GLuint indx,
+                                  GLint size,
+                                  GLenum type,
+                                  GLsizei stride,
+                                  const void* ptr) = 0;
 virtual void VertexAttribPointer(GLuint indx,
                                  GLint size,
                                  GLenum type,

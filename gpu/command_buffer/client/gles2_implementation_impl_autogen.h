@@ -1379,6 +1379,33 @@ void GLES2Implementation::Uniform1iv(GLint location,
   CheckGLError();
 }
 
+void GLES2Implementation::Uniform1ui(GLint location, GLuint x) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform1ui(" << location << ", "
+                     << x << ")");
+  helper_->Uniform1ui(location, x);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform1uiv(GLint location,
+                                      GLsizei count,
+                                      const GLuint* v) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform1uiv(" << location << ", "
+                     << count << ", " << static_cast<const void*>(v) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << v[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform1uiv", "count < 0");
+    return;
+  }
+  helper_->Uniform1uivImmediate(location, count, v);
+  CheckGLError();
+}
+
 void GLES2Implementation::Uniform2f(GLint location, GLfloat x, GLfloat y) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform2f(" << location << ", "
@@ -1430,6 +1457,33 @@ void GLES2Implementation::Uniform2iv(GLint location,
     return;
   }
   helper_->Uniform2ivImmediate(location, count, v);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform2ui(GLint location, GLuint x, GLuint y) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform2ui(" << location << ", "
+                     << x << ", " << y << ")");
+  helper_->Uniform2ui(location, x, y);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform2uiv(GLint location,
+                                      GLsizei count,
+                                      const GLuint* v) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform2uiv(" << location << ", "
+                     << count << ", " << static_cast<const void*>(v) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << v[0 + i * 2] << ", " << v[1 + i * 2]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform2uiv", "count < 0");
+    return;
+  }
+  helper_->Uniform2uivImmediate(location, count, v);
   CheckGLError();
 }
 
@@ -1489,6 +1543,37 @@ void GLES2Implementation::Uniform3iv(GLint location,
     return;
   }
   helper_->Uniform3ivImmediate(location, count, v);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform3ui(GLint location,
+                                     GLuint x,
+                                     GLuint y,
+                                     GLuint z) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform3ui(" << location << ", "
+                     << x << ", " << y << ", " << z << ")");
+  helper_->Uniform3ui(location, x, y, z);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform3uiv(GLint location,
+                                      GLsizei count,
+                                      const GLuint* v) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform3uiv(" << location << ", "
+                     << count << ", " << static_cast<const void*>(v) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << v[0 + i * 3] << ", " << v[1 + i * 3]
+                          << ", " << v[2 + i * 3]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform3uiv", "count < 0");
+    return;
+  }
+  helper_->Uniform3uivImmediate(location, count, v);
   CheckGLError();
 }
 
@@ -1556,6 +1641,38 @@ void GLES2Implementation::Uniform4iv(GLint location,
   CheckGLError();
 }
 
+void GLES2Implementation::Uniform4ui(GLint location,
+                                     GLuint x,
+                                     GLuint y,
+                                     GLuint z,
+                                     GLuint w) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform4ui(" << location << ", "
+                     << x << ", " << y << ", " << z << ", " << w << ")");
+  helper_->Uniform4ui(location, x, y, z, w);
+  CheckGLError();
+}
+
+void GLES2Implementation::Uniform4uiv(GLint location,
+                                      GLsizei count,
+                                      const GLuint* v) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform4uiv(" << location << ", "
+                     << count << ", " << static_cast<const void*>(v) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << v[0 + i * 4] << ", " << v[1 + i * 4]
+                          << ", " << v[2 + i * 4] << ", " << v[3 + i * 4]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform4uiv", "count < 0");
+    return;
+  }
+  helper_->Uniform4uivImmediate(location, count, v);
+  CheckGLError();
+}
+
 void GLES2Implementation::UniformMatrix2fv(GLint location,
                                            GLsizei count,
                                            GLboolean transpose,
@@ -1582,6 +1699,67 @@ void GLES2Implementation::UniformMatrix2fv(GLint location,
     return;
   }
   helper_->UniformMatrix2fvImmediate(location, count, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::UniformMatrix2x3fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix2x3fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << value[0 + i * 6] << ", "
+                          << value[1 + i * 6] << ", " << value[2 + i * 6]
+                          << ", " << value[3 + i * 6] << ", "
+                          << value[4 + i * 6] << ", " << value[5 + i * 6]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x3fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x3fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix2x3fvImmediate(location, count, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::UniformMatrix2x4fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix2x4fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG(
+          "  " << i << ": " << value[0 + i * 8] << ", " << value[1 + i * 8]
+               << ", " << value[2 + i * 8] << ", " << value[3 + i * 8] << ", "
+               << value[4 + i * 8] << ", " << value[5 + i * 8] << ", "
+               << value[6 + i * 8] << ", " << value[7 + i * 8]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x4fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2x4fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix2x4fvImmediate(location, count, value);
   CheckGLError();
 }
 
@@ -1617,6 +1795,69 @@ void GLES2Implementation::UniformMatrix3fv(GLint location,
   CheckGLError();
 }
 
+void GLES2Implementation::UniformMatrix3x2fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix3x2fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << value[0 + i * 6] << ", "
+                          << value[1 + i * 6] << ", " << value[2 + i * 6]
+                          << ", " << value[3 + i * 6] << ", "
+                          << value[4 + i * 6] << ", " << value[5 + i * 6]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x2fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x2fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix3x2fvImmediate(location, count, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::UniformMatrix3x4fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix3x4fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG(
+          "  " << i << ": " << value[0 + i * 12] << ", " << value[1 + i * 12]
+               << ", " << value[2 + i * 12] << ", " << value[3 + i * 12] << ", "
+               << value[4 + i * 12] << ", " << value[5 + i * 12] << ", "
+               << value[6 + i * 12] << ", " << value[7 + i * 12] << ", "
+               << value[8 + i * 12] << ", " << value[9 + i * 12] << ", "
+               << value[10 + i * 12] << ", " << value[11 + i * 12]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x4fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3x4fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix3x4fvImmediate(location, count, value);
+  CheckGLError();
+}
+
 void GLES2Implementation::UniformMatrix4fv(GLint location,
                                            GLsizei count,
                                            GLboolean transpose,
@@ -1649,6 +1890,70 @@ void GLES2Implementation::UniformMatrix4fv(GLint location,
     return;
   }
   helper_->UniformMatrix4fvImmediate(location, count, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::UniformMatrix4x2fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix4x2fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG(
+          "  " << i << ": " << value[0 + i * 8] << ", " << value[1 + i * 8]
+               << ", " << value[2 + i * 8] << ", " << value[3 + i * 8] << ", "
+               << value[4 + i * 8] << ", " << value[5 + i * 8] << ", "
+               << value[6 + i * 8] << ", " << value[7 + i * 8]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x2fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x2fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix4x2fvImmediate(location, count, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::UniformMatrix4x3fv(GLint location,
+                                             GLsizei count,
+                                             GLboolean transpose,
+                                             const GLfloat* value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniformMatrix4x3fv(" << location
+                     << ", " << count << ", "
+                     << GLES2Util::GetStringBool(transpose) << ", "
+                     << static_cast<const void*>(value) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG(
+          "  " << i << ": " << value[0 + i * 12] << ", " << value[1 + i * 12]
+               << ", " << value[2 + i * 12] << ", " << value[3 + i * 12] << ", "
+               << value[4 + i * 12] << ", " << value[5 + i * 12] << ", "
+               << value[6 + i * 12] << ", " << value[7 + i * 12] << ", "
+               << value[8 + i * 12] << ", " << value[9 + i * 12] << ", "
+               << value[10 + i * 12] << ", " << value[11 + i * 12]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x3fv", "count < 0");
+    return;
+  }
+  if (transpose != false) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4x3fv",
+               "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix4x3fvImmediate(location, count, value);
   CheckGLError();
 }
 
@@ -1747,6 +2052,51 @@ void GLES2Implementation::VertexAttrib4fv(GLuint indx, const GLfloat* values) {
   GPU_CLIENT_LOG("values: " << values[0] << ", " << values[1] << ", "
                             << values[2] << ", " << values[3]);
   helper_->VertexAttrib4fvImmediate(indx, values);
+  CheckGLError();
+}
+
+void GLES2Implementation::VertexAttribI4i(GLuint indx,
+                                          GLint x,
+                                          GLint y,
+                                          GLint z,
+                                          GLint w) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribI4i(" << indx << ", "
+                     << x << ", " << y << ", " << z << ", " << w << ")");
+  helper_->VertexAttribI4i(indx, x, y, z, w);
+  CheckGLError();
+}
+
+void GLES2Implementation::VertexAttribI4iv(GLuint indx, const GLint* values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribI4iv(" << indx
+                     << ", " << static_cast<const void*>(values) << ")");
+  GPU_CLIENT_LOG("values: " << values[0] << ", " << values[1] << ", "
+                            << values[2] << ", " << values[3]);
+  helper_->VertexAttribI4ivImmediate(indx, values);
+  CheckGLError();
+}
+
+void GLES2Implementation::VertexAttribI4ui(GLuint indx,
+                                           GLuint x,
+                                           GLuint y,
+                                           GLuint z,
+                                           GLuint w) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribI4ui(" << indx
+                     << ", " << x << ", " << y << ", " << z << ", " << w
+                     << ")");
+  helper_->VertexAttribI4ui(indx, x, y, z, w);
+  CheckGLError();
+}
+
+void GLES2Implementation::VertexAttribI4uiv(GLuint indx, const GLuint* values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribI4uiv(" << indx
+                     << ", " << static_cast<const void*>(values) << ")");
+  GPU_CLIENT_LOG("values: " << values[0] << ", " << values[1] << ", "
+                            << values[2] << ", " << values[3]);
+  helper_->VertexAttribI4uivImmediate(indx, values);
   CheckGLError();
 }
 

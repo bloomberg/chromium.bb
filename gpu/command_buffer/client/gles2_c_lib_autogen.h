@@ -527,6 +527,12 @@ void GLES2Uniform1i(GLint location, GLint x) {
 void GLES2Uniform1iv(GLint location, GLsizei count, const GLint* v) {
   gles2::GetGLContext()->Uniform1iv(location, count, v);
 }
+void GLES2Uniform1ui(GLint location, GLuint x) {
+  gles2::GetGLContext()->Uniform1ui(location, x);
+}
+void GLES2Uniform1uiv(GLint location, GLsizei count, const GLuint* v) {
+  gles2::GetGLContext()->Uniform1uiv(location, count, v);
+}
 void GLES2Uniform2f(GLint location, GLfloat x, GLfloat y) {
   gles2::GetGLContext()->Uniform2f(location, x, y);
 }
@@ -539,6 +545,12 @@ void GLES2Uniform2i(GLint location, GLint x, GLint y) {
 void GLES2Uniform2iv(GLint location, GLsizei count, const GLint* v) {
   gles2::GetGLContext()->Uniform2iv(location, count, v);
 }
+void GLES2Uniform2ui(GLint location, GLuint x, GLuint y) {
+  gles2::GetGLContext()->Uniform2ui(location, x, y);
+}
+void GLES2Uniform2uiv(GLint location, GLsizei count, const GLuint* v) {
+  gles2::GetGLContext()->Uniform2uiv(location, count, v);
+}
 void GLES2Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
   gles2::GetGLContext()->Uniform3f(location, x, y, z);
 }
@@ -550,6 +562,12 @@ void GLES2Uniform3i(GLint location, GLint x, GLint y, GLint z) {
 }
 void GLES2Uniform3iv(GLint location, GLsizei count, const GLint* v) {
   gles2::GetGLContext()->Uniform3iv(location, count, v);
+}
+void GLES2Uniform3ui(GLint location, GLuint x, GLuint y, GLuint z) {
+  gles2::GetGLContext()->Uniform3ui(location, x, y, z);
+}
+void GLES2Uniform3uiv(GLint location, GLsizei count, const GLuint* v) {
+  gles2::GetGLContext()->Uniform3uiv(location, count, v);
 }
 void GLES2Uniform4f(GLint location,
                     GLfloat x,
@@ -567,11 +585,29 @@ void GLES2Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
 void GLES2Uniform4iv(GLint location, GLsizei count, const GLint* v) {
   gles2::GetGLContext()->Uniform4iv(location, count, v);
 }
+void GLES2Uniform4ui(GLint location, GLuint x, GLuint y, GLuint z, GLuint w) {
+  gles2::GetGLContext()->Uniform4ui(location, x, y, z, w);
+}
+void GLES2Uniform4uiv(GLint location, GLsizei count, const GLuint* v) {
+  gles2::GetGLContext()->Uniform4uiv(location, count, v);
+}
 void GLES2UniformMatrix2fv(GLint location,
                            GLsizei count,
                            GLboolean transpose,
                            const GLfloat* value) {
   gles2::GetGLContext()->UniformMatrix2fv(location, count, transpose, value);
+}
+void GLES2UniformMatrix2x3fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix2x3fv(location, count, transpose, value);
+}
+void GLES2UniformMatrix2x4fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix2x4fv(location, count, transpose, value);
 }
 void GLES2UniformMatrix3fv(GLint location,
                            GLsizei count,
@@ -579,11 +615,35 @@ void GLES2UniformMatrix3fv(GLint location,
                            const GLfloat* value) {
   gles2::GetGLContext()->UniformMatrix3fv(location, count, transpose, value);
 }
+void GLES2UniformMatrix3x2fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix3x2fv(location, count, transpose, value);
+}
+void GLES2UniformMatrix3x4fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix3x4fv(location, count, transpose, value);
+}
 void GLES2UniformMatrix4fv(GLint location,
                            GLsizei count,
                            GLboolean transpose,
                            const GLfloat* value) {
   gles2::GetGLContext()->UniformMatrix4fv(location, count, transpose, value);
+}
+void GLES2UniformMatrix4x2fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix4x2fv(location, count, transpose, value);
+}
+void GLES2UniformMatrix4x3fv(GLint location,
+                             GLsizei count,
+                             GLboolean transpose,
+                             const GLfloat* value) {
+  gles2::GetGLContext()->UniformMatrix4x3fv(location, count, transpose, value);
 }
 void GLES2UseProgram(GLuint program) {
   gles2::GetGLContext()->UseProgram(program);
@@ -618,6 +678,29 @@ void GLES2VertexAttrib4f(GLuint indx,
 }
 void GLES2VertexAttrib4fv(GLuint indx, const GLfloat* values) {
   gles2::GetGLContext()->VertexAttrib4fv(indx, values);
+}
+void GLES2VertexAttribI4i(GLuint indx, GLint x, GLint y, GLint z, GLint w) {
+  gles2::GetGLContext()->VertexAttribI4i(indx, x, y, z, w);
+}
+void GLES2VertexAttribI4iv(GLuint indx, const GLint* values) {
+  gles2::GetGLContext()->VertexAttribI4iv(indx, values);
+}
+void GLES2VertexAttribI4ui(GLuint indx,
+                           GLuint x,
+                           GLuint y,
+                           GLuint z,
+                           GLuint w) {
+  gles2::GetGLContext()->VertexAttribI4ui(indx, x, y, z, w);
+}
+void GLES2VertexAttribI4uiv(GLuint indx, const GLuint* values) {
+  gles2::GetGLContext()->VertexAttribI4uiv(indx, values);
+}
+void GLES2VertexAttribIPointer(GLuint indx,
+                               GLint size,
+                               GLenum type,
+                               GLsizei stride,
+                               const void* ptr) {
+  gles2::GetGLContext()->VertexAttribIPointer(indx, size, type, stride, ptr);
 }
 void GLES2VertexAttribPointer(GLuint indx,
                               GLint size,
@@ -1467,6 +1550,14 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glUniform1iv),
     },
     {
+     "glUniform1ui",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1ui),
+    },
+    {
+     "glUniform1uiv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform1uiv),
+    },
+    {
      "glUniform2f",
      reinterpret_cast<GLES2FunctionPointer>(glUniform2f),
     },
@@ -1481,6 +1572,14 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glUniform2iv",
      reinterpret_cast<GLES2FunctionPointer>(glUniform2iv),
+    },
+    {
+     "glUniform2ui",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2ui),
+    },
+    {
+     "glUniform2uiv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform2uiv),
     },
     {
      "glUniform3f",
@@ -1499,6 +1598,14 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glUniform3iv),
     },
     {
+     "glUniform3ui",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3ui),
+    },
+    {
+     "glUniform3uiv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform3uiv),
+    },
+    {
      "glUniform4f",
      reinterpret_cast<GLES2FunctionPointer>(glUniform4f),
     },
@@ -1515,16 +1622,48 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glUniform4iv),
     },
     {
+     "glUniform4ui",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4ui),
+    },
+    {
+     "glUniform4uiv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniform4uiv),
+    },
+    {
      "glUniformMatrix2fv",
      reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix2fv),
+    },
+    {
+     "glUniformMatrix2x3fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix2x3fv),
+    },
+    {
+     "glUniformMatrix2x4fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix2x4fv),
     },
     {
      "glUniformMatrix3fv",
      reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix3fv),
     },
     {
+     "glUniformMatrix3x2fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix3x2fv),
+    },
+    {
+     "glUniformMatrix3x4fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix3x4fv),
+    },
+    {
      "glUniformMatrix4fv",
      reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4fv),
+    },
+    {
+     "glUniformMatrix4x2fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4x2fv),
+    },
+    {
+     "glUniformMatrix4x3fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4x3fv),
     },
     {
      "glUseProgram",
@@ -1565,6 +1704,26 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glVertexAttrib4fv",
      reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib4fv),
+    },
+    {
+     "glVertexAttribI4i",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribI4i),
+    },
+    {
+     "glVertexAttribI4iv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribI4iv),
+    },
+    {
+     "glVertexAttribI4ui",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribI4ui),
+    },
+    {
+     "glVertexAttribI4uiv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribI4uiv),
+    },
+    {
+     "glVertexAttribIPointer",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribIPointer),
     },
     {
      "glVertexAttribPointer",

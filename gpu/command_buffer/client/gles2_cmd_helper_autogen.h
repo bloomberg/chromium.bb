@@ -1120,6 +1120,22 @@ void Uniform1ivImmediate(GLint location, GLsizei count, const GLint* v) {
   }
 }
 
+void Uniform1ui(GLint location, GLuint x) {
+  gles2::cmds::Uniform1ui* c = GetCmdSpace<gles2::cmds::Uniform1ui>();
+  if (c) {
+    c->Init(location, x);
+  }
+}
+
+void Uniform1uivImmediate(GLint location, GLsizei count, const GLuint* v) {
+  const uint32_t size = gles2::cmds::Uniform1uivImmediate::ComputeSize(count);
+  gles2::cmds::Uniform1uivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform1uivImmediate>(size);
+  if (c) {
+    c->Init(location, count, v);
+  }
+}
+
 void Uniform2f(GLint location, GLfloat x, GLfloat y) {
   gles2::cmds::Uniform2f* c = GetCmdSpace<gles2::cmds::Uniform2f>();
   if (c) {
@@ -1147,6 +1163,22 @@ void Uniform2ivImmediate(GLint location, GLsizei count, const GLint* v) {
   const uint32_t size = gles2::cmds::Uniform2ivImmediate::ComputeSize(count);
   gles2::cmds::Uniform2ivImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform2ivImmediate>(size);
+  if (c) {
+    c->Init(location, count, v);
+  }
+}
+
+void Uniform2ui(GLint location, GLuint x, GLuint y) {
+  gles2::cmds::Uniform2ui* c = GetCmdSpace<gles2::cmds::Uniform2ui>();
+  if (c) {
+    c->Init(location, x, y);
+  }
+}
+
+void Uniform2uivImmediate(GLint location, GLsizei count, const GLuint* v) {
+  const uint32_t size = gles2::cmds::Uniform2uivImmediate::ComputeSize(count);
+  gles2::cmds::Uniform2uivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform2uivImmediate>(size);
   if (c) {
     c->Init(location, count, v);
   }
@@ -1184,6 +1216,22 @@ void Uniform3ivImmediate(GLint location, GLsizei count, const GLint* v) {
   }
 }
 
+void Uniform3ui(GLint location, GLuint x, GLuint y, GLuint z) {
+  gles2::cmds::Uniform3ui* c = GetCmdSpace<gles2::cmds::Uniform3ui>();
+  if (c) {
+    c->Init(location, x, y, z);
+  }
+}
+
+void Uniform3uivImmediate(GLint location, GLsizei count, const GLuint* v) {
+  const uint32_t size = gles2::cmds::Uniform3uivImmediate::ComputeSize(count);
+  gles2::cmds::Uniform3uivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform3uivImmediate>(size);
+  if (c) {
+    c->Init(location, count, v);
+  }
+}
+
 void Uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   gles2::cmds::Uniform4f* c = GetCmdSpace<gles2::cmds::Uniform4f>();
   if (c) {
@@ -1216,6 +1264,22 @@ void Uniform4ivImmediate(GLint location, GLsizei count, const GLint* v) {
   }
 }
 
+void Uniform4ui(GLint location, GLuint x, GLuint y, GLuint z, GLuint w) {
+  gles2::cmds::Uniform4ui* c = GetCmdSpace<gles2::cmds::Uniform4ui>();
+  if (c) {
+    c->Init(location, x, y, z, w);
+  }
+}
+
+void Uniform4uivImmediate(GLint location, GLsizei count, const GLuint* v) {
+  const uint32_t size = gles2::cmds::Uniform4uivImmediate::ComputeSize(count);
+  gles2::cmds::Uniform4uivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform4uivImmediate>(size);
+  if (c) {
+    c->Init(location, count, v);
+  }
+}
+
 void UniformMatrix2fvImmediate(GLint location,
                                GLsizei count,
                                const GLfloat* value) {
@@ -1223,6 +1287,32 @@ void UniformMatrix2fvImmediate(GLint location,
       gles2::cmds::UniformMatrix2fvImmediate::ComputeSize(count);
   gles2::cmds::UniformMatrix2fvImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
+void UniformMatrix2x3fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix2x3fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix2x3fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2x3fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
+void UniformMatrix2x4fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix2x4fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix2x4fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2x4fvImmediate>(
           size);
   if (c) {
     c->Init(location, count, value);
@@ -1242,6 +1332,32 @@ void UniformMatrix3fvImmediate(GLint location,
   }
 }
 
+void UniformMatrix3x2fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix3x2fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix3x2fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3x2fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
+void UniformMatrix3x4fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix3x4fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix3x4fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3x4fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
 void UniformMatrix4fvImmediate(GLint location,
                                GLsizei count,
                                const GLfloat* value) {
@@ -1249,6 +1365,32 @@ void UniformMatrix4fvImmediate(GLint location,
       gles2::cmds::UniformMatrix4fvImmediate::ComputeSize(count);
   gles2::cmds::UniformMatrix4fvImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
+void UniformMatrix4x2fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix4x2fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix4x2fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4x2fvImmediate>(
+          size);
+  if (c) {
+    c->Init(location, count, value);
+  }
+}
+
+void UniformMatrix4x3fvImmediate(GLint location,
+                                 GLsizei count,
+                                 const GLfloat* value) {
+  const uint32_t size =
+      gles2::cmds::UniformMatrix4x3fvImmediate::ComputeSize(count);
+  gles2::cmds::UniformMatrix4x3fvImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4x3fvImmediate>(
           size);
   if (c) {
     c->Init(location, count, value);
@@ -1334,6 +1476,53 @@ void VertexAttrib4fvImmediate(GLuint indx, const GLfloat* values) {
           size);
   if (c) {
     c->Init(indx, values);
+  }
+}
+
+void VertexAttribI4i(GLuint indx, GLint x, GLint y, GLint z, GLint w) {
+  gles2::cmds::VertexAttribI4i* c = GetCmdSpace<gles2::cmds::VertexAttribI4i>();
+  if (c) {
+    c->Init(indx, x, y, z, w);
+  }
+}
+
+void VertexAttribI4ivImmediate(GLuint indx, const GLint* values) {
+  const uint32_t size = gles2::cmds::VertexAttribI4ivImmediate::ComputeSize();
+  gles2::cmds::VertexAttribI4ivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::VertexAttribI4ivImmediate>(
+          size);
+  if (c) {
+    c->Init(indx, values);
+  }
+}
+
+void VertexAttribI4ui(GLuint indx, GLuint x, GLuint y, GLuint z, GLuint w) {
+  gles2::cmds::VertexAttribI4ui* c =
+      GetCmdSpace<gles2::cmds::VertexAttribI4ui>();
+  if (c) {
+    c->Init(indx, x, y, z, w);
+  }
+}
+
+void VertexAttribI4uivImmediate(GLuint indx, const GLuint* values) {
+  const uint32_t size = gles2::cmds::VertexAttribI4uivImmediate::ComputeSize();
+  gles2::cmds::VertexAttribI4uivImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::VertexAttribI4uivImmediate>(
+          size);
+  if (c) {
+    c->Init(indx, values);
+  }
+}
+
+void VertexAttribIPointer(GLuint indx,
+                          GLint size,
+                          GLenum type,
+                          GLsizei stride,
+                          GLuint offset) {
+  gles2::cmds::VertexAttribIPointer* c =
+      GetCmdSpace<gles2::cmds::VertexAttribIPointer>();
+  if (c) {
+    c->Init(indx, size, type, stride, offset);
   }
 }
 

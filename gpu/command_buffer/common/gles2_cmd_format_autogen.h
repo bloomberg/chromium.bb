@@ -5535,6 +5535,87 @@ COMPILE_ASSERT(offsetof(Uniform1ivImmediate, location) == 4,
 COMPILE_ASSERT(offsetof(Uniform1ivImmediate, count) == 8,
                OffsetOf_Uniform1ivImmediate_count_not_8);
 
+struct Uniform1ui {
+  typedef Uniform1ui ValueType;
+  static const CommandId kCmdId = kUniform1ui;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _location, GLuint _x) {
+    SetHeader();
+    location = _location;
+    x = _x;
+  }
+
+  void* Set(void* cmd, GLint _location, GLuint _x) {
+    static_cast<ValueType*>(cmd)->Init(_location, _x);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t x;
+};
+
+COMPILE_ASSERT(sizeof(Uniform1ui) == 12, Sizeof_Uniform1ui_is_not_12);
+COMPILE_ASSERT(offsetof(Uniform1ui, header) == 0,
+               OffsetOf_Uniform1ui_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform1ui, location) == 4,
+               OffsetOf_Uniform1ui_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform1ui, x) == 8, OffsetOf_Uniform1ui_x_not_8);
+
+struct Uniform1uivImmediate {
+  typedef Uniform1uivImmediate ValueType;
+  static const CommandId kCmdId = kUniform1uivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 1 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLuint* _v) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLuint* _v) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _v);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+};
+
+COMPILE_ASSERT(sizeof(Uniform1uivImmediate) == 12,
+               Sizeof_Uniform1uivImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(Uniform1uivImmediate, header) == 0,
+               OffsetOf_Uniform1uivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform1uivImmediate, location) == 4,
+               OffsetOf_Uniform1uivImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform1uivImmediate, count) == 8,
+               OffsetOf_Uniform1uivImmediate_count_not_8);
+
 struct Uniform2f {
   typedef Uniform2f ValueType;
   static const CommandId kCmdId = kUniform2f;
@@ -5702,6 +5783,90 @@ COMPILE_ASSERT(offsetof(Uniform2ivImmediate, location) == 4,
                OffsetOf_Uniform2ivImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(Uniform2ivImmediate, count) == 8,
                OffsetOf_Uniform2ivImmediate_count_not_8);
+
+struct Uniform2ui {
+  typedef Uniform2ui ValueType;
+  static const CommandId kCmdId = kUniform2ui;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _location, GLuint _x, GLuint _y) {
+    SetHeader();
+    location = _location;
+    x = _x;
+    y = _y;
+  }
+
+  void* Set(void* cmd, GLint _location, GLuint _x, GLuint _y) {
+    static_cast<ValueType*>(cmd)->Init(_location, _x, _y);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t x;
+  uint32_t y;
+};
+
+COMPILE_ASSERT(sizeof(Uniform2ui) == 16, Sizeof_Uniform2ui_is_not_16);
+COMPILE_ASSERT(offsetof(Uniform2ui, header) == 0,
+               OffsetOf_Uniform2ui_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform2ui, location) == 4,
+               OffsetOf_Uniform2ui_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform2ui, x) == 8, OffsetOf_Uniform2ui_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform2ui, y) == 12, OffsetOf_Uniform2ui_y_not_12);
+
+struct Uniform2uivImmediate {
+  typedef Uniform2uivImmediate ValueType;
+  static const CommandId kCmdId = kUniform2uivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 2 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLuint* _v) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLuint* _v) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _v);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+};
+
+COMPILE_ASSERT(sizeof(Uniform2uivImmediate) == 12,
+               Sizeof_Uniform2uivImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(Uniform2uivImmediate, header) == 0,
+               OffsetOf_Uniform2uivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform2uivImmediate, location) == 4,
+               OffsetOf_Uniform2uivImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform2uivImmediate, count) == 8,
+               OffsetOf_Uniform2uivImmediate_count_not_8);
 
 struct Uniform3f {
   typedef Uniform3f ValueType;
@@ -5876,6 +6041,93 @@ COMPILE_ASSERT(offsetof(Uniform3ivImmediate, location) == 4,
                OffsetOf_Uniform3ivImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(Uniform3ivImmediate, count) == 8,
                OffsetOf_Uniform3ivImmediate_count_not_8);
+
+struct Uniform3ui {
+  typedef Uniform3ui ValueType;
+  static const CommandId kCmdId = kUniform3ui;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _location, GLuint _x, GLuint _y, GLuint _z) {
+    SetHeader();
+    location = _location;
+    x = _x;
+    y = _y;
+    z = _z;
+  }
+
+  void* Set(void* cmd, GLint _location, GLuint _x, GLuint _y, GLuint _z) {
+    static_cast<ValueType*>(cmd)->Init(_location, _x, _y, _z);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+};
+
+COMPILE_ASSERT(sizeof(Uniform3ui) == 20, Sizeof_Uniform3ui_is_not_20);
+COMPILE_ASSERT(offsetof(Uniform3ui, header) == 0,
+               OffsetOf_Uniform3ui_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform3ui, location) == 4,
+               OffsetOf_Uniform3ui_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform3ui, x) == 8, OffsetOf_Uniform3ui_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform3ui, y) == 12, OffsetOf_Uniform3ui_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform3ui, z) == 16, OffsetOf_Uniform3ui_z_not_16);
+
+struct Uniform3uivImmediate {
+  typedef Uniform3uivImmediate ValueType;
+  static const CommandId kCmdId = kUniform3uivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 3 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLuint* _v) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLuint* _v) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _v);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+};
+
+COMPILE_ASSERT(sizeof(Uniform3uivImmediate) == 12,
+               Sizeof_Uniform3uivImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(Uniform3uivImmediate, header) == 0,
+               OffsetOf_Uniform3uivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform3uivImmediate, location) == 4,
+               OffsetOf_Uniform3uivImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform3uivImmediate, count) == 8,
+               OffsetOf_Uniform3uivImmediate_count_not_8);
 
 struct Uniform4f {
   typedef Uniform4f ValueType;
@@ -6067,6 +6319,101 @@ COMPILE_ASSERT(offsetof(Uniform4ivImmediate, location) == 4,
 COMPILE_ASSERT(offsetof(Uniform4ivImmediate, count) == 8,
                OffsetOf_Uniform4ivImmediate_count_not_8);
 
+struct Uniform4ui {
+  typedef Uniform4ui ValueType;
+  static const CommandId kCmdId = kUniform4ui;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _location, GLuint _x, GLuint _y, GLuint _z, GLuint _w) {
+    SetHeader();
+    location = _location;
+    x = _x;
+    y = _y;
+    z = _z;
+    w = _w;
+  }
+
+  void* Set(void* cmd,
+            GLint _location,
+            GLuint _x,
+            GLuint _y,
+            GLuint _z,
+            GLuint _w) {
+    static_cast<ValueType*>(cmd)->Init(_location, _x, _y, _z, _w);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  uint32_t w;
+};
+
+COMPILE_ASSERT(sizeof(Uniform4ui) == 24, Sizeof_Uniform4ui_is_not_24);
+COMPILE_ASSERT(offsetof(Uniform4ui, header) == 0,
+               OffsetOf_Uniform4ui_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform4ui, location) == 4,
+               OffsetOf_Uniform4ui_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform4ui, x) == 8, OffsetOf_Uniform4ui_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform4ui, y) == 12, OffsetOf_Uniform4ui_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform4ui, z) == 16, OffsetOf_Uniform4ui_z_not_16);
+COMPILE_ASSERT(offsetof(Uniform4ui, w) == 20, OffsetOf_Uniform4ui_w_not_20);
+
+struct Uniform4uivImmediate {
+  typedef Uniform4uivImmediate ValueType;
+  static const CommandId kCmdId = kUniform4uivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 4 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLuint* _v) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLuint* _v) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _v);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+};
+
+COMPILE_ASSERT(sizeof(Uniform4uivImmediate) == 12,
+               Sizeof_Uniform4uivImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(Uniform4uivImmediate, header) == 0,
+               OffsetOf_Uniform4uivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(Uniform4uivImmediate, location) == 4,
+               OffsetOf_Uniform4uivImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(Uniform4uivImmediate, count) == 8,
+               OffsetOf_Uniform4uivImmediate_count_not_8);
+
 struct UniformMatrix2fvImmediate {
   typedef UniformMatrix2fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix2fvImmediate;
@@ -6113,6 +6460,100 @@ COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, location) == 4,
                OffsetOf_UniformMatrix2fvImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, count) == 8,
                OffsetOf_UniformMatrix2fvImmediate_count_not_8);
+
+struct UniformMatrix2x3fvImmediate {
+  typedef UniformMatrix2x3fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix2x3fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix2x3fvImmediate) == 12,
+               Sizeof_UniformMatrix2x3fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix2x3fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix2x3fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix2x3fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix2x3fvImmediate_count_not_8);
+
+struct UniformMatrix2x4fvImmediate {
+  typedef UniformMatrix2x4fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix2x4fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix2x4fvImmediate) == 12,
+               Sizeof_UniformMatrix2x4fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix2x4fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix2x4fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix2x4fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix2x4fvImmediate_count_not_8);
 
 struct UniformMatrix3fvImmediate {
   typedef UniformMatrix3fvImmediate ValueType;
@@ -6161,6 +6602,100 @@ COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, location) == 4,
 COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, count) == 8,
                OffsetOf_UniformMatrix3fvImmediate_count_not_8);
 
+struct UniformMatrix3x2fvImmediate {
+  typedef UniformMatrix3x2fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix3x2fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix3x2fvImmediate) == 12,
+               Sizeof_UniformMatrix3x2fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix3x2fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix3x2fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix3x2fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix3x2fvImmediate_count_not_8);
+
+struct UniformMatrix3x4fvImmediate {
+  typedef UniformMatrix3x4fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix3x4fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix3x4fvImmediate) == 12,
+               Sizeof_UniformMatrix3x4fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix3x4fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix3x4fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix3x4fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix3x4fvImmediate_count_not_8);
+
 struct UniformMatrix4fvImmediate {
   typedef UniformMatrix4fvImmediate ValueType;
   static const CommandId kCmdId = kUniformMatrix4fvImmediate;
@@ -6207,6 +6742,100 @@ COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, location) == 4,
                OffsetOf_UniformMatrix4fvImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, count) == 8,
                OffsetOf_UniformMatrix4fvImmediate_count_not_8);
+
+struct UniformMatrix4x2fvImmediate {
+  typedef UniformMatrix4x2fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix4x2fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix4x2fvImmediate) == 12,
+               Sizeof_UniformMatrix4x2fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix4x2fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix4x2fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix4x2fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix4x2fvImmediate_count_not_8);
+
+struct UniformMatrix4x3fvImmediate {
+  typedef UniformMatrix4x3fvImmediate ValueType;
+  static const CommandId kCmdId = kUniformMatrix4x3fvImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
+    SetHeader(_count);
+    location = _location;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  int32_t count;
+  static const uint32_t transpose = false;
+};
+
+COMPILE_ASSERT(sizeof(UniformMatrix4x3fvImmediate) == 12,
+               Sizeof_UniformMatrix4x3fvImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, header) == 0,
+               OffsetOf_UniformMatrix4x3fvImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, location) == 4,
+               OffsetOf_UniformMatrix4x3fvImmediate_location_not_4);
+COMPILE_ASSERT(offsetof(UniformMatrix4x3fvImmediate, count) == 8,
+               OffsetOf_UniformMatrix4x3fvImmediate_count_not_8);
 
 struct UseProgram {
   typedef UseProgram ValueType;
@@ -6604,6 +7233,246 @@ COMPILE_ASSERT(offsetof(VertexAttrib4fvImmediate, header) == 0,
                OffsetOf_VertexAttrib4fvImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib4fvImmediate, indx) == 4,
                OffsetOf_VertexAttrib4fvImmediate_indx_not_4);
+
+struct VertexAttribI4i {
+  typedef VertexAttribI4i ValueType;
+  static const CommandId kCmdId = kVertexAttribI4i;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _indx, GLint _x, GLint _y, GLint _z, GLint _w) {
+    SetHeader();
+    indx = _indx;
+    x = _x;
+    y = _y;
+    z = _z;
+    w = _w;
+  }
+
+  void* Set(void* cmd, GLuint _indx, GLint _x, GLint _y, GLint _z, GLint _w) {
+    static_cast<ValueType*>(cmd)->Init(_indx, _x, _y, _z, _w);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t indx;
+  int32_t x;
+  int32_t y;
+  int32_t z;
+  int32_t w;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribI4i) == 24, Sizeof_VertexAttribI4i_is_not_24);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, header) == 0,
+               OffsetOf_VertexAttribI4i_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, indx) == 4,
+               OffsetOf_VertexAttribI4i_indx_not_4);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, x) == 8,
+               OffsetOf_VertexAttribI4i_x_not_8);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, y) == 12,
+               OffsetOf_VertexAttribI4i_y_not_12);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, z) == 16,
+               OffsetOf_VertexAttribI4i_z_not_16);
+COMPILE_ASSERT(offsetof(VertexAttribI4i, w) == 20,
+               OffsetOf_VertexAttribI4i_w_not_20);
+
+struct VertexAttribI4ivImmediate {
+  typedef VertexAttribI4ivImmediate ValueType;
+  static const CommandId kCmdId = kVertexAttribI4ivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLint) * 4);  // NOLINT
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize());  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _indx, const GLint* _values) {
+    SetHeader();
+    indx = _indx;
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
+  }
+
+  void* Set(void* cmd, GLuint _indx, const GLint* _values) {
+    static_cast<ValueType*>(cmd)->Init(_indx, _values);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t indx;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribI4ivImmediate) == 8,
+               Sizeof_VertexAttribI4ivImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(VertexAttribI4ivImmediate, header) == 0,
+               OffsetOf_VertexAttribI4ivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribI4ivImmediate, indx) == 4,
+               OffsetOf_VertexAttribI4ivImmediate_indx_not_4);
+
+struct VertexAttribI4ui {
+  typedef VertexAttribI4ui ValueType;
+  static const CommandId kCmdId = kVertexAttribI4ui;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _indx, GLuint _x, GLuint _y, GLuint _z, GLuint _w) {
+    SetHeader();
+    indx = _indx;
+    x = _x;
+    y = _y;
+    z = _z;
+    w = _w;
+  }
+
+  void* Set(void* cmd,
+            GLuint _indx,
+            GLuint _x,
+            GLuint _y,
+            GLuint _z,
+            GLuint _w) {
+    static_cast<ValueType*>(cmd)->Init(_indx, _x, _y, _z, _w);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t indx;
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  uint32_t w;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribI4ui) == 24,
+               Sizeof_VertexAttribI4ui_is_not_24);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, header) == 0,
+               OffsetOf_VertexAttribI4ui_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, indx) == 4,
+               OffsetOf_VertexAttribI4ui_indx_not_4);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, x) == 8,
+               OffsetOf_VertexAttribI4ui_x_not_8);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, y) == 12,
+               OffsetOf_VertexAttribI4ui_y_not_12);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, z) == 16,
+               OffsetOf_VertexAttribI4ui_z_not_16);
+COMPILE_ASSERT(offsetof(VertexAttribI4ui, w) == 20,
+               OffsetOf_VertexAttribI4ui_w_not_20);
+
+struct VertexAttribI4uivImmediate {
+  typedef VertexAttribI4uivImmediate ValueType;
+  static const CommandId kCmdId = kVertexAttribI4uivImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLuint) * 4);  // NOLINT
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize());  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _indx, const GLuint* _values) {
+    SetHeader();
+    indx = _indx;
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
+  }
+
+  void* Set(void* cmd, GLuint _indx, const GLuint* _values) {
+    static_cast<ValueType*>(cmd)->Init(_indx, _values);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t indx;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribI4uivImmediate) == 8,
+               Sizeof_VertexAttribI4uivImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(VertexAttribI4uivImmediate, header) == 0,
+               OffsetOf_VertexAttribI4uivImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribI4uivImmediate, indx) == 4,
+               OffsetOf_VertexAttribI4uivImmediate_indx_not_4);
+
+struct VertexAttribIPointer {
+  typedef VertexAttribIPointer ValueType;
+  static const CommandId kCmdId = kVertexAttribIPointer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _indx,
+            GLint _size,
+            GLenum _type,
+            GLsizei _stride,
+            GLuint _offset) {
+    SetHeader();
+    indx = _indx;
+    size = _size;
+    type = _type;
+    stride = _stride;
+    offset = _offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _indx,
+            GLint _size,
+            GLenum _type,
+            GLsizei _stride,
+            GLuint _offset) {
+    static_cast<ValueType*>(cmd)->Init(_indx, _size, _type, _stride, _offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t indx;
+  int32_t size;
+  uint32_t type;
+  int32_t stride;
+  uint32_t offset;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribIPointer) == 24,
+               Sizeof_VertexAttribIPointer_is_not_24);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, header) == 0,
+               OffsetOf_VertexAttribIPointer_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, indx) == 4,
+               OffsetOf_VertexAttribIPointer_indx_not_4);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, size) == 8,
+               OffsetOf_VertexAttribIPointer_size_not_8);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, type) == 12,
+               OffsetOf_VertexAttribIPointer_type_not_12);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, stride) == 16,
+               OffsetOf_VertexAttribIPointer_stride_not_16);
+COMPILE_ASSERT(offsetof(VertexAttribIPointer, offset) == 20,
+               OffsetOf_VertexAttribIPointer_offset_not_20);
 
 struct VertexAttribPointer {
   typedef VertexAttribPointer ValueType;

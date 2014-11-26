@@ -1717,6 +1717,40 @@ TEST_F(GLES2FormatTest, Uniform1ivImmediate) {
   // TODO(gman): Check that data was inserted;
 }
 
+TEST_F(GLES2FormatTest, Uniform1ui) {
+  cmds::Uniform1ui& cmd = *GetBufferAs<cmds::Uniform1ui>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLuint>(12));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform1ui::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.location);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.x);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, Uniform1uivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+  };
+  cmds::Uniform1uivImmediate& cmd = *GetBufferAs<cmds::Uniform1uivImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLuint) * 1;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform1uivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
 TEST_F(GLES2FormatTest, Uniform2f) {
   cmds::Uniform2f& cmd = *GetBufferAs<cmds::Uniform2f>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11),
@@ -1780,6 +1814,43 @@ TEST_F(GLES2FormatTest, Uniform2ivImmediate) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform2ivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, Uniform2ui) {
+  cmds::Uniform2ui& cmd = *GetBufferAs<cmds::Uniform2ui>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform2ui::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.location);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.x);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.y);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, Uniform2uivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::Uniform2uivImmediate& cmd = *GetBufferAs<cmds::Uniform2uivImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLuint) * 2;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform2uivImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
@@ -1859,6 +1930,47 @@ TEST_F(GLES2FormatTest, Uniform3ivImmediate) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform3ivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, Uniform3ui) {
+  cmds::Uniform3ui& cmd = *GetBufferAs<cmds::Uniform3ui>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLuint>(12),
+              static_cast<GLuint>(13), static_cast<GLuint>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform3ui::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.location);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.x);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.y);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.z);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, Uniform3uivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 5),
+  };
+  cmds::Uniform3uivImmediate& cmd = *GetBufferAs<cmds::Uniform3uivImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLuint) * 3;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform3uivImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
@@ -1954,6 +2066,50 @@ TEST_F(GLES2FormatTest, Uniform4ivImmediate) {
   // TODO(gman): Check that data was inserted;
 }
 
+TEST_F(GLES2FormatTest, Uniform4ui) {
+  cmds::Uniform4ui& cmd = *GetBufferAs<cmds::Uniform4ui>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13),
+                           static_cast<GLuint>(14), static_cast<GLuint>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform4ui::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.location);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.x);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.y);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.z);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.w);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, Uniform4uivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 7),
+  };
+  cmds::Uniform4uivImmediate& cmd = *GetBufferAs<cmds::Uniform4uivImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLuint) * 4;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::Uniform4uivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
 TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {
@@ -1974,6 +2130,76 @@ TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix2x3fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+  };
+  cmds::UniformMatrix2x3fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix2x3fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 6;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2x3fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix2x4fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
+  };
+  cmds::UniformMatrix2x4fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix2x4fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 8;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix2x4fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
@@ -2013,6 +2239,84 @@ TEST_F(GLES2FormatTest, UniformMatrix3fvImmediate) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix3x2fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+  };
+  cmds::UniformMatrix3x2fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix3x2fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 6;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3x2fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix3x4fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 16),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 17),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 18),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 19),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 20),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 21),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 22),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 23),
+  };
+  cmds::UniformMatrix3x4fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix3x4fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 12;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix3x4fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
@@ -2066,6 +2370,88 @@ TEST_F(GLES2FormatTest, UniformMatrix4fvImmediate) {
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
   EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix4x2fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
+  };
+  cmds::UniformMatrix4x2fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix4x2fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 8;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4x2fvImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(1), cmd.location);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, UniformMatrix4x3fvImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 16),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 17),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 18),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 19),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 20),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 21),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 22),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 23),
+  };
+  cmds::UniformMatrix4x3fvImmediate& cmd =
+      *GetBufferAs<cmds::UniformMatrix4x3fvImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLfloat) * 12;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UniformMatrix4x3fvImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(1), cmd.location);
@@ -2227,6 +2613,96 @@ TEST_F(GLES2FormatTest, VertexAttrib4fvImmediate) {
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
   // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, VertexAttribI4i) {
+  cmds::VertexAttribI4i& cmd = *GetBufferAs<cmds::VertexAttribI4i>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLint>(12), static_cast<GLint>(13),
+                           static_cast<GLint>(14), static_cast<GLint>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::VertexAttribI4i::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.y);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.z);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.w);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, VertexAttribI4ivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::VertexAttribI4ivImmediate& cmd =
+      *GetBufferAs<cmds::VertexAttribI4ivImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::VertexAttribI4ivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, VertexAttribI4ui) {
+  cmds::VertexAttribI4ui& cmd = *GetBufferAs<cmds::VertexAttribI4ui>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLuint>(12), static_cast<GLuint>(13),
+                           static_cast<GLuint>(14), static_cast<GLuint>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::VertexAttribI4ui::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.x);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.y);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.z);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.w);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, VertexAttribI4uivImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLuint data[] = {
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLuint>(kSomeBaseValueToTestWith + 3),
+  };
+  cmds::VertexAttribI4uivImmediate& cmd =
+      *GetBufferAs<cmds::VertexAttribI4uivImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::VertexAttribI4uivImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, VertexAttribIPointer) {
+  cmds::VertexAttribIPointer& cmd = *GetBufferAs<cmds::VertexAttribIPointer>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLint>(12), static_cast<GLenum>(13),
+                           static_cast<GLsizei>(14), static_cast<GLuint>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::VertexAttribIPointer::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.size);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.type);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.stride);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
 TEST_F(GLES2FormatTest, VertexAttribPointer) {

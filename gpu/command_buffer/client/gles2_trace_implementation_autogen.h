@@ -277,14 +277,20 @@ void Uniform1f(GLint location, GLfloat x) override;
 void Uniform1fv(GLint location, GLsizei count, const GLfloat* v) override;
 void Uniform1i(GLint location, GLint x) override;
 void Uniform1iv(GLint location, GLsizei count, const GLint* v) override;
+void Uniform1ui(GLint location, GLuint x) override;
+void Uniform1uiv(GLint location, GLsizei count, const GLuint* v) override;
 void Uniform2f(GLint location, GLfloat x, GLfloat y) override;
 void Uniform2fv(GLint location, GLsizei count, const GLfloat* v) override;
 void Uniform2i(GLint location, GLint x, GLint y) override;
 void Uniform2iv(GLint location, GLsizei count, const GLint* v) override;
+void Uniform2ui(GLint location, GLuint x, GLuint y) override;
+void Uniform2uiv(GLint location, GLsizei count, const GLuint* v) override;
 void Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) override;
 void Uniform3fv(GLint location, GLsizei count, const GLfloat* v) override;
 void Uniform3i(GLint location, GLint x, GLint y, GLint z) override;
 void Uniform3iv(GLint location, GLsizei count, const GLint* v) override;
+void Uniform3ui(GLint location, GLuint x, GLuint y, GLuint z) override;
+void Uniform3uiv(GLint location, GLsizei count, const GLuint* v) override;
 void Uniform4f(GLint location,
                GLfloat x,
                GLfloat y,
@@ -293,18 +299,48 @@ void Uniform4f(GLint location,
 void Uniform4fv(GLint location, GLsizei count, const GLfloat* v) override;
 void Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) override;
 void Uniform4iv(GLint location, GLsizei count, const GLint* v) override;
+void Uniform4ui(GLint location,
+                GLuint x,
+                GLuint y,
+                GLuint z,
+                GLuint w) override;
+void Uniform4uiv(GLint location, GLsizei count, const GLuint* v) override;
 void UniformMatrix2fv(GLint location,
                       GLsizei count,
                       GLboolean transpose,
                       const GLfloat* value) override;
+void UniformMatrix2x3fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
+void UniformMatrix2x4fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
 void UniformMatrix3fv(GLint location,
                       GLsizei count,
                       GLboolean transpose,
                       const GLfloat* value) override;
+void UniformMatrix3x2fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
+void UniformMatrix3x4fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
 void UniformMatrix4fv(GLint location,
                       GLsizei count,
                       GLboolean transpose,
                       const GLfloat* value) override;
+void UniformMatrix4x2fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
+void UniformMatrix4x3fv(GLint location,
+                        GLsizei count,
+                        GLboolean transpose,
+                        const GLfloat* value) override;
 void UseProgram(GLuint program) override;
 void ValidateProgram(GLuint program) override;
 void VertexAttrib1f(GLuint indx, GLfloat x) override;
@@ -319,6 +355,19 @@ void VertexAttrib4f(GLuint indx,
                     GLfloat z,
                     GLfloat w) override;
 void VertexAttrib4fv(GLuint indx, const GLfloat* values) override;
+void VertexAttribI4i(GLuint indx, GLint x, GLint y, GLint z, GLint w) override;
+void VertexAttribI4iv(GLuint indx, const GLint* values) override;
+void VertexAttribI4ui(GLuint indx,
+                      GLuint x,
+                      GLuint y,
+                      GLuint z,
+                      GLuint w) override;
+void VertexAttribI4uiv(GLuint indx, const GLuint* values) override;
+void VertexAttribIPointer(GLuint indx,
+                          GLint size,
+                          GLenum type,
+                          GLsizei stride,
+                          const void* ptr) override;
 void VertexAttribPointer(GLuint indx,
                          GLint size,
                          GLenum type,
