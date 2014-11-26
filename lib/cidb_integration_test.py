@@ -332,7 +332,7 @@ class DataSeries0Test(CIDBIntegrationTest):
 
 
   def simulate_builds(self, db, metadatas):
-    """Simulate a serires of Commit Queue master and slave builds.
+    """Simulate a series of Commit Queue master and slave builds.
 
     This method use the metadata objects in |metadatas| to simulate those
     builds insertions and updates to the cidb. All metadatas encountered
@@ -534,10 +534,13 @@ def _SimulateCQBuildFinish(db, metadata, build_id):
   db.UpdateMetadata(build_id, metadata)
 
   status = metadata_dict['status']['status']
-
   status = _TranslateStatus(status)
+  # The build summary reported by a real CQ run is more complicated -- it is
+  # computed from slave summaries by a master. For sanity checking, we just
+  # insert the current builer's summary.
+  summary = metadata_dict['status'].get('reason', None)
 
-  db.FinishBuild(build_id, status)
+  db.FinishBuild(build_id, status, summary)
 
 
 # TODO(akeshet): Allow command line args to specify alternate CIDB instance

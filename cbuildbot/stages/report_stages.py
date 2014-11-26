@@ -550,14 +550,19 @@ class ReportStage(generic_stages.BuilderStage,
         db.FinishChildConfig(build_id, child_metadata['name'],
                              translateStatus(child_metadata['status']))
 
-      # TODO(akeshet): Consider uploading the status pickle to the database,
-      # (by specifying that argument to FinishBuild), or come up with a
-      # pickle-free mechanism to describe failure details in database.
+      # TODO(pprabhu): After BuildData and CBuildbotMetdata are merged, remove
+      # this extra temporary object creation.
+      # XXX:HACK We're creating a BuildData with an empty URL. Don't try to
+      # MarkGathered this object.
+      build_data = metadata_lib.BuildData("",
+                                          self._run.attrs.metadata.GetDict())
       # TODO(akeshet): Find a clearer way to get the "primary upload url" for
       # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
       # Today it seems that element 0 of its return list is the primary upload
       # url, but there is no guarantee or unit test coverage of that.
-      db.FinishBuild(build_id, status=status_for_db, metadata_url=metadata_url)
+      db.FinishBuild(build_id, status=status_for_db,
+                     summary=build_data.failure_message,
+                     metadata_url=metadata_url)
 
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):

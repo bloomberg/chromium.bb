@@ -674,9 +674,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         update_dict)
 
 
-  @minimum_schema(11)
-  def FinishBuild(self, build_id, status=None, status_pickle=None,
-                  metadata_url=None):
+  @minimum_schema(25)
+  def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None):
     """Update the given build row, marking it as finished.
 
     This should be called once per build, as the last update to the build.
@@ -686,7 +685,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       build_id: id of row to update.
       status: Final build status, one of
               constants.BUILDER_COMPLETED_STATUSES.
-      status_pickle: Pickled manifest_version.BuilderStatus.
+      summary: A summary of the build (failures) collected from all slaves.
       metadata_url: google storage url to metadata.json file for this build,
                     e.g. ('gs://chromeos-image-archive/master-paladin/'
                           'R39-6225.0.0-rc1/metadata.json')
@@ -696,7 +695,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     current_timestamp = sqlalchemy.func.current_timestamp()
     self._Update('buildTable', build_id, {'finish_time': current_timestamp,
                                           'status': status,
-                                          'status_pickle': status_pickle,
+                                          'summary': summary,
                                           'metadata_url': metadata_url,
                                           'final': True})
 
