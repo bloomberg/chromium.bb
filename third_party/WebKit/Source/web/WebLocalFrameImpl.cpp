@@ -1868,6 +1868,11 @@ void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)
     m_autofillClient = autofillClient;
 }
 
+WebAutofillClient* WebLocalFrameImpl::autofillClient()
+{
+    return m_autofillClient;
+}
+
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
 {
     ASSERT(frame());

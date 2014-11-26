@@ -44,6 +44,7 @@ public:
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) = 0;
 
     virtual void setAutofillClient(WebAutofillClient*) = 0;
+    virtual WebAutofillClient* autofillClient() = 0;
 
 
     // Navigation Ping --------------------------------------------------------
