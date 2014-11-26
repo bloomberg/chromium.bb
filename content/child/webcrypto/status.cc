@@ -146,10 +146,8 @@ Status Status::ErrorUnsupportedExportKeyFormat() {
 }
 
 Status Status::ErrorImportAesKeyLength() {
-  // TODO(eroman): Mention only 128 and 256 bits since 192 is unsupported.
-  // http://crbug.com/425670
   return Status(blink::WebCryptoErrorTypeData,
-                "AES key data must be 128, 192 or 256 bits");
+                "AES key data must be 128 or 256 bits");
 }
 
 Status Status::ErrorGenerateAesKeyLength() {

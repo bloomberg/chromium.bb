@@ -75,7 +75,7 @@
   {
     "key_format": "raw",
     "key": "31",
-    "import_error": "DataError: AES key data must be 128, 192 or 256 bits"
+    "import_error": "DataError: AES key data must be 128 or 256 bits"
   },
 
   // Fail importing because the wrong format was specified
@@ -272,7 +272,7 @@
       "kty": "oct",
       "k": ""
     },
-    "import_error": "DataError: AES key data must be 128, 192 or 256 bits"
+    "import_error": "DataError: AES key data must be 128 or 256 bits"
   },
 
   // JWK: empty k (with alg specified)
