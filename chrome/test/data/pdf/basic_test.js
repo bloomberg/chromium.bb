@@ -30,7 +30,7 @@ var tests = [
    */
   function testPluginElement() {
     var plugin = document.getElementById('plugin');
-    chrome.test.assertEq('object', plugin.localName);
+    chrome.test.assertEq('embed', plugin.localName);
 
     chrome.test.assertTrue(
         plugin.getAttribute('src').indexOf('/pdf/test.pdf') != -1);

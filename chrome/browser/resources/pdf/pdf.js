@@ -60,7 +60,7 @@ function PDFViewer(streamDetails) {
   // element is sized to fill the entire window and is set to be fixed
   // positioning, acting as a viewport. The plugin renders into this viewport
   // according to the scroll position of the window.
-  this.plugin_ = document.createElement('object');
+  this.plugin_ = document.createElement('embed');
   // NOTE: The plugin's 'id' field must be set to 'plugin' since
   // chrome/renderer/printing/print_web_view_helper.cc actually references it.
   this.plugin_.id = 'plugin';
