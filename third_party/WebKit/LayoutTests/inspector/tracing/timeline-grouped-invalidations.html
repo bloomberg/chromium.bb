@@ -30,7 +30,7 @@ function test()
         for (var i = 0; i < 8; i++) {
             InspectorTest.assertEquals(invalidations[i].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
             InspectorTest.assertEquals(invalidations[i].nodeName, "DIV class='testElement'");
-            InspectorTest.assertEquals(invalidations[i].cause.reason, "StyleSheetChange");
+            InspectorTest.assertEquals(invalidations[i].cause.reason, "Inline CSS style declaration was mutated");
             InspectorTest.assertEquals(invalidations[i].cause.stackTrace.length, 1);
         }
 
@@ -42,9 +42,9 @@ function test()
 
         InspectorTest.assertEquals(invalidationGroups.length, 2);
         InspectorTest.assertEquals(invalidationGroups[0].textContent,
-            "StyleSheetChange for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
+            "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
         InspectorTest.assertEquals(invalidationGroups[1].textContent,
-            "StyleSheetChange for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
+            "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
         InspectorTest.completeTest();
     });
 }

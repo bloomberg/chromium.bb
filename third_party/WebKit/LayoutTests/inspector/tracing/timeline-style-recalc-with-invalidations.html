@@ -63,11 +63,11 @@ function test()
                 InspectorTest.assertEquals(invalidations.length, 2);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "DIV id='testElementOne'");
-                InspectorTest.assertEquals(invalidations[0].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[0].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(invalidations[0].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElementTwo'");
-                InspectorTest.assertEquals(invalidations[1].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[1].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(invalidations[1].cause.stackTrace.length, 1);
                 next();
             });
@@ -81,7 +81,7 @@ function test()
                 InspectorTest.assertEquals(firstInvalidations.length, 1);
                 InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV id='testElementOne'");
-                InspectorTest.assertEquals(firstInvalidations[0].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(firstInvalidations[0].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(firstInvalidations[0].cause.stackTrace.length, 1);
 
                 var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 1);
@@ -89,11 +89,11 @@ function test()
                 InspectorTest.assertEquals(secondInvalidations.length, 2);
                 InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV id='testElementOne'");
-                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(secondInvalidations[0].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV id='testElementTwo'");
-                InspectorTest.assertEquals(secondInvalidations[1].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(secondInvalidations[1].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(secondInvalidations[1].cause.stackTrace.length, 1);
 
                 var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 2);
@@ -101,15 +101,15 @@ function test()
                 InspectorTest.assertEquals(thirdInvalidations.length, 3);
                 InspectorTest.assertEquals(thirdInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(thirdInvalidations[0].nodeName, "DIV id='testElementOne'");
-                InspectorTest.assertEquals(thirdInvalidations[0].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(thirdInvalidations[0].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(thirdInvalidations[0].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(thirdInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(thirdInvalidations[1].nodeName, "DIV id='testElementTwo'");
-                InspectorTest.assertEquals(thirdInvalidations[1].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(thirdInvalidations[1].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(thirdInvalidations[1].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(thirdInvalidations[2].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(thirdInvalidations[2].nodeName, "DIV id='testElementThree'");
-                InspectorTest.assertEquals(thirdInvalidations[2].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(thirdInvalidations[2].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(thirdInvalidations[2].cause.stackTrace.length, 1);
                 next();
             });
@@ -124,11 +124,11 @@ function test()
                 InspectorTest.assertEquals(invalidations.length, 2);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
-                InspectorTest.assertEquals(invalidations[0].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[0].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(invalidations[0].cause.stackTrace.length, 1);
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV");
-                InspectorTest.assertEquals(invalidations[1].cause.reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[1].cause.reason, "Inline CSS style declaration was mutated");
                 InspectorTest.assertGreaterOrEqual(invalidations[1].cause.stackTrace.length, 1);
                 next();
             });

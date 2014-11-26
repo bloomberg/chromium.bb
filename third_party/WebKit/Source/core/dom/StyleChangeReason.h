@@ -27,6 +27,7 @@ extern const char FontSizeChange[];
 extern const char Fonts[];
 extern const char FullScreen[];
 extern const char Inline[];
+extern const char InlineCSSStyleMutated[];
 extern const char Inspector[];
 extern const char Language[];
 extern const char LinkColorChange[];

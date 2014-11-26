@@ -23,6 +23,7 @@ const char FontSizeChange[] = "FontSizeChange";
 const char Fonts[] = "Fonts";
 const char FullScreen[] = "FullScreen";
 const char Inline[] = "Inline";
+const char InlineCSSStyleMutated[] = "Inline CSS style declaration was mutated";
 const char Inspector[] = "Inspector";
 const char Language[] = "Language";
 const char LinkColorChange[] = "LinkColorChange";
