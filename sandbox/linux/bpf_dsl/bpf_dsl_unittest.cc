@@ -15,10 +15,12 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define CASES SANDBOX_BPF_DSL_CASES
 
@@ -326,6 +328,48 @@ BPF_TEST_C(BPFDSL, SwitchTest, SwitchPolicy) {
   ASSERT_SYSCALL_RESULT(-EPERM, fcntl, sock_fd.get(), F_SETFL, O_RDONLY);
 
   ASSERT_SYSCALL_RESULT(-EACCES, fcntl, sock_fd.get(), F_DUPFD, 0);
+}
+
+static intptr_t DummyTrap(const struct arch_seccomp_data& data, void* aux) {
+  return 0;
+}
+
+TEST(BPFDSL, IsAllowDeny) {
+  ResultExpr allow = Allow();
+  EXPECT_TRUE(allow->IsAllow());
+  EXPECT_FALSE(allow->IsDeny());
+
+  ResultExpr error = Error(ENOENT);
+  EXPECT_FALSE(error->IsAllow());
+  EXPECT_TRUE(error->IsDeny());
+
+  ResultExpr trace = Trace(42);
+  EXPECT_FALSE(trace->IsAllow());
+  EXPECT_FALSE(trace->IsDeny());
+
+  ResultExpr trap = Trap(DummyTrap, nullptr);
+  EXPECT_FALSE(trap->IsAllow());
+  EXPECT_TRUE(trap->IsDeny());
+
+  const Arg<int> arg(0);
+  ResultExpr maybe = If(arg == 0, Allow()).Else(Error(EPERM));
+  EXPECT_FALSE(maybe->IsAllow());
+  EXPECT_FALSE(maybe->IsDeny());
+}
+
+TEST(BPFDSL, HasUnsafeTraps) {
+  ResultExpr allow = Allow();
+  EXPECT_FALSE(allow->HasUnsafeTraps());
+
+  ResultExpr safe = Trap(DummyTrap, nullptr);
+  EXPECT_FALSE(safe->HasUnsafeTraps());
+
+  ResultExpr unsafe = UnsafeTrap(DummyTrap, nullptr);
+  EXPECT_TRUE(unsafe->HasUnsafeTraps());
+
+  const Arg<int> arg(0);
+  ResultExpr maybe = If(arg == 0, allow).Else(unsafe);
+  EXPECT_TRUE(maybe->HasUnsafeTraps());
 }
 
 }  // namespace

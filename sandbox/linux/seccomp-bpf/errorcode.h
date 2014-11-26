@@ -21,6 +21,10 @@ class PolicyCompiler;
 // All of the commonly used values are stored in the "err_" field. So, code
 // that is using the ErrorCode class typically operates on a single 32bit
 // field.
+//
+// TODO(mdempsky): Nuke from orbit. The only reason this class still
+// exists is for Verifier, which will eventually be replaced by a true
+// BPF symbolic evaluator and constraint solver.
 class SANDBOX_EXPORT ErrorCode {
  public:
   enum {

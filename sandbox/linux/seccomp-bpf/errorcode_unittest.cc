@@ -43,7 +43,7 @@ SANDBOX_TEST(ErrorCode, ErrnoConstructor) {
 
   DummyPolicy dummy_policy;
   bpf_dsl::PolicyCompiler compiler(&dummy_policy, Trap::Registry());
-  ErrorCode e3 = compiler.Trap(NULL, NULL);
+  ErrorCode e3 = compiler.Trap(NULL, NULL, true /* safe */);
   SANDBOX_ASSERT((e3.err() & SECCOMP_RET_ACTION)  == SECCOMP_RET_TRAP);
 
   uint16_t data = 0xdead;
@@ -61,12 +61,12 @@ SANDBOX_DEATH_TEST(ErrorCode,
 SANDBOX_TEST(ErrorCode, Trap) {
   DummyPolicy dummy_policy;
   bpf_dsl::PolicyCompiler compiler(&dummy_policy, Trap::Registry());
-  ErrorCode e0 = compiler.Trap(NULL, "a");
-  ErrorCode e1 = compiler.Trap(NULL, "b");
+  ErrorCode e0 = compiler.Trap(NULL, "a", true /* safe */);
+  ErrorCode e1 = compiler.Trap(NULL, "b", true /* safe */);
   SANDBOX_ASSERT((e0.err() & SECCOMP_RET_DATA) + 1 ==
                  (e1.err() & SECCOMP_RET_DATA));
 
-  ErrorCode e2 = compiler.Trap(NULL, "a");
+  ErrorCode e2 = compiler.Trap(NULL, "a", true /* safe */);
   SANDBOX_ASSERT((e0.err() & SECCOMP_RET_DATA) ==
                  (e2.err() & SECCOMP_RET_DATA));
 }
@@ -83,9 +83,9 @@ SANDBOX_TEST(ErrorCode, Equals) {
 
   DummyPolicy dummy_policy;
   bpf_dsl::PolicyCompiler compiler(&dummy_policy, Trap::Registry());
-  ErrorCode e4 = compiler.Trap(NULL, "a");
-  ErrorCode e5 = compiler.Trap(NULL, "b");
-  ErrorCode e6 = compiler.Trap(NULL, "a");
+  ErrorCode e4 = compiler.Trap(NULL, "a", true /* safe */);
+  ErrorCode e5 = compiler.Trap(NULL, "b", true /* safe */);
+  ErrorCode e6 = compiler.Trap(NULL, "a", true /* safe */);
   SANDBOX_ASSERT(!e1.Equals(e4));
   SANDBOX_ASSERT(!e3.Equals(e4));
   SANDBOX_ASSERT(!e5.Equals(e4));
@@ -105,9 +105,9 @@ SANDBOX_TEST(ErrorCode, LessThan) {
 
   DummyPolicy dummy_policy;
   bpf_dsl::PolicyCompiler compiler(&dummy_policy, Trap::Registry());
-  ErrorCode e4 = compiler.Trap(NULL, "a");
-  ErrorCode e5 = compiler.Trap(NULL, "b");
-  ErrorCode e6 = compiler.Trap(NULL, "a");
+  ErrorCode e4 = compiler.Trap(NULL, "a", true /* safe */);
+  ErrorCode e5 = compiler.Trap(NULL, "b", true /* safe */);
+  ErrorCode e6 = compiler.Trap(NULL, "a", true /* safe */);
   SANDBOX_ASSERT(e1.LessThan(e4));
   SANDBOX_ASSERT(e3.LessThan(e4));
   SANDBOX_ASSERT(e4.LessThan(e5));

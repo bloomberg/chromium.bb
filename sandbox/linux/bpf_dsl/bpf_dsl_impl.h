@@ -47,6 +47,12 @@ class ResultExprImpl : public base::RefCounted<ResultExprImpl> {
   // contains an unsafe trap expression.
   virtual bool HasUnsafeTraps() const;
 
+  // IsAllow returns whether the result expression is an "allow" result.
+  virtual bool IsAllow() const;
+
+  // IsAllow returns whether the result expression is a "deny" result.
+  virtual bool IsDeny() const;
+
  protected:
   ResultExprImpl() {}
   virtual ~ResultExprImpl() {}

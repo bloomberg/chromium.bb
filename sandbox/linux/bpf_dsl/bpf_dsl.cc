@@ -10,11 +10,16 @@
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
+#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 
 namespace sandbox {
 namespace bpf_dsl {
 namespace {
+
+intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
+  SANDBOX_DIE(static_cast<char*>(aux));
+}
 
 class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
@@ -23,6 +28,8 @@ class AllowResultExprImpl : public internal::ResultExprImpl {
   ErrorCode Compile(PolicyCompiler* pc) const override {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
+
+  bool IsAllow() const override { return true; }
 
  private:
   ~AllowResultExprImpl() override {}
@@ -40,28 +47,14 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
     return pc->Error(err_);
   }
 
+  bool IsDeny() const override { return true; }
+
  private:
   ~ErrorResultExprImpl() override {}
 
   int err_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorResultExprImpl);
-};
-
-class KillResultExprImpl : public internal::ResultExprImpl {
- public:
-  explicit KillResultExprImpl(const char* msg) : msg_(msg) { DCHECK(msg_); }
-
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return pc->Kill(msg_);
-  }
-
- private:
-  ~KillResultExprImpl() override {}
-
-  const char* msg_;
-
-  DISALLOW_COPY_AND_ASSIGN(KillResultExprImpl);
 };
 
 class TraceResultExprImpl : public internal::ResultExprImpl {
@@ -82,44 +75,27 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
 
 class TrapResultExprImpl : public internal::ResultExprImpl {
  public:
-  TrapResultExprImpl(TrapRegistry::TrapFnc func, const void* arg)
-      : func_(func), arg_(arg) {
+  TrapResultExprImpl(TrapRegistry::TrapFnc func, const void* arg, bool safe)
+      : func_(func), arg_(arg), safe_(safe) {
     DCHECK(func_);
   }
 
   ErrorCode Compile(PolicyCompiler* pc) const override {
-    return pc->Trap(func_, arg_);
+    return pc->Trap(func_, arg_, safe_);
   }
+
+  bool HasUnsafeTraps() const override { return safe_ == false; }
+
+  bool IsDeny() const override { return true; }
 
  private:
   ~TrapResultExprImpl() override {}
 
   TrapRegistry::TrapFnc func_;
   const void* arg_;
+  bool safe_;
 
   DISALLOW_COPY_AND_ASSIGN(TrapResultExprImpl);
-};
-
-class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
- public:
-  UnsafeTrapResultExprImpl(TrapRegistry::TrapFnc func, const void* arg)
-      : func_(func), arg_(arg) {
-    DCHECK(func_);
-  }
-
-  ErrorCode Compile(PolicyCompiler* pc) const override {
-    return pc->UnsafeTrap(func_, arg_);
-  }
-
-  bool HasUnsafeTraps() const override { return true; }
-
- private:
-  ~UnsafeTrapResultExprImpl() override {}
-
-  TrapRegistry::TrapFnc func_;
-  const void* arg_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnsafeTrapResultExprImpl);
 };
 
 class IfThenResultExprImpl : public internal::ResultExprImpl {
@@ -258,6 +234,14 @@ bool ResultExprImpl::HasUnsafeTraps() const {
   return false;
 }
 
+bool ResultExprImpl::IsAllow() const {
+  return false;
+}
+
+bool ResultExprImpl::IsDeny() const {
+  return false;
+}
+
 uint64_t DefaultMask(size_t size) {
   switch (size) {
     case 4:
@@ -291,7 +275,7 @@ ResultExpr Error(int err) {
 }
 
 ResultExpr Kill(const char* msg) {
-  return ResultExpr(new const KillResultExprImpl(msg));
+  return Trap(BPFFailure, msg);
 }
 
 ResultExpr Trace(uint16_t aux) {
@@ -299,11 +283,13 @@ ResultExpr Trace(uint16_t aux) {
 }
 
 ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux) {
-  return ResultExpr(new const TrapResultExprImpl(trap_func, aux));
+  return ResultExpr(
+      new const TrapResultExprImpl(trap_func, aux, true /* safe */));
 }
 
 ResultExpr UnsafeTrap(TrapRegistry::TrapFnc trap_func, const void* aux) {
-  return ResultExpr(new const UnsafeTrapResultExprImpl(trap_func, aux));
+  return ResultExpr(
+      new const TrapResultExprImpl(trap_func, aux, false /* unsafe */));
 }
 
 BoolExpr BoolConst(bool value) {
