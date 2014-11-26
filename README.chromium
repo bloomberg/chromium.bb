@@ -245,3 +245,9 @@ This directory contains the source code of ICU 52.1 for C/C++
                      http://bugs.icu-project.org/trac/ticket/11370
                      http://bugs.icu-project.org/trac/ticket/11371
 
+13. Apply the patch for collator
+   - patches/col.patch
+   - No upstream bug filed because the upstream code was completely
+     rewritten during the ICU 53 cycle.
+
+

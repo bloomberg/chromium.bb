@@ -2259,6 +2259,9 @@ inline UChar getNextNormalizedChar(collIterate *data)
         if (data->pos + 1 == data->endp) {
             return *(data->pos ++);
         }
+        if (data->pos >= data->endp) {
+            return (UChar) -1; // return U+FFFF (non-char) to indicate an error
+        }
     }
     else {
         if (innormbuf) {
@@ -2821,7 +2824,13 @@ uint32_t ucol_prv_getSpecialCE(const UCollator *coll, UChar ch, uint32_t CE, col
                                 }
                             }
                         } else if (U16_IS_LEAD(schar)) {
-                            miss = U16_GET_SUPPLEMENTARY(schar, getNextNormalizedChar(source));
+                            UChar nextChar = getNextNormalizedChar(source);
+                            const UChar* prevPos = source->pos;
+                            if (U16_IS_TRAIL(nextChar)) {
+                                miss = U16_GET_SUPPLEMENTARY(schar, nextChar);
+                            } else if (prevPos < source->pos) {
+                                goBackOne(source);
+                            }
                         }
 
                         uint8_t sCC;
