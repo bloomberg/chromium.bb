@@ -838,13 +838,13 @@ void MemoryCache::dumpLRULists(bool includeLive) const
     int size = m_allResources.size();
     for (int i = size - 1; i >= 0; i--) {
         printf("\n\nList %d: ", i);
-        Resource* current = m_allResources[i].m_tail;
+        MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
-            Resource* prev = current->m_prevInAllResourcesList;
-            if (includeLive || !current->hasClients())
-                printf("(%.1fK, %.1fK, %uA, %dR, %d, %d); ", current->decodedSize() / 1024.0f, (current->encodedSize() + current->overheadSize()) / 1024.0f, current->accessCount(), current->hasClients(), current->isPurgeable(), current->wasPurged());
+            ResourcePtr<Resource> currentResource = current->m_resource;
+            if (includeLive || !currentResource->hasClients())
+                printf("(%.1fK, %.1fK, %uA, %dR, %d, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClients(), currentResource->isPurgeable(), currentResource->wasPurged());
 
-            current = prev;
+            current = current->m_previousInAllResourcesList;
         }
     }
 }
