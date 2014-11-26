@@ -57053,11 +57053,44 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="WindowsExitCode" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error"/>
-  <int value="3221225477" label="Access Violation"/>
-<!-- TODO(siggi): Add other values here at need. -->
-
+  <int value="-2147483645" label="0x80000003 - STATUS_BREAKPOINT"/>
+  <int value="-1073741819" label="0xC0000005 - STATUS_ACCESS_VIOLATION"/>
+  <int value="-1073740972" label="0xC0000354 - STATUS_DEBUGGER_INACTIVE"/>
+  <int value="-1073740791" label="0xC0000409 - STATUS_STACK_BUFFER_OVERRUN"/>
+  <int value="-1073740777"
+      label="0xC0000417 - STATUS_INVALID_CRUNTIME_PARAMETER"/>
+  <int value="-805306369" label="0xCFFFFFFF - Hung browser killed."/>
+  <int value="0" label="content::RESULT_CODE_NORMAL_EXIT"/>
+  <int value="1" label="content::RESULT_CODE_KILLED"/>
+  <int value="2" label="content::RESULT_CODE_HUNG"/>
+  <int value="3" label="content::RESULT_CODE_KILLED_BAD_MESSAGE"/>
+  <int value="4" label="chrome::RESULT_CODE_INVALID_CMDLINE_URL"/>
+  <int value="5" label="chrome::RESULT_CODE_BAD_PROCESS_TYPE"/>
+  <int value="6" label="chrome::RESULT_CODE_MISSING_DATA"/>
+  <int value="7" label="chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED"/>
+  <int value="8" label="chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS"/>
+  <int value="9" label="chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE"/>
+  <int value="10" label="chrome::RESULT_CODE_UNINSTALL_USER_CANCEL"/>
+  <int value="11" label="chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE"/>
+  <int value="12" label="chrome::RESULT_CODE_UNSUPPORTED_PARAM"/>
+  <int value="13" label="chrome::RESULT_CODE_IMPORTER_HUNG"/>
+  <int value="14" label="chrome::RESULT_CODE_RESPAWN_FAILED"/>
+  <int value="15" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP1"/>
+  <int value="16" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP2"/>
+  <int value="17" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP3"/>
+  <int value="18" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP4"/>
+  <int value="19" label="chrome::RESULT_CODE_NORMAL_EXIT_CANCEL"/>
+  <int value="20" label="chrome::RESULT_CODE_PROFILE_IN_USE"/>
+  <int value="21" label="chrome::RESULT_CODE_PACK_EXTENSION_ERROR"/>
+  <int value="22" label="chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR"/>
+  <int value="23" label="chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED"/>
+  <int value="24" label="chrome::RESULT_CODE_NOTUSED_1"/>
+  <int value="25" label="chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2"/>
+  <int value="26" label="chrome::RESULT_CODE_NOTUSED_2"/>
+  <int value="27" label="chrome::RESULT_CODE_EULA_REFUSED"/>
+  <int value="28" label="chrome::RESULT_CODE_SXS_MIGRATION_FAILED"/>
+  <int value="259" label="0x103 - STILL_ACTIVE."/>
+  <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>
 </enum>
 
 <enum name="WindowsVersion" type="int">
