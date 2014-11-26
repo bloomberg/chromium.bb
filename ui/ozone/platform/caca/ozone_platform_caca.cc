@@ -10,6 +10,7 @@
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/system_input_injector.h"
 
 namespace ui {
 
@@ -32,6 +33,9 @@ class OzonePlatformCaca : public OzonePlatform {
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return NULL;  // no GPU support
+  }
+  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+    return nullptr; // no input injection support.
   }
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,

@@ -184,6 +184,9 @@ void DispatchEventFromNativeUiEvent(const base::NativeEvent& native_event,
   if (native_ui_event->IsKeyEvent()) {
     ui::KeyEvent key_event(native_event);
     callback.Run(&key_event);
+  } else if (native_ui_event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent wheel_event(native_event);
+    callback.Run(&wheel_event);
   } else if (native_ui_event->IsMouseEvent()) {
     ui::MouseEvent mouse_event(native_event);
     callback.Run(&mouse_event);

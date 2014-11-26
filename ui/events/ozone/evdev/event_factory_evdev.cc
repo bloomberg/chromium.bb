@@ -18,6 +18,7 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/input_injector_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
@@ -183,6 +184,11 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
 }
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
+
+scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
+  return make_scoped_ptr(new InputInjectorEvdev(
+      &modifiers_, cursor_, &keyboard_, dispatch_callback_));
+}
 
 void EventFactoryEvdev::PostUiEvent(scoped_ptr<Event> event) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

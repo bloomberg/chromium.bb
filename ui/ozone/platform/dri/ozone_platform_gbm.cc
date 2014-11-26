@@ -94,6 +94,9 @@ class OzonePlatformGbm : public OzonePlatform {
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
+  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+    return event_factory_ozone_->CreateSystemInputInjector();
+  }
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {

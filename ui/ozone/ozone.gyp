@@ -44,6 +44,7 @@
         'public/surface_factory_ozone.h',
         'public/surface_ozone_canvas.h',
         'public/surface_ozone_egl.h',
+        'public/system_input_injector.h',
       ],
     },
     {

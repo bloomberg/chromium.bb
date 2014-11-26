@@ -16,6 +16,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/system_input_injector.h"
 
 namespace ui {
 
@@ -41,6 +42,9 @@ class OzonePlatformTest : public OzonePlatform {
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
+  }
+  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+    return nullptr; // no input injection support.
   }
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,

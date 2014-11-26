@@ -79,6 +79,8 @@
       'evdev/event_modifiers_evdev.cc',
       'evdev/event_modifiers_evdev.h',
       'evdev/events_ozone_evdev_export.h',
+      'evdev/input_injector_evdev.cc',
+      'evdev/input_injector_evdev.h',
       'evdev/keyboard_evdev.cc',
       'evdev/keyboard_evdev.h',
       'evdev/tablet_event_converter_evdev.cc',

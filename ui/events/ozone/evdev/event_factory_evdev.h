@@ -17,6 +17,7 @@
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/public/system_input_injector.h"
 
 namespace gfx {
 class PointF;
@@ -26,6 +27,7 @@ namespace ui {
 
 class CursorDelegateEvdev;
 class DeviceManager;
+class SystemInputInjector;
 
 #if defined(USE_EVDEV_GESTURES)
 class GesturePropertyProvider;
@@ -41,6 +43,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   void WarpCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location);
+
+  scoped_ptr<SystemInputInjector> CreateSystemInputInjector();
 
  protected:
   // DeviceEventObserver overrides:
