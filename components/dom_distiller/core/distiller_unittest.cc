@@ -41,10 +41,11 @@ namespace {
 const char kTitle[] = "Title";
 const char kContent[] = "Content";
 const char kURL[] = "http://a.com/";
-const size_t kTotalImages = 2;
+const size_t kTotalImages = 3;
 const char* kImageURLs[kTotalImages] = {"http://a.com/img1.jpg",
-                                        "http://a.com/img2.jpg"};
-const char* kImageData[kTotalImages] = {"abcde", "12345"};
+                                        "http://a.com/img2.jpg",
+                                        "./bad_url_should_fail"};
+const char* kImageData[kTotalImages] = {"abcde", "12345", "VWXYZ"};
 const char kDebugLog[] = "Debug Log";
 
 const string GetImageName(int page_num, int image_num) {
@@ -407,6 +408,7 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   vector<int> image_indices;
   image_indices.push_back(0);
   image_indices.push_back(1);
+  image_indices.push_back(2);
   scoped_ptr<base::Value> result =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
   distiller_.reset(

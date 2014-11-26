@@ -268,6 +268,7 @@ void DistillerImpl::OnPageDistillationFinished(
 void DistillerImpl::FetchImage(int page_num,
                                const std::string& image_id,
                                const std::string& image_url) {
+  if (!GURL(image_url).is_valid()) return;
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
   DistillerURLFetcher* fetcher =
