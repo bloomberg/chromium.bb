@@ -14,6 +14,7 @@ import tempfile
 
 import build.inputs
 import processor
+import error_filter
 
 
 class Checker(object):
@@ -66,6 +67,7 @@ class Checker(object):
     self._runner_jar = os.path.join(current_dir, "runner", "runner.jar")
     self._temp_files = []
     self._verbose = verbose
+    self._error_filter = error_filter.PromiseErrorFilter()
 
   def _clean_up(self):
     if not self._temp_files:
@@ -210,6 +212,11 @@ class Checker(object):
     (_, stderr) = runner_cmd.communicate()
 
     errors = stderr.strip().split("\n\n")
+
+    # Filter out false-positive promise chain errors.
+    # See https://github.com/google/closure-compiler/issues/715 for details.
+    errors = self._error_filter.filter(errors);
+
     self._debug("Summary: %s" % errors.pop())
 
     output = self._format_errors(map(self._fix_up_error, errors))

@@ -264,24 +264,21 @@ FileBrowserBackground.prototype.navigateToVolume_ =
     }
   };
 
-  /** @suppress {checkTypes} */
-  (function() {
-    VolumeManager.getInstance()
-        .then(getDeviceRoot)
-        .then(maybeNavigateToPath)
-        .then(
-            /** @param {!DirectoryEntry} entry */
-            function(entry) {
-              launchFileManager(
-                  {currentDirectoryURL: entry.toURL()},
-                  /* App ID */ undefined,
-                  LaunchType.FOCUS_SAME_OR_CREATE);
-            }.bind(this))
-                .catch(
-                    function(error) {
-                      console.error(error.stack || error);
-                    });
-  })();
+  VolumeManager.getInstance()
+      .then(getDeviceRoot)
+      .then(maybeNavigateToPath)
+      .then(
+          /** @param {!DirectoryEntry} entry */
+          function(entry) {
+            launchFileManager(
+                {currentDirectoryURL: entry.toURL()},
+                /* App ID */ undefined,
+                LaunchType.FOCUS_SAME_OR_CREATE);
+          })
+      .catch(
+          function(error) {
+            console.error(error.stack || error);
+          });
 };
 
 /**
