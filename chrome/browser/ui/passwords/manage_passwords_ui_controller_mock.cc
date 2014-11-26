@@ -14,6 +14,9 @@ ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
       saved_password_(false),
       never_saved_password_(false),
       choose_credential_(false) {
+  // Do not silently replace an existing ManagePasswordsUIController because it
+  // unregisters itself in WebContentsDestroyed().
+  EXPECT_FALSE(contents->GetUserData(UserDataKey()));
   contents->SetUserData(UserDataKey(), this);
 }
 

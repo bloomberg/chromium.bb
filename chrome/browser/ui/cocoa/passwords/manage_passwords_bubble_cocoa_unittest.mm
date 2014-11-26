@@ -34,27 +34,27 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
     // Create the WebContents.
     siteInstance_ = content::SiteInstance::Create(profile());
-    webContents_ = CreateWebContents();
-    browser()->tab_strip_model()->AppendWebContents(
-        webContents_, /*foreground=*/true);
+    test_web_contents_ = CreateWebContents();
 
     // Create the test UIController here so that it's bound to
-    // |test_web_contents_| and therefore accessible to the model.
+    // |test_web_contents_| and therefore accessible to the model. It should be
+    // done before AppendWebContents() so the real ManagePasswordsUIController
+    // isn't created.
     ManagePasswordsUIControllerMock* ui_controller =
-        new ManagePasswordsUIControllerMock(webContents_);
+        new ManagePasswordsUIControllerMock(test_web_contents_);
+    browser()->tab_strip_model()->AppendWebContents(
+        test_web_contents_, /*foreground=*/true);
     // Set the initial state.
     ui_controller->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
   }
 
-  content::WebContents* webContents() { return webContents_; }
-
   content::WebContents* CreateWebContents() {
-    return content::WebContents::Create(
-        content::WebContents::CreateParams(profile(), siteInstance_.get()));
+    return content::WebContentsTester::CreateTestWebContents(
+        profile(), siteInstance_.get());
   }
 
   void ShowBubble() {
-    chrome::ShowManagePasswordsBubble(webContents());
+    chrome::ShowManagePasswordsBubble(test_web_contents_);
     if (ManagePasswordsBubbleCocoa::instance()) {
       // Disable animations so that closing happens immediately.
       InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(
@@ -74,7 +74,7 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
  private:
   scoped_refptr<content::SiteInstance> siteInstance_;
-  content::WebContents* webContents_;  // weak
+  content::WebContents* test_web_contents_;  // weak
 };
 
 TEST_F(ManagePasswordsBubbleCocoaTest, ShowShouldCreateAndShowBubble) {
