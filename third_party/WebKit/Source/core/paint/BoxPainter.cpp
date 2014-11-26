@@ -11,7 +11,6 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/DrawingRecorder.h"
-#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -51,11 +50,8 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
     paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
 }
 
-void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
+LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
 {
-    RenderStyle* style = m_renderBox.style();
-    BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), m_renderBox.backgroundShouldAlwaysBeClipped(), paintInfo.context);
-
     LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (m_renderBox.isDocumentElement()) {
@@ -67,7 +63,15 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
             bounds.moveBy(paintOffset);
         }
     }
-    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, bounds);
+    return bounds;
+}
+
+void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
+{
+    RenderStyle* style = m_renderBox.style();
+    BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), m_renderBox.backgroundShouldAlwaysBeClipped(), paintInfo.context);
+
+    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
@@ -519,7 +523,7 @@ void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintO
 void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
     // Figure out if we need to push a transparency layer to render our mask.
-    OwnPtr<TransparencyRecorder> transparencyRecorder;
+    bool pushTransparencyLayer = false;
     bool compositedMask = m_renderBox.hasLayer() && m_renderBox.layer()->hasCompositedMask();
     bool flattenCompositingLayers = m_renderBox.view()->frameView() && m_renderBox.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
     CompositeOperator compositeOp = CompositeSourceOver;
@@ -527,6 +531,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     bool allMaskImagesLoaded = true;
 
     if (!compositedMask || flattenCompositingLayers) {
+        pushTransparencyLayer = true;
         StyleImage* maskBoxImage = m_renderBox.style()->maskBoxImage().image();
         const FillLayer& maskLayers = m_renderBox.style()->maskLayers();
 
@@ -537,16 +542,16 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
         paintInfo.context->setCompositeOperation(CompositeDestinationIn);
-
-        transparencyRecorder = adoptPtr(new TransparencyRecorder(paintInfo.context, &m_renderBox, DisplayItem::BeginTransparency, WebBlendModeNormal, 1));
-
-        compositeOp = CompositeSourceOver;
+        paintInfo.context->beginTransparencyLayer(1);
     }
 
     if (allMaskImagesLoaded) {
         paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
         paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), compositeOp);
     }
+
+    if (pushTransparencyLayer)
+        paintInfo.context->endLayer();
 }
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

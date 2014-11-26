@@ -64,6 +64,8 @@ private:
         BoxSide, bool firstEdgeMatches, bool secondEdgeMatches);
     static void clipBorderSideForComplexInnerPath(GraphicsContext*, const RoundedRect&, const RoundedRect&, BoxSide, const BorderEdge[]);
 
+    LayoutRect boundsForDrawingRecorder(const LayoutPoint& paintOffset);
+
     // FIXME: this should be const.
     RenderBox& m_renderBox;
 };

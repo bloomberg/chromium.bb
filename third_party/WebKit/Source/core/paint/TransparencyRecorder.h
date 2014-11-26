@@ -15,13 +15,12 @@ class RenderObject;
 
 class TransparencyRecorder {
 public:
-    explicit TransparencyRecorder(GraphicsContext*, const RenderObject*, DisplayItem::Type, const WebBlendMode&, const float opacity);
+    explicit TransparencyRecorder(GraphicsContext*, const RenderObject*, const WebBlendMode&, const float opacity);
 
     ~TransparencyRecorder();
 
 private:
     const RenderObject* m_renderer;
-    const DisplayItem::Type m_type;
     GraphicsContext* m_graphicsContext;
 };
 
