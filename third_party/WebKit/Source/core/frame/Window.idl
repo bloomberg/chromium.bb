@@ -138,8 +138,8 @@
     readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
-    CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
-                                         [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
+    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
+                                                                 [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
 
     // WebKit extensions
     [MeasureAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,

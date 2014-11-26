@@ -1384,9 +1384,7 @@ StyleMedia* LocalDOMWindow::styleMedia() const
 
 PassRefPtrWillBeRawPtr<CSSStyleDeclaration> LocalDOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
 {
-    if (!elt)
-        return nullptr;
-
+    ASSERT(elt);
     return CSSComputedStyleDeclaration::create(elt, false, pseudoElt);
 }
 
