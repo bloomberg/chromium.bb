@@ -525,10 +525,26 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
   for (TokenInfoMap::iterator it = token_info_map.begin();
        it != token_info_map.end();
        ++it) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile41(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 AboutSigninInternals::SigninStatus::ToValue41"));
+
     base::ListValue* token_details = AddSection(token_info, it->first);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile42(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 AboutSigninInternals::SigninStatus::ToValue42"));
 
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
     const std::vector<TokenInfo*>& tokens = it->second;
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile43(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 AboutSigninInternals::SigninStatus::ToValue43"));
+
     for (size_t i = 0; i < tokens.size(); ++i) {
       base::DictionaryValue* token_info = tokens[i]->ToValue();
       token_details->Append(token_info);
