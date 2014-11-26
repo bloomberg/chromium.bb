@@ -205,7 +205,6 @@ void AppListView::InitAsFramelessWindow(gfx::NativeView parent,
   InitContents(parent, initial_apps_page);
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
   AddChildView(overlay_view_);
-  set_background(new AppListBackground(0, app_list_main_view_));
 
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(
@@ -214,6 +213,11 @@ void AppListView::InitAsFramelessWindow(gfx::NativeView parent,
   params.delegate = this;
   widget->Init(params);
   widget->SetBounds(bounds);
+  // This needs to be set *after* Widget::Init() because BubbleDelegateView sets
+  // its own background at OnNativeThemeChanged(), which is called in
+  // View::AddChildView() which is called at Widget::SetContentsView() to build
+  // the views hierarchy in the widget.
+  set_background(new AppListBackground(0, app_list_main_view_));
 }
 
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
