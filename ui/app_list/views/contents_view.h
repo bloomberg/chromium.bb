@@ -32,7 +32,6 @@ class AppListMainView;
 class AppListViewDelegate;
 class AppsContainerView;
 class ContentsAnimator;
-class ContentsSwitcherView;
 class PaginationModel;
 class SearchResultListView;
 class SearchResultPageView;
@@ -61,8 +60,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
-
-  void SetContentsSwitcherView(ContentsSwitcherView* contents_switcher_view);
 
   // Shows/hides the search results. Hiding the search results will cause the
   // app list to return to the page that was displayed before
@@ -166,18 +163,14 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void UpdatePageBounds();
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
-  // view is inserted as a child of the ContentsView, and a button with
-  // |resource_id| is added to the ContentsSwitcherView. There is no name
+  // view is inserted as a child of the ContentsView. There is no name
   // associated with the page. Returns the index of the new page.
-  int AddLauncherPage(views::View* view, int resource_id);
+  int AddLauncherPage(views::View* view);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
-  // view is inserted as a child of the ContentsView, and a button with
-  // |resource_id| is added to the ContentsSwitcherView. The page is associated
+  // view is inserted as a child of the ContentsView. The page is associated
   // with the name |state|. Returns the index of the new page.
-  int AddLauncherPage(views::View* view,
-                      int resource_id,
-                      AppListModel::State state);
+  int AddLauncherPage(views::View* view, AppListModel::State state);
 
   // Gets the PaginationModel owned by the AppsGridView.
   // Note: This is different to |pagination_model_|, which manages top-level
@@ -209,8 +202,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   views::View* custom_page_view_;
 
   AppListMainView* app_list_main_view_;     // Parent view, owns this.
-  // Sibling view, owned by |app_list_main_view_|.
-  ContentsSwitcherView* contents_switcher_view_;
 
   scoped_ptr<views::ViewModel> view_model_;
 

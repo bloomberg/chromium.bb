@@ -19,7 +19,6 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
-#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
@@ -285,7 +284,7 @@ void AppListViewTestContext::RunDisplayTest() {
       break;
     case EXPERIMENTAL:
       // TODO(calamity): This should be 768x560, to match the most recent mocks.
-      EXPECT_EQ("768x617", view_->bounds().size().ToString());
+      EXPECT_EQ("768x577", view_->bounds().size().ToString());
       break;
     default:
       NOTREACHED();
@@ -531,17 +530,10 @@ void AppListViewTestContext::RunProfileChangeTest() {
 
   StartPageView* start_page_view =
       view_->app_list_main_view()->contents_view()->start_page_view();
-  ContentsSwitcherView* contents_switcher_view =
-      view_->app_list_main_view()->contents_switcher_view();
-  if (test_type_ == EXPERIMENTAL) {
-    EXPECT_NO_FATAL_FAILURE(CheckView(contents_switcher_view));
-    EXPECT_EQ(view_->app_list_main_view()->contents_view(),
-              contents_switcher_view->contents_view());
+  if (test_type_ == EXPERIMENTAL)
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
-  } else {
-    EXPECT_EQ(NULL, contents_switcher_view);
+  else
     EXPECT_EQ(NULL, start_page_view);
-  }
 
   // New model updates should be processed by the start page view.
   delegate_->GetTestModel()->results()->Add(new TestTileSearchResult());

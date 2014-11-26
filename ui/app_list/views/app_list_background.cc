@@ -17,13 +17,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 
-namespace {
-
-// Size of bottom separator between contents view and contents switcher.
-const int kBottomSeparatorSize = 1;
-
-}  // namespace
-
 namespace app_list {
 
 AppListBackground::AppListBackground(int corner_radius,
@@ -57,20 +50,6 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
-
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    if (main_view_->visible()) {
-      views::View* contents_view = main_view_->contents_view();
-      const gfx::Rect contents_view_view_bounds =
-          contents_view->ConvertRectToWidget(contents_view->GetLocalBounds());
-      gfx::Rect separator_rect(contents_rect);
-      separator_rect.Inset(
-          kExperimentalWindowPadding + main_view_->GetInsets().left(), 0);
-      separator_rect.set_y(contents_view_view_bounds.bottom() - 1);
-      separator_rect.set_height(kBottomSeparatorSize);
-      canvas->FillRect(separator_rect, kBottomSeparatorColor);
-    }
-  }
 
   canvas->Restore();
 }

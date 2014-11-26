@@ -26,7 +26,6 @@ class AppListItem;
 class AppListModel;
 class AppListViewDelegate;
 class ApplicationDragAndDropHost;
-class ContentsSwitcherView;
 class ContentsView;
 class PaginationModel;
 class SearchBoxView;
@@ -72,9 +71,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
       ApplicationDragAndDropHost* drag_and_drop_host);
 
   ContentsView* contents_view() const { return contents_view_; }
-  ContentsSwitcherView* contents_switcher_view() const {
-    return contents_switcher_view_;
-  }
   AppListModel* model() { return model_; }
   AppListViewDelegate* view_delegate() { return delegate_; }
 
@@ -90,7 +86,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
  private:
   class IconLoader;
 
-  // Adds the ContentsView and the ContentsSwitcherView.
+  // Adds the ContentsView.
   void AddContentsViews();
 
   // Gets the PaginationModel owned by the AppsGridView.
@@ -127,9 +123,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Created by AppListView. Owned by views hierarchy.
   SearchBoxView* search_box_view_;
   ContentsView* contents_view_;  // Owned by views hierarchy.
-
-  // Owned by views hierarchy. NULL in the non-experimental app list.
-  ContentsSwitcherView* contents_switcher_view_;
 
   // Invisible widget that sits partly over the bottom of the app list, covering
   // the collapsed-state custom page, and intercepts click events. Always use

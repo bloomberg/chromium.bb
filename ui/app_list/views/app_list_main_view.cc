@@ -23,7 +23,6 @@
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
-#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/views/border.h"
@@ -111,7 +110,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
       model_(delegate->GetModel()),
       search_box_view_(nullptr),
       contents_view_(nullptr),
-      contents_switcher_view_(nullptr),
       custom_page_clickzone_(nullptr),
       weak_ptr_factory_(this) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -140,14 +138,8 @@ void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
 
   contents_view_ = new ContentsView(this);
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
-    contents_view_->SetContentsSwitcherView(contents_switcher_view_);
-  }
   contents_view_->Init(model_);
   AddChildView(contents_view_);
-  if (contents_switcher_view_)
-    AddChildView(contents_switcher_view_);
 
   search_box_view_->set_contents_view(contents_view_);
   UpdateSearchBoxVisibility();
@@ -201,10 +193,6 @@ void AppListMainView::ModelChanged() {
   search_box_view_->ModelChanged();
   delete contents_view_;
   contents_view_ = NULL;
-  if (contents_switcher_view_) {
-    delete contents_switcher_view_;
-    contents_switcher_view_ = NULL;
-  }
   AddContentsViews();
   Layout();
 }

@@ -16,7 +16,6 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_animator.h"
-#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
@@ -36,7 +35,6 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
       start_page_view_(nullptr),
       custom_page_view_(nullptr),
       app_list_main_view_(app_list_main_view),
-      contents_switcher_view_(nullptr),
       view_model_(new views::ViewModel),
       page_before_search_(0) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
@@ -46,8 +44,6 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
 
 ContentsView::~ContentsView() {
   pagination_model_.RemoveObserver(this);
-  if (contents_switcher_view_)
-    pagination_model_.RemoveObserver(contents_switcher_view_);
 }
 
 void ContentsView::Init(AppListModel* model) {
@@ -67,17 +63,15 @@ void ContentsView::Init(AppListModel* model) {
       if (it == custom_page_views.begin()) {
         custom_page_view_ = *it;
 
-        AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON,
-                        AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+        AddLauncherPage(*it, AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
       } else {
-        AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON);
+        AddLauncherPage(*it);
       }
     }
 
     // Start page.
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
-    AddLauncherPage(
-        start_page_view_, IDR_APP_LIST_SEARCH_ICON, AppListModel::STATE_START);
+    AddLauncherPage(start_page_view_, AppListModel::STATE_START);
 
     // Search results UI.
     search_results_page_view_ = new SearchResultPageView();
@@ -88,20 +82,19 @@ void ContentsView::Init(AppListModel* model) {
     search_results_page_view_->AddSearchResultContainerView(
         results, new SearchResultTileItemListView());
 
-    AddLauncherPage(search_results_page_view_, 0,
+    AddLauncherPage(search_results_page_view_,
                     AppListModel::STATE_SEARCH_RESULTS);
   } else {
     search_results_list_view_ =
         new SearchResultListView(app_list_main_view_, view_delegate);
-    AddLauncherPage(search_results_list_view_, 0,
+    AddLauncherPage(search_results_list_view_,
                     AppListModel::STATE_SEARCH_RESULTS);
     search_results_list_view_->SetResults(model->results());
   }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
-  AddLauncherPage(
-      apps_container_view_, IDR_APP_LIST_APPS_ICON, AppListModel::STATE_APPS);
+  AddLauncherPage(apps_container_view_, AppListModel::STATE_APPS);
 
   int initial_page_index = app_list::switches::IsExperimentalAppListEnabled()
                                ? GetPageIndexForState(AppListModel::STATE_START)
@@ -139,14 +132,6 @@ void ContentsView::CancelDrag() {
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
-}
-
-void ContentsView::SetContentsSwitcherView(
-    ContentsSwitcherView* contents_switcher_view) {
-  DCHECK(!contents_switcher_view_);
-  contents_switcher_view_ = contents_switcher_view;
-  if (contents_switcher_view_)
-    pagination_model_.AddObserver(contents_switcher_view_);
 }
 
 void ContentsView::SetActivePage(int page_index) {
@@ -328,23 +313,20 @@ views::View* ContentsView::GetPageView(int index) const {
 }
 
 void ContentsView::AddBlankPageForTesting() {
-  AddLauncherPage(new views::View, 0);
+  AddLauncherPage(new views::View);
   pagination_model_.SetTotalPages(view_model_->view_size());
 }
 
-int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
+int ContentsView::AddLauncherPage(views::View* view) {
   int page_index = view_model_->view_size();
   AddChildView(view);
   view_model_->Add(view, page_index);
-  if (contents_switcher_view_ && resource_id)
-    contents_switcher_view_->AddSwitcherButton(resource_id, page_index);
   return page_index;
 }
 
 int ContentsView::AddLauncherPage(views::View* view,
-                                  int resource_id,
                                   AppListModel::State state) {
-  int page_index = AddLauncherPage(view, resource_id);
+  int page_index = AddLauncherPage(view);
   bool success =
       state_to_view_.insert(std::make_pair(state, page_index)).second;
   success = success &&
