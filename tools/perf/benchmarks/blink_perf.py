@@ -230,6 +230,8 @@ class BlinkPerfShadowDOM(benchmark.Benchmark):
     return _CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
+# This benchmark is for local testing, doesn't need to run on bots.
+@benchmark.Disabled()
 class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
   tag = 'xml_http_request'
   test = _BlinkPerfMeasurement
