@@ -238,7 +238,7 @@ namespace app.window {
 
     // Enable window background transparency.
     // Only supported in ash. Requires app.window.alpha API permission.
-    boolean? alphaEnabled;
+    [nodoc] boolean? alphaEnabled;
 
     // The initial state of the window, allowing it to be created already
     // fullscreen, maximized, or minimized. Defaults to 'normal'.
