@@ -186,7 +186,8 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   if (NSPointInRect(location, [self bounds])) {
     [[self cell] setHighlighted:YES];
     dragCouldStart_ = YES;
-    dragStartPoint_ = [theEvent locationInWindow];
+    dragStartPoint_ = [self convertPoint:[theEvent locationInWindow]
+                                fromView:nil];
   }
 }
 
@@ -194,22 +195,37 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   if (!dragCouldStart_)
     return;
 
+  NSPoint eventPoint = [theEvent locationInWindow];
   if (!isBeingDragged_) {
     // Don't initiate a drag until it moves at least kMinimumDragDistance.
-    NSPoint currentPoint = [theEvent locationInWindow];
-    CGFloat dx = currentPoint.x - dragStartPoint_.x;
-    CGFloat dy = currentPoint.y - dragStartPoint_.y;
+    NSPoint dragStart = [self convertPoint:dragStartPoint_ toView:nil];
+    CGFloat dx = eventPoint.x - dragStart.x;
+    CGFloat dy = eventPoint.y - dragStart.y;
     if (dx*dx + dy*dy < kMinimumDragDistance*kMinimumDragDistance)
       return;
 
     // The start of a drag. Position the button above all others.
     [[self superview] addSubview:self positioned:NSWindowAbove relativeTo:nil];
+
+    // We reset the |dragStartPoint_| so that the mouse can always be in the
+    // same point along the button's x axis, and we avoid a "jump" when first
+    // starting to drag.
+    dragStartPoint_ = [self convertPoint:eventPoint fromView:nil];
+
+    isBeingDragged_ = YES;
   }
-  isBeingDragged_ = YES;
+
   NSRect buttonFrame = [self frame];
-  // TODO(andybons): Constrain the buttons to be within the container.
+  // The desired x is the current mouse point, minus the original offset of the
+  // mouse into the button.
+  CGFloat desiredX = [[self superview] convertPoint:eventPoint fromView:nil].x -
+      dragStartPoint_.x;
   // Clamp the button to be within its superview along the X-axis.
-  buttonFrame.origin.x += [theEvent deltaX];
+  NSRect containerBounds = [[self superview] bounds];
+  desiredX = std::min(std::max(NSMinX(containerBounds), desiredX),
+                      NSMaxX(containerBounds) - NSWidth(buttonFrame));
+
+  buttonFrame.origin.x = desiredX;
   [self setFrame:buttonFrame];
   [self setNeedsDisplay:YES];
   [[NSNotificationCenter defaultCenter]

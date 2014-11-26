@@ -43,8 +43,10 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   // YES upon |mouseDown:|.
   BOOL dragCouldStart_;
 
-  // The point where the mouse down event occurred. Used to prevent a drag from
-  // starting until it moves at least kMinimumDragDistance.
+  // If a drag is not currently in progress, this is the point where the mouse
+  // down event occurred, and is used to prevent a drag from starting until it
+  // moves at least kMinimumDragDistance. Once a drag begins, this is the point
+  // at which the drag actually started.
   NSPoint dragStartPoint_;
 }
 
