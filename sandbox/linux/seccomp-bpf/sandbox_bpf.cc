@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
@@ -39,6 +40,8 @@
 namespace sandbox {
 
 namespace {
+
+bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
 bool IsSingleThreaded(int proc_task_fd) {
   return ThreadHelpers::IsSingleThreaded(proc_task_fd);
@@ -86,6 +89,12 @@ SandboxBPF::~SandboxBPF() {
 
 // static
 bool SandboxBPF::SupportsSeccompSandbox(SeccompLevel level) {
+  // Never pretend to support seccomp with Valgrind, as it
+  // throws the tool off.
+  if (IsRunningOnValgrind()) {
+    return false;
+  }
+
   switch (level) {
     case SeccompLevel::SINGLE_THREADED:
       return KernelSupportsSeccompBPF();
