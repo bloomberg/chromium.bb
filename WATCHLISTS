@@ -885,7 +885,7 @@
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
-    'enhanced_bookmarks' : ['noyau+watch@chromium.org']
+    'enhanced_bookmarks': ['noyau+watch@chromium.org'],
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
