@@ -60,6 +60,9 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   // The identifier used to create a compositing surface.
   gfx::AcceleratedWidget widget_;
 
+  // Current Aura cursor.
+  gfx::NativeCursor current_cursor_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostOzone);
 };
 

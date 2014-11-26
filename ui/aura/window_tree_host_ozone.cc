@@ -11,7 +11,7 @@
 namespace aura {
 
 WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
-    : widget_(gfx::kNullAcceleratedWidget) {
+    : widget_(gfx::kNullAcceleratedWidget), current_cursor_(ui::kCursorNull) {
   platform_window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
 }
@@ -94,6 +94,9 @@ void WindowTreeHostOzone::ReleaseCapture() {
 }
 
 void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
+  if (cursor == current_cursor_)
+    return;
+  current_cursor_ = cursor;
   platform_window_->SetCursor(cursor.platform());
 }
 
