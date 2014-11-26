@@ -4278,7 +4278,6 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=thread',
-                  '-fPIC',
                   '-fsanitize-blacklist=<(tsan_blacklist)',
                 ],
                 'ldflags': [
@@ -4289,13 +4288,6 @@
                   'DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL=1',
                   'WTF_USE_DYNAMIC_ANNOTATIONS_NOIMPL=1',
                 ],
-                'target_conditions': [
-                  ['_type=="executable"', {
-                    'ldflags': [
-                      '-pie',
-                    ],
-                  }],
-                ],
               }],
             ],
           }],
@@ -4305,7 +4297,6 @@
                 'cflags': [
                   '-fsanitize=memory',
                   '-fsanitize-memory-track-origins=<(msan_track_origins)',
-                  '-fPIC',
                   '-fsanitize-blacklist=<(msan_blacklist)',
                 ],
                 'ldflags': [
@@ -4313,13 +4304,6 @@
                 ],
                 'defines': [
                   'MEMORY_SANITIZER',
-                ],
-                'target_conditions': [
-                  ['_type=="executable"', {
-                    'ldflags': [
-                      '-pie',
-                    ],
-                  }],
                 ],
               }],
             ],
