@@ -225,19 +225,6 @@ For more information of cros build usage:
     else:
       logging.info('%s has been uninstalled.', pkg)
 
-  def _IsPathWritable(self, device, path):
-    """Returns True if |path| on |device| is writable."""
-    tmp_file = os.path.join(path, 'tmp.cros_flash')
-    result = device.RunCommand(['touch', tmp_file], remote_sudo=True,
-                               error_code_ok=True, capture_output=True)
-
-    if result.returncode != 0:
-      return False
-
-    device.RunCommand(['rm', tmp_file], error_code_ok=True, remote_sudo=True)
-
-    return True
-
   def _ReadOptions(self):
     """Processes options and set variables."""
     self.emerge = self.options.emerge
@@ -278,7 +265,7 @@ For more information of cros build usage:
           logging.info('Cleaning outdated binary packages for %s', board)
           portage_util.CleanOutdatedBinaryPackages(board)
 
-        if not self._IsPathWritable(device, self.root):
+        if not device.IsPathWritable(self.root):
           # Only remounts rootfs if the given root is not writable.
           if not device.MountRootfsReadWrite():
             cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting.')

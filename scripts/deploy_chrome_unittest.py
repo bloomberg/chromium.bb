@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
 from chromite.lib import stats
 from chromite.lib import stats_unittest
@@ -119,6 +120,7 @@ class DeployChromeMock(partial_mock.PartialMock):
 
   def __init__(self):
     partial_mock.PartialMock.__init__(self)
+    self.remote_device_mock = remote_access_unittest.RemoteDeviceMock()
     # Target starts off as having rootfs verification enabled.
     self.rsh_mock = remote_access_unittest.RemoteShMock()
     self.rsh_mock.SetDefaultCmdResult(0)
@@ -135,10 +137,12 @@ class DeployChromeMock(partial_mock.PartialMock):
       self.backup['_DisableRootfsVerification'](inst)
 
   def PreStart(self):
+    self.remote_device_mock.start()
     self.rsh_mock.start()
 
   def PreStop(self):
     self.rsh_mock.stop()
+    self.remote_device_mock.stop()
 
   def _KillProcsIfNeeded(self, _inst):
     # Fully stub out for now.
@@ -187,13 +191,13 @@ class TestDisableRootfsVerification(DeployTest):
     """Test the working case, disabling rootfs verification."""
     self.deploy_mock.MockMountCmd(0)
     self.deploy._DisableRootfsVerification()
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
 
   def testDisableRootfsVerificationFailure(self):
     """Test failure to disable rootfs verification."""
     self.assertRaises(cros_build_lib.RunCommandError,
                       self.deploy._DisableRootfsVerification)
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
 
 
 class TestMount(DeployTest):
@@ -201,22 +205,32 @@ class TestMount(DeployTest):
 
   def testSuccess(self):
     """Test case where we are able to mount as writable."""
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
     self.deploy_mock.MockMountCmd(0)
     self.deploy._MountRootfsAsWritable()
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
 
   def testMountError(self):
     """Test that mount failure doesn't raise an exception by default."""
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.PatchObject(remote_access.RemoteDevice, 'IsPathWritable',
+                     return_value=False, autospec=True)
     self.deploy._MountRootfsAsWritable()
-    self.assertTrue(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertTrue(self.deploy._target_dir_is_still_readonly.is_set())
 
   def testMountRwFailure(self):
     """Test that mount failure raises an exception if error_code_ok=False."""
     self.assertRaises(cros_build_lib.RunCommandError,
                       self.deploy._MountRootfsAsWritable, error_code_ok=False)
-    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+
+  def testMountTempDir(self):
+    """Test that mount succeeds if target dir is writable."""
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
+    self.PatchObject(remote_access.RemoteDevice, 'IsPathWritable',
+                     return_value=True, autospec=True)
+    self.deploy._MountRootfsAsWritable()
+    self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
 
 
 class TestUiJobStarted(DeployTest):

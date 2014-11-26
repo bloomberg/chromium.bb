@@ -61,6 +61,16 @@ class RemoteShMock(partial_mock.PartialCmdMock):
       return self.backup['RemoteSh'](inst, cmd, *args, **kwargs)
 
 
+class RemoteDeviceMock(partial_mock.PartialMock):
+  """Mocks the RemoteDevice function."""
+
+  TARGET = 'chromite.lib.remote_access.RemoteDevice'
+  ATTRS = ('Pingable',)
+
+  def Pingable(self, _):
+    return True
+
+
 class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
   """Base class with RemoteSh mocked out for testing RemoteAccess."""
   def setUp(self):

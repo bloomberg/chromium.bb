@@ -582,6 +582,23 @@ class RemoteDevice(object):
     """Copy path to working directory on the device."""
     return self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
 
+  def IsPathWritable(self, path):
+    """Checks if the given path is writable on the device.
+
+    Args:
+      path: path on the device to check.
+    """
+    tmp_file = os.path.join(path, 'tmp.remote_access')
+    result = self.agent.RemoteSh(['touch', tmp_file], remote_sudo=True,
+                                 error_code_ok=True, capture_output=True)
+
+    if result.returncode != 0:
+      return False
+
+    self.agent.RemoteSh(['rm', tmp_file], error_code_ok=True, remote_sudo=True)
+
+    return True
+
   def PipeOverSSH(self, filepath, cmd, **kwargs):
     """Cat a file and pipe over SSH."""
     producer_cmd = ['cat', filepath]
