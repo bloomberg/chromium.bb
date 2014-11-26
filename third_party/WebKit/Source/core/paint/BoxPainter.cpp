@@ -495,6 +495,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
             RootInlineBox& root = box->root();
             box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root.lineTop(), root.lineBottom());
         } else {
+            // FIXME: this should only have an effect for the line box list within |obj|. Change this to create a LineBoxListPainter directly.
             LayoutSize localOffset = obj.isBox() ? toRenderBox(&obj)->locationOffset() : LayoutSize();
             obj.paint(info, scrolledPaintRect.location() - localOffset);
         }

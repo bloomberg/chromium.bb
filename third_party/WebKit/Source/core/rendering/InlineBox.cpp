@@ -194,7 +194,9 @@ void InlineBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit d
 
 void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
 {
-    BlockPainter::paintInlineBox(*this, paintInfo, paintOffset);
+    // Text clips are painted only for the direct inline children of the object that has a text clip style on it, not block children.
+    if (paintInfo.phase != PaintPhaseTextClip)
+        BlockPainter::paintInlineBox(*this, paintInfo, paintOffset);
 }
 
 bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
