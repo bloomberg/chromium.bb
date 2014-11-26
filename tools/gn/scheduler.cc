@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 
 Scheduler* g_scheduler = NULL;
 
@@ -15,7 +16,7 @@ namespace {
 
 int GetThreadCount() {
   std::string thread_count =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("threads");
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kThreads);
 
   int result;
   if (thread_count.empty() || !base::StringToInt(thread_count, &result))

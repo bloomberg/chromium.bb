@@ -14,14 +14,12 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 #include "tools/gn/target.h"
 
 namespace commands {
 
 namespace {
-
-// Suppress output on success.
-const char kSwitchQuiet[] = "q";
 
 const char kSwitchCheck[] = "check";
 
@@ -105,7 +103,7 @@ int RunGen(const std::vector<std::string>& args) {
 
   base::TimeDelta elapsed_time = timer.Elapsed();
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kSwitchQuiet)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
 
     std::string stats = "Wrote " +

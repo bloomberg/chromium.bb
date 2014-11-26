@@ -21,6 +21,7 @@
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/ninja_utils.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/switches.h"
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
 
@@ -37,8 +38,10 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   CommandLine cmdline(executable.NormalizePathSeparatorsTo('/'));
   cmdline.AppendArg("gen");
   cmdline.AppendArg(build_settings->build_dir().value());
-  cmdline.AppendSwitchPath("--root", build_settings->root_path());
-  cmdline.AppendSwitch("-q");  // Don't write output.
+  cmdline.AppendSwitchPath(std::string("--") + switches::kRoot,
+                           build_settings->root_path());
+  // Successful automatic invocations shouldn't print output.
+  cmdline.AppendSwitch(std::string("-") + switches::kQuiet);
 
   EscapeOptions escape_shell;
   escape_shell.mode = ESCAPE_NINJA_COMMAND;
@@ -57,7 +60,9 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
     // since those will have been written to the file and will be used
     // implicitly in the future. Keeping --args would mean changes to the file
     // would be ignored.
-    if (i->first != "q" && i->first != "root" && i->first != "args") {
+    if (i->first != switches::kQuiet &&
+        i->first != switches::kRoot &&
+        i->first != switches::kArgs) {
       std::string escaped_value =
           EscapeString(FilePathToUTF8(i->second), escape_shell, NULL);
       cmdline.AppendSwitchASCII(i->first, escaped_value);

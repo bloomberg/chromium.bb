@@ -22,10 +22,6 @@
 
 namespace functions {
 
-namespace {
-const char kNoExecSwitch[] = "no-exec";
-}  // namespace
-
 const char kExecScript[] = "exec_script";
 const char kExecScript_HelpShort[] =
     "exec_script: Synchronously run a script and return the output.";
@@ -176,13 +172,11 @@ Value RunExecScript(Scope* scope,
   std::string output;
   std::string stderr_output;
   int exit_code = 0;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoExecSwitch)) {
-    if (!internal::ExecProcess(
-            cmdline, startup_dir, &output, &stderr_output, &exit_code)) {
-      *err = Err(function->function(), "Could not execute python.",
-          "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
-      return Value();
-    }
+  if (!internal::ExecProcess(
+          cmdline, startup_dir, &output, &stderr_output, &exit_code)) {
+    *err = Err(function->function(), "Could not execute python.",
+        "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
+    return Value();
   }
   if (g_scheduler->verbose_logging()) {
     g_scheduler->Log("Pythoning", script_source.value() + " took " +

@@ -9,6 +9,7 @@
 #include "tools/gn/err.h"
 #include "tools/gn/location.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 
 // Only the GN-generated build makes this header for now.
 // TODO(brettw) consider adding this if we need it in GYP.
@@ -48,7 +49,7 @@ int main(int argc, char** argv) {
   if (cmdline.HasSwitch("help") || cmdline.HasSwitch("h")) {
     // Make "-h" and "--help" default to help command.
     command = commands::kHelp;
-  } else if (cmdline.HasSwitch("version")) {
+  } else if (cmdline.HasSwitch(switches::kVersion)) {
     // Make "--version" print the version and exit.
     OutputString(std::string(LAST_COMMIT_POSITION) + "\n");
     exit(0);

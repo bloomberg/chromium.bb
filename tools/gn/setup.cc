@@ -26,6 +26,7 @@
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 #include "tools/gn/tokenizer.h"
 #include "tools/gn/trace.h"
 #include "tools/gn/value.h"
@@ -84,23 +85,6 @@ extern const char kDotfile_Help[] =
     "  secondary_source = \"//build/config/temporary_buildfiles/\"\n";
 
 namespace {
-
-// More logging.
-const char kSwitchVerbose[] = "v";
-
-// Set build args.
-const char kSwitchArgs[] = "args";
-
-// Set root dir.
-const char kSwitchRoot[] = "root";
-
-// Set dotfile name.
-const char kSwitchDotfile[] = "dotfile";
-
-// Enable timing.
-const char kTimeSwitch[] = "time";
-
-const char kTracelogSwitch[] = "tracelog";
 
 const base::FilePath::CharType kGnFile[] = FILE_PATH_LITERAL(".gn");
 
@@ -198,10 +182,10 @@ bool CommonSetup::RunPostMessageLoop() {
 
   // Write out tracing and timing if requested.
   const CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(kTimeSwitch))
+  if (cmdline->HasSwitch(switches::kTime))
     PrintLongHelp(SummarizeTraces());
-  if (cmdline->HasSwitch(kTracelogSwitch))
-    SaveTraces(cmdline->GetSwitchValuePath(kTracelogSwitch));
+  if (cmdline->HasSwitch(switches::kTracelog))
+    SaveTraces(cmdline->GetSwitchValuePath(switches::kTracelog));
 
   return true;
 }
@@ -228,9 +212,9 @@ Setup::~Setup() {
 bool Setup::DoSetup(const std::string& build_dir, bool force_create) {
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
 
-  scheduler_.set_verbose_logging(cmdline->HasSwitch(kSwitchVerbose));
-  if (cmdline->HasSwitch(kTimeSwitch) ||
-      cmdline->HasSwitch(kTracelogSwitch))
+  scheduler_.set_verbose_logging(cmdline->HasSwitch(switches::kVerbose));
+  if (cmdline->HasSwitch(switches::kTime) ||
+      cmdline->HasSwitch(switches::kTracelog))
     EnableTracing();
 
   ScopedTrace setup_trace(TraceItem::TRACE_SETUP, "DoSetup");
@@ -273,8 +257,8 @@ SourceFile Setup::GetBuildArgFile() const {
 bool Setup::FillArguments(const CommandLine& cmdline) {
   // Use the args on the command line if specified, and save them. Do this even
   // if the list is empty (this means clear any defaults).
-  if (cmdline.HasSwitch(kSwitchArgs)) {
-    if (!FillArgsFromCommandLine(cmdline.GetSwitchValueASCII(kSwitchArgs)))
+  if (cmdline.HasSwitch(switches::kArgs)) {
+    if (!FillArgsFromCommandLine(cmdline.GetSwitchValueASCII(switches::kArgs)))
       return false;
     SaveArgsToFile();
     return true;
@@ -390,7 +374,8 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
   base::FilePath root_path;
 
   // Prefer the command line args to the config file.
-  base::FilePath relative_root_path = cmdline.GetSwitchValuePath(kSwitchRoot);
+  base::FilePath relative_root_path =
+      cmdline.GetSwitchValuePath(switches::kRoot);
   if (!relative_root_path.empty()) {
     root_path = base::MakeAbsoluteFilePath(relative_root_path);
     if (root_path.empty()) {
@@ -403,7 +388,8 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
     // When --root is specified, an alternate --dotfile can also be set.
     // --dotfile should be a real file path and not a "//foo" source-relative
     // path.
-    base::FilePath dot_file_path = cmdline.GetSwitchValuePath(kSwitchDotfile);
+    base::FilePath dot_file_path =
+        cmdline.GetSwitchValuePath(switches::kDotfile);
     if (dot_file_path.empty()) {
       dotfile_name_ = root_path.Append(kGnFile);
     } else {

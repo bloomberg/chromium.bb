@@ -153,6 +153,8 @@
         'substitution_type.h',
         'substitution_writer.cc',
         'substitution_writer.h',
+        'switches.cc',
+        'switches.h',
         'target.cc',
         'target.h',
         'target_generator.cc',

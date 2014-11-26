@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "tools/gn/switches.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -21,9 +22,6 @@
 namespace {
 
 bool initialized = false;
-
-static const char kSwitchColor[] = "color";
-static const char kSwitchNoColor[] = "nocolor";
 
 #if defined(OS_WIN)
 HANDLE hstdout;
@@ -37,7 +35,7 @@ void EnsureInitialized() {
   initialized = true;
 
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(kSwitchNoColor)) {
+  if (cmdline->HasSwitch(switches::kNoColor)) {
     // Force color off.
     is_console = false;
     return;
@@ -51,7 +49,7 @@ void EnsureInitialized() {
   is_console = !!::GetConsoleScreenBufferInfo(hstdout, &info);
   default_attributes = info.wAttributes;
 #else
-  if (cmdline->HasSwitch(kSwitchColor))
+  if (cmdline->HasSwitch(switches::kColor))
     is_console = true;
   else
     is_console = isatty(fileno(stdout));
