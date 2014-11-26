@@ -27,8 +27,8 @@ const wchar_t kPairingRegistryKeyName[] =
     L"SOFTWARE\\Chromoting\\paired-clients";
 #endif
 
-const wchar_t kPairingRegistryClientsKeyName[] = L"secrets";
-const wchar_t kPairingRegistrySecretsKeyName[] = L"clients";
+const wchar_t kPairingRegistryClientsKeyName[] = L"clients";
+const wchar_t kPairingRegistrySecretsKeyName[] = L"secrets";
 
 // Stores client pairing information in Windows registry. Two separate registry
 // keys are used:

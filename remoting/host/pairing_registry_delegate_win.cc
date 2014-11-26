@@ -206,7 +206,7 @@ PairingRegistry::Pairing PairingRegistryDelegateWin::Load(
 bool PairingRegistryDelegateWin::Save(const PairingRegistry::Pairing& pairing) {
   if (!privileged_.Valid()) {
     LOG(ERROR) << "Cannot save pairing entry '" << pairing.client_id()
-                << "': the delegate is read-only.";
+                << "': the pairing registry privileged key is invalid.";
     return false;
   }
 

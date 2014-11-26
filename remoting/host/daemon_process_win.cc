@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -30,6 +31,7 @@
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/launch_process_with_token.h"
+#include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
@@ -289,39 +291,84 @@ bool DaemonProcessWin::InitializePairingRegistry() {
   // the passed handles.
   SendToNetwork(new ChromotingDaemonNetworkMsg_InitializePairingRegistry(
       privileged_key, unprivileged_key));
+
   return true;
 }
 
+// A chromoting top crasher revealed that the pairing registry keys sometimes
+// cannot be opened. The speculation is that those keys are absent for some
+// reason. To reduce the host crashes we create those keys here if they are
+// absent. See crbug.com/379360 for details.
 bool DaemonProcessWin::OpenPairingRegistry() {
   DCHECK(!pairing_registry_privileged_key_.Valid());
   DCHECK(!pairing_registry_unprivileged_key_.Valid());
 
-  // Open the root of the pairing registry.
+  // Open the root of the pairing registry. Create if absent.
   base::win::RegKey root;
-  LONG result = root.Open(HKEY_LOCAL_MACHINE, kPairingRegistryKeyName,
-                          KEY_READ);
+  DWORD disposition;
+  LONG result = root.CreateWithDisposition(
+      HKEY_LOCAL_MACHINE, kPairingRegistryKeyName, &disposition,
+      KEY_READ | KEY_CREATE_SUB_KEY);
+
   if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName;
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to open or create HKLM\\" << kPairingRegistryKeyName;
     return false;
   }
 
-  base::win::RegKey privileged;
-  result = privileged.Open(root.Handle(), kPairingRegistryClientsKeyName,
-                           KEY_READ | KEY_WRITE);
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName << "\\"
-                << kPairingRegistryClientsKeyName;
-    return false;
-  }
+  if (disposition == REG_CREATED_NEW_KEY)
+    LOG(WARNING) << "Created pairing registry root key which was absent.";
 
+  // Open the pairing registry clients key. Create if absent.
   base::win::RegKey unprivileged;
-  result = unprivileged.Open(root.Handle(), kPairingRegistrySecretsKeyName,
-                             KEY_READ | KEY_WRITE);
+  result = unprivileged.CreateWithDisposition(
+      root.Handle(), kPairingRegistryClientsKeyName, &disposition,
+      KEY_READ | KEY_WRITE);
+
   if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistrySecretsKeyName
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to open or create HKLM\\" << kPairingRegistryKeyName
+                << "\\" << kPairingRegistryClientsKeyName;
+    return false;
+  }
+
+  if (disposition == REG_CREATED_NEW_KEY)
+    LOG(WARNING) << "Created pairing registry client key which was absent.";
+
+  // Open the pairing registry secret key.
+  base::win::RegKey privileged;
+  result = privileged.Open(
+      root.Handle(), kPairingRegistrySecretsKeyName, KEY_READ | KEY_WRITE);
+
+  if (result == ERROR_FILE_NOT_FOUND) {
+    LOG(WARNING) << "Pairing registry privileged key absent, creating.";
+
+    // Create a security descriptor that gives full access to local system and
+    // administrators and denies access by anyone else.
+    std::string security_descriptor = "O:BAG:BAD:(A;;GA;;;BA)(A;;GA;;;SY)";
+
+    ScopedSd sd = ConvertSddlToSd(security_descriptor);
+    if (!sd) {
+      PLOG(ERROR) << "Failed to create a security descriptor for the pairing"
+                  << "registry privileged key.";
+      return false;
+    }
+
+    SECURITY_ATTRIBUTES security_attributes = {0};
+    security_attributes.nLength = sizeof(security_attributes);
+    security_attributes.lpSecurityDescriptor = sd.get();
+    security_attributes.bInheritHandle = FALSE;
+
+    HKEY key = NULL;
+    result = ::RegCreateKeyEx(
+        root.Handle(), kPairingRegistrySecretsKeyName, 0, nullptr, 0,
+        KEY_READ | KEY_WRITE, &security_attributes, &key, &disposition);
+    privileged.Set(key);
+  }
+
+  if (result != ERROR_SUCCESS) {
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to open or create HKLM\\" << kPairingRegistryKeyName
                 << "\\" << kPairingRegistrySecretsKeyName;
     return false;
   }

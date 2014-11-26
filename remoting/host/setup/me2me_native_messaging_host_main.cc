@@ -217,24 +217,24 @@ int StartMe2MeNativeMessagingHost() {
   }
 
   base::win::RegKey unprivileged;
-  result = unprivileged.Open(root.Handle(), kPairingRegistrySecretsKeyName,
+  result = unprivileged.Open(root.Handle(), kPairingRegistryClientsKeyName,
                              needs_elevation ? KEY_READ : KEY_READ | KEY_WRITE);
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistrySecretsKeyName
-                << "\\" << kPairingRegistrySecretsKeyName;
+    PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName
+                << "\\" << kPairingRegistryClientsKeyName;
     return kInitializationFailed;
   }
 
   // Only try to open the privileged key if the current process is elevated.
   base::win::RegKey privileged;
   if (!needs_elevation) {
-    result = privileged.Open(root.Handle(), kPairingRegistryClientsKeyName,
+    result = privileged.Open(root.Handle(), kPairingRegistrySecretsKeyName,
                              KEY_READ | KEY_WRITE);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);
       PLOG(ERROR) << "Failed to open HKLM\\" << kPairingRegistryKeyName << "\\"
-                  << kPairingRegistryClientsKeyName;
+                  << kPairingRegistrySecretsKeyName;
       return kInitializationFailed;
     }
   }
