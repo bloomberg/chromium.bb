@@ -133,7 +133,12 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   // Ensure that the thread can work with only 12 kb and still process a
   // message.
   Thread::Options options;
+#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
+  // ASan bloats the stack variables and overflows the 12 kb stack on OSX.
+  options.stack_size = 24*1024;
+#else
   options.stack_size = 12*1024;
+#endif
   EXPECT_TRUE(a.StartWithOptions(options));
   EXPECT_TRUE(a.message_loop());
   EXPECT_TRUE(a.IsRunning());
