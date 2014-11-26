@@ -98,8 +98,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_BANNER;
     case blink::WebAXRoleBlockquote:
       return ui::AX_ROLE_BLOCKQUOTE;
-    case blink::WebAXRoleBrowser:
-      return ui::AX_ROLE_BROWSER;
     case blink::WebAXRoleBusyIndicator:
       return ui::AX_ROLE_BUSY_INDICATOR;
     case blink::WebAXRoleButton:
@@ -146,8 +144,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_DIV;
     case blink::WebAXRoleDocument:
       return ui::AX_ROLE_DOCUMENT;
-    case blink::WebAXRoleDrawer:
-      return ui::AX_ROLE_DRAWER;
     case blink::WebAXRoleEditableText:
       return ui::AX_ROLE_EDITABLE_TEXT;
     case blink::WebAXRoleEmbeddedObject:
@@ -168,8 +164,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_GROW_AREA;
     case blink::WebAXRoleHeading:
       return ui::AX_ROLE_HEADING;
-    case blink::WebAXRoleHelpTag:
-      return ui::AX_ROLE_HELP_TAG;
     case blink::WebAXRoleIframe:
       return ui::AX_ROLE_IFRAME;
     case blink::WebAXRoleIgnored:
@@ -206,8 +200,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_MARQUEE;
     case blink::WebAXRoleMath:
       return ui::AX_ROLE_MATH;
-    case blink::WebAXRoleMatte:
-      return ui::AX_ROLE_MATTE;
     case blink::WebAXRoleMenu:
       return ui::AX_ROLE_MENU;
     case blink::WebAXRoleMenuBar:
@@ -260,8 +252,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_ROW_HEADER;
     case blink::WebAXRoleRuler:
       return ui::AX_ROLE_RULER;
-    case blink::WebAXRoleRulerMarker:
-      return ui::AX_ROLE_RULER_MARKER;
     case blink::WebAXRoleSVGRoot:
       return ui::AX_ROLE_SVG_ROOT;
     case blink::WebAXRoleScrollArea:
@@ -272,8 +262,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_SEAMLESS_WEB_AREA;
     case blink::WebAXRoleSearch:
       return ui::AX_ROLE_SEARCH;
-    case blink::WebAXRoleSheet:
-      return ui::AX_ROLE_SHEET;
     case blink::WebAXRoleSlider:
       return ui::AX_ROLE_SLIDER;
     case blink::WebAXRoleSliderThumb:
@@ -290,8 +278,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_STATIC_TEXT;
     case blink::WebAXRoleStatus:
       return ui::AX_ROLE_STATUS;
-    case blink::WebAXRoleSystemWide:
-      return ui::AX_ROLE_SYSTEM_WIDE;
     case blink::WebAXRoleTab:
       return ui::AX_ROLE_TAB;
     case blink::WebAXRoleTabGroup:
@@ -326,8 +312,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_UNKNOWN;
     case blink::WebAXRoleUserInterfaceTooltip:
       return ui::AX_ROLE_TOOLTIP;
-    case blink::WebAXRoleValueIndicator:
-      return ui::AX_ROLE_VALUE_INDICATOR;
     case blink::WebAXRoleWebArea:
       return ui::AX_ROLE_WEB_AREA;
     case blink::WebAXRoleWindow:

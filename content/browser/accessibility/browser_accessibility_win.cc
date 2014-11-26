@@ -3816,20 +3816,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
 
     // TODO(dmazzoni): figure out the proper MSAA role for all of these.
-    case ui::AX_ROLE_BROWSER:
     case ui::AX_ROLE_DIRECTORY:
-    case ui::AX_ROLE_DRAWER:
-    case ui::AX_ROLE_HELP_TAG:
     case ui::AX_ROLE_IGNORED:
     case ui::AX_ROLE_LOG:
-    case ui::AX_ROLE_MATTE:
     case ui::AX_ROLE_NONE:
     case ui::AX_ROLE_PRESENTATIONAL:
-    case ui::AX_ROLE_RULER_MARKER:
-    case ui::AX_ROLE_SHEET:
     case ui::AX_ROLE_SLIDER_THUMB:
-    case ui::AX_ROLE_SYSTEM_WIDE:
-    case ui::AX_ROLE_VALUE_INDICATOR:
     default:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;

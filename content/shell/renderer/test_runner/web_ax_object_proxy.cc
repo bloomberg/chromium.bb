@@ -36,8 +36,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Banner");
     case blink::WebAXRoleBlockquote:
       return result.append("Blockquote");
-    case blink::WebAXRoleBrowser:
-      return result.append("Browser");
     case blink::WebAXRoleBusyIndicator:
       return result.append("BusyIndicator");
     case blink::WebAXRoleButton:
@@ -82,8 +80,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Div");
     case blink::WebAXRoleDocument:
       return result.append("Document");
-    case blink::WebAXRoleDrawer:
-      return result.append("Drawer");
     case blink::WebAXRoleEditableText:
       return result.append("EditableText");
     case blink::WebAXRoleEmbeddedObject:
@@ -104,8 +100,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("GrowArea");
     case blink::WebAXRoleHeading:
       return result.append("Heading");
-    case blink::WebAXRoleHelpTag:
-      return result.append("HelpTag");
     case blink::WebAXRoleIgnored:
       return result.append("Ignored");
     case blink::WebAXRoleImageMapLink:
@@ -140,8 +134,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Marquee");
     case blink::WebAXRoleMath:
       return result.append("Math");
-    case blink::WebAXRoleMatte:
-      return result.append("Matte");
     case blink::WebAXRoleMenuBar:
       return result.append("MenuBar");
     case blink::WebAXRoleMenuButton:
@@ -192,8 +184,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Row");
     case blink::WebAXRoleRuby:
       return result.append("Ruby");
-    case blink::WebAXRoleRulerMarker:
-      return result.append("RulerMarker");
     case blink::WebAXRoleRuler:
       return result.append("Ruler");
     case blink::WebAXRoleSVGRoot:
@@ -206,8 +196,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("SeamlessWebArea");
     case blink::WebAXRoleSearch:
       return result.append("Search");
-    case blink::WebAXRoleSheet:
-      return result.append("Sheet");
     case blink::WebAXRoleSlider:
       return result.append("Slider");
     case blink::WebAXRoleSliderThumb:
@@ -224,8 +212,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("StaticText");
     case blink::WebAXRoleStatus:
       return result.append("Status");
-    case blink::WebAXRoleSystemWide:
-      return result.append("SystemWide");
     case blink::WebAXRoleTabGroup:
       return result.append("TabGroup");
     case blink::WebAXRoleTabList:
@@ -260,8 +246,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Unknown");
     case blink::WebAXRoleUserInterfaceTooltip:
       return result.append("UserInterfaceTooltip");
-    case blink::WebAXRoleValueIndicator:
-      return result.append("ValueIndicator");
     case blink::WebAXRoleWebArea:
       return result.append("WebArea");
     case blink::WebAXRoleWindow:
