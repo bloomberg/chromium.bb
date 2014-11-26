@@ -54,7 +54,7 @@ console.log("Error broken stack #6\n    at foob.js foob.js:40:70");
 
 function test()
 {
-    InspectorTest.evaluateInPage("failure()");
+    InspectorTest.evaluateInPageWithTimeout("failure()");
     InspectorTest.waitUntilMessageReceived(dumpMessages);
 
     function dumpMessages()

@@ -40,9 +40,6 @@ CONSOLE MESSAGE: line 53: Error broken stack #6
 CONSOLE MESSAGE: line 9: Error
     at Failure.letsFailWithStack (stack-with-sourceMap.js:19:20)
     at <anonymous>:1:1
-    at Object.InjectedScript._evaluateOn (<anonymous>:777:140)
-    at Object.InjectedScript._evaluateAndWrap (<anonymous>:710:34)
-    at Object.InjectedScript.evaluate (<anonymous>:626:21)
 Test that console.log(new Error().stack) would linkify links in stacks for sourceUrls and sourceMaps Bug 424001.
 
 foob.js:5 Error: Some test
@@ -101,8 +98,5 @@ console-log-linkify-stack-in-errors.html:53 Error broken stack #6
 stack-with-sourceMap.coffee:3 Error
     at Failure.letsFailWithStack (stack-with-sourceMap.coffee:3)
     at window.failure (stack-with-sourceMap.coffee:7)
-    at <anonymous>:1:1
-    at Object.InjectedScript._evaluateOn (<anonymous>:777:140)
-    at Object.InjectedScript._evaluateAndWrap (<anonymous>:710:34)
-    at Object.InjectedScript.evaluate (<anonymous>:626:21) console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
+    at <anonymous>:1:1 console-message-text source-code > console-message-url webkit-html-resource-link >  webkit-html-resource-link >  webkit-html-resource-link
 
