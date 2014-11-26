@@ -13,6 +13,7 @@ PASS document.createProcessingInstruction() threw exception TypeError: Failed to
 PASS document.createTextNode() threw exception TypeError: Failed to execute 'createTextNode' on 'Document': 1 argument required, but only 0 present..
 PASS document.getElementById() threw exception TypeError: Failed to execute 'getElementById' on 'Document': 1 argument required, but only 0 present..
 PASS document.getElementsByClassName() threw exception TypeError: Failed to execute 'getElementsByClassName' on 'Document': 1 argument required, but only 0 present..
+PASS document.getElementsByName() threw exception TypeError: Failed to execute 'getElementsByName' on 'Document': 1 argument required, but only 0 present..
 PASS document.getElementsByTagName() threw exception TypeError: Failed to execute 'getElementsByTagName' on 'Document': 1 argument required, but only 0 present..
 PASS document.getElementsByTagNameNS('http://www.w3.org/2000/svg') threw exception TypeError: Failed to execute 'getElementsByTagNameNS' on 'Document': 2 arguments required, but only 1 present..
 PASS document.getElementsByTagNameNS() threw exception TypeError: Failed to execute 'getElementsByTagNameNS' on 'Document': 2 arguments required, but only 0 present..

@@ -125,7 +125,7 @@ interface Document : Node {
     readonly attribute HTMLCollection anchors;
     readonly attribute DOMString lastModified;
 
-    [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
+    [PerWorldBindings] NodeList getElementsByName(DOMString elementName);
 
     [PutForwards=href] readonly attribute Location location;
 
