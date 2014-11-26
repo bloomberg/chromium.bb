@@ -69,7 +69,13 @@ VideoDecoder::VideoDecoder() {
 }
 
 VideoDecoder::VideoDecoder(const InstanceHandle& instance) {
-  if (has_interface<PPB_VideoDecoder_0_1>()) {
+  if (has_interface<PPB_VideoDecoder_1_0>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_VideoDecoder_1_0>()->Create(instance.pp_instance()));
+  } else if (has_interface<PPB_VideoDecoder_0_2>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_VideoDecoder_0_2>()->Create(instance.pp_instance()));
+  } else if (has_interface<PPB_VideoDecoder_0_1>()) {
     PassRefFromConstructor(
         get_interface<PPB_VideoDecoder_0_1>()->Create(instance.pp_instance()));
   }
