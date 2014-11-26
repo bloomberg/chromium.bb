@@ -2868,7 +2868,9 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
     // converted to the static position already
     ASSERT(!(logicalLeft.isAuto() && logicalRight.isAuto()));
 
-    LayoutUnit logicalLeftValue = 0;
+    // minimumValueForLength will convert 'auto' to 0 so that it doesn't impact the available space computation below.
+    LayoutUnit logicalLeftValue = minimumValueForLength(logicalLeft, containerLogicalWidth);
+    LayoutUnit logicalRightValue = minimumValueForLength(logicalRight, containerLogicalWidth);
 
     const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, false);
 
@@ -2893,10 +2895,9 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
         // NOTE:  It is not necessary to solve for 'right' in the over constrained
         // case because the value is not used for any further calculations.
 
-        logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
         computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
 
-        const LayoutUnit availableSpace = containerLogicalWidth - (logicalLeftValue + computedValues.m_extent + valueForLength(logicalRight, containerLogicalWidth) + bordersPlusPadding);
+        const LayoutUnit availableSpace = containerLogicalWidth - (logicalLeftValue + computedValues.m_extent + logicalRightValue + bordersPlusPadding);
 
         // Margins are now the only unknown
         if (marginLogicalLeft.isAuto() && marginLogicalRight.isAuto()) {
@@ -2979,35 +2980,29 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
         marginLogicalLeftValue = minimumValueForLength(marginLogicalLeft, containerRelativeLogicalWidth);
         marginLogicalRightValue = minimumValueForLength(marginLogicalRight, containerRelativeLogicalWidth);
 
-        const LayoutUnit availableSpace = containerLogicalWidth - (marginLogicalLeftValue + marginLogicalRightValue + bordersPlusPadding);
+        const LayoutUnit availableSpace = containerLogicalWidth - (marginLogicalLeftValue + marginLogicalRightValue + logicalLeftValue + logicalRightValue + bordersPlusPadding);
 
         // FIXME: Is there a faster way to find the correct case?
         // Use rule/case that applies.
         if (logicalLeftIsAuto && logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 1: (use shrink-to-fit for width, and solve of left)
-            LayoutUnit logicalRightValue = valueForLength(logicalRight, containerLogicalWidth);
-
-            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalRightValue, bordersPlusPadding);
-            logicalLeftValue = availableSpace - (computedValues.m_extent + logicalRightValue);
+            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace, bordersPlusPadding);
+            logicalLeftValue = availableSpace - computedValues.m_extent;
         } else if (!logicalLeftIsAuto && logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 3: (use shrink-to-fit for width, and no need solve of right)
-            logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
-
-            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalLeftValue, bordersPlusPadding);
+            computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace, bordersPlusPadding);
         } else if (logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 4: (solve for left)
             computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
-            logicalLeftValue = availableSpace - (computedValues.m_extent + valueForLength(logicalRight, containerLogicalWidth));
+            logicalLeftValue = availableSpace - computedValues.m_extent;
         } else if (!logicalLeftIsAuto && logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 5: (solve for width)
-            logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
             if (autoWidthShouldFitContent())
-                computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace - logicalLeftValue, bordersPlusPadding);
+                computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace, bordersPlusPadding);
             else
-                computedValues.m_extent = std::max<LayoutUnit>(0, availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth)));
+                computedValues.m_extent = std::max<LayoutUnit>(0, availableSpace);
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 6: (no need solve for right)
-            logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
             computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
         }
     }
