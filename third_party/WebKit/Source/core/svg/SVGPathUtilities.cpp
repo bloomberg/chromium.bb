@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPathUtilities.h"
 
 #include "core/svg/SVGPathBlender.h"
@@ -42,8 +41,8 @@ bool buildPathFromString(const String& d, Path& result)
         return true;
 
     SVGPathBuilder builder(result);
-    OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
-    SVGPathParser parser(source.get(), &builder);
+    SVGPathStringSource source(d);
+    SVGPathParser parser(&source, &builder);
     return parser.parsePathDataFromSource(NormalizedParsing);
 }
 
@@ -81,8 +80,8 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream& result
     result.reserveInitialCapacity(d.length());
 
     SVGPathByteStreamBuilder builder(result);
-    OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
-    SVGPathParser parser(source.get(), &builder);
+    SVGPathStringSource source(d);
+    SVGPathParser parser(&source, &builder);
     bool ok = parser.parsePathDataFromSource(parsingMode);
     result.shrinkToFit();
     return ok;

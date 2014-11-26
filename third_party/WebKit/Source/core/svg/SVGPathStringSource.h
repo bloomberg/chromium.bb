@@ -29,14 +29,9 @@ namespace blink {
 
 class SVGPathStringSource final : public SVGPathSource {
 public:
-    static PassOwnPtrWillBeRawPtr<SVGPathStringSource> create(const String& string)
-    {
-        return adoptPtrWillBeNoop(new SVGPathStringSource(string));
-    }
-
-private:
     explicit SVGPathStringSource(const String&);
 
+private:
     virtual bool hasMoreData() const override;
     virtual bool moveToNextToken() override;
     virtual bool parseSVGSegmentType(SVGPathSegType&) override;
