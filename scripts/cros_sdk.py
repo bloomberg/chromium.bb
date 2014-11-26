@@ -414,7 +414,7 @@ def _ReExecuteIfNeeded(argv):
     # We must set up the cgroups mounts before we enter our own namespace.
     # This way it is a shared resource in the root mount namespace.
     cgroups.Cgroup.InitSystem()
-    namespaces.Unshare(namespaces.CLONE_NEWNS | namespaces.CLONE_NEWUTS)
+    namespaces.SimpleUnshare()
 
 
 def _CreateParser(sdk_latest_version, bootstrap_latest_version):
