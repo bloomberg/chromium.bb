@@ -226,7 +226,6 @@ bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {
 
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
-    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const chrome::SelectCertificateCallback& callback) {
   ui::WindowAndroid* window =

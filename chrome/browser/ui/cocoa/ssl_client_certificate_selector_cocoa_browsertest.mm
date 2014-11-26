@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
   int count = 0;
   SSLClientCertificateSelectorCocoa* selector =
       [[SSLClientCertificateSelectorCocoa alloc]
-          initWithNetworkSession:auth_requestor_->http_network_session_
+          initWithBrowserContext:web_contents->GetBrowserContext()
                  certRequestInfo:auth_requestor_->cert_request_info_.get()
                         callback:base::Bind(&OnCertificateSelected,
                                             &cert,
@@ -72,13 +72,13 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
 
 // Test that switching to another tab correctly hides the sheet.
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
-  SSLClientCertificateSelectorCocoa* selector =
-      [[SSLClientCertificateSelectorCocoa alloc]
-          initWithNetworkSession:auth_requestor_->http_network_session_
-                 certRequestInfo:auth_requestor_->cert_request_info_.get()
-                        callback:chrome::SelectCertificateCallback()];
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  SSLClientCertificateSelectorCocoa* selector =
+      [[SSLClientCertificateSelectorCocoa alloc]
+          initWithBrowserContext:web_contents->GetBrowserContext()
+                 certRequestInfo:auth_requestor_->cert_request_info_.get()
+                        callback:chrome::SelectCertificateCallback()];
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();
 
