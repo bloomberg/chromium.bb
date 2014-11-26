@@ -61,6 +61,15 @@
     ArrayBuffer buffer;
   };
 
+  dictionary AudioHistoryState {
+    // Whether the call to set or get this state was successful.
+    boolean success;
+
+    // The current value of the audio history opt-in state after this
+    // call.
+    boolean enabled;
+  };
+
   // The type of the recognized hotword. Right now it only has 'search' but
   // could be expanded to other types of actions in the future.
   enum HotwordType { search };
@@ -69,6 +78,7 @@
   callback LaunchStateCallback = void(LaunchState result);
   callback LocalizeStringsCallback = void(object result);
   callback StatusDetailsCallback = void(StatusDetails result);
+  callback AudioHistoryCallback = void(AudioHistoryState result);
 
   interface Functions {
     // Sets the current enabled state of hotword search.
@@ -119,6 +129,13 @@
 
     // Stops the speaker model training.
     static void stopTraining(optional GenericDoneCallback callback);
+
+    // Sets the audio history opt-in state.
+    static void setAudioHistoryEnabled(boolean enabled,
+                                       optional AudioHistoryCallback callback);
+
+    // Gets the audio history opt-in state.
+    static void getAudioHistoryEnabled(optional AudioHistoryCallback callback);
   };
 
   interface Events {

@@ -560,6 +560,15 @@ bool HotwordService::IsTraining() {
   return training_;
 }
 
+HotwordAudioHistoryHandler* HotwordService::GetAudioHistoryHandler() {
+  return audio_history_handler_.get();
+}
+
+void HotwordService::SetAudioHistoryHandler(
+    HotwordAudioHistoryHandler* handler) {
+  audio_history_handler_.reset(handler);
+}
+
 void HotwordService::OnHotwordSearchEnabledChanged(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, std::string(prefs::kHotwordSearchEnabled));

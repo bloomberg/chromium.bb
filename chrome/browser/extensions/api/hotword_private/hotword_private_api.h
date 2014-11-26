@@ -204,6 +204,36 @@ class HotwordPrivateGetLocalizedStringsFunction
   virtual bool RunSync() override;
 };
 
+class HotwordPrivateSetAudioHistoryEnabledFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setAudioHistoryEnabled",
+                             HOTWORDPRIVATE_SETAUDIOHISTORYENABLED)
+
+ protected:
+  virtual ~HotwordPrivateSetAudioHistoryEnabledFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunAsync() override;
+
+  void SetResultAndSendResponse(bool success, bool new_enabled_value);
+};
+
+class HotwordPrivateGetAudioHistoryEnabledFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getAudioHistoryEnabled",
+                             HOTWORDPRIVATE_GETAUDIOHISTORYENABLED)
+
+ protected:
+  virtual ~HotwordPrivateGetAudioHistoryEnabledFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunAsync() override;
+
+  void SetResultAndSendResponse(bool success, bool new_enabled_value);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_HOTWORD_PRIVATE_HOTWORD_PRIVATE_API_H_

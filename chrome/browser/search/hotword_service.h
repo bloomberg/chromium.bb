@@ -135,6 +135,12 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Returns true if speaker training is currently in progress.
   bool IsTraining();
 
+  // Returns a pointer to the audio history handler.
+  HotwordAudioHistoryHandler* GetAudioHistoryHandler();
+
+  // Sets the audio history handler. Used for tests.
+  void SetAudioHistoryHandler(HotwordAudioHistoryHandler* handler);
+
  private:
   // Returns the ID of the extension that may need to be reinstalled.
   std::string ReinstalledExtensionId();

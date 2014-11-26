@@ -11,28 +11,42 @@
 
 class Profile;
 
+namespace history {
+class WebHistoryService;
+}
+
 // A class which handles the audio history pref for hotwording. This has been
 // pulled into its own class in order to transparently (to the rest of
 // hotwording) handle changing user global pref management systems.
 class HotwordAudioHistoryHandler {
  public:
+  typedef base::Callback<void(bool success, bool new_enabled_value)>
+      HotwordAudioHistoryCallback;
+
   explicit HotwordAudioHistoryHandler(content::BrowserContext* context);
-  ~HotwordAudioHistoryHandler();
+  virtual ~HotwordAudioHistoryHandler();
 
   // Updates the current preference value based on the user's account info
   // or false if the user is not signed in.
-  void GetAudioHistoryEnabled();
+  void GetAudioHistoryEnabled(const HotwordAudioHistoryCallback& callback);
 
   // Sets the user's global pref value for enabling audio history.
-  void SetAudioHistoryEnabled(const bool enabled);
+  void SetAudioHistoryEnabled(const bool enabled,
+                              const HotwordAudioHistoryCallback& callback);
+
+  // This helper function is made public for testing.
+  virtual history::WebHistoryService* GetWebHistory();
 
  private:
   // Callback called upon completion of the web history request.
-  void AudioHistoryComplete(bool success, bool new_enabled_value);
+  void AudioHistoryComplete(
+      const HotwordAudioHistoryCallback& callback,
+      bool success,
+      bool new_enabled_value);
 
   Profile* profile_;
 
-  base::WeakPtrFactory<HotwordAudioHistoryHandler> weak_factory_;
+  base::WeakPtrFactory<HotwordAudioHistoryHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordAudioHistoryHandler);
 };

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -366,6 +367,59 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
 
   SetResult(localized_strings);
   return true;
+}
+
+bool HotwordPrivateSetAudioHistoryEnabledFunction::RunAsync() {
+  scoped_ptr<api::hotword_private::SetAudioHistoryEnabled::Params> params(
+      api::hotword_private::SetAudioHistoryEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service || !hotword_service->GetAudioHistoryHandler()) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  }
+
+  hotword_service->GetAudioHistoryHandler()->SetAudioHistoryEnabled(
+      params->enabled,
+      base::Bind(
+        &HotwordPrivateSetAudioHistoryEnabledFunction::SetResultAndSendResponse,
+        this));
+  return true;
+}
+
+void HotwordPrivateSetAudioHistoryEnabledFunction::SetResultAndSendResponse(
+    bool success, bool new_enabled_value) {
+  api::hotword_private::AudioHistoryState result;
+  result.success = success;
+  result.enabled = new_enabled_value;
+  SetResult(result.ToValue().release());
+  SendResponse(true);
+}
+
+bool HotwordPrivateGetAudioHistoryEnabledFunction::RunAsync() {
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service || !hotword_service->GetAudioHistoryHandler()) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  }
+
+  hotword_service->GetAudioHistoryHandler()->GetAudioHistoryEnabled(base::Bind(
+      &HotwordPrivateGetAudioHistoryEnabledFunction::SetResultAndSendResponse,
+      this));
+
+  return true;
+}
+
+void HotwordPrivateGetAudioHistoryEnabledFunction::SetResultAndSendResponse(
+    bool success, bool new_enabled_value) {
+  api::hotword_private::AudioHistoryState result;
+  result.success = success;
+  result.enabled = new_enabled_value;
+  SetResult(result.ToValue().release());
+  SendResponse(true);
 }
 
 }  // namespace extensions

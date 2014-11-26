@@ -94,11 +94,11 @@ class WebHistoryService : public KeyedService {
                             const ExpireWebHistoryCallback& callback);
 
   // Requests whether audio history recording is enabled.
-  void GetAudioHistoryEnabled(const AudioWebHistoryCallback& callback);
+  virtual void GetAudioHistoryEnabled(const AudioWebHistoryCallback& callback);
 
   // Sets the state of audio history recording to |new_enabled_value|.
-  void SetAudioHistoryEnabled(bool new_enabled_value,
-                              const AudioWebHistoryCallback& callback);
+  virtual void SetAudioHistoryEnabled(bool new_enabled_value,
+                                      const AudioWebHistoryCallback& callback);
 
   // Used for tests.
   size_t GetNumberOfPendingAudioHistoryRequests();
