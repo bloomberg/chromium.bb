@@ -443,9 +443,6 @@ void ThreadState::cleanupPages()
 void ThreadState::cleanup()
 {
     checkThread();
-    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
-        m_cleanupTasks[i]->preCleanup();
-
     {
         // Grab the threadAttachMutex to ensure only one thread can shutdown at
         // a time and that no other thread can do a global GC. It also allows
@@ -697,7 +694,7 @@ void ThreadState::snapshot()
 }
 #endif
 
-void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallback callback)
+void ThreadState::pushWeakPointerCallback(void* object, WeakPointerCallback callback)
 {
     CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
@@ -709,7 +706,7 @@ bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
     // pages are not traced and thus objects on those pages are never be
     // registered as objects on orphaned pages. We cannot assert this here since
     // we might have an off-heap collection. We assert it in
-    // Heap::pushWeakObjectPointerCallback.
+    // Heap::pushWeakPointerCallback.
     if (CallbackStack::Item* item = m_weakCallbackStack->pop()) {
         item->call(visitor);
         return true;

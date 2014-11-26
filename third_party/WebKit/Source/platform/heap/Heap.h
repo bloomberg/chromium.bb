@@ -874,9 +874,9 @@ public:
     // the containerObject can be the same thing, but the containerObject is
     // constrained to be on the heap, since the heap is used to identify the
     // correct thread.
-    static void pushWeakObjectPointerCallback(void* closure, void* containerObject, WeakPointerCallback);
+    static void pushWeakPointerCallback(void* closure, void* containerObject, WeakPointerCallback);
 
-    // Similar to the more general pushWeakObjectPointerCallback, but cell
+    // Similar to the more general pushWeakPointerCallback, but cell
     // pointer callbacks are added to a static callback work list and the weak
     // callback is performed on the thread performing garbage collection. This
     // is OK because cells are just cleared and no deallocation can happen.

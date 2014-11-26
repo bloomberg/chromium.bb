@@ -570,9 +570,6 @@ public:
     public:
         virtual ~CleanupTask() { }
 
-        // Executed before the final GC.
-        virtual void preCleanup() { }
-
         // Executed after the final GC. Thread heap is empty at this point.
         virtual void postCleanup() { }
     };
@@ -656,7 +653,7 @@ public:
     void snapshot();
 #endif
 
-    void pushWeakObjectPointerCallback(void*, WeakPointerCallback);
+    void pushWeakPointerCallback(void*, WeakPointerCallback);
     bool popAndInvokeWeakPointerCallback(Visitor*);
 
     size_t objectPayloadSizeForTesting();
@@ -699,7 +696,7 @@ public:
     }
 
 private:
-    explicit ThreadState();
+    ThreadState();
     ~ThreadState();
 
     friend class SafePointBarrier;
@@ -717,8 +714,7 @@ private:
 
     // Finds the Blink HeapPage in this thread-specific heap
     // corresponding to a given address. Return 0 if the address is
-    // not contained in any of the pages. This does not consider
-    // large objects.
+    // not contained in any of the pages.
     BaseHeapPage* pageFromAddress(Address);
 
     // When ThreadState is detaching from non-main thread its

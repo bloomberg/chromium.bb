@@ -2019,7 +2019,7 @@ public:
 
     virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) override
     {
-        Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
+        Heap::pushWeakPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
     }
 
     virtual void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
@@ -2380,14 +2380,14 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
     *slot = CallbackStack::Item(cell, callback);
 }
 
-void Heap::pushWeakObjectPointerCallback(void* closure, void* object, WeakPointerCallback callback)
+void Heap::pushWeakPointerCallback(void* closure, void* object, WeakPointerCallback callback)
 {
     ASSERT(Heap::contains(object));
     BaseHeapPage* page = pageFromObject(object);
     ASSERT(!page->orphaned());
     ASSERT(Heap::contains(object) == page);
     ThreadState* state = page->threadState();
-    state->pushWeakObjectPointerCallback(closure, callback);
+    state->pushWeakPointerCallback(closure, callback);
 }
 
 bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
@@ -2396,7 +2396,7 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
     // pages are not traced and thus objects on those pages are never be
     // registered as objects on orphaned pages. We cannot assert this here since
     // we might have an off-heap collection. We assert it in
-    // Heap::pushWeakObjectPointerCallback.
+    // Heap::pushWeakPointerCallback.
     if (CallbackStack::Item* item = s_weakCallbackStack->pop()) {
         item->call(visitor);
         return true;
