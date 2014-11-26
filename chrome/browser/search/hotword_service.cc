@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search/hotword_service.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
@@ -331,10 +333,8 @@ void HotwordService::OnExtensionInstalled(
   // by the IsHotwordAllowed check. The check for IsHotwordAllowed() here
   // can be removed once it's known that few people have manually
   // installed extension.
-  if (IsHotwordAllowed() &&
-      !profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) {
+  if (IsHotwordAllowed() && !IsSometimesOnEnabled())
     DisableHotwordExtension(GetExtensionService(profile_));
-  }
 }
 
 bool HotwordService::MaybeReinstallHotwordExtension() {
@@ -468,6 +468,12 @@ bool HotwordService::IsAlwaysOnEnabled() {
       profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled) &&
       HotwordServiceFactory::IsHotwordHardwareAvailable();
+}
+
+bool HotwordService::IsSometimesOnEnabled() {
+  return profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled) &&
+      !HotwordServiceFactory::IsHotwordHardwareAvailable();
 }
 
 void HotwordService::EnableHotwordExtension(

@@ -142,9 +142,11 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (!hotword_service) {
     result.available = false;
+    result.enabled = false;
     result.always_on_enabled = false;
   } else {
     result.available = hotword_service->IsServiceAvailable();
+    result.enabled = hotword_service->IsSometimesOnEnabled();
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
     result.training_enabled = hotword_service->IsTraining();
     result.always_on_enabled = hotword_service->IsAlwaysOnEnabled();
@@ -152,7 +154,6 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
-  result.enabled = prefs->GetBoolean(prefs::kHotwordSearchEnabled);
   result.audio_logging_enabled = false;
   result.experimental_hotword_enabled =
       HotwordService::IsExperimentalHotwordingEnabled();

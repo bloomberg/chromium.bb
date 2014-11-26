@@ -404,3 +404,99 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
 }
+
+TEST_P(HotwordServiceTest, IsAlwaysOnEnabled) {
+  // Bypass test for old hotwording.
+  if (extension_id_ != extension_misc::kHotwordSharedModuleId)
+    return;
+
+  // Set the field trial to a valid one.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      hotword_internal::kHotwordFieldTrialName, "Install"));
+
+  InitializeEmptyExtensionService();
+  service_->Init();
+  HotwordServiceFactory* hotword_service_factory =
+      HotwordServiceFactory::GetInstance();
+
+  MockHotwordService* hotword_service = static_cast<MockHotwordService*>(
+      hotword_service_factory->SetTestingFactoryAndUse(
+          profile(), BuildMockHotwordService));
+  EXPECT_TRUE(hotword_service != NULL);
+  hotword_service->SetExtensionService(service());
+  hotword_service->SetExtensionId(extension_id_);
+
+  // No hardware available. Should never be true.
+  EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
+
+  // Enable always-on, still not available.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
+  EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
+
+  // Enable regular hotwording, still not available.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, true);
+  EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
+
+  // Bypass hardware check.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalHotwordHardware);
+  EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
+
+  // Disable.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                    false);
+  EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
+}
+
+TEST_P(HotwordServiceTest, IsSometimesOnEnabled) {
+  // Set the field trial to a valid one.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      hotword_internal::kHotwordFieldTrialName, "Install"));
+
+  InitializeEmptyExtensionService();
+  service_->Init();
+  HotwordServiceFactory* hotword_service_factory =
+      HotwordServiceFactory::GetInstance();
+
+  MockHotwordService* hotword_service = static_cast<MockHotwordService*>(
+      hotword_service_factory->SetTestingFactoryAndUse(
+          profile(), BuildMockHotwordService));
+  EXPECT_TRUE(hotword_service != NULL);
+  hotword_service->SetExtensionService(service());
+  hotword_service->SetExtensionId(extension_id_);
+
+  // No pref set.
+  EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+
+  // Set pref.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, true);
+  EXPECT_TRUE(hotword_service->IsSometimesOnEnabled());
+
+  // Turn on always-on pref. Should have no effect.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
+  EXPECT_TRUE(hotword_service->IsSometimesOnEnabled());
+
+  // Disable.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, false);
+  EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+
+  // Bypass rest of test for old hotwording.
+  if (extension_id_ != extension_misc::kHotwordSharedModuleId)
+    return;
+
+  // Bypass hardware check.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalHotwordHardware);
+
+  // With hardware, only always-on is allowed.
+  EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+
+  // Set pref.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, true);
+  EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+
+  // Disable always-on.
+  profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                    false);
+  EXPECT_FALSE(hotword_service->IsSometimesOnEnabled());
+}

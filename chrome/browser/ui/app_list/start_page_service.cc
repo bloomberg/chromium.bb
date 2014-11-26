@@ -206,11 +206,10 @@ bool StartPageService::HotwordEnabled() {
 // TODO(amistry): Make speech input, and hotwording, work on non-ChromeOS.
 #if defined(OS_CHROMEOS)
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
-    auto prefs = profile_->GetPrefs();
     HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
     return HotwordServiceFactory::IsServiceAvailable(profile_) &&
-        (prefs->GetBoolean(prefs::kHotwordSearchEnabled) ||
-         (service && service->IsAlwaysOnEnabled()));
+        service &&
+        (service->IsSometimesOnEnabled() || service->IsAlwaysOnEnabled());
   }
   return HotwordServiceFactory::IsServiceAvailable(profile_) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);

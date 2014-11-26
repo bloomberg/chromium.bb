@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SEARCH_HOTWORD_SERVICE_H_
 #define CHROME_BROWSER_SEARCH_HOTWORD_SERVICE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -69,6 +71,9 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
 
   // Returns whether always-on hotwording is enabled.
   bool IsAlwaysOnEnabled();
+
+  // Returns whether google.com/NTP/launcher hotwording is enabled.
+  bool IsSometimesOnEnabled();
 
   // Control the state of the hotword extension.
   void EnableHotwordExtension(ExtensionService* extension_service);
