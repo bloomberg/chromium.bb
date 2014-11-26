@@ -388,7 +388,9 @@ void RenderGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
         minLogicalWidth += minTrackBreadth;
         maxLogicalWidth += maxTrackBreadth;
 
-        // FIXME: This should add in the scrollbarWidth (e.g. see RenderFlexibleBox).
+        LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
+        maxLogicalWidth += scrollbarWidth;
+        minLogicalWidth += scrollbarWidth;
     }
 }
 

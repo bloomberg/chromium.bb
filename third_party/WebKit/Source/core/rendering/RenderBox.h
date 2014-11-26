@@ -455,7 +455,7 @@ public:
 
     virtual int verticalScrollbarWidth() const;
     int horizontalScrollbarHeight() const;
-    int instrinsicScrollbarLogicalWidth() const;
+    int intrinsicScrollbarLogicalWidth() const;
     int scrollbarLogicalHeight() const { return style()->isHorizontalWritingMode() ? horizontalScrollbarHeight() : verticalScrollbarWidth(); }
     virtual bool scroll(ScrollDirection, ScrollGranularity, float delta = 1);
     bool canBeScrolledAndHasScrollableArea() const;

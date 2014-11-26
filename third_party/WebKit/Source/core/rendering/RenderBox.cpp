@@ -642,7 +642,7 @@ int RenderBox::horizontalScrollbarHeight() const
     return layer()->scrollableArea()->horizontalScrollbarHeight();
 }
 
-int RenderBox::instrinsicScrollbarLogicalWidth() const
+int RenderBox::intrinsicScrollbarLogicalWidth() const
 {
     if (!hasOverflowClip())
         return 0;
