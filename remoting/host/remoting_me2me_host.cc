@@ -53,7 +53,6 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/host_status_logger.h"
-#include "remoting/host/host_status_sender.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/ipc_host_event_logger.h"
@@ -326,7 +325,6 @@ class HostProcess
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
-  scoped_ptr<HostStatusSender> host_status_sender_;
   scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
   scoped_ptr<HostStatusLogger> host_status_logger_;
   scoped_ptr<HostEventLogger> host_event_logger_;
@@ -1328,9 +1326,6 @@ void HostProcess::StartHost() {
       this, host_id_, signal_strategy_.get(), key_pair_,
       directory_bot_jid_));
 
-  host_status_sender_.reset(new HostStatusSender(
-      host_id_, signal_strategy_.get(), key_pair_, directory_bot_jid_));
-
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
@@ -1378,7 +1373,8 @@ void HostProcess::ShutdownHost(HostExitCodes exit_code) {
 
     case HOST_STARTED:
       state_ = HOST_STOPPING;
-      host_status_sender_->SendOfflineStatus(exit_code);
+      heartbeat_sender_->SetHostOfflineReason(
+          ExitCodeToString(exit_code), base::Bind(base::DoNothing));
       ScheduleHostShutdown();
       break;
 
@@ -1410,7 +1406,6 @@ void HostProcess::ShutdownOnNetworkThread() {
   host_event_logger_.reset();
   host_status_logger_.reset();
   heartbeat_sender_.reset();
-  host_status_sender_.reset();
   host_change_notification_listener_.reset();
   signaling_connector_.reset();
   oauth_token_getter_.reset();

@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -40,6 +41,13 @@ class IqSender;
 //     <rem:signature>.signature.</rem:signature>
 //   </rem:heartbeat>
 // </iq>
+//
+// Normally the heartbeat indicates that the host is healthy and ready to
+// accept new connections from a client, but the rem:heartbeat xml element can
+// optionally include a rem:host-offline-reason attribute, which indicates that
+// the host cannot accept connections from the client (and might possibly be
+// shutting down).  The value of the host-offline-reason attribute can be a
+// string from host_exit_codes.cc (i.e. "INVALID_HOST_CONFIGURATION" string).
 //
 // The sequence-id attribute of the heartbeat is a zero-based incrementally
 // increasing integer unique to each heartbeat from a single host.
@@ -100,23 +108,36 @@ class HeartbeatSender : public SignalStrategy::Listener {
                   const std::string& directory_bot_jid);
   ~HeartbeatSender() override;
 
+  // Sets host offline reason for future heartbeat stanzas,
+  // as well as intiates sending a stanza right away.
+  //
+  // See rem:host-offline-reason class-level comments for discussion
+  // of allowed values for |host_offline_reason| string.
+  //
+  // |ack_callback| will be called once, when the bot acks
+  // receiving the |host_offline_reason|.
+  void SetHostOfflineReason(
+      const std::string& host_offline_reason,
+      const base::Closure& ack_callback);
+
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest,
                            DoSendStanzaWithExpectedSequenceId);
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, CreateHeartbeatMessage);
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, ProcessResponseSetInterval);
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest,
                            ProcessResponseExpectedSequenceId);
+  friend class HeartbeatSenderTest;
 
   void SendStanza();
   void ResendStanza();
   void DoSendStanza();
-  void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
+  void ProcessResponse(bool is_offline_heartbeat_response,
+                       IqRequest* request,
+                       const buzz::XmlElement* response);
   void SetInterval(int interval);
   void SetSequenceId(int sequence_id);
 
@@ -139,6 +160,18 @@ class HeartbeatSender : public SignalStrategy::Listener {
   int sequence_id_recent_set_num_;
   bool heartbeat_succeeded_;
   int failed_startup_heartbeat_count_;
+  std::string host_offline_reason_;
+  base::Closure host_offline_reason_ack_callback_;
+  // TODO(lukasza): Consistent usage of listener-vs-callback. This is
+  // inconsistent today, because 1) host-offline-reason changes really
+  // needed to use callbacks (for ability to wrap them in
+  // CancellableCallback and for ability to hold a ref-count to
+  // MinimumHeartbeatSupporter throughout the lifetime of a callback)
+  // and 2) refactoring for consistently using callbacks everywhere
+  // spans multiple files and would obscure the core changes for
+  // host-offline-reason code.
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
 };

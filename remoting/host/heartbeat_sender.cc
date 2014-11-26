@@ -33,6 +33,7 @@ const char kHostIdAttr[] = "hostid";
 const char kHostVersionTag[] = "host-version";
 const char kHeartbeatSignatureTag[] = "signature";
 const char kSequenceIdAttr[] = "sequence-id";
+const char kHostOfflineReasonAttr[] = "host-offline-reason";
 
 const char kErrorTag[] = "error";
 const char kNotFoundTag[] = "item-not-found";
@@ -67,6 +68,7 @@ HeartbeatSender::HeartbeatSender(
       failed_startup_heartbeat_count_(0) {
   DCHECK(signal_strategy_);
   DCHECK(key_pair_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   signal_strategy_->AddListener(this);
 
@@ -79,6 +81,7 @@ HeartbeatSender::~HeartbeatSender() {
 }
 
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (state == SignalStrategy::CONNECTED) {
     iq_sender_.reset(new IqSender(signal_strategy_));
     SendStanza();
@@ -97,31 +100,51 @@ bool HeartbeatSender::OnSignalStrategyIncomingStanza(
   return false;
 }
 
+void HeartbeatSender::SetHostOfflineReason(
+    const std::string& host_offline_reason,
+    const base::Closure& ack_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(host_offline_reason_ack_callback_.is_null());
+  host_offline_reason_ = host_offline_reason;
+  host_offline_reason_ack_callback_ = ack_callback;
+  if (signal_strategy_->GetState() == SignalStrategy::CONNECTED) {
+    DoSendStanza();
+  }
+}
+
 void HeartbeatSender::SendStanza() {
-  DoSendStanza();
   // Make sure we don't send another heartbeat before the heartbeat interval
   // has expired.
   timer_resend_.Stop();
+  DoSendStanza();
 }
 
 void HeartbeatSender::ResendStanza() {
-  DoSendStanza();
   // Make sure we don't send another heartbeat before the heartbeat interval
   // has expired.
   timer_.Reset();
+  DoSendStanza();
 }
 
 void HeartbeatSender::DoSendStanza() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(signal_strategy_->GetState() == SignalStrategy::CONNECTED);
   VLOG(1) << "Sending heartbeat stanza to " << directory_bot_jid_;
+
   request_ = iq_sender_->SendIq(
       buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
       base::Bind(&HeartbeatSender::ProcessResponse,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 !host_offline_reason_.empty()));
   ++sequence_id_;
 }
 
-void HeartbeatSender::ProcessResponse(IqRequest* request,
-                                      const XmlElement* response) {
+void HeartbeatSender::ProcessResponse(
+    bool is_offline_heartbeat_response,
+    IqRequest* request,
+    const XmlElement* response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     const XmlElement* error_element =
@@ -153,12 +176,6 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
                << response->Str();
     return;
   }
-
-  // Notify listener of the first successful heartbeat.
-  if (!heartbeat_succeeded_) {
-    listener_->OnHeartbeatSuccessful();
-  }
-  heartbeat_succeeded_ = true;
 
   // This method must only be called for error or result stanzas.
   DCHECK_EQ(std::string(buzz::STR_RESULT), type);
@@ -200,7 +217,24 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
       }
     }
     if (!did_set_sequence_id) {
+      // It seems the bot accepted our signature and our message.
       sequence_id_recent_set_num_ = 0;
+
+      // Notify listener of the first successful heartbeat.
+      if (!heartbeat_succeeded_) {
+        listener_->OnHeartbeatSuccessful();
+      }
+      heartbeat_succeeded_ = true;
+
+      // Notify caller of SetHostOfflineReason that we got an ack.
+      if (is_offline_heartbeat_response) {
+        if (!host_offline_reason_ack_callback_.is_null()) {
+          base::MessageLoop::current()->PostTask(
+              FROM_HERE,
+              host_offline_reason_ack_callback_);
+          host_offline_reason_ack_callback_.Reset();
+        }
+      }
     }
   }
 }
@@ -248,6 +282,11 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   heartbeat->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
                  base::IntToString(sequence_id_));
+  if (!host_offline_reason_.empty()) {
+    heartbeat->AddAttr(
+        QName(kChromotingXmlNamespace, kHostOfflineReasonAttr),
+        host_offline_reason_);
+  }
   heartbeat->AddElement(CreateSignature().release());
   // Append host version.
   scoped_ptr<XmlElement> version_tag(new XmlElement(

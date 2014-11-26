@@ -5,8 +5,6 @@
 #ifndef REMOTING_HOST_SERVER_LOG_ENTRY_HOST_H_
 #define REMOTING_HOST_SERVER_LOG_ENTRY_HOST_H_
 
-#include "remoting/host/host_exit_codes.h"
-#include "remoting/host/host_status_sender.h"
 #include "remoting/protocol/transport.h"
 
 namespace remoting {
@@ -20,10 +18,6 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
 
 // Constructs a log entry for a heartbeat.
 scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat();
-
-// Constructs a log entry for a host status message.
-scoped_ptr<ServerLogEntry> MakeLogEntryForHostStatus(
-    HostStatusSender::HostStatus host_status, HostExitCodes exit_code);
 
 // Adds fields describing the host to this log entry.
 void AddHostFieldsToLogEntry(ServerLogEntry* entry);

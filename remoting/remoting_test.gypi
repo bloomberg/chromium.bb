@@ -157,7 +157,6 @@
         'host/host_extension_session_manager_unittest.cc',
         'host/host_mock_objects.cc',
         'host/host_status_logger_unittest.cc',
-        'host/host_status_sender_unittest.cc',
         'host/ipc_desktop_environment_unittest.cc',
         'host/it2me/it2me_native_messaging_host_unittest.cc',
         'host/linux/audio_pipe_reader_unittest.cc',

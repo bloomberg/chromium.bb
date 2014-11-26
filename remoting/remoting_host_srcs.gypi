@@ -118,8 +118,6 @@
       'host/host_status_logger.h',
       'host/host_status_monitor.h',
       'host/host_status_observer.h',
-      'host/host_status_sender.cc',
-      'host/host_status_sender.h',
       'host/host_window.h',
       'host/host_window_proxy.cc',
       'host/host_window_proxy.h',

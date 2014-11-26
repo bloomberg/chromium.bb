@@ -15,16 +15,12 @@ namespace remoting {
 namespace {
 const char kValueEventNameSessionState[] = "session-state";
 const char kValueEventNameHeartbeat[] = "heartbeat";
-const char kValueEventNameHostStatus[] = "host-status";
 
 const char kValueRoleHost[] = "host";
 
 const char kKeySessionState[] = "session-state";
 const char kValueSessionStateConnected[] = "connected";
 const char kValueSessionStateClosed[] = "closed";
-
-const char kStatusName[] = "status";
-const char kExitCodeName[] = "exit-code";
 
 const char kKeyOsName[] = "os-name";
 
@@ -55,18 +51,6 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat() {
   scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleHost);
   entry->AddEventNameField(kValueEventNameHeartbeat);
-  return entry.Pass();
-}
-
-// static
-scoped_ptr<ServerLogEntry> MakeLogEntryForHostStatus(
-    HostStatusSender::HostStatus host_status, HostExitCodes exit_code) {
-  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
-  entry->AddRoleField(kValueRoleHost);
-  entry->AddEventNameField(kValueEventNameHostStatus);
-  entry->Set(kStatusName, HostStatusSender::HostStatusToString(host_status));
-  if (host_status == HostStatusSender::OFFLINE)
-    entry->Set(kExitCodeName, ExitCodeToString(exit_code));
   return entry.Pass();
 }
 
