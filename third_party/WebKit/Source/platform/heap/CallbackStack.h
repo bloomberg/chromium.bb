@@ -42,10 +42,6 @@ public:
     Item* pop();
 
     bool isEmpty() const;
-    bool sizeExceeds(size_t) const;
-
-    void append(CallbackStack*);
-    void takeBlockFrom(CallbackStack*);
 
     void invokeEphemeronCallbacks(Visitor*);
 

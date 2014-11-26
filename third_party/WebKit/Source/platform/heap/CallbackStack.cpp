@@ -91,27 +91,6 @@ bool CallbackStack::isEmpty() const
     return hasJustOneBlock() && m_first->isEmptyBlock();
 }
 
-void CallbackStack::takeBlockFrom(CallbackStack* other)
-{
-    // We assume the stealing stack is empty.
-    ASSERT(isEmpty());
-
-    if (other->isEmpty())
-        return;
-
-    if (other->hasJustOneBlock()) {
-        swap(other);
-        return;
-    }
-
-    // Delete our block and steal the first one from other.
-    delete m_first;
-    m_first = other->m_first;
-    other->m_first = m_first->next();
-    m_first->setNext(0);
-    m_last = m_first;
-}
-
 CallbackStack::Item* CallbackStack::allocateEntrySlow()
 {
     ASSERT(!m_first->allocateEntry());
@@ -167,28 +146,6 @@ void CallbackStack::invokeOldestCallbacks(Block* from, Block* upto, Visitor* vis
     // Recurse first (blockSize at a time) so we get to the newly added entries last.
     invokeOldestCallbacks(from->next(), upto, visitor);
     from->invokeEphemeronCallbacks(visitor);
-}
-
-bool CallbackStack::sizeExceeds(size_t minSize) const
-{
-    Block* current = m_first;
-    for (size_t size = m_first->size(); size < minSize; size += current->size()) {
-        if (!current->next())
-            return false;
-        current = current->next();
-    }
-    return true;
-}
-
-void CallbackStack::append(CallbackStack* other)
-{
-    ASSERT(!m_last->next());
-    ASSERT(!other->m_last->next());
-    m_last->setNext(other->m_first);
-    m_last = other->m_last;
-    // After append, we mark |other| as ill-formed by clearing its pointers.
-    other->m_first = 0;
-    other->m_last = 0;
 }
 
 bool CallbackStack::hasJustOneBlock() const
