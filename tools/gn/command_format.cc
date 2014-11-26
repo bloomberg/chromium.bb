@@ -59,7 +59,7 @@ const int kMaximumWidth = 80;
 const int kPenaltyLineBreak = 500;
 const int kPenaltyHorizontalSeparation = 100;
 const int kPenaltyExcess = 10000;
-const int kPenaltyBrokenLineOnOneLiner = 1000;
+const int kPenaltyBrokenLineOnOneLiner = 5000;
 
 enum Precedence {
   kPrecedenceLowest,
@@ -71,6 +71,12 @@ enum Precedence {
   kPrecedenceSuffix,
   kPrecedenceUnary,
 };
+
+int CountLines(const std::string& str) {
+  std::vector<std::string> lines;
+  base::SplitStringDontTrim(str, '\n', &lines);
+  return static_cast<int>(lines.size());
+}
 
 class Printer {
  public:
@@ -151,11 +157,16 @@ class Printer {
                 bool force_multiline);
 
   // Returns the penalty.
-  int FunctionCall(const FunctionCallNode* func_call);
+  int FunctionCall(const FunctionCallNode* func_call,
+                   const std::string& suffix);
 
   // Create a clone of this Printer in a similar state (other than the output,
   // but including margins, etc.) to be used for dry run measurements.
   void InitializeSub(Printer* sub);
+
+  template <class PARSENODE>
+  bool ListWillBeMultiline(const std::vector<PARSENODE*>& list,
+                           const ParseNode* end);
 
   std::string output_;           // Output buffer.
   std::vector<Token> comments_;  // Pending end-of-line comments.
@@ -367,6 +378,7 @@ void Printer::AddParen(int prec, int outer_prec, bool* parenthesized) {
 int Printer::Expr(const ParseNode* root,
                   int outer_prec,
                   const std::string& suffix) {
+  std::string at_end = suffix;
   int penalty = 0;
   penalty_depth_++;
 
@@ -405,32 +417,55 @@ int Printer::Expr(const ParseNode* root,
     AddParen(prec, outer_prec, &parenthesized);
     int start_line = CurrentLine();
     int start_column = CurrentColumn();
+    bool is_assignment = binop->op().value() == "=" ||
+                         binop->op().value() == "+=" ||
+                         binop->op().value() == "-=";
+    // A sort of funny special case for the long lists that are common in .gn
+    // files, don't indent them + 4, even though they're just continuations when
+    // they're simple lists like "x = [ a, b, c, ... ]"
+    const ListNode* right_as_list = binop->right()->AsList();
     int indent_column =
-        (binop->op().value() == "=" || binop->op().value() == "+=" ||
-         binop->op().value() == "-=")
+        (is_assignment &&
+         (!right_as_list || (!right_as_list->prefer_multiline() &&
+                             !ListWillBeMultiline(right_as_list->contents(),
+                                                  right_as_list->End()))))
             ? margin() + kIndentSize * 2
             : start_column;
     if (stack_.back().continuation_requires_indent)
       indent_column += kIndentSize * 2;
 
-    Expr(binop->left(),
-         prec,
-         std::string(" ") + binop->op().value().as_string());
+    stack_.push_back(IndentState(indent_column, false));
+    Printer sub_left;
+    InitializeSub(&sub_left);
+    sub_left.Expr(binop->left(),
+                  prec,
+                  std::string(" ") + binop->op().value().as_string());
+    bool left_is_multiline = CountLines(sub_left.String()) > 1;
+    // Avoid walking the whole left redundantly times (see timing of Format.046)
+    // so pull the output and comments from subprinter.
+    Print(sub_left.String().substr(start_column));
+    std::copy(sub_left.comments_.begin(),
+              sub_left.comments_.end(),
+              std::back_inserter(comments_));
 
     // Single line.
     Printer sub1;
     InitializeSub(&sub1);
-    sub1.stack_.push_back(IndentState(indent_column, false));
     sub1.Print(" ");
     int penalty_current_line =
         sub1.Expr(binop->right(), prec + 1, std::string());
     sub1.Print(suffix);
     penalty_current_line += AssessPenalty(sub1.String());
+    if (!is_assignment && left_is_multiline) {
+      // In e.g. xxx + yyy, if xxx is already multiline, then we want a penalty
+      // for trying to continue as if this were one line.
+      penalty_current_line +=
+          (CountLines(sub1.String()) - 1) * kPenaltyBrokenLineOnOneLiner;
+    }
 
     // Break after operator.
     Printer sub2;
     InitializeSub(&sub2);
-    sub2.stack_.push_back(IndentState(indent_column, false));
     sub2.Newline();
     int penalty_next_line = sub2.Expr(binop->right(), prec + 1, std::string());
     sub2.Print(suffix);
@@ -441,13 +476,12 @@ int Printer::Expr(const ParseNode* root,
       Expr(binop->right(), prec + 1, std::string());
     } else {
       // Otherwise, put first argument and op, and indent next.
-      stack_.push_back(IndentState(indent_column, false));
       Newline();
       penalty += std::abs(CurrentColumn() - start_column) *
                  kPenaltyHorizontalSeparation;
       Expr(binop->right(), prec + 1, std::string());
-      stack_.pop_back();
     }
+    stack_.pop_back();
     penalty += (CurrentLine() - start_line) * GetPenaltyForLineBreak();
   } else if (const BlockNode* block = root->AsBlock()) {
     Sequence(
@@ -470,11 +504,13 @@ int Printer::Expr(const ParseNode* root,
       } else {
         Sequence(kSequenceStyleBracedBlock,
                  condition->if_false()->AsBlock()->statements(),
-                 condition->if_false()->AsBlock()->End(), false);
+                 condition->if_false()->AsBlock()->End(),
+                 false);
       }
     }
   } else if (const FunctionCallNode* func_call = root->AsFunctionCall()) {
-    penalty += FunctionCall(func_call);
+    penalty += FunctionCall(func_call, at_end);
+    at_end = "";
   } else if (const IdentifierNode* identifier = root->AsIdentifier()) {
     Print(identifier->value().value());
   } else if (const ListNode* list = root->AsList()) {
@@ -505,7 +541,7 @@ int Printer::Expr(const ParseNode* root,
               std::back_inserter(comments_));
   }
 
-  Print(suffix);
+  Print(at_end);
 
   penalty_depth_--;
   return penalty;
@@ -524,14 +560,7 @@ void Printer::Sequence(SequenceStyle style,
   if (style == kSequenceStyleBlock || style == kSequenceStyleBracedBlock)
     force_multiline = true;
 
-  if (end && end->comments() && !end->comments()->before().empty())
-    force_multiline = true;
-
-  // If there's before line comments, make sure we have a place to put them.
-  for (const auto& i : list) {
-    if (i->comments() && !i->comments()->before().empty())
-      force_multiline = true;
-  }
+  force_multiline |= ListWillBeMultiline(list, end);
 
   if (list.size() == 0 && !force_multiline) {
     // No elements, and not forcing newlines, print nothing.
@@ -571,7 +600,7 @@ void Printer::Sequence(SequenceStyle style,
     }
 
     // Trailing comments.
-    if (end->comments()) {
+    if (end->comments() && !end->comments()->before().empty()) {
       if (list.size() >= 2)
         Newline();
       for (const auto& c : end->comments()->before()) {
@@ -597,7 +626,8 @@ void Printer::Sequence(SequenceStyle style,
     Print("}");
 }
 
-int Printer::FunctionCall(const FunctionCallNode* func_call) {
+int Printer::FunctionCall(const FunctionCallNode* func_call,
+                          const std::string& suffix) {
   int start_line = CurrentLine();
   int start_column = CurrentColumn();
   Print(func_call->function().value());
@@ -625,6 +655,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call) {
   std::string terminator = ")";
   if (have_block)
     terminator += " {";
+  terminator += suffix;
 
   // 1: Same line.
   Printer sub1;
@@ -637,13 +668,11 @@ int Printer::FunctionCall(const FunctionCallNode* func_call) {
   }
   sub1.Print(terminator);
   penalty_one_line += AssessPenalty(sub1.String());
-  std::vector<std::string> lines;
-  base::SplitStringDontTrim(sub1.String(), '\n', &lines);
   // This extra penalty prevents a short second argument from being squeezed in
   // after a first argument that went multiline (and instead preferring a
   // variant below).
-  if (lines.size() > 1)
-    penalty_one_line += kPenaltyBrokenLineOnOneLiner;
+  penalty_one_line +=
+      (CountLines(sub1.String()) - 1) * kPenaltyBrokenLineOnOneLiner;
 
   // 2: Starting on same line, broken at commas.
   Printer sub2;
@@ -742,6 +771,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call) {
   }
 
   Print(")");
+  Print(suffix);
 
   if (have_block) {
     Print(" ");
@@ -758,6 +788,24 @@ void Printer::InitializeSub(Printer* sub) {
   sub->comments_ = comments_;
   sub->penalty_depth_ = penalty_depth_;
   sub->Print(std::string(CurrentColumn(), 'x'));
+}
+
+template <class PARSENODE>
+bool Printer::ListWillBeMultiline(const std::vector<PARSENODE*>& list,
+                                  const ParseNode* end) {
+  if (list.size() > 1)
+    return true;
+
+  if (end && end->comments() && !end->comments()->before().empty())
+    return true;
+
+  // If there's before line comments, make sure we have a place to put them.
+  for (const auto& i : list) {
+    if (i->comments() && !i->comments()->before().empty())
+      return true;
+  }
+
+  return false;
 }
 
 void DoFormat(const ParseNode* root, bool dump_tree, std::string* output) {
