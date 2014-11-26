@@ -1223,8 +1223,6 @@ crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
-crbug.com/436745 [ Mac ] fast/transforms/transform-on-inline.html [ ImageOnlyFailure ]
-
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
