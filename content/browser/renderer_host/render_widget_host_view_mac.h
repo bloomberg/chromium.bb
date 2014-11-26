@@ -23,7 +23,6 @@
 #include "content/browser/compositor/io_surface_layer_mac.h"
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"

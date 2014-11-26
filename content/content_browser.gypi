@@ -1148,8 +1148,6 @@
       'browser/renderer_host/renderer_frame_manager.h',
       'browser/renderer_host/sandbox_ipc_linux.cc',
       'browser/renderer_host/sandbox_ipc_linux.h',
-      'browser/renderer_host/software_frame_manager.cc',
-      'browser/renderer_host/software_frame_manager.h',
       'browser/renderer_host/text_input_client_mac.h',
       'browser/renderer_host/text_input_client_mac.mm',
       'browser/renderer_host/text_input_client_message_filter.h',

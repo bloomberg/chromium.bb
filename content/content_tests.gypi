@@ -616,7 +616,6 @@
         'browser/renderer_host/render_widget_host_view_base_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_editcommand_helper_unittest.mm',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
-        'browser/renderer_host/software_frame_manager_unittest.cc',
         'browser/renderer_host/text_input_client_mac_unittest.mm',
         'browser/renderer_host/web_input_event_aura_unittest.cc',
         'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
