@@ -497,19 +497,24 @@ public:
     virtual void paintClippingMask(const PaintInfo&, const LayoutPoint&);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    LayoutRect borderBoxAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop);
+    void logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop, LogicalExtentComputedValues&);
 
     // Called when a positioned object moves but doesn't necessarily change size.  A simplified layout is attempted
     // that just updates the object's position. If the size does change, the object remains dirty.
     bool tryLayoutDoingPositionedMovementOnly()
     {
-        LayoutUnit oldWidth = width();
-        LayoutUnit newWidth = borderBoxAfterUpdatingLogicalWidth(logicalTop()).width();
+        LayoutUnit oldWidth = logicalWidth();
+        LogicalExtentComputedValues computedValues;
+        logicalExtentAfterUpdatingLogicalWidth(logicalTop(), computedValues);
         // If we shrink to fit our width may have changed, so we still need full layout.
         // FIXME: We check for potential change of width when deciding to set needsPositionedMovementLayout.
         // So either that check or this one is unnecessary, probably the former. crbug.com/428050
-        if (oldWidth != newWidth)
+        if (oldWidth != computedValues.m_extent)
             return false;
+        setLogicalWidth(computedValues.m_extent);
+        setLogicalLeft(computedValues.m_position);
+        setMarginStart(computedValues.m_margins.m_start);
+        setMarginEnd(computedValues.m_margins.m_end);
         updateLogicalHeight();
         return true;
     }

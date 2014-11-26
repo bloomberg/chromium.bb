@@ -1894,8 +1894,9 @@ LayoutUnit RenderBlockFlow::getClearDelta(RenderBox* child, LayoutUnit logicalTo
             LayoutRect borderBox = child->borderBoxRect();
             LayoutUnit childLogicalWidthAtOldLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
 
-            borderBox = child->borderBoxAfterUpdatingLogicalWidth(newLogicalTop);
-            LayoutUnit childLogicalWidthAtNewLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
+            LogicalExtentComputedValues computedValues;
+            child->logicalExtentAfterUpdatingLogicalWidth(newLogicalTop, computedValues);
+            LayoutUnit childLogicalWidthAtNewLogicalTopOffset = computedValues.m_extent;
 
             if (childLogicalWidthAtNewLogicalTopOffset <= availableLogicalWidthAtNewLogicalTopOffset) {
                 // Even though we may not be moving, if the logical width did shrink because of the presence of new floats, then

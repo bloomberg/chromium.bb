@@ -4412,24 +4412,28 @@ LayoutSize RenderBox::computePreviousBorderBoxSize(const LayoutSize& previousBou
     return previousBoundsSize;
 }
 
-LayoutRect RenderBox::borderBoxAfterUpdatingLogicalWidth(const LayoutUnit& newLogicalTop)
+void RenderBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogicalTop, RenderBox::LogicalExtentComputedValues& computedValues)
 {
     // FIXME: None of this is right for perpendicular writing-mode children.
     LayoutUnit oldLogicalWidth = logicalWidth();
+    LayoutUnit oldLogicalLeft = logicalLeft();
     LayoutUnit oldMarginLeft = marginLeft();
     LayoutUnit oldMarginRight = marginRight();
     LayoutUnit oldLogicalTop = logicalTop();
 
     setLogicalTop(newLogicalTop);
     updateLogicalWidth();
-    LayoutRect borderBox = borderBoxRect();
+
+    computedValues.m_extent = logicalWidth();
+    computedValues.m_position = logicalLeft();
+    computedValues.m_margins.m_start = marginStart();
+    computedValues.m_margins.m_end = marginEnd();
 
     setLogicalTop(oldLogicalTop);
     setLogicalWidth(oldLogicalWidth);
+    setLogicalLeft(oldLogicalLeft);
     setMarginLeft(oldMarginLeft);
     setMarginRight(oldMarginRight);
-
-    return borderBox;
 }
 
 } // namespace blink
