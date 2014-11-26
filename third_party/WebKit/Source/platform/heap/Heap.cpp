@@ -695,10 +695,6 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
         else
             threadState()->setGCRequested();
     }
-    if (remainingAllocationSize() > 0) {
-        m_freeList.addToFreeList(currentAllocationPoint(), remainingAllocationSize());
-        setAllocationPoint(0, 0);
-    }
     ensureCurrentAllocation(allocationSize, gcInfo);
     return allocate(payloadSize, gcInfo);
 }
@@ -706,6 +702,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
 template<typename Header>
 bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
 {
+    ASSERT(!hasCurrentAllocationArea());
     size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
     int i = m_freeList.m_biggestFreeListIndex;
     for (; i > 0; i--, bucketSize >>= 1) {
@@ -721,7 +718,8 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
             m_freeList.m_biggestFreeListIndex = i;
             entry->unlink(&m_freeList.m_freeLists[i]);
             setAllocationPoint(entry->address(), entry->size());
-            ASSERT(currentAllocationPoint() && remainingAllocationSize() >= minSize);
+            ASSERT(hasCurrentAllocationArea());
+            ASSERT(remainingAllocationSize() >= minSize);
             return true;
         }
     }
@@ -732,6 +730,7 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
 template<typename Header>
 void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* gcInfo)
 {
+    setAllocationPoint(0, 0);
     ASSERT(minSize >= allocationGranularity);
     if (allocateFromFreeList(minSize))
         return;
@@ -932,7 +931,7 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
     TRACE_EVENT_BEGIN2("blink_gc", "ThreadHeap::coalesce" , "requestedSize", (unsigned)minSize , "neededSize", (unsigned)neededFreeEntrySize);
 
     // Search for a coalescing candidate.
-    ASSERT(!ownsNonEmptyAllocationArea());
+    ASSERT(!hasCurrentAllocationArea());
     size_t pageCount = 0;
     HeapPage<Header>* page = m_firstPage;
     while (page) {
@@ -1470,7 +1469,7 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
             ASSERT(pagesAllocatedDuringSweepingContains(freeListEntry->address()));
         }
     }
-    if (ownsNonEmptyAllocationArea()) {
+    if (hasCurrentAllocationArea()) {
         if (pagesToBeSweptContains(currentAllocationPoint()))
             return false;
         ASSERT(pagesAllocatedDuringSweepingContains(currentAllocationPoint()));
@@ -1482,8 +1481,6 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
 template<typename Header>
 void ThreadHeap<Header>::makeConsistentForSweeping()
 {
-    if (ownsNonEmptyAllocationArea())
-        addToFreeList(currentAllocationPoint(), remainingAllocationSize());
     setAllocationPoint(0, 0);
     clearFreeLists();
 }

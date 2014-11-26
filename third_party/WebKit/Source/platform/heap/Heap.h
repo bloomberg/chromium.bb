@@ -794,11 +794,13 @@ private:
     PLATFORM_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
-    bool ownsNonEmptyAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
+    bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
     void setAllocationPoint(Address point, size_t size)
     {
         ASSERT(!point || pageFromAddress(point));
         ASSERT(size <= HeapPage<Header>::payloadSize());
+        if (hasCurrentAllocationArea())
+            addToFreeList(currentAllocationPoint(), remainingAllocationSize());
         updateRemainingAllocationSize();
         m_currentAllocationPoint = point;
         m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
