@@ -243,7 +243,7 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   }
 
   // Keep track of whether the tab has notified us of a navigation state change.
-  void NavigationStateChanged(const WebContents* source,
+  void NavigationStateChanged(WebContents* source,
                               InvalidateTypes changed_flags) override {
     navigation_state_change_count_++;
   }

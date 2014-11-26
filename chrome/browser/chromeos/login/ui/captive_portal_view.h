@@ -30,7 +30,7 @@ class CaptivePortalView : public SimpleWebViewDialog {
 
   // Overridden from content::WebContentsDelegate:
   virtual void NavigationStateChanged(
-      const content::WebContents* source,
+      content::WebContents* source,
       content::InvalidateTypes changed_flags) override;
   virtual void LoadingStateChanged(content::WebContents* source,
                                    bool to_different_document) override;

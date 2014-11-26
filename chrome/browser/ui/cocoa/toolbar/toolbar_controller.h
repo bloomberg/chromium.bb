@@ -119,6 +119,9 @@ class NotificationBridge;
 // restore any previous location bar state (such as user editing) as well.
 - (void)updateToolbarWithContents:(content::WebContents*)tab;
 
+// Resets the state for |tab|.
+- (void)resetTabState:(content::WebContents*)tab;
+
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
 

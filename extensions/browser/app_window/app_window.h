@@ -370,7 +370,7 @@ class AppWindow : public content::NotificationObserver,
   bool IsPopupOrPanel(const content::WebContents* source) const override;
   void MoveContents(content::WebContents* source,
                     const gfx::Rect& pos) override;
-  void NavigationStateChanged(const content::WebContents* source,
+  void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   void ToggleFullscreenModeForTab(content::WebContents* source,
                                   bool enter_fullscreen) override;

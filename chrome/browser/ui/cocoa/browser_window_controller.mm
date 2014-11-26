@@ -1262,6 +1262,10 @@ using content::WebContents;
   [toolbarController_ updateToolbarWithContents:tab];
 }
 
+- (void)resetTabState:(WebContents*)tab {
+  [toolbarController_ resetTabState:tab];
+}
+
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
 }

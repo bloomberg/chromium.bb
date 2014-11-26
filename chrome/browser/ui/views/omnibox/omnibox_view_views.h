@@ -68,6 +68,7 @@ class OmniboxViewViews
   // OmniboxView:
   void SaveStateToTab(content::WebContents* tab) override;
   void OnTabChanged(const content::WebContents* web_contents) override;
+  void ResetTabState(content::WebContents* web_contents) override;
   void Update() override;
   void UpdatePlaceholderText() override;
   base::string16 GetText() const override;

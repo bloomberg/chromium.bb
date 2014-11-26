@@ -526,6 +526,10 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   return [field_ convertPoint:bubble_point toView:nil];
 }
 
+void LocationBarViewMac::ResetTabState(WebContents* contents) {
+  omnibox_view_->ResetTabState(contents);
+}
+
 void LocationBarViewMac::Update(const WebContents* contents) {
   UpdateManagePasswordsIconAndBubble();
   UpdateBookmarkStarVisibility();

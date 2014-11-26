@@ -430,6 +430,10 @@ void BrowserWindowCocoa::UpdateToolbar(content::WebContents* contents) {
   [controller_ updateToolbarWithContents:contents];
 }
 
+void BrowserWindowCocoa::ResetToolbarTabState(content::WebContents* contents) {
+  [controller_ resetTabState:contents];
+}
+
 void BrowserWindowCocoa::FocusToolbar() {
   // Not needed on the Mac.
 }

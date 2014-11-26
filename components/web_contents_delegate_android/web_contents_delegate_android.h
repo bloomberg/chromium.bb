@@ -59,7 +59,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override;
   virtual void NavigationStateChanged(
-      const content::WebContents* source,
+      content::WebContents* source,
       content::InvalidateTypes changed_flags) override;
   virtual void VisibleSSLStateChanged(
       const content::WebContents* source) override;

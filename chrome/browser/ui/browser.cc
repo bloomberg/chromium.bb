@@ -1356,7 +1356,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   return nav_params.target_contents;
 }
 
-void Browser::NavigationStateChanged(const WebContents* source,
+void Browser::NavigationStateChanged(WebContents* source,
                                      content::InvalidateTypes changed_flags) {
   // Only update the UI when something visible has changed.
   if (changed_flags)
@@ -2065,19 +2065,25 @@ void Browser::UpdateToolbar(bool should_restore_state) {
       tab_strip_model_->GetActiveWebContents() : NULL);
 }
 
-void Browser::ScheduleUIUpdate(const WebContents* source,
+void Browser::ScheduleUIUpdate(WebContents* source,
                                unsigned changed_flags) {
   DCHECK(source);
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
 
   // Do some synchronous updates.
-  if (changed_flags & content::INVALIDATE_TYPE_URL &&
-      source == tab_strip_model_->GetActiveWebContents()) {
-    // Only update the URL for the current tab. Note that we do not update
-    // the navigation commands since those would have already been updated
-    // synchronously by NavigationStateChanged.
-    UpdateToolbar(false);
+  if (changed_flags & content::INVALIDATE_TYPE_URL) {
+    if (source == tab_strip_model_->GetActiveWebContents()) {
+      // Only update the URL for the current tab. Note that we do not update
+      // the navigation commands since those would have already been updated
+      // synchronously by NavigationStateChanged.
+      UpdateToolbar(false);
+    } else {
+      // Clear the saved tab state for the tab that navigated, so that we don't
+      // restore any user text after the old URL has been invalidated (e.g.,
+      // after a new navigation commits in that tab while unfocused).
+      window_->ResetToolbarTabState(source);
+    }
     changed_flags &= ~content::INVALIDATE_TYPE_URL;
   }
   if (changed_flags & content::INVALIDATE_TYPE_LOAD) {

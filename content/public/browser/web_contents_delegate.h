@@ -85,7 +85,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Called to inform the delegate that the WebContents's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state
   // that have been updated.
-  virtual void NavigationStateChanged(const WebContents* source,
+  virtual void NavigationStateChanged(WebContents* source,
                                       InvalidateTypes changed_flags) {}
 
   // Called to inform the delegate that the WebContent's visible SSL state (as

@@ -917,7 +917,7 @@ void AppWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
   native_app_window_->SetBounds(pos);
 }
 
-void AppWindow::NavigationStateChanged(const content::WebContents* source,
+void AppWindow::NavigationStateChanged(content::WebContents* source,
                                        content::InvalidateTypes changed_flags) {
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     native_app_window_->UpdateWindowTitle();

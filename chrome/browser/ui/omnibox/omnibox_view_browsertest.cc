@@ -650,6 +650,36 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLDWithTemporaryText) {
   EXPECT_EQ("/", url.path());
 }
 
+// See http://crbug.com/431575.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, ClearUserTextAfterBackgroundCommit) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+
+  // Navigate in first tab and enter text into the omnibox.
+  GURL url1("data:text/html,page1");
+  ui_test_utils::NavigateToURL(browser(), url1);
+  omnibox_view->SetUserText(ASCIIToUTF16("foo"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create another tab in the foreground.
+  AddTabAtIndex(1, url1, ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Navigate in the first tab, currently in the background.
+  GURL url2("data:text/html,page2");
+  chrome::NavigateParams params(browser(), url2, ui::PAGE_TRANSITION_LINK);
+  params.source_contents = contents;
+  params.disposition = CURRENT_TAB;
+  ui_test_utils::NavigateToURL(&params);
+
+  // Switch back to the first tab.  The user text should be cleared, and the
+  // omnibox should have the new URL.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_EQ(ASCIIToUTF16(url2.spec()), omnibox_view->GetText());
+}
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));

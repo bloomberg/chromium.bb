@@ -1048,6 +1048,12 @@ void BrowserView::UpdateToolbar(content::WebContents* contents) {
   frame_->UpdateToolbar();
 }
 
+void BrowserView::ResetToolbarTabState(content::WebContents* contents) {
+  // We may end up here during destruction.
+  if (toolbar_)
+    toolbar_->ResetTabState(contents);
+}
+
 void BrowserView::FocusToolbar() {
   // Temporarily reveal the top-of-window views (if not already revealed) so
   // that the toolbar is visible and is considered focusable. If the

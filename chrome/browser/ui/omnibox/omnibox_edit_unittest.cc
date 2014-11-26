@@ -26,6 +26,7 @@ class TestingOmniboxView : public OmniboxView {
   // OmniboxView:
   void SaveStateToTab(WebContents* tab) override {}
   void OnTabChanged(const WebContents* web_contents) override {}
+  void ResetTabState(WebContents* web_contents) override {}
   void Update() override {}
   void UpdatePlaceholderText() override {}
   void OpenMatch(const AutocompleteMatch& match,

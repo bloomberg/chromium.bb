@@ -989,6 +989,10 @@ void LocationBarView::Update(const WebContents* contents) {
   OnChanged();  // NOTE: Calls Layout().
 }
 
+void LocationBarView::ResetTabState(WebContents* contents) {
+  omnibox_view_->ResetTabState(contents);
+}
+
 void LocationBarView::ShowURL() {
   // Start the animation before calling ShowURL(), since the latter eventually
   // calls back to Layout(), and if the animation is not marked as "running",

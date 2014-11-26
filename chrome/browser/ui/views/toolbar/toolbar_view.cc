@@ -300,6 +300,11 @@ void ToolbarView::Update(WebContents* tab) {
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 }
 
+void ToolbarView::ResetTabState(WebContents* tab) {
+  if (location_bar_)
+    location_bar_->ResetTabState(tab);
+}
+
 void ToolbarView::SetPaneFocusAndFocusAppMenu() {
   SetPaneFocus(app_menu_);
 }

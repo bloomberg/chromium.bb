@@ -139,7 +139,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 }
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
-    const WebContents* source, content::InvalidateTypes changed_flags) {
+    WebContents* source, content::InvalidateTypes changed_flags) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

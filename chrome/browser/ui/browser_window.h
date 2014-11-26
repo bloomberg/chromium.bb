@@ -174,6 +174,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
+  // Resets the toolbar's tab state for |contents|.
+  virtual void ResetToolbarTabState(content::WebContents* contents) = 0;
+
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
 

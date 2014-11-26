@@ -217,6 +217,10 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
   ClearEditHistory();
 }
 
+void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
+  web_contents->SetUserData(OmniboxState::kKey, nullptr);
+}
+
 void OmniboxViewViews::Update() {
   UpdatePlaceholderText();
 

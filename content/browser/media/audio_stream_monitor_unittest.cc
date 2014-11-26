@@ -34,7 +34,7 @@ const int kAnotherStreamId = 6;
 class MockWebContentsDelegate : public WebContentsDelegate {
  public:
   MOCK_METHOD2(NavigationStateChanged,
-               void(const WebContents* source, InvalidateTypes changed_flags));
+               void(WebContents* source, InvalidateTypes changed_flags));
 };
 
 }  // namespace

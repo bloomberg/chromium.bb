@@ -57,6 +57,9 @@ class OmniboxView {
   // Called when the window's active tab changes.
   virtual void OnTabChanged(const content::WebContents* web_contents) = 0;
 
+  // Called to clear the saved state for |web_contents|.
+  virtual void ResetTabState(content::WebContents* web_contents) = 0;
+
   // Called when any relevant state changes other than changing tabs.
   virtual void Update() = 0;
 

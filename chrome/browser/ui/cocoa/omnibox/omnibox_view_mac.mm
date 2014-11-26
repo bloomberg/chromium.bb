@@ -209,6 +209,10 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
   }
 }
 
+void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
+  StoreStateToTab(web_contents, nullptr);
+}
+
 void OmniboxViewMac::Update() {
   UpdatePlaceholderText();
 

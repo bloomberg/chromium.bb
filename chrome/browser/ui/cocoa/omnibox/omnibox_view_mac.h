@@ -31,6 +31,7 @@ class OmniboxViewMac : public OmniboxView,
   // OmniboxView:
   void SaveStateToTab(content::WebContents* tab) override;
   void OnTabChanged(const content::WebContents* web_contents) override;
+  void ResetTabState(content::WebContents* web_contents) override;
   void Update() override;
   void UpdatePlaceholderText() override;
   void OpenMatch(const AutocompleteMatch& match,

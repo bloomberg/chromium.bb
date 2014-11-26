@@ -84,6 +84,7 @@ class TestBrowserWindow : public BrowserWindow {
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
+  void ResetToolbarTabState(content::WebContents* contents) override {}
   void FocusToolbar() override {}
   void FocusAppMenu() override {}
   void FocusBookmarksToolbar() override {}

@@ -238,6 +238,9 @@ class LocationBarView : public LocationBar,
                                       int* left_margin,
                                       int* right_margin);
 
+  // Clears the location bar's state for |contents|.
+  void ResetTabState(content::WebContents* contents);
+
   // LocationBar:
   void FocusLocation(bool select_all) override;
   void Revert() override;

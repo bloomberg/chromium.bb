@@ -125,7 +125,7 @@ content::WebContents* PanelHost::OpenURLFromTab(
   return navigate_params.target_contents;
 }
 
-void PanelHost::NavigationStateChanged(const content::WebContents* source,
+void PanelHost::NavigationStateChanged(content::WebContents* source,
                                        content::InvalidateTypes changed_flags) {
   // Only need to update the title if the title changed while not loading,
   // because the title is also updated when loading state changes.

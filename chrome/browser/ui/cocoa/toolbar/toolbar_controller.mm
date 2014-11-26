@@ -447,6 +447,10 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   [reloadButton_ setMenuEnabled:needReloadMenu];
 }
 
+- (void)resetTabState:(WebContents*)tab {
+  locationBarView_->ResetTabState(tab);
+}
+
 - (void)setStarredState:(BOOL)isStarred {
   locationBarView_->SetStarred(isStarred);
 }

@@ -68,6 +68,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // as well.
   void Update(content::WebContents* tab);
 
+  // Clears the current state for |tab|.
+  void ResetTabState(content::WebContents* tab);
+
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the app menu. Focus will be restored
   // to the last focused view if the user escapes.

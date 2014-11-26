@@ -75,7 +75,7 @@ views::NonClientFrameView* CaptivePortalView::CreateNonClientFrameView(
 }
 
 void CaptivePortalView::NavigationStateChanged(
-    const content::WebContents* source,
+    content::WebContents* source,
     content::InvalidateTypes changed_flags) {
   SimpleWebViewDialog::NavigationStateChanged(source, changed_flags);
 
