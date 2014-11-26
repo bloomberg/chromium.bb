@@ -9,7 +9,7 @@ var root = host.createShadowRoot();
 root.innerHTML = '<div></div>';
 var elem = root.firstChild;
 elem.id = 'bar';
-var attr = elem.attributes.item();
+var attr = elem.attributes.item(0);
 attr.value = 'bar';
 var doc2 = document.implementation.createHTMLDocument('Doc 2');
 doc2.adoptNode(attr);

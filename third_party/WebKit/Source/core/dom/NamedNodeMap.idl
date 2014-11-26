@@ -24,26 +24,24 @@
     WillBeGarbageCollected,
 ] interface NamedNodeMap {
 
-    [MeasureAs=NamedNodeMapGetNamedItem] Attr getNamedItem([Default=Undefined] optional DOMString name);
-    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr ([Default=Undefined] optional DOMString name);
+    [MeasureAs=NamedNodeMapGetNamedItem] Attr getNamedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr (DOMString name);
 
     [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr setNamedItem(Attr attr);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem([Default=Undefined] optional DOMString name);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem(DOMString name);
 
-    [MeasureAs=NamedNodeMapItem] getter Attr item([Default=Undefined] optional unsigned long index);
+    [MeasureAs=NamedNodeMapItem] getter Attr item(unsigned long index);
 
     readonly attribute unsigned long length;
 
 
     // Introduced in DOM Level 2:
 
-    [MeasureAs=NamedNodeMapGetNamedItemNS] Attr getNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
-                                                               [Default=Undefined] optional DOMString localName);
+    [MeasureAs=NamedNodeMapGetNamedItemNS] Attr getNamedItemNS(DOMString? namespaceURI, DOMString localName);
 
     [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr setNamedItemNS(Attr attr);
 
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS([Default=Undefined] optional DOMString? namespaceURI,
-                                                                                                              [Default=Undefined] optional DOMString localName);
+    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS(DOMString? namespaceURI, DOMString localName);
 
 };
