@@ -3,19 +3,23 @@
 # found in the LICENSE file.
 
 import("//build/config/sysroot.gni")
+import("//build/toolchain/ccache.gni")
 import("//build/toolchain/clang.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 import("//build/toolchain/goma.gni")
 
 if (use_goma) {
-  goma_prefix = "$goma_dir/gomacc "
+  assert(!use_ccache, "Goma and ccache can't be used together.")
+  compiler_prefix = "$goma_dir/gomacc "
+} else if (use_ccache) {
+  compiler_prefix = "ccache "
 } else {
-  goma_prefix = ""
+  compiler_prefix = ""
 }
 
 gcc_toolchain("arm") {
-  cc = "${goma_prefix}arm-linux-gnueabi-gcc"
-  cxx = "${goma_prefix}arm-linux-gnueabi-g++"
+  cc = "${compiler_prefix}arm-linux-gnueabi-gcc"
+  cxx = "${compiler_prefix}arm-linux-gnueabi-g++"
 
   ar = "arm-linux-gnueabi-ar"
   ld = cxx
@@ -33,8 +37,8 @@ gcc_toolchain("clang_x86") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
   }
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
 
   ar = "ar"
   ld = cxx
@@ -45,8 +49,8 @@ gcc_toolchain("clang_x86") {
 }
 
 gcc_toolchain("x86") {
-  cc = "${goma_prefix}gcc"
-  cxx = "$goma_prefix}g++"
+  cc = "${compiler_prefix}gcc"
+  cxx = "$compiler_prefix}g++"
 
   ar = "ar"
   ld = cxx
@@ -64,8 +68,8 @@ gcc_toolchain("clang_x64") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
   }
-  cc = "${goma_prefix}$prefix/clang"
-  cxx = "${goma_prefix}$prefix/clang++"
+  cc = "${compiler_prefix}$prefix/clang"
+  cxx = "${compiler_prefix}$prefix/clang++"
 
   ar = "ar"
   ld = cxx
@@ -76,8 +80,8 @@ gcc_toolchain("clang_x64") {
 }
 
 gcc_toolchain("x64") {
-  cc = "${goma_prefix}gcc"
-  cxx = "${goma_prefix}g++"
+  cc = "${compiler_prefix}gcc"
+  cxx = "${compiler_prefix}g++"
 
   ar = "ar"
   ld = cxx

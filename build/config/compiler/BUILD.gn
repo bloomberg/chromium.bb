@@ -10,6 +10,8 @@ if (is_posix) {
   import("//build/config/gcc/gcc_version.gni")
 }
 
+import("//build/toolchain/ccache.gni")
+
 declare_args() {
   # Normally, Android builds are lightly optimized, even for debug builds, to
   # keep binary size down. Setting this flag to true disables such optimization
@@ -30,7 +32,7 @@ if (!is_win) {
   # with some utilities such as icecc and ccache. Requires gold and
   # gcc >= 4.8 or clang.
   # http://gcc.gnu.org/wiki/DebugFission
-  use_debug_fission = use_gold && linux_use_bundled_binutils
+  use_debug_fission = use_gold && linux_use_bundled_binutils && !use_ccache
 }
 
 # default_include_dirs ---------------------------------------------------------
