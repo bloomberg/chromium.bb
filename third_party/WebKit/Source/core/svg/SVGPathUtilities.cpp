@@ -103,46 +103,43 @@ bool addToSVGPathByteStream(SVGPathByteStream& fromStream, const SVGPathByteStre
     return blender.addAnimatedPath(repeatCount);
 }
 
-bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream& stream, float length, unsigned& pathSeg)
+unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream& stream, float length)
 {
     if (stream.isEmpty())
-        return false;
+        return 0;
 
     PathTraversalState traversalState(PathTraversalState::TraversalSegmentAtLength);
     SVGPathTraversalStateBuilder builder(traversalState, length);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
-    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
-    pathSeg = builder.pathSegmentIndex();
-    return ok;
+    parser.parsePathDataFromSource(NormalizedParsing);
+    return builder.pathSegmentIndex();
 }
 
-bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream& stream, float& totalLength)
+float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream& stream)
 {
     if (stream.isEmpty())
-        return false;
+        return 0;
 
     PathTraversalState traversalState(PathTraversalState::TraversalTotalLength);
     SVGPathTraversalStateBuilder builder(traversalState);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
-    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
-    totalLength = builder.totalLength();
-    return ok;
+    parser.parsePathDataFromSource(NormalizedParsing);
+    return builder.totalLength();
 }
 
-bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream& stream, float length, FloatPoint& point)
+FloatPoint getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream& stream, float length)
 {
     if (stream.isEmpty())
-        return false;
+        return FloatPoint();
 
     PathTraversalState traversalState(PathTraversalState::TraversalPointAtLength);
     SVGPathTraversalStateBuilder builder(traversalState, length);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
-    bool ok = parser.parsePathDataFromSource(NormalizedParsing);
-    point = builder.currentPoint();
-    return ok;
+    parser.parsePathDataFromSource(NormalizedParsing);
+    return builder.currentPoint();
 }
 
 }

@@ -47,9 +47,9 @@ bool buildStringFromSVGPathSegList(PassRefPtrWillBeRawPtr<SVGPathSegList>, Strin
 
 bool addToSVGPathByteStream(SVGPathByteStream&, const SVGPathByteStream&, unsigned repeatCount = 1);
 
-bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream&, float length, unsigned& pathSeg);
-bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream&, float& totalLength);
-bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream&, float length, FloatPoint&);
+unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream&, float length);
+float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream&);
+FloatPoint getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream&, float length);
 
 } // namespace blink
 
