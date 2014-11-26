@@ -95,7 +95,6 @@ void DecoderStream<StreamType>::Initialize(
   stream_ = stream;
 
   state_ = STATE_INITIALIZING;
-  // TODO(xhwang): DecoderSelector only needs a config to select a decoder.
   decoder_selector_->SelectDecoder(
       stream, set_decryptor_ready_cb,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
@@ -371,18 +370,16 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   if (!reset_cb_.is_null())
     return;
 
-  // TODO(xhwang): VideoDecoder doesn't need to return EOS after it's flushed.
-  // Fix all decoders and remove this block.
+  if (!read_cb_.is_null()) {
+    // If |ready_outputs_| was non-empty, the read would have already been
+    // satisifed by Read().
+    DCHECK(ready_outputs_.empty());
+    SatisfyRead(OK, output);
+    return;
+  }
+
   // Store decoded output.
   ready_outputs_.push_back(output);
-
-  if (read_cb_.is_null())
-    return;
-
-  // Satisfy outstanding read request, if any.
-  scoped_refptr<Output> read_result = ready_outputs_.front();
-  ready_outputs_.pop_front();
-  SatisfyRead(OK, output);
 }
 
 template <DemuxerStream::Type StreamType>
