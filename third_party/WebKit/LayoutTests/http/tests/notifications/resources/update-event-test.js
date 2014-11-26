@@ -9,16 +9,23 @@ async_test(function(test) {
         return;
     }
 
+    // We require two asynchronous events to happen when a notification gets updated, (1)
+    // the old instance should receive the "close" event, and (2) the new notification
+    // should receive the "show" event, but only after (1) has happened.
+    var closedOriginalNotification = false;
+
     var notification = new Notification('My Notification', { tag: 'notification-test' });
     notification.addEventListener('show', function() {
         var updatedNotification = new Notification('Second Notification', { tag: 'notification-test' });
         updatedNotification.addEventListener('show', function() {
+            assert_true(closedOriginalNotification);
             test.done();
         });
     });
 
-    // FIXME: Replacing a notification should fire the close event on the
-    // notification that's being replaced.
+    notification.addEventListener('close', function() {
+        closedOriginalNotification = true;
+    });
 
     notification.addEventListener('error', function() {
         assert_unreached('The error event should not be thrown.');
