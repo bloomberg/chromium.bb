@@ -103,7 +103,7 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesPageSet
 
-
+@benchmark.Enabled('android')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases
