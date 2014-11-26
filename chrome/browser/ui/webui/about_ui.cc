@@ -889,6 +889,10 @@ std::string AboutSandbox() {
                   status & content::kSandboxLinuxSeccompBPF);
   AboutSandboxRow(&data,
                   std::string(),
+                  IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX_TSYNC,
+                  status & content::kSandboxLinuxSeccompTSYNC);
+  AboutSandboxRow(&data,
+                  std::string(),
                   IDS_ABOUT_SANDBOX_YAMA_LSM,
                   status & content::kSandboxLinuxYama);
 

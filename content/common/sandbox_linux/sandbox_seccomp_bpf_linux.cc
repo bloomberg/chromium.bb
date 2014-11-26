@@ -259,6 +259,14 @@ bool SandboxSeccompBPF::SupportsSandbox() {
   return false;
 }
 
+bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
+#if defined(USE_SECCOMP_BPF)
+  return SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
+#endif
+  return false;
+}
+
 bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
                                      base::ScopedFD proc_task_fd) {
 #if defined(USE_SECCOMP_BPF)

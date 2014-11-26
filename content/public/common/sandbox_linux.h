@@ -26,6 +26,9 @@ enum LinuxSandboxStatus {
   // The Yama LSM module is present and enforcing.
   kSandboxLinuxYama = 1 << 4,
 
+  // seccomp-bpf sandbox is active and the kernel supports TSYNC.
+  kSandboxLinuxSeccompTSYNC = 1 << 5,
+
   // A flag that denotes an invalid sandbox status.
   kSandboxLinuxInvalid = 1 << 31,
 };

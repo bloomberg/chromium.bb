@@ -112,6 +112,7 @@ LinuxSandbox::LinuxSandbox()
       sandbox_status_flags_(kSandboxLinuxInvalid),
       pre_initialized_(false),
       seccomp_bpf_supported_(false),
+      seccomp_bpf_with_tsync_supported_(false),
       yama_is_enforcing_(false),
       initialize_sandbox_ran_(false),
       setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create())
@@ -167,6 +168,10 @@ void LinuxSandbox::PreinitializeSandbox() {
     } else {
       seccomp_bpf_supported_ = true;
     }
+
+    if (SandboxSeccompBPF::SupportsSandboxWithTsync()) {
+      seccomp_bpf_with_tsync_supported_ = true;
+    }
   }
 
   // Yama is a "global", system-level status. We assume it will not regress
@@ -209,6 +214,11 @@ int LinuxSandbox::GetStatus() {
     if (seccomp_bpf_supported() &&
         SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
       sandbox_status_flags_ |= kSandboxLinuxSeccompBPF;
+    }
+
+    if (seccomp_bpf_with_tsync_supported() &&
+        SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
+      sandbox_status_flags_ |= kSandboxLinuxSeccompTSYNC;
     }
 
     if (yama_is_enforcing_) {
@@ -335,6 +345,11 @@ void LinuxSandbox::StopThreadImpl(base::Thread* thread) {
 bool LinuxSandbox::seccomp_bpf_supported() const {
   CHECK(pre_initialized_);
   return seccomp_bpf_supported_;
+}
+
+bool LinuxSandbox::seccomp_bpf_with_tsync_supported() const {
+  CHECK(pre_initialized_);
+  return seccomp_bpf_with_tsync_supported_;
 }
 
 bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {

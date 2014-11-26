@@ -117,8 +117,9 @@ class LinuxSandbox {
   // are the non-static implementations.
   bool InitializeSandboxImpl();
   void StopThreadImpl(base::Thread* thread);
-  // We must have been pre_initialized_ before using this.
+  // We must have been pre_initialized_ before using these.
   bool seccomp_bpf_supported() const;
+  bool seccomp_bpf_with_tsync_supported() const;
   // Returns true if it can be determined that the current process has open
   // directories that are not managed by the LinuxSandbox class. This would
   // be a vulnerability as it would allow to bypass the setuid sandbox.
@@ -143,6 +144,7 @@ class LinuxSandbox {
   // Did PreinitializeSandbox() run?
   bool pre_initialized_;
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
+  bool seccomp_bpf_with_tsync_supported_;  // Accurate if pre_initialized_.
   bool yama_is_enforcing_;  // Accurate if pre_initialized_.
   bool initialize_sandbox_ran_;  // InitializeSandbox() was called.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;

@@ -32,9 +32,10 @@ class SandboxSeccompBPF {
   static bool IsSeccompBPFDesired();
   // Should the sandbox be enabled for process_type ?
   static bool ShouldEnableSeccompBPF(const std::string& process_type);
-  // Check if the kernel supports this sandbox. It's useful to "prewarm"
-  // this, part of the result will be cached.
+  // Check if the kernel supports seccomp-bpf.
   static bool SupportsSandbox();
+  // Check if the kernel supports TSYNC (thread synchronization) with seccomp.
+  static bool SupportsSandboxWithTsync();
   // Start the sandbox and apply the policy for process_type, depending on
   // command line switches.
   static bool StartSandbox(const std::string& process_type,
