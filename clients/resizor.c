@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +52,10 @@ struct resizor {
 	struct spring width;
 	struct spring height;
 	struct wl_callback *frame_callback;
+	bool pointer_locked;
+	struct input *locked_input;
+	float pointer_x;
+	float pointer_y;
 };
 
 static void
@@ -221,18 +226,155 @@ show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 }
 
 static void
+locked_pointer_handle_motion(struct window *window,
+			     struct input *input,
+			     uint32_t time,
+			     float dx,
+			     float dy,
+			     void *data)
+{
+	struct resizor *resizor = data;
+
+	resizor->width.current += dx;
+	resizor->width.previous = resizor->width.current;
+	resizor->width.target = resizor->width.current;
+
+	resizor->height.current += dy;
+	resizor->height.previous = resizor->height.current;
+	resizor->height.target = resizor->height.current;
+
+	widget_schedule_resize(resizor->widget,
+			       resizor->width.current,
+			       resizor->height.current);
+}
+
+static void
+handle_pointer_locked(struct window *window, struct input *input, void *data)
+{
+	struct resizor *resizor = data;
+
+	resizor->pointer_locked = true;
+	input_set_pointer_image(input, CURSOR_BLANK);
+}
+
+static void
+handle_pointer_unlocked(struct window *window, struct input *input, void *data)
+{
+	struct resizor *resizor = data;
+
+	resizor->pointer_locked = false;
+	input_set_pointer_image(input, CURSOR_LEFT_PTR);
+}
+
+static const struct wl_callback_listener locked_pointer_frame_listener;
+
+static void
+locked_pointer_frame_callback(void *data,
+			      struct wl_callback *callback,
+			      uint32_t time)
+{
+	struct resizor *resizor = data;
+	struct wl_surface *surface;
+	struct rectangle allocation;
+	float x, y;
+
+	if (resizor->pointer_locked) {
+		widget_get_allocation(resizor->widget, &allocation);
+
+		x = resizor->pointer_x + (allocation.width - allocation.x);
+		y = resizor->pointer_y + (allocation.height - allocation.y);
+
+		widget_set_locked_pointer_cursor_hint(resizor->widget, x, y);
+	}
+
+	wl_callback_destroy(callback);
+
+	surface = window_get_wl_surface(resizor->window);
+	callback = wl_surface_frame(surface);
+	wl_callback_add_listener(callback,
+				 &locked_pointer_frame_listener,
+				 resizor);
+}
+
+static const struct wl_callback_listener locked_pointer_frame_listener = {
+	locked_pointer_frame_callback
+};
+
+static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       uint32_t button, enum wl_pointer_button_state state, void *data)
 {
 	struct resizor *resizor = data;
+	struct rectangle allocation;
+	struct wl_surface *surface;
+	struct wl_callback *callback;
 
-	switch (button) {
-	case BTN_RIGHT:
-		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
-			show_menu(resizor, input, time);
-		break;
+	if (button == BTN_RIGHT && state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		show_menu(resizor, input, time);
+	} else if (button == BTN_LEFT &&
+		   state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		window_get_allocation(resizor->window, &allocation);
+
+		resizor->width.current = allocation.width;
+		resizor->width.previous = allocation.width;
+		resizor->width.target = allocation.width;
+
+		resizor->height.current = allocation.height;
+		resizor->height.previous = allocation.height;
+		resizor->height.target = allocation.height;
+
+		window_lock_pointer(resizor->window, input);
+		window_set_pointer_locked_handler(resizor->window,
+						  handle_pointer_locked,
+						  handle_pointer_unlocked);
+		resizor->locked_input = input;
+
+		surface = window_get_wl_surface(resizor->window);
+		callback = wl_surface_frame(surface);
+		wl_callback_add_listener(callback,
+					 &locked_pointer_frame_listener,
+					 resizor);
+	} else if (button == BTN_LEFT &&
+		   state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		input_set_pointer_image(input, CURSOR_LEFT_PTR);
+		window_unlock_pointer(resizor->window);
 	}
+}
+
+static void
+set_cursor_inv_offset(struct resizor *resizor, float x, float y)
+{
+	struct rectangle allocation;
+
+	widget_get_allocation(resizor->widget, &allocation);
+
+	resizor->pointer_x = x - (allocation.width - allocation.x);
+	resizor->pointer_y = y - (allocation.height - allocation.y);
+}
+
+static int
+enter_handler(struct widget *widget,
+	      struct input *input,
+	      float x, float y, void *data)
+{
+	struct resizor *resizor = data;
+
+	set_cursor_inv_offset(resizor, x , y);
+
+	return CURSOR_LEFT_PTR;
+}
+
+static int
+motion_handler(struct widget *widget,
+	       struct input *input, uint32_t time,
+	       float x, float y, void *data)
+{
+	struct resizor *resizor = data;
+
+	set_cursor_inv_offset(resizor, x , y);
+
+	return CURSOR_LEFT_PTR;
 }
 
 static struct resizor *
@@ -251,6 +393,12 @@ resizor_create(struct display *display)
 	widget_set_redraw_handler(resizor->widget, redraw_handler);
 	window_set_keyboard_focus_handler(resizor->window,
 					  keyboard_focus_handler);
+
+	widget_set_enter_handler(resizor->widget, enter_handler);
+	widget_set_motion_handler(resizor->widget, motion_handler);
+
+	window_set_locked_pointer_motion_handler(
+			resizor->window, locked_pointer_handle_motion);
 
 	widget_set_button_handler(resizor->widget, button_handler);
 
