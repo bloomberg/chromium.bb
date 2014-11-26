@@ -6,6 +6,7 @@
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_WIN_H_
 
 #include "ui/events/events_base_export.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
@@ -13,7 +14,7 @@ namespace ui {
 // Methods to convert ui::KeyboardCode/Windows virtual key type methods.
 EVENTS_BASE_EXPORT WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
-EVENTS_BASE_EXPORT const char* CodeForWindowsScanCode(WORD scan_code);
+EVENTS_BASE_EXPORT DomCode CodeForWindowsScanCode(WORD scan_code);
 
 }  // namespace ui
 

@@ -544,8 +544,8 @@ KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
   return KeyboardCodeFromKeyCode([event keyCode]);
 }
 
-const char* CodeFromNSEvent(NSEvent* event) {
-  return ui::KeycodeConverter::NativeKeycodeToCode([event keyCode]);
+DomCode CodeFromNSEvent(NSEvent* event) {
+  return ui::KeycodeConverter::NativeKeycodeToDomCode([event keyCode]);
 }
 
 }  // namespace ui

@@ -13,6 +13,8 @@
 
 namespace ui {
 
+enum class DomCode;
+
 // We use windows virtual keycodes throughout our keyboard event related code,
 // including unit tests. But Mac uses a different set of virtual keycodes.
 // This function converts a windows virtual keycode into Mac's virtual key code
@@ -37,7 +39,7 @@ EVENTS_BASE_EXPORT int MacKeyCodeForWindowsKeyCode(
 // has a different notion of key codes.
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
 
-EVENTS_BASE_EXPORT const char* CodeFromNSEvent(NSEvent* event);
+EVENTS_BASE_EXPORT DomCode CodeFromNSEvent(NSEvent* event);
 
 } // namespace ui
 

@@ -28,7 +28,7 @@ typedef struct {
   //  On Linux: XKB scancode
   //  On Windows: Windows OEM scancode
   //  On Mac: Mac keycode
-  uint16_t native_keycode;
+  int native_keycode;
 
   // The UIEvents (aka: DOM4Events) |code| value as defined in:
   // http://www.w3.org/TR/DOM-Level-3-Events-code/
@@ -41,24 +41,20 @@ typedef struct {
 class KeycodeConverter {
  public:
   // Return the value that identifies an invalid native keycode.
-  static uint16_t InvalidNativeKeycode();
-
-  // Return the string that indentifies an invalid UI Event |code|.
-  // The returned pointer references a static global string.
-  static const char* InvalidKeyboardEventCode();
+  static int InvalidNativeKeycode();
 
   // Convert a native (Mac/Win/Linux) keycode into the |code| string.
   // The returned pointer references a static global string.
-  static const char* NativeKeycodeToCode(uint16_t native_keycode);
+  static const char* NativeKeycodeToCode(int native_keycode);
 
   // Convert a native (Mac/Win/Linux) keycode into a DomCode.
-  static DomCode NativeKeycodeToDomCode(uint16_t native_keycode);
+  static DomCode NativeKeycodeToDomCode(int native_keycode);
 
   // Convert a UI Events |code| string value into a native keycode.
-  static uint16_t CodeToNativeKeycode(const char* code);
+  static int CodeToNativeKeycode(const char* code);
 
   // Convert a DomCode into a native keycode.
-  static uint16_t DomCodeToNativeKeycode(DomCode code);
+  static int DomCodeToNativeKeycode(DomCode code);
 
   // Convert a UI Events |code| string value into a DomCode.
   static DomCode CodeStringToDomCode(const char* code);
@@ -77,13 +73,13 @@ class KeycodeConverter {
   // Please don't use USB keycodes in new code.
 
   // Return the value that identifies an invalid USB keycode.
-  static uint16_t InvalidUsbKeycode();
+  static uint32_t InvalidUsbKeycode();
 
   // Convert a USB keycode into an equivalent platform native keycode.
-  static uint16_t UsbKeycodeToNativeKeycode(uint32_t usb_keycode);
+  static int UsbKeycodeToNativeKeycode(uint32_t usb_keycode);
 
   // Convert a platform native keycode into an equivalent USB keycode.
-  static uint32_t NativeKeycodeToUsbKeycode(uint16_t native_keycode);
+  static uint32_t NativeKeycodeToUsbKeycode(int native_keycode);
 
   // Convert a USB keycode into the string with the DOM3 |code| value.
   // The returned pointer references a static global string.
@@ -95,7 +91,6 @@ class KeycodeConverter {
   // Static methods to support testing.
   static size_t NumKeycodeMapEntriesForTest();
   static const KeycodeMapEntry* GetKeycodeMapForTest();
-  static const char* DomCodeStringForTest(size_t index);
   static const char* DomKeyStringForTest(size_t index);
 
  private:

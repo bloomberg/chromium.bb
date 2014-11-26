@@ -16,6 +16,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/point3_f.h"
@@ -647,6 +649,7 @@ KeyEvent::KeyEvent(EventType type,
                    int flags)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
+      code_(DomCode::NONE),
       is_char_(false),
       platform_keycode_(0),
       character_() {
@@ -654,7 +657,7 @@ KeyEvent::KeyEvent(EventType type,
 
 KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
-                   const std::string& code,
+                   DomCode code,
                    int flags)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
@@ -667,7 +670,7 @@ KeyEvent::KeyEvent(EventType type,
 KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
     : Event(ET_KEY_PRESSED, EventTimeForNow(), flags),
       key_code_(key_code),
-      code_(""),
+      code_(DomCode::NONE),
       is_char_(true),
       platform_keycode_(0),
       character_(character) {
@@ -857,8 +860,10 @@ bool KeyEvent::IsRightSideKey() const {
       // Under X11, this must be a synthetic event, so we can require that
       // code_ be set correctly.
 #endif
-      return ((code_.size() > 5) &&
-              (code_.compare(code_.size() - 5, 5, "Right", 5)) == 0);
+      return (code_ == DomCode::SHIFT_RIGHT) ||
+             (code_ == DomCode::CONTROL_RIGHT) ||
+             (code_ == DomCode::ALT_RIGHT) ||
+             (code_ == DomCode::OS_RIGHT);
     default:
       return false;
   }
@@ -907,6 +912,10 @@ uint16 KeyEvent::GetConflatedWindowsKeyCode() const {
   if (is_char_)
     return character_;
   return key_code_;
+}
+
+std::string KeyEvent::GetCodeString() const {
+  return KeycodeConverter::DomCodeToCodeString(code_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

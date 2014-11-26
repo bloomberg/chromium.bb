@@ -255,7 +255,7 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeForWindowsKeyCode(static_cast<WORD>(native_event.wParam));
 }
 
-const char* CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const base::NativeEvent& native_event) {
   const uint16 scan_code = GetScanCodeFromLParam(native_event.lParam);
   return CodeForWindowsScanCode(scan_code);
 }

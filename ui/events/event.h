@@ -26,6 +26,7 @@ class Transform;
 
 namespace ui {
 class EventTarget;
+enum class DomCode;
 
 class EVENTS_EXPORT Event {
  public:
@@ -590,7 +591,7 @@ class EVENTS_EXPORT ExtendedKeyEventData {
 // -- character_ is a UTF-16 character value.
 // -- key_code_ is conflated with character_ by some code, because both
 //    arrive in the wParam field of a Windows event.
-// -- code_ is the empty string.
+// -- code_ is DomCode::NONE.
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
@@ -606,10 +607,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
   KeyEvent(base::char16 character, KeyboardCode key_code, int flags);
 
   // Used for synthetic events with code of DOM KeyboardEvent (e.g. 'KeyA')
-  // See also: ui/events/keycodes/dom4/keycode_converter_data.h
+  // See also: ui/events/keycodes/dom3/dom_values.txt
   KeyEvent(EventType type,
            KeyboardCode key_code,
-           const std::string& code,
+           DomCode code,
            int flags);
 
   KeyEvent(const KeyEvent& rhs);
@@ -681,7 +682,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // TODO(msw): Additional work may be needed for analogues on other platforms.
   bool IsUnicodeKeyCode() const;
 
-  std::string code() const { return code_; }
+  // Returns the DOM .code (physical key identifier) for a keystroke event.
+  DomCode code() const { return code_; };
+  std::string GetCodeString() const;
 
   // Normalizes flags_ so that it describes the state after the event.
   // (Native X11 event flags describe the state before the event.)
@@ -705,12 +708,12 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   KeyboardCode key_code_;
 
-  // String of 'code' defined in DOM KeyboardEvent (e.g. 'KeyA', 'Space')
-  // http://www.w3.org/TR/uievents/#keyboard-key-codes.
+  // DOM KeyboardEvent |code| (e.g. DomCode::KEY_A, DomCode::SPACE).
+  // http://www.w3.org/TR/DOM-Level-3-Events-code/
   //
   // This value represents the physical position in the keyboard and can be
   // converted from / to keyboard scan code like XKB.
-  std::string code_;
+  DomCode code_;
 
   // True if this is a character event, false if this is a keystroke event.
   bool is_char_;

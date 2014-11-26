@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
 
@@ -329,27 +330,32 @@ TEST(EventTest, KeyEventCopy) {
 }
 
 TEST(EventTest, KeyEventCode) {
+  const DomCode kDomCodeForSpace = DomCode::SPACE;
   const char kCodeForSpace[] = "Space";
+  ASSERT_EQ(kDomCodeForSpace,
+            ui::KeycodeConverter::CodeStringToDomCode(kCodeForSpace));
   const uint16 kNativeCodeSpace =
       ui::KeycodeConverter::CodeToNativeKeycode(kCodeForSpace);
   ASSERT_NE(ui::KeycodeConverter::InvalidNativeKeycode(), kNativeCodeSpace);
+  ASSERT_EQ(kNativeCodeSpace,
+            ui::KeycodeConverter::DomCodeToNativeKeycode(kDomCodeForSpace));
 
   {
-    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kCodeForSpace, EF_NONE);
-    EXPECT_EQ(kCodeForSpace, key.code());
+    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kDomCodeForSpace, EF_NONE);
+    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
   {
     // Regardless the KeyEvent.key_code (VKEY_RETURN), code should be
     // the specified value.
-    KeyEvent key(ET_KEY_PRESSED, VKEY_RETURN, kCodeForSpace, EF_NONE);
-    EXPECT_EQ(kCodeForSpace, key.code());
+    KeyEvent key(ET_KEY_PRESSED, VKEY_RETURN, kDomCodeForSpace, EF_NONE);
+    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
   {
     // If the synthetic event is initialized without code, it returns
     // an empty string.
     // TODO(komatsu): Fill a fallback value assuming the US keyboard layout.
     KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE);
-    EXPECT_TRUE(key.code().empty());
+    EXPECT_TRUE(key.GetCodeString().empty());
   }
 #if defined(USE_X11)
   {
@@ -357,7 +363,7 @@ TEST(EventTest, KeyEventCode) {
     ScopedXI2Event xevent;
     xevent.InitKeyEvent(ET_KEY_PRESSED, VKEY_SPACE, kNativeCodeSpace);
     KeyEvent key(xevent);
-    EXPECT_EQ(kCodeForSpace, key.code());
+    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
 #endif  // USE_X11
 #if defined(OS_WIN)
@@ -370,7 +376,7 @@ TEST(EventTest, KeyEventCode) {
     KeyEvent key(native_event);
 
     // KeyEvent converts from the native keycode (scan code) to the code.
-    EXPECT_EQ(kCodeForSpace, key.code());
+    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
   {
     const char kCodeForHome[]  = "Home";
@@ -384,7 +390,7 @@ TEST(EventTest, KeyEventCode) {
     KeyEvent key(native_event);
 
     // KeyEvent converts from the native keycode (scan code) to the code.
-    EXPECT_EQ(kCodeForHome, key.code());
+    EXPECT_EQ(kCodeForHome, key.GetCodeString());
   }
 #endif  // OS_WIN
 }

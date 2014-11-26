@@ -876,11 +876,11 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   return VKEY_UNKNOWN;
 }
 
-const char* CodeFromXEvent(const XEvent* xev) {
+DomCode CodeFromXEvent(const XEvent* xev) {
   int keycode = (xev->type == GenericEvent)
                     ? static_cast<XIDeviceEvent*>(xev->xcookie.data)->detail
                     : xev->xkey.keycode;
-  return ui::KeycodeConverter::NativeKeycodeToCode(keycode);
+  return ui::KeycodeConverter::NativeKeycodeToDomCode(keycode);
 }
 
 uint16 GetCharacterFromXEvent(const XEvent* xev) {

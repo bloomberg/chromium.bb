@@ -29,6 +29,7 @@
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -74,7 +75,7 @@ size_t GetUtf8StringLength(const char* s) {
 }
 
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
-  const std::string& code = event.code();
+  const std::string code = event.GetCodeString();
   if (StartsWithASCII(code, "Control", true))
     return "Ctrl";
   if (StartsWithASCII(code, "Shift", true))
@@ -145,10 +146,10 @@ void GetExtensionKeyboardEventFromKeyEvent(
   DCHECK(ext_event);
   ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
 
-  std::string dom_code = event.code();
-  if (dom_code == ui::KeycodeConverter::InvalidKeyboardEventCode())
-    dom_code = ui::KeyboardCodeToDomKeycode(event.key_code());
-  ext_event->code = dom_code;
+  if (event.code() == ui::DomCode::NONE)
+    ext_event->code = ui::KeyboardCodeToDomKeycode(event.key_code());
+  else
+    ext_event->code = event.GetCodeString();
   ext_event->key_code = static_cast<int>(event.key_code());
   ext_event->alt_key = event.IsAltDown();
   ext_event->ctrl_key = event.IsControlDown();
@@ -319,10 +320,11 @@ bool InputMethodEngine::SendKeyEvents(
     flags |= event.shift_key ? ui::EF_SHIFT_DOWN     : ui::EF_NONE;
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
-    ui::KeyEvent ui_event(type,
-                          key_code,
-                          event.code,
-                          flags);
+    ui::KeyEvent ui_event(
+        type,
+        key_code,
+        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()),
+        flags);
     // 4-bytes UTF-8 string is at least 2-characters UTF-16 string.
     // And Key char can only be single UTF-16 character.
     if (!event.key.empty() && event.key.size() < 4) {

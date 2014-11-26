@@ -200,7 +200,7 @@ class RemoteInputMethodWin : public InputMethod,
     if (event.is_char()) {
       if (text_input_client_) {
         text_input_client_->InsertChar(
-            static_cast<base::char16>(event.key_code()),
+            event.GetCharacter(),
             ui::GetModifiersFromKeyState());
       }
       return true;

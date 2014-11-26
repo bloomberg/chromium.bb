@@ -6,6 +6,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
 
@@ -127,9 +128,9 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return static_cast<KeyboardCode>(0);
 }
 
-const char* CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
-  return "";
+  return DomCode::NONE;
 }
 
 uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {

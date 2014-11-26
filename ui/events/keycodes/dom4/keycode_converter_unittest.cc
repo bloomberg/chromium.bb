@@ -37,8 +37,6 @@ TEST(UsbKeycodeMap, Basic) {
             keycode_map[0].usb_keycode);
   EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
             keycode_map[0].native_keycode);
-  EXPECT_STREQ(ui::KeycodeConverter::InvalidKeyboardEventCode(),
-               "Unidentified");
   EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
             ui::KeycodeConverter::CodeToNativeKeycode("Unidentified"));
 

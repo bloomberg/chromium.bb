@@ -22,6 +22,8 @@
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace chromeos {
 namespace input_method {
@@ -265,7 +267,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
     ui::KeyEvent key_event(
-        ui::ET_KEY_PRESSED, ui::VKEY_A, "KeyA", ui::EF_NONE);
+        ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_NONE);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
@@ -282,7 +284,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_CONTROL_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -300,7 +302,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_ALT_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -318,7 +320,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_SHIFT_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -336,7 +338,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_CAPS_LOCK_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -354,7 +356,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -372,7 +374,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
                            ui::VKEY_A,
-                           "KeyA",
+                           ui::DomCode::KEY_A,
                            ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
@@ -417,10 +419,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            kMediaKeyCases[i].key, kMediaKeyCases[i].code);
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           kMediaKeyCases[i].keycode,
-                           kMediaKeyCases[i].code,
-                           ui::EF_NONE);
+    ui::KeyEvent key_event(
+        ui::ET_KEY_PRESSED,
+        kMediaKeyCases[i].keycode,
+        ui::KeycodeConverter::CodeStringToDomCode(kMediaKeyCases[i].code),
+        ui::EF_NONE);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));

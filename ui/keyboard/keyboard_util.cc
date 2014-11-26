@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "url/gurl.h"
 
@@ -266,7 +267,11 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
-    ui::KeyEvent event(event_type, code, key_name, modifiers);
+    ui::KeyEvent event(
+        event_type,
+        code,
+        ui::KeycodeConverter::CodeStringToDomCode(key_name.c_str()),
+        modifiers);
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&event);
     CHECK(!details.dispatcher_destroyed);

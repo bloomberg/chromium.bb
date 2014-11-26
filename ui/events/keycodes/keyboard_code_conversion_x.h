@@ -14,11 +14,13 @@ typedef struct _XDisplay XDisplay;
 
 namespace ui {
 
+enum class DomCode;
+
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev);
 
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
-EVENTS_BASE_EXPORT const char* CodeFromXEvent(const XEvent* xev);
+EVENTS_BASE_EXPORT DomCode CodeFromXEvent(const XEvent* xev);
 
 // Returns a character on a standard US PC keyboard from an XEvent.
 EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(const XEvent* xev);

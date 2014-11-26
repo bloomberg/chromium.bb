@@ -636,7 +636,7 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromXKeyEvent(native_event);
 }
 
-const char* CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const base::NativeEvent& native_event) {
   return CodeFromXEvent(native_event);
 }
 

@@ -25,6 +25,7 @@
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -972,7 +973,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
       mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(1, mock_ime_engine_handler_->process_key_event_call_count());
   EXPECT_EQ(ui::VKEY_A, key_event->key_code());
-  EXPECT_EQ("KeyA", key_event->code());
+  EXPECT_EQ(ui::DomCode::KEY_A, key_event->code());
   EXPECT_EQ(kFlags, key_event->flags());
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 
@@ -1003,7 +1004,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   const ui::KeyEvent* key_event =
       mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(ui::VKEY_B, key_event->key_code());
-  EXPECT_EQ("KeyB", key_event->code());
+  EXPECT_EQ(ui::DomCode::KEY_B, key_event->code());
   EXPECT_EQ(kFlags, key_event->flags());
 
   KeyEventCallback first_callback =
@@ -1018,7 +1019,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   const ui::KeyEvent* key_event2 =
       mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(ui::VKEY_C, key_event2->key_code());
-  EXPECT_EQ("KeyC", key_event2->code());
+  EXPECT_EQ(ui::DomCode::KEY_C, key_event2->code());
   EXPECT_EQ(kFlags, key_event2->flags());
 
   // Check before state.

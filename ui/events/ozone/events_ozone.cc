@@ -54,10 +54,10 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return event->key_code();
 }
 
-const char* CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const base::NativeEvent& native_event) {
   const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
   DCHECK(event->IsKeyEvent());
-  return event->code().c_str();
+  return event->code();
 }
 
 uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {

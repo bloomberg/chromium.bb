@@ -90,6 +90,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        'dom4_keycode_converter',
         'events_base',
         'gesture_detection',
       ],

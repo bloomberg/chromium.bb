@@ -51,7 +51,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 
   webkit_event.windowsKeyCode = event.GetLocatedWindowsKeyboardCode();
   webkit_event.nativeKeyCode =
-    ui::KeycodeConverter::CodeToNativeKeycode(event.code().c_str());
+    ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
   webkit_event.unmodifiedText[0] = event.GetUnmodifiedText();
   webkit_event.text[0] = event.GetText();
 

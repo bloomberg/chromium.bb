@@ -63,17 +63,12 @@ const char* KeycodeConverter::DomKeyStringForTest(size_t index) {
 }
 
 // static
-uint16_t KeycodeConverter::InvalidNativeKeycode() {
+int KeycodeConverter::InvalidNativeKeycode() {
   return usb_keycode_map[0].native_keycode;
 }
 
 // static
-const char* KeycodeConverter::InvalidKeyboardEventCode() {
-  return "Unidentified";
-}
-
-// static
-const char* KeycodeConverter::NativeKeycodeToCode(uint16_t native_keycode) {
+const char* KeycodeConverter::NativeKeycodeToCode(int native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode) {
       if (usb_keycode_map[i].code != NULL)
@@ -81,11 +76,11 @@ const char* KeycodeConverter::NativeKeycodeToCode(uint16_t native_keycode) {
       break;
     }
   }
-  return InvalidKeyboardEventCode();
+  return "";
 }
 
 // static
-DomCode KeycodeConverter::NativeKeycodeToDomCode(uint16_t native_keycode) {
+DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode) {
       if (usb_keycode_map[i].code != NULL)
@@ -97,11 +92,9 @@ DomCode KeycodeConverter::NativeKeycodeToDomCode(uint16_t native_keycode) {
 }
 
 // static
-uint16_t KeycodeConverter::CodeToNativeKeycode(const char* code) {
-  if (!code ||
-      strcmp(code, InvalidKeyboardEventCode()) == 0) {
+int KeycodeConverter::CodeToNativeKeycode(const char* code) {
+  if (!code || !*code)
     return InvalidNativeKeycode();
-  }
 
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].code &&
@@ -113,7 +106,7 @@ uint16_t KeycodeConverter::CodeToNativeKeycode(const char* code) {
 }
 
 // static
-uint16_t KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
+int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
   if (code == DomCode::NONE)
     return InvalidNativeKeycode();
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
@@ -125,10 +118,8 @@ uint16_t KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
 
 // static
 DomCode KeycodeConverter::CodeStringToDomCode(const char* code) {
-  if (!code ||
-      strcmp(code, InvalidKeyboardEventCode()) == 0) {
+  if (!code || !*code)
     return DomCode::NONE;
-  }
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].code &&
         strcmp(usb_keycode_map[i].code, code) == 0) {
@@ -162,7 +153,7 @@ const char* KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
     if (dom_key_map[i].dom_key == dom_key)
       return dom_key_map[i].string;
   }
-  return nullptr;
+  return "";
 }
 
 // USB keycodes
@@ -170,12 +161,12 @@ const char* KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
 // Please don't use USB keycodes in new code.
 
 // static
-uint16_t KeycodeConverter::InvalidUsbKeycode() {
-  return static_cast<uint16_t>(usb_keycode_map[0].usb_keycode);
+uint32_t KeycodeConverter::InvalidUsbKeycode() {
+  return usb_keycode_map[0].usb_keycode;
 }
 
 // static
-uint16_t KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
+int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032) // non-US hash.
     usb_keycode = 0x070031; // US backslash.
@@ -192,7 +183,7 @@ uint16_t KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
 }
 
 // static
-uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(uint16_t native_keycode) {
+uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(int native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode)
       return usb_keycode_map[i].usb_keycode;
@@ -203,18 +194,19 @@ uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(uint16_t native_keycode) {
 // static
 const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode)
-      return usb_keycode_map[i].code;
+    if (usb_keycode_map[i].usb_keycode == usb_keycode) {
+      if (usb_keycode_map[i].code)
+        return usb_keycode_map[i].code;
+      break;
+    }
   }
-  return InvalidKeyboardEventCode();
+  return "";
 }
 
 // static
 uint32_t KeycodeConverter::CodeToUsbKeycode(const char* code) {
-  if (!code ||
-      strcmp(code, InvalidKeyboardEventCode()) == 0) {
+  if (!code || !*code)
     return InvalidUsbKeycode();
-  }
 
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].code &&
