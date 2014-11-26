@@ -4,10 +4,8 @@
 
 package org.chromium.content.browser;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.provider.Settings;
@@ -230,7 +228,7 @@ public class ContentVideoView extends FrameLayout
 
         mCurrentState = STATE_ERROR;
 
-        if (!isActivityContext(getContext())) {
+        if (ContentViewCore.activityFromContext(getContext()) == null) {
             Log.w(TAG, "Unable to show alert dialog because it requires an activity context");
             return;
         }
@@ -365,16 +363,6 @@ public class ContentVideoView extends FrameLayout
         ContentVideoView videoView = new ContentVideoView(context, nativeContentVideoView, client);
         client.enterFullscreenVideo(videoView);
         return videoView;
-    }
-
-    private static boolean isActivityContext(Context context) {
-        // Only retrieve the base context if the supplied context is a ContextWrapper but not
-        // an Activity, given that Activity is already a subclass of ContextWrapper.
-        if (context instanceof ContextWrapper && !(context instanceof Activity)) {
-            context = ((ContextWrapper) context).getBaseContext();
-            return isActivityContext(context);
-        }
-        return context instanceof Activity;
     }
 
     public void removeSurfaceView() {

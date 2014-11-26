@@ -10,6 +10,7 @@ import android.app.SearchManager;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -356,6 +357,22 @@ public class ContentViewCore
      */
     public interface SmartClipDataListener {
         public void onSmartClipDataExtracted(String text, String html, Rect clipRect);
+    }
+
+    /**
+     * Cast from Context to Activity taking ContextWrapper into account.
+     */
+    public static Activity activityFromContext(Context context) {
+        // Only retrieve the base context if the supplied context is a ContextWrapper but not
+        // an Activity, given that Activity is already a subclass of ContextWrapper.
+        if (context instanceof Activity) {
+            return ((Activity) context);
+        } else if (context instanceof ContextWrapper) {
+            context = ((ContextWrapper) context).getBaseContext();
+            return activityFromContext(context);
+        } else {
+            return null;
+        }
     }
 
     private final Context mContext;
@@ -1929,7 +1946,7 @@ public class ContentViewCore
                     i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
                     i.putExtra(SearchManager.QUERY, query);
                     i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
-                    if (!(getContext() instanceof Activity)) {
+                    if (activityFromContext(getContext()) == null) {
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
                     try {

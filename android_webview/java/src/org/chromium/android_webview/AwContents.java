@@ -793,8 +793,9 @@ public class AwContents implements SmartClipProvider {
 
         long nativeWebContents = nativeGetWebContents(mNativeAwContents);
 
-        mWindowAndroid = mContext instanceof Activity
-                ? new ActivityWindowAndroid((Activity) mContext)
+        Activity activity = ContentViewCore.activityFromContext(mContext);
+        mWindowAndroid = activity != null
+                ? new ActivityWindowAndroid(activity)
                 : new WindowAndroid(mContext.getApplicationContext());
         mContentViewCore = createAndInitializeContentViewCore(
                 mContainerView, mContext, mInternalAccessAdapter, nativeWebContents,
