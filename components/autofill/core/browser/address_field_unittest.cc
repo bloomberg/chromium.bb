@@ -73,18 +73,18 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
 
   field.label = base::string16();
-  field.name = base::string16();
+  field.name = ASCIIToUTF16("address2");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
 
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("addr1")) !=
+              field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("addr2")) !=
+              field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
 }
 
@@ -115,7 +115,8 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
       field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr3")) == field_type_map_.end());
+      field_type_map_.find(ASCIIToUTF16("addr3")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE3, field_type_map_[ASCIIToUTF16("addr3")]);
 }
 
 TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
@@ -225,30 +226,6 @@ TEST_F(AddressFieldTest, ParseCountry) {
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, field_type_map_[ASCIIToUTF16("country1")]);
-}
-
-TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
-  FormFieldData field;
-  field.form_control_type = "text";
-
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
-
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("bogus");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
-
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
 }
 
 TEST_F(AddressFieldTest, ParseCompany) {

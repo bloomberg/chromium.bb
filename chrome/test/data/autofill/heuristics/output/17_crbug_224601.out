@@ -42,7 +42,7 @@ PHONE_HOME_WHOLE_NUMBER | Register1$txtEveningPhone | Evening phone: |  | txtSea
 PHONE_HOME_WHOLE_NUMBER | Register1$txtMobilePhone | Mobile phone: |  | txtSearch_1-default
 ADDRESS_HOME_LINE1 | Register1$txtAddress1 | Address Line 1: * |  | txtSearch_1-default
 ADDRESS_HOME_LINE2 | Register1$txtAddress2 | Address Line 2: * |  | txtSearch_1-default
-UNKNOWN_TYPE | Register1$txtAddress3 | Address Line 3: |  | txtSearch_1-default
+ADDRESS_HOME_LINE3 | Register1$txtAddress3 | Address Line 3: |  | txtSearch_1-default
 UNKNOWN_TYPE | Register1$txtAddress4 | Address Line 4: |  | txtSearch_1-default
 UNKNOWN_TYPE | Register1$txtAddress5 | Address Line 5: |  | txtSearch_1-default
 ADDRESS_HOME_ZIP | Register1$txtPostCode | Post Code: * |  | txtSearch_1-default
