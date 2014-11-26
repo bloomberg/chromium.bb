@@ -247,7 +247,9 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
     jstring j_current_acc,
     jboolean j_force_notifications) {
   DVLOG(1) << "AndroidProfileOAuth2TokenService::ValidateAccounts from java";
-  std::string signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
+  std::string signed_in_account;
+  if (j_current_acc)
+    signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
   if (!signed_in_account.empty())
     signed_in_account = gaia::CanonicalizeEmail(signed_in_account);
   ValidateAccounts(signed_in_account, j_force_notifications != JNI_FALSE);
@@ -455,7 +457,9 @@ void OAuth2TokenFetched(
     jstring authToken,
     jboolean result,
     jlong nativeCallback) {
-  std::string token = ConvertJavaStringToUTF8(env, authToken);
+  std::string token;
+  if (authToken)
+    token = ConvertJavaStringToUTF8(env, authToken);
   scoped_ptr<FetchOAuth2TokenCallback> heap_callback(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
   // Android does not provide enough information to know if the credentials are

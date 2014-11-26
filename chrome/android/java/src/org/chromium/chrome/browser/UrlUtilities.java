@@ -134,6 +134,7 @@ public class UrlUtilities {
      * "//mail.google.com:/", this function prepends "file" while the other one prepends "http".
      */
     public static String fixupUrl(String uri) {
+        if (TextUtils.isEmpty(uri)) return uri;
         return nativeFixupUrl(uri, null);
     }
 
@@ -209,6 +210,7 @@ public class UrlUtilities {
      * identifier.
      */
     public static String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
+        if (TextUtils.isEmpty(uri)) return uri;
         return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
     }
 
@@ -218,5 +220,5 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
-    public static native String nativeFixupUrl(String url, String desiredTld);
+    private static native String nativeFixupUrl(String url, String desiredTld);
 }

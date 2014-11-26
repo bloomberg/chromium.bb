@@ -4,7 +4,10 @@
 
 package org.chromium.components.dom_distiller.core;
 
+import android.text.TextUtils;
+
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Wrapper for the dom_distiller::url_utils.
@@ -21,7 +24,10 @@ public final class DomDistillerUrlUtils {
      * @param url The URL to distill.
      * @return the URL to load to get the distilled version of a page.
      */
+    @VisibleForTesting
     public static String getDistillerViewUrlFromUrl(String scheme, String url) {
+        assert scheme != null;
+        if (TextUtils.isEmpty(url)) return url;
         return nativeGetDistillerViewUrlFromUrl(scheme, url);
     }
 
@@ -32,6 +38,7 @@ public final class DomDistillerUrlUtils {
      * @return the URL of the original page.
      */
     public static String getOriginalUrlFromDistillerUrl(String url) {
+        if (TextUtils.isEmpty(url)) return url;
         return nativeGetOriginalUrlFromDistillerUrl(url);
     }
 
@@ -42,10 +49,12 @@ public final class DomDistillerUrlUtils {
      * @return whether the url is for a distilled page.
      */
     public static boolean isDistilledPage(String url) {
+        if (TextUtils.isEmpty(url)) return false;
         return nativeIsDistilledPage(url);
     }
 
     public static boolean isUrlDistillable(String url) {
+        if (TextUtils.isEmpty(url)) return false;
         return nativeIsUrlDistillable(url);
     }
 
@@ -56,6 +65,8 @@ public final class DomDistillerUrlUtils {
     }
 
     public static String getValueForKeyInUrl(String url, String key) {
+        assert key != null;
+        if (TextUtils.isEmpty(url)) return null;
         return nativeGetValueForKeyInUrl(url, key);
     }
 
