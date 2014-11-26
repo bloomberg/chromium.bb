@@ -2974,9 +2974,9 @@ bool FrameView::scrollbarsDisabled() const
     // http://crbug.com/434533
 #if !OS(ANDROID)
     return false;
-#endif
-
+#else
     return m_frame->isMainFrame();
+#endif
 }
 
 AXObjectCache* FrameView::axObjectCache() const
