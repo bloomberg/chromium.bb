@@ -168,9 +168,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     void removeSheet(StyleSheetContents*);
 
-    void addScopedStyleResolver(const ScopedStyleResolver* resolver) { m_scopedStyleResolvers.add(resolver); }
-    void removeScopedStyleResolver(const ScopedStyleResolver* resolver) { m_scopedStyleResolvers.remove(resolver); }
-    bool hasOnlyScopedResolverForDocument() const { return m_scopedStyleResolvers.size() == 1; }
+    bool onlyDocumentHasStyles() const { return m_activeTreeScopes.isEmpty(); }
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
 
     virtual void trace(Visitor*) override;
@@ -230,8 +228,6 @@ private:
 
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<TreeScope>, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > StyleSheetCollectionMap;
     StyleSheetCollectionMap m_styleSheetCollectionMap;
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> > ScopedStyleResolverSet;
-    ScopedStyleResolverSet m_scopedStyleResolvers;
 
     bool m_documentScopeDirty;
     TreeScopeSet m_dirtyTreeScopes;

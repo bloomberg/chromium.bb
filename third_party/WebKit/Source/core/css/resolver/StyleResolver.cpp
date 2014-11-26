@@ -181,10 +181,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
     if (!treeScope)
         return;
 
-    ScopedStyleResolver& resolver = treeScope->ensureScopedStyleResolver();
-    document().styleEngine()->addScopedStyleResolver(&resolver);
-    unsigned index = resolver.appendCSSStyleSheet(&cssSheet);
-
+    unsigned index = treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(&cssSheet);
     addRulesFromSheet(cssSheet, treeScope, index);
 }
 
@@ -239,10 +236,9 @@ void StyleResolver::resetRuleFeatures()
 void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, unsigned parentIndex, ContainerNode& scope)
 {
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
-    ScopedStyleResolver* resolver = &scope.treeScope().ensureScopedStyleResolver();
-    document().styleEngine()->addScopedStyleResolver(resolver);
+    ScopedStyleResolver& resolver = scope.treeScope().ensureScopedStyleResolver();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
-        resolver->addKeyframeStyle(keyframesRules[i]);
+        resolver.addKeyframeStyle(keyframesRules[i]);
 
     m_treeBoundaryCrossingRules.addTreeBoundaryCrossingRules(authorRules, parentStyleSheet, parentIndex, scope);
 
@@ -263,14 +259,12 @@ void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
         return;
 
     m_treeBoundaryCrossingRules.reset(&treeScope.rootNode());
-
     resolver->resetAuthorStyle();
     resetRuleFeatures();
     if (treeScope.rootNode().isDocumentNode())
         return;
 
     // resolver is going to be freed below.
-    document().styleEngine()->removeScopedStyleResolver(resolver);
     treeScope.clearScopedStyleResolver();
 }
 
@@ -401,8 +395,13 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    if (document().styleEngine()->hasOnlyScopedResolverForDocument()) {
-        document().scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, ignoreCascadeScope);
+    if (document().styleEngine()->onlyDocumentHasStyles()) {
+        ScopedStyleResolver* resolver = document().scopedStyleResolver();
+        if (!resolver)
+            return;
+        // If we have no resolver for a document, the document has no styles.
+        // We don't need to see any rules (including treeboundary crossing ones).
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
@@ -418,15 +417,14 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
         return;
     }
 
-    if (resolvers.isEmpty())
-        return;
-
-    CascadeScope cascadeScope = 0;
-    CascadeOrder cascadeOrder = resolvers.size();
-    for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
-        ScopedStyleResolver* resolver = resolvers.at(i);
-        // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->treeScope().rootNode().isShadowRoot() ? 0 : cascadeOrder);
+    if (!resolvers.isEmpty()) {
+        CascadeScope cascadeScope = 0;
+        CascadeOrder cascadeOrder = resolvers.size();
+        for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
+            ScopedStyleResolver* resolver = resolvers.at(i);
+            // FIXME: Need to clarify how to treat style scoped.
+            resolver->collectMatchingAuthorRules(collector, includeEmptyRules, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->treeScope().rootNode().isShadowRoot() ? 0 : cascadeOrder);
+        }
     }
 
     m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);

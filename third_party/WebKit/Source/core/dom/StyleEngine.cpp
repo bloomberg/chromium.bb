@@ -103,9 +103,7 @@ void StyleEngine::detachFromDocument()
     m_fontSelector.clear();
     m_resolver.clear();
     m_styleSheetCollectionMap.clear();
-    for (const auto& resolver : m_scopedStyleResolvers)
-        const_cast<TreeScope&>(resolver->treeScope()).clearScopedStyleResolver();
-    m_scopedStyleResolvers.clear();
+    m_activeTreeScopes.clear();
 }
 #endif
 
@@ -319,7 +317,6 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
     collection->removeStyleSheetCandidateNode(node);
 
     markTreeScopeDirty(treeScope);
-    m_activeTreeScopes.remove(&treeScope);
 }
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
@@ -396,8 +393,12 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
             ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
             ASSERT(collection);
             collection->updateActiveStyleSheets(this, updateMode);
-            if (!collection->hasStyleSheetCandidateNodes())
+            if (!collection->hasStyleSheetCandidateNodes()) {
                 treeScopesRemoved.add(treeScope);
+                // When removing TreeScope from ActiveTreeScopes,
+                // its resolver should be destroyed by invoking resetAuthorStyle.
+                ASSERT(!treeScope->scopedStyleResolver());
+            }
         }
         m_activeTreeScopes.removeAll(treeScopesRemoved);
     }
@@ -433,8 +434,6 @@ const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > StyleEngine::activeSt
 
 void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 {
-    if (shadowRoot->scopedStyleResolver())
-        removeScopedStyleResolver(shadowRoot->scopedStyleResolver());
     m_styleSheetCollectionMap.remove(shadowRoot);
 }
 
@@ -462,8 +461,9 @@ void StyleEngine::createResolver()
     ASSERT(document().frame());
 
     m_resolver = adoptPtrWillBeNoop(new StyleResolver(*m_document));
-    addScopedStyleResolver(&m_document->ensureScopedStyleResolver());
 
+    // A scoped style resolver for document will be created during
+    // appendActiveAuthorStyleSheets if needed.
     appendActiveAuthorStyleSheets();
     combineCSSFeatureFlags(m_resolver->ensureUpdatedRuleFeatureSet());
 }
@@ -473,9 +473,16 @@ void StyleEngine::clearResolver()
     ASSERT(!document().inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
 
-    for (const auto& resolver: m_scopedStyleResolvers)
-        const_cast<TreeScope&>(resolver->treeScope()).clearScopedStyleResolver();
-    m_scopedStyleResolvers.clear();
+    document().clearScopedStyleResolver();
+    // clearResolver might be invoked while destryoing document. In this case,
+    // treescopes in m_activeTreeScopes might have already been destoryed,
+    // because m_activeTreeScopes are updated in updateActiveStyleSheets, not
+    // in removeStyleSheetCandidateNode. So we should not invoke
+    // treeScope->clearScopedStyleResolver when document is not active.
+    if (document().isActive()) {
+        for (auto& treeScope: m_activeTreeScopes)
+            treeScope->clearScopedStyleResolver();
+    }
 
     if (m_resolver)
         document().updateStyleInvalidationIfNeeded();
@@ -642,8 +649,12 @@ void StyleEngine::removeSheet(StyleSheetContents* contents)
 void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const
 {
     HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
-    for (const auto& resolver : m_scopedStyleResolvers)
-        resolver->collectFeaturesTo(features, visitedSharedStyleSheetContents);
+    if (document().scopedStyleResolver())
+        document().scopedStyleResolver()->collectFeaturesTo(features, visitedSharedStyleSheetContents);
+    for (auto& treeScope: m_activeTreeScopes) {
+        ASSERT(treeScope->scopedStyleResolver());
+        treeScope->scopedStyleResolver()->collectFeaturesTo(features, visitedSharedStyleSheetContents);
+    }
 }
 
 void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
@@ -664,7 +675,6 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_authorStyleSheets);
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
-    visitor->trace(m_scopedStyleResolvers);
     visitor->trace(m_resolver);
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);
