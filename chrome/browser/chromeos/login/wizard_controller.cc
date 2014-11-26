@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -442,17 +443,16 @@ void WizardController::ShowEnrollmentScreen() {
     screen_parameters_->GetString("user", &user);
   }
 
-  EnrollmentScreenActor::EnrollmentMode mode =
-      EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
+  EnrollmentMode mode = ENROLLMENT_MODE_MANUAL;
   EnrollmentScreen* screen = EnrollmentScreen::Get(this);
   std::string enrollment_domain = GetForcedEnrollmentDomain();
   if (is_auto_enrollment) {
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
+    mode = ENROLLMENT_MODE_AUTO;
   } else if (enrollment_recovery_) {
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY;
+    mode = ENROLLMENT_MODE_RECOVERY;
     enrollment_domain = GetEnrollmentRecoveryDomain();
   } else if (ShouldAutoStartEnrollment() && !CanExitEnrollment()) {
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
+    mode = ENROLLMENT_MODE_FORCED;
   }
 
   screen->SetParameters(mode, enrollment_domain, user,

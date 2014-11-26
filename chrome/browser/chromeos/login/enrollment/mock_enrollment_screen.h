@@ -26,19 +26,15 @@ class MockEnrollmentScreenActor
   virtual ~MockEnrollmentScreenActor();
 
   MOCK_METHOD3(SetParameters,
-               void(Controller*,
-                    EnrollmentScreenActor::EnrollmentMode,
-                    const std::string&));
+               void(Controller*, EnrollmentMode, const std::string&));
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD0(FetchOAuthToken, void());
-  MOCK_METHOD1(ResetAuth, void(const base::Closure&));
   MOCK_METHOD0(ShowSigninScreen, void());
   MOCK_METHOD0(ShowEnrollmentSpinnerScreen, void());
   MOCK_METHOD0(ShowLoginSpinnerScreen, void());
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError&));
-  MOCK_METHOD1(ShowUIError, void(UIError));
+  MOCK_METHOD1(ShowOtherError, void(EnterpriseEnrollmentHelper::OtherError));
   MOCK_METHOD1(ShowEnrollmentStatus, void(policy::EnrollmentStatus status));
 };
 

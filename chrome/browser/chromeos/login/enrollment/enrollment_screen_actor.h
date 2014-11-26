@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 
 class GoogleServiceAuthError;
@@ -18,27 +19,6 @@ namespace chromeos {
 // Interface class for the enterprise enrollment screen actor.
 class EnrollmentScreenActor {
  public:
-  // Enumeration of the possible errors that can occur during enrollment which
-  // are not covered by GoogleServiceAuthError or EnrollmentStatus.
-  enum UIError {
-    // Existing enrollment domain doesn't match authentication user.
-    UI_ERROR_DOMAIN_MISMATCH,
-    // Requested device mode not supported with auto enrollment.
-    UI_ERROR_AUTO_ENROLLMENT_BAD_MODE,
-    // Unexpected error condition, indicates a bug in the code.
-    UI_ERROR_FATAL,
-  };
-
-  // Describes the enrollment mode.  Must be kept in sync with
-  // |kEnrollmentModes| in enrollment_screen_handler.cc.
-  enum EnrollmentMode {
-    ENROLLMENT_MODE_MANUAL,    // Manually triggered enrollment.
-    ENROLLMENT_MODE_FORCED,    // Forced enrollment, user can't skip.
-    ENROLLMENT_MODE_AUTO,      // Auto-enrollment during first sign-in.
-    ENROLLMENT_MODE_RECOVERY,  // Recover from "spontaneous unenrollment".
-    ENROLLMENT_MODE_COUNT      // Counter must be last. Not an enrollment mode.
-  };
-
   // This defines the interface for controllers which will be called back when
   // something happens on the UI.
   class Controller {
@@ -46,8 +26,6 @@ class EnrollmentScreenActor {
     virtual ~Controller() {}
 
     virtual void OnLoginDone(const std::string& user) = 0;
-    virtual void OnAuthError(const GoogleServiceAuthError& error) = 0;
-    virtual void OnOAuthTokenAvailable(const std::string& oauth_token) = 0;
     virtual void OnRetry() = 0;
     virtual void OnCancel() = 0;
     virtual void OnConfirmationClosed() = 0;
@@ -69,13 +47,6 @@ class EnrollmentScreenActor {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Starts fetching the OAuth token.
-  virtual void FetchOAuthToken() = 0;
-
-  // Resets the authentication state and invokes the passed callback on
-  // completion.
-  virtual void ResetAuth(const base::Closure& callback) = 0;
-
   // Shows the signin screen.
   virtual void ShowSigninScreen() = 0;
 
@@ -89,7 +60,7 @@ class EnrollmentScreenActor {
   virtual void ShowAuthError(const GoogleServiceAuthError& error) = 0;
 
   // Show non-authentication error.
-  virtual void ShowUIError(UIError error) = 0;
+  virtual void ShowOtherError(EnterpriseEnrollmentHelper::OtherError error) = 0;
 
   // Update the UI to report the |status| of the enrollment procedure.
   virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) = 0;
