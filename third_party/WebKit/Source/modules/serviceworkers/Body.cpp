@@ -5,15 +5,63 @@
 #include "config.h"
 #include "modules/serviceworkers/Body.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/streams/UnderlyingSource.h"
 
 namespace blink {
+
+class Body::ReadableStreamSource : public GarbageCollectedFinalized<ReadableStreamSource>, public UnderlyingSource {
+    USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
+public:
+    ReadableStreamSource(Body* body) : m_body(body) { }
+    ~ReadableStreamSource() override { }
+    void pullSource() override { m_body->pullSource(); }
+
+    ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) override
+    {
+        return ScriptPromise();
+    }
+
+    void trace(Visitor* visitor) override
+    {
+        visitor->trace(m_body);
+        UnderlyingSource::trace(visitor);
+    }
+
+private:
+    Member<Body> m_body;
+};
+
+void Body::pullSource()
+{
+    if (!m_streamAccessed) {
+        // We do not download data unless the user explicitly uses the
+        // ReadableStream object in order to avoid performance regression,
+        // because currently Chrome cannot handle Streams efficiently
+        // especially with ServiceWorker or Blob.
+        return;
+    }
+    if (m_bodyUsed) {
+        m_stream->error(DOMException::create(InvalidStateError, "The stream is locked."));
+        return;
+    }
+    ASSERT(!m_loader);
+    FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
+    RefPtr<BlobDataHandle> blobHandle = blobDataHandle();
+    if (!blobHandle.get()) {
+        blobHandle = BlobDataHandle::create(BlobData::create(), 0);
+    }
+    m_loader = adoptPtr(new FileReaderLoader(readType, this));
+    m_loader->start(executionContext(), blobHandle);
+}
 
 ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
 {
@@ -36,6 +84,26 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     ASSERT(!m_resolver);
     m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
+
+    if (m_streamAccessed) {
+        // 'body' attribute was accessed and the stream source started pulling.
+        switch (m_stream->state()) {
+        case ReadableStream::Readable:
+            readAllFromStream(scriptState);
+            return promise;
+        case ReadableStream::Waiting:
+            // m_loader is working and m_resolver will be resolved when it
+            // ends.
+            return promise;
+        case ReadableStream::Closed:
+        case ReadableStream::Errored:
+            m_resolver->resolve(m_stream->closed(scriptState).v8Value());
+            return promise;
+            break;
+        }
+        ASSERT_NOT_REACHED();
+        return promise;
+    }
 
     FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsText;
     RefPtr<BlobDataHandle> blobHandle = blobDataHandle();
@@ -78,6 +146,23 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     return promise;
 }
 
+void Body::readAllFromStream(ScriptState* scriptState)
+{
+    // With the current loading mechanism, the data is loaded atomically.
+    ASSERT(m_stream->isDraining());
+    TrackExceptionState es;
+    // FIXME: Implement and use another |read| method that doesn't
+    // need an exception state and V8ArrayBuffer.
+    ScriptValue value = m_stream->read(scriptState, es);
+    ASSERT(!es.hadException());
+    ASSERT(m_stream->state() == ReadableStream::Closed);
+    ASSERT(!value.isEmpty() && V8ArrayBuffer::hasInstance(value.v8Value(), scriptState->isolate()));
+    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.v8Value().As<v8::Object>());
+    didFinishLoadingViaStream(buffer);
+    m_resolver.clear();
+    m_stream->close();
+}
+
 ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
 {
     return readAsync(scriptState, ResponseAsArrayBuffer);
@@ -103,6 +188,21 @@ ScriptPromise Body::text(ScriptState* scriptState)
     return readAsync(scriptState, ResponseAsText);
 }
 
+ReadableStream* Body::body()
+{
+    if (!m_streamAccessed) {
+        m_streamAccessed = true;
+        if (m_stream->isPulling()) {
+            // The stream has been pulling, but the source ignored the
+            // instruction because it didn't know the user wanted to use the
+            // ReadableStream interface. Now it knows the user does, so have
+            // the source start pulling.
+            m_streamSource->pullSource();
+        }
+    }
+    return m_stream;
+}
+
 bool Body::bodyUsed() const
 {
     return m_bodyUsed;
@@ -122,29 +222,46 @@ void Body::stop()
 
 bool Body::hasPendingActivity() const
 {
-    return m_resolver;
+    if (m_resolver)
+        return true;
+    if (m_streamAccessed && (m_stream->state() == ReadableStream::Readable || m_stream->state() == ReadableStream::Waiting))
+        return true;
+    return false;
+}
+
+void Body::trace(Visitor* visitor)
+{
+    visitor->trace(m_stream);
+    visitor->trace(m_streamSource);
 }
 
 Body::Body(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_bodyUsed(false)
+    , m_streamAccessed(false)
     , m_responseType(ResponseType::ResponseUnknown)
+    , m_streamSource(new ReadableStreamSource(this))
+    , m_stream(new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(context, m_streamSource))
 {
+    m_stream->didSourceStart();
 }
 
 Body::Body(const Body& copy_from)
     : ActiveDOMObject(copy_from.lifecycleContext())
     , m_bodyUsed(copy_from.bodyUsed())
     , m_responseType(ResponseType::ResponseUnknown)
+    , m_streamSource(new ReadableStreamSource(this))
+    , m_stream(new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(copy_from.executionContext(), m_streamSource))
 {
+    m_stream->didSourceStart();
 }
 
-void Body::resolveJSON()
+void Body::resolveJSON(const String& string)
 {
     ASSERT(m_responseType == ResponseAsJSON);
     ScriptState::Scope scope(m_resolver->scriptState());
     v8::Isolate* isolate = m_resolver->scriptState()->isolate();
-    v8::Local<v8::String> inputString = v8String(isolate, m_loader->stringResult());
+    v8::Local<v8::String> inputString = v8String(isolate, string);
     v8::TryCatch trycatch;
     v8::Local<v8::Value> parsed = v8::JSON::Parse(inputString);
     if (parsed.IsEmpty()) {
@@ -162,8 +279,15 @@ void Body::didStartLoading() { }
 void Body::didReceiveData() { }
 void Body::didFinishLoading()
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (executionContext()->activeDOMObjectsAreStopped())
         return;
+
+    if (m_streamAccessed) {
+        didFinishLoadingViaStream(m_loader->arrayBufferResult().get());
+        m_resolver.clear();
+        m_stream->close();
+        return;
+    }
 
     switch (m_responseType) {
     case ResponseAsArrayBuffer:
@@ -182,7 +306,7 @@ void Body::didFinishLoading()
         ASSERT_NOT_REACHED();
         break;
     case ResponseAsJSON:
-        resolveJSON();
+        resolveJSON(m_loader->stringResult());
         break;
     case ResponseAsText:
         m_resolver->resolve(m_loader->stringResult());
@@ -191,16 +315,63 @@ void Body::didFinishLoading()
         ASSERT_NOT_REACHED();
     }
     m_resolver.clear();
+    m_stream->close();
+}
+
+void Body::didFinishLoadingViaStream(DOMArrayBuffer* buffer)
+{
+    if (!m_bodyUsed) {
+        // |m_stream| is pulling.
+        ASSERT(m_streamAccessed);
+        m_stream->enqueue(buffer);
+        return;
+    }
+
+    switch (m_responseType) {
+    case ResponseAsArrayBuffer:
+        m_resolver->resolve(buffer);
+        break;
+    case ResponseAsBlob: {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendBytes(buffer->data(), buffer->byteLength());
+        m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), blobData->length())));
+        break;
+    }
+    case ResponseAsFormData:
+        ASSERT_NOT_REACHED();
+        break;
+    case ResponseAsJSON: {
+        String s = String::fromUTF8(static_cast<const char*>(buffer->data()), buffer->byteLength());
+        if (s.isNull())
+            m_resolver->reject(DOMException::create(NetworkError, "Invalid utf-8 string"));
+        else
+            resolveJSON(s);
+        break;
+    }
+    case ResponseAsText: {
+        String s = String::fromUTF8(static_cast<const char*>(buffer->data()), buffer->byteLength());
+        if (s.isNull())
+            m_resolver->reject(DOMException::create(NetworkError, "Invalid utf-8 string"));
+        else
+            m_resolver->resolve(s);
+        break;
+    }
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 void Body::didFail(FileError::ErrorCode code)
 {
-    ASSERT(m_resolver);
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    m_resolver->resolve("");
-    m_resolver.clear();
+    if (m_resolver) {
+        // FIXME: We should reject the promise.
+        m_resolver->resolve("");
+        m_resolver.clear();
+    }
+    m_stream->error(DOMException::create(NetworkError, "network error"));
 }
 
 } // namespace blink

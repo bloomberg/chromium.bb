@@ -11,6 +11,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/streams/ReadableStreamImpl.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -42,6 +43,7 @@ public:
     ScriptPromise formData(ScriptState*);
     ScriptPromise json(ScriptState*);
     ScriptPromise text(ScriptState*);
+    ReadableStream* body();
 
     // Sets the bodyUsed flag to true. This signifies that the contents of the
     // body have been consumed and cannot be accessed again.
@@ -52,15 +54,18 @@ public:
     virtual void stop() override;
     virtual bool hasPendingActivity() const override;
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*);
 
 protected:
     // Copy constructor for clone() implementations
     explicit Body(const Body&);
 
 private:
+    class ReadableStreamSource;
+    void pullSource();
+    void readAllFromStream(ScriptState*);
     ScriptPromise readAsync(ScriptState*, ResponseType);
-    void resolveJSON();
+    void resolveJSON(const String&);
 
     // FileReaderLoaderClient functions.
     virtual void didStartLoading() override;
@@ -70,10 +75,15 @@ private:
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() = 0;
 
+    void didFinishLoadingViaStream(DOMArrayBuffer*);
+
     OwnPtr<FileReaderLoader> m_loader;
     bool m_bodyUsed;
+    bool m_streamAccessed;
     ResponseType m_responseType;
     RefPtr<ScriptPromiseResolver> m_resolver;
+    Member<ReadableStreamSource> m_streamSource;
+    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
 };
 
 } // namespace blink

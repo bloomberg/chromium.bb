@@ -26,6 +26,9 @@ async_test(function(t) {
       'Blob: 16 : text/html',
       'ArrayBuffer: 16',
       '<!DOCTYPE html>\n : TypeError',
+      'stream: <!DOCTYPE html>\n',
+      'Text: <!DOCTYPE html>\n',
+      'Text: <!DOCTYPE html>\n',
     ];
 
     function onMessage(e) {
