@@ -76,42 +76,6 @@ void EnableUnsafeTraps() {
   Die::SuppressInfoMessages(true);
 }
 
-// This test should execute no matter whether we have kernel support. So,
-// we make it a TEST() instead of a BPF_TEST().
-TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupports)) {
-  // We check that we don't crash, but it's ok if the kernel doesn't
-  // support it.
-  bool seccomp_bpf_supported = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::SINGLE_THREADED);
-  bool seccomp_bpf_tsync_supported = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::MULTI_THREADED);
-  // We want to log whether or not seccomp BPF is actually supported
-  // since actual test coverage depends on it.
-  std::cout << "Seccomp BPF supported (single thread): "
-            << (seccomp_bpf_supported ? "true." : "false.") << "\n";
-  std::cout << "Seccomp BPF supported (multi thread): "
-            << (seccomp_bpf_tsync_supported ? "true." : "false.") << "\n";
-  std::cout << "Pointer size: " << sizeof(void*) << "\n";
-}
-
-SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupportsTwice)) {
-  bool single1 = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::SINGLE_THREADED);
-  bool single2 = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::SINGLE_THREADED);
-  ASSERT_EQ(single1, single2);
-  bool multi1 = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::MULTI_THREADED);
-  bool multi2 = SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::MULTI_THREADED);
-  ASSERT_EQ(multi1, multi2);
-
-  // Multi threaded support implies single threaded support.
-  if (multi1) {
-    ASSERT_TRUE(single1);
-  }
-}
-
 // BPF_TEST does a lot of the boiler-plate code around setting up a
 // policy and optional passing data between the caller, the policy and
 // any Trap() handlers. This is great for writing short and concise tests,

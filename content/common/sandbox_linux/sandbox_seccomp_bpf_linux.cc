@@ -157,7 +157,7 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
   SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(policy);
 
-  sandbox.set_proc_task_fd(proc_task_fd.release());
+  sandbox.SetProcTaskFd(proc_task_fd.Pass());
   CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 

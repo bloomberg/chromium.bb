@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -79,12 +80,10 @@ bool KernelSupportsSeccompTsync() {
 }  // namespace
 
 SandboxBPF::SandboxBPF()
-    : proc_task_fd_(-1), sandbox_has_started_(false), policy_() {
+    : proc_task_fd_(), sandbox_has_started_(false), policy_() {
 }
 
 SandboxBPF::~SandboxBPF() {
-  if (proc_task_fd_ != -1)
-    IGNORE_EINTR(close(proc_task_fd_));
 }
 
 // static
@@ -128,12 +127,12 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   const bool supports_tsync = KernelSupportsSeccompTsync();
 
   if (seccomp_level == SeccompLevel::SINGLE_THREADED) {
-    if (!IsSingleThreaded(proc_task_fd_)) {
+    if (!IsSingleThreaded(proc_task_fd_.get())) {
       SANDBOX_DIE("Cannot start sandbox; process is already multi-threaded");
       return false;
     }
   } else if (seccomp_level == SeccompLevel::MULTI_THREADED) {
-    if (IsSingleThreaded(proc_task_fd_)) {
+    if (IsSingleThreaded(proc_task_fd_.get())) {
       SANDBOX_DIE("Cannot start sandbox; "
                   "process may be single-threaded when reported as not");
       return false;
@@ -148,12 +147,8 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   // We no longer need access to any files in /proc. We want to do this
   // before installing the filters, just in case that our policy denies
   // close().
-  if (proc_task_fd_ >= 0) {
-    if (IGNORE_EINTR(close(proc_task_fd_))) {
-      SANDBOX_DIE("Failed to close file descriptor for /proc");
-      return false;
-    }
-    proc_task_fd_ = -1;
+  if (proc_task_fd_.is_valid()) {
+    proc_task_fd_.reset();
   }
 
   // Install the filters.
@@ -163,8 +158,8 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   return true;
 }
 
-void SandboxBPF::set_proc_task_fd(int proc_task_fd) {
-  proc_task_fd_ = proc_task_fd;
+void SandboxBPF::SetProcTaskFd(base::ScopedFD proc_task_fd) {
+  proc_task_fd_.swap(proc_task_fd);
 }
 
 // static

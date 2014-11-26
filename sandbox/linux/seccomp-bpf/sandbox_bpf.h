@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
@@ -68,10 +69,11 @@ class SANDBOX_EXPORT SandboxBPF {
   // The sandbox needs to be able to access files in "/proc/self/task/". If
   // this directory is not accessible when "StartSandbox()" gets called, the
   // caller must provide an already opened file descriptor by calling
-  // "set_proc_task_fd()".
+  // "SetProcTaskFd()".
   // The sandbox becomes the new owner of this file descriptor and will
-  // eventually close it when "StartSandbox()" executes.
-  void set_proc_task_fd(int proc_task_fd);
+  // close it when "StartSandbox()" executes or when the sandbox object
+  // disappears.
+  void SetProcTaskFd(base::ScopedFD proc_task_fd);
 
   // Checks whether a particular system call number is valid on the current
   // architecture.
@@ -106,7 +108,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // been configured with SetSandboxPolicy().
   void InstallFilter(bool must_sync_threads);
 
-  int proc_task_fd_;
+  base::ScopedFD proc_task_fd_;
   bool sandbox_has_started_;
   scoped_ptr<bpf_dsl::Policy> policy_;
 
