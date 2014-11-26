@@ -11,16 +11,9 @@
 #endif
 
 #include <errno.h>
-#include <fcntl.h>
 #include <linux/filter.h>
-#include <signal.h>
-#include <string.h>
 #include <sys/prctl.h>
-#include <sys/stat.h>
-#include <sys/syscall.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
@@ -28,7 +21,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
@@ -43,10 +35,6 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
-
-using sandbox::bpf_dsl::Allow;
-using sandbox::bpf_dsl::Error;
-using sandbox::bpf_dsl::ResultExpr;
 
 namespace sandbox {
 
@@ -88,16 +76,12 @@ bool KernelSupportsSeccompTsync() {
 }  // namespace
 
 SandboxBPF::SandboxBPF()
-    : quiet_(false), proc_task_fd_(-1), sandbox_has_started_(false), policy_() {
+    : proc_task_fd_(-1), sandbox_has_started_(false), policy_() {
 }
 
 SandboxBPF::~SandboxBPF() {
   if (proc_task_fd_ != -1)
     IGNORE_EINTR(close(proc_task_fd_));
-}
-
-bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
-  return SyscallSet::IsValid(sysnum);
 }
 
 // static
@@ -112,8 +96,13 @@ bool SandboxBPF::SupportsSeccompSandbox(SeccompLevel level) {
   return false;
 }
 
-void SandboxBPF::set_proc_task_fd(int proc_task_fd) {
-  proc_task_fd_ = proc_task_fd;
+// Don't take a scoped_ptr here, polymorphism makes their use awkward.
+void SandboxBPF::SetSandboxPolicy(bpf_dsl::Policy* policy) {
+  DCHECK(!policy_);
+  if (sandbox_has_started_) {
+    SANDBOX_DIE("Cannot change policy after sandbox has started");
+  }
+  policy_.reset(policy);
 }
 
 bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
@@ -165,13 +154,54 @@ bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
   return true;
 }
 
-// Don't take a scoped_ptr here, polymorphism make their use awkward.
-void SandboxBPF::SetSandboxPolicy(bpf_dsl::Policy* policy) {
-  DCHECK(!policy_);
-  if (sandbox_has_started_) {
-    SANDBOX_DIE("Cannot change policy after sandbox has started");
+void SandboxBPF::set_proc_task_fd(int proc_task_fd) {
+  proc_task_fd_ = proc_task_fd;
+}
+
+// static
+bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
+  return SyscallSet::IsValid(sysnum);
+}
+
+// static
+bool SandboxBPF::IsRequiredForUnsafeTrap(int sysno) {
+  return bpf_dsl::PolicyCompiler::IsRequiredForUnsafeTrap(sysno);
+}
+
+// static
+intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
+  return Syscall::Call(
+      args.nr, static_cast<intptr_t>(args.args[0]),
+      static_cast<intptr_t>(args.args[1]), static_cast<intptr_t>(args.args[2]),
+      static_cast<intptr_t>(args.args[3]), static_cast<intptr_t>(args.args[4]),
+      static_cast<intptr_t>(args.args[5]));
+}
+
+scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
+    bool force_verification) {
+#if !defined(NDEBUG)
+  force_verification = true;
+#endif
+
+  bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
+  scoped_ptr<CodeGen::Program> program = compiler.Compile();
+
+  // Make sure compilation resulted in a BPF program that executes
+  // correctly. Otherwise, there is an internal error in our BPF compiler.
+  // There is really nothing the caller can do until the bug is fixed.
+  if (force_verification) {
+    // Verification is expensive. We only perform this step, if we are
+    // compiled in debug mode, or if the caller explicitly requested
+    // verification.
+
+    const char* err = NULL;
+    if (!Verifier::VerifyBPF(&compiler, *program, *policy_, &err)) {
+      bpf_dsl::DumpBPF::PrintProgram(*program);
+      SANDBOX_DIE(err);
+    }
   }
-  policy_.reset(policy);
+
+  return program.Pass();
 }
 
 void SandboxBPF::InstallFilter(bool must_sync_threads) {
@@ -200,7 +230,7 @@ void SandboxBPF::InstallFilter(bool must_sync_threads) {
   policy_.reset();
 
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-    SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to enable no-new-privs");
+    SANDBOX_DIE("Kernel refuses to enable no-new-privs");
   }
 
   // Install BPF filter program. If the thread state indicates multi-threading
@@ -210,57 +240,16 @@ void SandboxBPF::InstallFilter(bool must_sync_threads) {
     int rv =
         sys_seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, &prog);
     if (rv) {
-      SANDBOX_DIE(quiet_ ? NULL :
+      SANDBOX_DIE(
           "Kernel refuses to turn on and synchronize threads for BPF filters");
     }
   } else {
     if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
-      SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to turn on BPF filters");
+      SANDBOX_DIE("Kernel refuses to turn on BPF filters");
     }
   }
 
   sandbox_has_started_ = true;
-}
-
-scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
-    bool force_verification) {
-#if !defined(NDEBUG)
-  force_verification = true;
-#endif
-
-  bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
-  scoped_ptr<CodeGen::Program> program = compiler.Compile();
-
-  // Make sure compilation resulted in BPF program that executes
-  // correctly. Otherwise, there is an internal error in our BPF compiler.
-  // There is really nothing the caller can do until the bug is fixed.
-  if (force_verification) {
-    // Verification is expensive. We only perform this step, if we are
-    // compiled in debug mode, or if the caller explicitly requested
-    // verification.
-
-    const char* err = NULL;
-    if (!Verifier::VerifyBPF(&compiler, *program, *policy_, &err)) {
-      bpf_dsl::DumpBPF::PrintProgram(*program);
-      SANDBOX_DIE(err);
-    }
-  }
-
-  return program.Pass();
-}
-
-bool SandboxBPF::IsRequiredForUnsafeTrap(int sysno) {
-  return bpf_dsl::PolicyCompiler::IsRequiredForUnsafeTrap(sysno);
-}
-
-intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
-  return Syscall::Call(args.nr,
-                       static_cast<intptr_t>(args.args[0]),
-                       static_cast<intptr_t>(args.args[1]),
-                       static_cast<intptr_t>(args.args[2]),
-                       static_cast<intptr_t>(args.args[3]),
-                       static_cast<intptr_t>(args.args[4]),
-                       static_cast<intptr_t>(args.args[5]));
 }
 
 }  // namespace sandbox
