@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
 
 #include "base/callback_list.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/host_zoom_map.h"
 
@@ -34,9 +35,17 @@ class ZoomEventManager : public base::SupportsUserData::Data {
   scoped_ptr<content::HostZoomMap::Subscription> AddZoomLevelChangedCallback(
       const content::HostZoomMap::ZoomLevelChangedCallback& callback);
 
+  // Get a weak ptr to be used by clients who may themselves be UserData for
+  // the context, since the order of destruction is undefined between the client
+  // and this class.
+  base::WeakPtr<ZoomEventManager> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   base::CallbackList<void(const content::HostZoomMap::ZoomLevelChange&)>
       zoom_level_changed_callbacks_;
+  base::WeakPtrFactory<ZoomEventManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomEventManager);
 };

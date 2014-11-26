@@ -494,13 +494,6 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    content_zoom_subscription_ =
-        content::HostZoomMap::GetDefaultForBrowserContext(
-            menu->browser_->profile())
-            ->AddZoomLevelChangedCallback(
-                base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
-                           base::Unretained(this)));
-
     browser_zoom_subscription_ = ZoomEventManager::GetForBrowserContext(
         menu->browser_->profile())->AddZoomLevelChangedCallback(
             base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
@@ -685,7 +678,6 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
-  scoped_ptr<content::HostZoomMap::Subscription> content_zoom_subscription_;
   scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 

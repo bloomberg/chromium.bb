@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -73,6 +74,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -840,8 +842,9 @@ Profile::ProfileType ProfileImpl::GetProfileType() const {
 
 scoped_ptr<content::ZoomLevelDelegate>
 ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
-  return make_scoped_ptr(
-      new chrome::ChromeZoomLevelPrefs(GetPrefs(), GetPath(), partition_path));
+  return make_scoped_ptr(new chrome::ChromeZoomLevelPrefs(
+      GetPrefs(), GetPath(), partition_path,
+      ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 
 base::FilePath ProfileImpl::GetPath() const {

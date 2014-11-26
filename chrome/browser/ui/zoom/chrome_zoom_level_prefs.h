@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -16,6 +17,8 @@
 #include "base/prefs/pref_store.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/zoom_level_delegate.h"
+
+class ZoomEventManager;
 
 namespace base {
 class DictionaryValue;
@@ -40,7 +43,8 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   // |pref_service_| must outlive this class.
   ChromeZoomLevelPrefs(PrefService* pref_service,
                        const base::FilePath& profile_path,
-                       const base::FilePath& partition_path);
+                       const base::FilePath& partition_path,
+                       base::WeakPtr<ZoomEventManager> zoom_event_manager);
   virtual ~ChromeZoomLevelPrefs();
 
   static std::string GetHashForTesting(const base::FilePath& relative_path);
@@ -64,6 +68,7 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   PrefService* pref_service_;
+  base::WeakPtr<ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;
   scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   std::string partition_key_;

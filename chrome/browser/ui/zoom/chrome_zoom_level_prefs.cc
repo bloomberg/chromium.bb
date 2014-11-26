@@ -14,6 +14,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,10 +34,13 @@ std::string GetHash(
 
 namespace chrome {
 
-ChromeZoomLevelPrefs::ChromeZoomLevelPrefs(PrefService* pref_service,
-                                           const base::FilePath& profile_path,
-                                           const base::FilePath& partition_path)
+ChromeZoomLevelPrefs::ChromeZoomLevelPrefs(
+    PrefService* pref_service,
+    const base::FilePath& profile_path,
+    const base::FilePath& partition_path,
+    base::WeakPtr<ZoomEventManager> zoom_event_manager)
     : pref_service_(pref_service),
+      zoom_event_manager_(zoom_event_manager),
       host_zoom_map_(nullptr) {
   DCHECK(pref_service_);
 
@@ -90,6 +94,12 @@ ChromeZoomLevelPrefs::RegisterDefaultZoomLevelCallback(
 
 void ChromeZoomLevelPrefs::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
+  // If there's a manager to aggregate ZoomLevelChanged events, pass this event
+  // along. Since we already hold a subscription to our associated HostZoomMap,
+  // we don't need to create a separate subscription for this.
+  if (zoom_event_manager_)
+    zoom_event_manager_->OnZoomLevelChanged(change);
+
   if (change.mode != content::HostZoomMap::ZOOM_CHANGED_FOR_HOST)
     return;
   double level = change.zoom_level;

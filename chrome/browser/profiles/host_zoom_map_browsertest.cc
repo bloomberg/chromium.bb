@@ -23,9 +23,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -44,10 +46,10 @@ class ZoomLevelChangeObserver {
  public:
   explicit ZoomLevelChangeObserver(Profile* profile)
       : message_loop_runner_(new content::MessageLoopRunner) {
-    content::HostZoomMap* host_zoom_map = static_cast<content::HostZoomMap*>(
-        content::HostZoomMap::GetDefaultForBrowserContext(profile));
-    subscription_ = host_zoom_map->AddZoomLevelChangedCallback(base::Bind(
-        &ZoomLevelChangeObserver::OnZoomLevelChanged, base::Unretained(this)));
+    subscription_ = ZoomEventManager::GetForBrowserContext(profile)
+                        ->AddZoomLevelChangedCallback(base::Bind(
+                            &ZoomLevelChangeObserver::OnZoomLevelChanged,
+                            base::Unretained(this)));
   }
 
   void BlockUntilZoomLevelForHostHasChanged(const std::string& host) {
@@ -209,6 +211,40 @@ class HostZoomMapSanitizationBrowserTest
  private:
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapSanitizationBrowserTest);
 };
+
+// Regression test for crbug.com/435017.
+IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
+                       EventsForNonDefaultStoragePartition) {
+  ZoomLevelChangeObserver observer(browser()->profile());
+
+  // TODO(wjmaclean): Make this test more general by implementing a way to
+  // force a generic URL to be loaded in a non-default storage partition. This
+  // test currently relies on the signin page being loaded into a non-default
+  // storage partition (and verifies this is the case), but ultimately it would
+  // be better not to rely on what the signin page is doing.
+  GURL test_url = ConstructTestServerURL(chrome::kChromeUIChromeSigninURL);
+  std::string test_host(test_url.host());
+  std::string test_scheme(test_url.scheme());
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify that our loaded page is using a HostZoomMap different from the
+  // one for the default StoragePartition.
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents);
+  HostZoomMap* default_profile_host_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(browser()->profile());
+  EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
+
+  double new_zoom_level =
+      host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host);
+  host_zoom_map->SetZoomLevelForHostAndScheme(test_scheme, test_host,
+                                              new_zoom_level);
+  observer.BlockUntilZoomLevelForHostHasChanged(test_host);
+  EXPECT_EQ(new_zoom_level, host_zoom_map->GetZoomLevelForHostAndScheme(
+                                test_scheme, test_host));
+}
 
 // Regression test for crbug.com/364399.
 IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ToggleDefaultZoomLevel) {
