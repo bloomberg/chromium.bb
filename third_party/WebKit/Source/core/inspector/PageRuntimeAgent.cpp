@@ -114,8 +114,9 @@ void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, ScriptState* 
     if (!m_enabled)
         return;
     ASSERT(m_frontend);
+    String originString = origin ? origin->toRawString() : "";
     String frameId = m_pageAgent->frameId(frame);
-    addExecutionContextToFrontend(scriptState, false, origin->toRawString(), frameId);
+    addExecutionContextToFrontend(scriptState, false, originString, frameId);
 }
 
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
@@ -159,8 +160,10 @@ void PageRuntimeAgent::reportExecutionContextCreation()
         localFrame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;
-        for (size_t i = 0; i< isolatedContexts.size(); i++)
-            addExecutionContextToFrontend(isolatedContexts[i].first, false, isolatedContexts[i].second->toRawString(), frameId);
+        for (const auto& pair : isolatedContexts) {
+            String originString = pair.second ? pair.second->toRawString() : "";
+            addExecutionContextToFrontend(pair.first, false, originString, frameId);
+        }
         isolatedContexts.clear();
     }
 }

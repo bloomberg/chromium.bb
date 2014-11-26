@@ -451,8 +451,6 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
         WindowProxy* isolatedWorldWindowProxy = it->value.get();
         SecurityOrigin* origin = isolatedWorldWindowProxy->world().isolatedWorldSecurityOrigin();
-        if (!origin)
-            continue;
         if (!isolatedWorldWindowProxy->isContextInitialized())
             continue;
         result.append(std::pair<ScriptState*, SecurityOrigin*>(isolatedWorldWindowProxy->scriptState(), origin));
