@@ -61,12 +61,7 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
 
 bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!controller)
-    return false;
-  aura::Window* window = controller->GetContainerWindow();
-  return window && keyboard::InsertText(text, window);
+  return keyboard::InsertText(text);
 }
 
 bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {

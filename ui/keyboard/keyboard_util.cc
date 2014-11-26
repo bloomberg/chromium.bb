@@ -19,6 +19,8 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "url/gurl.h"
 
@@ -157,12 +159,12 @@ bool IsExperimentalInputViewEnabled() {
   return false;
 }
 
-bool InsertText(const base::string16& text, aura::Window* root_window) {
-  if (!root_window)
+bool InsertText(const base::string16& text) {
+  keyboard::KeyboardController* controller = KeyboardController::GetInstance();
+  if (!controller)
     return false;
 
-  ui::InputMethod* input_method = root_window->GetProperty(
-      aura::client::kRootWindowInputMethodKey);
+  ui::InputMethod* input_method = controller->proxy()->GetInputMethod();
   if (!input_method)
     return false;
 
@@ -313,17 +315,25 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
       {"keyboard/config/emoji.js", IDR_KEYBOARD_CONFIG_EMOJI},
       {"keyboard/config/hwt.js", IDR_KEYBOARD_CONFIG_HWT},
       {"keyboard/config/us.js", IDR_KEYBOARD_CONFIG_US},
+      {"keyboard/emoji.css", IDR_KEYBOARD_CSS_EMOJI},
       {"keyboard/images/backspace.png", IDR_KEYBOARD_IMAGES_BACKSPACE},
+      {"keyboard/images/car.png", IDR_KEYBOARD_IMAGES_CAR},
       {"keyboard/images/check.png", IDR_KEYBOARD_IMAGES_CHECK},
       {"keyboard/images/compact.png", IDR_KEYBOARD_IMAGES_COMPACT},
       {"keyboard/images/down.png", IDR_KEYBOARD_IMAGES_DOWN},
+      {"keyboard/images/emoji.png", IDR_KEYBOARD_IMAGES_EMOJI},
+      {"keyboard/images/emoji_cat_items.png", IDR_KEYBOARD_IMAGES_CAT},
+      {"keyboard/images/emoticon.png", IDR_KEYBOARD_IMAGES_EMOTICON},
       {"keyboard/images/enter.png", IDR_KEYBOARD_IMAGES_RETURN},
       {"keyboard/images/error.png", IDR_KEYBOARD_IMAGES_ERROR},
+      {"keyboard/images/favorit.png", IDR_KEYBOARD_IMAGES_FAVORITE},
+      {"keyboard/images/flower.png", IDR_KEYBOARD_IMAGES_FLOWER},
       {"keyboard/images/globe.png", IDR_KEYBOARD_IMAGES_GLOBE},
       {"keyboard/images/hide.png", IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD},
       {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
       {"keyboard/images/left.png", IDR_KEYBOARD_IMAGES_LEFT},
       {"keyboard/images/penci.png", IDR_KEYBOARD_IMAGES_PENCIL},
+      {"keyboard/images/recent.png", IDR_KEYBOARD_IMAGES_RECENT},
       {"keyboard/images/regular_size.png", IDR_KEYBOARD_IMAGES_FULLSIZE},
       {"keyboard/images/menu.png", IDR_KEYBOARD_IMAGES_MENU},
       {"keyboard/images/pencil.png", IDR_KEYBOARD_IMAGES_PENCIL},
@@ -332,7 +342,10 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
       {"keyboard/images/setting.png", IDR_KEYBOARD_IMAGES_SETTINGS},
       {"keyboard/images/shift.png", IDR_KEYBOARD_IMAGES_SHIFT},
       {"keyboard/images/space.png", IDR_KEYBOARD_IMAGES_SPACE},
+      {"keyboard/images/special_characters.png",
+       IDR_KEYBOARD_IMAGES_SPECIAL_CHARACTERS},
       {"keyboard/images/tab.png", IDR_KEYBOARD_IMAGES_TAB},
+      {"keyboard/images/triangle.png", IDR_KEYBOARD_IMAGES_TRIANGLE},
       {"keyboard/images/up.png", IDR_KEYBOARD_IMAGES_UP},
       {"keyboard/index.html", IDR_KEYBOARD_INDEX},
       {"keyboard/inputview_adapter.js", IDR_KEYBOARD_INPUTVIEW_ADAPTER},

@@ -96,12 +96,9 @@ KEYBOARD_EXPORT bool IsInputViewEnabled();
 // Returns true if experimental features are enabled for IME input-views.
 KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
 
-// Insert |text| into the active TextInputClient associated with |root_window|,
-// if there is one. Returns true if |text| was successfully inserted. Note
-// that this may convert |text| into ui::KeyEvents for injection in some
-// special circumstances (i.e. VKEY_RETURN, VKEY_BACK).
-KEYBOARD_EXPORT bool InsertText(const base::string16& text,
-                                aura::Window* root_window);
+// Insert |text| into the active TextInputClient if there is one. Returns true
+// if |text| was successfully inserted.
+KEYBOARD_EXPORT bool InsertText(const base::string16& text);
 
 // Move cursor when swipe on the virtualkeyboard. Returns true if cursor was
 // successfully moved according to |swipe_direction|.

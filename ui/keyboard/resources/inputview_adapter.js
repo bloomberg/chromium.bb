@@ -172,6 +172,10 @@ function registerInputviewApi() {
     }
   }
 
+  function commitText_(text) {
+    chrome.virtualKeyboardPrivate.insertText(text, logIfError_);
+  }
+
   /**
    * Retrieve the preferred keyboard configuration.
    * @param {function} callback The callback function for processing the
@@ -277,6 +281,7 @@ function registerInputviewApi() {
   }
 
   window.inputview = {
+    commitText: commitText_,
     getKeyboardConfig: getKeyboardConfig_,
     getInputMethods: getInputMethods_,
     getCurrentInputMethod: getCurrentInputMethod_,
@@ -293,6 +298,8 @@ function registerInputviewApi() {
   registerFunction('chrome.runtime.sendMessage', function(message) {
     if (message.type == 'send_key_event')
       sendKeyEvent_(message.keyData);
+    else if (message.type == 'commit_text')
+      commitText_(message.text);
     else
       defaultSendMessage(message);
   });

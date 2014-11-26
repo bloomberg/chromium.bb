@@ -18,11 +18,18 @@
       <include name="IDR_KEYBOARD_CONFIG_EMOJI" file="${inputview_dir}/config/emoji_data.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_CONFIG_HWT" file="${inputview_dir}/config/hwt_data.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_CONFIG_US" file="${inputview_dir}/config/us_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CSS_EMOJI" file="${inputview_dir}/emoji.css" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_BACKSPACE" file="${inputview_dir}/images/backspace.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_CAR" file="${inputview_dir}/images/car.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_CAT" file="${inputview_dir}/images/emoji_cat_items.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_CHECK" file="${inputview_dir}/images/check.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_COMPACT" file="${inputview_dir}/images/compact.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_DOWN" file="${inputview_dir}/images/down.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_EMOJI" file="${inputview_dir}/images/emoji.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_EMOTICON" file="${inputview_dir}/images/emoticon.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_ERROR" file="${inputview_dir}/images/error.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_FAVORITE" file="${inputview_dir}/images/favorit.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_FLOWER" file="${inputview_dir}/images/flower.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_FULLSIZE" file="${inputview_dir}/images/regular_size.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_GLOBE" file="${inputview_dir}/images/globe.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD" file="${inputview_dir}/images/hide.png" type="BINDATA" />
@@ -30,13 +37,16 @@
       <include name="IDR_KEYBOARD_IMAGES_LEFT" file="${inputview_dir}/images/left.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_MENU" file="${inputview_dir}/images/menu.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_PENCIL" file="${inputview_dir}/images/pencil.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_RECENT" file="${inputview_dir}/images/recent.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RETURN" file="${inputview_dir}/images/enter.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_RIGHT" file="${inputview_dir}/images/right.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SPECIAL_CHARACTERS" file="${inputview_dir}/images/special_characters.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="${inputview_dir}/images/search.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SETTINGS" file="${inputview_dir}/images/setting.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SHIFT" file="${inputview_dir}/images/shift.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_SPACE" file="${inputview_dir}/images/space.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_TAB" file="${inputview_dir}/images/tab.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_TRIANGLE" file="${inputview_dir}/images/triangle.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_UP" file="${inputview_dir}/images/up.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_INPUTVIEW_ADAPTER" file="resources/inputview_adapter.js" type="BINDATA" />

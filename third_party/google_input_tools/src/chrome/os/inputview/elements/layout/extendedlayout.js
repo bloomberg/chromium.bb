@@ -126,7 +126,7 @@ ExtendedLayout.prototype.resize = function(width, height) {
         this.getChildAt(i));
     child.resize(width, height);
   }
-  this.getElement().style.width = width * this.getChildCount();
+  this.getElement().style.width = width * this.getChildCount() + 'px';
   goog.base(this, 'resize', width * this.getChildCount(), height);
 };
 
@@ -156,7 +156,7 @@ ExtendedLayout.prototype.calculate_ = function() {
 ExtendedLayout.prototype.gotoPage = function(pageNum) {
   var width = goog.style.getSize(this.getElement()).width;
   var childNum = this.getChildCount();
-  this.elem.style.marginLeft = 0 - width / childNum * pageNum;
+  this.elem.style.marginLeft = 0 - width / childNum * pageNum + 'px';
 };
 
 
