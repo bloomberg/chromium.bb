@@ -1713,7 +1713,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_NAME,
     IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList)
+    ENABLE_DISABLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList,
+                              app_list::switches::kDisableExperimentalAppList)
   },
   {
     "enable-centered-app-list",

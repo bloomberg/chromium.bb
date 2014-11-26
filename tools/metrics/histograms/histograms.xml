@@ -48814,6 +48814,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
+  <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-320820051" label="enable-zero-copy"/>

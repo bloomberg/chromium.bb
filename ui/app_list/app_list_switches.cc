@@ -30,9 +30,10 @@ const char kDisableSyncAppList[] = "disable-sync-app-list";
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
 
-// If set, the experimental app list will be used. Implies
+// Enable/disable the experimental app list. If enabled, implies
 // --enable-centered-app-list.
 const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
+const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
 
 // Enables syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
@@ -72,8 +73,13 @@ bool IsAppInfoEnabled() {
 }
 
 bool IsExperimentalAppListEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableExperimentalAppList);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableExperimentalAppList))
+    return true;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableExperimentalAppList))
+    return false;
+
+  return false;
 }
 
 bool IsCenteredAppListEnabled() {

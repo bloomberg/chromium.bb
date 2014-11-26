@@ -18,6 +18,7 @@ APP_LIST_EXPORT extern const char kDisableDriveAppsInAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
+APP_LIST_EXPORT extern const char kDisableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kEnableHotwordAlwaysOn[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 
