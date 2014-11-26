@@ -14123,6 +14123,14 @@ Do you accept?
         TLS 1.2
       </message>
 
+      <!-- Strings for controlling credit card scanning feature in about:flags. -->
+      <message name="IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME" desc="The name of about:flags option to enable scanning of credit cards using device camera.">
+        Credit card scanning
+      </message>
+      <message name="IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_DESCRIPTION" desc="The description of about:flags option to enable scanning of credit cards using device camera.">
+        Enable scanning a new credit card number when filling out a credit card form.
+      </message>
+
       <!-- Simple Cache Backend experiment. -->
       <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
         Simple Cache for HTTP.

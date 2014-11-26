@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -106,6 +107,13 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   labels.push_back(base::string16());
   icons.push_back(base::string16());
   ids.push_back(POPUP_ITEM_ID_SEPARATOR);
+
+  if (manager_->ShouldShowScanCreditCard(query_form_, query_field_)) {
+    values.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
+    labels.push_back(base::string16());
+    icons.push_back(base::string16());
+    ids.push_back(POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+  }
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
@@ -253,6 +261,9 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
 #else
     NOTREACHED();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+  } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
+    manager_->client()->ScanCreditCard(base::Bind(
+        &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
   } else {
     FillAutofillFormData(identifier, false);
   }
@@ -293,6 +304,15 @@ void AutofillExternalDelegate::OnPingAck() {
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void AutofillExternalDelegate::OnCreditCardScanned(
+    const base::string16& card_number,
+    int expiration_month,
+    int expiration_year) {
+  manager_->FillCreditCardForm(
+      query_id_, query_form_, query_field_,
+      CreditCard(card_number, expiration_month, expiration_year));
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

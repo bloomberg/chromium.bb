@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
+#include "chrome/browser/ui/android/autofill/credit_card_scanner_view_android.h"
 #include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -137,6 +138,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate },
   { "ContentViewUtil", RegisterContentViewUtil },
   { "ContextMenuHelper", RegisterContextMenuHelper },
+  { "CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register },
   { "DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register },
   { "DataReductionProxySettings", DataReductionProxySettingsAndroid::Register },
   { "DevToolsServer", RegisterDevToolsServer },

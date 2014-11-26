@@ -118,6 +118,15 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       expiration_year_(0) {
 }
 
+CreditCard::CreditCard(const base::string16& card_number,
+                       int expiration_month,
+                       int expiration_year)
+    : AutofillDataModel(std::string(), std::string()) {
+  SetNumber(card_number);
+  SetExpirationMonth(expiration_month);
+  SetExpirationYear(expiration_year);
+}
+
 CreditCard::CreditCard()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       record_type_(LOCAL_CARD),

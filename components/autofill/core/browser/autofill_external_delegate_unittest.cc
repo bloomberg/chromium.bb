@@ -55,6 +55,9 @@ class MockAutofillClient : public autofill::TestAutofillClient {
  public:
   MockAutofillClient() {}
 
+  MOCK_METHOD1(ScanCreditCard,
+               void(const CreditCardScanCallback& callbacK));
+
   MOCK_METHOD7(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
@@ -88,6 +91,12 @@ class MockAutofillManager : public AutofillManager {
                     const FormData& form,
                     const FormFieldData& field,
                     int unique_id));
+
+  MOCK_METHOD4(FillCreditCardForm,
+               void(int query_id,
+                    const FormData& form,
+                    const FormFieldData& field,
+                    const CreditCard& credit_card));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
@@ -427,6 +436,29 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
 
   external_delegate_->DidAcceptSuggestion(base::string16(),
                                           POPUP_ITEM_ID_CLEAR_FORM);
+}
+
+// Test that autofill client will scan a credit card after use accepted the
+// suggestion to scan a credit card.
+TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardMenuItem) {
+  EXPECT_CALL(autofill_client_, ScanCreditCard(_));
+  EXPECT_CALL(autofill_client_, HideAutofillPopup());
+  external_delegate_->DidAcceptSuggestion(base::string16(),
+                                          POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+}
+
+// Test that autofill manager will fill the credit card form after user scans a
+// credit card.
+TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
+  base::string16 card_number = base::ASCIIToUTF16("test");
+  int expiration_month = 1;
+  int expiration_year = 3000;
+  EXPECT_CALL(
+      *autofill_manager_,
+      FillCreditCardForm(
+          _, _, _, CreditCard(card_number, expiration_month, expiration_year)));
+  external_delegate_->OnCreditCardScanned(card_number, expiration_month,
+                                          expiration_year);
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {

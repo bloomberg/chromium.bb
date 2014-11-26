@@ -187,6 +187,14 @@ void AwAutofillClient::ConfirmSaveCreditCard(
   NOTIMPLEMENTED();
 }
 
+bool AwAutofillClient::HasCreditCardScanFeature() {
+  return false;
+}
+
+void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ShowRequestAutocompleteDialog(
     const autofill::FormData& form,
     const GURL& source_url,

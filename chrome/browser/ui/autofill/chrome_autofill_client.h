@@ -25,6 +25,7 @@ namespace autofill {
 class AutofillDialogController;
 class AutofillKeystoneBridgeWrapper;
 class AutofillPopupControllerImpl;
+class CreditCardScannerController;
 struct FormData;
 
 // Chrome implementation of AutofillClient.
@@ -47,6 +48,8 @@ class ChromeAutofillClient
   void ShowAutofillSettings() override;
   void ConfirmSaveCreditCard(const AutofillMetrics& metric_logger,
                              const base::Closure& save_card_callback) override;
+  bool HasCreditCardScanFeature() override;
+  void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowRequestAutocompleteDialog(const FormData& form,
                                      const GURL& source_url,
                                      const ResultCallback& callback) override;

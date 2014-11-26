@@ -36,6 +36,14 @@ void TestAutofillClient::ConfirmSaveCreditCard(
     const base::Closure& save_card_callback) {
 }
 
+bool TestAutofillClient::HasCreditCardScanFeature() {
+  return false;
+}
+
+void TestAutofillClient::ScanCreditCard(
+    const CreditCardScanCallback& callback) {
+}
+
 void TestAutofillClient::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
@@ -25,8 +26,7 @@ class AutofillManager;
 // this logic. See http://crbug.com/51644
 
 // Delegate for in-browser Autocomplete and Autofill display and selection.
-class AutofillExternalDelegate
-    : public AutofillPopupDelegate {
+class AutofillExternalDelegate : public AutofillPopupDelegate {
  public:
   // Creates an AutofillExternalDelegate for the specified AutofillManager and
   // AutofillDriver.
@@ -86,6 +86,14 @@ class AutofillExternalDelegate
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateUnitTest,
+                           FillCreditCardForm);
+
+  // Called when a credit card is scanned using device camera.
+  void OnCreditCardScanned(const base::string16& card_number,
+                           int expiration_month,
+                           int expiration_year);
+
   // Fills the form with the Autofill data corresponding to |unique_id|.
   // If |is_preview| is true then this is just a preview to show the user what
   // would be selected and if |is_preview| is false then the user has selected

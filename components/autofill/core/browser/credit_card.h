@@ -33,6 +33,9 @@ class CreditCard : public AutofillDataModel {
   };
 
   CreditCard(const std::string& guid, const std::string& origin);
+  CreditCard(const base::string16& card_number,
+             int expiration_month,
+             int expiration_year);
 
   // For use in STL containers.
   CreditCard();

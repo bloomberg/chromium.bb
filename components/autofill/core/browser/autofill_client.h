@@ -51,6 +51,10 @@ class AutofillClient {
                               const base::string16&,
                               const FormStructure*)> ResultCallback;
 
+  typedef base::Callback<void(const base::string16& /* card number */,
+                              int /* exp month */,
+                              int /* exp year */)> CreditCardScanCallback;
+
   virtual ~AutofillClient() {}
 
   // Gets the PersonalDataManager instance associated with the client.
@@ -73,6 +77,15 @@ class AutofillClient {
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
       const base::Closure& save_card_callback) = 0;
+
+  // Returns true if both the platform and the device support scanning credit
+  // cards. Should be called before ScanCreditCard().
+  virtual bool HasCreditCardScanFeature() = 0;
+
+  // Shows the user interface for scanning a credit card. Invokes the |callback|
+  // when a credit card is scanned successfully. Should be called only if
+  // HasCreditCardScanFeature() returns true.
+  virtual void ScanCreditCard(const CreditCardScanCallback& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.
   virtual void ShowRequestAutocompleteDialog(

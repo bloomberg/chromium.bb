@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -111,6 +112,15 @@ void ChromeAutofillClient::ConfirmSaveCreditCard(
       InfoBarService::FromWebContents(web_contents_);
   AutofillCCInfoBarDelegate::Create(
       infobar_service, &metric_logger, save_card_callback);
+}
+
+bool ChromeAutofillClient::HasCreditCardScanFeature() {
+  return CreditCardScannerController::HasCreditCardScanFeature();
+}
+
+void ChromeAutofillClient::ScanCreditCard(
+    const CreditCardScanCallback& callback) {
+  CreditCardScannerController::ScanCreditCard(web_contents(), callback);
 }
 
 void ChromeAutofillClient::ShowRequestAutocompleteDialog(

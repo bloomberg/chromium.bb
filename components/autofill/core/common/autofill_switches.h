@@ -12,6 +12,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kDisablePasswordGeneration[];
 extern const char kDisambiguateAutofillServerNameTypes[];
+extern const char kEnableCreditCardScan[];
 extern const char kEnablePasswordGeneration[];
 extern const char kIgnoreAutocompleteOffForAutofill[];
 extern const char kLocalHeuristicsOnlyForPasswordGeneration[];

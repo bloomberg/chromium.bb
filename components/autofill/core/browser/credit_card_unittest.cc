@@ -545,4 +545,14 @@ TEST(CreditCardTest, LastFourDigits) {
   ASSERT_EQ(base::ASCIIToUTF16("489"), card.LastFourDigits());
 }
 
+TEST(CreditCardTest, CanBuildFromCardNumberAndExpirationDate) {
+  base::string16 card_number = base::ASCIIToUTF16("test");
+  int month = 1;
+  int year = 3000;
+  CreditCard card(card_number, month, year);
+  EXPECT_EQ(card_number, card.number());
+  EXPECT_EQ(month, card.expiration_month());
+  EXPECT_EQ(year, card.expiration_year());
+}
+
 }  // namespace autofill

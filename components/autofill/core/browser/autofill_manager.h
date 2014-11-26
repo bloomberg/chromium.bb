@@ -81,10 +81,10 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void ShowAutofillSettings();
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Whether the field represented by |fieldData| should show an entry to prompt
-  // the user to give Chrome access to the user's address book.
-  bool ShouldShowAccessAddressBookSuggestion(const FormData& data,
-                                             const FormFieldData& field_data);
+  // Whether the |field| should show an entry to prompt the user to give Chrome
+  // access to the user's address book.
+  bool ShouldShowAccessAddressBookSuggestion(const FormData& form,
+                                             const FormFieldData& field);
 
   // If Chrome has not prompted for access to the user's address book, the
   // method prompts the user for permission and blocks the process. Otherwise,
@@ -99,12 +99,20 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   int AccessAddressBookPromptCount();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+  // Whether the |field| should show an entry to scan a credit card.
+  bool ShouldShowScanCreditCard(const FormData& form,
+                                const FormFieldData& field);
+
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,
                                  const FormData& form,
                                  const FormFieldData& field,
                                  int unique_id);
+  virtual void FillCreditCardForm(int query_id,
+                                  const FormData& form,
+                                  const FormFieldData& field,
+                                  const CreditCard& credit_card);
   void DidShowSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidPreviewAutofillFormData();
@@ -229,6 +237,15 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                               size_t* variant,
                               bool* is_credit_card) const WARN_UNUSED_RESULT;
 
+  // Fills or previews |data_model| in the |form|.
+  void FillOrPreviewDataModelForm(AutofillDriver::RendererFormDataAction action,
+                                  int query_id,
+                                  const FormData& form,
+                                  const FormFieldData& field,
+                                  const AutofillDataModel* data_model,
+                                  size_t variant,
+                                  bool is_credit_card);
+
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.
   bool FindCachedForm(const FormData& form,
@@ -242,6 +259,12 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                              const FormFieldData& field,
                              FormStructure** form_structure,
                              AutofillField** autofill_field) WARN_UNUSED_RESULT;
+
+  // Returns the field corresponding to |form| and |field| that can be
+  // autofilled. Returns NULL if the field cannot be autofilled.
+  AutofillField* GetAutofillField(const FormData& form,
+                                  const FormFieldData& field)
+      WARN_UNUSED_RESULT;
 
   // Re-parses |live_form| and adds the result to |form_structures_|.
   // |cached_form| should be a pointer to the existing version of the form, or

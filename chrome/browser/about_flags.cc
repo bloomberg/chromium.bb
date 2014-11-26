@@ -2016,6 +2016,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kSSLVersionMinChoices)
   },
+  {
+    "enable-credit-card-scan",
+    IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME,
+    IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(autofill::switches::kEnableCreditCardScan)
+  },
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

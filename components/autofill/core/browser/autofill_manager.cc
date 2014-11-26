@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -282,19 +283,10 @@ void AutofillManager::ShowAutofillSettings() {
 bool AutofillManager::ShouldShowAccessAddressBookSuggestion(
     const FormData& form,
     const FormFieldData& field) {
-  if (!personal_data_ || !field.should_autocomplete)
-    return false;
-
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
-  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
-    return false;
-
-  if (!form_structure->IsAutofillable())
-    return false;
-
-  return personal_data_->ShouldShowAccessAddressBookSuggestion(
-      autofill_field->Type());
+  AutofillField* autofill_field = GetAutofillField(form, field);
+  return autofill_field &&
+         personal_data_->ShouldShowAccessAddressBookSuggestion(
+             autofill_field->Type());
 }
 
 bool AutofillManager::AccessAddressBook() {
@@ -315,6 +307,21 @@ int AutofillManager::AccessAddressBookPromptCount() {
   return personal_data_->AccessAddressBookPromptCount();
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
+                                               const FormFieldData& field) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          autofill::switches::kEnableCreditCardScan)) {
+    return false;
+  }
+
+  if (!client_->HasCreditCardScanFeature())
+    return false;
+
+  AutofillField* autofill_field = GetAutofillField(form, field);
+  return autofill_field &&
+         autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER;
+}
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
@@ -556,8 +563,6 @@ void AutofillManager::FillOrPreviewForm(
 
   const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
-  FormStructure* form_structure = NULL;
-  AutofillField* autofill_field = NULL;
   bool is_credit_card = false;
   // NOTE: RefreshDataModels may invalidate |data_model| because it causes the
   // PersonalDataManager to reload Mac address book entries. Thus it must come
@@ -565,119 +570,25 @@ void AutofillManager::FillOrPreviewForm(
   if (!RefreshDataModels() ||
       !driver_->RendererIsAvailable() ||
       !GetProfileOrCreditCard(
-          unique_id, &data_model, &variant, &is_credit_card) ||
-      !GetCachedFormAndField(form, field, &form_structure, &autofill_field))
-    return;
-
-  DCHECK(form_structure);
-  DCHECK(autofill_field);
-
-  FormData result = form;
-
-  base::string16 profile_full_name;
-  std::string profile_language_code;
-  if (!is_credit_card) {
-    profile_full_name = data_model->GetInfo(
-        AutofillType(NAME_FULL), app_locale_);
-    profile_language_code =
-        static_cast<const AutofillProfile*>(data_model)->language_code();
-  }
-
-  // If the relevant section is auto-filled, we should fill |field| but not the
-  // rest of the form.
-  if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
-    for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
-         iter != result.fields.end(); ++iter) {
-      if (iter->SameFieldAs(field)) {
-        base::string16 value = data_model->GetInfoForVariant(
-            autofill_field->Type(), variant, app_locale_);
-        if (AutofillField::FillFormField(*autofill_field,
-                                         value,
-                                         profile_language_code,
-                                         app_locale_,
-                                         &(*iter))) {
-          // Mark the cached field as autofilled, so that we can detect when a
-          // user edits an autofilled field (for metrics).
-          autofill_field->is_autofilled = true;
-
-          // Mark the field as autofilled when a non-empty value is assigned to
-          // it. This allows the renderer to distinguish autofilled fields from
-          // fields with non-empty values, such as select-one fields.
-          iter->is_autofilled = true;
-
-          if (!is_credit_card && !value.empty())
-            client_->DidFillOrPreviewField(value, profile_full_name);
-        }
-        break;
-      }
-    }
-
-    driver_->SendFormDataToRenderer(query_id, action, result);
+          unique_id, &data_model, &variant, &is_credit_card)) {
     return;
   }
 
-  // Cache the field type for the field from which the user initiated autofill.
-  FieldTypeGroup initiating_group_type = autofill_field->Type().group();
-  DCHECK_EQ(form_structure->field_count(), form.fields.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    if (form_structure->field(i)->section() != autofill_field->section())
-      continue;
+  FillOrPreviewDataModelForm(action, query_id, form, field, data_model, variant,
+                             is_credit_card);
+}
 
-    DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
-
-    const AutofillField* cached_field = form_structure->field(i);
-    FieldTypeGroup field_group_type = cached_field->Type().group();
-    if (field_group_type != NO_GROUP) {
-      // If the field being filled is either
-      //   (a) the field that the user initiated the fill from, or
-      //   (b) part of the same logical unit, e.g. name or phone number,
-      // then take the multi-profile "variant" into account.
-      // Otherwise fill with the default (zeroth) variant.
-      size_t use_variant = 0;
-      if (result.fields[i].SameFieldAs(field) ||
-          field_group_type == initiating_group_type) {
-        use_variant = variant;
-      }
-      base::string16 value = data_model->GetInfoForVariant(
-          cached_field->Type(), use_variant, app_locale_);
-
-      // Must match ForEachMatchingFormField() in form_autofill_util.cc.
-      // Only notify autofilling of empty fields and the field that initiated
-      // the filling (note that "select-one" controls may not be empty but will
-      // still be autofilled).
-      bool should_notify =
-          !is_credit_card &&
-          !value.empty() &&
-          (result.fields[i].SameFieldAs(field) ||
-           result.fields[i].form_control_type == "select-one" ||
-           result.fields[i].value.empty());
-      if (AutofillField::FillFormField(*cached_field,
-                                       value,
-                                       profile_language_code,
-                                       app_locale_,
-                                       &result.fields[i])) {
-        // Mark the cached field as autofilled, so that we can detect when a
-        // user edits an autofilled field (for metrics).
-        form_structure->field(i)->is_autofilled = true;
-
-        // Mark the field as autofilled when a non-empty value is assigned to
-        // it. This allows the renderer to distinguish autofilled fields from
-        // fields with non-empty values, such as select-one fields.
-        result.fields[i].is_autofilled = true;
-
-        if (should_notify)
-          client_->DidFillOrPreviewField(value, profile_full_name);
-      }
-    }
+void AutofillManager::FillCreditCardForm(int query_id,
+                                         const FormData& form,
+                                         const FormFieldData& field,
+                                         const CreditCard& credit_card) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field) ||
+      !driver_->RendererIsAvailable()) {
+    return;
   }
 
-  autofilled_form_signatures_.push_front(form_structure->FormSignature());
-  // Only remember the last few forms that we've seen, both to avoid false
-  // positives and to avoid wasting memory.
-  if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
-    autofilled_form_signatures_.pop_back();
-
-  driver_->SendFormDataToRenderer(query_id, action, result);
+  FillOrPreviewDataModelForm(AutofillDriver::FORM_DATA_ACTION_FILL, query_id,
+                             form, field, &credit_card, 0, true);
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
@@ -970,6 +881,130 @@ bool AutofillManager::GetProfileOrCreditCard(
   return !!*data_model;
 }
 
+void AutofillManager::FillOrPreviewDataModelForm(
+    AutofillDriver::RendererFormDataAction action,
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const AutofillDataModel* data_model,
+    size_t variant,
+    bool is_credit_card) {
+  FormStructure* form_structure = NULL;
+  AutofillField* autofill_field = NULL;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
+
+  DCHECK(form_structure);
+  DCHECK(autofill_field);
+
+  FormData result = form;
+
+  base::string16 profile_full_name;
+  std::string profile_language_code;
+  if (!is_credit_card) {
+    profile_full_name = data_model->GetInfo(
+        AutofillType(NAME_FULL), app_locale_);
+    profile_language_code =
+        static_cast<const AutofillProfile*>(data_model)->language_code();
+  }
+
+  // If the relevant section is auto-filled, we should fill |field| but not the
+  // rest of the form.
+  if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
+    for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
+         iter != result.fields.end(); ++iter) {
+      if (iter->SameFieldAs(field)) {
+        base::string16 value = data_model->GetInfoForVariant(
+            autofill_field->Type(), variant, app_locale_);
+        if (AutofillField::FillFormField(*autofill_field,
+                                         value,
+                                         profile_language_code,
+                                         app_locale_,
+                                         &(*iter))) {
+          // Mark the cached field as autofilled, so that we can detect when a
+          // user edits an autofilled field (for metrics).
+          autofill_field->is_autofilled = true;
+
+          // Mark the field as autofilled when a non-empty value is assigned to
+          // it. This allows the renderer to distinguish autofilled fields from
+          // fields with non-empty values, such as select-one fields.
+          iter->is_autofilled = true;
+
+          if (!is_credit_card && !value.empty())
+            client_->DidFillOrPreviewField(value, profile_full_name);
+        }
+        break;
+      }
+    }
+
+    driver_->SendFormDataToRenderer(query_id, action, result);
+    return;
+  }
+
+  // Cache the field type for the field from which the user initiated autofill.
+  FieldTypeGroup initiating_group_type = autofill_field->Type().group();
+  DCHECK_EQ(form_structure->field_count(), form.fields.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
+    if (form_structure->field(i)->section() != autofill_field->section())
+      continue;
+
+    DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
+
+    const AutofillField* cached_field = form_structure->field(i);
+    FieldTypeGroup field_group_type = cached_field->Type().group();
+    if (field_group_type != NO_GROUP) {
+      // If the field being filled is either
+      //   (a) the field that the user initiated the fill from, or
+      //   (b) part of the same logical unit, e.g. name or phone number,
+      // then take the multi-profile "variant" into account.
+      // Otherwise fill with the default (zeroth) variant.
+      size_t use_variant = 0;
+      if (result.fields[i].SameFieldAs(field) ||
+          field_group_type == initiating_group_type) {
+        use_variant = variant;
+      }
+      base::string16 value = data_model->GetInfoForVariant(
+          cached_field->Type(), use_variant, app_locale_);
+
+      // Must match ForEachMatchingFormField() in form_autofill_util.cc.
+      // Only notify autofilling of empty fields and the field that initiated
+      // the filling (note that "select-one" controls may not be empty but will
+      // still be autofilled).
+      bool should_notify =
+          !is_credit_card &&
+          !value.empty() &&
+          (result.fields[i].SameFieldAs(field) ||
+           result.fields[i].form_control_type == "select-one" ||
+           result.fields[i].value.empty());
+      if (AutofillField::FillFormField(*cached_field,
+                                       value,
+                                       profile_language_code,
+                                       app_locale_,
+                                       &result.fields[i])) {
+        // Mark the cached field as autofilled, so that we can detect when a
+        // user edits an autofilled field (for metrics).
+        form_structure->field(i)->is_autofilled = true;
+
+        // Mark the field as autofilled when a non-empty value is assigned to
+        // it. This allows the renderer to distinguish autofilled fields from
+        // fields with non-empty values, such as select-one fields.
+        result.fields[i].is_autofilled = true;
+
+        if (should_notify)
+          client_->DidFillOrPreviewField(value, profile_full_name);
+      }
+    }
+  }
+
+  autofilled_form_signatures_.push_front(form_structure->FormSignature());
+  // Only remember the last few forms that we've seen, both to avoid false
+  // positives and to avoid wasting memory.
+  if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
+    autofilled_form_signatures_.pop_back();
+
+  driver_->SendFormDataToRenderer(query_id, action, result);
+}
+
 bool AutofillManager::FindCachedForm(const FormData& form,
                                      FormStructure** form_structure) const {
   // Find the FormStructure that corresponds to |form|.
@@ -1034,6 +1069,22 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // website disables autocomplete while the user is interacting with the form.
   // See http://crbug.com/160476
   return *autofill_field != NULL;
+}
+
+AutofillField* AutofillManager::GetAutofillField(const FormData& form,
+                                                 const FormFieldData& field) {
+  if (!personal_data_ || !field.should_autocomplete)
+    return NULL;
+
+  FormStructure* form_structure = NULL;
+  AutofillField* autofill_field = NULL;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return NULL;
+
+  if (!form_structure->IsAutofillable())
+    return NULL;
+
+  return autofill_field;
 }
 
 bool AutofillManager::UpdateCachedForm(const FormData& live_form,

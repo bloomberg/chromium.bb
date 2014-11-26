@@ -15,6 +15,10 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 const char kDisambiguateAutofillServerNameTypes[] =
     "disambiguate-autofill-server-name-types";
 
+// Enables using device's camera to scan a new credit card when filling out a
+// credit card form.
+const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
+
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
