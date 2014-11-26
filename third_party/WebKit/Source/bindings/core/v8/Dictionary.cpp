@@ -46,32 +46,57 @@
 
 namespace blink {
 
+static ExceptionState& emptyExceptionState()
+{
+    DEFINE_STATIC_LOCAL(NonThrowableExceptionState, exceptionState, ());
+    return exceptionState;
+}
+
 Dictionary::Dictionary()
     : m_isolate(0)
+    , m_exceptionState(&emptyExceptionState())
 {
 }
 
-Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate)
+Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate, ExceptionState& exceptionState)
     : m_options(options)
     , m_isolate(isolate)
+    , m_exceptionState(&exceptionState)
 {
     ASSERT(m_isolate);
+    ASSERT(m_exceptionState);
+#if ENABLE(ASSERT)
+    m_exceptionState->onStackObjectChecker().add(this);
+#endif
 }
 
 Dictionary::~Dictionary()
 {
+#if ENABLE(ASSERT)
+    if (m_exceptionState)
+        m_exceptionState->onStackObjectChecker().remove(this);
+#endif
 }
 
 Dictionary& Dictionary::operator=(const Dictionary& optionsObject)
 {
     m_options = optionsObject.m_options;
     m_isolate = optionsObject.m_isolate;
+#if ENABLE(ASSERT)
+    if (m_exceptionState)
+        m_exceptionState->onStackObjectChecker().remove(this);
+#endif
+    m_exceptionState = optionsObject.m_exceptionState;
+#if ENABLE(ASSERT)
+    if (m_exceptionState)
+        m_exceptionState->onStackObjectChecker().add(this);
+#endif
     return *this;
 }
 
 Dictionary Dictionary::createEmpty(v8::Isolate* isolate)
 {
-    return Dictionary(v8::Object::New(isolate), isolate);
+    return Dictionary(v8::Object::New(isolate), isolate, emptyExceptionState());
 }
 
 bool Dictionary::isObject() const
@@ -95,6 +120,7 @@ bool Dictionary::hasProperty(const String& key) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
+    ASSERT(m_exceptionState);
     v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
     if (!options->Has(v8Key))
         return false;
@@ -111,6 +137,7 @@ bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
+    ASSERT(m_exceptionState);
     v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
     if (!options->Has(v8Key))
         return false;
@@ -134,7 +161,7 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     if (v8Value->IsObject()) {
         ASSERT(m_isolate);
         ASSERT(m_isolate == v8::Isolate::GetCurrent());
-        value = Dictionary(v8Value, m_isolate);
+        value = Dictionary(v8Value, m_isolate, *m_exceptionState);
     }
 
     return true;
@@ -146,6 +173,7 @@ bool Dictionary::set(const String& key, const v8::Handle<v8::Value>& value)
         return false;
     v8::Local<v8::Object> options = m_options->ToObject(m_isolate);
     ASSERT(!options.IsEmpty());
+    ASSERT(m_exceptionState);
 
     return options->Set(v8String(m_isolate, key), value);
 }

@@ -46,13 +46,15 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
     Dictionary dictionaryArg;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."));
+            exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
             return;
         }
-        dictionaryArg = Dictionary(info[0], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate(), exceptionState), exceptionState);
     }
     RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(dictionaryArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -96,7 +98,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
-        defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalDictionaryArg, Dictionary(info[4], info.GetIsolate(), exceptionState), exceptionState);
         if (UNLIKELY(info.Length() <= 5)) {
             RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
             v8::Handle<v8::Object> wrapper = info.Holder();

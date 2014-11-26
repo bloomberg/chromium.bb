@@ -48,8 +48,8 @@ TEST_F(AnimationEffectInputTest, SortedOffsets)
     setV8ObjectPropertyAsString(keyframe2, "width", "0px");
     setV8ObjectPropertyAsString(keyframe2, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
 
     RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -68,8 +68,8 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
     setV8ObjectPropertyAsString(keyframe2, "width", "100px");
     setV8ObjectPropertyAsString(keyframe2, "offset", "0");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
 
     EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
@@ -89,9 +89,9 @@ TEST_F(AnimationEffectInputTest, LooslySorted)
     setV8ObjectPropertyAsString(keyframe3, "width", "0px");
     setV8ObjectPropertyAsString(keyframe3, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
 
     RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -115,10 +115,10 @@ TEST_F(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
     setV8ObjectPropertyAsString(keyframe4, "height", "300px");
     setV8ObjectPropertyAsString(keyframe4, "offset", "1");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe4, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe4, m_isolate, exceptionState));
 
     EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
@@ -138,9 +138,9 @@ TEST_F(AnimationEffectInputTest, Invalid)
     setV8ObjectPropertyAsString(keyframe3, "width", "100px");
     setV8ObjectPropertyAsString(keyframe3, "offset", "0");
 
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
-    jsKeyframes.append(Dictionary(keyframe3, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
+    jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
 
     EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());

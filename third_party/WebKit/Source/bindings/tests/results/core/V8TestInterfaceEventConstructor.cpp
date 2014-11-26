@@ -240,7 +240,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Value> initializedByEventConstructorReadonlyAnyAttribute;
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
-        Dictionary options(info[1], info.GetIsolate());
+        Dictionary options(info[1], info.GetIsolate(), exceptionState);
         if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;

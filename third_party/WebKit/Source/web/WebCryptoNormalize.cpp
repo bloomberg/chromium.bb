@@ -32,6 +32,7 @@
 #include "public/web/WebCryptoNormalize.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/CryptoResult.h"
@@ -42,7 +43,9 @@ namespace blink {
 
 WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
 {
-    Dictionary algorithmDictionary(algorithmObject, isolate);
+    // FIXME: Avoid using NonThrowableExceptionState.
+    NonThrowableExceptionState exceptionState;
+    Dictionary algorithmDictionary(algorithmObject, isolate, exceptionState);
     if (!algorithmDictionary.isUndefinedOrNull() && !algorithmDictionary.isObject())
         return WebCryptoAlgorithm();
     WebCryptoAlgorithm algorithm;

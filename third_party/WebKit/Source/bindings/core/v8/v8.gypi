@@ -41,6 +41,8 @@
             'NPV8Object.cpp',
             'NPV8Object.h',
             'Nullable.h',
+            'OnStackObjectChecker.cpp',
+            'OnStackObjectChecker.h',
             'PageScriptDebugServer.cpp',
             'PageScriptDebugServer.h',
             'PostMessage.h',

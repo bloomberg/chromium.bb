@@ -91,7 +91,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
     }
 
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        Dictionary cppValue = Dictionary(v8Value, isolate);
+        TONATIVE_VOID_EXCEPTIONSTATE(Dictionary, cppValue, Dictionary(v8Value, isolate, exceptionState), exceptionState);
         impl.setDictionary(cppValue);
         return;
     }

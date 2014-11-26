@@ -46,11 +46,14 @@ namespace blink {
 class Element;
 class Path2D;
 
+// Dictionary class provides ways to retrieve property values as C++ objects
+// from a V8 object. Instances of this class must not outlive V8's handle scope
+// because they hold a V8 value without putting it on persistent handles.
 class Dictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
-    Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*);
+    Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*, ExceptionState&);
     ~Dictionary();
 
     Dictionary& operator=(const Dictionary&);
@@ -128,13 +131,14 @@ public:
 private:
     v8::Handle<v8::Value> m_options;
     v8::Isolate* m_isolate;
+    ExceptionState* m_exceptionState;
 };
 
 template<>
 struct NativeValueTraits<Dictionary> {
-    static inline Dictionary nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState&)
+    static inline Dictionary nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
-        return Dictionary(value, isolate);
+        return Dictionary(value, isolate, exceptionState);
     }
 };
 

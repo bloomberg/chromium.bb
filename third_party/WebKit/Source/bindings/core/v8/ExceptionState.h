@@ -31,6 +31,7 @@
 #ifndef ExceptionState_h
 #define ExceptionState_h
 
+#include "bindings/core/v8/OnStackObjectChecker.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -107,6 +108,10 @@ public:
         setException(value);
     }
 
+#if ENABLE(ASSERT)
+    OnStackObjectChecker& onStackObjectChecker() { return m_onStackObjectChecker; }
+#endif
+
 protected:
     ExceptionCode m_code;
     Context m_context;
@@ -123,6 +128,9 @@ private:
     ScopedPersistent<v8::Value> m_exception;
     v8::Handle<v8::Object> m_creationContext;
     v8::Isolate* m_isolate;
+#if ENABLE(ASSERT)
+    OnStackObjectChecker m_onStackObjectChecker;
+#endif
 };
 
 // Used if exceptions can/should not be directly thrown.

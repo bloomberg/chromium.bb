@@ -6802,7 +6802,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
             v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
-        arg2 = Dictionary(info[1], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg2, Dictionary(info[1], info.GetIsolate(), exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
         TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg3, info[2], exceptionState, info, ScriptState::current(info.GetIsolate()));
         TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(variadic, toImplArguments<String>(info, 3, exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
@@ -6818,18 +6818,21 @@ static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 
 static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethodWithoutExceptionState", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "promiseMethodWithoutExceptionState", "TestObject", 1, info.Length())));
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary arg1;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."))));
+            exceptionState.throwTypeError("parameter 1 ('arg1') is not an object.");
+            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
-        arg1 = Dictionary(info[0], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg1, Dictionary(info[0], info.GetIsolate(), exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
     }
     v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
 }
@@ -6869,18 +6872,21 @@ static void xPathNSResolverMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDictionaryArg", "TestObject", 1, info.Length()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary dictionaryArg;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObject", "parameter 1 ('dictionaryArg') is not an object."));
+            exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
             return;
         }
-        dictionaryArg = Dictionary(info[0], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodDictionaryArg(dictionaryArg);
 }
@@ -7284,14 +7290,16 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v
 
 static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOptionalDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Dictionary optionalDictionaryArg;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObject", "parameter 1 ('optionalDictionaryArg') is not an object."));
+            exceptionState.throwTypeError("parameter 1 ('optionalDictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
             return;
         }
-        optionalDictionaryArg = Dictionary(info[0], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalDictionaryArg, Dictionary(info[0], info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }

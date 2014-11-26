@@ -477,7 +477,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'long long': 'toInt64({arguments})',
     'unsigned long long': 'toUInt64({arguments})',
     # Interface types
-    'Dictionary': 'Dictionary({v8_value}, {isolate})',
+    'Dictionary': 'Dictionary({v8_value}, {isolate}, exceptionState)',
     'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
@@ -491,7 +491,7 @@ V8_VALUE_TO_CPP_VALUE = {
 def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
             idl_type.is_dictionary or
-            idl_type.name in ('ByteString', 'USVString', 'SerializedScriptValue'))
+            idl_type.name in ('ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True

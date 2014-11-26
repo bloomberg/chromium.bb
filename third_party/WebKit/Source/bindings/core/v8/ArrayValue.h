@@ -26,6 +26,7 @@
 #ifndef ArrayValue_h
 #define ArrayValue_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
 
@@ -59,6 +60,8 @@ private:
 
     v8::Local<v8::Array> m_array;
     v8::Isolate* m_isolate;
+    // FIXME: ArrayValue constructor should take an exception state.
+    mutable NonThrowableExceptionState m_exceptionState;
 };
 
 }

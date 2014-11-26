@@ -66,7 +66,7 @@ bool ArrayValue::get(size_t index, Dictionary& value) const
     if (indexedValue.IsEmpty() || !indexedValue->IsObject())
         return false;
 
-    value = Dictionary(indexedValue, m_isolate);
+    value = Dictionary(indexedValue, m_isolate, m_exceptionState);
     return true;
 }
 

@@ -25,7 +25,7 @@ protected:
     {
         v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
-        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
+        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate, exceptionState);
         return TimingInput::convert(timingInputDictionary);
     }
 
@@ -33,11 +33,12 @@ protected:
     {
         v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
-        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
+        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate, exceptionState);
         return TimingInput::convert(timingInputDictionary);
     }
 
     v8::Isolate* m_isolate;
+    TrackExceptionState exceptionState;
 
 private:
     V8TestingScope m_scope;
@@ -165,7 +166,7 @@ TEST_F(AnimationTimingInputTest, TimingInputEmpty)
     Timing controlTiming;
 
     v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
-    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate, exceptionState);
     Timing updatedTiming = TimingInput::convert(timingInputDictionary);
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);

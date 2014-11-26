@@ -70,7 +70,7 @@ void ParsedProperties::setDefaultLastModified()
 
 bool ParsedProperties::parseBlobPropertyBag(v8::Isolate* isolate, v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState)
 {
-    TONATIVE_DEFAULT(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
+    TONATIVE_DEFAULT(Dictionary, dictionary, Dictionary(propertyBag, isolate, exceptionState), false);
 
     String endings;
     TONATIVE_DEFAULT(bool, containsEndings, DictionaryHelper::get(dictionary, "endings", endings), false);

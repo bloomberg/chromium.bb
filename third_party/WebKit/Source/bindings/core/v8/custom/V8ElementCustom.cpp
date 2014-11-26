@@ -51,7 +51,7 @@ void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, cons
     Element* impl = V8Element::toImpl(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        TONATIVE_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate()));
+        TONATIVE_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate(), exceptionState));
         impl->setScrollLeft(scrollOptionsHorizontal, exceptionState);
         exceptionState.throwIfNeeded();
         return;
@@ -67,7 +67,7 @@ void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const
     Element* impl = V8Element::toImpl(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        TONATIVE_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate()));
+        TONATIVE_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate(), exceptionState));
         impl->setScrollTop(scrollOptionsVertical, exceptionState);
         exceptionState.throwIfNeeded();
         return;
@@ -114,9 +114,10 @@ void animate3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 // AnimationPlayer animate(AnimationEffect? effect, Dictionary timing);
 void animate4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toImpl(info.Holder());
     TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toImplWithTypeCheck(info.GetIsolate(), info[0]));
-    TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
+    TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate(), exceptionState));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("animate", "Element", "parameter 2 ('timingInput') is not an object."));
         return;
@@ -143,7 +144,7 @@ void animate6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toImpl(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
-    TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
+    TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate(), exceptionState));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
         exceptionState.throwTypeError("parameter 2 ('timingInput') is not an object.");
         exceptionState.throwIfNeeded();
