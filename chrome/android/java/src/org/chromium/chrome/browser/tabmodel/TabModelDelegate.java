@@ -14,16 +14,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 public interface TabModelDelegate {
 
     /**
-     * Called when a new tab is created.
-     */
-    void didCreateNewTab(Tab tab);
-
-    /**
-     * Called when the {@link TabModelSelector} or its {@link TabModel} has changed.
-     */
-    void didChange();
-
-    /**
      * Requests the specified to be shown.
      * @param tab The tab that is requested to be shown.
      * @param type The reason why this tab was requested to be shown.

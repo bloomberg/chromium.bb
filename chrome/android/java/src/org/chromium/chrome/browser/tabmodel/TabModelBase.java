@@ -119,9 +119,6 @@ public abstract class TabModelBase extends TabModelJniBridge {
         mRewoundList.resetRewoundState();
 
         int newIndex = indexOf(tab);
-        mModelDelegate.didChange();
-        mModelDelegate.didCreateNewTab(tab);
-
         tabAddedToModel(tab);
 
         for (TabModelObserver obs : mObservers) obs.didAddTab(tab, type);
@@ -162,7 +159,6 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
         mRewoundList.resetRewoundState();
 
-        mModelDelegate.didChange();
         for (TabModelObserver obs : mObservers) obs.didMoveTab(tab, newIndex, curIndex);
     }
 
@@ -411,10 +407,6 @@ public abstract class TabModelBase extends TabModelJniBridge {
             for (TabModelObserver obs : mObservers) obs.didSelectTab(tab, type, lastId);
         }
 
-        // notifyDataSetChanged() can call into
-        // ChromeViewHolderTablet.handleTabChangeExternal(), which will eventually move the
-        // ContentView onto the current view hierarchy (with addView()).
-        mModelDelegate.didChange();
         TraceEvent.end();
     }
 

@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,27 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         }
         mActiveModelIndex = startIncognito ? INCOGNITO_TAB_MODEL_INDEX : NORMAL_TAB_MODEL_INDEX;
         mTabModels = Collections.unmodifiableList(tabModels);
+
+        TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, TabLaunchType type) {
+                notifyChanged();
+                notifyNewTabCreated(tab);
+            }
+
+            @Override
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+                notifyChanged();
+            }
+
+            @Override
+            public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+                notifyChanged();
+            }
+        };
+        for (TabModel model : models) {
+            model.addObserver(tabModelObserver);
+        }
     }
 
     @Override
@@ -170,7 +193,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
      * Notifies all the listeners that a new tab has been created.
      * @param tab The tab that has been created.
      */
-    protected void notifyNewTabCreated(Tab tab) {
+    private void notifyNewTabCreated(Tab tab) {
         for (int i = 0; i < mChangeListeners.size(); i++) {
             mChangeListeners.get(i).onNewTabCreated(tab);
         }
