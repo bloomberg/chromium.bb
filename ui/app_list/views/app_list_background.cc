@@ -32,12 +32,14 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
                               views::View* view) const {
   gfx::Rect bounds = view->GetContentsBounds();
 
-  canvas->Save();
-  SkPath path;
-  // Contents corner radius is 1px smaller than border corner radius.
-  SkScalar radius = SkIntToScalar(corner_radius_ - 1);
-  path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-  canvas->ClipPath(path, false);
+  if (corner_radius_ > 0) {
+    canvas->Save();
+    SkPath path;
+    // Contents corner radius is 1px smaller than border corner radius.
+    SkScalar radius = SkIntToScalar(corner_radius_ - 1);
+    path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
+    canvas->ClipPath(path, false);
+  }
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
@@ -51,7 +53,8 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
 
-  canvas->Restore();
+  if (corner_radius_ > 0)
+    canvas->Restore();
 }
 
 }  // namespace app_list
