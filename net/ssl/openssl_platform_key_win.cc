@@ -4,15 +4,674 @@
 
 #include "net/ssl/openssl_platform_key.h"
 
+#include <windows.h>
+#include <NCrypt.h>
+
+#include <string.h>
+
+#include <algorithm>
+#include <vector>
+
+#include <openssl/bn.h>
+#include <openssl/ec_key.h>
+#include <openssl/err.h>
+#include <openssl/engine.h>
+#include <openssl/evp.h>
+#include <openssl/md5.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
+
+#include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/win/windows_version.h"
+#include "crypto/scoped_capi_types.h"
+#include "crypto/wincrypt_shim.h"
+#include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
+#include "net/ssl/openssl_ssl_util.h"
+
+// TODO(davidben): The key needs to inform the choice of hash function in
+// TLS 1.2. See https://crbug.com/278370.
 
 namespace net {
 
+namespace {
+
+using NCryptFreeObjectFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE);
+using NCryptGetPropertyFunc =
+    SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE,  // hObject
+                             LPCWSTR,  // pszProperty
+                             PBYTE,  // pbOutput
+                             DWORD,  // cbOutput
+                             DWORD*,  // pcbResult
+                             DWORD);  // dwFlags
+using NCryptSignHashFunc =
+    SECURITY_STATUS(WINAPI*)(NCRYPT_KEY_HANDLE,  // hKey
+                             VOID*,  // pPaddingInfo
+                             PBYTE,  // pbHashValue
+                             DWORD,  // cbHashValue
+                             PBYTE,  // pbSignature
+                             DWORD,  // cbSignature
+                             DWORD*,  // pcbResult
+                             DWORD);  // dwFlags
+
+class CNGFunctions {
+ public:
+  CNGFunctions()
+      : ncrypt_free_object_(nullptr),
+        ncrypt_get_property_(nullptr),
+        ncrypt_sign_hash_(nullptr) {
+    HMODULE ncrypt = GetModuleHandle(L"ncrypt.dll");
+    if (ncrypt != nullptr) {
+      ncrypt_free_object_ = reinterpret_cast<NCryptFreeObjectFunc>(
+          GetProcAddress(ncrypt, "NCryptFreeObject"));
+      ncrypt_get_property_ = reinterpret_cast<NCryptGetPropertyFunc>(
+          GetProcAddress(ncrypt, "NCryptGetProperty"));
+      ncrypt_sign_hash_ = reinterpret_cast<NCryptSignHashFunc>(
+          GetProcAddress(ncrypt, "NCryptSignHash"));
+    }
+  }
+
+  NCryptFreeObjectFunc ncrypt_free_object() const {
+    return ncrypt_free_object_;
+  }
+
+  NCryptGetPropertyFunc ncrypt_get_property() const {
+    return ncrypt_get_property_;
+  }
+
+  NCryptSignHashFunc ncrypt_sign_hash() const { return ncrypt_sign_hash_; }
+
+ private:
+  NCryptFreeObjectFunc ncrypt_free_object_;
+  NCryptGetPropertyFunc ncrypt_get_property_;
+  NCryptSignHashFunc ncrypt_sign_hash_;
+};
+
+base::LazyInstance<CNGFunctions>::Leaky g_cng_functions =
+    LAZY_INSTANCE_INITIALIZER;
+
+struct CERT_KEY_CONTEXTDeleter {
+  void operator()(PCERT_KEY_CONTEXT key) {
+    if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+      g_cng_functions.Get().ncrypt_free_object()(key->hNCryptKey);
+    } else {
+      CryptReleaseContext(key->hCryptProv, 0);
+    }
+    delete key;
+  }
+};
+
+using ScopedCERT_KEY_CONTEXT =
+    scoped_ptr<CERT_KEY_CONTEXT, CERT_KEY_CONTEXTDeleter>;
+
+// KeyExData contains the data that is contained in the EX_DATA of the
+// RSA and ECDSA objects that are created to wrap Windows system keys.
+struct KeyExData {
+  KeyExData(ScopedCERT_KEY_CONTEXT key, DWORD key_length)
+      : key(key.Pass()), key_length(key_length) {}
+
+  ScopedCERT_KEY_CONTEXT key;
+  DWORD key_length;
+};
+
+// ExDataDup is called when one of the RSA or EC_KEY objects is
+// duplicated. This is not supported and should never happen.
+int ExDataDup(CRYPTO_EX_DATA* to,
+              const CRYPTO_EX_DATA* from,
+              void** from_d,
+              int idx,
+              long argl,
+              void* argp) {
+  CHECK_EQ((void*)nullptr, *from_d);
+  return 0;
+}
+
+// ExDataFree is called when one of the RSA or EC_KEY objects is freed.
+void ExDataFree(void* parent,
+                void* ptr,
+                CRYPTO_EX_DATA* ex_data,
+                int idx,
+                long argl,
+                void* argp) {
+  KeyExData* data = reinterpret_cast<KeyExData*>(ptr);
+  delete data;
+}
+
+extern const RSA_METHOD win_rsa_method;
+extern const ECDSA_METHOD win_ecdsa_method;
+
+// BoringSSLEngine is a BoringSSL ENGINE that implements RSA and ECDSA
+// by forwarding the requested operations to CAPI or CNG.
+class BoringSSLEngine {
+ public:
+  BoringSSLEngine()
+      : rsa_index_(RSA_get_ex_new_index(0 /* argl */,
+                                        nullptr /* argp */,
+                                        nullptr /* new_func */,
+                                        ExDataDup,
+                                        ExDataFree)),
+        ec_key_index_(EC_KEY_get_ex_new_index(0 /* argl */,
+                                              nullptr /* argp */,
+                                              nullptr /* new_func */,
+                                              ExDataDup,
+                                              ExDataFree)),
+        engine_(ENGINE_new()) {
+    ENGINE_set_RSA_method(engine_, &win_rsa_method, sizeof(win_rsa_method));
+    ENGINE_set_ECDSA_method(engine_, &win_ecdsa_method,
+                            sizeof(win_ecdsa_method));
+  }
+
+  int rsa_ex_index() const { return rsa_index_; }
+  int ec_key_ex_index() const { return ec_key_index_; }
+
+  const ENGINE* engine() const { return engine_; }
+
+ private:
+  const int rsa_index_;
+  const int ec_key_index_;
+  ENGINE* const engine_;
+};
+
+base::LazyInstance<BoringSSLEngine>::Leaky global_boringssl_engine =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Custom RSA_METHOD that uses the platform APIs for signing.
+
+const KeyExData* RsaGetExData(const RSA* rsa) {
+  return reinterpret_cast<const KeyExData*>(
+      RSA_get_ex_data(rsa, global_boringssl_engine.Get().rsa_ex_index()));
+}
+
+size_t RsaMethodSize(const RSA* rsa) {
+  const KeyExData* ex_data = RsaGetExData(rsa);
+  return (ex_data->key_length + 7) / 8;
+}
+
+// Signs |in| using |rsa| with PKCS #1 padding. If |hash_nid| is NID_md5_sha1,
+// |in| is a TLS MD5/SHA-1 concatenation and should be signed as-is. Otherwise
+// |in| is a standard hash function and should be prefixed with the
+// corresponding DigestInfo before signing. The signature is written to |out|
+// and its length written to |*out_len|. This function returns true on success
+// and false on failure.
+bool RsaSignPKCS1(const RSA* rsa,
+                  int hash_nid,
+                  const uint8_t* in,
+                  size_t in_len,
+                  uint8_t* out,
+                  size_t max_out,
+                  size_t* out_len) {
+  const KeyExData* ex_data = RsaGetExData(rsa);
+  if (!ex_data) {
+    NOTREACHED();
+    OPENSSL_PUT_ERROR(RSA, RSA_sign, ERR_R_INTERNAL_ERROR);
+    return false;
+  }
+
+  if (ex_data->key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+    BCRYPT_PKCS1_PADDING_INFO rsa_padding_info;
+    switch (hash_nid) {
+      case NID_md5_sha1:
+        rsa_padding_info.pszAlgId = nullptr;
+        break;
+      case NID_sha1:
+        rsa_padding_info.pszAlgId = BCRYPT_SHA1_ALGORITHM;
+        break;
+      case NID_sha256:
+        rsa_padding_info.pszAlgId = BCRYPT_SHA256_ALGORITHM;
+        break;
+      case NID_sha384:
+        rsa_padding_info.pszAlgId = BCRYPT_SHA384_ALGORITHM;
+        break;
+      case NID_sha512:
+        rsa_padding_info.pszAlgId = BCRYPT_SHA512_ALGORITHM;
+        break;
+      default:
+        OPENSSL_PUT_ERROR(RSA, RSA_sign, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+        return false;
+    }
+
+    DWORD signature_len;
+    SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
+        ex_data->key->hNCryptKey, &rsa_padding_info, const_cast<PBYTE>(in),
+        in_len, out, max_out, &signature_len, BCRYPT_PAD_PKCS1);
+    if (FAILED(ncrypt_status) || signature_len == 0) {
+      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+      return false;
+    }
+    *out_len = signature_len;
+    return true;
+  }
+
+  ALG_ID hash_alg;
+  switch (hash_nid) {
+    case NID_md5_sha1:
+      hash_alg = CALG_SSL3_SHAMD5;
+      break;
+    case NID_sha1:
+      hash_alg = CALG_SHA1;
+      break;
+    case NID_sha256:
+      hash_alg = CALG_SHA_256;
+      break;
+    case NID_sha384:
+      hash_alg = CALG_SHA_384;
+      break;
+    case NID_sha512:
+      hash_alg = CALG_SHA_512;
+      break;
+    default:
+      OPENSSL_PUT_ERROR(RSA, RSA_sign, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+      return false;
+  }
+
+  HCRYPTHASH hash;
+  if (!CryptCreateHash(ex_data->key->hCryptProv, hash_alg, 0, 0, &hash)) {
+    PLOG(ERROR) << "CreateCreateHash failed";
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return false;
+  }
+  DWORD hash_len;
+  DWORD arg_len = sizeof(hash_len);
+  if (!CryptGetHashParam(hash, HP_HASHSIZE, reinterpret_cast<BYTE*>(&hash_len),
+                         &arg_len, 0)) {
+    PLOG(ERROR) << "CryptGetHashParam HP_HASHSIZE failed";
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return false;
+  }
+  if (hash_len != in_len) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return false;
+  }
+  if (!CryptSetHashParam(hash, HP_HASHVAL, const_cast<BYTE*>(in), 0)) {
+    PLOG(ERROR) << "CryptSetHashParam HP_HASHVAL failed";
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return false;
+  }
+  DWORD signature_len = max_out;
+  if (!CryptSignHash(hash, ex_data->key->dwKeySpec, nullptr, 0, out,
+                     &signature_len)) {
+    PLOG(ERROR) << "CryptSignHash failed";
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return false;
+  }
+
+  /* CryptoAPI signs in little-endian, so reverse it. */
+  std::reverse(out, out + signature_len);
+  *out_len = signature_len;
+  return true;
+}
+
+int RsaMethodSign(int hash_nid,
+                  const uint8_t* in,
+                  unsigned in_len,
+                  uint8_t* out,
+                  unsigned* out_len,
+                  const RSA* rsa) {
+  // TOD(davidben): Switch BoringSSL's sign hook to using size_t rather than
+  // unsigned.
+  size_t len;
+  if (!RsaSignPKCS1(rsa, hash_nid, in, in_len, out, RSA_size(rsa), &len))
+    return 0;
+  *out_len = len;
+  return 1;
+}
+
+int RsaMethodEncrypt(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
+                     int padding) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, encrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  return 0;
+}
+
+int RsaMethodSignRaw(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
+                     int padding) {
+  DCHECK_EQ(RSA_PKCS1_PADDING, padding);
+  if (padding != RSA_PKCS1_PADDING) {
+    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_UNKNOWN_PADDING_TYPE);
+    return 0;
+  }
+
+  // BoringSSL calls only sign_raw, not sign, in pre-TLS-1.2 MD5/SHA1
+  // signatures. This hook is implemented only for that case.
+  //
+  // TODO(davidben): Make client auth in BoringSSL call RSA_sign with
+  // NID_md5_sha1. https://crbug.com/437023
+  if (in_len != MD5_DIGEST_LENGTH + SHA_DIGEST_LENGTH) {
+    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_INVALID_MESSAGE_LENGTH);
+    return 0;
+  }
+  if (!RsaSignPKCS1(rsa, NID_md5_sha1, in, in_len, out, max_out, out_len))
+    return 0;
+  return 1;
+}
+
+int RsaMethodDecrypt(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
+                     int padding) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, decrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  return 0;
+}
+
+int RsaMethodVerifyRaw(RSA* rsa,
+                       size_t* out_len,
+                       uint8_t* out,
+                       size_t max_out,
+                       const uint8_t* in,
+                       size_t in_len,
+                       int padding) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, verify_raw, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  return 0;
+}
+
+const RSA_METHOD win_rsa_method = {
+    {
+     0,  // references
+     1,  // is_static
+    },
+    nullptr,  // app_data
+
+    nullptr,  // init
+    nullptr,  // finish
+    RsaMethodSize,
+    RsaMethodSign,
+    nullptr,  // verify
+    RsaMethodEncrypt,
+    RsaMethodSignRaw,
+    RsaMethodDecrypt,
+    RsaMethodVerifyRaw,
+    nullptr,  // private_transform
+    nullptr,  // mod_exp
+    nullptr,  // bn_mod_exp
+    RSA_FLAG_OPAQUE,
+    nullptr,  // keygen
+};
+
+// Custom ECDSA_METHOD that uses the platform APIs.
+// Note that for now, only signing through ECDSA_sign() is really supported.
+// all other method pointers are either stubs returning errors, or no-ops.
+
+const KeyExData* EcKeyGetExData(const EC_KEY* ec_key) {
+  return reinterpret_cast<const KeyExData*>(EC_KEY_get_ex_data(
+      ec_key, global_boringssl_engine.Get().ec_key_ex_index()));
+}
+
+size_t EcdsaMethodGroupOrderSize(const EC_KEY* ec_key) {
+  const KeyExData* ex_data = EcKeyGetExData(ec_key);
+  // Windows doesn't distinguish the sizes of the curve's degree (which
+  // determines the size of a point on the curve) and the base point's order
+  // (which determines the size of a scalar). For P-256, P-384, and P-521, these
+  // two sizes are the same.
+  //
+  // See
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375520(v=vs.85).aspx
+  // which uses the same length for both.
+  return (ex_data->key_length + 7) / 8;
+}
+
+int EcdsaMethodSign(const uint8_t* digest,
+                    size_t digest_len,
+                    uint8_t* out_sig,
+                    unsigned int* out_sig_len,
+                    EC_KEY* ec_key) {
+  const KeyExData* ex_data = EcKeyGetExData(ec_key);
+  // Only CNG supports ECDSA.
+  if (!ex_data || ex_data->key->dwKeySpec != CERT_NCRYPT_KEY_SPEC) {
+    NOTREACHED();
+    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    return 0;
+  }
+
+  size_t degree = (ex_data->key_length + 7) / 8;
+  if (degree == 0) {
+    NOTREACHED();
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+  std::vector<uint8_t> raw_sig(degree * 2);
+
+  DWORD signature_len;
+  SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
+      ex_data->key->hNCryptKey, nullptr, const_cast<PBYTE>(digest), digest_len,
+      &raw_sig[0], raw_sig.size(), &signature_len, 0);
+  if (FAILED(ncrypt_status) || signature_len != raw_sig.size()) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+
+  // Convert the RAW ECDSA signature to a DER-encoded ECDSA-Sig-Value.
+  crypto::ScopedECDSA_SIG sig(ECDSA_SIG_new());
+  if (!sig) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+  sig->r = BN_bin2bn(&raw_sig[0], degree, nullptr);
+  sig->s = BN_bin2bn(&raw_sig[degree], degree, nullptr);
+  if (!sig->r || !sig->s) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+
+  // Ensure the DER-encoded signature fits in the bounds.
+  int len = i2d_ECDSA_SIG(sig.get(), nullptr);
+  if (len < 0 || len > ECDSA_size(ec_key)) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+
+  len = i2d_ECDSA_SIG(sig.get(), &out_sig);
+  if (len < 0) {
+    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+    return 0;
+  }
+  *out_sig_len = len;
+  return 1;
+}
+
+int EcdsaMethodVerify(const uint8_t* digest,
+                      size_t digest_len,
+                      const uint8_t* sig,
+                      size_t sig_len,
+                      EC_KEY* eckey) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(ECDSA, ECDSA_do_verify, ECDSA_R_NOT_IMPLEMENTED);
+  return 0;
+}
+
+const ECDSA_METHOD win_ecdsa_method = {
+    {
+     0,  // references
+     1,  // is_static
+    },
+    nullptr,  // app_data
+
+    nullptr,  // init
+    nullptr,  // finish
+    EcdsaMethodGroupOrderSize,
+    EcdsaMethodSign,
+    EcdsaMethodVerify,
+    ECDSA_FLAG_OPAQUE,
+};
+
+// Determines the key type and length of |key|. The type is returned as an
+// OpenSSL EVP_PKEY type. The key length for RSA key is the size of the RSA
+// modulus in bits. For an ECDSA key, it is the number of bits to represent the
+// group order. It returns true on success and false on failure.
+bool GetKeyInfo(PCERT_KEY_CONTEXT key, int* out_type, DWORD* out_length) {
+  if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+    DWORD prop_len;
+    SECURITY_STATUS status = g_cng_functions.Get().ncrypt_get_property()(
+        key->hNCryptKey, NCRYPT_ALGORITHM_GROUP_PROPERTY, nullptr, 0, &prop_len,
+        0);
+    if (FAILED(status) || prop_len == 0 || prop_len % 2 != 0) {
+      LOG(ERROR) << "Could not query CNG key type: " << status;
+      return false;
+    }
+
+    std::vector<BYTE> prop_buf(prop_len);
+    status = g_cng_functions.Get().ncrypt_get_property()(
+        key->hNCryptKey, NCRYPT_ALGORITHM_GROUP_PROPERTY, &prop_buf[0],
+        prop_buf.size(), &prop_len, 0);
+    if (FAILED(status) || prop_len == 0 || prop_len % 2 != 0) {
+      LOG(ERROR) << "Could not query CNG key type: " << status;
+      return false;
+    }
+
+    int type;
+    const wchar_t* alg = reinterpret_cast<const wchar_t*>(&prop_buf[0]);
+    if (wcsncmp(NCRYPT_RSA_ALGORITHM_GROUP, alg, prop_len / 2) == 0) {
+      type = EVP_PKEY_RSA;
+    } else if (wcsncmp(NCRYPT_ECDSA_ALGORITHM_GROUP, alg, prop_len / 2) == 0 ||
+               wcsncmp(NCRYPT_ECDH_ALGORITHM_GROUP, alg, prop_len / 2) == 0) {
+      // Importing an ECDSA key via PKCS #12 seems to label it as ECDH rather
+      // than ECDSA, so also allow ECDH.
+      type = EVP_PKEY_EC;
+    } else {
+      LOG(ERROR) << "Unknown CNG key type: "
+                 << std::wstring(alg, wcsnlen(alg, prop_len / 2));
+      return false;
+    }
+
+    DWORD length;
+    prop_len;
+    status = g_cng_functions.Get().ncrypt_get_property()(
+        key->hNCryptKey, NCRYPT_LENGTH_PROPERTY,
+        reinterpret_cast<BYTE*>(&length), sizeof(DWORD), &prop_len, 0);
+    if (FAILED(status)) {
+      LOG(ERROR) << "Could not get CNG key length " << status;
+      return false;
+    }
+    DCHECK_EQ(sizeof(DWORD), prop_len);
+
+    *out_type = type;
+    *out_length = length;
+    return true;
+  }
+
+  crypto::ScopedHCRYPTKEY hcryptkey;
+  if (!CryptGetUserKey(key->hCryptProv, key->dwKeySpec, hcryptkey.receive())) {
+    PLOG(ERROR) << "Could not get CAPI key handle";
+    return false;
+  }
+
+  ALG_ID alg_id;
+  DWORD prop_len = sizeof(alg_id);
+  if (!CryptGetKeyParam(hcryptkey.get(), KP_ALGID,
+                        reinterpret_cast<BYTE*>(&alg_id), &prop_len, 0)) {
+    PLOG(ERROR) << "Could not query CAPI key type";
+    return false;
+  }
+
+  if (alg_id != CALG_RSA_SIGN && alg_id != CALG_RSA_KEYX) {
+    LOG(ERROR) << "Unknown CAPI key type: " << alg_id;
+    return false;
+  }
+
+  DWORD length;
+  prop_len = sizeof(DWORD);
+  if (!CryptGetKeyParam(hcryptkey.get(), KP_KEYLEN,
+                        reinterpret_cast<BYTE*>(&length), &prop_len, 0)) {
+    PLOG(ERROR) << "Could not get CAPI key length";
+    return false;
+  }
+  DCHECK_EQ(sizeof(DWORD), prop_len);
+
+  *out_type = EVP_PKEY_RSA;
+  *out_length = length;
+  return true;
+}
+
+crypto::ScopedEVP_PKEY CreateRSAWrapper(ScopedCERT_KEY_CONTEXT key,
+                                        DWORD key_length) {
+  crypto::ScopedRSA rsa(RSA_new_method(global_boringssl_engine.Get().engine()));
+  if (!rsa)
+    return nullptr;
+
+  RSA_set_ex_data(rsa.get(), global_boringssl_engine.Get().rsa_ex_index(),
+                  new KeyExData(key.Pass(), key_length));
+
+  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
+    return nullptr;
+  return pkey.Pass();
+}
+
+crypto::ScopedEVP_PKEY CreateECDSAWrapper(ScopedCERT_KEY_CONTEXT key,
+                                          DWORD key_length) {
+  crypto::ScopedEC_KEY ec_key(
+      EC_KEY_new_method(global_boringssl_engine.Get().engine()));
+  if (!ec_key)
+    return nullptr;
+
+  EC_KEY_set_ex_data(ec_key.get(),
+                     global_boringssl_engine.Get().ec_key_ex_index(),
+                     new KeyExData(key.Pass(), key_length));
+
+  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  if (!pkey || !EVP_PKEY_set1_EC_KEY(pkey.get(), ec_key.get()))
+    return nullptr;
+
+  return pkey.Pass();
+}
+
+}  // namespace
+
 crypto::ScopedEVP_PKEY FetchClientCertPrivateKey(
     const X509Certificate* certificate) {
-  // TODO(davidben): Implement on Windows.
-  NOTIMPLEMENTED();
-  return crypto::ScopedEVP_PKEY();
+  PCCERT_CONTEXT cert_context = certificate->os_cert_handle();
+
+  HCRYPTPROV_OR_NCRYPT_KEY_HANDLE crypt_prov = 0;
+  DWORD key_spec = 0;
+  BOOL must_free = FALSE;
+  DWORD flags = 0;
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    flags |= CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG;
+
+  if (!CryptAcquireCertificatePrivateKey(cert_context, flags, nullptr,
+                                         &crypt_prov, &key_spec, &must_free)) {
+    PLOG(WARNING) << "Could not acquire private key";
+    return nullptr;
+  }
+
+  // Should never get a cached handle back - ownership must always be
+  // transferred.
+  CHECK_EQ(must_free, TRUE);
+  ScopedCERT_KEY_CONTEXT key(new CERT_KEY_CONTEXT);
+  key->dwKeySpec = key_spec;
+  key->hCryptProv = crypt_prov;
+
+  int key_type;
+  DWORD key_length;
+  if (!GetKeyInfo(key.get(), &key_type, &key_length))
+    return nullptr;
+
+  switch (key_type) {
+    case EVP_PKEY_RSA:
+      return CreateRSAWrapper(key.Pass(), key_length);
+    case EVP_PKEY_EC:
+      return CreateECDSAWrapper(key.Pass(), key_length);
+    default:
+      return nullptr;
+  }
 }
 
 }  // namespace net

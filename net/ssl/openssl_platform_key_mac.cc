@@ -4,7 +4,9 @@
 
 #include "net/ssl/openssl_platform_key.h"
 
+#include <openssl/ec_key.h>
 #include <openssl/err.h>
+#include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 
