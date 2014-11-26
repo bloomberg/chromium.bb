@@ -737,7 +737,8 @@ void ServiceWorkerVersion::OnSyncEventFinished(
 }
 
 void ServiceWorkerVersion::OnPushEventFinished(
-    int request_id) {
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnPushEventFinished",
                "Request id", request_id);
@@ -746,9 +747,12 @@ void ServiceWorkerVersion::OnPushEventFinished(
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
+  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
+  if (result == blink::WebServiceWorkerEventResultRejected)
+    status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  callback->Run(SERVICE_WORKER_OK);
+  callback->Run(status);
   push_callbacks_.Remove(request_id);
 }
 

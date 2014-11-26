@@ -34,6 +34,9 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "Operation failed by network issue";
     case SERVICE_WORKER_ERROR_SECURITY:
       return "Operation failed by security issue";
+    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+      return "ServiceWorker failed to handle event (event.waitUntil "
+             "Promise rejected)";
   }
   NOTREACHED();
   return "";
