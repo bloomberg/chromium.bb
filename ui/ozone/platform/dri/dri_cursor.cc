@@ -43,8 +43,6 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
 
 void DriCursor::ShowCursor() {
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
-  if (!sender_->IsConnected())
-    return;
   if (cursor_.get())
     sender_->SetHardwareCursor(cursor_window_, cursor_->bitmaps(),
                                bitmap_location(), cursor_->frame_delay_ms());
@@ -53,8 +51,6 @@ void DriCursor::ShowCursor() {
 }
 
 void DriCursor::HideCursor() {
-  if (!sender_->IsConnected())
-    return;
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
   sender_->SetHardwareCursor(cursor_window_, std::vector<SkBitmap>(),
                              gfx::Point(), 0);

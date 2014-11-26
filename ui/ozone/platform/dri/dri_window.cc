@@ -63,9 +63,6 @@ DriWindow::~DriWindow() {
   window_manager_->RemoveWindow(widget_);
 
   sender_->RemoveChannelObserver(this);
-  if (!sender_->IsConnected())
-    return;
-
   sender_->Send(new OzoneGpuMsg_DestroyWindowDelegate(widget_));
 }
 
@@ -84,9 +81,6 @@ void DriWindow::Close() {}
 void DriWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
-
-  if (!sender_->IsConnected())
-    return;
 
   if (window_manager_->cursor()->GetCursorWindow() == widget_)
     window_manager_->cursor()->HideCursor();
