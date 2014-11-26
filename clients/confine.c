@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,6 +61,8 @@ struct confine {
 	struct input *cursor_timeout_input;
 	int cursor_timeout_fd;
 	struct task cursor_timeout_task;
+
+	bool pointer_confined;
 };
 
 static void
@@ -193,6 +196,34 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 }
 
 static void
+toggle_pointer_confine(struct confine *confine, struct input *input)
+{
+	if (confine->pointer_confined) {
+		window_unconfine_pointer(confine->window);
+	} else {
+		window_confine_pointer_to_widget(confine->window,
+						 confine->widget,
+						 input);
+	}
+
+	confine->pointer_confined = !confine->pointer_confined;
+}
+
+static void
+button_handler(struct widget *widget,
+	       struct input *input, uint32_t time,
+	       uint32_t button,
+	       enum wl_pointer_button_state state, void *data)
+{
+	struct confine *confine = data;
+	bool is_pressed = state == WL_POINTER_BUTTON_STATE_PRESSED;
+
+	if (is_pressed && button == BTN_LEFT)
+		toggle_pointer_confine(confine, input);
+	widget_schedule_redraw(widget);
+}
+
+static void
 cursor_timeout_reset(struct confine *confine)
 {
 	const long cursor_timeout = 500;
@@ -256,6 +287,14 @@ cursor_timeout_func(struct task *task, uint32_t events)
 				CURSOR_LEFT_PTR);
 }
 
+static void
+pointer_unconfined(struct window *window, struct input *input, void *data)
+{
+	struct confine *confine = data;
+
+	confine->pointer_confined = false;
+}
+
 static struct confine *
 confine_create(struct display *display)
 {
@@ -272,8 +311,12 @@ confine_create(struct display *display)
 	window_set_user_data(confine->window, confine);
 	window_set_keyboard_focus_handler(confine->window,
 					  keyboard_focus_handler);
+	window_set_pointer_confined_handler(confine->window,
+					    NULL,
+					    pointer_unconfined);
 
 	widget_set_redraw_handler(confine->widget, redraw_handler);
+	widget_set_button_handler(confine->widget, button_handler);
 	widget_set_motion_handler(confine->widget, motion_handler);
 	widget_set_resize_handler(confine->widget, resize_handler);
 	widget_set_leave_handler(confine->widget, leave_handler);
