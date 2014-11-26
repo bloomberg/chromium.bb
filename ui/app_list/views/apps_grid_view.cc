@@ -386,17 +386,10 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
                                            kOverscrollPageTransitionDurationMs);
 
   pagination_model_.AddObserver(this);
-  // The experimental app list transitions vertically.
-  PaginationController::ScrollAxis scroll_axis =
-      app_list::switches::IsExperimentalAppListEnabled()
-          ? PaginationController::SCROLL_AXIS_VERTICAL
-          : PaginationController::SCROLL_AXIS_HORIZONTAL;
-  pagination_controller_.reset(
-      new PaginationController(&pagination_model_, scroll_axis));
-  if (!switches::IsExperimentalAppListEnabled()) {
-    page_switcher_view_ = new PageSwitcher(&pagination_model_);
-    AddChildView(page_switcher_view_);
-  }
+  pagination_controller_.reset(new PaginationController(
+      &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
+  page_switcher_view_ = new PageSwitcher(&pagination_model_);
+  AddChildView(page_switcher_view_);
 }
 
 AppsGridView::~AppsGridView() {
@@ -642,12 +635,10 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
 
   MaybeStartPageFlipTimer(last_drag_point_);
 
-  if (page_switcher_view_) {
-    gfx::Point page_switcher_point(last_drag_point_);
-    views::View::ConvertPointToTarget(
-        this, page_switcher_view_, &page_switcher_point);
-    page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
-  }
+  gfx::Point page_switcher_point(last_drag_point_);
+  views::View::ConvertPointToTarget(this, page_switcher_view_,
+                                    &page_switcher_point);
+  page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
 
   if (last_folder_drop_target != folder_drop_target_ ||
       last_reorder_drop_target != reorder_drop_target_ ||
@@ -886,9 +877,7 @@ bool AppsGridView::IsAnimatingView(AppListItemView* view) {
 
 gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
-  int page_switcher_height = 0;
-  if (page_switcher_view_)
-    page_switcher_height = page_switcher_view_->GetPreferredSize().height();
+  int page_switcher_height = page_switcher_view_->GetPreferredSize().height();
   gfx::Size size = GetTileGridSize();
   size.Enlarge(insets.width(), insets.height() + page_switcher_height);
   return size;
@@ -922,14 +911,12 @@ void AppsGridView::Layout() {
   }
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
-  if (page_switcher_view_) {
-    const int page_switcher_height =
-        page_switcher_view_->GetPreferredSize().height();
-    gfx::Rect rect(GetContentsBounds());
-    rect.set_y(rect.bottom() - page_switcher_height);
-    rect.set_height(page_switcher_height);
-    page_switcher_view_->SetBoundsRect(rect);
-  }
+  const int page_switcher_height =
+      page_switcher_view_->GetPreferredSize().height();
+  gfx::Rect rect(GetContentsBounds());
+  rect.set_y(rect.bottom() - page_switcher_height);
+  rect.set_height(page_switcher_height);
+  page_switcher_view_->SetBoundsRect(rect);
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {

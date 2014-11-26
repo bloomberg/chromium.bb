@@ -526,13 +526,10 @@ void AppListController::TransitionChanged() {
     const int shift = kMaxOverScrollShift * progress * dir;
 
     gfx::Rect shifted(view_bounds_);
-    // Experimental app list scrolls vertically, so make the overscroll
-    // vertical.
-    if (app_list::switches::IsExperimentalAppListEnabled())
-      shifted.set_y(shifted.y() + shift);
-    else
-      shifted.set_x(shifted.x() + shift);
+    shifted.set_x(shifted.x() + shift);
+
     widget->SetBounds(shifted);
+
     should_snap_back_ = true;
   } else if (should_snap_back_) {
     should_snap_back_ = false;
