@@ -59,8 +59,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   friend class AppCacheHost;
 
   // Callers should use AppCacheHost::CreateRequestHandler.
-  AppCacheRequestHandler(AppCacheHost* host, ResourceType resource_type,
-                         bool should_reset_appcache);
+  AppCacheRequestHandler(AppCacheHost* host, ResourceType resource_type);
 
   // AppCacheHost::Observer override
   void OnDestructionImminent(AppCacheHost* host) override;
@@ -113,9 +112,6 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Frame vs subresource vs sharedworker loads are somewhat different.
   ResourceType resource_type_;
-
-  // True if corresponding AppCache group should be resetted before load.
-  bool should_reset_appcache_;
 
   // Subresource requests wait until after cache selection completes.
   bool is_waiting_for_cache_selection_;

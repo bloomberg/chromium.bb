@@ -80,9 +80,6 @@ struct CONTENT_EXPORT RequestInfo {
   // True if the request should not be handled by the ServiceWorker.
   bool skip_service_worker;
 
-  // True if corresponding AppCache group should be resetted.
-  bool should_reset_appcache;
-
   // The request mode passed to the ServiceWorker.
   FetchRequestMode fetch_request_mode;
 

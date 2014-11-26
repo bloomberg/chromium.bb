@@ -29,8 +29,7 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
                                   AppCacheServiceImpl* service,
                                   int process_id,
                                   int host_id,
-                                  ResourceType resource_type,
-                                  bool should_reset_appcache);
+                                  ResourceType resource_type);
 
   // May be called after response headers are complete to retrieve extra
   // info about the response.

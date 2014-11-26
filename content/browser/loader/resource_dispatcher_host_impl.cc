@@ -1279,8 +1279,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(
       new_request.get(), filter_->appcache_service(), child_id,
-      request_data.appcache_host_id, request_data.resource_type,
-      request_data.should_reset_appcache);
+      request_data.appcache_host_id, request_data.resource_type);
 
   scoped_ptr<ResourceHandler> handler(
        CreateResourceHandler(
