@@ -1487,6 +1487,8 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
 }
 
 void RenderThreadImpl::OnUpdateTimezone() {
+  if (!blink_platform_impl_)
+    return;
   NotifyTimezoneChange();
 }
 
