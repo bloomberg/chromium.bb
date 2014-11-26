@@ -323,6 +323,10 @@
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
+    'enhanced_bookmarks': {
+      'filepath': 'chrome/browser/enhanced_bookmarks/' \
+                  '|components/enhanced_bookmarks/'
+    },
     'events': {
       'filepath': 'ui/events/',
     },
@@ -817,7 +821,7 @@
     'base_memory': ['gavinp+memory@chromium.org'],
     'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
-    'bookmarks': ['tfarina@chromium.org'],
+    'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
@@ -881,6 +885,7 @@
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
+    'enhanced_bookmarks' : ['noyau+watch@chromium.org']
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
