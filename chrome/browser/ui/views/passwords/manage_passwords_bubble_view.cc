@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_source.h"
@@ -248,7 +248,7 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
 // ManagePasswordsBubbleView::PendingView -------------------------------------
 
 // A view offering the user the ability to save credentials. Contains a
-// single ManagePasswordItemView, along with a "Save Passwords" button
+// single ManagePasswordItemsView, along with a "Save Passwords" button
 // and a rejection combobox.
 class ManagePasswordsBubbleView::PendingView : public views::View,
                                                public views::ButtonListener,
@@ -283,11 +283,11 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
+  std::vector<const autofill::PasswordForm*> credentials(
+      1, &parent->model()->pending_password());
   // Create the pending credential item, save button and refusal combobox.
-  ManagePasswordItemView* item =
-      new ManagePasswordItemView(parent->model(),
-                                 parent->model()->pending_password(),
-                                 password_manager::ui::FIRST_ITEM);
+  ManagePasswordItemsView* item =
+      new ManagePasswordItemsView(parent_->model(), credentials);
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
   save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -478,20 +478,14 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
   if (!parent_->model()->best_matches().empty()) {
-    for (autofill::ConstPasswordFormMap::const_iterator i(
-             parent_->model()->best_matches().begin());
-         i != parent_->model()->best_matches().end();
-         ++i) {
-      ManagePasswordItemView* item = new ManagePasswordItemView(
-          parent_->model(),
-          *i->second,
-          i == parent_->model()->best_matches().begin()
-              ? password_manager::ui::FIRST_ITEM
-              : password_manager::ui::SUBSEQUENT_ITEM);
-
+      std::vector<const autofill::PasswordForm*> password_forms;
+      for (auto password_form : parent_->model()->best_matches()) {
+        password_forms.push_back(password_form.second);
+      }
+      ManagePasswordItemsView* item = new ManagePasswordItemsView(
+          parent_->model(), password_forms);
       layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
       layout->AddView(item);
-    }
   } else {
     views::Label* empty_label = new views::Label(
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
