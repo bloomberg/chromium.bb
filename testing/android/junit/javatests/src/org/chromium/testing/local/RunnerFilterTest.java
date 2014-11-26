@@ -18,6 +18,8 @@ import org.junit.runners.Suite;
 @RunWith(BlockJUnit4ClassRunner.class)
 public class RunnerFilterTest {
 
+    private class FakeTestClass {}
+
     @Test
     public void testDescription() {
         Filter filterUnderTest = new RunnerFilter(BlockJUnit4ClassRunner.class);
@@ -50,7 +52,7 @@ public class RunnerFilterTest {
     public void testClassNotFound() {
         Filter filterUnderTest = new RunnerFilter(BlockJUnit4ClassRunner.class);
         Assert.assertFalse(filterUnderTest.shouldRun(
-                Description.createTestDescription("FakeTestClass", "fakeTestMethod")));
+                Description.createTestDescription(FakeTestClass.class, "fakeTestMethod")));
     }
 }
 

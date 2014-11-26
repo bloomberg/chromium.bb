@@ -114,9 +114,9 @@ public class GtestLoggerTest {
 
         Set<Description> failures = new TreeSet<Description>(new DescriptionComparator());
         failures.add(Description.createTestDescription(
-                "GtestLoggerTest", "testTestRunFinishedNoFailures"));
+                GtestLoggerTest.class, "testTestRunFinishedNoFailures"));
         failures.add(Description.createTestDescription(
-                "GtestLoggerTest", "testTestRunFinishedWithFailures"));
+                GtestLoggerTest.class, "testTestRunFinishedWithFailures"));
 
         loggerUnderTest.testRunFinished(1232, failures, 4312);
         Assert.assertEquals(
@@ -124,8 +124,10 @@ public class GtestLoggerTest {
                         + "[==========] 1234 tests ran. (4312 ms total)\n"
                         + "[  PASSED  ] 1232 tests.\n"
                         + "[  FAILED  ] 2 tests.\n"
-                        + "[  FAILED  ] GtestLoggerTest.testTestRunFinishedNoFailures\n"
-                        + "[  FAILED  ] GtestLoggerTest.testTestRunFinishedWithFailures\n"
+                        + "[  FAILED  ] org.chromium.testing.local.GtestLoggerTest"
+                        + ".testTestRunFinishedNoFailures\n"
+                        + "[  FAILED  ] org.chromium.testing.local.GtestLoggerTest"
+                        + ".testTestRunFinishedWithFailures\n"
                         + "\n",
                 actual.toString());
     }

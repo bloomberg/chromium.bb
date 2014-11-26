@@ -9,6 +9,7 @@ import org.junit.runner.manipulation.Filter;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -24,6 +25,7 @@ class GtestFilter extends Filter {
     private static final Pattern ASTERISK = Pattern.compile("\\*");
     private static final Pattern COLON = Pattern.compile(":");
     private static final Pattern DASH = Pattern.compile("-");
+    private static final Pattern DOLLAR = Pattern.compile("\\$");
     private static final Pattern PERIOD = Pattern.compile("\\.");
 
     /**
@@ -39,7 +41,8 @@ class GtestFilter extends Filter {
         for (String f : filterStrings) {
             if (f.isEmpty()) continue;
 
-            String sanitized = PERIOD.matcher(f).replaceAll("\\\\.");
+            String sanitized = PERIOD.matcher(f).replaceAll(Matcher.quoteReplacement("\\."));
+            sanitized = DOLLAR.matcher(sanitized).replaceAll(Matcher.quoteReplacement("\\$"));
             sanitized = ASTERISK.matcher(sanitized).replaceAll(".*");
             int negIndex = sanitized.indexOf('-');
             if (negIndex == 0) {

@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 # GYP: //third_party/junit.gyp:hamcrest_jar
 java_prebuilt("hamcrest") {
-  jar_path = "src/lib/hamcrest-core-1.3.jar"
+  jar_path = "src/lib/hamcrest-core-1.1.jar"
 }
 
 # GYP: //third_party/junit.gyp:junit_jar

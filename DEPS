@@ -486,7 +486,7 @@ deps_os = {
       Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
 
     'src/third_party/junit/src':
-      Var('chromium_git') + '/external/junit.git' + '@' + 'c62e2df8dbecccb1b434d4ba8843b59e90b03266',
+      Var('chromium_git') + '/external/junit.git' + '@' + '45a44647e7306262162e1346b750c3209019f2e1',
 
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
