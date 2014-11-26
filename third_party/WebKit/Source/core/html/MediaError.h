@@ -40,7 +40,6 @@ public:
         MEDIA_ERR_NETWORK,
         MEDIA_ERR_DECODE,
         MEDIA_ERR_SRC_NOT_SUPPORTED,
-        MEDIA_ERR_ENCRYPTED
     };
 
     static PassRefPtrWillBeRawPtr<MediaError> create(Code code)

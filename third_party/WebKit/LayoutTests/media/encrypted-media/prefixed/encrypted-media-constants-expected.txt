@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.
 Test MediaKeyError constants and additional MediaError constant.
 
 EXPECTED (MediaKeyError.MEDIA_KEYERR_UNKNOWN == '1') OK
@@ -8,6 +7,5 @@ EXPECTED (MediaKeyError.MEDIA_KEYERR_OUTPUT == '4') OK
 EXPECTED (MediaKeyError.MEDIA_KEYERR_HARDWARECHANGE == '5') OK
 EXPECTED (MediaKeyError.MEDIA_KEYERR_DOMAIN == '6') OK
 
-EXPECTED (MediaError.MEDIA_ERR_ENCRYPTED == '5') OK
 END OF TEST
 
