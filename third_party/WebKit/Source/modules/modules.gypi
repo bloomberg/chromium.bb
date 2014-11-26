@@ -416,6 +416,7 @@
       'beacon/NavigatorBeacon.cpp',
       'beacon/NavigatorBeacon.h',
       'bluetooth/Bluetooth.h',
+      'bluetooth/BluetoothDevice.cpp',
       'bluetooth/BluetoothDevice.h',
       'bluetooth/BluetoothDiscovery.cpp',
       'bluetooth/BluetoothDiscovery.h',

@@ -4,7 +4,7 @@
 <script>
 
 test(function(t) { assert_exists(window, "testRunner"); t.done(); },
-     "window.testRunner is required for these tests.");
+     "window.testRunner is required for the following tests.");
 
 async_test(function(t) {
   testRunner.setBluetoothMockDataSet('RejectRequestDevice_NotFoundError');
@@ -29,10 +29,13 @@ async_test(function(t) {
 }, 'Reject with SecurityError.');
 
 async_test(function(t) {
-  testRunner.setBluetoothMockDataSet('ResolveRequestDevice_Empty');
+  testRunner.setBluetoothMockDataSet('Single Empty Device');
   navigator.bluetooth.requestDevice()
     .then(
-      t.step_func(function() { t.done() }),
+      t.step_func(function(device) {
+        assert_equals(device.constructor.name, "BluetoothDevice");
+        t.done();
+      }),
       t.step_func(function() { assert_unreached('Mock was set to resolve.'); }));
 }, 'Mock will resolve.');
 

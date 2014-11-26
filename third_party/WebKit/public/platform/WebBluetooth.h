@@ -15,10 +15,7 @@ struct WebBluetoothError;
 
 // Success and failure callbacks for requestDevice.
 // WebBluetoothDevice and WebBluetoothError object ownership is transfered.
-// FIXME: After removing references to old version in crrev.com/699843003, update to:
-// typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
-// Old version:
-typedef WebCallbacks<void, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
+typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
 
 class WebBluetooth {
 public:
@@ -26,8 +23,9 @@ public:
 
     // Requests a bluetooth device.
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
-    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void requestDevice(WebCallbacks<WebBluetoothDevice, WebBluetoothError>*) { BLINK_ASSERT_NOT_REACHED(); };
+    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) = 0;
+    // FIXME: Remove after crrev.com/712153002 lands.
+    virtual void requestDevice(WebCallbacks<void, WebBluetoothError>*) { BLINK_ASSERT_NOT_REACHED(); };
 };
 
 } // namespace blink

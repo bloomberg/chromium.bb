@@ -8,4 +8,21 @@ test(function() {
   assert_throws(null, function() { BluetoothDevice(); },
                 'the constructor should not be callable');
 }, 'BluetoothDevice IDL test');
+
+test(function(t) { assert_exists(window, "testRunner"); t.done(); },
+     "window.testRunner is required for the following tests.");
+
+async_test(function(t) {
+  testRunner.setBluetoothMockDataSet('Single Empty Device');
+  navigator.bluetooth.requestDevice()
+    .then(
+      t.step_func(function(device) {
+        assert_equals(device.constructor.name, "BluetoothDevice");
+        // Attempt (and fail) to clear all members, verifying they are readonly.
+        device.instanceId = ""
+        assert_equals(device.instanceId, "Empty Mock deviceId");
+        t.done();
+      }),
+      t.step_func(function() { assert_unreached('Mock was set to resolve.'); }));
+}, 'BluetoothDevice attributes.');
 </script>
