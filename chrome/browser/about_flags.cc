@@ -1677,11 +1677,12 @@ const Experiment kExperiments[] = {
                               switches::kDisableSessionCrashedBubble)
   },
   {
-    "out-of-process-pdf",
+    "enable-out-of-process-pdf",
     IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME,
     IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kOutOfProcessPdf)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOutOfProcessPdf,
+                              switches::kDisableOutOfProcessPdf)
   },
   {
     "disable-cast-streaming-hw-encoding",

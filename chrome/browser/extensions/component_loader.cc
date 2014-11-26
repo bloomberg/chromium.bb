@@ -624,7 +624,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   base::FilePath pdf_path;
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOutOfProcessPdf) &&
+  if (switches::OutOfProcessPdfEnabled() &&
       PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path) &&
       plugin_service->GetRegisteredPpapiPluginInfo(pdf_path)) {
     Add(IDR_PDF_MANIFEST, base::FilePath(FILE_PATH_LITERAL("pdf")));

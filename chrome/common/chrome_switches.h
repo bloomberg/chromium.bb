@@ -89,6 +89,7 @@ extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisableOriginChip[];
+extern const char kDisableOutOfProcessPdf[];
 extern const char kDisablePasswordManagerReauthentication[];
 extern const char kDisablePeopleSearch[];
 extern const char kDisablePermissionsBubbles[];
@@ -149,6 +150,7 @@ extern const char kEnableOfflineLoadStaleCache[];
 extern const char kDisableOfflineLoadStaleCache[];
 extern const char kEnableOriginChipAlways[];
 extern const char kEnableOriginChipOnSrp[];
+extern const char kEnableOutOfProcessPdf[];
 extern const char kEnablePanels[];
 extern const char kEnablePermissionsBubbles[];
 extern const char kEnablePluginPlaceholderShadowDom[];
@@ -247,7 +249,6 @@ extern const char kNumPacThreads[];
 extern const char kOpenInNewWindow[];
 extern const char kOriginToForceQuicOn[];
 extern const char kOriginalProcessStartTime[];
-extern const char kOutOfProcessPdf[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
@@ -406,6 +407,7 @@ extern const char kFileManagerExtensionPath[];
 #endif
 
 bool AboutInSettingsEnabled();
+bool OutOfProcessPdfEnabled();
 bool SettingsWindowEnabled();
 
 #if defined(OS_CHROMEOS)

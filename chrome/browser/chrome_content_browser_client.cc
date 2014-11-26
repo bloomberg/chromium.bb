@@ -1366,6 +1366,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintXmppEndpoint,
       switches::kDisableBundledPpapiFlash,
       switches::kDisableCastStreamingHWEncoding,
+      switches::kDisableOutOfProcessPdf,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)
@@ -1373,13 +1374,13 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClNonSfiMode,
 #endif
       switches::kEnableNetBenchmarking,
+      switches::kEnableOutOfProcessPdf,
       switches::kEnablePluginPlaceholderShadowDom,
       switches::kEnableShowModalDialog,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWebBasedSignin,
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
-      switches::kOutOfProcessPdf,
       switches::kPlaybackMode,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashPath,

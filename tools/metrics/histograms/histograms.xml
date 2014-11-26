@@ -48753,6 +48753,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
+  <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
@@ -48881,6 +48882,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="689489984" label="disable-zero-suggest"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
+  <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>

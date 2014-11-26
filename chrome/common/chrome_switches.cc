@@ -299,6 +299,9 @@ const char kDisableOfflineAutoReloadVisibleOnly[] =
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 
+// Disable the out of process PDF plugin.
+const char kDisableOutOfProcessPdf[]        = "disable-out-of-process-pdf";
+
 // Disable the setting to prompt the user for their OS account password before
 // revealing plaintext passwords in the password manager.
 const char kDisablePasswordManagerReauthentication[] =
@@ -516,6 +519,9 @@ const char kDisableOfflineLoadStaleCache[]  =
 // to do that with "flag=value" flags.
 const char kEnableOriginChipAlways[]        = "enable-origin-chip-always";
 const char kEnableOriginChipOnSrp[]         = "enable-origin-chip-on-srp";
+
+// Enable the out of process PDF plugin.
+const char kEnableOutOfProcessPdf[]         = "enable-out-of-process-pdf";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
@@ -883,9 +889,6 @@ const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
 // The time that a new chrome process which is delegating to an already running
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
-
-// Enable the out of process PDF plugin.
-const char kOutOfProcessPdf[] = "out-of-process-pdf";
 
 // Packages an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
@@ -1364,6 +1367,17 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableAboutInSettings);
+}
+
+bool OutOfProcessPdfEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableOutOfProcessPdf))
+    return true;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableOutOfProcessPdf))
+    return false;
+
+  // Default.
+  return false;
 }
 
 bool SettingsWindowEnabled() {

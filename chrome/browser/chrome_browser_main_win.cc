@@ -250,7 +250,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
           switches::kEnableWin32kRendererLockDown) &&
       base::win::GetVersion() >= base::win::VERSION_WIN8) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kOutOfProcessPdf);
+        switches::kEnableOutOfProcessPdf);
   }
   return rv;
 }

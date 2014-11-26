@@ -24,7 +24,7 @@ class PDFExtensionTest : public ExtensionApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kOutOfProcessPdf);
+    command_line->AppendSwitch(switches::kEnableOutOfProcessPdf);
   }
 
   virtual void SetUpOnMainThread() override {

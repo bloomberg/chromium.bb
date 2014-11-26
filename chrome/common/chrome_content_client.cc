@@ -139,8 +139,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       content::PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = ChromeContentClient::kPDFPluginName;
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kOutOfProcessPdf)) {
+      if (switches::OutOfProcessPdfEnabled()) {
         pdf.is_out_of_process = true;
         content::WebPluginMimeType pdf_mime_type(kPDFPluginOutOfProcessMimeType,
                                                  kPDFPluginExtension,
