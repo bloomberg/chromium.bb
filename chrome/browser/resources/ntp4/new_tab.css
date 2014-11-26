@@ -80,8 +80,8 @@ html[dir='rtl'] #notification-container {
   background-color: transparent;
   /* TODO(estade): this should animate between states. */
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2.png') 1x,
-      url('../../../../ui/resources/default_200_percent/close_2.png') 2x);
+      url(../../../../ui/resources/default_100_percent/close_2.png) 1x,
+      url(../../../../ui/resources/default_200_percent/close_2.png) 2x);
   border: 0;
   cursor: default;
   display: inline-block;
@@ -93,15 +93,15 @@ html[dir='rtl'] #notification-container {
 .close-button:hover,
 .close-button:focus {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2_hover.png') 1x,
-      url('../../../../ui/resources/default_200_percent/close_2_hover.png') 2x);
+      url(../../../../ui/resources/default_100_percent/close_2_hover.png) 1x,
+      url(../../../../ui/resources/default_200_percent/close_2_hover.png) 2x);
 }
 
 .close-button:active {
   background-image: -webkit-image-set(
-      url('../../../../ui/resources/default_100_percent/close_2_pressed.png')
+      url(../../../../ui/resources/default_100_percent/close_2_pressed.png)
           1x,
-      url('../../../../ui/resources/default_200_percent/close_2_pressed.png')
+      url(../../../../ui/resources/default_200_percent/close_2_pressed.png)
           2x);
 }
 
@@ -403,7 +403,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 #chrome-web-store-title {
   -webkit-padding-end: 36px;
   -webkit-padding-start: 15px;
-  background: url('chrome://theme/IDR_WEBSTORE_ICON_24') right 50% no-repeat;
+  background: url(chrome://theme/IDR_WEBSTORE_ICON_24) right 50% no-repeat;
   display: inline-block;
   line-height: 49px;
 }

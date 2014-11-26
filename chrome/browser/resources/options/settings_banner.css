@@ -18,7 +18,7 @@
 }
 
 .settings-banner > .close-button {
-  background-image: url('chrome://theme/IDR_CLOSE_DIALOG');
+  background-image: url(chrome://theme/IDR_CLOSE_DIALOG);
   background-position: center;
   background-repeat: no-repeat;
   height: 14px;
@@ -35,11 +35,11 @@ html[dir='rtl'] .settings-banner > .close-button {
 }
 
 .settings-banner > .close-button:hover {
-  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
+  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
 }
 
 .settings-banner > .close-button:active {
-  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
+  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
 
 .settings-banner .content-area {

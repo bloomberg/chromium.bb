@@ -133,19 +133,19 @@ html[dir='rtl'] .float-start {
 }
 
 #main-content.device-detected-none #status-icon {
-  background: url('insert.png');
+  background: url(insert.png);
   background-repeat: no-repeat;
   display: block;
 }
 
 #main-content.device-detected-usb #status-icon {
-  background: url('detected_usb.png');
+  background: url(detected_usb.png);
   background-repeat: no-repeat;
   display: block;
 }
 
 #main-content.device-detected-sd #status-icon {
-  background: url('detected_sd.png');
+  background: url(detected_sd.png);
   background-repeat: no-repeat;
   display: block;
 }
@@ -189,13 +189,13 @@ html[dir='rtl'] .float-start {
 
 #main-content.warning #warning-icon,
 #main-content.error #warning-icon {
-  background: url('../../../../ui/webui/resources/images/icon_warning.png');
+  background: url(../../../../ui/webui/resources/images/icon_warning.png);
   background-repeat: no-repeat;
   display: block;
 }
 
 #main-content.success #warning-icon {
-  background: url('../../../../ui/webui/resources/images/icon_checkmark.png');
+  background: url(../../../../ui/webui/resources/images/icon_checkmark.png);
   background-repeat: no-repeat;
   display: block;
 }

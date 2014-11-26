@@ -41,8 +41,8 @@ a {
    * the resource manually. */
   -webkit-user-select: none;
   content: -webkit-image-set(
-      url('../../app/theme/default_100_percent/common/error_managed_mode_blocked_page.png') 1x,
-      url('../../app/theme/default_200_percent/common/error_managed_mode_blocked_page.png') 2x);
+      url(../../app/theme/default_100_percent/common/error_managed_mode_blocked_page.png) 1x,
+      url(../../app/theme/default_200_percent/common/error_managed_mode_blocked_page.png) 2x);
   margin-bottom: 15px;
   margin-top: 10px;
 }

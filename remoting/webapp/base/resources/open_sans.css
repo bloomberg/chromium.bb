@@ -8,5 +8,5 @@
   font-style: normal;
   font-weight: 400;
   src: local('Open Sans'), local('OpenSans'),
-       url('open_sans.woff') format('woff');
+       url(open_sans.woff) format('woff');
 }

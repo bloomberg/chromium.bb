@@ -73,7 +73,7 @@ html.apps-v2 body:not(.fullscreen) {
 .window-controls-stub {
   display: none;
   height: 8px;
-  background: url("drag.webp");
+  background: url(drag.webp);
   background-position: 2px 1px;
 }
 

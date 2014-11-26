@@ -45,8 +45,8 @@ a {
    * renderer process, so embed the resource manually.
    */
   content: -webkit-image-set(
-      url('default_100_percent/common/error_network_generic.png') 1x,
-      url('default_200_percent/common/error_network_generic.png') 2x);
+      url(default_100_percent/common/error_network_generic.png) 1x,
+      url(default_200_percent/common/error_network_generic.png) 2x);
   height: 50px;
   padding-top: 20px;
   width: 41px;
@@ -54,8 +54,8 @@ a {
 
 .icon-offline {
   content: -webkit-image-set(
-      url('default_100_percent/offline/100-error-offline.png') 1x,
-      url('default_200_percent/offline/200-error-offline.png') 2x);
+      url(default_100_percent/offline/100-error-offline.png) 1x,
+      url(default_200_percent/offline/200-error-offline.png) 2x);
   height: 47px;
   margin: 0 0 40px;
   position: relative;
@@ -129,8 +129,8 @@ a {
 #search-image {
   content:
       -webkit-image-set(
-          url('../../app/theme/default_100_percent/common/omnibox_search_button_loupe.png') 1x,
-          url('../../app/theme/default_200_percent/common/omnibox_search_button_loupe.png') 2x);
+          url(../../app/theme/default_100_percent/common/omnibox_search_button_loupe.png) 1x,
+          url(../../app/theme/default_200_percent/common/omnibox_search_button_loupe.png) 2x);
   margin: auto;
 }
 

@@ -38,24 +38,24 @@
 
 .topbutton-bar .maximize-button {
   background-image: -webkit-image-set(
-      url('chrome://resources/images/apps/topbar_button_maximize.png') 1x,
-      url('chrome://resources/images/2x/apps/topbar_button_maximize.png') 2x);
+      url(chrome://resources/images/apps/topbar_button_maximize.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_maximize.png) 2x);
 }
 
 .topbutton-bar .minimize-button {
   background-image: -webkit-image-set(
-      url('chrome://resources/images/apps/topbar_button_minimize.png') 1x,
-      url('chrome://resources/images/2x/apps/topbar_button_minimize.png') 2x);
+      url(chrome://resources/images/apps/topbar_button_minimize.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_minimize.png) 2x);
 }
 
 .topbutton-bar .close-button {
   background-image: -webkit-image-set(
-      url('chrome://resources/images/apps/topbar_button_close.png') 1x,
-      url('chrome://resources/images/2x/apps/topbar_button_close.png') 2x);
+      url(chrome://resources/images/apps/topbar_button_close.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_close.png) 2x);
 }
 
 .topbutton-bar .gear-button {
   background-image: -webkit-image-set(
-      url('chrome://resources/images/apps/topbar_button_settings.png') 1x,
-      url('chrome://resources/images/2x/apps/topbar_button_settings.png') 2x);
+      url(chrome://resources/images/apps/topbar_button_settings.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_settings.png) 2x);
 }

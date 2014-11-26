@@ -21,99 +21,99 @@ button.blue-button {
 
 button.white-button {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button.png') 1x,
-    url('chrome://resources/images/2x/apps/button.png')
+    url(chrome://resources/images/apps/button.png) 1x,
+    url(chrome://resources/images/2x/apps/button.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button:hover {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_hover.png') 1x,
-    url('chrome://resources/images/2x/apps/button_hover.png')
+    url(chrome://resources/images/apps/button_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/button_hover.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button:active {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_pressed.png') 1x,
-    url('chrome://resources/images/2x/apps/button_pressed.png')
+    url(chrome://resources/images/apps/button_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/button_pressed.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button:focus {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_focused.png') 1x,
-    url('chrome://resources/images/2x/apps/button_focused.png')
+    url(chrome://resources/images/apps/button_focused.png) 1x,
+    url(chrome://resources/images/2x/apps/button_focused.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button:focus:hover {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_focused_hover.png') 1x,
-    url('chrome://resources/images/2x/apps/button_focused_hover.png')
+    url(chrome://resources/images/apps/button_focused_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/button_focused_hover.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button:focus:active {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_focused_pressed.png') 1x,
-    url('chrome://resources/images/2x/apps/button_focused_pressed.png')
+    url(chrome://resources/images/apps/button_focused_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/button_focused_pressed.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.white-button[disabled] {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_inactive.png') 1x,
-    url('chrome://resources/images/2x/apps/button_inactive.png')
+    url(chrome://resources/images/apps/button_inactive.png) 1x,
+    url(chrome://resources/images/2x/apps/button_inactive.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button.png')
+    url(chrome://resources/images/apps/blue_button.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button:hover {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_hover.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_hover.png')
+    url(chrome://resources/images/apps/blue_button_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_hover.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button:active {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_pressed.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_pressed.png')
+    url(chrome://resources/images/apps/blue_button_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_pressed.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button:focus {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_focused.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_focused.png')
+    url(chrome://resources/images/apps/blue_button_focused.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_focused.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button:focus:hover {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_focused_hover.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_focused_hover.png')
+    url(chrome://resources/images/apps/blue_button_focused_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_focused_hover.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button:focus:active {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_focused_pressed.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_focused_pressed.png')
+    url(chrome://resources/images/apps/blue_button_focused_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_focused_pressed.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
 button.blue-button[disabled] {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/blue_button_inactive.png') 1x,
-    url('chrome://resources/images/2x/apps/blue_button_inactive.png')
+    url(chrome://resources/images/apps/blue_button_inactive.png) 1x,
+    url(chrome://resources/images/2x/apps/blue_button_inactive.png)
         2x) 5 fill / 5px / 2px repeat;
 }
 
@@ -134,36 +134,36 @@ input[type='checkbox']::after {
 
 input[type='checkbox']:not(:checked)::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox.png') 2x);
+    url(chrome://resources/images/apps/checkbox.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox.png) 2x);
 }
 
 input[type='checkbox']:focus:not(:checked)::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox_focused.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox_focused.png') 2x);
+    url(chrome://resources/images/apps/checkbox_focused.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox_focused.png) 2x);
 }
 
 input[type='checkbox']:disabled:not(:checked)::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox_inactive.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox_inactive.png') 2x);
+    url(chrome://resources/images/apps/checkbox_inactive.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox_inactive.png) 2x);
 }
 
 input[type='checkbox']:checked::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox_checked.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox_checked.png') 2x);
+    url(chrome://resources/images/apps/checkbox_checked.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox_checked.png) 2x);
 }
 
 input[type='checkbox']:focus:checked::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox_focused_checked.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox_focused_checked.png') 2x);
+    url(chrome://resources/images/apps/checkbox_focused_checked.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox_focused_checked.png) 2x);
 }
 
 input[type='checkbox']:disabled:checked::after {
   background-image: -webkit-image-set(
-    url('chrome://resources/images/apps/checkbox_checked_inactive.png') 1x,
-    url('chrome://resources/images/2x/apps/checkbox_checked_inactive.png') 2x);
+    url(chrome://resources/images/apps/checkbox_checked_inactive.png) 1x,
+    url(chrome://resources/images/2x/apps/checkbox_checked_inactive.png) 2x);
 }

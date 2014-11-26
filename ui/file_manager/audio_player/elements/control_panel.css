@@ -45,8 +45,8 @@
 
 .media-button:active {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_pressed.png') 1x,
-      url('../assets/200/player_button_pressed.png') 2x);
+      url(../assets/100/player_button_pressed.png) 1x,
+      url(../assets/200/player_button_pressed.png) 2x);
 }
 
 .media-button > div,
@@ -96,21 +96,21 @@
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_handler.png') 1x,
-      url('../assets/200/player_timeline_handler.png') 2x);
+      url(../assets/100/player_timeline_handler.png) 1x,
+      url(../assets/200/player_timeline_handler.png) 2x);
   width: 28px;
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_handler.png') 1x,
-      url('../assets/200/player_timeline_handler.png') 2x);
+      url(../assets/100/player_timeline_handler.png) 1x,
+      url(../assets/200/player_timeline_handler.png) 2x);
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb:active {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_handler_pressed.png') 1x,
-      url('../assets/200/player_timeline_handler_pressed.png') 2x);
+      url(../assets/100/player_timeline_handler_pressed.png) 1x,
+      url(../assets/200/player_timeline_handler_pressed.png) 2x);
 }
 
 .custom-slider.progress.disabled > input[type='range']::-webkit-slider-thumb {
@@ -152,8 +152,8 @@
 /* Custom slider bar (we hide the standard one). */
 .custom-slider > .bar {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_base_center.png') 1x,
-      url('../assets/200/player_timeline_base_center.png') 2x);
+      url(../assets/100/player_timeline_base_center.png) 1x,
+      url(../assets/200/player_timeline_base_center.png) 2x);
   /* In order to match the horizontal position of the standard slider bar
      left and right must be equal to 1/2 of the thumb icon width. */
   bottom: 15px;
@@ -174,8 +174,8 @@
 /* The filled portion of the slider bar to the left of the thumb. */
 .custom-slider > .bar > .filled {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_played_center.png') 1x,
-      url('../assets/200/player_timeline_played_center.png') 2x);
+      url(../assets/100/player_timeline_played_center.png) 1x,
+      url(../assets/200/player_timeline_played_center.png) 2x);
   border-left-style: none;
   border-right-style: none;
   left: 0;
@@ -190,16 +190,16 @@
 /* Left cap is always filled, should be the same color as .filled. */
 .custom-slider > .bar > .cap.left {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_played_left.png') 1x,
-      url('../assets/200/player_timeline_played_left.png') 2x);
+      url(../assets/100/player_timeline_played_left.png) 1x,
+      url(../assets/200/player_timeline_played_left.png) 2x);
   right: 100%;
 }
 
 /* Right cap is always not filled. */
 .custom-slider > .bar > .cap.right {
   background-image: -webkit-image-set(
-      url('../assets/100/player_timeline_base_right.png') 1x,
-      url('../assets/200/player_timeline_base_right.png') 2x);
+      url(../assets/100/player_timeline_base_right.png) 1x,
+      url(../assets/200/player_timeline_base_right.png) 2x);
   left: 100%;
 }
 
@@ -277,15 +277,15 @@
 
 .media-button.shuffle-mode > label > .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_shuffle.png') 1x,
-      url('../assets/200/player_button_shuffle.png') 2x);
+      url(../assets/100/player_button_shuffle.png) 1x,
+      url(../assets/200/player_button_shuffle.png) 2x);
   pointer-events: auto;
 }
 
 .media-button.shuffle-mode > label > input:checked + .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_shuffle_active.png') 1x,
-      url('../assets/200/player_button_shuffle_active.png') 2x);
+      url(../assets/100/player_button_shuffle_active.png) 1x,
+      url(../assets/200/player_button_shuffle_active.png) 2x);
 }
 
 .media-button.repeat {
@@ -295,15 +295,15 @@
 
 .media-button.repeat > label > .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_repeat.png') 1x,
-      url('../assets/200/player_button_repeat.png') 2x);
+      url(../assets/100/player_button_repeat.png) 1x,
+      url(../assets/200/player_button_repeat.png) 2x);
   pointer-events: auto;
 }
 
 .media-button.repeat > label > input:checked + .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_repeat_active.png') 1x,
-      url('../assets/200/player_button_repeat_active.png') 2x);
+      url(../assets/100/player_button_repeat_active.png) 1x,
+      url(../assets/200/player_button_repeat_active.png) 2x);
 }
 
 .media-button.play {
@@ -313,14 +313,14 @@
 
 .media-button.play > .ended {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_play.png') 1x,
-      url('../assets/200/player_button_play.png') 2x);
+      url(../assets/100/player_button_play.png) 1x,
+      url(../assets/200/player_button_play.png) 2x);
 }
 
 .media-button.play > .playing {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_pause.png') 1x,
-      url('../assets/200/player_button_pause.png') 2x);
+      url(../assets/100/player_button_pause.png) 1x,
+      url(../assets/200/player_button_pause.png) 2x);
 }
 
 .media-button.previous {
@@ -330,8 +330,8 @@
 
 .media-button.previous > .normal {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_previous.png') 1x,
-      url('../assets/200/player_button_previous.png') 2x);
+      url(../assets/100/player_button_previous.png) 1x,
+      url(../assets/200/player_button_previous.png) 2x);
 }
 
 .media-button.next {
@@ -341,8 +341,8 @@
 
 .media-button.next > .normal {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_next.png') 1x,
-      url('../assets/200/player_button_next.png') 2x);
+      url(../assets/100/player_button_next.png) 1x,
+      url(../assets/200/player_button_next.png) 2x);
 }
 
 .media-button.volume {
@@ -352,21 +352,21 @@
 
 .media-button.volume > .normal {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_volume.png') 1x,
-      url('../assets/200/player_button_volume.png') 2x);
+      url(../assets/100/player_button_volume.png) 1x,
+      url(../assets/200/player_button_volume.png) 2x);
 }
 
 .media-button.volume > label > .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_volume.png') 1x,
-      url('../assets/200/player_button_volume.png') 2x);
+      url(../assets/100/player_button_volume.png) 1x,
+      url(../assets/200/player_button_volume.png) 2x);
   pointer-events: auto;
 }
 
 .media-button.volume > label > input:checked + .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_volume_active.png') 1x,
-      url('../assets/200/player_button_volume_active.png') 2x);
+      url(../assets/100/player_button_volume_active.png) 1x,
+      url(../assets/200/player_button_volume_active.png) 2x);
 }
 
 .media-button.playlist {
@@ -376,15 +376,15 @@
 
 .media-button.playlist > label > .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_playlist.png') 1x,
-      url('../assets/200/player_button_playlist.png') 2x);
+      url(../assets/100/player_button_playlist.png) 1x,
+      url(../assets/200/player_button_playlist.png) 2x);
   pointer-events: auto;
 }
 
 .media-button.playlist > label > input:checked + .icon {
   background-image: -webkit-image-set(
-      url('../assets/100/player_button_playlist_active.png') 1x,
-      url('../assets/200/player_button_playlist_active.png') 2x);
+      url(../assets/100/player_button_playlist_active.png) 1x,
+      url(../assets/200/player_button_playlist_active.png) 2x);
 }
 
 

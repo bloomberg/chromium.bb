@@ -79,7 +79,7 @@ html[dir=rtl] .icon {
 .download.otr > .safe,
 .download.otr > .show-dangerous {
   -webkit-transition: opacity 150ms;
-  background: url('../../../../ui/webui/resources/images/otr_icon_standalone.png')
+  background: url(../../../../ui/webui/resources/images/otr_icon_standalone.png)
               no-repeat right bottom;
   opacity: .66;
 }
@@ -112,7 +112,7 @@ html[dir=rtl] .progress {
 }
 
 .progress.background {
-  background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_BACKGROUND_32');
+  background: url(chrome://theme/IDR_DOWNLOAD_PROGRESS_BACKGROUND_32);
   background-size: 48px;
 }
 

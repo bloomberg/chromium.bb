@@ -68,7 +68,7 @@ h3 {
 #search-field {
   -webkit-padding-start: 64px;
   background-image:
-      url('../../../../ui/webui/resources/images/2x/search.png');
+      url(../../../../ui/webui/resources/images/2x/search.png);
   background-position: 16px center;
   background-repeat: no-repeat;
   background-size: 32px;
@@ -102,7 +102,7 @@ html[dir='rtl'] #search-field {
 }
 
 button.remove-entry {
-  background: url('../../../../ui/webui/resources/images/2x/x-thin.png')
+  background: url(../../../../ui/webui/resources/images/2x/x-thin.png)
       no-repeat center center;
   background-size: 13px;
   border: 0;

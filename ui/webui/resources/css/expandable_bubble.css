@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .expandable-bubble {
-  -webkit-border-image: url('chrome://theme/IDR_APP_NOTIFICATION_SMALL_BUBBLE')
+  -webkit-border-image: url(chrome://theme/IDR_APP_NOTIFICATION_SMALL_BUBBLE)
                         5 5 7 6 stretch;
   -webkit-box-sizing: border-box;
   -webkit-user-select: none;
@@ -18,7 +18,7 @@
 
 .expandable-bubble::after {
   bottom: -1px;
-  content: url('chrome://theme/IDR_APP_NOTIFICATION_NUB');
+  content: url(chrome://theme/IDR_APP_NOTIFICATION_NUB);
   display: block;
   height: 7px;
   position: absolute;
@@ -36,7 +36,7 @@
 
 .expandable-bubble[masked] > .expandable-bubble-contents >
     .expandable-bubble-title::after {
-  content: url('chrome://theme/IDR_APP_NOTIFICATION_NUB_MASK');
+  content: url(chrome://theme/IDR_APP_NOTIFICATION_NUB_MASK);
   display: block;
   height: 15px;
   overflow: hidden;
@@ -73,18 +73,18 @@
 
 .expandable-bubble-close {
   background-image: -webkit-image-set(
-      url('../../../resources/default_100_percent/close_2.png') 1x,
-      url('../../../resources/default_200_percent/close_2.png') 2x);
+      url(../../../resources/default_100_percent/close_2.png) 1x,
+      url(../../../resources/default_200_percent/close_2.png) 2x);
 }
 
 .expandable-bubble-close:hover {
   background-image: -webkit-image-set(
-      url('../../../resources/default_100_percent/close_2_hover.png') 1x,
-      url('../../../resources/default_200_percent/close_2_hover.png') 2x);
+      url(../../../resources/default_100_percent/close_2_hover.png) 1x,
+      url(../../../resources/default_200_percent/close_2_hover.png) 2x);
 }
 
 .expandable-bubble-close:active {
   background-image: -webkit-image-set(
-      url('../../../resources/default_100_percent/close_2_pressed.png') 1x,
-      url('../../../resources/default_200_percent/close_2_pressed.png') 2x);
+      url(../../../resources/default_100_percent/close_2_pressed.png) 1x,
+      url(../../../resources/default_200_percent/close_2_pressed.png) 2x);
 }

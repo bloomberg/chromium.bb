@@ -156,7 +156,7 @@ html[dir=rtl] #slide-guests .arrow-down {
 
 #slide-guests .slide-image {
   background-color: rgb(90, 196, 144);
-  background-image: url('chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS');
+  background-image: url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS);
 }
 
 #slide-friends .slide-image {
@@ -172,7 +172,7 @@ html[dir=rtl] #slide-guests .arrow-down {
 }
 
 #slide-not-you #dismiss-bubble-button {
-  background-image: url('chrome://theme/IDR_CLOSE_1');
+  background-image: url(chrome://theme/IDR_CLOSE_1);
   cursor: pointer;
   height: 16px;
   position: absolute;

@@ -47,7 +47,7 @@ core-item:not(:last-child)::after {
 }
 
 :host([connecting]) core-item.core-selected .throbber {
-  background: url('chrome://resources/images/throbber.svg') no-repeat;
+  background: url(chrome://resources/images/throbber.svg) no-repeat;
   background-size: cover;
   display: inline-block;
   height: 25px;

@@ -67,8 +67,8 @@
 
 .cast-menu > [checked]:before {
   content: -webkit-image-set(
-      url('../images/media/media_check.png') 1x,
-      url('../images/media/2x/media_check.png') 2x);
+      url(../images/media/media_check.png) 1x,
+      url(../images/media/2x/media_check.png) 2x);
   height: 8px;
   margin: 0 10px;
   width: 10px;

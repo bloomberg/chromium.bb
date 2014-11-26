@@ -292,7 +292,7 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-add-connection {
-  background-image: url('chrome://theme/IDR_NETWORK_ADD_CONNECTION');
+  background-image: url(chrome://theme/IDR_NETWORK_ADD_CONNECTION);
   background-size: 16px;
 }
 
@@ -301,7 +301,7 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-control-active {
-  background-image: url('chrome://theme/IDR_PROFILE_SELECTED');
+  background-image: url(chrome://theme/IDR_PROFILE_SELECTED);
   background-size: 16px;
 }
 
@@ -361,7 +361,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-selector {
   background: right center no-repeat;
-  background-image: url('../../../../ui/webui/resources/images/select.png');
+  background-image: url(../../../../ui/webui/resources/images/select.png);
   padding-right: 20px;
 }
 

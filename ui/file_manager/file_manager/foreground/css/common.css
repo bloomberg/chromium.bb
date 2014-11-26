@@ -35,8 +35,8 @@ input.common[type='checkbox'] {
 
 input.common[type='checkbox']:checked::after {
   background-image: -webkit-image-set(
-    url('../images/common/check_no_box.png') 1x,
-    url('../images/common/2x/check_no_box.png') 2x);
+    url(../images/common/check_no_box.png) 1x,
+    url(../images/common/2x/check_no_box.png) 2x);
   background-position: -3px -4px;
   background-repeat: no-repeat;
 }
@@ -47,15 +47,15 @@ input.common[type='checkbox'].white {
 
 input.common[type='checkbox'].white:not(:checked)::after {
   background-image: -webkit-image-set(
-    url('../images/common/checkbox_white_unchecked.png') 1x,
-    url('../images/common/2x/checkbox_white_unchecked.png') 2x);
+    url(../images/common/checkbox_white_unchecked.png) 1x,
+    url(../images/common/2x/checkbox_white_unchecked.png) 2x);
   background-position: -1px 0;
 }
 
 input.common[type='checkbox'].white:checked::after {
   background-image: -webkit-image-set(
-    url('../images/common/checkbox_white_checked.png') 1x,
-    url('../images/common/2x/checkbox_white_checked.png') 2x);
+    url(../images/common/checkbox_white_checked.png) 1x,
+    url(../images/common/2x/checkbox_white_checked.png) 2x);
   background-position: -1px 0;
 }
 
@@ -79,8 +79,8 @@ input.common[type='checkbox']::after {
 
 .bubble .pointer {
   background: -webkit-image-set(
-    url('../images/common/bubble_point_white.png') 1x,
-    url('../images/common/2x/bubble_point_white.png') 2x);
+    url(../images/common/bubble_point_white.png) 1x,
+    url(../images/common/2x/bubble_point_white.png) 2x);
   display: block;
   height: 11px;
   left: 24px;
@@ -101,8 +101,8 @@ input.common[type='checkbox']::after {
 
 .bubble .close-x {
   background: -webkit-image-set(
-    url('../images/common/close_x_gray.png') 1x,
-    url('../images/common/2x/close_x_gray.png') 2x);
+    url(../images/common/close_x_gray.png) 1x,
+    url(../images/common/2x/close_x_gray.png) 2x);
   height: 21px;
   opacity: 0.3;
   position: absolute;
@@ -150,8 +150,8 @@ input.common[type='checkbox']::after {
 
 span.disclosureindicator {
   background-image: -webkit-image-set(
-    url('../images/common/disclosure_arrow_dk_grey.png') 1x,
-    url('../images/common/2x/disclosure_arrow_dk_grey.png') 2x);
+    url(../images/common/disclosure_arrow_dk_grey.png) 1x,
+    url(../images/common/2x/disclosure_arrow_dk_grey.png) 2x);
   background-position: center;
   background-repeat: no-repeat;
   display: inline-block;
@@ -250,8 +250,8 @@ menu.chrome-menu > hr {
 
 menu.chrome-menu > menuitem[checked] {
   background-image: -webkit-image-set(
-    url('../images/common/check_no_box.png') 1x,
-    url('../images/common/2x/check_no_box.png') 2x);
+    url(../images/common/check_no_box.png) 1x,
+    url(../images/common/2x/check_no_box.png) 2x);
 }
 
 menu.chrome-menu > [checked]::before {
@@ -276,8 +276,8 @@ select {
   background-repeat: no-repeat;
   border: 5px solid transparent;
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button.png') 1x,
-    url('chrome://resources/images/2x/apps/button.png')
+    url(chrome://resources/images/apps/button.png) 1x,
+    url(chrome://resources/images/2x/apps/button.png)
         2x) 5 / 5px / 2px repeat;
   box-sizing: content-box;
   color: rgb(34, 34, 34);
@@ -302,8 +302,8 @@ input[type='button']:hover,
 input[type='submit']:hover,
 select:hover {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_hover.png') 1x,
-    url('chrome://resources/images/2x/apps/button_hover.png')
+    url(chrome://resources/images/apps/button_hover.png) 1x,
+    url(chrome://resources/images/2x/apps/button_hover.png)
         2x) 5 fill / 5px / 2px repeat;
   color: #222;
 }
@@ -312,8 +312,8 @@ button:active,
 input[type='button']:active,
 input[type='submit']:active {
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button_pressed.png') 1x,
-    url('chrome://resources/images/2x/apps/button_pressed.png')
+    url(chrome://resources/images/apps/button_pressed.png) 1x,
+    url(chrome://resources/images/2x/apps/button_pressed.png)
         2x) 5 fill / 5px / 2px repeat;
   color: #333;
 }
@@ -327,8 +327,8 @@ input[type='submit'][disabled]:hover {
   background-color: rgb(250, 250, 250);
   background-image: none;
   border-image: -webkit-image-set(
-    url('chrome://resources/images/apps/button.png') 1x,
-    url('chrome://resources/images/2x/apps/button.png')
+    url(chrome://resources/images/apps/button.png) 1x,
+    url(chrome://resources/images/2x/apps/button.png)
         2x) 5 fill / 5px / 2px repeat;
   color: rgb(150, 150, 150);
 }
@@ -488,7 +488,7 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-close {
-  background: url('chrome://theme/IDR_CLOSE_DIALOG') center no-repeat;
+  background: url(chrome://theme/IDR_CLOSE_DIALOG) center no-repeat;
   display: inline-block;
   height: 44px;
   opacity: 0.7;
@@ -499,9 +499,9 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-close:hover {
-  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
+  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
 }
 
 .cr-dialog-close:active {
-  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
+  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }

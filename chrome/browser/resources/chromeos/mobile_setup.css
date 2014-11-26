@@ -63,7 +63,7 @@ iframe {
 
 .logo {
   background:
-    url('chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/carrier_logo.png')
+    url(chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/carrier_logo.png)
     no-repeat;
   background-position: 85% 50%;
   height: 58px;

@@ -27,12 +27,12 @@
 
 #more-settings .more-settings-icon-minus {
   background-image: -webkit-image-set(
-      url('../images/1x/minus.png') 1x,
-      url('../images/2x/minus.png') 2x);
+      url(../images/1x/minus.png) 1x,
+      url(../images/2x/minus.png) 2x);
 }
 
 #more-settings .more-settings-icon-plus {
   background-image: -webkit-image-set(
-      url('../images/1x/plus.png') 1x,
-      url('../images/2x/plus.png') 2x);
+      url(../images/1x/plus.png) 1x,
+      url(../images/2x/plus.png) 2x);
 }

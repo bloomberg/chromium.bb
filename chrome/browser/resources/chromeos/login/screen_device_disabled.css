@@ -25,7 +25,7 @@
 
 #device-disabled-symbol {
   align-self: center;
-  background-image: url('chrome://theme/IDR_DEVICE_DISABLED');
+  background-image: url(chrome://theme/IDR_DEVICE_DISABLED);
   height: 24px;
   width: 24px;
 }

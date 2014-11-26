@@ -115,7 +115,7 @@ html[dir=rtl] .bubble-right::after {
 
 .error-message-bubble {
   -webkit-padding-start: 30px;
-  background: url('chrome://theme/IDR_WARNING') left top no-repeat;
+  background: url(chrome://theme/IDR_WARNING) left top no-repeat;
   background-size: 24px;
 }
 

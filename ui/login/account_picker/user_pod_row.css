@@ -239,69 +239,69 @@ html[dir=rtl] .main-pane {
 }
 
 .custom-icon-hardlocked {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED);
 }
 
 .custom-icon-hardlocked.icon-with-tooltip:hover {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER);
 }
 
 .custom-icon-hardlocked.interactive-custom-icon:active {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED);
 }
 
 .custom-icon-locked {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_LOCKED);
 }
 
 .custom-icon-locked.icon-with-tooltip:hover {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER);
 }
 
 .custom-icon-locked.interactive-custom-icon:active {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED);
 }
 
 .custom-icon-locked-to-be-activated {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED);
 }
 
 .custom-icon-locked-to-be-activated.icon-with-tooltip:hover {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER);
 }
 
 .custom-icon-locked-to-be-activated.interactive-custom-icon:active {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED);
 }
 
 .custom-icon-locked-with-proximity-hint {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT);
 }
 
 .custom-icon-locked-with-proximity-hint.icon-with-tooltip:hover {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER);
 }
 
 .custom-icon-locked-with-proximity-hint.interactive-custom-icon:active {
   background-image:
-      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED');
+      url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED);
 }
 
 .custom-icon-unlocked {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED);
 }
 
 .custom-icon-unlocked.icon-with-tooltip:hover {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER);
 }
 
 .custom-icon-unlocked.interactive-custom-icon:active {
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED);
 }
 
 /**
@@ -311,27 +311,27 @@ html[dir=rtl] .main-pane {
  */
 .custom-icon::after {
   content:
-    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED')
-    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER')
-    url('chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER')
-    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED')
-    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED')
-    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER')
-    url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED');
+    url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED)
+    url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_HOVER)
+    url(chrome://theme/IDR_EASY_UNLOCK_HARDLOCKED_PRESSED)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER)
+    url(chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED)
+    url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED)
+    url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER)
+    url(chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED);
   display: none;
 }
 
 .custom-icon-spinner {
   -webkit-animation: easy-unlock-spinner-animation 2s steps(45) infinite;
-  background-image: url('chrome://theme/IDR_EASY_UNLOCK_SPINNER');
+  background-image: url(chrome://theme/IDR_EASY_UNLOCK_SPINNER);
 }
 
 @-webkit-keyframes easy-unlock-spinner-animation {
@@ -396,18 +396,18 @@ html[dir=rtl] .action-box-area {
 }
 
 .action-box-button {
-  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL');
+  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL);
   height: 13px;
   margin: 5px;
   width: 13px;
 }
 
 .action-box-button:hover {
-  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER');
+  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER);
 }
 
 .action-box-area.active .action-box-button {
-  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED');
+  background-image: url(chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED);
 }
 
 .user-type-icon-area {
@@ -427,15 +427,15 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .user-type-icon-area.supervised .user-type-icon-image {
-  background-image: url('chrome://theme/IDR_SUPERVISED_USER_ICON');
+  background-image: url(chrome://theme/IDR_SUPERVISED_USER_ICON);
 }
 
 .user-type-icon-area.policy .user-type-icon-image {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
 }
 
 .user-type-icon-area.app .user-type-icon-image {
-  background-image: url('chrome://theme/IDR_KIOSK_APP_USER_POD_ICON');
+  background-image: url(chrome://theme/IDR_KIOSK_APP_USER_POD_ICON);
 }
 
 .action-box-menu {
@@ -581,7 +581,7 @@ html[dir=rtl] .user-type-bubble {
 }
 
 .pod.public-account .learn-more {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
   height: 16px;
   position: relative;
   top: 16px;
@@ -691,7 +691,7 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .expanded-pane-learn-more {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
   height: 16px;
   position: relative;
   top: 6px;

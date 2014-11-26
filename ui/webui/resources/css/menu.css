@@ -64,7 +64,7 @@ menu > :not(hr):-webkit-any([selected], :active) {
 }
 
 menu > [checked]::before {
-  content: url('../images/checkbox_black.png');
+  content: url(../images/checkbox_black.png);
   display: inline-block;
   height: 9px;
   margin: 0 5px;
@@ -76,7 +76,7 @@ menu > [checked] {
 }
 
 menu > [selected][checked]:active::before {
-  content: url('../images/checkbox_white.png');
+  content: url(../images/checkbox_white.png);
 }
 
 /* TODO(zvorygin) menu > [shortcutText]::after - this selector is much better,

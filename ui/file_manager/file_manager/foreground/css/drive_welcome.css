@@ -12,8 +12,8 @@
 
 .drive-welcome-icon {
   background-image: -webkit-image-set(
-    url('../images/files/ui/drive_logo.png') 1x,
-    url('../images/files/ui/2x/drive_logo.png') 2x);
+    url(../images/files/ui/drive_logo.png) 1x,
+    url(../images/files/ui/2x/drive_logo.png) 2x);
   background-repeat: no-repeat;
 }
 

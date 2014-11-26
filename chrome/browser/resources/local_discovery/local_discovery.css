@@ -115,7 +115,7 @@ section {
 }
 
 #back-link {
-  background: url('chrome://theme/IDR_CHEVRON_LEFT') left no-repeat;
+  background: url(chrome://theme/IDR_CHEVRON_LEFT) left no-repeat;
   margin-bottom: 25px;
   margin-top: 6px;
   padding-left: 23px;

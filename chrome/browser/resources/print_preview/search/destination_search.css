@@ -125,8 +125,8 @@
 #destination-search .cloudprint-promo .close-button {
   -webkit-margin-start: 12px;
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_CLOSE_DIALOG') 1x,
-    url('chrome://theme/IDR_CLOSE_DIALOG@2x') 2x);
+    url(chrome://theme/IDR_CLOSE_DIALOG) 1x,
+    url(chrome://theme/IDR_CLOSE_DIALOG@2x) 2x);
   background-repeat: no-repeat;
   background-size: 14px;
   height: 14px;
@@ -135,12 +135,12 @@
 
 #destination-search .cloudprint-promo .close-button:hover {
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_CLOSE_DIALOG_H') 1x,
-    url('chrome://theme/IDR_CLOSE_DIALOG_H@2x') 2x);
+    url(chrome://theme/IDR_CLOSE_DIALOG_H) 1x,
+    url(chrome://theme/IDR_CLOSE_DIALOG_H@2x) 2x);
 }
 
 #destination-search .cloudprint-promo .close-button:active {
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_CLOSE_DIALOG_P') 1x,
-    url('chrome://theme/IDR_CLOSE_DIALOG_P@2x') 2x);
+    url(chrome://theme/IDR_CLOSE_DIALOG_P) 1x,
+    url(chrome://theme/IDR_CLOSE_DIALOG_P@2x) 2x);
 }

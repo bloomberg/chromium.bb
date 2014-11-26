@@ -36,7 +36,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 #logo {
-  background-image: url('images/google_logo.png@2x');
+  background-image: url(images/google_logo.png@2x);
   background-repeat: no-repeat;
   background-size: 269px 95px;
   height: 95px;
@@ -46,7 +46,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 body.alternate-logo #logo {
-  -webkit-mask-image: url('images/google_logo.png@2x');
+  -webkit-mask-image: url(images/google_logo.png@2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: #eee;
@@ -462,19 +462,19 @@ body[dir=rtl] .md .mv-thumb-fallback {
 }
 
 .classical .mv-x {
-  background-image: url('images/close_2.png');
+  background-image: url(images/close_2.png);
   height: 16px;
   width: 16px;
 }
 
 .classical .mv-x:hover,
 .classical #mv-notice-x:focus {
-  background-image: url('images/close_2_hover.png');
+  background-image: url(images/close_2_hover.png);
 }
 
 .classical .mv-x:active,
 .classical #mv-notice-x:active {
-  background-image: url('images/close_2_active.png');
+  background-image: url(images/close_2_active.png);
 }
 
 .classical .mv-page .mv-x {
@@ -503,8 +503,8 @@ body[dir=rtl] .classical .mv-page .mv-x {
 
 .md .mv-x .mv-x-inner {
   -webkit-mask-image: -webkit-image-set(
-      url('images/close_3_mask.png') 1x,
-      url('images/close_3_mask.png@2x') 2x);
+      url(images/close_3_mask.png) 1x,
+      url(images/close_3_mask.png@2x) 2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 10px 10px;
   background-color: rgba(90,90,90,0.7);
@@ -600,8 +600,8 @@ body[dir=rtl] .md .mv-favicon {
 
 .md .mv-favicon-fallback {
   background-image: -webkit-image-set(
-      url('images/ntp_default_favicon.png') 1x,
-      url('images/ntp_default_favicon.png@2x') 2x);
+      url(images/ntp_default_favicon.png) 1x,
+      url(images/ntp_default_favicon.png@2x) 2x);
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }

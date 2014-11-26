@@ -5,7 +5,7 @@
 .inline-spinner,
 .spinner {
   -webkit-animation: spinner-animation 1s step-end infinite;
-  background-image: url('chrome://resources/images/spinner.svg');
+  background-image: url(chrome://resources/images/spinner.svg);
   background-size: 100%;
 }
 

@@ -60,7 +60,7 @@ html[dir='rtl'] #header {
 
 #header h1 {
   -webkit-padding-start: 3em;
-  background: url('../../../../ui/webui/resources/images/gear.png') no-repeat;
+  background: url(../../../../ui/webui/resources/images/gear.png) no-repeat;
   background-position: 12px 60%;
   color: white;
   display: inline;

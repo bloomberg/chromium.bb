@@ -136,7 +136,7 @@ html[dir='rtl'] .footer-menu-item {
 }
 
 .recent-window {
-  background-image: url('images/closed_window.png');
+  background-image: url(images/closed_window.png);
 }
 
 /* TODO(estade): find a better color for active. */
@@ -148,7 +148,7 @@ html[dir='rtl'] .footer-menu-item {
 
 .disclosure-triangle {
   -webkit-margin-start: 2px;
-  -webkit-mask-image: url('images/disclosure_triangle_mask.png');
+  -webkit-mask-image: url(images/disclosure_triangle_mask.png);
   background-color: #7F7F7F;
   display: inline-block;
   height: 9px;

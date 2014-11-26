@@ -79,19 +79,19 @@
   color: #333;
 }
 .extension-error-severity-info .extension-error-icon {
-  content: url('extension_error_severity_info.png');
+  content: url(extension_error_severity_info.png);
 }
 
 .extension-error-severity-warning .extension-error-message {
   color: rgba(250, 145, 0, 255);
 }
 .extension-error-severity-warning .extension-error-icon {
-  content: url('extension_error_severity_warning.png');
+  content: url(extension_error_severity_warning.png);
 }
 
 .extension-error-severity-fatal .extension-error-message {
   color: rgba(200, 50, 50, 255);
 }
 .extension-error-severity-fatal .extension-error-icon {
-  content: url('extension_error_severity_fatal.png');
+  content: url(extension_error_severity_fatal.png);
 }

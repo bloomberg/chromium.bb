@@ -28,8 +28,8 @@
 
 #display-overscan-operation-arrows {
   background-image: -webkit-image-set(
-    url('overscan_arrows.png') 1x,
-    url('overscan_arrows_2x.png') 2x);
+    url(overscan_arrows.png) 1x,
+    url(overscan_arrows_2x.png) 2x);
   background-position: center;
   background-repeat: no-repeat;
   height: 51px;
@@ -38,8 +38,8 @@
 
 #display-overscan-operation-shift {
   background-image: -webkit-image-set(
-    url('overscan_shift.png') 1x,
-    url('overscan_shift_2x.png') 2x);
+    url(overscan_shift.png) 1x,
+    url(overscan_shift_2x.png) 2x);
   background-position: center;
   background-repeat: no-repeat;
   height: 23px;
@@ -48,8 +48,8 @@
 
 html[dir=rtl] #display-overscan-operation-shift {
   background-image: -webkit-image-set(
-    url('overscan_shift_rtl.png') 1x,
-    url('overscan_shift_rtl_2x.png') 2x);
+    url(overscan_shift_rtl.png) 1x,
+    url(overscan_shift_rtl_2x.png) 2x);
 }
 
 #display-overscan-button-strip {

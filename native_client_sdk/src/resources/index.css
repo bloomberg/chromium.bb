@@ -35,7 +35,7 @@ body {
   height: 2px;
 }
 .close-button {
-  background-image: url('button_close.png');
+  background-image: url(button_close.png);
   float: right;
   height: 17px;
   margin: 8px 2px;
@@ -44,7 +44,7 @@ body {
   width: 17px;
 }
 .close-button:hover {
-  background-image: url('button_close_hover.png');
+  background-image: url(button_close_hover.png);
 }
 .main {
   display: -webkit-flex;

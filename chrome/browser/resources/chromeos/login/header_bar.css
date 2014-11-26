@@ -17,7 +17,7 @@
      Otherwise if opacity: 0.8 is set here it will affect button text as well.
      Have to position background differently so that opacity is not applied
      to child elements. */
-  background-image: url('chrome://theme/IDR_LAUNCHER_BACKGROUND');
+  background-image: url(chrome://theme/IDR_LAUNCHER_BACKGROUND);
   padding-top: 7px;
 }
 
@@ -90,20 +90,20 @@ html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
 }
 
 #login-header-bar #shutdown-button {
-  background-image: url('chrome://theme/IDR_ICON_POWER_WHITE');
+  background-image: url(chrome://theme/IDR_ICON_POWER_WHITE);
 }
 
 #login-header-bar #add-user-button {
-  background-image: url('chrome://theme/IDR_ICON_ADD_USER_WHITE');
+  background-image: url(chrome://theme/IDR_ICON_ADD_USER_WHITE);
 }
 
 #login-header-bar #guest-user-button {
-  background-image: url('chrome://theme/IDR_ICON_GUEST_WHITE');
+  background-image: url(chrome://theme/IDR_ICON_GUEST_WHITE);
 }
 
 #login-header-bar #cancel-multiple-sign-in-button {
   /* TODO(dzhioev): replace with appropriate image when possible. */
-  background-image: url('chrome://theme/IDR_PANEL_CLOSE');
+  background-image: url(chrome://theme/IDR_PANEL_CLOSE);
 }
 
 .button-restricted {

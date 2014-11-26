@@ -87,8 +87,8 @@ video {
 
 #cast-container > #cast-info {
   background-image: -webkit-image-set(
-      url('../images/100/cast_big.png') 1x,
-      url('../images/200/cast_big.png') 2x);
+      url(../images/100/cast_big.png) 1x,
+      url(../images/200/cast_big.png) 2x);
   background-position: 0 0;
   background-repeat: no-repeat;
   bottom: 70px;
@@ -162,8 +162,8 @@ video {
   -webkit-box-pack: center;
   background-color: rgba(24, 24, 24, 1);
   background-image: -webkit-image-set(
-      url('../images/100/error.png') 1x,
-      url('../images/200/error.png') 2x);
+      url(../images/100/error.png) 1x,
+      url(../images/200/error.png) 2x);
   background-position: 25px center;
   background-repeat: no-repeat;
   color: white;

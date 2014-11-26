@@ -101,11 +101,11 @@ body {
 }
 
 #window-close-button {
-  background-image: url('../images/ui/close-white.png');
+  background-image: url(../images/ui/close-white.png);
 }
 
 #window-close-button:hover {
-  background-image: url('../images/ui/close-white-hover.png');
+  background-image: url(../images/ui/close-white-hover.png);
 }
 
 #bar {
@@ -154,7 +154,7 @@ body {
   -webkit-animation-iteration-count: infinite;
   -webkit-animation-name: spin;
   -webkit-animation-timing-function: linear;
-  background-image: url('../images/ui/spinner.png');
+  background-image: url(../images/ui/spinner.png);
   background-position: center;
   background-repeat: no-repeat;
   height: 16px;
@@ -212,7 +212,7 @@ body {
 }
 
 .image-picker .check {
-  background-image: url('../images/ui/check.png');
+  background-image: url(../images/ui/check.png);
   height: 32px;
   left: 38px;
   position: absolute;
@@ -342,20 +342,20 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 .overlay-container .close {
-  background-image: url('../images/ui/close-overlay.png');
+  background-image: url(../images/ui/close-overlay.png);
 }
 
 .overlay-container .close:hover {
-  background-image: url('../images/ui/close-overlay-hover.png');
+  background-image: url(../images/ui/close-overlay-hover.png);
 }
 
 /* Custom wallpaper thumbnail container. */
 #add-new img {
-  content: url('../images/ui/add-wallpaper-thumbnail.png');
+  content: url(../images/ui/add-wallpaper-thumbnail.png);
 }
 
 .image-picker:not([disabled]) #add-new:hover img {
-  content: url('../images/ui/add-wallpaper-thumbnail-hover.png');
+  content: url(../images/ui/add-wallpaper-thumbnail-hover.png);
 }
 
 #wallpaper-selection-container #content div {
@@ -375,11 +375,11 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 #wallpaper-selection-container .remember-icon {
-  content: url('../images/ui/remember.png');
+  content: url(../images/ui/remember.png);
 }
 
 #surprise-me #checkbox {
-  background-image: url('../images/ui/checkbox_unchecked.png');
+  background-image: url(../images/ui/checkbox_unchecked.png);
   display: inline-block;
   height: 17px;
   margin-right: 4px;
@@ -390,5 +390,5 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 #surprise-me #checkbox.checked {
-  background-image: url('../images/ui/checkbox_checked.png');
+  background-image: url(../images/ui/checkbox_checked.png);
 }

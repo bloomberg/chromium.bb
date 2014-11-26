@@ -69,7 +69,7 @@ button.menu-button-activator.active {
 }
 
 .menu-button li.selected {
-  background-image: url('tick.webp');
+  background-image: url(tick.webp);
   background-position: left center;
   background-repeat: no-repeat;
 }
