@@ -1002,8 +1002,6 @@
       'browser/renderer_host/gamepad_browser_message_filter.h',
       'browser/renderer_host/gpu_message_filter.cc',
       'browser/renderer_host/gpu_message_filter.h',
-      'browser/renderer_host/image_transport_factory_android.cc',
-      'browser/renderer_host/image_transport_factory_android.h',
       'browser/renderer_host/ime_adapter_android.cc',
       'browser/renderer_host/ime_adapter_android.h',
       'browser/renderer_host/input/gesture_event_queue.cc',

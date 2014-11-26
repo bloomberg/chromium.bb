@@ -101,8 +101,6 @@
       'browser/geolocation/mock_location_provider.h',
       'browser/renderer_host/media/mock_media_observer.cc',
       'browser/renderer_host/media/mock_media_observer.h',
-      'browser/renderer_host/test/no_transport_image_transport_factory_android.cc',
-      'browser/renderer_host/test/no_transport_image_transport_factory_android.h',
       'test/appcache_test_helper.cc',
       'test/appcache_test_helper.h',
       'test/blink_test_environment.cc',

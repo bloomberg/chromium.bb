@@ -25,9 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "content/browser/renderer_host/test/no_transport_image_transport_factory_android.h"
-#else
+#if !defined(OS_ANDROID)
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #endif
 
@@ -276,11 +274,7 @@ static void CacheSyncPoint(uint32* called_release_sync_point,
 // thread and is intended to behave deterministically.
 TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 // VideoCaptureController::ReturnBuffer() uses ImageTransportFactory.
-#if defined(OS_ANDROID)
-  ImageTransportFactoryAndroid::InitializeForUnitTests(
-      scoped_ptr<ImageTransportFactoryAndroid>(
-          new NoTransportImageTransportFactoryAndroid));
-#else
+#if !defined(OS_ANDROID)
   ImageTransportFactory::InitializeForUnitTests(
       scoped_ptr<ImageTransportFactory>(new NoTransportImageTransportFactory));
 #endif
@@ -474,8 +468,13 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   // Allocate all buffers from the buffer pool, half as SHM buffer and half as
   // mailbox buffers.  Make sure of different counts though.
-  int shm_buffers = kPoolSize / 2;
-  int mailbox_buffers = kPoolSize - shm_buffers;
+#if defined(OS_ANDROID)
+  int mailbox_buffers = 0;
+#else
+  int mailbox_buffers = kPoolSize / 2;
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+#endif
+  int shm_buffers = kPoolSize - mailbox_buffers;
   if (shm_buffers == mailbox_buffers) {
     shm_buffers--;
     mailbox_buffers++;
@@ -496,17 +495,13 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   std::vector<uint32> mailbox_syncpoints(mailbox_buffers);
   std::vector<uint32> release_syncpoints(mailbox_buffers);
-#if defined(OS_ANDROID)
-  GLHelper* gl_helper =
-      ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
-#else
-  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-#endif
   for (int i = 0; i < mailbox_buffers; ++i) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
                                           gfx::Size(0, 0));
     ASSERT_TRUE(buffer.get());
+#if !defined(OS_ANDROID)
     mailbox_syncpoints[i] = gl_helper->InsertSyncPoint();
+#endif
     device_->OnIncomingCapturedVideoFrame(
         buffer,
         media::VideoCaptureFormat(capture_resolution,
@@ -539,9 +534,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-#if defined(OS_ANDROID)
-  ImageTransportFactoryAndroid::TerminateForUnitTests();
-#else
+#if !defined(OS_ANDROID)
   ImageTransportFactory::Terminate();
 #endif
 }

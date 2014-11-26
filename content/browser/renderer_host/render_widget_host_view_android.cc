@@ -36,6 +36,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -43,7 +44,6 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
-#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
@@ -52,14 +52,18 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "skia/ext/image_operations.h"
@@ -96,6 +100,119 @@ void SendImeEventAck(RenderWidgetHostImpl* host) {
   host->Send(new ViewMsg_ImeEventAck(host->GetRoutingID()));
 }
 
+class GLHelperHolder
+    : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+ public:
+  static GLHelperHolder* Create();
+  ~GLHelperHolder() override;
+
+  void Initialize();
+
+  // WebGraphicsContextLostCallback implementation.
+  virtual void onContextLost() override;
+
+  GLHelper* GetGLHelper() { return gl_helper_.get(); }
+  bool IsLost() { return !context_.get() || context_->isContextLost(); }
+
+ private:
+  GLHelperHolder();
+  static scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D();
+
+  scoped_ptr<GLHelper> gl_helper_;
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
+};
+
+GLHelperHolder* GLHelperHolder::Create() {
+  GLHelperHolder* holder = new GLHelperHolder;
+  holder->Initialize();
+
+  return holder;
+}
+
+GLHelperHolder::GLHelperHolder() {
+}
+
+GLHelperHolder::~GLHelperHolder() {
+}
+
+void GLHelperHolder::Initialize() {
+  context_ = CreateContext3D();
+  if (context_) {
+    context_->setContextLostCallback(this);
+    gl_helper_.reset(new GLHelper(context_->GetImplementation(),
+                                  context_->GetContextSupport()));
+  }
+}
+
+void GLHelperHolder::onContextLost() {
+  // Need to post a task because the command buffer client cannot be deleted
+  // from within this callback.
+  LOG(ERROR) << "Context lost.";
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
+}
+
+scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+GLHelperHolder::CreateContext3D() {
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+  // GLHelper can only be used in asynchronous APIs for postprocessing after
+  // Browser Compositor operations (i.e. readback).
+  DCHECK(gpu_channel_host.get()) << "Illegal access to GPU channel at startup";
+  if (gpu_channel_host->IsLost()) {
+    // The Browser Compositor is in charge of reestablishing the channel.
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  }
+
+  blink::WebGraphicsContext3D::Attributes attrs;
+  attrs.shareResources = true;
+  GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
+  static const size_t kBytesPerPixel = 4;
+  gfx::DeviceDisplayInfo display_info;
+  size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
+                                             display_info.GetDisplayWidth() *
+                                             kBytesPerPixel;
+  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
+  limits.command_buffer_size = 64 * 1024;
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
+  limits.max_transfer_buffer_size = std::min(
+      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
+  limits.mapped_memory_reclaim_limit =
+      WebGraphicsContext3DCommandBufferImpl::kNoLimit;
+  bool lose_context_when_out_of_memory = false;
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+      new WebGraphicsContext3DCommandBufferImpl(
+          0,  // offscreen
+          url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
+          limits, nullptr));
+  if (context->InitializeOnCurrentThread())
+    context->pushGroupMarkerEXT(
+        base::StringPrintf("CmdBufferImageTransportFactory-%p",
+                           context.get()).c_str());
+  return context.Pass();
+}
+
+// This can only be used for readback postprocessing. It may return null if the
+// channel was lost and not reestablished yet.
+GLHelper* GetPostReadbackGLHelper() {
+  static GLHelperHolder* g_readback_helper_holder = nullptr;
+
+  if (g_readback_helper_holder && g_readback_helper_holder->IsLost()) {
+    delete g_readback_helper_holder;
+    g_readback_helper_holder = nullptr;
+  }
+
+  if (!g_readback_helper_holder)
+    g_readback_helper_holder = GLHelperHolder::Create();
+
+  return g_readback_helper_holder->GetGLHelper();
+}
+
 void CopyFromCompositingSurfaceFinished(
     ReadbackRequestCallback& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
@@ -108,8 +225,7 @@ void CopyFromCompositingSurfaceFinished(
   bitmap_pixels_lock.reset();
   uint32 sync_point = 0;
   if (result) {
-    GLHelper* gl_helper =
-        ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+    GLHelper* gl_helper = GetPostReadbackGLHelper();
     if (gl_helper)
       sync_point = gl_helper->InsertSyncPoint();
   }
@@ -209,6 +325,17 @@ RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
 
 RenderWidgetHostViewAndroid::LastFrameInfo::~LastFrameInfo() {}
 
+void RenderWidgetHostViewAndroid::OnContextLost() {
+  scoped_ptr<RenderWidgetHostIterator> widgets(
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
+  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
+    if (widget->GetView()) {
+      static_cast<RenderWidgetHostViewAndroid*>(widget->GetView())
+          ->OnLostResources();
+    }
+  }
+}
+
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
@@ -231,11 +358,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       weak_ptr_factory_(this) {
   host_->SetView(this);
   SetContentViewCore(content_view_core);
-  ImageTransportFactoryAndroid::AddObserver(this);
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
-  ImageTransportFactoryAndroid::RemoveObserver(this);
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
   DCHECK(readbacks_waiting_for_frame_.empty());
@@ -1328,7 +1453,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   gfx::GLSurfaceHandle handle =
       gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
   if (CompositorImpl::IsInitialized()) {
-    handle.parent_client_id = ImageTransportFactoryAndroid::GetChannelID();
+    handle.parent_client_id =
+        BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   }
   return handle;
 }
@@ -1658,12 +1784,11 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
                                                 dst_size_in_pixel.height(),
                                                 color_type,
-                                                kOpaque_SkAlphaType)))
+                                                kOpaque_SkAlphaType))) {
     return;
+  }
 
-  ImageTransportFactoryAndroid* factory =
-      ImageTransportFactoryAndroid::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
+  GLHelper* gl_helper = GetPostReadbackGLHelper();
   if (!gl_helper || !gl_helper->IsReadbackConfigSupported(color_type))
     return;
 
@@ -1702,11 +1827,10 @@ SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
   // supported we should go with that (this degrades quality)
   // or stick back to the default format.
   if (base::SysInfo::IsLowEndDevice()) {
-    ImageTransportFactoryAndroid* factory =
-        ImageTransportFactoryAndroid::GetInstance();
-    // TODO(sievers): This needs to work differently, because we might
-    // not have a GPU channel to query for readback configs here.
-    GLHelper* gl_helper = factory->GetGLHelper();
+    // TODO(sievers): Cannot use GLHelper here. Instead remove this API
+    // and have CopyFromCompositingSurface() fall back to RGB8 if 565 was
+    // requested but is not supported.
+    GLHelper* gl_helper = GetPostReadbackGLHelper();
     if (gl_helper && gl_helper->IsReadbackConfigSupported(kRGB_565_SkColorType))
       return kRGB_565_SkColorType;
   }

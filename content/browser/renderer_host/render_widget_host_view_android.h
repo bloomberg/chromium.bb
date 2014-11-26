@@ -18,7 +18,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
-#include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/input/touch_selection_controller.h"
@@ -82,7 +81,6 @@ class ReadbackRequest {
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public cc::DelegatedFrameResourceCollectionClient,
-      public ImageTransportFactoryAndroidObserver,
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
@@ -197,9 +195,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                        base::TimeDelta vsync_period) override;
   virtual void OnAnimate(base::TimeTicks begin_frame_time) override;
 
-  // ImageTransportFactoryAndroidObserver implementation.
-  virtual void OnLostResources() override;
-
   // DelegatedFrameEvictor implementation
   virtual void EvictDelegatedFrame() override;
 
@@ -274,6 +269,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTextSurroundingSelectionCallback(
       const TextSurroundingSelectionCallback& callback);
 
+  static void OnContextLost();
+
  private:
   void RunAckCallbacks();
 
@@ -324,6 +321,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void InternalSwapCompositorFrame(uint32 output_surface_id,
                                    scoped_ptr<cc::CompositorFrame> frame);
+  void OnLostResources();
 
   enum VSyncRequestType {
     FLUSH_INPUT = 1 << 0,
