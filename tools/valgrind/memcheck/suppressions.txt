@@ -3469,7 +3469,15 @@
    fun:_ZN4mojo6system10Dispatcher12WriteMessageENS0_11UserPointerIKvEEjPSt6vectorINS0_19DispatcherTransportESaIS6_EEj
    fun:_ZN4mojo6system4Core12WriteMessageEjNS0_11UserPointerIKvEEjNS2_IKjEEjj
    fun:MojoWriteMessage
-   fun:_ZN3IPC8internal13MessageReader4SendE10scoped_ptrINS_7MessageEN4base14DefaultDeleterIS3_EEE
+}
+{
+   bug_436110_b
+   Memcheck:Param
+   sendmsg(msg.msg_iov[0])
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   fun:_ZN4mojo8embedder33PlatformChannelSendmsgWithHandlesENS0_14PlatformHandleEP5iovecmPS1_m
+   ...
+   fun:MojoWriteMessage
 }
 {
    bug_436172
