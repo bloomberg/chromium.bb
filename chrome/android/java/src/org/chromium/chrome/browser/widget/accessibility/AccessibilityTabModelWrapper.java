@@ -39,6 +39,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
         @Override
         public void onNewTabCreated(Tab tab) {
+            getAdapter().notifyDataSetChanged();
         }
     };
 
@@ -159,7 +160,6 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
     @Override
     protected void onDetachedFromWindow() {
-        mTabModelSelector.unregisterChangeListener(mTabModelChangeListener);
         mIsAttachedToWindow = false;
         super.onDetachedFromWindow();
     }

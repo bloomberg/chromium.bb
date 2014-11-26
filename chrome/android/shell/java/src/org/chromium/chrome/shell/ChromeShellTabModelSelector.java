@@ -43,7 +43,9 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
 
         TabModelDelegate tabModelDelegate = new TabModelDelegate() {
             @Override
-            public void didCreateNewTab(Tab tab) {}
+            public void didCreateNewTab(Tab tab) {
+                notifyNewTabCreated(tab);
+            }
 
             @Override
             public void didChange() {}
