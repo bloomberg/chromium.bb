@@ -17,11 +17,6 @@ class FilePath;
 namespace file_manager {
 namespace util {
 
-// Opens the file manager for the freshly mounted removable drive specified
-// by |file_path|.
-// If there is another file manager instance open, this call does nothing.
-void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path);
-
 // Opens an item (file or directory). If the target is a directory, the
 // directory will be opened in the file manager. If the target is a file, the
 // file will be opened using a file handler, a file browser handler, or the

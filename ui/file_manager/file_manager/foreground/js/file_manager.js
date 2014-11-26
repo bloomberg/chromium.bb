@@ -269,13 +269,6 @@ function FileManager() {
    */
   this.sourceNotFoundErrorCount_ = 0;
 
-  /**
-   * Whether the app should be closed on unmount.
-   * @type {boolean}
-   * @private
-   */
-  this.closeOnUnmount_ = false;
-
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
   Object.preventExtensions(this);
@@ -980,13 +973,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.appStateController_.initialize(this.ui_, this.directoryModel_);
 
-    this.closeOnUnmount_ = (this.launchParams_.action == 'auto-open');
-
-    if (this.closeOnUnmount_) {
-      this.volumeManager_.addEventListener('externally-unmounted',
-          this.onExternallyUnmounted_.bind(this));
-    }
-
     // Create search controller.
     this.searchController_ = new SearchController(
         this.ui_.searchBox,
@@ -1544,21 +1530,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @param {Event} event Unmount event.
-   * @private
-   */
-  FileManager.prototype.onExternallyUnmounted_ = function(event) {
-    if (event.volumeInfo === this.currentVolumeInfo_) {
-      if (this.closeOnUnmount_) {
-        // If the file manager opened automatically when a usb drive inserted,
-        // user have never changed current volume (that implies the current
-        // directory is still on the device) then close this window.
-        window.close();
-      }
-    }
-  };
-
-  /**
    * Return DirectoryEntry of the current directory or null.
    * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
    *     null if the directory model is not ready or the current directory is
@@ -1765,14 +1736,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Remember the current volume info.
     this.currentVolumeInfo_ = this.volumeManager_.getVolumeInfo(
         event.newDirEntry);
-
-    // If volume has changed, then update the gear menu.
-    if (oldCurrentVolumeInfo !== this.currentVolumeInfo_) {
-      // If the volume has changed, and it was previously set, then do not
-      // close on unmount anymore.
-      if (oldCurrentVolumeInfo)
-        this.closeOnUnmount_ = false;
-    }
 
     this.selectionHandler_.onFileSelectionChanged();
     this.searchController_.clear();

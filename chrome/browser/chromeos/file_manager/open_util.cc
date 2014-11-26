@@ -69,16 +69,12 @@ void ExecuteFileTaskForUrl(Profile* profile,
 // internal handlers of special action IDs:
 //
 // "open" - Open the file manager for the given folder.
-// "auto-open" - Open the file manager for the given removal drive and close
-//               the file manager when the removal drive is unmounted.
 // "select" - Open the file manager for the given file. The folder containing
 //            the file will be opened with the file selected.
 void OpenFileManagerWithInternalActionId(Profile* profile,
                                          const GURL& url,
                                          const std::string& action_id) {
-  DCHECK(action_id == "auto-open" ||
-         action_id == "open" ||
-         action_id == "select");
+  DCHECK(action_id == "open" || action_id == "select");
   content::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
   file_tasks::TaskDescriptor task(kFileManagerAppId,
@@ -188,16 +184,6 @@ bool ConvertPath(Profile* profile, const base::FilePath& path, GURL* url) {
 }
 
 }  // namespace
-
-void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  GURL url;
-  if (!ConvertPath(profile, file_path, &url))
-    return;
-
-  OpenFileManagerWithInternalActionId(profile, url, "auto-open");
-}
 
 void OpenItem(Profile* profile, const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

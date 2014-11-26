@@ -121,13 +121,6 @@
     },
     // The following handlers are used only internally, therefore they do not
     // have any file filter.
-    // Automatically opens a volume and later close Files.app when unmounted.
-    {
-      "id": "auto-open",
-      "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "common/images/file_types/200/generic.png",
-      "file_filters": []
-    },
     // Selects the passed file after launching Files.app.
     {
       "id": "select",

@@ -225,8 +225,8 @@ FileTasks.prototype.processTasks_ = function(tasks) {
     var taskParts = task.taskId.split('|');
 
     // Skip internal Files.app's handlers.
-    if (taskParts[0] === id && (taskParts[2] === 'auto-open' ||
-        taskParts[2] === 'select' || taskParts[2] === 'open')) {
+    if (taskParts[0] === id &&
+        (taskParts[2] === 'select' || taskParts[2] === 'open')) {
       continue;
     }
 
