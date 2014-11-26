@@ -14,6 +14,7 @@
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
 #include "core/dom/Element.h"
+#include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -101,6 +102,10 @@ public:
     const DoubleOrString& doubleOrStringMember() const { return m_doubleOrStringMember; }
     void setDoubleOrStringMember(const DoubleOrString& value) { m_doubleOrStringMember = value; }
 
+    bool hasInternalDictionarySequenceMember() const { return !m_internalDictionarySequenceMember.isNull(); }
+    const Vector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
+    void setInternalDictionarySequenceMember(const Vector<InternalDictionary>& value) { m_internalDictionarySequenceMember = value; }
+
     virtual void trace(Visitor*);
 
 private:
@@ -123,6 +128,7 @@ private:
     ScriptValue m_objectOrNullMember;
     Nullable<bool> m_createMember;
     DoubleOrString m_doubleOrStringMember;
+    Nullable<Vector<InternalDictionary> > m_internalDictionarySequenceMember;
 
     friend class V8TestDictionary;
 };

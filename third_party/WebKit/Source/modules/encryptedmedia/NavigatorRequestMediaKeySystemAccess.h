@@ -45,18 +45,6 @@ private:
     static const char* supplementName();
 };
 
-// This is needed by the generated code for Navigator to convert a JavaScript
-// object into a MediaKeySystemOptions object.
-template <>
-struct NativeValueTraits<MediaKeySystemOptions> {
-    static inline MediaKeySystemOptions nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
-    {
-        MediaKeySystemOptions impl;
-        V8MediaKeySystemOptions::toImpl(isolate, value, impl, exceptionState);
-        return impl;
-    }
-};
-
 } // namespace blink
 
 #endif // NavigatorRequestMediaKeySystemAccess_h

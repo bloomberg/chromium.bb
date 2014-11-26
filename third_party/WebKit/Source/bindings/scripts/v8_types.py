@@ -330,6 +330,8 @@ def is_traceable(idl_type):
 IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(
     lambda self: any((member_type.is_traceable for member_type in self.member_types)))
+IdlArrayOrSequenceType.is_traceable = property(
+    lambda self: self.element_type.is_traceable)
 
 
 ################################################################################

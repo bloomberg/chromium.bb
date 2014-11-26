@@ -20,14 +20,19 @@ public:
     static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, {{cpp_class}}&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8({{cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
-void toV8{{cpp_class}}({{cpp_class}}&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Handle<v8::Value> toV8(const {{cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
+void toV8{{cpp_class}}(const {{cpp_class}}&, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl)
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<{{cpp_class}}> {
+    static {{cpp_class}} nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 } // namespace blink
 

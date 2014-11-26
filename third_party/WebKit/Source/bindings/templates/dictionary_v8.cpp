@@ -58,7 +58,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
     {% endfor %}
 }
 
-v8::Handle<v8::Value> toV8({{cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const {{cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
     {% if parent_v8_class %}
@@ -68,7 +68,13 @@ v8::Handle<v8::Value> toV8({{cpp_class}}& impl, v8::Handle<v8::Object> creationC
     return v8Object;
 }
 
-void toV8{{cpp_class}}({{cpp_class}}& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+template<>
+v8::Handle<v8::Value> toV8NoInline(const {{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(*impl, creationContext, isolate);
+}
+
+void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
@@ -83,6 +89,13 @@ void toV8{{cpp_class}}({{cpp_class}}& impl, v8::Handle<v8::Object> dictionary, v
     }
 
     {% endfor %}
+}
+
+{{cpp_class}} NativeValueTraits<{{cpp_class}}>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    {{cpp_class}} impl;
+    {{v8_class}}::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 } // namespace blink

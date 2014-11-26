@@ -38,7 +38,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value
 
 }
 
-v8::Handle<v8::Value> toV8(TestInterfaceEventInit& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
     toV8EventInitDictionary(impl, v8Object, creationContext, isolate);
@@ -46,12 +46,25 @@ v8::Handle<v8::Value> toV8(TestInterfaceEventInit& impl, v8::Handle<v8::Object> 
     return v8Object;
 }
 
-void toV8TestInterfaceEventInit(TestInterfaceEventInit& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+template<>
+v8::Handle<v8::Value> toV8NoInline(const TestInterfaceEventInit* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(*impl, creationContext, isolate);
+}
+
+void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasStringMember()) {
         dictionary->Set(v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()));
     }
 
+}
+
+TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterfaceEventInit impl;
+    V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 } // namespace blink

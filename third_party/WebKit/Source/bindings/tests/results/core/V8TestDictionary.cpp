@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8InternalDictionary.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
@@ -83,6 +84,15 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
             return;
         }
         impl.setEnumMember(enumMember);
+    } else if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+
+    v8::Local<v8::Value> internalDictionarySequenceMemberValue = v8Object->Get(v8String(isolate, "internalDictionarySequenceMember"));
+    if (!internalDictionarySequenceMemberValue.IsEmpty() && !isUndefinedOrNull(internalDictionarySequenceMemberValue)) {
+        TONATIVE_VOID_EXCEPTIONSTATE(Vector<InternalDictionary>, internalDictionarySequenceMember, toImplArray<InternalDictionary>(internalDictionarySequenceMemberValue, 0, isolate, exceptionState), exceptionState);
+        impl.setInternalDictionarySequenceMember(internalDictionarySequenceMember);
     } else if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return;
@@ -215,14 +225,20 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 }
 
-v8::Handle<v8::Value> toV8(TestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8(const TestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
     toV8TestDictionary(impl, v8Object, creationContext, isolate);
     return v8Object;
 }
 
-void toV8TestDictionary(TestDictionary& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+template<>
+v8::Handle<v8::Value> toV8NoInline(const TestDictionary* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(*impl, creationContext, isolate);
+}
+
+void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasBooleanMember()) {
         dictionary->Set(v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate));
@@ -250,6 +266,10 @@ void toV8TestDictionary(TestDictionary& impl, v8::Handle<v8::Object> dictionary,
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, impl.enumMember()));
     } else {
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, String("foo")));
+    }
+
+    if (impl.hasInternalDictionarySequenceMember()) {
+        dictionary->Set(v8String(isolate, "internalDictionarySequenceMember"), v8Array(impl.internalDictionarySequenceMember(), creationContext, isolate));
     }
 
     if (impl.hasLongMember()) {
@@ -310,6 +330,13 @@ void toV8TestDictionary(TestDictionary& impl, v8::Handle<v8::Object> dictionary,
         dictionary->Set(v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"), toV8(impl.testInterfaceWillBeGarbageCollectedOrNullMember(), creationContext, isolate));
     }
 
+}
+
+TestDictionary NativeValueTraits<TestDictionary>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestDictionary impl;
+    V8TestDictionary::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 } // namespace blink

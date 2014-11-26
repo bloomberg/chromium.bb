@@ -24,4 +24,5 @@ dictionary TestDictionary {
     object? objectOrNullMember;
     [ImplementedAs=createMember] boolean create;
     (double or DOMString) doubleOrStringMember;
+    sequence<InternalDictionary> internalDictionarySequenceMember;
 };
