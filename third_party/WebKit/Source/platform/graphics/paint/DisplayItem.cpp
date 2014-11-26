@@ -1,0 +1,70 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "platform/graphics/paint/DisplayItem.h"
+
+namespace blink {
+
+#ifndef NDEBUG
+
+WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
+{
+    switch (type) {
+    case DisplayItem::DrawingPaintPhaseBlockBackground: return "DrawingPaintPhaseBlockBackground";
+    case DisplayItem::DrawingPaintPhaseChildBlockBackground: return "DrawingPaintPhaseChildBlockBackground";
+    case DisplayItem::DrawingPaintPhaseChildBlockBackgrounds: return "DrawingPaintPhaseChildBlockBackgrounds";
+    case DisplayItem::DrawingPaintPhaseFloat: return "DrawingPaintPhaseFloat";
+    case DisplayItem::DrawingPaintPhaseForeground: return "DrawingPaintPhaseForeground";
+    case DisplayItem::DrawingPaintPhaseOutline: return "DrawingPaintPhaseOutline";
+    case DisplayItem::DrawingPaintPhaseChildOutlines: return "DrawingPaintPhaseChildOutlines";
+    case DisplayItem::DrawingPaintPhaseSelfOutline: return "DrawingPaintPhaseSelfOutline";
+    case DisplayItem::DrawingPaintPhaseSelection: return "DrawingPaintPhaseSelection";
+    case DisplayItem::DrawingPaintPhaseCollapsedTableBorders: return "DrawingPaintPhaseCollapsedTableBorders";
+    case DisplayItem::DrawingPaintPhaseTextClip: return "DrawingPaintPhaseTextClip";
+    case DisplayItem::DrawingPaintPhaseMask: return "DrawingPaintPhaseMask";
+    case DisplayItem::DrawingPaintPhaseClippingMask: return "DrawingPaintPhaseClippingMask";
+    case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
+    case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
+    case DisplayItem::ClipLayerParent: return "ClipLayerParent";
+    case DisplayItem::ClipLayerFilter: return "ClipLayerFilter";
+    case DisplayItem::ClipLayerForeground: return "ClipLayerForeground";
+    case DisplayItem::ClipLayerFragmentFloat: return "ClipLayerFragmentFloat";
+    case DisplayItem::ClipLayerFragmentForeground: return "ClipLayerFragmentForeground";
+    case DisplayItem::ClipLayerFragmentChildOutline: return "ClipLayerFragmentChildOutline";
+    case DisplayItem::ClipLayerFragmentOutline: return "ClipLayerFragmentOutline";
+    case DisplayItem::ClipLayerFragmentMask: return "ClipLayerFragmentMask";
+    case DisplayItem::ClipLayerFragmentClippingMask: return "ClipLayerFragmentClippingMask";
+    case DisplayItem::ClipLayerFragmentParent: return "ClipLayerFragmentParent";
+    case DisplayItem::ClipLayerFragmentSelection: return "ClipLayerFragmentSelection";
+    case DisplayItem::ClipLayerFragmentChildBlockBackgrounds: return "ClipLayerFragmentChildBlockBackgrounds";
+    case DisplayItem::EndClip: return "EndClip";
+    case DisplayItem::BeginFilter: return "BeginFilter";
+    case DisplayItem::EndFilter: return "EndFilter";
+    case DisplayItem::TransparencyClip: return "TransparencyClip";
+    case DisplayItem::BeginTransparency: return "BeginTransparency";
+    case DisplayItem::EndTransparency: return "EndTransparency";
+    case ClipBoxChildBlockBackgrounds: return "ClipBoxChildBlockBackgrounds";
+    case ClipBoxFloat: return "ClipBoxFloat";
+    case ClipBoxForeground: return "ClipBoxForeground";
+    case ClipBoxChildOutlines: return "ClipBoxChildOutlines";
+    case ClipBoxSelection: return "ClipBoxSelection";
+    case ClipBoxCollapsedTableBorders: return "ClipBoxCollapsedTableBorders";
+    case ClipBoxTextClip: return "ClipBoxTextClip";
+    case ClipBoxClippingMask: return "ClipBoxClippingMask";
+    case BeginTransform: return "BeginTransform";
+    case EndTransform: return "EndTransform";
+    }
+    ASSERT_NOT_REACHED();
+    return "Unknown";
+}
+
+WTF::String DisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\"}", clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data());
+}
+
+#endif
+
+} // namespace blink

@@ -12,21 +12,11 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
-
-void ClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->save();
-    context->clip(m_clipRect);
-    for (RoundedRect roundedRect : m_roundedRectClips)
-        context->clipRoundedRect(roundedRect);
-}
-
-void EndClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->restore();
-}
 
 LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
     const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
@@ -34,13 +24,15 @@ LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, Gra
     , m_renderer(renderer)
 {
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(renderer, clipType, snappedClipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(renderer ? renderer->displayItemClient() : nullptr, clipType, snappedClipRect));
     if (localPaintingInfo && clipRect.hasRadius())
         collectRoundedRectClips(*renderer->layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, clipDisplayItem->roundedRectClips());
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         clipDisplayItem->replay(graphicsContext);
     } else {
-        m_renderer->view()->viewDisplayList().add(clipDisplayItem.release());
+        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
+
     }
 }
 
@@ -86,20 +78,12 @@ void LayerClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const 
 LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer));
-        m_renderer->view()->viewDisplayList().add(endClip.release());
+        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer ? m_renderer->displayItemClient() : nullptr));
+        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(endClip.release());
     } else {
         m_graphicsContext->restore();
     }
 }
-
-#ifndef NDEBUG
-WTF::String ClipDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\", clipRect: [%d,%d,%d,%d]}",
-        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height());
-}
-#endif
 
 } // namespace blink

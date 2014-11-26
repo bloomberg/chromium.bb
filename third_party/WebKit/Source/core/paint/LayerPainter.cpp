@@ -9,8 +9,7 @@
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
-#include "core/paint/TransformDisplayItem.h"
-#include "core/paint/TransparencyDisplayItem.h"
+#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/PaintInfo.h"
@@ -18,6 +17,10 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/graphics/paint/TransparencyDisplayItem.h"
 
 namespace blink {
 
@@ -391,8 +394,10 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
         // FIXME: we shouldn't be calling replay when Slimming Paint is on. However, replay() currently has an important side-effect that it stores
         // the current matrix on the GraphicsContext, which is used for making conditional painting decisions such as anti-aliasing rotated borders.
         beginTransformDisplayItem->replay(context);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(beginTransformDisplayItem.release());
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(beginTransformDisplayItem.release());
+        }
     }
 
     // Now do a paint with the root layer shifted to be us.
@@ -404,8 +409,10 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
         OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()));
         // FIXME: the same fix applies are as in the FIXME for BeginTransformDisplayItem above.
         endTransformDisplayItem->replay(context);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            m_renderLayer.renderer()->view()->viewDisplayList().add(endTransformDisplayItem.release());
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+                container->graphicsLayerBacking()->displayItemList().add(endTransformDisplayItem.release());
+        }
     }
 }
 

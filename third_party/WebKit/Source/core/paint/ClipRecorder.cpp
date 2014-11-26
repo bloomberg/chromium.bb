@@ -5,11 +5,14 @@
 #include "config.h"
 #include "core/paint/ClipRecorder.h"
 
-#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -19,11 +22,12 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
     , m_canvas(canvas)
 {
     DisplayItem::Type type = paintPhaseToClipType(paintInfo.phase);
-    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(&m_canvas, type, pixelSnappedIntRect(clipRect)));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(m_canvas.displayItemClient(), type, pixelSnappedIntRect(clipRect)));
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_canvas.view()->viewDisplayList().add(clipDisplayItem.release());
-    else
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        if (RenderLayer* container = m_canvas.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
+    } else
         clipDisplayItem->replay(paintInfo.context);
 }
 
@@ -32,7 +36,8 @@ ClipRecorder::~ClipRecorder()
     OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_canvas));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_canvas.view()->viewDisplayList().add(endClipDisplayItem.release());
+        if (RenderLayer* container = m_canvas.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(endClipDisplayItem.release());
     } else {
         endClipDisplayItem->replay(m_paintInfo.context);
     }

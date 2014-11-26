@@ -5,37 +5,15 @@
 #ifndef ClipRecorder_h
 #define ClipRecorder_h
 
-#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/RoundedRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
-class RenderLayerModelObject;
+class RenderLayer;
+class RoundedRect;
 struct PaintInfo;
-
-class ClipDisplayItem : public DisplayItem {
-public:
-    ClipDisplayItem(const RenderLayerModelObject* renderer, Type type, IntRect clipRect)
-        : DisplayItem(renderer, type), m_clipRect(clipRect) { }
-
-    Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
-    virtual void replay(GraphicsContext*) override;
-
-    IntRect m_clipRect;
-    Vector<RoundedRect> m_roundedRectClips;
-#ifndef NDEBUG
-    virtual WTF::String asDebugString() const override;
-#endif
-};
-
-class EndClipDisplayItem : public DisplayItem {
-public:
-    EndClipDisplayItem(const RenderLayerModelObject* renderer) : DisplayItem(renderer, EndClip) { }
-
-    virtual void replay(GraphicsContext*) override;
-};
 
 class ClipRecorder {
 public:

@@ -11,7 +11,7 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/DrawingRecorder.h"
-#include "core/paint/TransparencyDisplayItem.h"
+#include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -27,6 +27,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/TransparencyDisplayItem.h"
 
 namespace blink {
 

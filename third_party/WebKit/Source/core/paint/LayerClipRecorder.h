@@ -5,9 +5,9 @@
 #ifndef LayerClipRecorder_h
 #define LayerClipRecorder_h
 
-#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/PaintPhase.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Vector.h"
 
 namespace blink {

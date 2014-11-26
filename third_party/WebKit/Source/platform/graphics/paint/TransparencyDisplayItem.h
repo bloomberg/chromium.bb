@@ -5,18 +5,19 @@
 #ifndef TransparencyDisplayItem_h
 #define TransparencyDisplayItem_h
 
-#include "core/paint/ViewDisplayList.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
+#ifndef NDEBUG
+#include "wtf/text/WTFString.h"
+#endif
 
 namespace blink {
 
-// FIXME: Move this file to TransparencyRecorder
-
-class BeginTransparencyDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT BeginTransparencyDisplayItem : public DisplayItem {
 public:
-    BeginTransparencyDisplayItem(const RenderObject* renderer, Type type, const WebBlendMode& blendMode, const float opacity)
-        : DisplayItem(renderer, type)
+    BeginTransparencyDisplayItem(DisplayItemClient client, Type type, const WebBlendMode& blendMode, const float opacity)
+        : DisplayItem(client, type)
         , m_blendMode(blendMode)
         , m_opacity(opacity) { }
     virtual void replay(GraphicsContext*) override;
@@ -32,28 +33,16 @@ private:
     const float m_opacity;
 };
 
-class EndTransparencyDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT EndTransparencyDisplayItem : public DisplayItem {
 public:
-    EndTransparencyDisplayItem(const RenderObject* renderer, Type type)
-        : DisplayItem(renderer, type) { }
+    EndTransparencyDisplayItem(DisplayItemClient client, Type type)
+        : DisplayItem(client, type) { }
     virtual void replay(GraphicsContext*) override;
 
 private:
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif
-};
-
-class TransparencyRecorder {
-public:
-    explicit TransparencyRecorder(GraphicsContext*, const RenderObject*, DisplayItem::Type, const WebBlendMode&, const float opacity);
-
-    ~TransparencyRecorder();
-
-private:
-    const RenderObject* m_renderer;
-    const DisplayItem::Type m_type;
-    GraphicsContext* m_graphicsContext;
 };
 
 } // namespace blink
