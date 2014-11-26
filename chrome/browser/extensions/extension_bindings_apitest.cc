@@ -80,6 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 
 // Tests that we don't override events when bindings are re-injected.
 // Regression test for http://crbug.com/269149.
+// Regression test for http://crbug.com/436593.
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, EventOverriding) {
   ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
 }

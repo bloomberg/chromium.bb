@@ -10,6 +10,10 @@ function test() {
     chrome.windows.remove(w.id);
   });
 
+  // Regression test for http://crbug.com/436593 (dotted api names).
+  chrome.system.storage.onAttached.addListener(function () {
+  });
+
   chrome.windows.onRemoved.addListener(function listener(windowId) {
     if (windowId != testWindowId)
       return;  // I guess some other window might have closed?
@@ -20,6 +24,10 @@ function test() {
     // This used to crash since we try to register the event more than once.
     chrome.windows.onRemoved.removeListener(listener);
     chrome.windows.onRemoved.addListener(listener);
+
+    // Regression test for http://crbug.com/436593 (dotted api names).
+    chrome.system.storage.onAttached.addListener(function () {
+    })
     chrome.test.succeed();
   });
 }

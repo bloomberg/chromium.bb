@@ -1174,9 +1174,9 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
   if (bind_object.IsEmpty())
     return;
 
-  v8::Local<v8::String> v8_api_name =
-      v8::String::NewFromUtf8(context->isolate(), api_name.c_str());
-  if (bind_object->HasRealNamedProperty(v8_api_name)) {
+  v8::Local<v8::String> v8_bind_name =
+      v8::String::NewFromUtf8(context->isolate(), bind_name.c_str());
+  if (bind_object->HasRealNamedProperty(v8_bind_name)) {
     // The bind object may already have the property if the API has been
     // registered before (or if the extension has put something there already,
     // but, whatevs).
@@ -1186,9 +1186,9 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
     // others so that we don't destroy state such as event listeners.
     //
     // TODO(kalman): Only register available APIs to make this all moot.
-    if (bind_object->HasRealNamedCallbackProperty(v8_api_name))
+    if (bind_object->HasRealNamedCallbackProperty(v8_bind_name))
       return;  // lazy binding still there, nothing to do
-    if (bind_object->Get(v8_api_name)->IsObject())
+    if (bind_object->Get(v8_bind_name)->IsObject())
       return;  // binding has already been fully installed
   }
 
