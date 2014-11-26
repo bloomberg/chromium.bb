@@ -24,6 +24,9 @@ class MockAttachmentStore : public AttachmentStore,
  public:
   MockAttachmentStore() {}
 
+  void Init(const InitCallback& callback) override {
+  }
+
   void Read(const AttachmentIdList& ids,
             const ReadCallback& callback) override {
     read_ids.push_back(ids);

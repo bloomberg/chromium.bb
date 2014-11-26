@@ -95,6 +95,7 @@ void DomDistillerStore::OnAttachmentsWrite(
   bool success = false;
   switch (result) {
     case syncer::AttachmentStore::UNSPECIFIED_ERROR:
+    case syncer::AttachmentStore::STORE_INITIALIZATION_FAILED:
       break;
     case syncer::AttachmentStore::SUCCESS:
       success = true;
@@ -163,6 +164,7 @@ void DomDistillerStore::OnAttachmentsRead(
   bool success = false;
   switch (result) {
     case syncer::AttachmentStore::UNSPECIFIED_ERROR:
+    case syncer::AttachmentStore::STORE_INITIALIZATION_FAILED:
       break;
     case syncer::AttachmentStore::SUCCESS:
       DCHECK(missing->empty());

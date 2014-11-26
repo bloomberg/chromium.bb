@@ -26,6 +26,7 @@ class SYNC_EXPORT InMemoryAttachmentStore : public AttachmentStoreBase,
   ~InMemoryAttachmentStore() override;
 
   // AttachmentStoreBase implementation.
+  void Init(const InitCallback& callback) override;
   void Read(const AttachmentIdList& ids, const ReadCallback& callback) override;
   void Write(const AttachmentList& attachments,
              const WriteCallback& callback) override;

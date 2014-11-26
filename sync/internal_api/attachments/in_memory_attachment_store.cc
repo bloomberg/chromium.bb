@@ -21,6 +21,11 @@ InMemoryAttachmentStore::InMemoryAttachmentStore(
 InMemoryAttachmentStore::~InMemoryAttachmentStore() {
 }
 
+void InMemoryAttachmentStore::Init(const InitCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
+}
+
 void InMemoryAttachmentStore::Read(const AttachmentIdList& ids,
                                    const ReadCallback& callback) {
   DCHECK(CalledOnValidThread());

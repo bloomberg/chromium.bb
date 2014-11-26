@@ -29,47 +29,18 @@ scoped_refptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
       backend.Pass(), base::ThreadTaskRunnerHandle::Get()));
 }
 
-void AttachmentStore::CreateOnDiskStore(
+scoped_refptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
-    const CreateCallback& callback) {
-  scoped_refptr<base::SequencedTaskRunner> frontend_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
-  backend_task_runner->PostTask(FROM_HERE,
-                                base::Bind(&CreateOnDiskStoreOnBackendThread,
-                                           path,
-                                           frontend_task_runner,
-                                           callback));
-}
+    const InitCallback& callback) {
+  scoped_ptr<OnDiskAttachmentStore> backend(
+      new OnDiskAttachmentStore(base::ThreadTaskRunnerHandle::Get(), path));
 
-void AttachmentStore::CreateOnDiskStoreOnBackendThread(
-    const base::FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& frontend_task_runner,
-    const CreateCallback& callback) {
-  scoped_ptr<OnDiskAttachmentStore> store(
-      new OnDiskAttachmentStore(frontend_task_runner));
-  Result result = store->OpenOrCreate(path);
-  if (result != SUCCESS)
-    store.reset();
-  frontend_task_runner->PostTask(FROM_HERE,
-                                 base::Bind(&CreateBackendDone,
-                                            result,
-                                            base::Passed(&store),
-                                            base::ThreadTaskRunnerHandle::Get(),
-                                            callback));
-}
+  scoped_refptr<AttachmentStore> attachment_store =
+      new AttachmentStoreHandle(backend.Pass(), backend_task_runner);
+  attachment_store->Init(callback);
 
-void AttachmentStore::CreateBackendDone(
-    const Result& result,
-    scoped_ptr<AttachmentStoreBase> backend,
-    const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
-    const CreateCallback& callback) {
-  scoped_refptr<AttachmentStore> store;
-  if (result == SUCCESS) {
-    store = new AttachmentStoreHandle(backend.Pass(), backend_task_runner);
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, result, store));
+  return attachment_store;
 }
 
 }  // namespace syncer

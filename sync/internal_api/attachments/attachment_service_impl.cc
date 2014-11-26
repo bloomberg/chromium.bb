@@ -200,7 +200,8 @@ void AttachmentServiceImpl::ReadDone(
 
   AttachmentIdList::const_iterator iter = unavailable_attachment_ids->begin();
   AttachmentIdList::const_iterator end = unavailable_attachment_ids->end();
-  if (attachment_downloader_.get()) {
+  if (result != AttachmentStore::STORE_INITIALIZATION_FAILED &&
+      attachment_downloader_.get()) {
     // Try to download locally unavailable attachments.
     for (; iter != end; ++iter) {
       attachment_downloader_->DownloadAttachment(
@@ -227,6 +228,7 @@ void AttachmentServiceImpl::WriteDone(
       state->AddAttachment(attachment);
       break;
     case AttachmentStore::UNSPECIFIED_ERROR:
+    case AttachmentStore::STORE_INITIALIZATION_FAILED:
       state->AddUnavailableAttachmentId(attachment.GetId());
       break;
   }

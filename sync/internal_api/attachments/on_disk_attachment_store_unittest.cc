@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "sync/internal_api/attachments/attachment_store_test_template.h"
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -23,12 +24,9 @@ namespace syncer {
 
 namespace {
 
-void AttachmentStoreCreated(scoped_refptr<AttachmentStore>* store_dest,
-                            AttachmentStore::Result* result_dest,
-                            const AttachmentStore::Result& result,
-                            const scoped_refptr<AttachmentStore>& store) {
+void AttachmentStoreCreated(AttachmentStore::Result* result_dest,
+                            const AttachmentStore::Result& result) {
   *result_dest = result;
-  *store_dest = store;
 }
 
 }  // namespace
@@ -43,13 +41,12 @@ class OnDiskAttachmentStoreFactory {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     scoped_refptr<AttachmentStore> store;
     AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
-    AttachmentStore::CreateOnDiskStore(
-        temp_dir_.path(),
-        base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&AttachmentStoreCreated, &store, &result));
+    store = AttachmentStore::CreateOnDiskStore(
+        temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+        base::Bind(&AttachmentStoreCreated, &result));
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
-    EXPECT_EQ(result, AttachmentStore::SUCCESS);
+    EXPECT_EQ(AttachmentStore::SUCCESS, result);
     return store;
   }
 
@@ -77,10 +74,12 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
 
   void CopyResultAttachments(
       AttachmentStore::Result* destination_result,
+      AttachmentIdList* destination_failed_attachment_ids,
       const AttachmentStore::Result& source_result,
       scoped_ptr<AttachmentMap> source_attachments,
       scoped_ptr<AttachmentIdList> source_failed_attachment_ids) {
     CopyResult(destination_result, source_result);
+    *destination_failed_attachment_ids = *source_failed_attachment_ids;
   }
 
   scoped_ptr<leveldb::DB> OpenLevelDB(const base::FilePath& path) {
@@ -144,12 +143,11 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, CloseAndReopen) {
   AttachmentStore::Result result;
 
   result = AttachmentStore::UNSPECIFIED_ERROR;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_EQ(AttachmentStore::SUCCESS, result);
 
   result = AttachmentStore::UNSPECIFIED_ERROR;
   std::string some_data = "data";
@@ -162,28 +160,28 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, CloseAndReopen) {
                            base::Unretained(this),
                            &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_EQ(AttachmentStore::SUCCESS, result);
 
-  // Close attachment store.
+  // Close and reopen attachment store.
   store_ = nullptr;
   result = AttachmentStore::UNSPECIFIED_ERROR;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_EQ(AttachmentStore::SUCCESS, result);
 
   result = AttachmentStore::UNSPECIFIED_ERROR;
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(attachment.GetId());
+  AttachmentIdList failed_attachment_ids;
   store_->Read(
       attachment_ids,
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultAttachments,
-                 base::Unretained(this),
-                 &result));
+                 base::Unretained(this), &result, &failed_attachment_ids));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_EQ(AttachmentStore::SUCCESS, result);
+  EXPECT_TRUE(failed_attachment_ids.empty());
 }
 
 // Ensure loading corrupt attachment store fails.
@@ -200,13 +198,11 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, FailToOpen) {
                   current_file_content.size());
 
   AttachmentStore::Result result = AttachmentStore::SUCCESS;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
-  EXPECT_EQ(store_.get(), nullptr);
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, result);
 }
 
 // Ensure that attachment store works correctly when store metadata is missing,
@@ -221,12 +217,11 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   OpenLevelDB(db_path);
   // Open database with AttachmentStore.
   AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_EQ(AttachmentStore::SUCCESS, result);
   // Close AttachmentStore so that test can check content.
   store_ = nullptr;
   RunLoop();
@@ -235,7 +230,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   std::string data = ReadStoreMetadataRecord(db_path);
   attachment_store_pb::StoreMetadata metadata;
   EXPECT_TRUE(metadata.ParseFromString(data));
-  EXPECT_EQ(metadata.schema_version(), 1);
+  EXPECT_EQ(1, metadata.schema_version());
 
   // Set unknown future schema version.
   metadata.set_schema_version(2);
@@ -244,26 +239,22 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
 
   // AttachmentStore should fail to load.
   result = AttachmentStore::SUCCESS;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
-  EXPECT_EQ(store_.get(), nullptr);
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, result);
 
   // Write garbage into metadata record.
   UpdateStoreMetadataRecord(db_path, "abra.cadabra");
 
   // AttachmentStore should fail to load.
   result = AttachmentStore::SUCCESS;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &result));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
-  EXPECT_EQ(store_.get(), nullptr);
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, result);
 }
 
 // Ensure that attachment store correctly maintains metadata records for
@@ -274,15 +265,13 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
       temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
 
   // Create attachment store.
-  AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
-  AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(),
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
-  RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &create_result));
 
   // Write two attachments.
+  AttachmentStore::Result write_result = AttachmentStore::UNSPECIFIED_ERROR;
   std::string some_data;
   AttachmentList attachments;
   some_data = "data1";
@@ -293,22 +282,20 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
       Attachment::Create(base::RefCountedString::TakeString(&some_data)));
   store_->Write(attachments,
                 base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
-                           base::Unretained(this),
-                           &result));
-  RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+                           base::Unretained(this), &write_result));
 
   // Delete one of written attachments.
+  AttachmentStore::Result drop_result = AttachmentStore::UNSPECIFIED_ERROR;
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(attachments[0].GetId());
   store_->Drop(attachment_ids,
                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
-                          base::Unretained(this),
-                          &result));
-  RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+                          base::Unretained(this), &drop_result));
   store_ = nullptr;
   RunLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, create_result);
+  EXPECT_EQ(AttachmentStore::SUCCESS, write_result);
+  EXPECT_EQ(AttachmentStore::SUCCESS, drop_result);
 
   // Verify that attachment store contains only records for second attachment.
   VerifyAttachmentRecordsPresent(db_path, attachments[0].GetId(), false);
@@ -320,14 +307,13 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
   // Create attachment store.
-  AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
-  AttachmentStore::CreateOnDiskStore(
+  AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
+  store_ = AttachmentStore::CreateOnDiskStore(
       temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &store_, &result));
-  RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+      base::Bind(&AttachmentStoreCreated, &create_result));
 
   // Write attachment with incorrect crc32c.
+  AttachmentStore::Result write_result = AttachmentStore::UNSPECIFIED_ERROR;
   const uint32_t intentionally_wrong_crc32c = 0;
   std::string some_data("data1");
   Attachment attachment = Attachment::CreateFromParts(
@@ -337,19 +323,78 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
   attachments.push_back(attachment);
   store_->Write(attachments,
                 base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
-                           base::Unretained(this), &result));
-  RunLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+                           base::Unretained(this), &write_result));
 
   // Read attachment.
+  AttachmentStore::Result read_result = AttachmentStore::UNSPECIFIED_ERROR;
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(attachment.GetId());
+  AttachmentIdList failed_attachment_ids;
   store_->Read(
       attachment_ids,
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultAttachments,
-                 base::Unretained(this), &result));
+                 base::Unretained(this), &read_result, &failed_attachment_ids));
   RunLoop();
-  EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
+  EXPECT_EQ(AttachmentStore::SUCCESS, create_result);
+  EXPECT_EQ(AttachmentStore::SUCCESS, write_result);
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, read_result);
+  EXPECT_THAT(failed_attachment_ids, testing::ElementsAre(attachment.GetId()));
+}
+
+// Ensure that after store initialization failure ReadWrite/Drop operations fail
+// with correct error.
+TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  base::FilePath db_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
+  base::CreateDirectory(db_path);
+
+  // To simulate corrupt database write empty CURRENT file.
+  std::string current_file_content = "";
+  base::WriteFile(db_path.Append(FILE_PATH_LITERAL("CURRENT")),
+                  current_file_content.c_str(), current_file_content.size());
+
+  AttachmentStore::Result create_result = AttachmentStore::SUCCESS;
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &create_result));
+
+  // Reading from uninitialized store should result in
+  // STORE_INITIALIZATION_FAILED.
+  AttachmentStore::Result read_result = AttachmentStore::SUCCESS;
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create());
+  AttachmentIdList failed_attachment_ids;
+  store_->Read(
+      attachment_ids,
+      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultAttachments,
+                 base::Unretained(this), &read_result, &failed_attachment_ids));
+
+  // Dropping from uninitialized store should result in
+  // STORE_INITIALIZATION_FAILED.
+  AttachmentStore::Result drop_result = AttachmentStore::SUCCESS;
+  store_->Drop(attachment_ids,
+               base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                          base::Unretained(this), &drop_result));
+
+  // Writing to uninitialized store should result in
+  // STORE_INITIALIZATION_FAILED.
+  AttachmentStore::Result write_result = AttachmentStore::SUCCESS;
+  std::string some_data;
+  AttachmentList attachments;
+  some_data = "data1";
+  attachments.push_back(
+      Attachment::Create(base::RefCountedString::TakeString(&some_data)));
+  store_->Write(attachments,
+                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                           base::Unretained(this), &write_result));
+
+  RunLoop();
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, create_result);
+  EXPECT_EQ(AttachmentStore::STORE_INITIALIZATION_FAILED, read_result);
+  EXPECT_THAT(failed_attachment_ids, testing::ElementsAre(attachment_ids[0]));
+  EXPECT_EQ(AttachmentStore::STORE_INITIALIZATION_FAILED, drop_result);
+  EXPECT_EQ(AttachmentStore::STORE_INITIALIZATION_FAILED, write_result);
 }
 
 }  // namespace syncer
