@@ -96,7 +96,7 @@ AC_CHECK_PROG([MAKEINFO_FOUND], [makeinfo], [yes])
 if test x"${MAKEINFO_FOUND}" = xyes
 then
   MAKEINFO_VERSION_REQ=5
-  AC_MSG_CHECKING([makeinfo version >= $MAKEINFO_VERSION_REQ])
+  AC_MSG_CHECKING([for makeinfo version >= $MAKEINFO_VERSION_REQ])
   MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^makeinfo .* \([[0-9]]\+\)\.[[0-9]]\+/\1/p'`
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
