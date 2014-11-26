@@ -183,6 +183,9 @@
   "seconds": {
     "improvement_direction": "down"
   },
+  "tasks_per_frame": {
+    "improvement_direction": "down"
+  },
   "us": {
     "improvement_direction": "down"
   },
