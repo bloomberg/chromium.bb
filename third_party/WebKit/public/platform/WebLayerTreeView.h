@@ -129,12 +129,6 @@ public:
         const WebLayer* pageScaleLayer,
         const WebLayer* innerViewportScrollLayer,
         const WebLayer* outerViewportScrollLayer) { }
-    // TODO(ccameron): remove this function once all callers have been moved to
-    // the version that specifies the overscroll elasticity layer.
-    virtual void registerViewportLayers(
-        const WebLayer* pageScaleLayer,
-        const WebLayer* innerViewportScrollLayer,
-        const WebLayer* outerViewportScrollLayer) { }
     virtual void clearViewportLayers() { }
 
     // Used to update the active selection bounds.
