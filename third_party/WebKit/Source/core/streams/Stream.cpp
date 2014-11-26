@@ -56,6 +56,11 @@ void Stream::addData(const char* data, size_t len)
     BlobRegistry::addDataToStream(m_internalURL, buffer);
 }
 
+void Stream::flush()
+{
+    BlobRegistry::flushStream(m_internalURL);
+}
+
 void Stream::finalize()
 {
     BlobRegistry::finalizeStream(m_internalURL);

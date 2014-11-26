@@ -212,6 +212,24 @@ void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamDa
     }
 }
 
+static void flushStreamTask(void* context)
+{
+    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->flushStream(blobRegistryContext->url);
+}
+
+void BlobRegistry::flushStream(const KURL& url)
+{
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->flushStream(url);
+    } else {
+        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
+        callOnMainThread(&flushStreamTask, context.leakPtr());
+    }
+}
+
 static void finalizeStreamTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));

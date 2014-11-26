@@ -62,6 +62,8 @@ public:
 
     // Appends data to this stream.
     void addData(const char* data, size_t len);
+    // Flushes contents buffered in the stream.
+    void flush();
     // Mark this stream finalized so that a reader of this stream is notified
     // of EOF.
     void finalize();

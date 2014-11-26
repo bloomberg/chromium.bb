@@ -60,6 +60,9 @@ public:
     // Add data to the stream referred by the URL.
     virtual void addDataToStream(const WebURL&, const char* data, size_t length) { BLINK_ASSERT_NOT_REACHED(); }
 
+    // Flush contents buffered in the stream to the corresponding reader.
+    virtual void flushStream(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
+
     // Tell the registry that construction of this stream has completed
     // successfully and so it won't receive any more data.
     virtual void finalizeStream(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
