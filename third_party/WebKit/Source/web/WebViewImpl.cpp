@@ -195,8 +195,9 @@ static const float viewportAnchorYCoord = 0;
 
 // Constants for zooming in on a focused text field.
 static const double scrollAndScaleAnimationDurationInSeconds = 0.2;
-static const int minReadableCaretHeight = 18;
-static const float minScaleChangeToTriggerZoom = 1.05f;
+static const int minReadableCaretHeight = 16;
+static const int minReadableCaretHeightForTextArea = 13;
+static const float minScaleChangeToTriggerZoom = 1.5f;
 static const float leftBoxRatio = 0.3f;
 static const int caretPadding = 10;
 
@@ -2857,12 +2858,24 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     unscaledCaret.scale(1 / pageScaleFactor());
     caret = unscaledCaret;
 
-    // Pick a scale which is reasonably readable. This is the scale at which
-    // the caret height will become minReadableCaretHeight (adjusted for dpi
-    // and font scale factor).
-    newScale = clampPageScaleFactorToLimits(legibleScale() * minReadableCaretHeight / caret.height);
-    newScale = std::max(newScale, pageScaleFactor());
+    if (shouldDisableDesktopWorkarounds()) {
+        newScale = pageScaleFactor();
+    } else {
+        // Pick a scale which is reasonably readable. This is the scale at which
+        // the caret height will become minReadableCaretHeightForNode (adjusted
+        // for dpi and font scale factor).
+        const int minReadableCaretHeightForNode = textboxRect.height() >= 2 * caret.height ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
+        newScale = clampPageScaleFactorToLimits(legibleScale() * minReadableCaretHeightForNode / caret.height);
+        newScale = std::max(newScale, pageScaleFactor());
+    }
     const float deltaScale = newScale / pageScaleFactor();
+
+    needAnimation = false;
+    // If we are at less than the target zoom level, zoom in.
+    if (deltaScale > minScaleChangeToTriggerZoom)
+        needAnimation = true;
+    else
+        newScale = pageScaleFactor();
 
     // Convert the rects to absolute space in the new scale.
     IntRect textboxRectInDocumentCoordinates = textboxRect;
@@ -2872,6 +2885,20 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
 
     int viewWidth = m_size.width / newScale;
     int viewHeight = m_size.height / newScale;
+
+    // If the caret is offscreen, then animate.
+    IntRect sizeRect(0, 0, viewWidth, viewHeight);
+    sizeRect.scale(newScale / pageScaleFactor());
+    if (!sizeRect.contains(caret))
+        needAnimation = true;
+
+    // If the box is partially offscreen and it's possible to bring it fully
+    // onscreen, then animate.
+    if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRect))
+        needAnimation = true;
+
+    if (!needAnimation)
+        return;
 
     if (textboxRectInDocumentCoordinates.width() <= viewWidth) {
         // Field is narrower than screen. Try to leave padding on left so field's
@@ -2893,20 +2920,6 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         // be offscreen, in which case bottom-align the caret.
         newScroll.setY(std::max<int>(textboxRectInDocumentCoordinates.y(), caretInDocumentCoordinates.y() + caretInDocumentCoordinates.height() + caretPadding - viewHeight));
     }
-
-    needAnimation = false;
-    // If we are at less than the target zoom level, zoom in.
-    if (deltaScale > minScaleChangeToTriggerZoom)
-        needAnimation = true;
-    // If the caret is offscreen, then animate.
-    IntRect sizeRect(0, 0, viewWidth, viewHeight);
-    sizeRect.scale(newScale / pageScaleFactor());
-    if (!sizeRect.contains(caret))
-        needAnimation = true;
-    // If the box is partially offscreen and it's possible to bring it fully
-    // onscreen, then animate.
-    if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRect))
-        needAnimation = true;
 }
 
 void WebViewImpl::advanceFocus(bool reverse)
