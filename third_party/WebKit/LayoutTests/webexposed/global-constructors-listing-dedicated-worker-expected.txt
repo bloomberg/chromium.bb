@@ -57,6 +57,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Object
 [Worker] Promise
 [Worker] RangeError
+[Worker] ReadableStream
 [Worker] ReferenceError
 [Worker] RegExp
 [Worker] Set

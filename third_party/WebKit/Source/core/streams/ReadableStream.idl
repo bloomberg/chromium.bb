@@ -11,7 +11,8 @@ enum ReadableStreamState {
 
 [
     RuntimeEnabled=Stream,
-    GarbageCollected
+    GarbageCollected,
+    Exposed=(Window,Worker)
 ] interface ReadableStream {
     [CallWith=ScriptState, RaisesException] any read();
     [CallWith=ScriptState] Promise wait();
