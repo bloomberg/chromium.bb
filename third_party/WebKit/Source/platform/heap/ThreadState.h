@@ -676,6 +676,7 @@ public:
     template<typename T>
     void registerPreFinalizer(T& target)
     {
+        checkThread();
         ASSERT(!m_preFinalizers.contains(&target));
         ASSERT(!isSweepInProgress());
         m_preFinalizers.add(&target, &T::invokePreFinalizer);
@@ -686,6 +687,7 @@ public:
     template<typename T>
     void unregisterPreFinalizer(T& target)
     {
+        checkThread();
         ASSERT(&T::invokePreFinalizer);
         unregisterPreFinalizerInternal(&target);
     }

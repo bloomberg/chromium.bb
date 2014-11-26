@@ -342,6 +342,7 @@ ThreadState::ThreadState()
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
 {
+    checkThread();
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
@@ -399,7 +400,6 @@ void ThreadState::detachMainThread()
     // threadAttachMutex and waiting for other threads to pause or reach a
     // safepoint.
     ThreadState* state = mainThreadState();
-
     {
         SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
 
@@ -436,12 +436,14 @@ void ThreadState::attach()
 
 void ThreadState::cleanupPages()
 {
+    checkThread();
     for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->cleanupPages();
 }
 
 void ThreadState::cleanup()
 {
+    checkThread();
     for (size_t i = 0; i < m_cleanupTasks.size(); i++)
         m_cleanupTasks[i]->preCleanup();
 
@@ -492,7 +494,6 @@ void ThreadState::cleanup()
         m_cleanupTasks[i]->postCleanup();
     m_cleanupTasks.clear();
 }
-
 
 void ThreadState::detach()
 {
@@ -731,6 +732,7 @@ Mutex& ThreadState::globalRootsMutex()
 
 bool ThreadState::shouldGC()
 {
+    checkThread();
     // Do not GC during sweeping. We allow allocation during finalization,
     // but those allocations are not allowed to lead to nested GCs.
     if (m_sweepInProgress)
@@ -746,6 +748,7 @@ bool ThreadState::shouldGC()
 
 bool ThreadState::shouldForceConservativeGC()
 {
+    checkThread();
     // Do not GC during sweeping. We allow allocation during finalization,
     // but those allocations are not allowed to lead to nested GCs.
     if (m_sweepInProgress)
@@ -813,6 +816,7 @@ void ThreadState::didV8GC()
 
 void ThreadState::performPendingGC(StackState stackState)
 {
+    checkThread();
     if (stackState == NoHeapPointersOnStack) {
         if (forcePreciseGCForTesting()) {
             setForcePreciseGCForTesting(false);
@@ -889,6 +893,7 @@ void ThreadState::prepareForGC()
 
 void ThreadState::setupHeapsForTermination()
 {
+    checkThread();
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->prepareHeapForTermination();
 }
@@ -961,13 +966,13 @@ NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(void* scope
 
 void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
 {
+    checkThread();
 #ifdef ADDRESS_SANITIZER
     if (stackState == HeapPointersOnStack)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
 #endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
     performPendingGC(stackState);
-    checkThread();
     ASSERT(!m_atSafePoint);
     m_atSafePoint = true;
     m_stackState = stackState;
@@ -1014,6 +1019,7 @@ void ThreadState::copyStackUntilSafePointScope()
 
 void ThreadState::performPendingSweep()
 {
+    checkThread();
     if (!sweepRequested())
         return;
 
@@ -1095,8 +1101,8 @@ void ThreadState::performPendingSweep()
 
 void ThreadState::addInterruptor(Interruptor* interruptor)
 {
+    checkThread();
     SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
-
     {
         MutexLocker locker(threadAttachMutex());
         m_interruptors.append(interruptor);
@@ -1105,8 +1111,8 @@ void ThreadState::addInterruptor(Interruptor* interruptor)
 
 void ThreadState::removeInterruptor(Interruptor* interruptor)
 {
+    checkThread();
     SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
-
     {
         MutexLocker locker(threadAttachMutex());
         size_t index = m_interruptors.find(interruptor);
@@ -1131,6 +1137,7 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
 
 void ThreadState::unregisterPreFinalizerInternal(void* target)
 {
+    checkThread();
     if (isSweepInProgress())
         return;
     auto it = m_preFinalizers.find(target);
@@ -1140,6 +1147,7 @@ void ThreadState::unregisterPreFinalizerInternal(void* target)
 
 void ThreadState::invokePreFinalizers(Visitor& visitor)
 {
+    checkThread();
     Vector<void*> deadObjects;
     for (auto& entry : m_preFinalizers) {
         if (entry.value(entry.key, visitor))
