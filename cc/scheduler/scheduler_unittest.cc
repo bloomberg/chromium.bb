@@ -168,17 +168,30 @@ class FakeSchedulerClient : public SchedulerClient {
   void AdvanceFrame() {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
                  "FakeSchedulerClient::AdvanceFrame");
+    bool previous_deadline_pending =
+        scheduler_->BeginImplFrameDeadlinePending();
     if (ExternalBeginFrame()) {
-      // Creep the time forward so that any BeginFrameArgs is not equal to the
-      // last one otherwise we violate the BeginFrameSource contract.
-      now_src_->AdvanceNowMicroseconds(1);
-      fake_external_begin_frame_source_->TestOnBeginFrame(
-          CreateBeginFrameArgsForTesting(now_src_));
+      SendNextBeginFrame();
+      // This could be the previous deadline or a new one.
       EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
     }
-
+    // Consume previous deadline first. It is important that we check for the
+    // existence of a previous deadline so that we do not consume the new one.
+    if (previous_deadline_pending) {
+      EXPECT_TRUE(task_runner().RunTasksWhile(ImplFrameDeadlinePending(true)));
+    }
+    // Then run tasks until new deadline is scheduled.
     EXPECT_TRUE(task_runner().RunTasksWhile(ImplFrameDeadlinePending(false)));
     EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  }
+
+  void SendNextBeginFrame() {
+    DCHECK(ExternalBeginFrame());
+    // Creep the time forward so that any BeginFrameArgs is not equal to the
+    // last one otherwise we violate the BeginFrameSource contract.
+    now_src_->AdvanceNow(BeginFrameArgs::DefaultInterval());
+    fake_external_begin_frame_source_->TestOnBeginFrame(
+        CreateBeginFrameArgsForTesting(now_src_));
   }
 
   OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
@@ -1385,6 +1398,131 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frames());
   client.Reset();
+}
+
+TEST(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  client.Reset();
+  scheduler->SetNeedsCommit();
+  EXPECT_TRUE(client.needs_begin_frames());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
+
+  client.Reset();
+  client.AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  client.Reset();
+  scheduler->NotifyBeginMainFrameStarted();
+
+  client.Reset();
+  client.SendNextBeginFrame();
+  // This BeginFrame is queued up as a retro frame.
+  EXPECT_NO_ACTION(client);
+  // The previous deadline is still pending.
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  client.Reset();
+  // This commit should schedule the (previous) deadline to trigger immediately.
+  scheduler->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
+
+  client.Reset();
+  // The deadline task should trigger causing a draw.
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  client.task_runner().RunTasksWhile(client.ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+
+  // Keep animating.
+  client.Reset();
+  scheduler->SetNeedsAnimate();
+  scheduler->SetNeedsRedraw();
+  EXPECT_NO_ACTION(client);
+
+  // Let's advance sufficiently past the next frame's deadline.
+  client.now_src()->AdvanceNow(
+      BeginFrameArgs::DefaultInterval() -
+      BeginFrameArgs::DefaultEstimatedParentDrawTime() +
+      base::TimeDelta::FromMicroseconds(1));
+
+  // The retro frame hasn't expired yet.
+  client.task_runner().RunTasksWhile(client.ImplFrameDeadlinePending(false));
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  // This is an immediate deadline case.
+  client.Reset();
+  client.task_runner().RunPendingTasks();
+  EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client);
+}
+
+TEST(SchedulerTest, RetroFrameDoesNotExpireTooLate) {
+  FakeSchedulerClient client;
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  client.Reset();
+  scheduler->SetNeedsCommit();
+  EXPECT_TRUE(client.needs_begin_frames());
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
+
+  client.Reset();
+  client.AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  client.Reset();
+  scheduler->NotifyBeginMainFrameStarted();
+
+  client.Reset();
+  client.SendNextBeginFrame();
+  // This BeginFrame is queued up as a retro frame.
+  EXPECT_NO_ACTION(client);
+  // The previous deadline is still pending.
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  client.Reset();
+  // This commit should schedule the (previous) deadline to trigger immediately.
+  scheduler->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
+
+  client.Reset();
+  // The deadline task should trigger causing a draw.
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  client.task_runner().RunTasksWhile(client.ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+
+  // Keep animating.
+  client.Reset();
+  scheduler->SetNeedsAnimate();
+  scheduler->SetNeedsRedraw();
+  EXPECT_NO_ACTION(client);
+
+  // Let's advance sufficiently past the next frame's deadline.
+  client.now_src()->AdvanceNow(BeginFrameArgs::DefaultInterval() +
+                               base::TimeDelta::FromMicroseconds(1));
+
+  // The retro frame should've expired.
+  EXPECT_NO_ACTION(client);
 }
 
 void BeginFramesNotFromClient(bool use_external_begin_frame_source,
