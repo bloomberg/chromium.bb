@@ -196,8 +196,8 @@ public:
         , m_parkedAllThreads(false)
     {
         m_state->checkThread();
-        EXPECT_FALSE(m_state->isInGC());
         if (LIKELY(ThreadState::stopThreads())) {
+            Heap::enterGC();
             m_state->enterGC();
             m_parkedAllThreads = true;
         }
@@ -211,7 +211,7 @@ public:
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
             m_state->leaveGC();
-            EXPECT_FALSE(m_state->isInGC());
+            Heap::leaveGC();
             ThreadState::resumeThreads();
         }
     }

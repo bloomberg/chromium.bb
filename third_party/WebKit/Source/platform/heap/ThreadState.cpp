@@ -139,7 +139,6 @@ uintptr_t ThreadState::s_mainThreadStackStart = 0;
 uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 SafePointBarrier* ThreadState::s_safePointBarrier = 0;
-bool ThreadState::s_inGC = false;
 
 static Mutex& threadAttachMutex()
 {
@@ -771,7 +770,7 @@ bool ThreadState::shouldForceConservativeGC()
 
 bool ThreadState::sweepRequested()
 {
-    ASSERT(isAnyThreadInGC() || checkThread());
+    ASSERT(Heap::isInGC() || checkThread());
     return m_sweepRequested;
 }
 
@@ -1160,7 +1159,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
 #if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 {
-    bool needLockForIteration = !isAnyThreadInGC();
+    bool needLockForIteration = !isInGC();
     if (needLockForIteration)
         threadAttachMutex().lock();
 

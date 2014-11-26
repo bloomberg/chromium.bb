@@ -447,22 +447,18 @@ public:
     // performing GC?
     bool isInGC() const { return m_inGC; }
 
-    // Is any of the threads registered with the blink garbage collection
-    // infrastructure currently performing GC?
-    static bool isAnyThreadInGC() { return s_inGC; }
-
+    // FIXME: This will be removed soon.
     void enterGC()
     {
         ASSERT(!m_inGC);
-        ASSERT(!s_inGC);
         m_inGC = true;
-        s_inGC = true;
     }
 
+    // FIXME: This will be removed soon.
     void leaveGC()
     {
+        ASSERT(m_inGC);
         m_inGC = false;
-        s_inGC = false;
     }
 
     // Is the thread corresponding to this thread state currently
@@ -742,10 +738,6 @@ private:
     static uintptr_t s_mainThreadStackStart;
     static uintptr_t s_mainThreadUnderestimatedStackSize;
     static SafePointBarrier* s_safePointBarrier;
-
-    // This variable is flipped to true after all threads are stoped
-    // and outermost GC has started.
-    static bool s_inGC;
 
     // We can't create a static member of type ThreadState here
     // because it will introduce global constructor and destructor.
