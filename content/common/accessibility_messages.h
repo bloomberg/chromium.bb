@@ -153,6 +153,13 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_SetValue,
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,
                     gfx::Point /* location to test */)
 
+// Relay a request from assistive technology to set accessibility focus
+// to a given node. On platforms where this is used (currently Android),
+// inline text boxes are only computed for the node with accessibility focus,
+// rather than for the whole tree.
+IPC_MESSAGE_ROUTED1(AccessibilityMsg_SetAccessibilityFocus,
+                    int /* object id */)
+
 // Tells the render view that a AccessibilityHostMsg_Events
 // message was processed and it can send addition events.
 IPC_MESSAGE_ROUTED0(AccessibilityMsg_Events_ACK)

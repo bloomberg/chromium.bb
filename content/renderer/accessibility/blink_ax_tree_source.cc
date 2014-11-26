@@ -108,7 +108,8 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
     : render_frame_(render_frame),
       node_to_frame_routing_id_map_(NULL),
-      node_to_browser_plugin_instance_id_map_(NULL) {
+      node_to_browser_plugin_instance_id_map_(NULL),
+      accessibility_focus_id_(-1) {
 }
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
@@ -147,6 +148,17 @@ int32 BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
 void BlinkAXTreeSource::GetChildren(
     blink::WebAXObject parent,
     std::vector<blink::WebAXObject>* out_children) const {
+  if (parent.role() == blink::WebAXRoleStaticText) {
+    blink::WebAXObject ancestor = parent;
+    while (!ancestor.isDetached()) {
+      if (ancestor.axID() == accessibility_focus_id_) {
+        parent.loadInlineTextBoxes();
+        break;
+      }
+      ancestor = ancestor.parentObject();
+    }
+  }
+
   bool is_iframe = false;
   WebNode node = parent.node();
   if (!node.isNull() && node.isElementNode()) {

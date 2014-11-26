@@ -116,6 +116,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
       int32 granularity, int cursor_index,
       BrowserAccessibilityAndroid* node, int32* start_index, int32* end_index);
 
+  // Set accessibility focus. This sends a message to the renderer to
+  // asynchronously load inline text boxes for this node only, enabling more
+  // accurate movement by granularities on this node.
+  void SetAccessibilityFocus(JNIEnv* env, jobject obj, jint id);
+
  protected:
   // AXTreeDelegate overrides.
   virtual void OnRootChanged(ui::AXNode* new_root) override;

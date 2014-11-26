@@ -29,6 +29,12 @@ class BlinkAXTreeSource
   // Walks up the ancestor chain to see if this is a descendant of the root.
   bool IsInTree(blink::WebAXObject node) const;
 
+  // Set the id of the node with accessibility focus. The node with
+  // accessibility focus will force loading inline text box children,
+  // which aren't always loaded by default on all platforms.
+  int accessibility_focus_id() { return accessibility_focus_id_; }
+  void set_accessiblity_focus_id(int id) { accessibility_focus_id_ = id; }
+
   // AXTreeSource implementation.
   blink::WebAXObject GetRoot() const override;
   blink::WebAXObject GetFromId(int32 id) const override;
@@ -50,6 +56,7 @@ class BlinkAXTreeSource
   RenderFrameImpl* render_frame_;
   std::map<int32, int>* node_to_frame_routing_id_map_;
   std::map<int32, int>* node_to_browser_plugin_instance_id_map_;
+  int accessibility_focus_id_;
 };
 
 }  // namespace content

@@ -154,6 +154,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const override;
   void AccessibilityHitTest(const gfx::Point& point) override;
+  void AccessibilitySetAccessibilityFocus(int acc_obj_id) override;
   void AccessibilityFatalError() override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;

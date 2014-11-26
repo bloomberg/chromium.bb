@@ -69,6 +69,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
       const gfx::Rect& bounds) const = 0;
   virtual void AccessibilityHitTest(
       const gfx::Point& point) = 0;
+  virtual void AccessibilitySetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;

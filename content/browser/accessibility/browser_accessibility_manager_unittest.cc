@@ -82,6 +82,7 @@ class TestBrowserAccessibilityDelegate
     return gfx::Point();
   }
   void AccessibilityHitTest(const gfx::Point& point) override {}
+  void AccessibilitySetAccessibilityFocus(int acc_obj_id) override {}
   void AccessibilityFatalError() override { got_fatal_error_ = true; }
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
     return gfx::kNullAcceleratedWidget;

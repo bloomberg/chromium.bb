@@ -43,12 +43,14 @@ RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);
 
-  // TODO(dmazzoni): remove this on Android while still supporting
-  // moving by granularities.
-  settings->setInlineTextBoxAccessibilityEnabled(true);
-
 #if defined(OS_ANDROID)
+  // Password values are only passed through on Android.
   settings->setAccessibilityPasswordValuesEnabled(true);
+#endif
+
+#if !defined(OS_ANDROID)
+  // Inline text boxes are enabled for all nodes on all except Android.
+  settings->setInlineTextBoxAccessibilityEnabled(true);
 #endif
 
   const WebDocument& document = GetMainDocument();
@@ -75,6 +77,8 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection, OnSetTextSelection)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetAccessibilityFocus,
+                        OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -343,6 +347,26 @@ void RendererAccessibility::OnHitTest(gfx::Point point) {
   WebAXObject obj = root_obj.hitTest(point);
   if (!obj.isDetached())
     HandleAXEvent(obj, ui::AX_EVENT_HOVER);
+}
+
+void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
+  if (tree_source_.accessibility_focus_id() == acc_obj_id)
+    return;
+
+  tree_source_.set_accessiblity_focus_id(acc_obj_id);
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+
+  // This object may not be a leaf node. Force the whole subtree to be
+  // re-serialized.
+  serializer_.DeleteClientSubtree(obj);
+
+  // Explicitly send a tree change update event now.
+  HandleAXEvent(obj, ui::AX_EVENT_TREE_CHANGED);
 }
 
 void RendererAccessibility::OnReset(int reset_token) {

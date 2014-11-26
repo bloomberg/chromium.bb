@@ -406,6 +406,10 @@ void RenderFrameHostImpl::AccessibilityHitTest(const gfx::Point& point) {
   Send(new AccessibilityMsg_HitTest(routing_id_, point));
 }
 
+void RenderFrameHostImpl::AccessibilitySetAccessibilityFocus(int acc_obj_id) {
+  Send(new AccessibilityMsg_SetAccessibilityFocus(routing_id_, acc_obj_id));
+}
+
 void RenderFrameHostImpl::AccessibilityFatalError() {
   browser_accessibility_manager_.reset(NULL);
   if (accessibility_reset_token_)

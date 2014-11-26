@@ -51,8 +51,13 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     return web_contents->GetRootBrowserAccessibilityManager()->GetRoot();
   }
 
-  // Call NextAtGranularity repeatedly and return a string that concatenates
-  // all of the text of the returned text ranges.
+  // First, set accessibility focus to a node and wait for the update that
+  // loads inline text boxes for that node. (We load inline text boxes
+  // asynchronously on Android since we only ever need them for the node
+  // with accessibility focus.)
+  //
+  // Then call NextAtGranularity repeatedly and return a string that
+  // concatenates all of the text of the returned text ranges.
   //
   // As an example, if the node's text is "cat dog" and you traverse by
   // word, this returns "'cat', 'dog'".
@@ -64,6 +69,13 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
   base::string16 TraverseNodeAtGranularity(
       BrowserAccessibility* node,
       int granularity) {
+    AccessibilityNotificationWaiter waiter(
+        shell(), AccessibilityModeComplete,
+        ui::AX_EVENT_TREE_CHANGED);
+    node->manager()->delegate()->AccessibilitySetAccessibilityFocus(
+        node->GetId());
+    waiter.WaitForNotification();
+
     int start_index = -1;
     int end_index = -1;
     BrowserAccessibilityAndroid* android_node =

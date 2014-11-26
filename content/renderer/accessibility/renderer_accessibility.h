@@ -96,6 +96,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   void OnEventsAck();
   void OnFatalError();
   void OnHitTest(gfx::Point point);
+  void OnSetAccessibilityFocus(int acc_obj_id);
   void OnReset(int reset_token);
   void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);

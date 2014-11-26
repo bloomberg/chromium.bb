@@ -46,6 +46,7 @@
     show,
     textChanged,
     textSelectionChanged,
+    treeChanged,
     valueChanged
   };
 

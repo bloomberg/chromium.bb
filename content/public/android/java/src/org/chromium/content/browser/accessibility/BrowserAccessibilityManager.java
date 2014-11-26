@@ -453,6 +453,16 @@ public class BrowserAccessibilityManager {
         mSelectionGranularity = 0;
         mSelectionStartIndex = 0;
         mSelectionEndIndex = 0;
+
+        // Calling nativeSetAccessibilityFocus will asynchronously load inline text boxes for
+        // this node and its subtree. If accessibility focus is on anything other than
+        // the root, do it - otherwise set it to -1 so we don't load inline text boxes
+        // for the whole subtree of the root.
+        if (mAccessibilityFocusId == mCurrentRootId)
+            nativeSetAccessibilityFocus(mNativeObj, -1);
+        else
+            nativeSetAccessibilityFocus(mNativeObj, mAccessibilityFocusId);
+
         sendAccessibilityEvent(mAccessibilityFocusId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         return true;
@@ -962,4 +972,6 @@ public class BrowserAccessibilityManager {
             int selectionGranularity, boolean extendSelection, int id, int cursorIndex);
     private native boolean nativeAdjustSlider(
             long nativeBrowserAccessibilityManagerAndroid, int id, boolean increment);
+    private native void nativeSetAccessibilityFocus(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
 }

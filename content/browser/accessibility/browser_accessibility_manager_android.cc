@@ -122,6 +122,9 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (event_type == ui::AX_EVENT_HIDE)
     return;
 
+  if (event_type == ui::AX_EVENT_TREE_CHANGED)
+    return;
+
   if (event_type == ui::AX_EVENT_HOVER) {
     HandleHoverEvent(node);
     return;
@@ -713,6 +716,12 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
   }
 
   return true;
+}
+
+void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
+    JNIEnv* env, jobject obj, jint id) {
+  if (delegate_)
+    delegate_->AccessibilitySetAccessibilityFocus(id);
 }
 
 void BrowserAccessibilityManagerAndroid::OnRootChanged(ui::AXNode* new_root) {
