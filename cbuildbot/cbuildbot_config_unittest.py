@@ -677,9 +677,16 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     self.assertEquals(new['vm_tests'], [constants.SMOKE_SUITE_TEST_TYPE,
                                         constants.SIMPLE_AU_TEST_TYPE,
                                         constants.CROS_VM_TEST_TYPE])
-    old['vm_tests'] = None
+
+    # Don't override vm tests for arm boards.
+    old = cbuildbot_config.config['daisy-paladin']
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
-    self.assertIsNone(new['vm_tests'])
+    self.assertEquals(new['vm_tests'], old['vm_tests'])
+
+    # Don't override vm tests for brillo boards.
+    old = cbuildbot_config.config['duck-paladin']
+    new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
+    self.assertEquals(new['vm_tests'], old['vm_tests'])
 
 
 if __name__ == '__main__':

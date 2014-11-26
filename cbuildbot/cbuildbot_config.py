@@ -116,9 +116,10 @@ def OverrideConfigForTrybot(build_config, options):
 
     # In trybots, we want to always run VM tests and all unit tests, so that
     # developers will get better testing for their changes.
-    if (my_config['build_type'] == constants.PALADIN_TYPE
-        and my_config['tests_supported']
-        and build_config['vm_tests'] is not None):
+    if (my_config['build_type'] == constants.PALADIN_TYPE and
+        my_config['tests_supported'] and
+        all(x not in _arm_boards for x in my_config['boards']) and
+        all(x not in _brillo_boards for x in my_config['boards'])):
       my_config['vm_tests'] = [constants.SMOKE_SUITE_TEST_TYPE,
                                constants.SIMPLE_AU_TEST_TYPE,
                                constants.CROS_VM_TEST_TYPE]
