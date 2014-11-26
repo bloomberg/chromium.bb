@@ -115,6 +115,7 @@ test("sandbox_linux_unittests") {
   if (compile_credentials) {
     sources += [
       "services/credentials_unittest.cc",
+      "services/proc_util_unittest.cc",
       "services/unix_domain_socket_unittest.cc",
     ]
   }
@@ -250,6 +251,8 @@ component("sandbox_services") {
     sources += [
       "services/credentials.cc",
       "services/credentials.h",
+      "services/proc_util.cc",
+      "services/proc_util.h",
     ]
     # For capabilities.cc.
     configs += [ "//build/config/linux:libcap" ]

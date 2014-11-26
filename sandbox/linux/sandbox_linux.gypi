@@ -252,6 +252,8 @@
           'sources': [
             'services/credentials.cc',
             'services/credentials.h',
+            'services/proc_util.cc',
+            'services/proc_util.h',
           ],
           'dependencies': [
             # for capabilities.cc.

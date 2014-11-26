@@ -52,6 +52,7 @@
     [ 'compile_credentials==1', {
       'sources': [
         'services/credentials_unittest.cc',
+        'services/proc_util_unittest.cc',
         'services/unix_domain_socket_unittest.cc',
       ],
     }],

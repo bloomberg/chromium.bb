@@ -4,13 +4,10 @@
 
 #include "sandbox/linux/services/credentials.h"
 
-#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/capability.h>
-#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -24,6 +21,7 @@
 #include "base/template_util.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "base/threading/thread.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 
 namespace {
@@ -60,15 +58,6 @@ struct FILECloser {
 // Don't use ScopedFILE in base since it doesn't check fclose().
 // TODO(jln): fix base/.
 typedef scoped_ptr<FILE, FILECloser> ScopedFILE;
-
-struct DIRCloser {
-  void operator()(DIR* d) const {
-    DCHECK(d);
-    PCHECK(0 == closedir(d));
-  }
-};
-
-typedef scoped_ptr<DIR, DIRCloser> ScopedDIR;
 
 COMPILE_ASSERT((base::is_same<uid_t, gid_t>::value), UidAndGidAreSameType);
 // generic_id_t can be used for either uid_t or gid_t.
@@ -174,86 +163,6 @@ Credentials::Credentials() {
 Credentials::~Credentials() {
 }
 
-int Credentials::CountOpenFds(int proc_fd) {
-  DCHECK_LE(0, proc_fd);
-  int proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
-  PCHECK(0 <= proc_self_fd);
-
-  // Ownership of proc_self_fd is transferred here, it must not be closed
-  // or modified afterwards except via dir.
-  ScopedDIR dir(fdopendir(proc_self_fd));
-  CHECK(dir);
-
-  int count = 0;
-  struct dirent e;
-  struct dirent* de;
-  while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
-      continue;
-    }
-
-    int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
-    if (fd_num == proc_fd || fd_num == proc_self_fd) {
-      continue;
-    }
-
-    ++count;
-  }
-  return count;
-}
-
-bool Credentials::HasOpenDirectory(int proc_fd) {
-  int proc_self_fd = -1;
-  if (proc_fd >= 0) {
-    proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
-  } else {
-    proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
-    if (proc_self_fd < 0) {
-      // If this process has been chrooted (eg into /proc/self/fdinfo) then
-      // the new root dir will not have directory listing permissions for us
-      // (hence EACCES).  And if we do have this permission, then /proc won't
-      // exist anyway (hence ENOENT).
-      DPCHECK(errno == EACCES || errno == ENOENT)
-        << "Unexpected failure when trying to open /proc/self/fd: ("
-        << errno << ") " << strerror(errno);
-
-      // If not available, guess false.
-      return false;
-    }
-  }
-  PCHECK(0 <= proc_self_fd);
-
-  // Ownership of proc_self_fd is transferred here, it must not be closed
-  // or modified afterwards except via dir.
-  ScopedDIR dir(fdopendir(proc_self_fd));
-  CHECK(dir);
-
-  struct dirent e;
-  struct dirent* de;
-  while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
-      continue;
-    }
-
-    int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
-    if (fd_num == proc_fd || fd_num == proc_self_fd) {
-      continue;
-    }
-
-    struct stat s;
-    // It's OK to use proc_self_fd here, fstatat won't modify it.
-    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
-    if (S_ISDIR(s.st_mode)) {
-      return true;
-    }
-  }
-
-  // No open unmanaged directories found.
-  return false;
-}
-
 bool Credentials::DropAllCapabilities() {
   ScopedCap cap(cap_init());
   CHECK(cap);
@@ -341,7 +250,7 @@ bool Credentials::MoveToNewUserNS() {
 bool Credentials::DropFileSystemAccess() {
   // Chrooting to a safe empty dir will only be safe if no directory file
   // descriptor is available to the process.
-  DCHECK(!HasOpenDirectory(-1));
+  DCHECK(!ProcUtil::HasOpenDirectory(-1));
   return ChrootToSafeEmptyDir();
 }
 

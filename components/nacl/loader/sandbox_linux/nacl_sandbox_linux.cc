@@ -23,7 +23,7 @@
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
@@ -75,8 +75,7 @@ bool NaClSandbox::IsSingleThreaded() {
 
 bool NaClSandbox::HasOpenDirectory() {
   CHECK(proc_fd_.is_valid());
-  sandbox::Credentials credentials;
-  return credentials.HasOpenDirectory(proc_fd_.get());
+  return sandbox::ProcUtil::HasOpenDirectory(proc_fd_.get());
 }
 
 void NaClSandbox::InitializeLayerOneSandbox() {
@@ -111,8 +110,7 @@ void NaClSandbox::CheckForExpectedNumberOfOpenFds() {
     //
     // This sanity check ensures that dynamically loaded libraries don't
     // leave any FDs open before we enable the sandbox.
-    sandbox::Credentials credentials;
-    CHECK_EQ(7, credentials.CountOpenFds(proc_fd_.get()));
+    CHECK_EQ(7, sandbox::ProcUtil::CountOpenFds(proc_fd_.get()));
   }
 }
 

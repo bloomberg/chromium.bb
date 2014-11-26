@@ -32,7 +32,7 @@
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
-#include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
@@ -387,7 +387,7 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 }
 
 bool LinuxSandbox::HasOpenDirectories() const {
-  return sandbox::Credentials().HasOpenDirectory(proc_fd_);
+  return sandbox::ProcUtil::HasOpenDirectory(proc_fd_);
 }
 
 void LinuxSandbox::SealSandbox() {
