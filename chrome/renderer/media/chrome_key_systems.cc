@@ -157,9 +157,15 @@ static void AddPepperBasedWidevine(
                                  &codecs);
 
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
+
+  // Audio codecs are always supported.
+  // TODO(sandersd): Include AAC here once the tests are updated.
+  // TODO(sandersd): Distinguish these from those that are directly supported,
+  // as those may offer a higher level of protection.
+  supported_codecs |= media::EME_CODEC_WEBM_OPUS;
+  supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+
   for (size_t i = 0; i < codecs.size(); ++i) {
-    if (codecs[i] == kCdmSupportedCodecVorbis)
-      supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
     if (codecs[i] == kCdmSupportedCodecVp8)
       supported_codecs |= media::EME_CODEC_WEBM_VP8;
     if (codecs[i] == kCdmSupportedCodecVp9)

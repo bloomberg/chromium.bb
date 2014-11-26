@@ -555,6 +555,18 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
   TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
+  TestSimplePlayback("bear-320x240-opus-a_enc-a.webm", kWebMAudioOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
+  TestSimplePlayback("bear-320x240-opus-av_enc-av.webm", kWebMAudioVideo);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
+  TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMAudioVideo);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
   RunInvalidResponseTest();
 }

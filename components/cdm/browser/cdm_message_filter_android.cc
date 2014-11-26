@@ -34,6 +34,7 @@ struct CodecInfo {
 };
 
 const CodecInfo kCodecsToQuery[] = {
+  {media::EME_CODEC_WEBM_OPUS, CODEC_AUDIO, "opus", "video/webm"},
   {media::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
   {media::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
   {media::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},

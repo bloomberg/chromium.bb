@@ -60,6 +60,7 @@ static NamedCodec kContainerToCodecMasks[] = {
 
 // Mapping between codec names and enum values.
 static NamedCodec kCodecStrings[] = {
+    {"opus", EME_CODEC_WEBM_OPUS},
     {"vorbis", EME_CODEC_WEBM_VORBIS},
     {"vp8", EME_CODEC_WEBM_VP8},
     {"vp8.0", EME_CODEC_WEBM_VP8},
@@ -86,6 +87,10 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   // Temporarily disable VP9 support for Android.
   // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
   info.supported_codecs &= ~EME_CODEC_WEBM_VP9;
+
+  // Opus is not supported on Android yet. http://crbug.com/318436.
+  // TODO(sandersd): Check for platform support to set this bit.
+  info.supported_codecs &= ~EME_CODEC_WEBM_OPUS;
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)

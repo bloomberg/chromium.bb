@@ -168,6 +168,30 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
+  // Opus is not supported on Android. http://crbug.com/318436
+#if defined(OS_ANDROID)
+  return;
+#endif
+  TestSimplePlayback("bear-320x240-opus-a_enc-a.webm", kWebMAudioOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
+  // Opus is not supported on Android. http://crbug.com/318436
+#if defined(OS_ANDROID)
+  return;
+#endif
+  TestSimplePlayback("bear-320x240-opus-av_enc-av.webm", kWebMAudioVideo);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
+  // Opus is not supported on Android. http://crbug.com/318436
+#if defined(OS_ANDROID)
+  return;
+#endif
+  TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMAudioVideo);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
   TestConfigChange();
 }
