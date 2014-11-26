@@ -10,9 +10,19 @@
 namespace {
 
 class SelfAssign : public base::RefCounted<SelfAssign> {
-  friend class base::RefCounted<SelfAssign>;
+ protected:
+  virtual ~SelfAssign() {}
 
-  ~SelfAssign() {}
+ private:
+  friend class base::RefCounted<SelfAssign>;
+};
+
+class Derived : public SelfAssign {
+ protected:
+  ~Derived() override {}
+
+ private:
+  friend class base::RefCounted<Derived>;
 };
 
 class CheckDerivedMemberAccess : public scoped_refptr<SelfAssign> {
@@ -71,4 +81,35 @@ TEST(RefCountedUnitTest, ScopedRefPtrToOpaque) {
   q = p;
   base::TestOpaqueRefCounted(p);
   base::TestOpaqueRefCounted(q);
+}
+
+TEST(RefCountedUnitTest, BooleanTesting) {
+  scoped_refptr<SelfAssign> p;
+  EXPECT_FALSE(p);
+  p = new SelfAssign;
+  EXPECT_TRUE(p);
+}
+
+TEST(RefCountedUnitTest, Equality) {
+  scoped_refptr<SelfAssign> p1(new SelfAssign);
+  scoped_refptr<SelfAssign> p2(new SelfAssign);
+
+  EXPECT_EQ(p1, p1);
+  EXPECT_EQ(p2, p2);
+
+  EXPECT_NE(p1, p2);
+  EXPECT_NE(p2, p1);
+}
+
+TEST(RefCountedUnitTest, ConvertibleEquality) {
+  scoped_refptr<Derived> p1(new Derived);
+  scoped_refptr<SelfAssign> p2;
+
+  EXPECT_NE(p1, p2);
+  EXPECT_NE(p2, p1);
+
+  p2 = p1;
+
+  EXPECT_EQ(p1, p2);
+  EXPECT_EQ(p2, p1);
 }

@@ -333,6 +333,19 @@ class scoped_refptr {
     swap(&r.ptr_);
   }
 
+ private:
+  // Allow scoped_refptr<T> to be used in boolean expressions, but not
+  // implicitly convertible to a real bool (which is dangerous).
+  //
+  // Note that this trick is only safe when the == and != operators
+  // are declared explicitly, as otherwise "refptr1 == refptr2"
+  // will compile but do the wrong thing (i.e., convert to Testable
+  // and then do the comparison).
+  typedef T* scoped_refptr::*Testable;
+
+ public:
+  operator Testable() const { return ptr_ ? &scoped_refptr::ptr_ : nullptr; }
+
   template <typename U>
   bool operator==(const scoped_refptr<U>& rhs) const {
     return ptr_ == rhs.get();
