@@ -1062,14 +1062,6 @@ public class Tab {
         return mWebContentsDelegate;
     }
 
-    /**
-     * Called when the favicon of the content this tab represents changes.
-     */
-    // TODO(michaelbai): This method is overridden in downstream, remove it after refactorying
-    // downstream usages.
-    protected void onFaviconUpdated() {
-    }
-
     @CalledByNative
     protected void onFaviconAvailable(Bitmap icon) {
         boolean needUpdate = false;
@@ -1094,7 +1086,6 @@ public class Tab {
 
         if (!needUpdate) return;
 
-        onFaviconUpdated();
         for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
     }
     /**
