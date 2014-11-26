@@ -47,9 +47,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   bool draws_content_;
 
  private:
-  bool can_use_lcd_text_;
-  bool ignore_lcd_text_change_;
-
   DISALLOW_COPY_AND_ASSIGN(WebContentLayerImpl);
 };
 
