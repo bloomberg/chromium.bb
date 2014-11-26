@@ -68,6 +68,9 @@ public:
     WebString blobUUID() const;
     uint64_t blobSize() const;
 
+    void setStreamURL(const WebURL&);
+    WebURL streamURL() const;
+
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;
 
