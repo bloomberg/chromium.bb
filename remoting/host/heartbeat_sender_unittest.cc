@@ -14,6 +14,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
+#include "remoting/host/mock_callback.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,17 +43,6 @@ const char kTestJid[] = "user@gmail.com/chromoting123";
 const char kStanzaId[] = "123";
 const int kTestInterval = 123;
 
-class MockListener : public HeartbeatSender::Listener {
- public:
-  // Overridden from HeartbeatSender::Listener
-  virtual void OnUnknownHostIdError() override {
-    NOTREACHED();
-  }
-
-  // Overridden from HeartbeatSender::Listener
-  MOCK_METHOD0(OnHeartbeatSuccessful, void());
-};
-
 }  // namespace
 
 ACTION_P(AddListener, list) {
@@ -78,9 +68,13 @@ class HeartbeatSenderTest
         .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
     EXPECT_CALL(signal_strategy_, GetLocalJid())
         .WillRepeatedly(Return(kTestJid));
+    EXPECT_CALL(mock_unknown_host_id_error_callback_, Run())
+        .Times(0);
 
     heartbeat_sender_.reset(new HeartbeatSender(
-        &mock_listener_, kHostId, &signal_strategy_, key_pair_, kTestBotJid));
+        mock_heartbeat_successful_callback_.GetCallback(),
+        mock_unknown_host_id_error_callback_.GetCallback(),
+        kHostId, &signal_strategy_, key_pair_, kTestBotJid));
   }
 
   void TearDown() override {
@@ -98,7 +92,8 @@ class HeartbeatSenderTest
 
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
-  MockListener mock_listener_;
+  MockClosure mock_heartbeat_successful_callback_;
+  MockClosure mock_unknown_host_id_error_callback_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
@@ -241,7 +236,7 @@ void HeartbeatSenderTest::ProcessResponseWithInterval(
 
 // Verify that ProcessResponse parses set-interval result.
 TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
-  EXPECT_CALL(mock_listener_, OnHeartbeatSuccessful());
+  EXPECT_CALL(mock_heartbeat_successful_callback_, Run());
 
   ProcessResponseWithInterval(false, kTestInterval);
 
@@ -275,12 +270,10 @@ TEST_F(HeartbeatSenderTest, DoSetHostOfflineReason) {
   base::RunLoop().RunUntilIdle();
 }
 
-static void MarkCallbackAsRun(bool* didCallbackRun) {
-  *didCallbackRun = true;
-}
-
 // Make sure SetHostOfflineReason triggers a callback when bot responds.
 TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
+  MockClosure mock_ack_callback;
+
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -290,33 +283,35 @@ TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
   EXPECT_CALL(signal_strategy_, GetState())
       .WillOnce(Return(SignalStrategy::DISCONNECTED))
       .WillRepeatedly(Return(SignalStrategy::CONNECTED));
-  EXPECT_CALL(mock_listener_, OnHeartbeatSuccessful())
+  EXPECT_CALL(mock_heartbeat_successful_callback_, Run())
       .WillRepeatedly(Return());
 
-  bool didCallbackRun = false;
+  // Callback should not run, until response to offline-reason.
+  EXPECT_CALL(mock_ack_callback, Run()).Times(0);
+
   heartbeat_sender_->SetHostOfflineReason(
       "test_error",
-      base::Bind(MarkCallbackAsRun, base::Unretained(&didCallbackRun)));
-  ASSERT_FALSE(didCallbackRun);
+      mock_ack_callback.GetCallback());
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(didCallbackRun) << "Callback shouldn't run before ack from bot";
 
   ProcessResponseWithInterval(
-      false /* <- this not a response to offline-reason*/,
+      false,  // <- This is not a response to offline-reason.
       kTestInterval);
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(didCallbackRun) << "Callback shouldn't run "
-      << "when getting a response to an earlier, non-offline stanza";
 
+  // Callback should run once, when we get response to offline-reason.
+  EXPECT_CALL(mock_ack_callback, Run()).Times(1);
+  ProcessResponseWithInterval(
+      true,  // <- This is a response to offline-reason.
+      kTestInterval);
+  base::RunLoop().RunUntilIdle();
+
+  // When subsequent responses to offline-reason come,
+  // the callback should not be called again.
+  EXPECT_CALL(mock_ack_callback, Run()).Times(0);
   ProcessResponseWithInterval(true, kTestInterval);
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(didCallbackRun) << "Ack from bot should trigger the callback";
-
-  didCallbackRun = false;
-  ProcessResponseWithInterval(true, kTestInterval);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(didCallbackRun) << "Callback should only run once";
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   base::RunLoop().RunUntilIdle();

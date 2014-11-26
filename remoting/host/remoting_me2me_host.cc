@@ -140,7 +140,6 @@ namespace remoting {
 
 class HostProcess
     : public ConfigWatcher::Delegate,
-      public HeartbeatSender::Listener,
       public HostChangeNotificationListener::Listener,
       public IPC::Listener,
       public base::RefCountedThreadSafe<HostProcess> {
@@ -155,10 +154,6 @@ class HostProcess
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
-
-  // HeartbeatSender::Listener overrides.
-  void OnHeartbeatSuccessful() override;
-  void OnUnknownHostIdError() override;
 
   // HostChangeNotificationListener::Listener overrides.
   void OnHostDeleted() override;
@@ -246,6 +241,9 @@ class HostProcess
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
 
   void StartHost();
+
+  void OnHeartbeatSuccessful();
+  void OnUnknownHostIdError();
 
   void OnAuthFailed();
 
@@ -1323,8 +1321,9 @@ void HostProcess::StartHost() {
 #endif
 
   heartbeat_sender_.reset(new HeartbeatSender(
-      this, host_id_, signal_strategy_.get(), key_pair_,
-      directory_bot_jid_));
+      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
+      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
+      host_id_, signal_strategy_.get(), key_pair_, directory_bot_jid_));
 
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));

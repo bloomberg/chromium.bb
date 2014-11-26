@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -87,21 +88,11 @@ class IqSender;
 //  </iq>
 class HeartbeatSender : public SignalStrategy::Listener {
  public:
-  class Listener {
-   public:
-    virtual ~Listener() { }
-
-    // Invoked after the first successful heartbeat.
-    virtual void OnHeartbeatSuccessful() = 0;
-
-    // Invoked when the host ID is permanently not recognized by the server.
-    virtual void OnUnknownHostIdError() = 0;
-  };
-
   // |signal_strategy| and |delegate| must outlive this
   // object. Heartbeats will start when the supplied SignalStrategy
   // enters the CONNECTED state.
-  HeartbeatSender(Listener* listener,
+  HeartbeatSender(const base::Closure& on_heartbeat_successful_callback,
+                  const base::Closure& on_unknown_host_id_error,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
                   scoped_refptr<RsaKeyPair> key_pair,
@@ -145,7 +136,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   scoped_ptr<buzz::XmlElement> CreateHeartbeatMessage();
   scoped_ptr<buzz::XmlElement> CreateSignature();
 
-  Listener* listener_;
+  base::Closure on_heartbeat_successful_callback_;
+  base::Closure on_unknown_host_id_error_;
   std::string host_id_;
   SignalStrategy* signal_strategy_;
   scoped_refptr<RsaKeyPair> key_pair_;
@@ -162,14 +154,6 @@ class HeartbeatSender : public SignalStrategy::Listener {
   int failed_startup_heartbeat_count_;
   std::string host_offline_reason_;
   base::Closure host_offline_reason_ack_callback_;
-  // TODO(lukasza): Consistent usage of listener-vs-callback. This is
-  // inconsistent today, because 1) host-offline-reason changes really
-  // needed to use callbacks (for ability to wrap them in
-  // CancellableCallback and for ability to hold a ref-count to
-  // MinimumHeartbeatSupporter throughout the lifetime of a callback)
-  // and 2) refactoring for consistently using callbacks everywhere
-  // spans multiple files and would obscure the core changes for
-  // host-offline-reason code.
 
   base::ThreadChecker thread_checker_;
 

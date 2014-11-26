@@ -50,12 +50,14 @@ const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
 }  // namespace
 
 HeartbeatSender::HeartbeatSender(
-    Listener* listener,
+    const base::Closure& on_heartbeat_successful_callback,
+    const base::Closure& on_unknown_host_id_error,
     const std::string& host_id,
     SignalStrategy* signal_strategy,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& directory_bot_jid)
-    : listener_(listener),
+    : on_heartbeat_successful_callback_(on_heartbeat_successful_callback),
+      on_unknown_host_id_error_(on_unknown_host_id_error),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       key_pair_(key_pair),
@@ -167,7 +169,7 @@ void HeartbeatSender::ProcessResponse(
                               &HeartbeatSender::ResendStanza);
           return;
         }
-        listener_->OnUnknownHostIdError();
+        on_unknown_host_id_error_.Run();
         return;
       }
     }
@@ -222,7 +224,7 @@ void HeartbeatSender::ProcessResponse(
 
       // Notify listener of the first successful heartbeat.
       if (!heartbeat_succeeded_) {
-        listener_->OnHeartbeatSuccessful();
+        on_heartbeat_successful_callback_.Run();
       }
       heartbeat_succeeded_ = true;
 
