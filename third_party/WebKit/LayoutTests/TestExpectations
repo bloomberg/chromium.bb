@@ -555,6 +555,9 @@ crbug.com/338883 [ Linux Win ] crypto/ecdsa-generateKey-parseAlgorithm-failures.
 crbug.com/338883 [ Linux Win ] crypto/ecdsa-import-jwk.html [ Failure Pass ]
 crbug.com/338883 [ Linux Win ] crypto/ecdsa-sign-verify.html [ Failure Pass ]
 
+# Temporarily mask failures in this test while landing Chromium side.
+crbug.com/436793 crypto/aes-cbc-invalid-length.html [ Failure Pass ]
+
 # This test needs to be updated to use a non-svg font.
 crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]
 
