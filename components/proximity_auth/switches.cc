@@ -7,6 +7,18 @@
 namespace proximity_auth {
 namespace switches {
 
+// Disable Easy sign-in.
+const char kDisableEasySignin[] = "disable-easy-signin";
+
+// Disable Easy unlock.
+const char kDisableEasyUnlock[] = "disable-easy-unlock";
+
+// Enable Easy sign-in.
+const char kEnableEasySignin[] = "enable-easy-signin";
+
+// Enable Easy unlock.
+const char kEnableEasyUnlock[] = "enable-easy-unlock";
+
 // Enables close proximity detection. This allows the user to set a setting to
 // require very close proximity between the remote device and the local device
 // in order to unlock the local device, which trades off convenience for

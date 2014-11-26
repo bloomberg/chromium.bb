@@ -845,11 +845,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)
   },
   {
-    "disable-easy-signin",
-    IDS_FLAGS_DISABLE_EASY_SIGNIN_NAME,
-    IDS_FLAGS_DISABLE_EASY_SIGNIN_DESCRIPTION,
+    "easy-unlock",
+    IDS_FLAGS_EASY_UNLOCK_NAME,
+    IDS_FLAGS_EASY_UNLOCK_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(proximity_auth::switches::kEnableEasyUnlock,
+                              proximity_auth::switches::kDisableEasyUnlock)
+  },
+  {
+    "easy-signin",
+    IDS_FLAGS_EASY_SIGNIN_NAME,
+    IDS_FLAGS_EASY_SIGNIN_DESCRIPTION,
     kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableEasySignin),
+    ENABLE_DISABLE_VALUE_TYPE(proximity_auth::switches::kEnableEasySignin,
+                              proximity_auth::switches::kDisableEasySignin)
   },
   {
     "enable-easy-unlock-proximity-detection",

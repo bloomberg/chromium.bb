@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proximity_auth/switches.h"
 #include "components/user_manager/user.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif
@@ -81,19 +81,21 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 
 // static
 bool EasyUnlockService::IsSignInEnabled() {
-#if defined(OS_CHROMEOS)
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("EasySignIn");
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group = base::FieldTrialList::FindFullName("EasySignIn");
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableEasySignin)) {
+          proximity_auth::switches::kDisableEasySignin)) {
     return false;
   }
 
-  return group_name == "Enable";
-#else
-  return false;
-#endif
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableEasySignin)) {
+    return true;
+  }
+
+  return group == "Enable";
 }
 
 class EasyUnlockService::BluetoothDetector
@@ -667,4 +669,3 @@ void EasyUnlockService::PrepareForSuspend() {
         EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING);
   }
 }
-

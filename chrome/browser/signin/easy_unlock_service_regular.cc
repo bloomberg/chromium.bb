@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
@@ -41,6 +42,27 @@ const char kKeyDevices[] = "devices";
 
 // Key name of the phone public key in a device dictionary.
 const char kKeyPhoneId[] = "permitRecord.id";
+
+#if defined(OS_CHROMEOS)
+// Returns true iff the proximity authentication feature is enabled.
+bool IsEnabled() {
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group = base::FieldTrialList::FindFullName("EasyUnlock");
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableEasyUnlock)) {
+    return false;
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableEasyUnlock)) {
+    return true;
+  }
+
+  return group == "Enable";
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -279,11 +301,9 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() {
   if (!profile()->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
     return false;
 
-  // Respect existing policy and skip finch test.
-  if (!profile()->GetPrefs()->IsManagedPreference(prefs::kEasyUnlockAllowed)) {
-    // It is enabled when the trial exists and is in "Enable" group.
-    return base::FieldTrialList::FindFullName("EasyUnlock") == "Enable";
-  }
+  // If the preference is managed, respect the existing policy.
+  if (!profile()->GetPrefs()->IsManagedPreference(prefs::kEasyUnlockAllowed))
+     return IsEnabled();
 
   return true;
 #else

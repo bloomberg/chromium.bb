@@ -37,9 +37,6 @@ const char kDisableBootAnimation[] = "disable-boot-animation";
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 
-// Disable Easy sign-in.
-const char kDisableEasySignin[] = "disable-easy-signin";
-
 // Disable HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
