@@ -112,6 +112,27 @@
                   test.done();
               });
           }, "Test removesourcebuffer event firing on sourceBuffers and activeSourceBuffers when MediaSource closes.", { allow_media_element_error: true } );
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              // Basic checks
+              assert_equals(mediaSource.sourceBuffers.length, 1, "mediaSource sourceBuffers length");
+              assert_equals(mediaSource.sourceBuffers[0], sourceBuffer, "matching sourceBuffer");
+              assert_not_equals(undefined, null, "null is different from undefined");
+
+              // SourceBufferList's indexed property getter is anonymous. At least ensure no 'item' is defined.
+              assert_equals(mediaSource.sourceBuffers.item, undefined, "'item' is undefined for MediaSource.sourceBuffers");
+
+              // Out-of-range indices should result in undefined.
+              assert_equals(mediaSource.sourceBuffers[1], undefined, "undefined result for out-of-range (+1 index)");
+              assert_equals(mediaSource.sourceBuffers[2], undefined, "undefined result for out-of-range (+2 index)");
+              assert_equals(mediaSource.sourceBuffers[undefined], undefined, "undefined result for out-of-range (undefined index)")
+              assert_equals(mediaSource.sourceBuffers[null], undefined, "undefined result for out-of-range (null index)");
+              assert_equals(mediaSource.sourceBuffers[""], undefined, "undefined result for out-of-range (empty string index)");
+              assert_equals(mediaSource.sourceBuffers["invalid index"], undefined, "undefined result for out-of-range (string index)");
+
+              test.done();
+          }, "Test out-of-range SourceBufferList indexed property getter behavior");
         </script>
     </body>
 </html>
