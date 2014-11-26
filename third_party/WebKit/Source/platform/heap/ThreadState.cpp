@@ -335,7 +335,7 @@ ThreadState::ThreadState()
     , m_inGC(false)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
-    , m_lowCollectionRate(false)
+    , m_collectionRate(0)
     , m_traceDOMWrappers(0)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
@@ -751,16 +751,15 @@ bool ThreadState::shouldForceConservativeGC()
         return false;
 
     size_t newSize = Heap::allocatedObjectSize();
-    if (m_didV8GCAfterLastGC && !m_lowCollectionRate) {
+    if (m_didV8GCAfterLastGC && m_collectionRate > 0.5) {
         // If we had a V8 GC after the last Oilpan GC and the last collection
-        // rate is high, trigger a conservative GC on a 100% increase in size,
-        // but not for less than 4MB.
+        // rate was higher than 50%, trigger a conservative GC on a 100%
+        // increase in size, but not for less than 4MB.
         return newSize >= 4 * 1024 * 1024 && newSize > 2 * Heap::markedObjectSize();
     }
     // Otherwise, trigger a conservative GC on a 300% increase in size, but not
-    // for less than 32MB.  We set the higher limits in this case because Oilpan
-    // GC might waste time to trace a lot of unused DOM wrappers or to find
-    // small amount of garbage.
+    // for less than 32MB.  We set the higher limit in this case because Oilpan
+    // GC is unlikely to collect a lot of objects without having a V8 GC.
     // FIXME: Is 32MB reasonable?
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
@@ -1079,11 +1078,12 @@ void ThreadState::performPendingSweep()
 
     // If we collected less than 50% of objects, record that the collection rate
     // is low which we use to determine when to perform the next GC.
-    // FIXME: We should make m_lowCollectionRate available in non-main threads.
+    // FIXME: We should make m_collectionRate available in non-main threads.
     // FIXME: Heap::markedObjectSize() may not be accurate because other threads
     // may not have finished sweeping.
-    if (isMainThread())
-        m_lowCollectionRate = Heap::markedObjectSize() > (allocatedObjectSizeBeforeSweeping / 2);
+    if (isMainThread()) {
+        m_collectionRate = 1.0 * Heap::markedObjectSize() / allocatedObjectSizeBeforeSweeping;
+    }
 
     if (Platform::current()) {
         Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);

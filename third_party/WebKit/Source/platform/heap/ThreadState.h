@@ -766,7 +766,7 @@ private:
     bool m_isTerminating;
 
     bool m_shouldFlushHeapDoesNotContainCache;
-    bool m_lowCollectionRate;
+    double m_collectionRate;
 
     CallbackStack* m_weakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
