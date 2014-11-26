@@ -48,21 +48,6 @@ using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
-STATIC_CONST_MEMBER_DEFINITION const
-    TabSpecificContentSettings::MicrophoneCameraState
-    TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED;
-STATIC_CONST_MEMBER_DEFINITION const
-    TabSpecificContentSettings::MicrophoneCameraState
-    TabSpecificContentSettings::MICROPHONE_ACCESSED;
-STATIC_CONST_MEMBER_DEFINITION const
-    TabSpecificContentSettings::MicrophoneCameraState
-    TabSpecificContentSettings::MICROPHONE_BLOCKED;
-STATIC_CONST_MEMBER_DEFINITION const
-    TabSpecificContentSettings::MicrophoneCameraState
-    TabSpecificContentSettings::CAMERA_ACCESSED;
-STATIC_CONST_MEMBER_DEFINITION const
-    TabSpecificContentSettings::MicrophoneCameraState
-    TabSpecificContentSettings::CAMERA_BLOCKED;
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
