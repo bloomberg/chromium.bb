@@ -669,3 +669,10 @@ blink_web.dll!blink::Frame::detach
 content.dll!content::RenderFrameProxy::OnDeleteProxy
 content.dll!content::RenderFrameProxy::OnMessageReceived
 content.dll!content::MessageRouter::RouteMessage
+
+UNINITIALIZED READ
+name=some name
+base.dll!Pickle::WriteBool
+content.dll!IPC::ParamTraits<>::Write
+content.dll!IPC::MessageSchema<>::Write
+content.dll!ResourceHostMsg_RequestResource::ResourceHostMsg_RequestResource
