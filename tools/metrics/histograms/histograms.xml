@@ -21101,6 +21101,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.VerifyWakeOnWiFiSettingsResult"
+    enum="VerifyWakeOnWiFiSettingsResult">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of times NIC wake on
+    WiFi settings verification succeeds or fails in shill. This metric is
+    recorded every time wake on WiFi settings are requested and verified after
+    the NIC is programmed with wake on WiFi settings.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.WakeOnWiFiFeaturesEnabledState"
     enum="WakeOnWiFiFeaturesEnabledState">
   <owner>samueltan@chromium.org</owner>
@@ -56678,6 +56689,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="VAVEAEncoderFailure" type="int">
   <int value="0" label="VAAPI_ERROR"/>
+</enum>
+
+<enum name="VerifyWakeOnWiFiSettingsResult" type="int">
+  <summary>
+    The result of NIC wake on WiFi settings verification. Corresponds to
+    VerifyWakeOnWiFiSettingsResult in shill/metrics.h
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
 </enum>
 
 <enum name="VideoCaptureEvent" type="int">
