@@ -158,7 +158,10 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     class WriteDescriptor {
      public:
-      WriteDescriptor(const GURL& url, int64_t key, int64_t size);
+      WriteDescriptor(const GURL& url,
+                      int64_t key,
+                      int64_t size,
+                      base::Time last_modified);
       WriteDescriptor(const base::FilePath& path,
                       int64_t key,
                       int64_t size,
