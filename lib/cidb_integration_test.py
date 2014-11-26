@@ -176,10 +176,10 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema24(self):
-    """Run the CQ test with schema version 24."""
-    # Run the CQ test at schema version 24
-    self._PrepareFreshDatabase(24)
+  def testCQWithSchema25(self):
+    """Run the CQ test with schema version 25."""
+    # Run the CQ test at schema version 25
+    self._PrepareFreshDatabase(25)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -386,7 +386,7 @@ class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 
   def runTest(self):
-    """Simulate a single set of canary builds with database schema v7."""
+    """Simulate a single set of canary builds with database schema v25."""
     metadatas = GetTestDataSeries(SERIES_1_TEST_DATA_PATH)
     self.assertEqual(len(metadatas), 18, 'Did not load expected amount of '
                                          'test data')
@@ -394,7 +394,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(16)
+    self._PrepareFreshDatabase(25)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 

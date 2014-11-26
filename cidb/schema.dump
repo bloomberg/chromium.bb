@@ -74,6 +74,7 @@ CREATE TABLE `buildTable` (
   `toolchain_url` varchar(240) DEFAULT NULL,
   `final` tinyint(1) NOT NULL DEFAULT '0',
   `metadata_url` varchar(240) DEFAULT NULL,
+  `summary` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildbot_generation` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`),
   KEY `master_build_id` (`master_build_id`),
