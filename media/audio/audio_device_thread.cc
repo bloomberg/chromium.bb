@@ -170,7 +170,14 @@ void AudioDeviceThread::Thread::Run() {
     if (bytes_read != sizeof(pending_data))
       break;
 
-    {
+    // kuint32max is a special signal which is returned after the browser
+    // stops the output device in response to a renderer side request.
+    //
+    // Avoid running Process() for the paused signal, we still need to update
+    // the buffer index if |synchronized_buffers_| is true though.
+    //
+    // See comments in AudioOutputController::DoPause() for details on why.
+    if (pending_data != kuint32max) {
       base::AutoLock auto_lock(callback_lock_);
       if (callback_)
         callback_->Process(pending_data);
