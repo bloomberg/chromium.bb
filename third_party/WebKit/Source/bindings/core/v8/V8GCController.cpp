@@ -451,7 +451,7 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
         //     the DOM objects are not collected forever. (Note that
         //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
         // (6) V8 hits OOM.
-        ThreadState::current()->setGCRequested();
+        ThreadState::current()->requestGC();
     }
 }
 

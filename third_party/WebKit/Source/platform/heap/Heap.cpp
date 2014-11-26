@@ -427,11 +427,8 @@ public:
         // FIXME: in an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row.
-        RELEASE_ASSERT(!m_state->isInGC());
-        RELEASE_ASSERT(!m_state->isSweepInProgress());
         if (LIKELY(ThreadState::stopThreads())) {
             m_parkedAllThreads = true;
-            m_state->enterGC();
         }
         if (m_state->isMainThread())
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
@@ -444,8 +441,6 @@ public:
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
-            m_state->leaveGC();
-            ASSERT(!m_state->isInGC());
             ThreadState::resumeThreads();
         }
     }
@@ -693,7 +688,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
         if (threadState()->shouldForceConservativeGC())
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         else
-            threadState()->setGCRequested();
+            threadState()->requestGC();
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
     return allocate(payloadSize, gcInfo);
@@ -1028,7 +1023,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 
     updateRemainingAllocationSize();
     if (m_threadState->shouldGC())
-        m_threadState->setGCRequested();
+        m_threadState->requestGC();
     m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
@@ -2426,23 +2421,31 @@ bool Heap::weakTableRegistered(const void* table)
 }
 #endif
 
-void Heap::prepareForGC()
+void Heap::preGC()
 {
     ASSERT(Heap::isInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->prepareForGC();
+        (*it)->preGC();
+}
+
+void Heap::postGC()
+{
+    ASSERT(Heap::isInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
+        (*it)->postGC();
 }
 
 void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::CauseOfGC cause)
 {
     ThreadState* state = ThreadState::current();
-    state->clearGCRequested();
+    state->setGCState(ThreadState::StoppingOtherThreads);
 
     GCScope gcScope(stackState);
     // Check if we successfully parked the other threads. If not we bail out of the GC.
     if (!gcScope.allThreadsParked()) {
-        ThreadState::current()->setGCRequested();
+        state->requestGC();
         return;
     }
 
@@ -2466,7 +2469,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     NoAllocationScope<AnyThread> noAllocationScope;
 
     enterGC();
-    prepareForGC();
+    preGC();
 
     Heap::resetMarkedObjectSize();
     Heap::resetAllocatedObjectSize();
@@ -2496,6 +2499,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     // we should have crashed during marking before getting here.)
     orphanedPagePool()->decommitOrphanedPages();
 
+    postGC();
     leaveGC();
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -2521,9 +2525,8 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     {
         NoAllocationScope<AnyThread> noAllocationScope;
 
-        Heap::enterGC();
-        state->enterGC();
-        state->prepareForGC();
+        enterGC();
+        state->preGC();
 
         // 1. trace the thread local persistent roots. For thread local GCs we
         // don't trace the stack (ie. no conservative scanning) since this is
@@ -2544,8 +2547,8 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         postMarkingProcessing();
         globalWeakProcessing();
 
-        state->leaveGC();
-        Heap::leaveGC();
+        state->postGC();
+        leaveGC();
     }
     state->performPendingSweep();
 }

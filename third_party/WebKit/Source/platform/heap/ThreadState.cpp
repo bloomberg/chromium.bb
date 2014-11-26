@@ -326,16 +326,14 @@ ThreadState::ThreadState()
     , m_safePointScopeMarker(0)
     , m_atSafePoint(false)
     , m_interruptors()
-    , m_gcRequested(false)
     , m_didV8GCAfterLastGC(false)
     , m_forcePreciseGCForTesting(false)
-    , m_sweepRequested(0)
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
-    , m_inGC(false)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_collectionRate(0)
+    , m_gcState(NoGCScheduled)
     , m_traceDOMWrappers(0)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
@@ -358,6 +356,7 @@ ThreadState::ThreadState()
 ThreadState::~ThreadState()
 {
     checkThread();
+    ASSERT(gcState() == NoGCScheduled);
     delete m_weakCallbackStack;
     m_weakCallbackStack = 0;
     for (int i = 0; i < NumberOfHeaps; i++)
@@ -764,43 +763,38 @@ bool ThreadState::shouldForceConservativeGC()
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
-bool ThreadState::sweepRequested()
+void ThreadState::setGCState(GCState gcState)
 {
-    ASSERT(Heap::isInGC() || checkThread());
-    return m_sweepRequested;
+    switch (gcState) {
+    case NoGCScheduled:
+        checkThread();
+        RELEASE_ASSERT(m_gcState == Sweeping);
+        break;
+    case GCScheduled:
+        checkThread();
+        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == GCScheduled || m_gcState == StoppingOtherThreads);
+        break;
+    case StoppingOtherThreads:
+        checkThread();
+        break;
+    case GCRunning:
+        break;
+    case SweepScheduled:
+        RELEASE_ASSERT(m_gcState == GCRunning);
+        break;
+    case Sweeping:
+        checkThread();
+        RELEASE_ASSERT(m_gcState == SweepScheduled);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    m_gcState = gcState;
 }
 
-void ThreadState::setSweepRequested()
+ThreadState::GCState ThreadState::gcState() const
 {
-    // Sweep requested is set from the thread that initiates garbage
-    // collection which could be different from the thread for this
-    // thread state. Therefore the setting of m_sweepRequested needs a
-    // barrier.
-    atomicTestAndSetToOne(&m_sweepRequested);
-}
-
-void ThreadState::clearSweepRequested()
-{
-    checkThread();
-    m_sweepRequested = 0;
-}
-
-bool ThreadState::gcRequested()
-{
-    checkThread();
-    return m_gcRequested;
-}
-
-void ThreadState::setGCRequested()
-{
-    checkThread();
-    m_gcRequested = true;
-}
-
-void ThreadState::clearGCRequested()
-{
-    checkThread();
-    m_gcRequested = false;
+    return m_gcState;
 }
 
 void ThreadState::didV8GC()
@@ -816,7 +810,7 @@ void ThreadState::performPendingGC(StackState stackState)
         if (forcePreciseGCForTesting()) {
             setForcePreciseGCForTesting(false);
             Heap::collectAllGarbage();
-        } else if (gcRequested()) {
+        } else if (gcState() == GCScheduled) {
             Heap::collectGarbage(NoHeapPointersOnStack);
         }
     }
@@ -856,7 +850,7 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
     }
 }
 
-void ThreadState::prepareForGC()
+void ThreadState::preGC()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
         BaseHeap* heap = m_heaps[i];
@@ -867,12 +861,17 @@ void ThreadState::prepareForGC()
         // not trace already dead objects. If we trace a dead object we could end up tracing
         // into garbage or the middle of another object via the newly conservatively found
         // object.
-        if (sweepRequested())
+        if (gcState() == ThreadState::SweepScheduled)
             heap->markUnmarkedObjectsDead();
     }
     prepareRegionTree();
-    setSweepRequested();
+    setGCState(ThreadState::GCRunning);
     flushHeapDoesNotContainCacheIfNeeded();
+}
+
+void ThreadState::postGC()
+{
+    setGCState(ThreadState::SweepScheduled);
 }
 
 void ThreadState::setupHeapsForTermination()
@@ -1003,8 +1002,9 @@ void ThreadState::copyStackUntilSafePointScope()
 void ThreadState::performPendingSweep()
 {
     checkThread();
-    if (!sweepRequested())
+    if (gcState() != SweepScheduled)
         return;
+    setGCState(Sweeping);
 
 #if ENABLE(GC_PROFILE_HEAP)
     // We snapshot the heap prior to sweeping to get numbers for both resources
@@ -1060,9 +1060,8 @@ void ThreadState::performPendingSweep()
             m_heaps[i]->postSweepProcessing();
     }
 
-    clearGCRequested();
     m_didV8GCAfterLastGC = false;
-    clearSweepRequested();
+    setGCState(ThreadState::NoGCScheduled);
 
     // If we collected less than 50% of objects, record that the collection rate
     // is low which we use to determine when to perform the next GC.
@@ -1144,7 +1143,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
 #if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 {
-    bool needLockForIteration = !isInGC();
+    bool needLockForIteration = !Heap::isInGC();
     if (needLockForIteration)
         threadAttachMutex().lock();
 

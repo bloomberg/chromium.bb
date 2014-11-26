@@ -918,7 +918,8 @@ public:
     static void globalWeakProcessing();
     static void setForcePreciseGCForTesting();
 
-    static void prepareForGC();
+    static void preGC();
+    static void postGC();
 
     // Conservatively checks whether an address is a pointer in any of the thread
     // heaps. If so marks the object pointed to as live.

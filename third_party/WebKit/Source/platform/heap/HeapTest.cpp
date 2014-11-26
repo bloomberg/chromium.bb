@@ -198,7 +198,6 @@ public:
         m_state->checkThread();
         if (LIKELY(ThreadState::stopThreads())) {
             Heap::enterGC();
-            m_state->enterGC();
             m_parkedAllThreads = true;
         }
     }
@@ -210,7 +209,6 @@ public:
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
-            m_state->leaveGC();
             Heap::leaveGC();
             ThreadState::resumeThreads();
         }
@@ -3353,7 +3351,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
-        Heap::prepareForGC();
+        Heap::preGC();
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
@@ -3365,6 +3363,7 @@ TEST(HeapTest, CheckAndMarkPointer)
         EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress));
         EXPECT_EQ(2ul, visitor.count());
         visitor.reset();
+        Heap::postGC();
     }
     // This forces a GC without stack scanning which results in the objects
     // being collected. This will also rebuild the above mentioned freelists,
@@ -3373,7 +3372,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked());
-        Heap::prepareForGC();
+        Heap::preGC();
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             // We would like to assert that checkAndMarkPointer returned false
@@ -3390,6 +3389,7 @@ TEST(HeapTest, CheckAndMarkPointer)
         Heap::checkAndMarkPointer(&visitor, largeObjectAddress);
         Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress);
         EXPECT_EQ(0ul, visitor.count());
+        Heap::postGC();
     }
     // This round of GC is important to make sure that the object start
     // bitmap are cleared out and that the free lists are rebuild.

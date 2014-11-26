@@ -320,6 +320,16 @@ public:
         ForcedGC
     };
 
+    // See setGCState() for possible state transitions.
+    enum GCState {
+        NoGCScheduled,
+        GCScheduled,
+        StoppingOtherThreads,
+        GCRunning,
+        SweepScheduled,
+        Sweeping,
+    };
+
     class NoSweepScope {
     public:
         explicit NoSweepScope(ThreadState* state) : m_state(state)
@@ -399,11 +409,6 @@ public:
         return true;
     }
 
-    // If gcRequested returns true when a thread returns to its event
-    // loop the thread will initiate a garbage collection.
-    bool gcRequested();
-    void setGCRequested();
-    void clearGCRequested();
     void didV8GC();
 
     // shouldGC and shouldForceConservativeGC implement the heuristics
@@ -416,6 +421,13 @@ public:
     bool shouldGC();
     bool shouldForceConservativeGC();
 
+    void requestGC() { setGCState(GCScheduled); }
+    void setGCState(GCState);
+    GCState gcState() const;
+
+    void preGC();
+    void postGC();
+
     // Was the last GC forced for testing? This is set when garbage collection
     // is forced for testing and there are pointers on the stack. It remains
     // set until a garbage collection is triggered with no pointers on the stack.
@@ -425,9 +437,6 @@ public:
     void setForcePreciseGCForTesting(bool);
     bool forcePreciseGCForTesting();
 
-    bool sweepRequested();
-    void setSweepRequested();
-    void clearSweepRequested();
     void performPendingSweep();
 
     // Support for disallowing allocation. Mainly used for sanity
@@ -440,31 +449,11 @@ public:
     // made consistent for sweeping.
     void makeConsistentForSweeping();
 
-    // Is the thread corresponding to this thread state currently
-    // performing GC?
-    bool isInGC() const { return m_inGC; }
-
-    // FIXME: This will be removed soon.
-    void enterGC()
-    {
-        ASSERT(!m_inGC);
-        m_inGC = true;
-    }
-
-    // FIXME: This will be removed soon.
-    void leaveGC()
-    {
-        ASSERT(m_inGC);
-        m_inGC = false;
-    }
-
-    // Is the thread corresponding to this thread state currently
-    // sweeping?
+    // Is this thread currently sweeping?
     bool isSweepInProgress() const { return m_sweepInProgress; }
 
     void prepareRegionTree();
     void flushHeapDoesNotContainCacheIfNeeded();
-    void prepareForGC();
 
     // Safepoint related functionality.
     //
@@ -750,13 +739,10 @@ private:
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
-    bool m_gcRequested;
     bool m_didV8GCAfterLastGC;
     bool m_forcePreciseGCForTesting;
-    volatile int m_sweepRequested;
     bool m_sweepInProgress;
     size_t m_noAllocationCount;
-    bool m_inGC;
     BaseHeap* m_heaps[NumberOfHeaps];
 
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
@@ -764,6 +750,7 @@ private:
 
     bool m_shouldFlushHeapDoesNotContainCache;
     double m_collectionRate;
+    GCState m_gcState;
 
     CallbackStack* m_weakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
