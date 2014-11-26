@@ -1,8 +1,4 @@
 
-crbug.com/408544 [ Win Mac ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/408544 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/408544 [ Win Mac ] virtual/textblob/fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
