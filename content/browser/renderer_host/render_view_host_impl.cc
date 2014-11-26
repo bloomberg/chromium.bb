@@ -393,8 +393,10 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
   prefs.container_culling_enabled =
       command_line.HasSwitch(switches::kEnableContainerCulling);
-  prefs.text_blobs_enabled =
-      !command_line.HasSwitch(switches::kDisableTextBlobs);
+  // Text blobs rely on impl-side painting for proper LCD handling.
+  prefs.text_blobs_enabled = command_line.HasSwitch(switches::kForceTextBlobs)
+      || (content::IsImplSidePaintingEnabled() &&
+          !command_line.HasSwitch(switches::kDisableTextBlobs));
   prefs.region_based_columns_enabled =
       command_line.HasSwitch(switches::kEnableRegionBasedColumns);
 

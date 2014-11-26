@@ -255,7 +255,7 @@ const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 // Disables SVG 1.1 DOM.
 const char kDisableSVG1DOM[]                = "disable-svg1dom";
 
-// Disable experimental text blob rendering.
+// Disable text blob rendering.
 const char kDisableTextBlobs[]              = "disable-text-blobs";
 
 // Disable multithreaded GPU compositing of web content.
@@ -541,6 +541,11 @@ const char kForceGpuRasterization[]        = "force-gpu-rasterization";
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
+
+// Always use text blob rendering, overriding kDisableTextBlobs and any
+// heuristics that may otherwise disable it.
+// TODO(fmalita): remove after --disable-impl-side-painting is phased out.
+const char kForceTextBlobs[]                = "force-text-blobs";
 
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[]                   = "gpu-device-id";
