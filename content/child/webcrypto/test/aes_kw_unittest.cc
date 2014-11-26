@@ -28,7 +28,7 @@ TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
   blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
     SCOPED_TRACE(i);
-    EXPECT_EQ(Status::ErrorGenerateKeyLength(),
+    EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
               GenerateSecretKey(CreateAesKwKeyGenAlgorithm(kKeyLen[i]), true, 0,
                                 &key));
   }

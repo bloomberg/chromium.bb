@@ -136,6 +136,9 @@ class CONTENT_EXPORT Status {
   // AES.
   static Status ErrorImportAesKeyLength();
 
+  // Attempted to generate an AES key with an invalid length.
+  static Status ErrorGenerateAesKeyLength();
+
   // 192-bit AES keys are valid, however unsupported.
   static Status ErrorAes192BitUnsupported();
 
@@ -205,9 +208,12 @@ class CONTENT_EXPORT Status {
   // An unextractable key was used by an operation which exports the key data.
   static Status ErrorKeyNotExtractable();
 
-  // The key length specified when generating a key was invalid. Either it was
-  // zero, or it was not a multiple of 8 bits.
-  static Status ErrorGenerateKeyLength();
+  // Attempted to generate an HMAC key with a key length in bits that was not a
+  // multiple of 8.
+  static Status ErrorGenerateHmacKeyLengthPartialByte();
+
+  // Attempted to generate an HMAC key using a key length of 0.
+  static Status ErrorGenerateHmacKeyLengthZero();
 
   // Attempted to create a key (either by importKey(), generateKey(), or
   // unwrapKey()) however the key usages were not applicable for the key type

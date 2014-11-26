@@ -183,7 +183,7 @@ Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
   if (*keylen_bits == 192)
     return Status::ErrorAes192BitUnsupported();
 
-  return Status::ErrorGenerateKeyLength();
+  return Status::ErrorGenerateAesKeyLength();
 }
 
 Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
@@ -203,14 +203,16 @@ Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
     }
   }
 
+  // TODO(eroman): Non multiple of 8 bit keylengths should be allowed:
+  // http://crbug.com/431085.
   if (params->optionalLengthBits() % 8)
-    return Status::ErrorGenerateKeyLength();
+    return Status::ErrorGenerateHmacKeyLengthPartialByte();
 
   *keylen_bits = params->optionalLengthBits();
 
-  // TODO(eroman): NSS fails when generating a zero-length secret key.
+  // Zero-length HMAC keys are disallowed by the spec.
   if (*keylen_bits == 0)
-    return Status::ErrorGenerateKeyLength();
+    return Status::ErrorGenerateHmacKeyLengthZero();
 
   return Status::Success();
 }

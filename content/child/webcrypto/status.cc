@@ -146,8 +146,15 @@ Status Status::ErrorUnsupportedExportKeyFormat() {
 }
 
 Status Status::ErrorImportAesKeyLength() {
+  // TODO(eroman): Mention only 128 and 256 bits since 192 is unsupported.
+  // http://crbug.com/425670
   return Status(blink::WebCryptoErrorTypeData,
                 "AES key data must be 128, 192 or 256 bits");
+}
+
+Status Status::ErrorGenerateAesKeyLength() {
+  return Status(blink::WebCryptoErrorTypeOperation,
+                "AES key length must be 128 or 256 bits");
 }
 
 Status Status::ErrorAes192BitUnsupported() {
@@ -241,10 +248,21 @@ Status Status::ErrorKeyNotExtractable() {
                 "They key is not extractable");
 }
 
-Status Status::ErrorGenerateKeyLength() {
+Status Status::ErrorGenerateHmacKeyLengthPartialByte() {
+  // TODO(eroman): This message needs to be fixed (however appears in a
+  // LayoutTest).
+  //   * The error type is no longer spec compliant
+  //   * The message text is poor
+  //   * In fact the spec no longer requires key lengths to be multiples of 8
+  //     bits so this message is bogus (http://crbug.com/431085)
   return Status(blink::WebCryptoErrorTypeData,
                 "Invalid key length: it is either zero or not a multiple of 8 "
                 "bits");
+}
+
+Status Status::ErrorGenerateHmacKeyLengthZero() {
+  return Status(blink::WebCryptoErrorTypeOperation,
+                "HMAC key length must be not be zero");
 }
 
 Status Status::ErrorCreateKeyBadUsages() {
