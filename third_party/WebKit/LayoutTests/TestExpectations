@@ -466,6 +466,8 @@ crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailu
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure Pass ]
 
+crbug.com/436766 [ Mac ] fast/transforms/transform-on-inline.html [ Pass ImageOnlyFailure ]
+
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
