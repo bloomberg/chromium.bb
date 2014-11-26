@@ -11,8 +11,8 @@ var filter = {};
  * Create a filter from name and options.
  *
  * @param {string} name Maps to a filter method name.
- * @param {Object} options A map of filter-specific options.
- * @return {function(ImageData,ImageData,number,number)} created function.
+ * @param {!Object} options A map of filter-specific options.
+ * @return {function(!ImageData,!ImageData,number,number)} created function.
  */
 filter.create = function(name, options) {
   var filterFunc = filter[name](options);
@@ -30,8 +30,8 @@ filter.create = function(name, options) {
  *
  * To be used with large images to avoid freezing up the UI.
  *
- * @param {HTMLCanvasElement} dstCanvas Destination canvas.
- * @param {HTMLCanvasElement} srcCanvas Source canvas.
+ * @param {!HTMLCanvasElement} dstCanvas Destination canvas.
+ * @param {!HTMLCanvasElement} srcCanvas Source canvas.
  * @param {function(ImageData,ImageData,number,number)} filterFunc Filter.
  * @param {function(number, number)} progressCallback Progress callback.
  * @param {number} maxPixelsPerStrip Pixel number to process at once.
@@ -81,8 +81,8 @@ filter.applyByStrips = function(
 /**
  * Return a color histogram for an image.
  *
- * @param {HTMLCanvasElement|ImageData} source Image data to analyze.
- * @return {{r: Array.<number>, g: Array.<number>, b: Array.<number>}}
+ * @param {!(HTMLCanvasElement|ImageData)} source Image data to analyze.
+ * @return {{r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}
  *     histogram.
  */
 filter.getHistogram = function(source) {
@@ -124,7 +124,7 @@ filter.getHistogram = function(source) {
  *
  * @param {number} maxArg Maximum argument value (inclusive).
  * @param {function(number): number} func Function to precompute.
- * @return {Uint8Array} Computed results.
+ * @return {!Uint8Array} Computed results.
  */
 filter.precompute = function(maxArg, func) {
   var results = new Uint8Array(maxArg + 1);
@@ -137,14 +137,14 @@ filter.precompute = function(maxArg, func) {
 /**
  * Convert pixels by applying conversion tables to each channel individually.
  *
- * @param {Array.<number>} rMap Red channel conversion table.
- * @param {Array.<number>} gMap Green channel conversion table.
- * @param {Array.<number>} bMap Blue channel conversion table.
- * @param {ImageData} dst Destination image data. Can be smaller than the
- *                        source, must completely fit inside the source.
- * @param {ImageData} src Source image data.
- * @param {number} offsetX Horizontal offset of dst relative to src.
- * @param {number} offsetY Vertical offset of dst relative to src.
+ * @param {!Uint8Array} rMap Red channel conversion table.
+ * @param {!Uint8Array} gMap Green channel conversion table.
+ * @param {!Uint8Array} bMap Blue channel conversion table.
+ * @param {!ImageData} dst Destination image data. Can be smaller than the
+ *     source, must completely fit inside the source.
+ * @param {!ImageData} src Source image data.
+ * @param {!number} offsetX Horizontal offset of dst relative to src.
+ * @param {!number} offsetY Vertical offset of dst relative to src.
  */
 filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
   var dstData = dst.data;
@@ -175,12 +175,14 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
 /**
  * Number of digits after period(in binary form) to preserve.
  * @type {number}
+ * @const
  */
 filter.FIXED_POINT_SHIFT = 16;
 
 /**
  * Maximum value that can be represented in fixed point without overflow.
  * @type {number}
+ * @const
  */
 filter.MAX_FLOAT_VALUE = 0x7FFFFFFF >> filter.FIXED_POINT_SHIFT;
 
@@ -204,10 +206,10 @@ filter.floatToFixedPoint = function(x) {
  *  0 w2 w1 w2  0
  *  0  0 w3  0  0
  *
- * @param {Array.<number>} weights See the picture above.
- * @param {ImageData} dst Destination image data. Can be smaller than the
- *                        source, must completely fit inside the source.
- * @param {ImageData} src Source image data.
+ * @param {!Array.<number>} weights See the picture above.
+ * @param {!ImageData} dst Destination image data. Can be smaller than the
+ *     source, must completely fit inside the source.
+ * @param {!ImageData} src Source image data.
  * @param {number} offsetX Horizontal offset of dst relative to src.
  * @param {number} offsetY Vertical offset of dst relative to src.
  */
@@ -281,7 +283,7 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
 /**
  * Compute the average color for the image.
  *
- * @param {ImageData} imageData Image data to analyze.
+ * @param {!ImageData} imageData Image data to analyze.
  * @return {{r: number, g: number, b: number}} average color.
  */
 filter.getAverageColor = function(imageData) {
@@ -309,7 +311,7 @@ filter.getAverageColor = function(imageData) {
 /**
  * Compute the average color with more weight given to pixes at the center.
  *
- * @param {ImageData} imageData Image data to analyze.
+ * @param {!ImageData} imageData Image data to analyze.
  * @return {{r: number, g: number, b: number}} weighted average color.
  */
 filter.getWeightedAverageColor = function(imageData) {
@@ -350,9 +352,9 @@ filter.getWeightedAverageColor = function(imageData) {
  * The copied part of src should completely fit into dst (there is no clipping
  * on either side).
  *
- * @param {Array.<number>} matrix 3x3 color matrix.
- * @param {ImageData} dst Destination image data.
- * @param {ImageData} src Source image data.
+ * @param {!Array.<number>} matrix 3x3 color matrix.
+ * @param {!ImageData} dst Destination image data.
+ * @param {!ImageData} src Source image data.
  * @param {number} offsetX X offset in source to start processing.
  * @param {number} offsetY Y offset in source to start processing.
  */
@@ -429,9 +431,9 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
 /**
  * Return a convolution filter function bound to specific weights.
  *
- * @param {Array.<number>} weights Weights for the convolution matrix
- *                                 (not normalized).
- * @return {function(ImageData,ImageData,number,number)} Convolution filter.
+ * @param {!Array.<number>} weights Weights for the convolution matrix
+ *     (not normalized).
+ * @return {function(!ImageData,!ImageData,number,number)} Convolution filter.
  */
 filter.createConvolutionFilter = function(weights) {
   // Normalize the weights to sum to 1.
@@ -461,8 +463,8 @@ filter.createConvolutionFilter = function(weights) {
 
 /**
  * Creates matrix filter.
- * @param {Array.<number>} matrix Color transformation matrix.
- * @return {function(ImageData,ImageData,number,number)} Matrix filter.
+ * @param {!Array.<number>} matrix Color transformation matrix.
+ * @return {function(!ImageData,!ImageData,number,number)} Matrix filter.
  */
 filter.createColorMatrixFilter = function(matrix) {
   for (var r = 0; r != 3; r++) {
@@ -479,8 +481,8 @@ filter.createColorMatrixFilter = function(matrix) {
 
 /**
  * Return a blur filter.
- * @param {Object} options Blur options.
- * @return {function(ImageData,ImageData,number,number)} Blur filter.
+ * @param {{radius: number, strength: number}} options Blur options.
+ * @return {function(!ImageData,!ImageData,number,number)} Blur filter.
  */
 filter.blur = function(options) {
   if (options.radius == 1)
@@ -496,8 +498,8 @@ filter.blur = function(options) {
 
 /**
  * Return a sharpen filter.
- * @param {Object} options Sharpen options.
- * @return {function(ImageData,ImageData,number,number)} Sharpen filter.
+ * @param {{radius: number, strength: number}} options Sharpen options.
+ * @return {function(!ImageData,!ImageData,number,number)} Sharpen filter.
  */
 filter.sharpen = function(options) {
   if (options.radius == 1)
@@ -513,8 +515,8 @@ filter.sharpen = function(options) {
 
 /**
  * Return an exposure filter.
- * @param {Object} options exposure options.
- * @return {function(ImageData,ImageData,number,number)} Exposure filter.
+ * @param {{brightness: number, contrast: number}} options exposure options.
+ * @return {function(!ImageData,!ImageData,number,number)} Exposure filter.
  */
 filter.exposure = function(options) {
   var pixelMap = filter.precompute(
@@ -534,8 +536,10 @@ filter.exposure = function(options) {
 
 /**
  * Return a color autofix filter.
- * @param {Object} options Histogram for autofix.
- * @return {function(ImageData,ImageData,number,number)} Autofix filter.
+ * @param {{histogram:
+ *     {r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}} options
+ *     Histogram for autofix.
+ * @return {function(!ImageData,!ImageData,number,number)} Autofix filter.
  */
 filter.autofix = function(options) {
   return filter.mapPixels.bind(null,
@@ -547,8 +551,8 @@ filter.autofix = function(options) {
 /**
  * Return a conversion table that stretches the range of colors used
  * in the image to 0..255.
- * @param {Array.<number>} channelHistogram Histogram to calculate range.
- * @return {Uint8Array} Color mapping array.
+ * @param {!Array.<number>} channelHistogram Histogram to calculate range.
+ * @return {!Uint8Array} Color mapping array.
  */
 filter.autofix.stretchColors = function(channelHistogram) {
   var range = filter.autofix.getRange(channelHistogram);
@@ -562,7 +566,7 @@ filter.autofix.stretchColors = function(channelHistogram) {
 
 /**
  * Return a range that encloses non-zero elements values in a histogram array.
- * @param {Array.<number>} channelHistogram Histogram to analyze.
+ * @param {!Array.<number>} channelHistogram Histogram to analyze.
  * @return {{first: number, last: number}} Channel range in histogram.
  */
 filter.autofix.getRange = function(channelHistogram) {
@@ -585,11 +589,12 @@ filter.autofix.getRange = function(channelHistogram) {
  * offset is less than SENSITIVITY, probably autofix is not needed.
  * Reasonable empirical value.
  * @type {number}
+ * @const
  */
 filter.autofix.SENSITIVITY = 8;
 
 /**
- * @param {Array.<number>} channelHistogram Histogram to analyze.
+ * @param {!Array.<number>} channelHistogram Histogram to analyze.
  * @return {boolean} True if stretching this range to 0..255 would make
  *                   a visible difference.
  */
@@ -600,7 +605,8 @@ filter.autofix.needsStretching = function(channelHistogram) {
 };
 
 /**
- * @param {{r: Array.<number>, g: Array.<number>, b: Array.<number>}} histogram
+ * @param {{r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}
+ *     histogram
  * @return {boolean} True if the autofix would make a visible difference.
  */
 filter.autofix.isApplicable = function(histogram) {
