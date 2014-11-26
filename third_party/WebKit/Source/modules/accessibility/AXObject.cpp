@@ -252,6 +252,7 @@ bool AXObject::isClickable() const
     case MenuButtonRole:
     case PopUpButtonRole:
     case RadioButtonRole:
+    case SpinButtonRole:
     case TabRole:
     case TextAreaRole:
     case TextFieldRole:
