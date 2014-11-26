@@ -34,10 +34,10 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Forward.h"
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
@@ -119,9 +119,8 @@ public:
 
     void ensureUnacceleratedImageBuffer();
     ImageBuffer* buffer() const;
-    Image* copiedImage() const;
+    Image* copiedImage(SourceDrawingBuffer) const;
     void clearCopiedImage();
-    PassRefPtrWillBeRawPtr<ImageData> getImageData() const;
 
     SecurityOrigin* securityOrigin() const;
     bool originClean() const { return m_originClean; }
@@ -187,7 +186,7 @@ private:
 
     void updateExternallyAllocatedMemory() const;
 
-    String toDataURLInternal(const String& mimeType, const double* quality, bool isSaving = false) const;
+    String toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer) const;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver>> m_observers;
 

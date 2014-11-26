@@ -93,9 +93,13 @@
 
 namespace blink {
 
+namespace {
+
 const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
 const unsigned maxGLActiveContexts = 16;
+
+} // namesapce
 
 // FIXME: Oilpan: static vectors to heap allocated WebGLRenderingContextBase objects
 // are kept here. This relies on the WebGLRenderingContextBase finalization to
@@ -891,7 +895,7 @@ void WebGLRenderingContextBase::setIsHidden(bool hidden)
         drawingBuffer()->setIsHidden(hidden);
 }
 
-void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceBuffer source)
+void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffer sourceBuffer)
 {
     if (isContextLost())
         return;
@@ -907,7 +911,7 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceBuffer sourc
     ScopedTexture2DRestorer restorer(this);
 
     drawingBuffer()->commit();
-    if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), source == Front)) {
+    if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), sourceBuffer)) {
         canvas()->ensureUnacceleratedImageBuffer();
         if (canvas()->hasImageBuffer())
             drawingBuffer()->paintRenderingResultsToCanvas(canvas()->buffer());
@@ -919,7 +923,7 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceBuffer sourc
         drawingBuffer()->bind();
 }
 
-PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResultsToImageData()
+PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResultsToImageData(SourceDrawingBuffer sourceBuffer)
 {
     if (isContextLost())
         return nullptr;
@@ -927,14 +931,10 @@ PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResul
     clearIfComposited();
     drawingBuffer()->commit();
     int width, height;
-    RefPtr<Uint8ClampedArray> imageDataPixels = drawingBuffer()->paintRenderingResultsToImageData(width, height);
+    RefPtr<Uint8ClampedArray> imageDataPixels =
+        drawingBuffer()->paintRenderingResultsToImageData(width, height, sourceBuffer);
     if (!imageDataPixels)
         return nullptr;
-
-    if (m_framebufferBinding)
-        webContext()->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
-    else
-        drawingBuffer()->bind();
 
     return ImageData::create(IntSize(width, height), imageDataPixels);
 }
@@ -3614,18 +3614,14 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
             WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
             ScopedTexture2DRestorer restorer(gl);
             if (gl && gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
-                level, m_unpackPremultiplyAlpha, !m_unpackFlipY, DrawingBuffer::Back)) {
+                level, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
             }
         }
     }
 
-    RefPtrWillBeRawPtr<ImageData> imageData = canvas->getImageData();
-    if (imageData)
-        texImage2D(target, level, internalformat, format, type, imageData.get(), exceptionState);
-    else
-        texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(BackBuffer), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video, BackingStoreCopy backingStoreCopy)
@@ -3859,11 +3855,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
 
-    RefPtrWillBeRawPtr<ImageData> imageData = canvas->getImageData();
-    if (imageData)
-        texSubImage2D(target, level, xoffset, yoffset, format, type, imageData.get(), exceptionState);
-    else
-        texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(BackBuffer), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,

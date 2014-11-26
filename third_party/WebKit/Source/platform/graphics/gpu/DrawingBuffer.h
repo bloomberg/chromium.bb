@@ -155,15 +155,14 @@ public:
     virtual bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) override;
     virtual void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
 
-    enum SourceBuffer { Front, Back };
     // Destroys the TEXTURE_2D binding for the owned context
     bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
-        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceBuffer);
+        GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer);
 
     void setPackAlignment(GLint param);
 
     void paintRenderingResultsToCanvas(ImageBuffer*);
-    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&);
+    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer);
 
 protected: // For unittests
     DrawingBuffer(

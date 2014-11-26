@@ -91,7 +91,7 @@ PassRefPtr<Image> CSSCanvasValue::image(RenderObject* renderer, const IntSize& /
     HTMLCanvasElement* elt = element(&renderer->document());
     if (!elt || !elt->buffer())
         return nullptr;
-    return elt->copiedImage();
+    return elt->copiedImage(FrontBuffer);
 }
 
 bool CSSCanvasValue::equals(const CSSCanvasValue& other) const

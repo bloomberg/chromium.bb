@@ -429,7 +429,7 @@ static Image* imageFromNode(const Node& node)
         return nullptr;
 
     if (renderer->isCanvas())
-        return toHTMLCanvasElement(node).copiedImage();
+        return toHTMLCanvasElement(node).copiedImage(FrontBuffer);
 
     if (renderer->isImage()) {
         RenderImage* renderImage = toRenderImage(renderer);

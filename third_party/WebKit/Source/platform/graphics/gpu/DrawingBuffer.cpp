@@ -459,7 +459,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
 }
 
 bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat,
-    GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceBuffer source)
+    GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer sourceBuffer)
 {
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
@@ -478,7 +478,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     WebExternalTextureMailbox mailbox;
     GLint textureId = 0;
-    if (source == Front && m_frontColorBuffer.texInfo.textureId) {
+    if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
         textureId = m_frontColorBuffer.texInfo.textureId;
         mailbox = m_frontColorBuffer.mailbox;
     } else {
@@ -887,7 +887,7 @@ void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
     paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
 }
 
-PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height)
+PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer)
 {
     if (m_actualAttributes.premultipliedAlpha)
         return nullptr;
@@ -903,9 +903,28 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
 
     RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
 
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
+    GLint fbo = 0;
+    if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
+        GLint fbo = m_context->createFramebuffer();
+        m_context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
+        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.texInfo.textureId, 0);
+    } else {
+        m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
+    }
+
     readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, WebGLImageConversion::AlphaDoNothing);
     flipVertically(pixels->data(), width, height);
+
+    if (fbo) {
+        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+        m_context->deleteFramebuffer(fbo);
+    }
+
+    if (m_framebufferBinding) {
+        restoreFramebufferBinding();
+    } else {
+        bind();
+    }
 
     return pixels.release();
 }

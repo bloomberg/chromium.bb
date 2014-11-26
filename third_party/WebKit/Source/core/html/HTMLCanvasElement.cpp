@@ -357,7 +357,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
     if (m_context) {
         if (!paintsIntoCanvasBuffer() && !document().printing())
             return;
-        m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Front);
+        m_context->paintRenderingResultsToCanvas(FrontBuffer);
     }
 
     if (hasImageBuffer()) {
@@ -405,10 +405,10 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
 
 const AtomicString HTMLCanvasElement::imageSourceURL() const
 {
-    return AtomicString(toDataURLInternal("image/png", 0, true));
+    return AtomicString(toDataURLInternal("image/png", 0, FrontBuffer));
 }
 
-String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, bool isSaving) const
+String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer sourceBuffer) const
 {
     if (m_size.isEmpty() || !canCreateImageBuffer(size()))
         return String("data:,");
@@ -419,14 +419,13 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
         return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
     }
 
-    // Try to get ImageData first, as that may avoid lossy conversions.
-    RefPtrWillBeRawPtr<ImageData> imageData = getImageData();
-
-    if (imageData)
-        return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
-
     if (m_context->is3d()) {
-        m_context->paintRenderingResultsToCanvas(isSaving ? CanvasRenderingContext::Front : CanvasRenderingContext::Back);
+        // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
+        RefPtrWillBeRawPtr<ImageData> imageData =
+            toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
+        if (imageData)
+            return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
+        m_context->paintRenderingResultsToCanvas(sourceBuffer);
     }
 
     return buffer()->toDataURL(encodingMimeType, quality);
@@ -439,14 +438,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
         return String();
     }
 
-    return toDataURLInternal(mimeType, quality);
-}
-
-PassRefPtrWillBeRawPtr<ImageData> HTMLCanvasElement::getImageData() const
-{
-    if (!m_context || !m_context->is3d())
-        return nullptr;
-    return toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData();
+    return toDataURLInternal(mimeType, quality, BackBuffer);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
@@ -687,12 +679,11 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
     m_didFailToCreateImageBuffer = !m_imageBuffer;
 }
 
-Image* HTMLCanvasElement::copiedImage() const
+Image* HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffer) const
 {
     if (!m_copiedImage && buffer()) {
-        if (m_context && m_context->is3d()) {
-            m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Front);
-        }
+        if (m_context && m_context->is3d())
+            m_context->paintRenderingResultsToCanvas(sourceBuffer);
         m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
         updateExternallyAllocatedMemory();
     }
@@ -759,7 +750,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
     }
 
     if (m_context && m_context->is3d()) {
-        m_context->paintRenderingResultsToCanvas(CanvasRenderingContext::Back);
+        m_context->paintRenderingResultsToCanvas(BackBuffer);
         *status = ExternalSourceImageStatus;
 
         // can't create SkImage from WebGLImageBufferSurface (contains only SkBitmap)

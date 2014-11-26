@@ -124,7 +124,7 @@ public:
     Platform3DObject getBackingTexture();
     void didModifyBackingTexture();
 
-    bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, bool fromFrontBuffer = false);
+    bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, SourceDrawingBuffer);
 
     void flush();
 

@@ -57,4 +57,10 @@ const unsigned GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
 const unsigned GC3D_MAP_CHROMIUM = 0x78F1;
 const unsigned GC3D_SCANOUT_CHROMIUM = 0x78F2;
 
-#endif
+namespace blink {
+
+enum SourceDrawingBuffer { FrontBuffer, BackBuffer };
+
+} // namespace blink
+
+#endif // GraphicsTypes3D_h

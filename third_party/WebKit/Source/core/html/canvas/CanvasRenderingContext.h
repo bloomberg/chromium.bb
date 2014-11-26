@@ -58,8 +58,7 @@ public:
     virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
 
-    enum SourceBuffer { Front, Back };
-    virtual void paintRenderingResultsToCanvas(SourceBuffer) { }
+    virtual void paintRenderingResultsToCanvas(SourceDrawingBuffer) { }
 
     virtual blink::WebLayer* platformLayer() const { return nullptr; }
 
