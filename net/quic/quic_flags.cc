@@ -32,10 +32,6 @@ bool FLAGS_enable_quic_fec = false;
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
 
-// If true, the server will accept slightly more streams than the negotiated
-// limit.
-bool FLAGS_quic_allow_more_open_streams = false;
-
 // If true, QUIC will be more resilliant to junk packets with valid connection
 // IDs.
 bool FLAGS_quic_drop_junk_packets = true;

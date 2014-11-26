@@ -116,7 +116,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual CongestionControlType GetCongestionControlType() const = 0;
 
   // Called by the Session when we get a bandwidth estimate from the client.
-  virtual void ResumeConnectionState(
+  // Returns true if initial connection state is changed as a result.
+  virtual bool ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params) = 0;
 };
 

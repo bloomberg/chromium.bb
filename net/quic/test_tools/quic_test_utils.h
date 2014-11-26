@@ -319,6 +319,8 @@ class MockConnection : public QuicConnection {
                                       QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
 
+  MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
+
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) {
@@ -483,7 +485,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(InRecovery, bool());
   MOCK_CONST_METHOD0(GetSlowStartThreshold, QuicByteCount());
   MOCK_CONST_METHOD0(GetCongestionControlType, CongestionControlType());
-  MOCK_METHOD1(ResumeConnectionState, void(const CachedNetworkParameters&));
+  MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);

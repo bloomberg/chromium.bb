@@ -72,24 +72,30 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config,
   }
 }
 
-void TcpCubicSender::ResumeConnectionState(
+bool TcpCubicSender::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params) {
   // If the previous bandwidth estimate is less than an hour old, store in
   // preparation for doing bandwidth resumption.
   int64 seconds_since_estimate =
       clock_->WallNow().ToUNIXSeconds() - cached_network_params.timestamp();
   if (seconds_since_estimate > kNumSecondsPerHour) {
-    return;
+    return false;
   }
 
   QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
       cached_network_params.bandwidth_estimate_bytes_per_second());
   QuicTime::Delta rtt_ms =
       QuicTime::Delta::FromMilliseconds(cached_network_params.min_rtt_ms());
-  congestion_window_ = bandwidth.ToBytesPerPeriod(rtt_ms) / kMaxPacketSize;
+
+  // Make sure CWND is in appropriate range (in case of bad data).
+  QuicPacketCount new_congestion_window =
+      bandwidth.ToBytesPerPeriod(rtt_ms) / kMaxPacketSize;
+  congestion_window_ = max(min(new_congestion_window, kMaxTcpCongestionWindow),
+                           kMinCongestionWindowForBandwidthResumption);
 
   // TODO(rjshade): Set appropriate CWND when previous connection was in slow
   // start at time of estimate.
+  return true;
 }
 
 void TcpCubicSender::SetNumEmulatedConnections(int num_connections) {

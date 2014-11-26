@@ -854,8 +854,6 @@ TEST_P(EndToEndTest, Timeout) {
 }
 
 TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
-
   // Negotiate 1 max open stream.
   client_config_.SetMaxStreamsPerConnection(1, 1);
   ASSERT_TRUE(Initialize());

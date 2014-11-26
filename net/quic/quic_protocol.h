@@ -59,8 +59,6 @@ const QuicByteCount kMaxPacketSize = 1452;
 // Default maximum packet size used in Linux TCP implementations.
 const QuicByteCount kDefaultTCPMSS = 1460;
 
-// Maximum size of the initial congestion window in packets.
-const QuicPacketCount kMaxInitialWindow = 100;
 // We match SPDY's use of 32 when secure (since we'd compete with SPDY).
 const QuicPacketCount kInitialCongestionWindowSecure = 32;
 // Be conservative, and just use double a typical TCP ICWND for HTTP.
@@ -69,9 +67,11 @@ const QuicPacketCount kInitialCongestionWindowInsecure = 20;
 // Default size of initial flow control window, for both stream and session.
 const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 
-// Maximum size of the congestion window, in packets, for TCP congestion control
-// algorithms.
-const size_t kMaxTcpCongestionWindow = 200;
+// Minimum size of the CWND, in packets, when doing bandwidth resumption.
+const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
+
+// Maximum size of the CWND, in packets, for TCP congestion control algorithms.
+const QuicPacketCount kMaxTcpCongestionWindow = 200;
 
 // Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;

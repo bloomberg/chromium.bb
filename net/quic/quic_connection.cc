@@ -282,9 +282,9 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 }
 
-void QuicConnection::ResumeConnectionState(
+bool QuicConnection::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params) {
-  sent_packet_manager_.ResumeConnectionState(cached_network_params);
+  return sent_packet_manager_.ResumeConnectionState(cached_network_params);
 }
 
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {

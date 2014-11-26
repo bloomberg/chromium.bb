@@ -192,7 +192,6 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
 }
 
 TEST_P(QuicServerSessionTest, MaxOpenStreams) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
   // Test that the server closes the connection if a client attempts to open too
   // many data streams. The server accepts slightly more than the negotiated
   // stream limit to deal with rare cases where a client FIN/RST is lost.
@@ -230,7 +229,6 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
 }
 
 TEST_P(QuicServerSessionTest, MaxOpenStreamsImplicit) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
   // Test that the server closes the connection if a client attempts to open too
   // many data streams implicitly.  The server accepts slightly more than the
   // negotiated stream limit to deal with rare cases where a client FIN/RST is

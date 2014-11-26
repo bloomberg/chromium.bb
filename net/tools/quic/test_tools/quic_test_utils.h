@@ -95,7 +95,7 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_CONST_METHOD0(HasPendingWrites, bool());
 
-  MOCK_METHOD1(ResumeConnectionState, void(const CachedNetworkParameters&));
+  MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,

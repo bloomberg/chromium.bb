@@ -100,6 +100,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
       session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
   ASSERT_EQ(QUIC_NO_ERROR, error);
   ASSERT_TRUE(session()->config()->negotiated());
+  session()->OnConfigNegotiated();
 }
 
 QuicClientSessionBase* MockCryptoClientStream::client_session() {

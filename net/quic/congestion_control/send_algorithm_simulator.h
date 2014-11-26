@@ -27,7 +27,11 @@ namespace net {
 class SendAlgorithmSimulator {
  public:
   struct Sender {
-    Sender(SendAlgorithmInterface* send_algorithm, RttStats* rtt_stats);
+    Sender(SendAlgorithmInterface* send_algorithm,
+           RttStats* rtt_stats);
+    Sender(SendAlgorithmInterface* send_algorithm,
+           RttStats* rtt_stats,
+           QuicTime::Delta additional_rtt);
 
     void RecordStats() {
       QuicByteCount cwnd = send_algorithm->GetCongestionWindow();
@@ -53,6 +57,7 @@ class SendAlgorithmSimulator {
 
     SendAlgorithmInterface* send_algorithm;
     RttStats* rtt_stats;
+    QuicTime::Delta additional_rtt;
 
     // Last sequence number the sender sent.
     QuicPacketSequenceNumber last_sent;
@@ -72,13 +77,10 @@ class SendAlgorithmSimulator {
   };
 
   struct Transfer {
-    Transfer(Sender* sender, QuicByteCount num_bytes, QuicTime start_time)
-        : sender(sender),
-          num_bytes(num_bytes),
-          bytes_acked(0),
-          bytes_lost(0),
-          bytes_in_flight(0),
-          start_time(start_time) {}
+    Transfer(Sender* sender,
+             QuicByteCount num_bytes,
+             QuicTime start_time,
+             string name);
 
     Sender* sender;
     QuicByteCount num_bytes;
@@ -86,6 +88,7 @@ class SendAlgorithmSimulator {
     QuicByteCount bytes_lost;
     QuicByteCount bytes_in_flight;
     QuicTime start_time;
+    string name;
   };
 
   struct SentPacket {
@@ -154,7 +157,8 @@ class SendAlgorithmSimulator {
   void AddTransfer(Sender* sender, size_t num_bytes);
 
   // Adds a pending sending to start at the specified time.
-  void AddTransfer(Sender* sender, size_t num_bytes, QuicTime start_time);
+  void AddTransfer(
+      Sender* sender, size_t num_bytes, QuicTime start_time, string name);
 
   // Convenience method to transfer all bytes.
   void TransferBytes();

@@ -163,9 +163,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
 }
 
-void QuicSentPacketManager::ResumeConnectionState(
+bool QuicSentPacketManager::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params) {
-  send_algorithm_->ResumeConnectionState(cached_network_params);
+  return send_algorithm_->ResumeConnectionState(cached_network_params);
 }
 
 void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
