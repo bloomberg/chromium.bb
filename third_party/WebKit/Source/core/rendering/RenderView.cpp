@@ -239,8 +239,11 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* paintInvalida
         transformState.applyTransform(t);
     }
 
-    if (mode & IsFixed && m_frameView)
+    if ((mode & IsFixed) && m_frameView) {
         transformState.move(m_frameView->scrollOffsetForFixedPosition());
+        // IsFixed flag is only applicable within this RenderView.
+        mode &= ~IsFixed;
+    }
 
     if (paintInvalidationContainer == this)
         return;
