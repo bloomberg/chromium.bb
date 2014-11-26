@@ -3505,6 +3505,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       ia_state_ |= STATE_SYSTEM_FOCUSABLE;
       break;
+    case ui::AX_ROLE_EMBEDDED_OBJECT:
+      ia_role_ = ROLE_SYSTEM_CLIENT;
+      ia2_role_ = IA2_ROLE_EMBEDDED_OBJECT;
+      break;
     case ui::AX_ROLE_EDITABLE_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;

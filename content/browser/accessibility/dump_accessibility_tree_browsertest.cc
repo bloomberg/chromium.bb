@@ -706,6 +706,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityEm) {
   RunTest(FILE_PATH_LITERAL("em.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityEmbed) {
+  RunTest(FILE_PATH_LITERAL("embed.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFieldset) {
   RunTest(FILE_PATH_LITERAL("fieldset.html"));
 }
