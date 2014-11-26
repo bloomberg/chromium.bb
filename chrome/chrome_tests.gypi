@@ -2846,6 +2846,7 @@
     },
     {
       # Executable to measure time to load libraries.
+      # GN version: //chrome/test:load_library_perf_tests
       'target_name': 'load_library_perf_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [

@@ -384,3 +384,27 @@ test("sync_performance_tests") {
     deps += [ "//ui/views" ]
   }
 }
+
+
+# Executable to measure time to load libraries.
+test("load_library_perf_tests") {
+  sources = [
+    "../browser/load_library_perf_test.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+    "//testing/perf",
+    "//third_party/widevine/cdm:version_h",
+  ]
+
+  # TODO(GYP) CDM adapter stuff.
+  #if (enable_pepper_cdms) {
+  #  deps += [
+  #    "//media/cdm/ppapi:clearkeycdmadapter",
+  #    "//ppapi:ppapi_cpp",
+  #    "//third_party/widevine/cdm:adapter",
+  #  ]
+  #}
+}

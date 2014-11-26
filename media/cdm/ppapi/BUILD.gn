@@ -1,0 +1,60 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+# Android doesn't use ffmpeg.
+use_ffmpeg = !is_android
+
+# The GYP version supports build flags "use_fake_video_decoder" and
+# "use_vpx". These should be added here if necessary but its not clear if
+# they are required any more.
+shared_library("clearkeycdm") {
+  sources = [
+    "cdm_file_io_test.cc",
+    "cdm_file_io_test.h",
+    "external_clear_key/cdm_video_decoder.cc",
+    "external_clear_key/cdm_video_decoder.h",
+    "external_clear_key/clear_key_cdm.cc",
+    "external_clear_key/clear_key_cdm.h",
+    "external_clear_key/clear_key_cdm_common.h",
+  ]
+
+  defines = [ "CDM_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//media:shared_memory_support",  # For media::AudioBus.
+    "//url",
+  ]
+
+  if (use_ffmpeg) {
+    sources += [
+      "external_clear_key/ffmpeg_cdm_audio_decoder.cc",
+      "external_clear_key/ffmpeg_cdm_audio_decoder.h",
+      "external_clear_key/ffmpeg_cdm_video_decoder.cc",
+      "external_clear_key/ffmpeg_cdm_video_decoder.h",
+    ]
+    defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
+    deps += [ "//third_party/ffmpeg" ]
+  }
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  # TODO(GYP) on Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+}
+
+# TODO(GYP): clearkeycdmadapter_resources
+
+group("clearkeycdmadapter") {
+  deps = [
+    #":cdmadapter",  TODO(GYP)
+    ":clearkeycdm",
+    #":clearkeycdmadapter_resources",  TODO(GYP)
+    "//ppapi:ppapi_cpp",
+  ]
+}

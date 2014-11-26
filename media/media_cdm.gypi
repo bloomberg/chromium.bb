@@ -25,6 +25,7 @@
         ],
         'targets': [
         {
+          # GN version: //media/cdm/ppapi:clearkeycdm
           'target_name': 'clearkeycdm',
           'type': 'none',
           # TODO(tomfinegan): Simplify this by unconditionally including all the
@@ -125,6 +126,7 @@
           ],
         },
         {
+          # GN version: //media/cdm/ppapi:clearkeycdmadapter
           'target_name': 'clearkeycdmadapter',
           'type': 'none',
           # Check whether the plugin's origin URL is valid.
