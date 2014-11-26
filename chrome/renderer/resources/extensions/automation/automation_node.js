@@ -620,8 +620,13 @@ AutomationRootNodeImpl.prototype = {
       return;
     var children = node.children();
 
-    for (var i = 0, child; child = children[i]; i++)
+    for (var i = 0, child; child = children[i]; i++) {
+      // Do not invalidate into subrooted nodes.
+      // TODO(dtseng): Revisit logic once out of proc iframes land.
+      if (child.root != node.root)
+        continue;
       this.invalidate_(child);
+    }
 
     // Retrieve the internal AutomationNodeImpl instance for this node.
     // This object is not accessible outside of bindings code, but we can access

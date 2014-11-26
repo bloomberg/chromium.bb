@@ -54,7 +54,7 @@ class AutomationManagerAsh : public extensions::AutomationActionAdapter {
   AutomationManagerAsh();
 
     // Reset all state in this manager.
-  void Reset();
+  void ResetSerializer();
 
   void SendEvent(content::BrowserContext* context,
                  views::AXAuraObjWrapper* aura_obj,

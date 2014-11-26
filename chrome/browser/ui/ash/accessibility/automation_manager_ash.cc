@@ -26,7 +26,9 @@ AutomationManagerAsh* AutomationManagerAsh::GetInstance() {
 
 void AutomationManagerAsh::Enable(BrowserContext* context) {
   enabled_ = true;
-  Reset();
+  if (!current_tree_.get())
+    current_tree_.reset(new AXTreeSourceAsh());
+  ResetSerializer();
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
 }
 
@@ -82,8 +84,7 @@ AutomationManagerAsh::AutomationManagerAsh() : enabled_(false) {
 
 AutomationManagerAsh::~AutomationManagerAsh() {}
 
-void AutomationManagerAsh::Reset() {
-  current_tree_.reset(new AXTreeSourceAsh());
+void AutomationManagerAsh::ResetSerializer() {
   current_tree_serializer_.reset(
       new ui::AXTreeSerializer<views::AXAuraObjWrapper*>(
           current_tree_.get()));
