@@ -14,8 +14,6 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import base64
@@ -317,8 +315,8 @@ def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
   Returns:
     The desired URL.
   """
-  return _CHROME_VERSION_URL % { 'old': old_chrome_version,
-                                 'new': chrome_version }
+  return _CHROME_VERSION_URL % {'old': old_chrome_version,
+                                'new': chrome_version}
 
 
 def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):

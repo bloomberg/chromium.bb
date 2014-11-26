@@ -9,8 +9,6 @@ To expose a function directly to the command line interface, name your function
 with the prefix "UserAct".
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import inspect
@@ -214,8 +212,8 @@ def IsApprover(cl, users):
 def UserActTodo(opts):
   """List CLs needing your review"""
   emails, reviewers, owners = _MyUserInfo()
-  cls = FilteredQuery(opts, '( %s ) status:open NOT ( %s )' %
-                            (' OR '.join(reviewers), ' OR '.join(owners)))
+  cls = FilteredQuery(opts, ('( %s ) status:open NOT ( %s )' %
+                             (' OR '.join(reviewers), ' OR '.join(owners))))
   cls = [x for x in cls if not IsApprover(x, emails)]
   lims = limits(cls)
   for cl in cls:
@@ -379,8 +377,8 @@ Actions:"""
                       help='Query internal Chromium Gerrit instance')
   parser.add_argument('-g', '--gob',
                       default=constants.EXTERNAL_GOB_INSTANCE,
-                      help='Gerrit (on borg) instance to query (default: %s)' %
-                           (constants.EXTERNAL_GOB_INSTANCE))
+                      help=('Gerrit (on borg) instance to query (default: %s)' %
+                            (constants.EXTERNAL_GOB_INSTANCE)))
   parser.add_argument('--sort', default='number',
                       help='Key to sort on (number, project)')
   parser.add_argument('--raw', default=False, action='store_true',

@@ -8,8 +8,6 @@ Script that generates a tarball containing changes that are needed to create a
 complete sysroot from extracted prebuilt packages.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -30,8 +28,8 @@ _CREATE_BATCH_EXCLUDE = ('--exclude=/tmp/', '--exclude=/var/cache/',
 # --delete is used to account for files that may be deleted during emerge.
 # Short version: rsync -rplgoDc --delete
 _CREATE_BATCH_ARGS = ('--recursive', '--links', '--perms', '--group',
-                     '--owner', '--devices', '--specials', '--checksum',
-                     '--delete')
+                      '--owner', '--devices', '--specials', '--checksum',
+                      '--delete')
 
 # We want to ensure that we use only binary packages. However,
 # build_packages will try to rebuild any unbuilt packages. Ignore those through
@@ -66,11 +64,11 @@ def _ParseCommandLine(argv):
   parser.add_argument('--out-dir', type=osutils.ExpandPath, required=True,
                       help='Directory to place the generated tarball.')
   parser.add_argument('--out-batch', default=constants.DELTA_SYSROOT_BATCH,
-                      help='The name to give to the batch file. Defaults to %r.'
-                            % constants.DELTA_SYSROOT_BATCH)
+                      help=('The name to give to the batch file. Defaults to '
+                            '%r.' % constants.DELTA_SYSROOT_BATCH))
   parser.add_argument('--out-file', default=constants.DELTA_SYSROOT_TAR,
-                      help='The name to give to the tarball. Defaults to %r.'
-                            % constants.DELTA_SYSROOT_TAR)
+                      help=('The name to give to the tarball. Defaults to %r.'
+                            % constants.DELTA_SYSROOT_TAR))
   parser.add_argument('--skip-tests', action='store_false', default=True,
                       dest='build_tests',
                       help='If we should not build the autotests packages.')

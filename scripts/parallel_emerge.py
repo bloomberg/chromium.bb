@@ -13,8 +13,6 @@ Portage APIs. It is faster than standard emerge because it has a
 multiprocess model instead of an asynchronous model.
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import codecs
@@ -1538,8 +1536,8 @@ class EmergeQueue(object):
         line += "Building %s/%s, " % (bjobs, bready + bjobs)
         if retries:
           line += "Retrying %s, " % (retries,)
-      load =  " ".join(str(x) for x in os.getloadavg())
-      line += ("[Time %dm%.1fs Load %s]" % (seconds/60, seconds %60, load))
+      load = " ".join(str(x) for x in os.getloadavg())
+      line += ("[Time %dm%.1fs Load %s]" % (seconds / 60, seconds % 60, load))
       self._Print(line)
 
   def _Finish(self, target):

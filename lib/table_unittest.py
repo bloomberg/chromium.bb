@@ -6,7 +6,6 @@
 """Unit tests for the table module."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -179,19 +178,19 @@ class TableTest(cros_test_lib.TestCase):
 
     # Merge but stick with current row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
-                          merge_rules = { self.COL3: 'accept_this_val' })
+                          merge_rules={self.COL3: 'accept_this_val'})
     self.assertEquals(3, len(self._table))
     self.assertRowsEqual(self.ROW0, self._table[0])
 
     # Merge and use new row where different.
     self._table._MergeRow(self.ROW0a, self.COL0,
-                          merge_rules = { self.COL3: 'accept_other_val' })
+                          merge_rules={self.COL3: 'accept_other_val'})
     self.assertEquals(3, len(self._table))
     self.assertRowsEqual(self.ROW0a, self._table[0])
 
     # Merge and combine column values where different
     self._table._MergeRow(self.ROW1a, self.COL2,
-                          merge_rules = { self.COL3: 'join_with: ' })
+                          merge_rules={self.COL3: 'join_with: '})
     self.assertEquals(3, len(self._table))
     final_row = dict(self.ROW1a)
     final_row[self.COL3] = self.ROW1[self.COL3] + ' ' + self.ROW1a[self.COL3]
@@ -202,7 +201,7 @@ class TableTest(cros_test_lib.TestCase):
                                             [self.ROW0b, self.ROW1a, self.ROW2])
 
     self._table.MergeTable(other_table, self.COL2,
-                           merge_rules = { self.COL3: 'join_with: ' })
+                           merge_rules={self.COL3: 'join_with: '})
 
     final_row0 = self.ROW0b
     final_row1 = dict(self.ROW1a)
@@ -220,7 +219,7 @@ class TableTest(cros_test_lib.TestCase):
 
     self._table.MergeTable(other_table, self.COL2,
                            allow_new_columns=True,
-                           merge_rules = { self.COL3: 'join_by_space' })
+                           merge_rules={self.COL3: 'join_by_space'})
 
     self.assertTrue(self._table.HasColumn(self.EXTRACOL))
     self.assertEquals(5, self._table.GetNumColumns())
@@ -242,7 +241,7 @@ class TableTest(cros_test_lib.TestCase):
     self.assertRowsEqual(self.ROW2, self._table[2])
 
     # Sort by COL3
-    self._table.Sort(lambda row : row[self.COL3])
+    self._table.Sort(lambda row: row[self.COL3])
 
     self.assertEquals(3, len(self._table))
     self.assertRowsEqual(self.ROW0, self._table[0])
@@ -250,7 +249,7 @@ class TableTest(cros_test_lib.TestCase):
     self.assertRowsEqual(self.ROW1, self._table[2])
 
     # Reverse sort by COL3
-    self._table.Sort(lambda row : row[self.COL3], reverse=True)
+    self._table.Sort(lambda row: row[self.COL3], reverse=True)
 
     self.assertEquals(3, len(self._table))
     self.assertRowsEqual(self.ROW1, self._table[0])

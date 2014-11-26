@@ -32,8 +32,6 @@ http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/working-on-a-br\
 anch
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import errno
@@ -119,9 +117,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
         reviewers.add('@'.join(ele[-3:-1]))
       continue
     msg.append(line)
-  msg += [
-    '(cherry picked from commit %s)' % patch.sha1,
-  ]
+  msg += ['(cherry picked from commit %s)' % patch.sha1]
   git.RunGit(work_dir, ['commit', '--amend', '-F', '-'],
              input='\n'.join(msg).encode('utf8'))
 

@@ -5,9 +5,6 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import exceptions
@@ -78,43 +75,47 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
   SS_COL_LATEST_UP = gdata_lib.PrepColNameForSS(COL_LATEST_UP)
   SS_COL_TARGET = gdata_lib.PrepColNameForSS(COL_TARGET)
 
-  COLS = [COL_PKG,
-          COL_SLOT,
-          COL_OVERLAY,
-          COL_STATUS,
-          COL_VER,
-          COL_STABLE_UP,
-          COL_LATEST_UP,
-          COL_TARGET,
-          ]
+  COLS = [
+      COL_PKG,
+      COL_SLOT,
+      COL_OVERLAY,
+      COL_STATUS,
+      COL_VER,
+      COL_STABLE_UP,
+      COL_LATEST_UP,
+      COL_TARGET,
+  ]
 
-  ROW0 = {COL_PKG: 'lib/foo',
-          COL_SLOT: '0',
-          COL_OVERLAY: 'portage',
-          COL_STATUS: 'needs upgrade',
-          COL_VER: '3.0.2',
-          COL_STABLE_UP: '3.0.9',
-          COL_LATEST_UP: '3.0.11',
-          COL_TARGET: 'virtual/target-os',
-          }
-  ROW1 = {COL_PKG: 'sys-dev/bar',
-          COL_SLOT: '0',
-          COL_OVERLAY: 'chromiumos-overlay',
-          COL_STATUS: 'needs upgrade',
-          COL_VER: '1.2.3-r1',
-          COL_STABLE_UP: '1.2.3-r2',
-          COL_LATEST_UP: '1.2.4',
-          COL_TARGET: 'virtual/target-os-dev',
-          }
-  ROW2 = {COL_PKG: 'sys-dev/raster',
-          COL_SLOT: '1',
-          COL_OVERLAY: 'chromiumos-overlay',
-          COL_STATUS: 'current',
-          COL_VER: '1.2.3',
-          COL_STABLE_UP: '1.2.3',
-          COL_LATEST_UP: '1.2.4',
-          COL_TARGET: 'virtual/target-os-test',
-          }
+  ROW0 = {
+      COL_PKG: 'lib/foo',
+      COL_SLOT: '0',
+      COL_OVERLAY: 'portage',
+      COL_STATUS: 'needs upgrade',
+      COL_VER: '3.0.2',
+      COL_STABLE_UP: '3.0.9',
+      COL_LATEST_UP: '3.0.11',
+      COL_TARGET: 'virtual/target-os',
+  }
+  ROW1 = {
+      COL_PKG: 'sys-dev/bar',
+      COL_SLOT: '0',
+      COL_OVERLAY: 'chromiumos-overlay',
+      COL_STATUS: 'needs upgrade',
+      COL_VER: '1.2.3-r1',
+      COL_STABLE_UP: '1.2.3-r2',
+      COL_LATEST_UP: '1.2.4',
+      COL_TARGET: 'virtual/target-os-dev',
+  }
+  ROW2 = {
+      COL_PKG: 'sys-dev/raster',
+      COL_SLOT: '1',
+      COL_OVERLAY: 'chromiumos-overlay',
+      COL_STATUS: 'current',
+      COL_VER: '1.2.3',
+      COL_STABLE_UP: '1.2.3',
+      COL_LATEST_UP: '1.2.4',
+      COL_TARGET: 'virtual/target-os-test',
+  }
 
   SS_ROW0 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW0.items()])
   SS_ROW1 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW1.items()])
@@ -227,8 +228,8 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
     ws_name = 'Some ws_name'
 
     # Replay script
-    gdata_lib.SpreadsheetComm.__new__(gdata_lib.SpreadsheetComm
-                                      ).AndReturn(mocked_scomm)
+    gdata_lib.SpreadsheetComm.__new__(
+        gdata_lib.SpreadsheetComm).AndReturn(mocked_scomm)
     mocked_scomm.Connect(mocked_uploader._creds, ss_key, ws_name,
                          source='Upload Package Status')
     mocked_scomm.GetRowCacheByCol(self.SS_COL_PKG).AndReturn('RowCache')
@@ -288,7 +289,7 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
     # pretend that it has a different value that needs to be changed
     # by an upload.
     row1_pkg = self.ROW1[self.COL_PKG]
-    row1_reverse_delta = { self.SS_COL_VER: '1.2.3' }
+    row1_reverse_delta = {self.SS_COL_VER: '1.2.3'}
     ss_row1 = dict(self.SS_ROW1)
     for col in row1_reverse_delta:
       ss_row1[col] = row1_reverse_delta[col]
@@ -297,17 +298,18 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
     # Prepare verfication for row.
     g_col_set1 = set(row1_reverse_delta.keys())
     g_row1 = gdata_lib.PrepRowForSS(self.SS_ROW1)
-    row1_verifier = lambda rdelta : RowVerifier(rdelta, g_col_set1, g_row1)
+    row1_verifier = lambda rdelta: RowVerifier(rdelta, g_col_set1, g_row1)
     mocked_uploader._scomm.UpdateRowCellByCell(3, mox.Func(row1_verifier))
 
     # Third Row.
     # Pretend third row does already exist in online spreadsheet, and
     # pretend that several values need to be changed by an upload.
     row2_pkg = self.ROW2[self.COL_PKG]
-    row2_reverse_delta = { self.SS_COL_STATUS: 'needs upgrade',
-                           self.SS_COL_VER: '0.5',
-                           self.SS_COL_TARGET: 'chromeos-foo',
-                           }
+    row2_reverse_delta = {
+        self.SS_COL_STATUS: 'needs upgrade',
+        self.SS_COL_VER: '0.5',
+        self.SS_COL_TARGET: 'chromeos-foo',
+    }
     ss_row2 = dict(self.SS_ROW2)
     for col in row2_reverse_delta:
       ss_row2[col] = row2_reverse_delta[col]
@@ -316,7 +318,7 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
     # Prepare verification for row.
     g_col_set2 = set(row2_reverse_delta.keys())
     g_row2 = gdata_lib.PrepRowForSS(self.SS_ROW2)
-    row2_verifier = lambda rdelta : RowVerifier(rdelta, g_col_set2, g_row2)
+    row2_verifier = lambda rdelta: RowVerifier(rdelta, g_col_set2, g_row2)
     mocked_uploader._scomm.UpdateRowCellByCell(4, mox.Func(row2_verifier))
 
     self.mox.ReplayAll()
@@ -407,10 +409,12 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
     self.mox.ReplayAll()
 
-    ups.main(['--email=%s' % email,
-              '--password=%s' % password,
-              '--cred-file=%s' % creds_file,
-               csv])
+    ups.main([
+        '--email=%s' % email,
+        '--password=%s' % password,
+        '--cred-file=%s' % creds_file,
+        csv,
+    ])
 
     self.mox.VerifyAll()
 
@@ -435,9 +439,11 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
 
-    ups.main(['--cred-file=%s' % creds_file,
-              '--auth-token-file=%s' % token_file,
-              csv])
+    ups.main([
+        '--cred-file=%s' % creds_file,
+        '--auth-token-file=%s' % token_file,
+        csv,
+    ])
 
     self.mox.VerifyAll()
 
@@ -462,9 +468,11 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
 
-    ups.main(['--cred-file=%s' % creds_file,
-              '--auth-token-file=%s' % token_file,
-              csv])
+    ups.main([
+        '--cred-file=%s' % creds_file,
+        '--auth-token-file=%s' % token_file,
+        csv,
+    ])
 
     self.mox.VerifyAll()
 

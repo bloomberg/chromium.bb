@@ -6,7 +6,6 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -38,7 +37,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
 
   def testHelp(self):
     """Test that --help is functioning"""
-    argv = [ '--help' ]
+    argv = ['--help']
 
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0.

@@ -4,8 +4,6 @@
 
 """This module allows adding and deleting of projects to the local manifest."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -193,8 +191,7 @@ def main(argv):
         "Your repository checkout is using the old minilayout.xml workflow; "
         "auto-upgrading it.")
     cros_build_lib.RunCommand(
-        [sys.argv[0], '--upgrade-minilayout'], cwd=os.getcwd(),
-         print_cmd=False)
+        [sys.argv[0], '--upgrade-minilayout'], cwd=os.getcwd(), print_cmd=False)
 
   if not args:
     parser.error("No command specified.")

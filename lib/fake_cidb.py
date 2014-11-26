@@ -4,8 +4,6 @@
 
 """Fake CIDB for unit testing."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import datetime
@@ -13,6 +11,7 @@ import itertools
 
 from chromite.cbuildbot import constants
 from chromite.lib import clactions
+
 
 class FakeCIDBConnection(object):
   """Fake connection to a Continuous Integration database.
@@ -38,7 +37,7 @@ class FakeCIDBConnection(object):
     return self.fake_time or datetime.datetime.now()
 
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_config, bot_hostname,  master_build_id=None):
+                  build_config, bot_hostname, master_build_id=None):
     """Insert a build row."""
     row = {'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,

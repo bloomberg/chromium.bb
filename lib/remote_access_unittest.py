@@ -5,8 +5,6 @@
 
 """Test the remote_access module."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -46,7 +44,7 @@ class RemoteShMock(partial_mock.PartialCmdMock):
   """Mocks the RemoteSh function."""
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
   ATTRS = ('RemoteSh',)
-  DEFAULT_ATTR =  'RemoteSh'
+  DEFAULT_ATTR = 'RemoteSh'
 
   def RemoteSh(self, inst, cmd, *args, **kwargs):
     """Simulates a RemoteSh invocation."""

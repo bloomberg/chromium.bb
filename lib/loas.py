@@ -10,8 +10,6 @@ Google production resources.
 If you don't know what any of this means, then you don't need this module :).
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import datetime
@@ -57,8 +55,8 @@ class Loas(object):
   def Status(self):
     # Only bother checking once a day.  Our certs are valid in the
     # range of weeks, so there's no need to constantly do this.
-    if (datetime.date.today() < self.last_notification +
-                                datetime.timedelta(days=1)):
+    if (datetime.date.today() <
+        self.last_notification + datetime.timedelta(days=1)):
       return
 
     cmd = ['prodcertstatus', '--check_loas_cert_location', 'sslenrolled']
@@ -81,8 +79,8 @@ class Loas(object):
       alerts.SendEmail(
           'Loas certs expiring soon!',
           self.email_notify,
-          message='Please run:\n %s\n\n%s\n%s' %
-              (self.enroll_msg, result.output, result.error))
+          message='Please run:\n %s\n\n%s\n%s' % (
+              self.enroll_msg, result.output, result.error))
       self.last_notification = datetime.date.today()
     else:
       # We won't expire for a while, so stop the periodic polling.

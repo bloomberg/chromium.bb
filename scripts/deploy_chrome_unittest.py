@@ -5,8 +5,6 @@
 
 """Unit tests for the deploy_chrome script."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -62,7 +60,7 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 
   def testLocalPathSpecified(self):
     """Test case of local path specified."""
-    argv =  list(_REGULAR_TO) + ['--local-pkg-path', '/path/to/chrome']
+    argv = list(_REGULAR_TO) + ['--local-pkg-path', '/path/to/chrome']
     _ParseCommandLine(argv)
 
   def testNoTarget(self):

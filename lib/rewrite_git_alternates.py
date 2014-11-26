@@ -9,8 +9,6 @@ In particular, this in combination w/ enter_chroot's mount binding, allows
 us to access the same repo from inside and outside a chroot at the same time
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 __all__ = ('RebuildRepoCheckout',)
@@ -90,7 +88,7 @@ def _UpdateGitAlternates(proj_root, projects):
     relpath = os.path.join(relpath, 'alternates', project)
 
     osutils.SafeMakedirs(os.path.dirname(tmp_path))
-    os.symlink(relpath , tmp_path)
+    os.symlink(relpath, tmp_path)
     os.rename(tmp_path, alt_path)
 
 

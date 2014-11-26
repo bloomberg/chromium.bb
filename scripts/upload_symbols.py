@@ -9,8 +9,6 @@ crashes on non-release builds (in which case try to only upload the symbols
 for those executables involved).
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import ctypes
@@ -324,7 +322,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
                                   if not x.startswith('STACK CFI')])
 
         upload_item = FakeItem(sym_file=temp_sym_file.name,
-                                 sym_header=sym_item.sym_header)
+                               sym_header=sym_item.sym_header)
 
     # Hopefully the crash server will let it through.  But it probably won't.
     # Not sure what the best answer is in this case.
@@ -342,8 +340,8 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
           retry_util.RetryException,
           (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
           upload_url, upload_item, sleep=INITIAL_RETRY_DELAY,
-          timed_log_msg='upload of %10i bytes took %%s: %s' %
-                        (file_size, os.path.basename(sym_file)))
+          timed_log_msg=('upload of %10i bytes took %%s: %s' %
+                         (file_size, os.path.basename(sym_file))))
       success = True
 
       if passed_queue:

@@ -8,8 +8,6 @@ Documentation on this script is also available here:
   http://www.chromium.org/chromium-os/licensing
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import cgi
@@ -829,7 +827,7 @@ class Licensing(object):
           raise PackageLicenseError('License for %s is missing' % package_name)
 
         logging.error('>>> License for %s is missing, creating now <<<',
-                        package_name)
+                      package_name)
         build_info_path = os.path.join(
             cros_build_lib.GetSysroot(pkg.board),
             PER_PKG_LICENSE_DIR, pkg.fullnamerev)

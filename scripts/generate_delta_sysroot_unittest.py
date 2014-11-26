@@ -5,9 +5,6 @@
 
 """Unittests for generate_delta_sysroot."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -43,19 +40,19 @@ class InterfaceTest(cros_test_lib.OutputTestCase,
   def testCorrectArgv(self):
     """Test successful parsing"""
     argv = ['--board', 'link', '--out-dir', self.tempdir]
-    options =  _Parse(argv)
+    options = _Parse(argv)
     gds.FinishParsing(options)
 
   def testTestsSet(self):
     """Test successful parsing"""
     argv = ['--board', 'link', '--out-dir', self.tempdir]
-    options =  _Parse(argv)
+    options = _Parse(argv)
     self.assertTrue(options.build_tests)
 
   def testNoTestsSet(self):
     """Test successful parsing"""
     argv = ['--board', 'link', '--out-dir', self.tempdir, '--skip-tests']
-    options =  _Parse(argv)
+    options = _Parse(argv)
     self.assertFalse(options.build_tests)
 
   def assertParseError(self, argv):
@@ -71,8 +68,9 @@ class TestCreateBatchFile(cros_test_lib.TempDirTestCase):
     """Test error is raised if there is no source directory."""
     no_source = os.path.join(self.tempdir, 'foo/bar/cow')
 
-    self.assertRaises2(cros_build_lib.RunCommandError, gds.CreateBatchFile,
-        no_source, self.tempdir, os.path.join(self.tempdir,'batch'))
+    self.assertRaises2(
+        cros_build_lib.RunCommandError, gds.CreateBatchFile,
+        no_source, self.tempdir, os.path.join(self.tempdir, 'batch'))
 
 
 if __name__ == '__main__':

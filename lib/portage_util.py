@@ -5,7 +5,6 @@
 """Routines and classes for working with Portage overlays and ebuilds."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -497,7 +496,7 @@ class EBuild(object):
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     projects = settings['CROS_WORKON_PROJECT'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
-    live =  settings['CROS_WORKON_ALWAYS_LIVE']
+    live = settings['CROS_WORKON_ALWAYS_LIVE']
 
     return EBuild.CrosWorkonVars(localnames, projects, subdirs, live)
 

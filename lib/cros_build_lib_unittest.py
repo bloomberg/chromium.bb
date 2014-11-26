@@ -5,9 +5,6 @@
 
 """Test the cros_build_lib module."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -44,15 +41,17 @@ import mock
 
 # pylint: disable=W0212,R0904
 
+
 class RunCommandErrorStrTest(cros_test_lib.TestCase):
   """Test that RunCommandError __str__ works as expected."""
 
   def testNonUTF8Characters(self):
     """Test that non-UTF8 characters do not kill __str__"""
     result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
-                                        error_code_ok=True)
+                                       error_code_ok=True)
     rce = cros_build_lib.RunCommandError('\x81', result)
     str(rce)
+
 
 class CmdToStrTest(cros_test_lib.TestCase):
   """Test the CmdToStr function."""
@@ -192,7 +191,7 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
   def testErrorCodeNotRaisesError(self):
     """Don't raise exception when command returns non-zero exit code."""
     result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
-                                        error_code_ok=True)
+                                       error_code_ok=True)
     self.assertTrue(result.returncode != 0)
 
   def testMissingCommandRaisesError(self):
@@ -243,11 +242,11 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # Make some arbitrary functors we can pretend are signal handlers.
     # Note that these are intentionally defined on the fly via lambda-
     # this is to ensure that they're unique to each run.
-    sigint_suppress = lambda signum, frame:None
+    sigint_suppress = lambda signum, frame: None
     sigint_suppress.__name__ = 'sig_ign_sigint'
-    normal_sigint = lambda signum, frame:None
+    normal_sigint = lambda signum, frame: None
     normal_sigint.__name__ = 'sigint'
-    normal_sigterm = lambda signum, frame:None
+    normal_sigterm = lambda signum, frame: None
     normal_sigterm.__name__ = 'sigterm'
 
     # Set up complicated mock for signal.signal().
@@ -644,10 +643,11 @@ class TestRetries(cros_test_lib.MockTestCase):
     # pylint: disable=E1101
     path = os.path.join(self.tempdir, 'script')
     paths = {
-      'stop': os.path.join(self.tempdir, 'stop'),
-      'store': os.path.join(self.tempdir, 'store')
+        'stop': os.path.join(self.tempdir, 'stop'),
+        'store': os.path.join(self.tempdir, 'store'),
     }
-    osutils.WriteFile(path,
+    osutils.WriteFile(
+        path,
         "import sys\n"
         "val = int(open(%(store)r).read())\n"
         "stop_val = int(open(%(stop)r).read())\n"
@@ -946,7 +946,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
           invoked.append(obj_self.marker)
           if has_exception is not None:
             self.assertTrue(all(x is not None
-                              for x in (exc_type, exc, traceback)))
+                                for x in (exc_type, exc, traceback)))
             self.assertTrue(exc_type == has_exception)
           if exception_kls:
             raise exception_kls()
@@ -1014,7 +1014,8 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     git.ManifestCheckout(self.tempdir, manifest_path=empty_path)
 
     # Next, verify include works.
-    osutils.WriteFile(os.path.join(self.manifest_dir, 'include-target.xml'),
+    osutils.WriteFile(
+        os.path.join(self.manifest_dir, 'include-target.xml'),
         """
         <manifest>
           <remote name="foon" fetch="http://localhost" />

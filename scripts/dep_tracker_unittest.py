@@ -5,8 +5,6 @@
 
 """Unit tests for dep_tracker.py."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -28,7 +26,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
 
   def testHelp(self):
     """Test that --help is functioning."""
-    argv = [ '--help' ]
+    argv = ['--help']
 
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0.

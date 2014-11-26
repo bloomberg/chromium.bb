@@ -5,7 +5,6 @@
 """Perform various tasks related to updating Portage packages."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -412,9 +411,9 @@ class Upgrader(object):
     envvars = {}
     if arch:
       if unstable_ok:
-        envvars['ACCEPT_KEYWORDS'] =  arch + ' ~' + arch
+        envvars['ACCEPT_KEYWORDS'] = arch + ' ~' + arch
       else:
-        envvars['ACCEPT_KEYWORDS'] =  arch
+        envvars['ACCEPT_KEYWORDS'] = arch
 
     if portdir is not None:
       envvars['PORTDIR'] = portdir

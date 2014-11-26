@@ -4,8 +4,6 @@
 
 """Library containing functions to access a remote test device."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import glob
@@ -554,7 +552,7 @@ class RemoteDevice(object):
     if mode == 'scp':
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
-      func  = self.agent.Scp
+      func = self.agent.Scp
     else:
       func = self.agent.Rsync
 
@@ -570,7 +568,7 @@ class RemoteDevice(object):
     if mode == 'scp':
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
-      func  = self.agent.ScpToLocal
+      func = self.agent.ScpToLocal
     else:
       func = self.agent.RsyncToLocal
 

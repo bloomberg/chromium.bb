@@ -5,7 +5,6 @@
 """Script for listing top buildbot crashes."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -229,19 +228,19 @@ def _CreateParser():
   parser = optparse.OptionParser(usage=usage)
 
   # Main options
-  parser.add_option('', '--days',  dest='days', default=7, type='int',
-                    help=('Number of days to look at for crash info.'))
-  parser.add_option('', '--chrome_branch',  dest='chrome_branch',
+  parser.add_option('--days', dest='days', default=7, type='int',
+                    help='Number of days to look at for crash info.')
+  parser.add_option('--chrome_branch', dest='chrome_branch',
                     default=_GetChromeBranch(),
-                    help=('Chrome branch to look at for crash info.'))
-  parser.add_option('', '--all_programs', action='store_true',
+                    help='Chrome branch to look at for crash info.')
+  parser.add_option('--all_programs', action='store_true',
                     dest='all_programs', default=False,
-                    help=('Show crashes in programs other than Chrome.'))
-  parser.add_option('', '--list', action='store_true', dest='list_all',
+                    help='Show crashes in programs other than Chrome.')
+  parser.add_option('--list', action='store_true', dest='list_all',
                     default=False,
-                    help=('List all stack traces found (not just one).'))
-  parser.add_option('', '--jobs',  dest='jobs', default=32, type='int',
-                    help=('Number of processes to run in parallel.'))
+                    help='List all stack traces found (not just one).')
+  parser.add_option('--jobs', dest='jobs', default=32, type='int',
+                    help='Number of processes to run in parallel.')
   return parser
 
 

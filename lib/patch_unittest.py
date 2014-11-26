@@ -6,7 +6,6 @@
 """Unittests for chromite.lib.patch."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -777,7 +776,7 @@ class TestFormatting(cros_test_lib.TestCase):
     if raises:
       self.assertRaises2(ValueError, functor, value,
                          msg="%s(%r) did not throw a ValueError"
-                         % (functor.__name__, value),  **kwargs)
+                         % (functor.__name__, value), **kwargs)
     else:
       self.assertEqual(functor(value, **kwargs), expected,
                        msg="failed: %s(%r) != %r"

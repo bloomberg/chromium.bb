@@ -5,7 +5,6 @@
 """Module that handles the processing of patches to the source tree."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -660,7 +659,7 @@ class GitRepoPatch(PatchQuery):
     """
     super(GitRepoPatch, self).__init__(remote, project=project,
                                        tracking_branch=tracking_branch,
-                                       change_id = change_id,
+                                       change_id=change_id,
                                        sha1=sha1, gerrit_number=None)
     self.project_url = project_url
     self.commit_message = None

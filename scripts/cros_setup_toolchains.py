@@ -4,9 +4,6 @@
 
 """This script manages the installed toolchains in the chroot."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import copy
@@ -49,16 +46,16 @@ DEFAULT_VERSION = PACKAGE_STABLE
 DEFAULT_TARGET_VERSION_MAP = {
 }
 TARGET_VERSION_MAP = {
-  'host' : {
-    'gdb' : PACKAGE_NONE,
-  },
+    'host' : {
+        'gdb' : PACKAGE_NONE,
+    },
 }
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
 CONFIG_TARGET_SUFFIXES = {
-  'binutils' : {
-    'i686-pc-linux-gnu' : '-gold',
-    'x86_64-cros-linux-gnu' : '-gold',
-  },
+    'binutils' : {
+        'i686-pc-linux-gnu' : '-gold',
+        'x86_64-cros-linux-gnu' : '-gold',
+    },
 }
 # Global per-run cache that will be filled ondemand in by GetPackageMap()
 # function as needed.
@@ -102,9 +99,9 @@ class Crossdev(object):
       if target == 'host':
         target_tuple = toolchain.GetHostTuple()
       # Catch output of crossdev.
-      out = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg',
-                                       '--ex-gdb', target_tuple],
-                print_cmd=False, redirect_stdout=True).output.splitlines()
+      out = cros_build_lib.RunCommand(
+          ['crossdev', '--show-target-cfg', '--ex-gdb', target_tuple],
+          print_cmd=False, redirect_stdout=True).output.splitlines()
       # List of tuples split at the first '=', converted into dict.
       val[target] = dict([x.split('=', 1) for x in out])
     return val[target]
@@ -477,11 +474,12 @@ def SelectActiveToolchains(targets, suffixes):
 
       extra_env = {'CHOST': target}
       cmd = ['%s-config' % package, '-c', target]
-      current = cros_build_lib.RunCommand(cmd, print_cmd=False,
-          redirect_stdout=True, extra_env=extra_env).output.splitlines()[0]
+      result = cros_build_lib.RunCommand(
+          cmd, print_cmd=False, redirect_stdout=True, extra_env=extra_env)
+      current = result.output.splitlines()[0]
       # Do not gcc-config when the current is live or nothing needs to be done.
       if current != desired and current != '9999':
-        cmd = [ package + '-config', desired ]
+        cmd = [package + '-config', desired]
         cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
@@ -711,7 +709,7 @@ def _GetFilesForTarget(target, root='/'):
 
 
 def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
-                             path_rewrite_func=lambda x:x, root='/'):
+                             path_rewrite_func=lambda x: x, root='/'):
   """Link in all packable files and their runtime dependencies
 
   This also wraps up executable ELFs with helper scripts.

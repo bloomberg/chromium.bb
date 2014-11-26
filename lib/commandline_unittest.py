@@ -5,9 +5,6 @@
 
 """Test the commandline module."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import cPickle
@@ -50,7 +47,7 @@ class GSPathTest(cros_test_lib.TestCase):
     return parser.parse_args(argv)
 
   def _RunGSPathTestCase(self, raw, parsed):
-    options, _ =  self._ParseCommandLine(['--gs-path', raw])
+    options, _ = self._ParseCommandLine(['--gs-path', raw])
     self.assertEquals(options.gs_path, parsed)
 
   def testNoGSPathCorrectionNeeded(self):
@@ -175,9 +172,9 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.PatchObject(commandline.ArgumentParser, 'ConfigureCacheDir')
     dir_struct = [
-      'repo/.repo/',
-      'gclient/.gclient',
-      'submodule/.git/',
+        'repo/.repo/',
+        'gclient/.gclient',
+        'submodule/.git/',
     ]
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, dir_struct)
     self.repo_root = os.path.join(self.tempdir, 'repo')

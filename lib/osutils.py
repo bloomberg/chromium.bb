@@ -4,9 +4,6 @@
 
 """Common file and os related utilities, including tempdir manipulation."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import collections
@@ -126,7 +123,7 @@ def SafeUnlink(path, sudo=False):
   if sudo:
     try:
       cros_build_lib.SudoRunCommand(
-          ['rm', '--',  path], print_cmd=False, redirect_stderr=True)
+          ['rm', '--', path], print_cmd=False, redirect_stderr=True)
       return True
     except cros_build_lib.RunCommandError:
       if os.path.exists(path):
@@ -533,7 +530,7 @@ MS_SLAVE = 1 << 19
 MS_SHARED = 1 << 20
 MS_RELATIME = 1 << 21
 MS_KERNMOUNT = 1 << 22
-MS_I_VERSION =  1 << 23
+MS_I_VERSION = 1 << 23
 MS_STRICTATIME = 1 << 24
 MS_ACTIVE = 1 << 30
 MS_NOUSER = 1 << 31
@@ -989,7 +986,8 @@ class MountImageContext(object):
     self._CleanUp()
 
 
-MountInfo = collections.namedtuple('MountInfo',
+MountInfo = collections.namedtuple(
+    'MountInfo',
     'source destination filesystem options')
 
 

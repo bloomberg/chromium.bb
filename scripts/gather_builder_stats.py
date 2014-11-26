@@ -4,9 +4,6 @@
 
 """Script for gathering stats from builder runs."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import division
 from __future__ import print_function
 
@@ -167,16 +164,16 @@ class SpreadsheetMasterTable(StatsTable):
   ID_COL = COL_BUILD_NUMBER
 
   COLUMNS = (
-     COL_BUILD_NUMBER,
-     COL_BUILD_LINK,
-     COL_STATUS,
-     COL_START_DATETIME,
-     COL_RUNTIME_MINUTES,
-     COL_WEEKDAY,
-     COL_CHROMEOS_VERSION,
-     COL_CHROME_VERSION,
-     COL_FAILED_STAGES,
-     COL_FAILURE_MESSAGE,
+      COL_BUILD_NUMBER,
+      COL_BUILD_LINK,
+      COL_STATUS,
+      COL_START_DATETIME,
+      COL_RUNTIME_MINUTES,
+      COL_WEEKDAY,
+      COL_CHROMEOS_VERSION,
+      COL_CHROME_VERSION,
+      COL_FAILED_STAGES,
+      COL_FAILURE_MESSAGE,
   )
 
   def __init__(self, target, waterfall, columns=None):
@@ -232,7 +229,7 @@ class SpreadsheetMasterTable(StatsTable):
     """Fetch a row dictionary from |build_data|
 
     Returns:
-      A dictionary of the form {column_name : value}
+      A dictionary of the form {column_name: value}
     """
     build_number = build_data.build_number
     build_link = self.GetBuildSSLink(build_number)
@@ -375,7 +372,7 @@ class CQMasterTable(SpreadsheetMasterTable):
     """Fetch a row dictionary from |build_data|
 
     Returns:
-      A dictionary of the form {column_name : value}
+      A dictionary of the form {column_name: value}
     """
     row = super(CQMasterTable, self)._GetBuildRow(build_data)
     row[self.COL_CL_COUNT] = str(build_data.count_changes)
@@ -394,10 +391,11 @@ class CQMasterTable(SpreadsheetMasterTable):
 class SSUploader(object):
   """Uploads data from table object to Google spreadsheet."""
 
-  __slots__ = ('_creds',          # gdata_lib.Creds object
-               '_scomm',          # gdata_lib.SpreadsheetComm object
-               'ss_key',          # Spreadsheet key string
-               )
+  __slots__ = (
+      '_creds',          # gdata_lib.Creds object
+      '_scomm',          # gdata_lib.SpreadsheetComm object
+      'ss_key',          # Spreadsheet key string
+  )
 
   SOURCE = 'Gathered from builder metadata'
   HYPERLINK_RE = re.compile(r'=HYPERLINK\("[^"]+", "([^"]+)"\)')
@@ -832,8 +830,8 @@ class CQSlaveStats(StatsManager):
 
     _SendToCarbon(builds, (
         _GetGraphName,
-        lambda b : b.runtime_seconds,
-        lambda b : b.epoch_time_seconds,
+        lambda b: b.runtime_seconds,
+        lambda b: b.epoch_time_seconds,
     ))
 
 
@@ -850,16 +848,16 @@ class CQMasterStats(StatsManager):
   def _SendToCarbonV0(self, builds):
     # Send runtime data.
     _SendToCarbon(builds, (
-        lambda b : 'buildbot.cq.run_time_seconds',
-        lambda b : b.runtime_seconds,
-        lambda b : b.epoch_time_seconds,
+        lambda b: 'buildbot.cq.run_time_seconds',
+        lambda b: b.runtime_seconds,
+        lambda b: b.epoch_time_seconds,
     ))
 
     # Send CLs per run data.
     _SendToCarbon(builds, (
-        lambda b : 'buildbot.cq.cls_per_run',
-        lambda b : b.count_changes,
-        lambda b : b.epoch_time_seconds,
+        lambda b: 'buildbot.cq.cls_per_run',
+        lambda b: b.count_changes,
+        lambda b: b.epoch_time_seconds,
     ))
 
   # Organized by by increasing graphite version numbers, starting at 0.
@@ -908,7 +906,7 @@ class CLStats(StatsManager):
   """Manager for stats about CL actions taken by the Commit Queue."""
   PATCH_HANDLING_TIME_SUMMARY_KEY = 'patch_handling_time'
   SUMMARY_SPREADSHEET_COLUMNS = {
-      PATCH_HANDLING_TIME_SUMMARY_KEY : ('PatchHistogram', 1)}
+      PATCH_HANDLING_TIME_SUMMARY_KEY: ('PatchHistogram', 1)}
   COL_FAILURE_CATEGORY = 'failure category'
   COL_FAILURE_BLAME = 'bug or bad CL'
   REASON_BAD_CL = 'Bad CL'
@@ -969,11 +967,11 @@ class CLStats(StatsManager):
     general_regex = r'^.*(%s).*?([0-9]+)/?,?$'
 
     crbug = general_regex % r'crbug.com|code.google.com'
-    internal_review = (general_regex %
+    internal_review = general_regex % (
         r'chrome-internal-review.googlesource.com|crosreview.com/i')
-    external_review = (general_regex %
+    external_review = general_regex % (
         r'crosreview.com|chromium-review.googlesource.com')
-    guts = (general_regex % r't/|gutsv\d.corp.google.com/#ticket/')
+    guts = general_regex % r't/|gutsv\d.corp.google.com/#ticket/'
 
     # Buganizer regex is different, as buganizer urls do not end with the bug
     # number.
@@ -1264,11 +1262,11 @@ class CLStats(StatsManager):
     unique_cl_blames = {blame for blame in unique_blames if
                         EXTERNAL_CL_BASE_URL in blame}
 
-    submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
-                         if any(a.action==constants.CL_ACTION_SUBMITTED
+    submitted_changes = {k: v for k, v, in self.per_cl_actions.iteritems()
+                         if any(a.action == constants.CL_ACTION_SUBMITTED
                                 for a in v)}
-    submitted_patches = {k : v for k, v, in self.per_patch_actions.iteritems()
-                         if any(a.action==constants.CL_ACTION_SUBMITTED
+    submitted_patches = {k: v for k, v, in self.per_patch_actions.iteritems()
+                         if any(a.action == constants.CL_ACTION_SUBMITTED
                                 for a in v)}
 
     patch_handle_times = [(v[-1].timestamp - v[0].timestamp).total_seconds()
@@ -1288,8 +1286,8 @@ class CLStats(StatsManager):
     bad_cl_candidates = {}
     for bot_type, patch_actions in submitted_after_new_patch.items():
       bad_cl_candidates[bot_type] = [
-        k for k, _ in sorted(patch_actions.items(),
-                             key=lambda x: x[1][-1].timestamp)]
+          k for k, _ in sorted(patch_actions.items(),
+                               key=lambda x: x[1][-1].timestamp)]
 
     # Calculate how many good patches were falsely rejected and why.
     # good_patch_rejections maps patches to the rejection actions.
@@ -1333,28 +1331,25 @@ class CLStats(StatsManager):
         self.CalculateStageFailures(reject_actions, submitted_changes,
                                     good_patch_rejections)
 
-    summary = {'total_cl_actions'      : len(self.actions),
-               'unique_cls'            : len(self.per_cl_actions),
-               'unique_patches'        : len(self.per_patch_actions),
-               'submitted_patches'     : len(submit_actions),
-               'rejections'            : len(reject_actions),
-               'submit_fails'          : len(sbfail_actions),
-               'good_patch_rejections' : sum(rejection_counts),
-               'mean_good_patch_rejections' :
-                   numpy.mean(rejection_counts),
-               'good_patch_rejection_breakdown' :
-                   good_patch_rejection_breakdown,
-               'good_patch_rejection_count' :
-                   dict(good_patch_rejection_count),
-               'false_rejection_rate' :
-                   false_rejection_rate,
-               'median_handling_time' : numpy.median(patch_handle_times),
-               self.PATCH_HANDLING_TIME_SUMMARY_KEY : patch_handle_times,
-               'bad_cl_candidates' : bad_cl_candidates,
-               'correctly_rejected_by_stage' : correctly_rejected_by_stage,
-               'incorrectly_rejected_by_stage' : incorrectly_rejected_by_stage,
-               'unique_blames_change_count' : len(unique_cl_blames),
-               }
+    summary = {
+        'total_cl_actions': len(self.actions),
+        'unique_cls': len(self.per_cl_actions),
+        'unique_patches': len(self.per_patch_actions),
+        'submitted_patches': len(submit_actions),
+        'rejections': len(reject_actions),
+        'submit_fails': len(sbfail_actions),
+        'good_patch_rejections': sum(rejection_counts),
+        'mean_good_patch_rejections': numpy.mean(rejection_counts),
+        'good_patch_rejection_breakdown': good_patch_rejection_breakdown,
+        'good_patch_rejection_count': dict(good_patch_rejection_count),
+        'false_rejection_rate': false_rejection_rate,
+        'median_handling_time': numpy.median(patch_handle_times),
+        self.PATCH_HANDLING_TIME_SUMMARY_KEY: patch_handle_times,
+        'bad_cl_candidates': bad_cl_candidates,
+        'correctly_rejected_by_stage': correctly_rejected_by_stage,
+        'incorrectly_rejected_by_stage': incorrectly_rejected_by_stage,
+        'unique_blames_change_count': len(unique_cl_blames),
+    }
 
     logging.info('CQ committed %s changes', summary['submitted_patches'])
     logging.info('CQ correctly rejected %s unique changes',
@@ -1581,7 +1576,7 @@ def main(argv):
 
   if options.canary_master:
     stats_managers.append(
-      CanaryMasterStats(
+        CanaryMasterStats(
             db=db,
             ss_key=options.ss_key or CANARY_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))

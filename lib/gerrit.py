@@ -4,8 +4,6 @@
 
 """Module containing helper class and methods for interacting with Gerrit."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import logging
@@ -114,7 +112,7 @@ class GerritHelper(object):
       commit: The git commit hash for a patch associated with the change.
       must_match: Raise an exception if the change is not found.
     """
-    query = { 'project': project, 'commit': commit, 'must_match': must_match }
+    query = {'project': project, 'commit': commit, 'must_match': must_match}
     return self.QuerySingleRecord(change, **query)
 
   def IsChangeCommitted(self, change, must_match=False):

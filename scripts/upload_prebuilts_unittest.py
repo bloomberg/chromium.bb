@@ -5,9 +5,6 @@
 
 """Unittests for upload_prebuilts.py."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import copy
@@ -49,12 +46,13 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
   """Tests for the UpdateLocalFile function."""
 
   def setUp(self):
-    self.contents_str = ['# comment that should be skipped',
-                         'PKGDIR="/var/lib/portage/pkgs"',
-                         'PORTAGE_BINHOST="http://no.thanks.com"',
-                         'portage portage-20100310.tar.bz2',
-                         'COMPILE_FLAGS="some_value=some_other"',
-                         ]
+    self.contents_str = [
+        '# comment that should be skipped',
+        'PKGDIR="/var/lib/portage/pkgs"',
+        'PORTAGE_BINHOST="http://no.thanks.com"',
+        'portage portage-20100310.tar.bz2',
+        'COMPILE_FLAGS="some_value=some_other"',
+    ]
     self.version_file = os.path.join(self.tempdir, 'version')
     osutils.WriteFile(self.version_file, '\n'.join(self.contents_str))
 
@@ -123,11 +121,11 @@ class TestPrebuilt(cros_test_lib.MockTestCase):
     gs_bucket_path = 'gs://chromeos-prebuilt/host/version'
     local_path = os.path.join(base_local_path, 'public1.tbz2')
     self.PatchObject(prebuilt.os.path, 'exists', return_true=True)
-    pkgs = [{ 'CPV': 'public1' }]
+    pkgs = [{'CPV': 'public1'}]
     result = prebuilt.GenerateUploadDict(base_local_path, gs_bucket_path, pkgs)
-    expected = { local_path: gs_bucket_path + '/public1.tbz2',
-                local_path.replace('tbz2','debug.tbz2'): gs_bucket_path +
-                                   '/public1.debug.tbz2'}
+    expected = {local_path: gs_bucket_path + '/public1.tbz2',
+                local_path.replace('tbz2', 'debug.tbz2'):
+                    gs_bucket_path + '/public1.debug.tbz2'}
     self.assertEqual(result, expected)
 
   def testDeterminePrebuiltConfHost(self):
@@ -293,7 +291,8 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
   def testSuccessfulGsUpload(self):
     uploads = {'/packages/private.tbz2': 'gs://foo/private.tbz2'}
     self.mox.StubOutWithMock(prebuilt, 'GenerateUploadDict')
-    prebuilt.GenerateUploadDict('/packages', 'gs://foo/suffix',
+    prebuilt.GenerateUploadDict(
+        '/packages', 'gs://foo/suffix',
         PRIVATE_PACKAGES).AndReturn(uploads)
     uploads = uploads.copy()
     uploads['fake'] = 'gs://foo/suffix/Packages'
@@ -328,11 +327,14 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
     package_path = os.path.join(self.build_path,
                                 prebuilt._HOST_PACKAGES_PATH)
-    url_suffix = prebuilt._REL_HOST_PATH % {'version': self.version,
-        'host_arch': prebuilt._HOST_ARCH, 'target': target}
+    url_suffix = prebuilt._REL_HOST_PATH % {
+        'version': self.version,
+        'host_arch': prebuilt._HOST_ARCH,
+        'target': target,
+    }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
-        packages_url_suffix).AndReturn(True)
+    prebuilt.PrebuiltUploader._UploadPrebuilt(
+        package_path, packages_url_suffix).AndReturn(True)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     urls = [url_value.replace('foo', 'bar'), url_value]
@@ -353,8 +355,10 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     board_path = os.path.join(
         self.build_path, prebuilt._BOARD_PATH % {'board': board})
     package_path = os.path.join(board_path, 'packages')
-    url_suffix = prebuilt._REL_BOARD_PATH % {'version': self.version,
-        'target': target}
+    url_suffix = prebuilt._REL_BOARD_PATH % {
+        'version': self.version,
+        'target': target,
+    }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
     self.mox.StubOutWithMock(multiprocessing.Process, '__init__')
     self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')

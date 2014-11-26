@@ -6,7 +6,6 @@
 """Unit tests for portage_util.py."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -162,7 +161,7 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
       os.path.isdir(mox.IgnoreArg()).AndReturn(False)
     for p in fake_projects:
       os.path.isdir(mox.IgnoreArg()).AndReturn(True)
-      MANIFEST.FindCheckoutFromPath(mox.IgnoreArg()).AndReturn({ 'name': p })
+      MANIFEST.FindCheckoutFromPath(mox.IgnoreArg()).AndReturn({'name': p})
     self.mox.ReplayAll()
 
     ebuild = portage_util.EBuild(ebuild_path)
@@ -223,9 +222,9 @@ class StubEBuild(portage_util.EBuild):
 
   def GetCommitId(self, srcpath):
     id_map = {
-      'p1_path' : 'my_id',
-      'p1_path1' : 'my_id1',
-      'p1_path2' : 'my_id2'
+        'p1_path': 'my_id',
+        'p1_path1': 'my_id1',
+        'p1_path2': 'my_id2'
     }
     if srcpath in id_map:
       return id_map[srcpath]
@@ -272,7 +271,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
     if multi:
       portage_util.EBuild.GetSourcePath('/sources', MANIFEST).AndReturn(
-          (['fake_project1','fake_project2'], ['p1_path1','p1_path2']))
+          (['fake_project1', 'fake_project2'], ['p1_path1', 'p1_path2']))
     else:
       portage_util.EBuild.GetSourcePath('/sources', MANIFEST).AndReturn(
           (['fake_project1'], ['p1_path']))
@@ -753,13 +752,13 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 class PortageDBTest(cros_test_lib.MoxTempDirTestCase):
   """Portage package Database related tests."""
 
-  fake_pkgdb = { 'category1' : [ 'package-1', 'package-2' ],
-                 'category2' : [ 'package-3', 'package-4' ],
-                 'category3' : [ 'invalid', 'semi-invalid' ],
-                 'with' : [ 'files-1' ],
-                 'dash-category' : [ 'package-5', ],
-                 '-invalid' : [ 'package-6' ],
-                 'invalid' : [], }
+  fake_pkgdb = {'category1': ['package-1', 'package-2'],
+                'category2': ['package-3', 'package-4'],
+                'category3': ['invalid', 'semi-invalid'],
+                'with': ['files-1'],
+                'dash-category': ['package-5',],
+                '-invalid': ['package-6'],
+                'invalid': [], }
   fake_packages = []
   build_root = None
   fake_chroot = None

@@ -8,8 +8,6 @@ This pushes files from the archive bucket to the signer bucket and marks
 artifacts for signing (which a signing process will look for).
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import ConfigParser
@@ -289,6 +287,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
     # Upload all the files first before flagging them for signing.
     files_to_copy = (
+        # pylint: disable=bad-whitespace
         # <src>                          <dst>
         # <signing type>                 <sfx>
         ('recovery_image.tar.xz',        recovery_base,          'tar.xz',

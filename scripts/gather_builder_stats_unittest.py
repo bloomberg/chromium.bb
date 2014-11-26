@@ -6,7 +6,6 @@
 """Unit tests for gather_builder_stats."""
 
 # pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
 
 from __future__ import print_function
 
@@ -186,8 +185,8 @@ class TestCLActionLogic(unittest.TestCase):
       cl_stats.db = self.fake_db
       cl_stats.Gather(datetime.date.today(), datetime.date.today())
       cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
-      cl_stats.blames =  {1: '', 2: '', 3: 'crosreview.com/1',
-                          4: 'crosreview.com/1'}
+      cl_stats.blames = {1: '', 2: '', 3: 'crosreview.com/1',
+                         4: 'crosreview.com/1'}
       summary = cl_stats.Summarize()
 
       expected = {

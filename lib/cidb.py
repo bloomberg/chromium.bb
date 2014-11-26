@@ -4,9 +4,6 @@
 
 """Continuous Integration Database Library."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import glob
@@ -189,8 +186,8 @@ class SchemaVersionedMySQLConnection(object):
     """
     tables = self._Execute('SHOW TABLES').fetchall()
     if (self.SCHEMA_VERSION_TABLE_NAME,) in tables:
-      r = self._Execute('SELECT MAX(%s) from %s' %
-          (self.SCHEMA_VERSION_COL, self.SCHEMA_VERSION_TABLE_NAME))
+      r = self._Execute('SELECT MAX(%s) from %s' % (
+          self.SCHEMA_VERSION_COL, self.SCHEMA_VERSION_TABLE_NAME))
       return r.fetchone()[0] or 0
     else:
       return 0
@@ -344,8 +341,8 @@ class SchemaVersionedMySQLConnection(object):
     """
     self._ReflectToMetadata()
     primary_key = self._GetPrimaryKey(table)
-    upd = self._meta.tables[table].update().where(primary_key==row_id
-                                                  ).values(values)
+    upd = self._meta.tables[table].update().where(
+        primary_key == row_id).values(values)
     r = self._Execute(upd)
     return r.rowcount
 
@@ -382,7 +379,7 @@ class SchemaVersionedMySQLConnection(object):
     primary_key = self._GetPrimaryKey(table)
     table_m = self._meta.tables[table]
     columns_m = [table_m.c[col_name] for col_name in columns]
-    sel = sqlalchemy.sql.select(columns_m).where(primary_key==row_id)
+    sel = sqlalchemy.sql.select(columns_m).where(primary_key == row_id)
     r = self._Execute(sel).fetchall()
     if r:
       assert len(r) == 1, 'Query by primary key returned more than 1 row.'
@@ -494,9 +491,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
 
   _SQL_FETCH_ACTIONS = (
-    'SELECT c.id, b.id, action, c.reason, build_config, build_number, '
-    'change_number, patch_number, change_source, timestamp FROM '
-    'clActionTable c JOIN buildTable b ON build_id = b.id ')
+      'SELECT c.id, b.id, action, c.reason, build_config, build_number, '
+      'change_number, patch_number, change_source, timestamp FROM '
+      'clActionTable c JOIN buildTable b ON build_id = b.id ')
 
   def __init__(self, db_credentials_dir):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
@@ -512,7 +509,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(2)
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_config, bot_hostname,  master_build_id=None):
+                  build_config, bot_hostname, master_build_id=None):
     """Insert a build row.
 
     Args:
@@ -525,15 +522,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Insert('buildTable', {'builder_name': builder_name,
                                        'buildbot_generation':
-                                         constants.BUILDBOT_GENERATION,
+                                           constants.BUILDBOT_GENERATION,
                                        'waterfall': waterfall,
                                        'build_number': build_number,
-                                       'build_config' : build_config,
+                                       'build_config': build_config,
                                        'bot_hostname': bot_hostname,
-                                       'start_time' :
+                                       'start_time':
                                            sqlalchemy.func.current_timestamp(),
-                                       'master_build_id' : master_build_id}
-                        )
+                                       'master_build_id': master_build_id})
 
   @minimum_schema(3)
   def InsertCLActions(self, build_id, cl_actions):
@@ -559,12 +555,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       action = cl_action.action
       reason = cl_action.reason
       values.append({
-          'build_id' : build_id,
-          'change_source' : change_source,
+          'build_id': build_id,
+          'change_source': change_source,
           'change_number': change_number,
-          'patch_number' : patch_number,
-          'action' : action,
-          'reason' : reason})
+          'patch_number': patch_number,
+          'action': action,
+          'reason': reason})
 
     return self._InsertMany('clActionTable', values)
 
@@ -670,9 +666,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     update_dict = {
         'main_firmware_version': board_metadata.get('main-firmware-version'),
-        'ec_firmware_version': board_metadata.get('ec-firmware-version')
-        }
-    return self._UpdateWhere('boardPerBuildTable',
+        'ec_firmware_version': board_metadata.get('ec-firmware-version'),
+    }
+    return self._UpdateWhere(
+        'boardPerBuildTable',
         'build_id = %s and board = "%s"' % (build_id, board),
         update_dict)
 
@@ -697,11 +694,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     self._ReflectToMetadata()
     # The current timestamp is evaluated on the database, not locally.
     current_timestamp = sqlalchemy.func.current_timestamp()
-    self._Update('buildTable', build_id, {'finish_time' : current_timestamp,
-                                          'status' : status,
-                                          'status_pickle' : status_pickle,
+    self._Update('buildTable', build_id, {'finish_time': current_timestamp,
+                                          'status': status,
+                                          'status_pickle': status_pickle,
                                           'metadata_url': metadata_url,
-                                          'final' : True})
+                                          'final': True})
 
 
   @minimum_schema(16)
@@ -939,8 +936,8 @@ class CIDBConnectionFactory(object):
     """
     if cls._ConnectionIsSetup:
       assert (cls._ConnectionType == cls._CONNECTION_TYPE_MOCK or
-              cls._ConnectionType == cls._CONNECTION_TYPE_NONE) , (
-          'A non-mock CIDB is already set up.')
+              cls._ConnectionType == cls._CONNECTION_TYPE_NONE), (
+                  'A non-mock CIDB is already set up.')
     cls._ConnectionType = cls._CONNECTION_TYPE_NONE
     cls._ConnectionIsSetup = True
 

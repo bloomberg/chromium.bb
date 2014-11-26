@@ -5,8 +5,6 @@
 
 """Unittests for pushimage.py"""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -161,11 +159,11 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     """Simple smoke test"""
     EXPECTED = {
         'canary': [
-            'gs://chromeos-releases/canary-channel/test.board-hi/5126.0.0/'
-              'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions'],
+            ('gs://chromeos-releases/canary-channel/test.board-hi/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions')],
         'dev': [
-            'gs://chromeos-releases/dev-channel/test.board-hi/5126.0.0/'
-              'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions'],
+            ('gs://chromeos-releases/dev-channel/test.board-hi/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions')],
     }
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
@@ -193,11 +191,11 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     """Only sign the requested recovery type"""
     EXPECTED = {
         'canary': [
-            'gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
-              'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'],
+            ('gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board.instructions')],
         'dev': [
-            'gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
-              'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'],
+            ('gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board.instructions')],
     }
 
     urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',

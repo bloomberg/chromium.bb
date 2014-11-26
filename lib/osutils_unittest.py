@@ -5,8 +5,6 @@
 
 """Unittests for the osutils.py module (imagine that!)."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -279,12 +277,12 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
   D = cros_test_lib.Directory
 
   DIR_STRUCT = [
-    D('a', [
-      D('.repo', []),
-      D('b', [
-        D('c', [])
+      D('a', [
+          D('.repo', []),
+          D('b', [
+              D('c', [])
+          ])
       ])
-    ])
   ]
 
   START_PATH = os.path.join('a', 'b', 'c')
@@ -295,13 +293,13 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
   def testFound(self):
     """Target is found."""
     found = osutils.FindInPathParents(
-      '.repo', os.path.join(self.tempdir, self.START_PATH))
+        '.repo', os.path.join(self.tempdir, self.START_PATH))
     self.assertEquals(found, os.path.join(self.tempdir, 'a', '.repo'))
 
   def testNotFound(self):
     """Target is not found."""
     found = osutils.FindInPathParents(
-      'does.not/exist', os.path.join(self.tempdir, self.START_PATH))
+        'does.not/exist', os.path.join(self.tempdir, self.START_PATH))
     self.assertEquals(found, None)
 
 
