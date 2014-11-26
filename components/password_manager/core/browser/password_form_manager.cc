@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -25,6 +26,10 @@ using autofill::FormStructure;
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 using base::Time;
+
+// Shorten the name to spare line breaks. The code provides enough context
+// already.
+typedef autofill::SavePasswordProgressLogger Logger;
 
 namespace password_manager {
 
@@ -351,8 +356,17 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     PasswordStore::AuthorizationPromptPolicy prompt_policy) {
   DCHECK_EQ(state_, PRE_MATCHING_PHASE);
   state_ = MATCHING_PHASE;
+
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
+  }
+
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_NO_STORE);
     NOTREACHED();
     return;
   }
@@ -368,6 +382,12 @@ void PasswordFormManager::OnRequestDone(
   // Note that the result gets deleted after this call completes, but we own
   // the PasswordForm objects pointed to by the result vector, thus we keep
   // copies to a minimum here.
+
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
+  }
 
   int best_score = 0;
   // These credentials will be in the final result regardless of score.
@@ -442,6 +462,8 @@ void PasswordFormManager::OnRequestDone(
     // If no saved forms can be used, then it isn't blacklisted and generation
     // should be allowed.
     driver_->AllowPasswordGenerationForForm(observed_form_);
+    if (logger)
+      logger->LogNumber(Logger::STRING_BEST_SCORE, best_score);
     return;
   }
 
@@ -497,6 +519,13 @@ void PasswordFormManager::OnRequestDone(
 void PasswordFormManager::OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) {
   DCHECK_EQ(state_, MATCHING_PHASE);
+
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
+    logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
+  }
 
   if (results.empty()) {
     state_ = POST_MATCHING_PHASE;

@@ -468,6 +468,13 @@ void ShowLoginPrompt(const GURL& request_url,
     return;
   }
 
+  if (password_manager && password_manager->client()->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        password_manager->client());
+    logger.LogMessage(
+        autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
+  }
+
   // Tell the password manager to look for saved passwords.
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);

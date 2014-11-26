@@ -179,6 +179,30 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
     case
         SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
       return "Provisionally saved form is not HTML";
+    case SavePasswordProgressLogger::STRING_ON_REQUEST_DONE_METHOD:
+      return "PasswordFormManager::OnRequestDone";
+    case SavePasswordProgressLogger::STRING_BEST_SCORE:
+      return "best_score";
+    case SavePasswordProgressLogger::STRING_ON_GET_STORE_RESULTS_METHOD:
+      return "PasswordFormManager::OnGetPasswordStoreResults";
+    case SavePasswordProgressLogger::STRING_NUMBER_RESULTS:
+      return "Number of results from the password store";
+    case SavePasswordProgressLogger::STRING_FETCH_LOGINS_METHOD:
+      return "PasswordFormManager::FetchMatchingLoginsFromPasswordStore";
+    case SavePasswordProgressLogger::STRING_NO_STORE:
+      return "PasswordStore is not available";
+    case SavePasswordProgressLogger::STRING_CREATE_LOGIN_MANAGERS_METHOD:
+      return "PasswordManager::CreatePendingLoginManagers";
+    case SavePasswordProgressLogger::STRING_OLD_NUMBER_LOGIN_MANAGERS:
+      return "Number of pending login managers (before)";
+    case SavePasswordProgressLogger::STRING_NEW_NUMBER_LOGIN_MANAGERS:
+      return "Number of pending login managers (after)";
+    case SavePasswordProgressLogger::STRING_ENABLED_FOR_CURRENT_PAGE_METHOD:
+      return "PasswordManager::IsEnabledForCurrentPage";
+    case SavePasswordProgressLogger::STRING_CLIENT_CHECK_PRESENT:
+      return "IsPasswordManagerEnabledForCurrentPage";
+    case SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD:
+      return "ShowLoginPrompt";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

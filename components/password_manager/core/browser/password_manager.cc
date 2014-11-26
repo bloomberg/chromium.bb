@@ -164,8 +164,18 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
 }
 
 bool PasswordManager::IsEnabledForCurrentPage() const {
-  return !driver_->DidLastPageLoadEncounterSSLErrors() &&
-      client_->IsPasswordManagerEnabledForCurrentPage();
+  bool ssl_errors = driver_->DidLastPageLoadEncounterSSLErrors();
+  bool client_check = client_->IsPasswordManagerEnabledForCurrentPage();
+
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_ENABLED_FOR_CURRENT_PAGE_METHOD);
+    logger->LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
+    logger->LogBoolean(Logger::STRING_CLIENT_CHECK_PRESENT, client_check);
+  }
+
+  return !ssl_errors && client_check;
 }
 
 bool PasswordManager::IsSavingEnabledForCurrentPage() const {
@@ -387,8 +397,19 @@ void PasswordManager::OnPasswordFormsParsed(
 
 void PasswordManager::CreatePendingLoginManagers(
     const std::vector<PasswordForm>& forms) {
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
+  }
+
   if (!IsEnabledForCurrentPage())
     return;
+
+  if (logger) {
+    logger->LogNumber(Logger::STRING_OLD_NUMBER_LOGIN_MANAGERS,
+                      pending_login_managers_.size());
+  }
 
   // Copy the weak pointers to the currently known login managers for comparison
   // against the newly added.
@@ -421,6 +442,11 @@ void PasswordManager::CreatePendingLoginManagers(
         client_->GetAuthorizationPromptPolicy(*iter);
 
     manager->FetchMatchingLoginsFromPasswordStore(prompt_policy);
+  }
+
+  if (logger) {
+    logger->LogNumber(Logger::STRING_NEW_NUMBER_LOGIN_MANAGERS,
+                      pending_login_managers_.size());
   }
 }
 
