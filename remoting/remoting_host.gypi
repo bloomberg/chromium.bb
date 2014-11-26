@@ -111,6 +111,11 @@
                 'host/remoting_me2me_host.cc',
               ],
               'conditions': [
+                ['use_ash==1', {
+                  'dependencies': [
+                    '../ash/ash.gyp:ash',
+                  ],
+                }],
                 ['use_ozone==0', {
                   'sources!': [
                     'host/input_injector_chromeos.cc',
@@ -182,11 +187,6 @@
                 'process_outputs_as_sources': 1,
                 'message': 'Running message compiler on <(RULE_INPUT_PATH)',
               }],
-            }],
-            ['use_ash==1', {
-              'dependencies': [
-                 '../ash/ash.gyp:ash',
-              ],
             }],
             ['enable_webrtc==1', {
               'dependencies': [
