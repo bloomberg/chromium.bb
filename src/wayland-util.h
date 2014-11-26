@@ -107,10 +107,10 @@ struct wl_interface {
  *
  * Iterate the list in ascending order:
  * \code
- *	item_t *item;
- *	wl_list_for_each(item, foo_list, link) {
- *		Do_something_with_item(item);
- *	}
+ * item_t *item;
+ * wl_list_for_each(item, foo_list, link) {
+ * 	Do_something_with_item(item);
+ * }
  * \endcode
  */
 struct wl_list {
