@@ -80,6 +80,61 @@ namespace internal {
 //                 into the Bind() system, doing most of the type resolution.
 //                 There are ARITY BindState types.
 
+// HasNonConstReferenceParam selects true_type when any of the parameters in
+// |Sig| is a non-const reference.
+// Implementation note: This non-specialized case handles zero-arity case only.
+// Non-zero-arity cases should be handled by the specialization below.
+template <typename Sig>
+struct HasNonConstReferenceParam : false_type {};
+
+// Implementation note: Select true_type if the first parameter is a non-const
+// reference.  Otherwise, skip the first parameter and check rest of parameters
+// recursively.
+template <typename R, typename T, typename... Args>
+struct HasNonConstReferenceParam<R(T, Args...)>
+    : SelectType<is_non_const_reference<T>::value,
+                 true_type,
+                 HasNonConstReferenceParam<R(Args...)>>::Type {};
+
+// HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
+// pointer to a RefCounted type.
+// Implementation note: This non-specialized case handles zero-arity case only.
+// Non-zero-arity cases should be handled by the specialization below.
+template <typename... Args>
+struct HasRefCountedTypeAsRawPtr : false_type {};
+
+// Implementation note: Select true_type if the first parameter is a raw pointer
+// to a RefCounted type. Otherwise, skip the first parameter and check rest of
+// parameters recursively.
+template <typename T, typename... Args>
+struct HasRefCountedTypeAsRawPtr<T, Args...>
+    : SelectType<NeedsScopedRefptrButGetsRawPtr<T>::value,
+                 true_type,
+                 HasRefCountedTypeAsRawPtr<Args...>>::Type {};
+
+// BindsArrayToFirstArg selects true_type when |is_method| is true and the first
+// item of |Args| is an array type.
+// Implementation note: This non-specialized case handles !is_method case and
+// zero-arity case only.  Other cases should be handled by the specialization
+// below.
+template <bool is_method, typename... Args>
+struct BindsArrayToFirstArg : false_type {};
+
+template <typename T, typename... Args>
+struct BindsArrayToFirstArg<true, T, Args...> : is_array<T> {};
+
+// HasRefCountedParamAsRawPtr is the same to HasRefCountedTypeAsRawPtr except
+// when |is_method| is true HasRefCountedParamAsRawPtr skips the first argument.
+// Implementation note: This non-specialized case handles !is_method case and
+// zero-arity case only.  Other cases should be handled by the specialization
+// below.
+template <bool is_method, typename... Args>
+struct HasRefCountedParamAsRawPtr : HasRefCountedTypeAsRawPtr<Args...> {};
+
+template <typename T, typename... Args>
+struct HasRefCountedParamAsRawPtr<true, T, Args...>
+    : HasRefCountedTypeAsRawPtr<Args...> {};
+
 // RunnableAdapter<>
 //
 // The RunnableAdapter<> templates provide a uniform interface for invoking

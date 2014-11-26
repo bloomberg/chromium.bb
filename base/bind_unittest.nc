@@ -167,7 +167,7 @@ void WontCompile() {
   method_bound_to_array_cb.Run();
 }
 
-#elif defined(NCTEST_NO_RAW_PTR_FOR_REFCOUNTED_TYPES)  // [r"fatal error: static_assert failed \"p1_is_refcounted_type_and_needs_scoped_refptr\""]
+#elif defined(NCTEST_NO_RAW_PTR_FOR_REFCOUNTED_TYPES)  // [r"fatal error: static_assert failed \"a_parameter_is_refcounted_type_and_needs_scoped_refptr\""]
 
 // Refcounted types should not be bound as a raw pointer.
 void WontCompile() {
