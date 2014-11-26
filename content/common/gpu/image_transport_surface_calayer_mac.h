@@ -9,6 +9,7 @@
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
 @class ImageTransportLayer;
@@ -17,7 +18,8 @@ namespace content {
 
 // Allocate CAOpenGLLayer-backed storage for an FBO image transport surface.
 class CALayerStorageProvider
-    : public ImageTransportSurfaceFBO::StorageProvider {
+    : public ImageTransportSurfaceFBO::StorageProvider,
+      public ui::GpuSwitchingObserver {
  public:
   CALayerStorageProvider(ImageTransportSurfaceFBO* transport_surface);
   ~CALayerStorageProvider() override;
@@ -39,6 +41,9 @@ class CALayerStorageProvider
   bool LayerCanDraw();
   void LayerDoDraw();
   void LayerResetStorageProvider();
+
+  // ui::GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
 
  private:
   void DrawImmediatelyAndUnblockBrowser();
@@ -81,6 +86,10 @@ class CALayerStorageProvider
   // when they are discarded, and remove one item from the queue as each frame
   // is acked.
   std::list<base::scoped_nsobject<CAContext> > previously_discarded_contexts_;
+
+  // Indicates that the CALayer should be recreated at the next swap. This is
+  // to ensure that the CGLContext created for the CALayer be on the right GPU.
+  bool recreate_layer_after_gpu_switch_;
 
   // Weak factory against which a timeout task for forcing a draw is created.
   base::WeakPtrFactory<CALayerStorageProvider> pending_draw_weak_factory_;

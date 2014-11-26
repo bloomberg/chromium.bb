@@ -82,6 +82,10 @@ bool GLContext::GetTotalGpuMemory(size_t* bytes) {
 void GLContext::SetSafeToForceGpuSwitch() {
 }
 
+bool GLContext::ForceGpuSwitchIfNeeded() {
+  return true;
+}
+
 void GLContext::SetUnbindFboOnMakeCurrent() {
   NOTIMPLEMENTED();
 }
@@ -199,6 +203,8 @@ void GLContext::SetupForVirtualization() {
 bool GLContext::MakeVirtuallyCurrent(
     GLContext* virtual_context, GLSurface* surface) {
   DCHECK(virtual_gl_api_);
+  if (!ForceGpuSwitchIfNeeded())
+    return false;
   return virtual_gl_api_->MakeCurrent(virtual_context, surface);
 }
 

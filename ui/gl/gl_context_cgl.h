@@ -29,6 +29,7 @@ class GLContextCGL : public GLContextReal {
   void SetSwapInterval(int interval) override;
   bool GetTotalGpuMemory(size_t* bytes) override;
   void SetSafeToForceGpuSwitch() override;
+  bool ForceGpuSwitchIfNeeded() override;
 
  protected:
   ~GLContextCGL() override;

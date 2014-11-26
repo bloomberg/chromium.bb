@@ -136,7 +136,7 @@ void GLContextCGL::Destroy() {
   }
 }
 
-bool GLContextCGL::MakeCurrent(GLSurface* surface) {
+bool GLContextCGL::ForceGpuSwitchIfNeeded() {
   DCHECK(context_);
 
   // The call to CGLSetVirtualScreen can hang on some AMD drivers
@@ -174,6 +174,14 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
       renderer_id_ = renderer_id;
     }
   }
+  return true;
+}
+
+bool GLContextCGL::MakeCurrent(GLSurface* surface) {
+  DCHECK(context_);
+
+  if (!ForceGpuSwitchIfNeeded())
+    return false;
 
   if (IsCurrent(surface))
     return true;
