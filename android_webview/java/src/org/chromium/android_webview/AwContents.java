@@ -276,6 +276,8 @@ public class AwContents implements SmartClipProvider {
         private final InternalAccessDelegate mInitialInternalAccessAdapter;
         private final AwViewMethods mInitialAwViewMethods;
         private FullScreenView mFullScreenView;
+        /** Whether the initial container view was focused when we entered fullscreen */
+        private boolean mWasInitialContainerViewFocused;
 
         private FullScreenTransitionsState(ViewGroup initialContainerView,
                 InternalAccessDelegate initialInternalAccessAdapter,
@@ -285,8 +287,14 @@ public class AwContents implements SmartClipProvider {
             mInitialAwViewMethods = initialAwViewMethods;
         }
 
-        private void enterFullScreen(FullScreenView fullScreenView) {
+        private void enterFullScreen(FullScreenView fullScreenView,
+                boolean wasInitialContainerViewFocused) {
             mFullScreenView = fullScreenView;
+            mWasInitialContainerViewFocused = wasInitialContainerViewFocused;
+        }
+
+        private boolean wasInitialContainerViewFocused() {
+            return mWasInitialContainerViewFocused;
         }
 
         private void exitFullScreen() {
@@ -663,8 +671,14 @@ public class AwContents implements SmartClipProvider {
 
         // In fullscreen mode FullScreenView owns the AwViewMethodsImpl and AwContents
         // a NullAwViewMethods.
-        FullScreenView fullScreenView = new FullScreenView(mContext, mAwViewMethods);
-        mFullScreenTransitionsState.enterFullScreen(fullScreenView);
+        FullScreenView fullScreenView = new FullScreenView(mContext, mAwViewMethods, this);
+        fullScreenView.setFocusable(true);
+        fullScreenView.setFocusableInTouchMode(true);
+        boolean wasInitialContainerViewFocused = mContainerView.isFocused();
+        if (wasInitialContainerViewFocused) {
+            fullScreenView.requestFocus();
+        }
+        mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused);
         mAwViewMethods = new NullAwViewMethods(this, mInternalAccessAdapter, mContainerView);
         mContainerView.removeOnLayoutChangeListener(mLayoutChangeListener);
         fullScreenView.addOnLayoutChangeListener(mLayoutChangeListener);
@@ -715,6 +729,10 @@ public class AwContents implements SmartClipProvider {
         setInternalAccessAdapter(mFullScreenTransitionsState.getInitialInternalAccessDelegate());
         setContainerView(initialContainerView);
 
+        // Return focus to the WebView.
+        if (mFullScreenTransitionsState.wasInitialContainerViewFocused()) {
+            mContainerView.requestFocus();
+        }
         mFullScreenTransitionsState.exitFullScreen();
     }
 

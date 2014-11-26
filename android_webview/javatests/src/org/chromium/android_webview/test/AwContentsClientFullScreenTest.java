@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.MediumTest;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -126,6 +127,37 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                 DOMUtils.exitFullscreen(mContentViewCore.getWebContents());
             }
         });
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
+        doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv()
+            throws Throwable {
+        doTestOnShowAndHideCustomViewWithBackKey(VIDEO_INSIDE_DIV_TEST_URL);
+    }
+
+    public void doTestOnShowAndHideCustomViewWithBackKey(String videoTestUrl) throws Throwable {
+        doOnShowCustomViewTest(videoTestUrl);
+
+        // The key event should not be propagated to mTestContainerView (the original container
+        // view).
+        mTestContainerView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                fail("mTestContainerView received key event");
+                return false;
+            }
+        });
+
+        sendKeys(KeyEvent.KEYCODE_BACK);
+        mContentsClient.waitForCustomViewHidden();
+        assertFalse(mContentsClient.wasOnUnhandledKeyUpEventCalled());
     }
 
     @MediumTest

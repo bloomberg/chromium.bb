@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.app.Activity;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -26,6 +27,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     public static final long WAITING_SECONDS = scaleTimeout(20);
     private CallbackHelper mOnShowCustomViewCallbackHelper = new CallbackHelper();
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
+    private CallbackHelper mOnUnhandledKeyUpEventCallbackHelper = new CallbackHelper();
 
     private final Activity mActivity;
     private final boolean mAllowHardwareAcceleration;
@@ -67,6 +69,17 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
 
     public WebChromeClient.CustomViewCallback getExitCallback() {
         return mExitCallback;
+    }
+
+    @Override
+    public void onUnhandledKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            mOnUnhandledKeyUpEventCallbackHelper.notifyCalled();
+        }
+    }
+
+    public boolean wasOnUnhandledKeyUpEventCalled() {
+        return mOnUnhandledKeyUpEventCallbackHelper.getCallCount() > 0;
     }
 
     public View getCustomView() {

@@ -23,11 +23,14 @@ import android.widget.FrameLayout;
 public class FullScreenView extends FrameLayout {
 
     private AwViewMethods mAwViewMethods;
+    private final AwContents mAwContents;
     private InternalAccessAdapter mInternalAccessAdapter;
 
-    public FullScreenView(Context context, AwViewMethods awViewMethods) {
+    public FullScreenView(Context context, AwViewMethods awViewMethods,
+            AwContents awContents) {
         super(context);
         setAwViewMethods(awViewMethods);
+        mAwContents = awContents;
         mInternalAccessAdapter = new InternalAccessAdapter();
     }
 
@@ -73,6 +76,12 @@ public class FullScreenView extends FrameLayout {
 
     @Override
     public boolean dispatchKeyEvent(final KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK
+                && event.getAction() == KeyEvent.ACTION_UP
+                && mAwContents.isFullScreen()) {
+            mAwContents.requestExitFullscreen();
+            return true;
+        }
         return mAwViewMethods.dispatchKeyEvent(event);
     }
 
