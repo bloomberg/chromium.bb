@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 this.onpush = function(event) {
-  sendMessageToClients('push', event.data);
+  // TODO(peter): Remove this check once Blink supports PushMessageData.json().
+  var data = event.data;
+  if (typeof data !== 'string')
+    data = data.text();
+
+  sendMessageToClients('push', data);
 };
 
 function sendMessageToClients(type, data) {
