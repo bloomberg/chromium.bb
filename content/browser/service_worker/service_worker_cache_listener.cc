@@ -254,6 +254,8 @@ void ServiceWorkerCacheListener::OnCacheBatch(
   }
 
   if (operation.operation_type == SERVICE_WORKER_CACHE_OPERATION_TYPE_PUT) {
+    // We don't support streaming for cache.
+    DCHECK(operation.response.stream_url.is_empty());
     scoped_ptr<ServiceWorkerResponse> scoped_response(
         new ServiceWorkerResponse(operation.response.url,
                                   operation.response.status_code,
@@ -261,7 +263,8 @@ void ServiceWorkerCacheListener::OnCacheBatch(
                                   operation.response.response_type,
                                   operation.response.headers,
                                   operation.response.blob_uuid,
-                                  operation.response.blob_size));
+                                  operation.response.blob_size,
+                                  operation.response.stream_url));
     cache->Put(scoped_request.Pass(),
                scoped_response.Pass(),
                base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,

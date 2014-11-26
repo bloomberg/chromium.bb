@@ -209,13 +209,14 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         embedded_worker_id,
         request_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-        ServiceWorkerResponse(GURL(""),
+        ServiceWorkerResponse(GURL(),
                               200,
                               "OK",
                               blink::WebServiceWorkerResponseTypeDefault,
                               ServiceWorkerHeaderMap(),
                               blob_uuid_,
-                              blob_size_)));
+                              blob_size_,
+                              GURL())));
   }
 
   std::string blob_uuid_;

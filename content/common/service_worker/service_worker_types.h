@@ -102,7 +102,8 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         blink::WebServiceWorkerResponseType response_type,
                         const ServiceWorkerHeaderMap& headers,
                         const std::string& blob_uuid,
-                        uint64 blob_size);
+                        uint64 blob_size,
+                        const GURL& stream_url);
   ~ServiceWorkerResponse();
 
   GURL url;
@@ -112,6 +113,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
   uint64 blob_size;
+  GURL stream_url;
 };
 
 // Controls how requests are matched in the Cache API.

@@ -217,12 +217,12 @@ class ServiceWorkerCacheTest : public testing::Test {
     headers.insert(std::make_pair("a", "a"));
     headers.insert(std::make_pair("b", "b"));
     body_request_ = ServiceWorkerFetchRequest(
-        GURL("http://example.com/body.html"), "GET", headers, GURL(""), false);
+        GURL("http://example.com/body.html"), "GET", headers, GURL(), false);
     no_body_request_ =
         ServiceWorkerFetchRequest(GURL("http://example.com/no_body.html"),
                                   "GET",
                                   headers,
-                                  GURL(""),
+                                  GURL(),
                                   false);
 
     std::string expected_response;
@@ -243,7 +243,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                               blink::WebServiceWorkerResponseTypeDefault,
                               headers,
                               blob_handle_->uuid(),
-                              expected_blob_data_.size());
+                              expected_blob_data_.size(),
+                              GURL());
 
     no_body_response_ =
         ServiceWorkerResponse(GURL("http://example.com/no_body.html"),
@@ -252,7 +253,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                               blink::WebServiceWorkerResponseTypeDefault,
                               headers,
                               "",
-                              0);
+                              0,
+                              GURL());
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -273,7 +275,8 @@ class ServiceWorkerCacheTest : public testing::Test {
                                   response.response_type,
                                   response.headers,
                                   response.blob_uuid,
-                                  response.blob_size));
+                                  response.blob_size,
+                                  response.stream_url));
     return sw_response.Pass();
   }
 
@@ -705,7 +708,8 @@ TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
                                  blink::WebServiceWorkerResponseTypeDefault,
                                  ServiceWorkerHeaderMap(),
                                  "",
-                                 0);
+                                 0,
+                                 GURL());
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);
@@ -717,7 +721,7 @@ TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
   ServiceWorkerFetchRequest request(GURL("http://www.example.com"),
                                          "GET",
                                          ServiceWorkerHeaderMap(),
-                                         GURL(""),
+                                         GURL(),
                                          false);
   request.headers["content-type"] = "foo";
   request.headers["Content-Type"] = "bar";

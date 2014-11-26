@@ -48,14 +48,16 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     blink::WebServiceWorkerResponseType response_type,
     const ServiceWorkerHeaderMap& headers,
     const std::string& blob_uuid,
-    uint64 blob_size)
+    uint64 blob_size,
+    const GURL& stream_url)
     : url(url),
       status_code(status_code),
       status_text(status_text),
       response_type(response_type),
       headers(headers),
       blob_uuid(blob_uuid),
-      blob_size(blob_size) {
+      blob_size(blob_size),
+      stream_url(stream_url) {
 }
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}

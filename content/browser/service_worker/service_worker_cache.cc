@@ -692,7 +692,7 @@ void ServiceWorkerCache::MatchDidReadMetadata(
       match_context->request->url, metadata->response().status_code(),
       metadata->response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata->response().response_type()),
-      ServiceWorkerHeaderMap(), "", 0));
+      ServiceWorkerHeaderMap(), "", 0, GURL()));
 
   ServiceWorkerResponse* response = match_context->response.get();
 
