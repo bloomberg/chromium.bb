@@ -4,9 +4,6 @@
 
 """Install/copy the image to the device."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import cStringIO
@@ -247,8 +244,8 @@ class USBImager(object):
       The device name chosen by the user.
     """
     idx = cros_build_lib.GetChoice(
-      'Removable device(s) found. Please select/confirm to continue:',
-      [self.GetRemovableDeviceDescription(x) for x in devices])
+        'Removable device(s) found. Please select/confirm to continue:',
+        [self.GetRemovableDeviceDescription(x) for x in devices])
 
     return devices[idx]
 
@@ -261,14 +258,15 @@ class USBImager(object):
     """
     if not self.board:
       raise Exception('Couldn\'t determine what board to use')
-    cmd = ['%s/usr/sbin/chromeos-install' %
-             cros_build_lib.GetSysroot(self.board),
-           '--yes',
-           '--skip_src_removable',
-           '--skip_dst_removable',
-           '--payload_image=%s' % image,
-           '--dst=%s' % device,
-           '--skip_postinstall']
+    cmd = [
+        '%s/usr/sbin/chromeos-install' % cros_build_lib.GetSysroot(self.board),
+        '--yes',
+        '--skip_src_removable',
+        '--skip_dst_removable',
+        '--payload_image=%s' % image,
+        '--dst=%s' % device,
+        '--skip_postinstall',
+    ]
     cros_build_lib.SudoRunCommand(cmd)
 
   def CopyImageToDevice(self, image, device):
@@ -343,7 +341,8 @@ class USBImager(object):
     elif len(images) > 1:
       idx = cros_build_lib.GetChoice(
           'Multiple images found in %s. Please select one to continue:' % (
-          dir_path), images)
+              (dir_path,)),
+          images)
 
     return os.path.join(dir_path, images[idx])
 
@@ -654,7 +653,7 @@ class RemoteDeviceUpdater(object):
     logging.info('Copying image to temporary directory %s', tempdir_path)
     # Devserver only knows the image names listed in IMAGE_TYPE_TO_NAME.
     # Rename the image to chromiumos_test_image.bin when copying.
-    TEMP_IMAGE_TYPE  = 'test'
+    TEMP_IMAGE_TYPE = 'test'
     shutil.copy(path,
                 os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
     chroot_path = cros_build_lib.ToChrootPath(tempdir_path)

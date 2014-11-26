@@ -14,8 +14,6 @@ must be logged in with an @google.com account to view chromeOS perf data there.
 This module is similar to src/third_party/autotest/files/tko/perf_uploader.py.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -43,10 +41,10 @@ _MAX_UNIT_LENGTH = 32
 
 class PerfUploadingError(Exception):
   """A dummy class to wrap errors in this module."""
-  pass
 
 
-PerformanceValue = collections.namedtuple('PerformanceValue',
+PerformanceValue = collections.namedtuple(
+    'PerformanceValue',
     'description value units higher_is_better graph')
 
 
@@ -192,7 +190,8 @@ def _ComputeAvgStddev(perf_data):
   return perf_data
 
 
-PresentationInfo = collections.namedtuple('PresentationInfo',
+PresentationInfo = collections.namedtuple(
+    'PresentationInfo',
     'master_name test_name')
 
 
@@ -291,7 +290,7 @@ def _SendToDashboard(data_obj):
     urllib2.urlopen(req)
   except urllib2.HTTPError as e:
     raise PerfUploadingError('HTTPError: %d %s for JSON %s\n' %
-                              (e.code, e.msg, data_obj['data']))
+                             (e.code, e.msg, data_obj['data']))
   except urllib2.URLError as e:
     raise PerfUploadingError('URLError: %s for JSON %s\n' %
                              (str(e.reason), data_obj['data']))

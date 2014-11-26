@@ -4,8 +4,6 @@
 
 """cros deploy: Deploy the packages onto the target device."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -84,7 +82,7 @@ For more information of cros build usage:
         'package. Stripping removes debug symbol files and reduces the size '
         'of the package significantly. Defaults to always strip.')
     parser.add_argument(
-        '--unmerge',  dest='emerge', action='store_false', default=True,
+        '--unmerge', dest='emerge', action='store_false', default=True,
         help='Unmerge requested packages.')
     parser.add_argument(
         '--root', default='/',

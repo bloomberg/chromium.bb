@@ -5,8 +5,6 @@
 
 """This module tests the init module."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import glob
@@ -41,7 +39,7 @@ class MockCommand(partial_mock.PartialMock):
 
     args = base_args if base_args else []
     args += [self.COMMAND] + self.args
-    options =  parser.parse_args(args)
+    options = parser.parse_args(args)
     self.inst = options.cros_class(options)
 
   def Run(self, inst):

@@ -4,8 +4,6 @@
 
 """cros pinchrome: Pin chrome to an earlier version."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import fnmatch
@@ -345,17 +343,17 @@ class PinchromeCommand(cros.CrosCommand):
       The commit message.
     """
     message = [
-      '%s' % subject,
-      '',
-      'BUG=%s' % self.options.bug,
-      'TEST=None',
+        '%s' % subject,
+        '',
+        'BUG=%s' % self.options.bug,
+        'TEST=None',
     ]
     if cq_depend:
       message += ['CQ-DEPEND=%s' % cq_depend]
     if change_id:
       message += [
-        '',
-        'Change-Id: %s' % change_id,
+          '',
+          'Change-Id: %s' % change_id,
       ]
 
     return '\n'.join(message)

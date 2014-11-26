@@ -5,8 +5,6 @@
 
 """This module tests the cros image command."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import copy
@@ -28,7 +26,9 @@ from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 
+
 # pylint: disable=W0212
+
 
 class MockChromeSDKCommand(init_unittest.MockCommand):
   """Mock out the build command."""
@@ -266,7 +266,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testSpecificComponent(self):
     """Tests that SDKFetcher.Prepare() handles |components| param properly."""
     sdk = cros_chrome_sdk.SDKFetcher(os.path.join(self.tempdir),
-                                    SDKFetcherMock.BOARD)
+                                     SDKFetcherMock.BOARD)
     components = [constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR]
     with sdk.Prepare(components=components) as ctx:
       for c in components:
@@ -324,7 +324,7 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
   def testNoGomaPort(self):
     """We print an error when gomacc is not returning a port."""
     self.rc_mock.AddCmdResult(
-          cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD)
+        cros_chrome_sdk.ChromeSDKCommand.GOMACC_PORT_CMD)
     self.VerifyGomaError()
 
   def testGomaccError(self):
@@ -482,9 +482,9 @@ class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(osutils, 'SourceEnvironment',
                      side_effect=SourceEnvironmentMock)
     file_list = (
-      'goma/goma_ctl.py',
-      'clang/clang',
-      'chromite/parallel_emerge',
+        'goma/goma_ctl.py',
+        'clang/clang',
+        'chromite/parallel_emerge',
     )
     abs_paths = [os.path.join(self.tempdir, relpath) for relpath in file_list]
     for p in abs_paths:

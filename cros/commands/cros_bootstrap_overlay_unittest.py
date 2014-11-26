@@ -5,8 +5,6 @@
 
 """This module tests the cros bootstrap-overlay command."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -74,7 +72,7 @@ DEPEND="chromeos-base/otherthing"
     match = re.search('%s="([^"]+)"' % variable, content)
     if match:
       atom_list = match.group(1).split('\n')
-      return [ a.strip() for a in atom_list ]
+      return [a.strip() for a in atom_list]
     return []
 
   def testCreateVirtual(self):

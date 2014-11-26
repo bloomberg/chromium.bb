@@ -4,8 +4,6 @@
 
 """cros build: Build the requested packages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -124,9 +122,9 @@ To just build a single package:
     """
     modified_packages = self._ListModifiedPackages(board)
     cmd = self._GetEmergeCommand(board) + [
-      '-uNv',
-      '--reinstall-atoms=%s' % ' '.join(modified_packages),
-      '--usepkg-exclude=%s' % ' '.join(modified_packages),
+        '-uNv',
+        '--reinstall-atoms=%s' % ' '.join(modified_packages),
+        '--usepkg-exclude=%s' % ' '.join(modified_packages),
     ]
     cmd.append('--deep' if self.options.deps else '--nodeps')
     if self.options.binary:

@@ -4,9 +4,6 @@
 
 """The cros chrome-sdk command for the simple chrome workflow."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import argparse
@@ -416,8 +413,8 @@ class ChromeSDKCommand(cros.CrosCommand):
   SDK_GOMA_PORT_ENV = 'SDK_GOMA_PORT'
   SDK_GOMA_DIR_ENV = 'SDK_GOMA_DIR'
 
-  GOMACC_PORT_CMD  = ['./gomacc', 'port']
-  FETCH_GOMA_CMD  = ['wget', _GOMA_URL]
+  GOMACC_PORT_CMD = ['./gomacc', 'port']
+  FETCH_GOMA_CMD = ['wget', _GOMA_URL]
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -492,14 +489,15 @@ class ChromeSDKCommand(cros.CrosCommand):
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
-              'starting a bash shell.')
+             'starting a bash shell.')
 
     parser.add_option_to_group(
         parser.caching_group, '--clear-sdk-cache', action='store_true',
         default=False,
         help='Removes everything in the SDK cache before starting.')
 
-    group = parser.add_option_group('Metadata Overrides (Advanced)',
+    group = parser.add_option_group(
+        'Metadata Overrides (Advanced)',
         description='Provide all of these overrides in order to remove '
                     'dependencies on metadata.json existence.')
     parser.add_option_to_group(

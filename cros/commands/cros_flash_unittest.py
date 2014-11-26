@@ -5,8 +5,6 @@
 
 """This module tests the cros flash command."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import mock
@@ -78,13 +76,14 @@ class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
 
     local_path = os.path.join(base_path, 'recovery_image.bin')
     self.assertEqual(
-      cros_flash.DevserverURLToLocalPath(
-          url, self.tempdir, 'recovery'), local_path)
+        cros_flash.DevserverURLToLocalPath(url, self.tempdir, 'recovery'),
+        local_path)
 
     # Default to test image.
     local_path = os.path.join(base_path, 'chromiumos_test_image.bin')
     self.assertEqual(
-      cros_flash.DevserverURLToLocalPath(url, self.tempdir, 'taco'), local_path)
+        cros_flash.DevserverURLToLocalPath(url, self.tempdir, 'taco'),
+        local_path)
 
 
 class MockFlashCommand(init_unittest.MockCommand):
