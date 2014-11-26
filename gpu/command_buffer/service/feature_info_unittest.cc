@@ -455,7 +455,7 @@ TEST_F(FeatureInfoTest, InitializeEXT_read_format_bgra) {
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_sRGB) {
-  SetupInitExpectations("GL_EXT_sRGB");
+  SetupInitExpectations("GL_EXT_sRGB GL_OES_rgb8_rgba8");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_sRGB"));
   EXPECT_TRUE(info_->GetTextureFormatValidator(GL_SRGB_EXT).IsValid(
@@ -688,6 +688,27 @@ TEST_F(FeatureInfoTest, Initialize_texture_floatGLES3) {
       GL_FLOAT));
   EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
       GL_FLOAT));
+}
+
+TEST_F(FeatureInfoTest, Initialize_sRGBGLES3) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_sRGB")));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_SRGB_EXT).IsValid(
+      GL_UNSIGNED_BYTE));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_SRGB_ALPHA_EXT).IsValid(
+      GL_UNSIGNED_BYTE));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(
+      GL_SRGB_EXT));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(
+      GL_SRGB_ALPHA_EXT));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_SRGB_EXT));
+  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+      GL_SRGB_ALPHA_EXT));
+  EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
+      GL_SRGB8_ALPHA8_EXT));
+  EXPECT_FALSE(info_->validators()->frame_buffer_parameter.IsValid(
+      GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_floatGLES2) {

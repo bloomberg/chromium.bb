@@ -394,8 +394,14 @@ void FeatureInfo::InitializeFeatures() {
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
   }
 
-  if (is_es3 || extensions.Contains("GL_EXT_sRGB") ||
-      gfx::HasDesktopGLFeatures()) {
+  // With EXT_sRGB, unsized SRGB_EXT and SRGB_ALPHA_EXT are accepted by the
+  // <format> and <internalformat> parameter of TexImage2D. GLES3 adds support
+  // for SRGB Textures but the accepted internal formats for TexImage2D are only
+  // sized formats GL_SRGB8 and GL_SRGB8_ALPHA8. Also, SRGB_EXT isn't a valid
+  // <format> in this case. So, even with GLES3 explicitly check for
+  // GL_EXT_sRGB.
+  if (((is_es3 || extensions.Contains("GL_OES_rgb8_rgba8")) &&
+      extensions.Contains("GL_EXT_sRGB")) || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_sRGB");
     texture_format_validators_[GL_SRGB_EXT].AddValue(GL_UNSIGNED_BYTE);
     texture_format_validators_[GL_SRGB_ALPHA_EXT].AddValue(GL_UNSIGNED_BYTE);
