@@ -1195,9 +1195,8 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
     std::set<ServerFieldType> seen_types;
     ServerFieldType previous_type = UNKNOWN_TYPE;
 
-    for (std::vector<AutofillField*>::iterator field = fields_.begin();
-         field != fields_.end(); ++field) {
-      const ServerFieldType current_type = (*field)->Type().GetStorableType();
+    for (AutofillField* field : fields_) {
+      const ServerFieldType current_type = field->Type().GetStorableType();
 
       bool already_saw_current_type = seen_types.count(current_type) > 0;
 
@@ -1208,7 +1207,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
         already_saw_current_type = false;
 
       // Ignore non-focusable field while inferring boundaries between sections.
-      if (!(*field)->is_focusable)
+      if (!field->is_focusable)
         already_saw_current_type = false;
 
       // Some forms have adjacent fields of the same type.  Two common examples:
@@ -1228,23 +1227,28 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       if (current_type != UNKNOWN_TYPE && already_saw_current_type) {
         // We reached the end of a section, so start a new section.
         seen_types.clear();
-        current_section = (*field)->unique_name();
+        current_section = field->unique_name();
       }
 
-      seen_types.insert(current_type);
-      (*field)->set_section(base::UTF16ToUTF8(current_section));
+      // Only consider a type "seen" if it was focusable. Some forms have
+      // sections for different locales, only one of which is enabled at a
+      // time. Each section may duplicate some information (e.g. postal code)
+      // and we don't want that to cause section splits.
+      if (field->is_focusable)
+        seen_types.insert(current_type);
+
+      field->set_section(base::UTF16ToUTF8(current_section));
     }
   }
 
   // Ensure that credit card and address fields are in separate sections.
   // This simplifies the section-aware logic in autofill_manager.cc.
-  for (std::vector<AutofillField*>::iterator field = fields_.begin();
-       field != fields_.end(); ++field) {
-    FieldTypeGroup field_type_group = (*field)->Type().group();
+  for (AutofillField* field : fields_) {
+    FieldTypeGroup field_type_group = field->Type().group();
     if (field_type_group == CREDIT_CARD)
-      (*field)->set_section((*field)->section() + "-cc");
+      field->set_section(field->section() + "-cc");
     else
-      (*field)->set_section((*field)->section() + "-default");
+      field->set_section(field->section() + "-default");
   }
 }
 

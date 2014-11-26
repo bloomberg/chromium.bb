@@ -26,6 +26,8 @@ const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 
 // Convert the |html| snippet to a data URI.
 GURL HTMLToDataURI(const std::string& html) {
+  // GURL requires data URLs to be UTF-8 and will fail below if it's not.
+  CHECK(base::IsStringUTF8(html)) << "Input file is not UTF-8.";
   return GURL(std::string("data:text/html;charset=utf-8,") + html);
 }
 
