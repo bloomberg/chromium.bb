@@ -116,11 +116,6 @@ void DriWindow::Restore() {}
 void DriWindow::SetCursor(PlatformCursor cursor) {
   DriCursor* dri_cursor = window_manager_->cursor();
   dri_cursor->SetCursor(widget_, cursor);
-  // ShowCursor results in a IPC call to GPU. So, we make sure the channel
-  // is connected. OnChannelEstablished guarantees that ShowCursor is called
-  // eventually.
-  if (sender_->IsConnected() && dri_cursor->GetCursorWindow() == widget_)
-    dri_cursor->ShowCursor();
 }
 
 void DriWindow::MoveCursorTo(const gfx::Point& location) {
