@@ -31,12 +31,17 @@
 #t23 { flood-color: ff0000 }
 #t24 { lighting-color: ff0000 }
 
+#t25 { border-top: ff0000 }
+#t26 { border-left: ff0000 }
+#t27 { border-right: ff0000 }
+#t28 { border-bottom: ff0000 }
+#t29 { border: ff0000 }
 </style>
 <script>
 var sheet = document.styleSheets[0];
 
 test(function(){ assert_true(!!sheet); }, "StyleSheet present");
-test(function(){ assert_equals(sheet.cssRules.length, 24); }, "All rules parsed");
+test(function(){ assert_equals(sheet.cssRules.length, 29); }, "All rules parsed");
 
 test(function(){
     assert_equals(sheet.cssRules[0].style.color, "rgb(0, 128, 0)");
@@ -133,4 +138,24 @@ test(function(){
 test(function(){
     assert_equals(sheet.cssRules[23].style.lightingColor, "");
 }, "No hashless color quirk for lighting-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[24].style.borderTopColor, "");
+}, "No hashless color quirk for border-top shorthand");
+
+test(function(){
+    assert_equals(sheet.cssRules[25].style.borderLeftColor, "");
+}, "No hashless color quirk for border-left shorthand");
+
+test(function(){
+    assert_equals(sheet.cssRules[26].style.borderRightColor, "");
+}, "No hashless color quirk for border-right shorthand");
+
+test(function(){
+    assert_equals(sheet.cssRules[27].style.borderBottomColor, "");
+}, "No hashless color quirk for border-bottom shorthand");
+
+test(function(){
+    assert_equals(sheet.cssRules[28].style.borderTopColor, "");
+}, "No hashless color quirk for border shorthand");
 </script>

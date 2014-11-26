@@ -606,13 +606,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             bool acceptQuirkyColors = false;
             switch (propId) {
             case CSSPropertyBackgroundColor:
-                if (!inShorthand())
-                    acceptQuirkyColors = true;
-                break;
             case CSSPropertyBorderBottomColor:
             case CSSPropertyBorderLeftColor:
             case CSSPropertyBorderRightColor:
             case CSSPropertyBorderTopColor:
+                if (!inShorthand() || m_currentShorthand == CSSPropertyBorderColor)
+                    acceptQuirkyColors = true;
+                break;
             case CSSPropertyColor:
                 acceptQuirkyColors = true;
                 break;
