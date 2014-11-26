@@ -20,6 +20,7 @@ StreamRegistry::StreamRegistry()
 }
 
 StreamRegistry::~StreamRegistry() {
+  DCHECK(register_observers_.empty());
 }
 
 void StreamRegistry::RegisterStream(scoped_refptr<Stream> stream) {
@@ -27,6 +28,10 @@ void StreamRegistry::RegisterStream(scoped_refptr<Stream> stream) {
   DCHECK(stream.get());
   DCHECK(!stream->url().is_empty());
   streams_[stream->url()] = stream;
+
+  auto itr = register_observers_.find(stream->url());
+  if (itr != register_observers_.end())
+    itr->second->OnStreamRegistered(stream.get());
 }
 
 scoped_refptr<Stream> StreamRegistry::GetStream(const GURL& url) {
@@ -88,5 +93,19 @@ bool StreamRegistry::UpdateMemoryUsage(const GURL& url,
   total_memory_usage_ = current_total_memory_usage + increase;
   return true;
 }
+
+
+void StreamRegistry::SetRegisterObserver(const GURL& url,
+                                         StreamRegisterObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(register_observers_.find(url) == register_observers_.end());
+  register_observers_[url] = observer;
+}
+
+void StreamRegistry::RemoveRegisterObserver(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+  register_observers_.erase(url);
+}
+
 
 }  // namespace content

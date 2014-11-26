@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/browser/streams/stream_register_observer.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -49,10 +50,14 @@ class CONTENT_EXPORT StreamRegistry : public base::NonThreadSafe {
     max_memory_usage_ = size;
   }
 
+  void SetRegisterObserver(const GURL& url, StreamRegisterObserver* observer);
+  void RemoveRegisterObserver(const GURL& url);
+
  private:
   typedef std::map<GURL, scoped_refptr<Stream> > StreamMap;
 
   StreamMap streams_;
+  std::map<GURL, StreamRegisterObserver*> register_observers_;
 
   size_t total_memory_usage_;
 

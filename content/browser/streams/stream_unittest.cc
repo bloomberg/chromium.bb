@@ -6,6 +6,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_read_observer.h"
+#include "content/browser/streams/stream_register_observer.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/streams/stream_write_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,6 +103,45 @@ class TestStreamWriter : public StreamWriteObserver {
 
   void OnClose(Stream* stream) override {}
 };
+
+class TestStreamObserver : public StreamRegisterObserver {
+ public:
+  TestStreamObserver(const GURL& url, StreamRegistry* registry)
+      : url_(url), registry_(registry), registered_(false), stream_(NULL) {
+    registry->SetRegisterObserver(url, this);
+  }
+  ~TestStreamObserver() override { registry_->RemoveRegisterObserver(url_); }
+  virtual void OnStreamRegistered(Stream* stream) override {
+    registered_ = true;
+    stream_ = stream;
+  }
+  bool registered() const { return registered_; }
+  Stream* stream() const { return stream_; }
+
+ private:
+  const GURL url_;
+  StreamRegistry* registry_;
+  bool registered_;
+  Stream* stream_;
+};
+
+TEST_F(StreamTest, SetAndRemoveRegisterObserver) {
+  TestStreamWriter writer1;
+  TestStreamWriter writer2;
+  GURL url1("blob://stream1");
+  GURL url2("blob://stream2");
+  scoped_ptr<TestStreamObserver> observer1(
+      new TestStreamObserver(url1, registry_.get()));
+  scoped_ptr<TestStreamObserver> observer2(
+      new TestStreamObserver(url2, registry_.get()));
+  scoped_refptr<Stream> stream1(new Stream(registry_.get(), &writer1, url1));
+  EXPECT_TRUE(observer1->registered());
+  EXPECT_EQ(observer1->stream(), stream1.get());
+  EXPECT_FALSE(observer2->registered());
+
+  observer2.reset();
+  scoped_refptr<Stream> stream2(new Stream(registry_.get(), &writer2, url2));
+}
 
 TEST_F(StreamTest, SetReadObserver) {
   TestStreamReader reader;

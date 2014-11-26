@@ -1317,6 +1317,7 @@
       'browser/streams/stream_handle_impl.h',
       'browser/streams/stream_context.h',
       'browser/streams/stream_read_observer.h',
+      'browser/streams/stream_register_observer.h',
       'browser/streams/stream_registry.cc',
       'browser/streams/stream_registry.h',
       'browser/streams/stream_url_request_job.cc',
