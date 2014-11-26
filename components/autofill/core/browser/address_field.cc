@@ -77,7 +77,6 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
   if (address_field->company_ ||
       address_field->address1_ ||
       address_field->address2_ ||
-      address_field->address3_ ||
       address_field->street_address_ ||
       address_field->city_ ||
       address_field->state_ ||
@@ -99,7 +98,6 @@ AddressField::AddressField()
     : company_(NULL),
       address1_(NULL),
       address2_(NULL),
-      address3_(NULL),
       street_address_(NULL),
       city_(NULL),
       state_(NULL),
@@ -114,12 +112,10 @@ bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
   // request both.
   DCHECK(!(address1_ && street_address_));
   DCHECK(!(address2_ && street_address_));
-  DCHECK(!(address3_ && street_address_));
 
   return AddClassification(company_, COMPANY_NAME, map) &&
          AddClassification(address1_, ADDRESS_HOME_LINE1, map) &&
          AddClassification(address2_, ADDRESS_HOME_LINE2, map) &&
-         AddClassification(address3_, ADDRESS_HOME_LINE3, map) &&
          AddClassification(street_address_, ADDRESS_HOME_STREET_ADDRESS, map) &&
          AddClassification(city_, ADDRESS_HOME_CITY, map) &&
          AddClassification(state_, ADDRESS_HOME_STATE, map) &&
@@ -159,39 +155,30 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
                            &street_address_) &&
       !ParseFieldSpecifics(scanner, label_pattern,
                            MATCH_LABEL | MATCH_TEXT_AREA,
-                           &street_address_))
+                           &street_address_)) {
     return false;
+  }
 
-  if (street_address_)
-    return true;
-
-  // This code may not pick up pages that have an address field consisting of a
-  // sequence of unlabeled address fields. If we need to add this, see
-  // discussion on https://codereview.chromium.org/741493003/
+  // Optionally parse more address lines, which may have empty labels.
   pattern = UTF8ToUTF16(autofill::kAddressLine2Re);
   label_pattern = UTF8ToUTF16(autofill::kAddressLine2LabelRe);
-  if (!ParseField(scanner, pattern, &address2_) &&
-      !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
-                           &address2_))
-    return true;
-
-  // Optionally parse address line 3. This uses the same label regexp as
-  // address 2 above.
-  pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
-  if (!ParseField(scanner, pattern, &address3_) &&
-      !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
-                           &address3_))
-    return true;
-
-  // Try for surplus lines, which we will promptly discard. Some pages have 4
-  // address lines (e.g. uk/ShoesDirect2.html)!
-  //
-  // Since these are rare, don't bother considering unlabeled lines as extra
-  // address lines.
-  pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
-  while (ParseField(scanner, pattern, NULL)) {
-    // Consumed a surplus line, try for another.
+  if (!street_address_ &&
+      !ParseEmptyLabel(scanner, &address2_) &&
+      !ParseField(scanner, pattern, &address2_)) {
+    ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
+                        &address2_);
   }
+
+  // Try for surplus lines, which we will promptly discard.
+  // Some pages have 3 address lines (eg SharperImageModifyAccount.html)
+  // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
+  if (address2_) {
+    pattern = UTF8ToUTF16(autofill::kAddressLinesExtraRe);
+    while (ParseField(scanner, pattern, NULL)) {
+      // Consumed a surplus line, try for another.
+    }
+  }
+
   return true;
 }
 

@@ -1046,14 +1046,14 @@ TEST(FormStructureTest, ThreeAddressLines) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
-  ASSERT_EQ(4U, form_structure->autofill_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
 
   // Address Line 1.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
   // Address Line 2.
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
   // Address Line 3.
-  EXPECT_EQ(ADDRESS_HOME_LINE3, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
   // City.
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }
@@ -1085,22 +1085,22 @@ TEST(FormStructureTest, SurplusAddressLinesIgnored) {
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   ASSERT_EQ(4U, form_structure->field_count());
-  ASSERT_EQ(3U, form_structure->autofill_count());
+  ASSERT_EQ(2U, form_structure->autofill_count());
 
   // Address Line 1.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
   // Address Line 2.
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
-  // Address Line 3.
-  EXPECT_EQ(ADDRESS_HOME_LINE3, form_structure->field(2)->heuristic_type());
+  // Address Line 3 (ignored).
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
   // Address Line 4 (ignored).
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
 }
 
-// This example comes from expedia.com where they used to use a "Suite" label
-// to indicate a suite or apartment number (the form has changed since this
-// test was written). We interpret this as address line 2. And the following
-// "Street address second line" we interpret as address line 3.
+// This example comes from expedia.com where they use a "Suite" label to
+// indicate a suite or apartment number.  We interpret this as address line 2.
+// And the following "Street address second line" we interpret as address line
+// 3 and discard.
 // See http://crbug.com/48197 for details.
 TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   scoped_ptr<FormStructure> form_structure;
@@ -1129,14 +1129,14 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
-  EXPECT_EQ(4U, form_structure->autofill_count());
+  EXPECT_EQ(3U, form_structure->autofill_count());
 
   // Address Line 1.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
   // Suite / Apt.
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
   // Address Line 3.
-  EXPECT_EQ(ADDRESS_HOME_LINE3, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
   // City.
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }

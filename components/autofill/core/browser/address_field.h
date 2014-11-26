@@ -52,7 +52,6 @@ class AddressField : public FormField {
   AutofillField* company_;
   AutofillField* address1_;
   AutofillField* address2_;
-  AutofillField* address3_;
   AutofillField* street_address_;
   AutofillField* city_;
   AutofillField* state_;

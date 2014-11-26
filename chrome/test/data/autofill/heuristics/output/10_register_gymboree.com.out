@@ -4,7 +4,7 @@ NAME_FIRST | USER_ACCOUNT<>firstName | First Name* |  | LOYALTY_ACCOUNT<>email_1
 NAME_LAST | USER_ACCOUNT<>lastName | Last Name* |  | LOYALTY_ACCOUNT<>email_1-default
 ADDRESS_HOME_LINE1 | LOYALTY_ADDRESS<>address1 | Address Line 1* |  | LOYALTY_ACCOUNT<>email_1-default
 ADDRESS_HOME_LINE2 | LOYALTY_ADDRESS<>address2 | Address Line 2 |  | LOYALTY_ACCOUNT<>email_1-default
-ADDRESS_HOME_LINE3 | LOYALTY_ADDRESS<>address3 | Address Line 3 |  | LOYALTY_ACCOUNT<>email_1-default
+UNKNOWN_TYPE | LOYALTY_ADDRESS<>address3 | Address Line 3 |  | LOYALTY_ACCOUNT<>email_1-default
 ADDRESS_HOME_CITY | LOYALTY_ADDRESS<>city | City* |  | LOYALTY_ACCOUNT<>email_1-default
 ADDRESS_HOME_STATE | LOYALTY_ADDRESS<>state_cd | State/Province* |  | LOYALTY_ACCOUNT<>email_1-default
 ADDRESS_HOME_ZIP | LOYALTY_ADDRESS<>postal | Zip/Postal Code*! |  | LOYALTY_ACCOUNT<>email_1-default
