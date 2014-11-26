@@ -129,10 +129,10 @@ int ElementsUploadDataStream::ReadElements(
   if (read_failed_) {
     // If an error occured during read operation, then pad with zero.
     // Otherwise the server will hang waiting for the rest of the data.
-    int num_bytes_to_fill = std::min(
+    int num_bytes_to_fill = static_cast<int>(std::min(
         static_cast<uint64>(buf->BytesRemaining()),
-        size() - position() - buf->BytesConsumed());
-    DCHECK_LE(0, num_bytes_to_fill);
+        size() - position() - buf->BytesConsumed()));
+    DCHECK_GE(num_bytes_to_fill, 0);
     memset(buf->data(), 0, num_bytes_to_fill);
     buf->DidConsume(num_bytes_to_fill);
   }

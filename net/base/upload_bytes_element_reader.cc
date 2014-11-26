@@ -48,8 +48,8 @@ int UploadBytesElementReader::Read(IOBuffer* buf,
                                    const CompletionCallback& callback) {
   DCHECK_LT(0, buf_length);
 
-  const size_t num_bytes_to_read =
-      std::min(BytesRemaining(), static_cast<uint64>(buf_length));
+  const int num_bytes_to_read = static_cast<int>(
+      std::min(BytesRemaining(), static_cast<uint64>(buf_length)));
 
   // Check if we have anything to copy first, because we are getting
   // the address of an element in |bytes_| and that will throw an

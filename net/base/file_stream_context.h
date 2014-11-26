@@ -100,11 +100,11 @@ class FileStream::Context {
  private:
   struct IOResult {
     IOResult();
-    IOResult(int64 result, int os_error);
-    static IOResult FromOSError(int64 os_error);
+    IOResult(int64 result, logging::SystemErrorCode os_error);
+    static IOResult FromOSError(logging::SystemErrorCode os_error);
 
     int64 result;
-    int os_error;  // Set only when result < 0.
+    logging::SystemErrorCode os_error;  // Set only when result < 0.
   };
 
   struct OpenResult {

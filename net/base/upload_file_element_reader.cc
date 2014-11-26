@@ -78,8 +78,8 @@ int UploadFileElementReader::Read(IOBuffer* buf,
                                   const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
-  uint64 num_bytes_to_read =
-      std::min(BytesRemaining(), static_cast<uint64>(buf_length));
+  int num_bytes_to_read = static_cast<int>(
+      std::min(BytesRemaining(), static_cast<uint64>(buf_length)));
   if (num_bytes_to_read == 0)
     return 0;
 
@@ -140,7 +140,7 @@ void UploadFileElementReader::OnSeekCompleted(
   if (result < 0) {
     DLOG(WARNING) << "Failed to seek \"" << path_.value()
                   << "\" to offset: " << range_offset_ << " (" << result << ")";
-    callback.Run(result);
+    callback.Run(static_cast<int>(result));
     return;
   }
 

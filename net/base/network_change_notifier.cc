@@ -305,7 +305,8 @@ class HistogramWatcher
     if (bytes_read > 10000 &&
         request_duration > base::TimeDelta::FromMilliseconds(1) &&
         request.creation_time() > last_connection_change_) {
-      int32 kbps = bytes_read * 8 / request_duration.InMilliseconds();
+      int32 kbps = static_cast<int32>(
+          bytes_read * 8 / request_duration.InMilliseconds());
       if (kbps > peak_kbps_since_last_connection_change_)
         peak_kbps_since_last_connection_change_ = kbps;
     }

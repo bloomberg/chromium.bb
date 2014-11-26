@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -45,7 +46,7 @@ NET_EXPORT bool IsCertificateError(int error);
 NET_EXPORT bool IsClientCertificateError(int error);
 
 // Map system error code to Error.
-NET_EXPORT Error MapSystemError(int os_error);
+NET_EXPORT Error MapSystemError(logging::SystemErrorCode os_error);
 
 // Returns a list of all the possible net error codes (not counting OK). This
 // is intended for use with UMA histograms that are reporting the result of

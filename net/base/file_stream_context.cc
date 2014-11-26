@@ -33,14 +33,15 @@ FileStream::Context::IOResult::IOResult()
       os_error(0) {
 }
 
-FileStream::Context::IOResult::IOResult(int64 result, int os_error)
+FileStream::Context::IOResult::IOResult(int64 result,
+                                        logging::SystemErrorCode os_error)
     : result(result),
       os_error(os_error) {
 }
 
 // static
 FileStream::Context::IOResult FileStream::Context::IOResult::FromOSError(
-    int64 os_error) {
+    logging::SystemErrorCode os_error) {
   return IOResult(MapSystemError(os_error), os_error);
 }
 

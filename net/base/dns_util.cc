@@ -13,9 +13,9 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
   const char* buf = dotted.data();
   unsigned n = dotted.size();
   char label[63];
-  unsigned int labellen = 0; /* <= sizeof label */
+  size_t labellen = 0; /* <= sizeof label */
   char name[255];
-  unsigned int namelen = 0; /* <= sizeof name */
+  size_t namelen = 0; /* <= sizeof name */
   char ch;
 
   for (;;) {
@@ -27,7 +27,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
       if (labellen) {
         if (namelen + labellen + 1 > sizeof name)
           return false;
-        name[namelen++] = labellen;
+        name[namelen++] = static_cast<char>(labellen);
         memcpy(name + namelen, label, labellen);
         namelen += labellen;
         labellen = 0;
@@ -42,7 +42,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
   if (labellen) {
     if (namelen + labellen + 1 > sizeof name)
       return false;
-    name[namelen++] = labellen;
+    name[namelen++] = static_cast<char>(labellen);
     memcpy(name + namelen, label, labellen);
     namelen += labellen;
     labellen = 0;
