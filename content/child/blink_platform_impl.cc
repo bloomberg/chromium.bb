@@ -30,6 +30,7 @@
 #include "blink/public/resources/grit/blink_resources.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
+#include "content/child/bluetooth/web_bluetooth_impl.h"
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
@@ -442,6 +443,8 @@ void BlinkPlatformImpl::InternalInit() {
   if (ChildThread::current()) {
     geofencing_provider_.reset(new WebGeofencingProviderImpl(
         ChildThread::current()->thread_safe_sender()));
+    bluetooth_.reset(
+        new WebBluetoothImpl(ChildThread::current()->thread_safe_sender()));
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     notification_dispatcher_ =
         ChildThread::current()->notification_dispatcher();
@@ -1044,6 +1047,10 @@ blink::WebCrypto* BlinkPlatformImpl::crypto() {
 
 blink::WebGeofencingProvider* BlinkPlatformImpl::geofencingProvider() {
   return geofencing_provider_.get();
+}
+
+blink::WebBluetooth* BlinkPlatformImpl::bluetooth() {
+  return bluetooth_.get();
 }
 
 blink::WebNotificationManager*

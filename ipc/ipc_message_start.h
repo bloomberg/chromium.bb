@@ -113,6 +113,7 @@ enum IPCMessageStart {
   GeofencingMsgStart,
   LayoutTestMsgStart,
   DnsPrefetchMsgStart,
+  BluetoothMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

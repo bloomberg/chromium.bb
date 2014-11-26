@@ -397,6 +397,8 @@
       'browser/appcache/appcache_manifest_parser.h',
       'browser/appcache/view_appcache_internals_job.cc',
       'browser/appcache/view_appcache_internals_job.h',
+      'browser/bluetooth/bluetooth_dispatcher_host.cc',
+      'browser/bluetooth/bluetooth_dispatcher_host.h',
       'browser/bootstrap_sandbox_mac.cc',
       'browser/bootstrap_sandbox_mac.h',
       'browser/browser_child_process_host_impl.cc',

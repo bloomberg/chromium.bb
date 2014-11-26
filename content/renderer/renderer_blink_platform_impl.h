@@ -46,7 +46,6 @@ class RendererClipboardDelegate;
 class RendererScheduler;
 class RenderView;
 class ThreadSafeSender;
-class WebBluetoothImpl;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
@@ -150,7 +149,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebURL& storage_partition,
       blink::WebStorageQuotaType,
       blink::WebStorageQuotaCallbacks);
-  virtual blink::WebBluetooth* bluetooth();
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
   virtual blink::WebScheduler* scheduler();
@@ -189,8 +187,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();
   }
-
-  WebBluetoothImpl* BluetoothImplForTesting() { return bluetooth_.get(); }
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
@@ -249,8 +245,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
-
-  scoped_ptr<WebBluetoothImpl> bluetooth_;
 
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 

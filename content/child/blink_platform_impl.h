@@ -35,6 +35,7 @@ namespace content {
 class FlingCurveConfiguration;
 class NotificationDispatcher;
 class ThreadSafeSender;
+class WebBluetoothImpl;
 class WebCryptoImpl;
 class WebGeofencingProviderImpl;
 
@@ -153,11 +154,14 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebWorkerRunLoop& runLoop);
   virtual blink::WebCrypto* crypto();
   virtual blink::WebGeofencingProvider* geofencingProvider();
+  virtual blink::WebBluetooth* bluetooth();
   virtual blink::WebNotificationManager* notificationManager();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
+
+  WebBluetoothImpl* BluetoothImplForTesting() { return bluetooth_.get(); }
 
  private:
   static void DestroyCurrentThread(void*);
@@ -182,6 +186,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
+  scoped_ptr<WebBluetoothImpl> bluetooth_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;

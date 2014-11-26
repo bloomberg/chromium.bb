@@ -26,6 +26,7 @@
 #include "base/threading/thread_local.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
+#include "content/child/bluetooth/bluetooth_message_filter.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
@@ -291,6 +292,8 @@ void ChildThread::Init(const Options& options) {
                                               quota_message_filter_.get()));
   geofencing_message_filter_ =
       new GeofencingMessageFilter(thread_safe_sender_.get());
+  bluetooth_message_filter_ =
+      new BluetoothMessageFilter(thread_safe_sender_.get());
   notification_dispatcher_ =
       new NotificationDispatcher(thread_safe_sender_.get());
   channel_->AddFilter(histogram_message_filter_.get());
@@ -300,6 +303,7 @@ void ChildThread::Init(const Options& options) {
   channel_->AddFilter(notification_dispatcher_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
   channel_->AddFilter(geofencing_message_filter_->GetFilter());
+  channel_->AddFilter(bluetooth_message_filter_->GetFilter());
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {

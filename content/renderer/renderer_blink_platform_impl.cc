@@ -14,7 +14,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/child/bluetooth/web_bluetooth_impl.h"
 #include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
@@ -237,8 +236,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
-      bluetooth_(new WebBluetoothImpl) {
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
   } else {
@@ -1208,12 +1206,6 @@ void RendererBlinkPlatformImpl::queryStorageUsageAndQuota(
           storage_partition,
           static_cast<storage::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebBluetooth* RendererBlinkPlatformImpl::bluetooth() {
-  return bluetooth_.get();
 }
 
 //------------------------------------------------------------------------------

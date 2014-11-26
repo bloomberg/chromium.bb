@@ -5,30 +5,43 @@
 #ifndef CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 #define CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebBluetooth.h"
-#include "third_party/WebKit/public/platform/WebBluetoothError.h"
 
 namespace content {
 
-// Mock implementation of blink::WebBluetooth until a more complete
-// implementation is built out.
+class BluetoothDispatcher;
+class ThreadSafeSender;
+
+// Implementation of blink::WebBluetooth. Passes calls through to the thread
+// specific BluetoothDispatcher.
 class CONTENT_EXPORT WebBluetoothImpl
     : NON_EXPORTED_BASE(public blink::WebBluetooth) {
  public:
-  WebBluetoothImpl();
+  explicit WebBluetoothImpl(ThreadSafeSender* thread_safe_sender);
+  ~WebBluetoothImpl();
 
-  // WebBluetooth interface:
-  void requestDevice(blink::WebBluetoothRequestDeviceCallbacks*) override;
+  // blink::WebBluetooth interface:
+  // TODO(scheib): Remove void version after crrev.com/715613005 lands.
+  void requestDevice(
+      blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks) override;
+  void requestDevice(
+      blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>*
+          callbacks) override;
 
   // Testing interface:
   void SetBluetoothMockDataSetForTesting(const std::string& name);
 
  private:
-  enum class MockData { NOT_MOCKING, REJECT, RESOLVE };
-  MockData m_bluetoothMockDataSet;
-  blink::WebBluetoothError::ErrorType m_bluetoothRequestDeviceRejectType;
+  BluetoothDispatcher* GetDispatcher();
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebBluetoothImpl);
 };
 
 }  // namespace content

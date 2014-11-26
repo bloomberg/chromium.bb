@@ -36,6 +36,7 @@ class WebFrame;
 }  // namespace blink
 
 namespace content {
+class BluetoothMessageFilter;
 class ChildDiscardableSharedMemoryManager;
 class ChildGpuMemoryBufferManager;
 class ChildHistogramMessageFilter;
@@ -264,6 +265,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<base::PowerMonitor> power_monitor_;
 
   scoped_refptr<GeofencingMessageFilter> geofencing_message_filter_;
+
+  scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
 
   bool in_browser_process_;
 

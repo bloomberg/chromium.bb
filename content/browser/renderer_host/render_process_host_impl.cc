@@ -35,6 +35,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
@@ -676,6 +677,8 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
 
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
   AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();
   media::AudioManager* audio_manager =
@@ -864,8 +867,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   AddFilter(new HistogramMessageFilter());
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMemoryBenchmarking))
+  if (browser_command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
   AddFilter(new VibrationMessageFilter());
@@ -876,6 +878,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
   AddFilter(new GeofencingDispatcherHost(
       storage_partition_impl_->GetGeofencingManager()));
+  if (browser_command_line.HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures))
+    AddFilter(new BluetoothDispatcherHost());
 }
 
 void RenderProcessHostImpl::RegisterMojoServices() {

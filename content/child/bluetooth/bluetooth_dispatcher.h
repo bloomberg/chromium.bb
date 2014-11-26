@@ -1,0 +1,84 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_CHILD_BLUETOOTH_BLUETOOTH_DISPATCHER_H_
+#define CONTENT_CHILD_BLUETOOTH_BLUETOOTH_DISPATCHER_H_
+
+#include "base/id_map.h"
+#include "base/memory/ref_counted.h"
+#include "content/child/worker_task_runner.h"
+#include "content/common/bluetooth/bluetooth_error.h"
+#include "third_party/WebKit/public/platform/WebBluetooth.h"
+
+namespace base {
+class MessageLoop;
+class TaskRunner;
+}
+
+namespace IPC {
+class Message;
+}
+
+namespace content {
+class ThreadSafeSender;
+
+// Dispatcher for child process threads which communicates to the browser's
+// BluetoothDispatcherHost.
+//
+// Instances are created for each thread as necessary by WebBluetoothImpl.
+//
+// Incoming IPC messages are received by the BluetoothMessageFilter and
+// directed to the thread specific instance of this class.
+// Outgoing messages come from WebBluetoothImpl.
+class BluetoothDispatcher : public WorkerTaskRunner::Observer {
+ public:
+  explicit BluetoothDispatcher(ThreadSafeSender* sender);
+  ~BluetoothDispatcher() override;
+
+  // Gets or Creates a BluetoothDispatcher for the current thread.
+  // |thread_safe_sender| is required when constructing a BluetoothDispatcher.
+  static BluetoothDispatcher* GetOrCreateThreadSpecificInstance(
+      ThreadSafeSender* thread_safe_sender);
+
+  // IPC Send and Receiving interface, see IPC::Sender and IPC::Listener.
+  bool Send(IPC::Message* msg);
+  void OnMessageReceived(const IPC::Message& msg);
+
+  // Corresponding to WebBluetoothImpl methods.
+  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
+  void requestDevice(
+      blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks);
+  void requestDevice(blink::WebCallbacks<blink::WebBluetoothDevice,
+                                         blink::WebBluetoothError>* callbacks);
+  void SetBluetoothMockDataSetForTesting(const std::string& name);
+
+  // WorkerTaskRunner::Observer implementation.
+  void OnWorkerRunLoopStopped() override;
+
+ private:
+  // IPC Handlers, see definitions in bluetooth_messages.h.
+  void OnRequestDeviceSuccess(int thread_id,
+                              int request_id,
+                              const std::string& device_instance_id);
+  void OnRequestDeviceError(int thread_id,
+                            int request_id,
+                            BluetoothError error_type);
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+
+  // Tracks requests sent to browser to match replies with callbacks.
+  // Owns callback objects.
+  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
+  IDMap<blink::WebCallbacks<void, blink::WebBluetoothError>, IDMapOwnPointer>
+      pending_requests_old_;
+  IDMap<
+      blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>,
+      IDMapOwnPointer> pending_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_CHILD_BLUETOOTH_BLUETOOTH_DISPATCHER_H_
