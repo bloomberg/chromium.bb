@@ -485,6 +485,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.skip_service_worker = request.skipServiceWorker();
+  request_info.should_reset_appcache = request.shouldResetAppCache();
   request_info.fetch_request_mode = GetFetchRequestMode(request);
   request_info.fetch_credentials_mode = GetFetchCredentialsMode(request);
   request_info.fetch_request_context_type = GetRequestContextType(request);
@@ -579,6 +580,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setRequestContext(request_.requestContext());
   new_request.setFrameType(request_.frameType());
   new_request.setSkipServiceWorker(request_.skipServiceWorker());
+  new_request.setShouldResetAppCache(request_.shouldResetAppCache());
   new_request.setFetchRequestMode(request_.fetchRequestMode());
   new_request.setFetchCredentialsMode(request_.fetchCredentialsMode());
 

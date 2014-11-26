@@ -194,6 +194,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // or kAppCacheNoHostId.
   IPC_STRUCT_MEMBER(int, appcache_host_id)
 
+  // True if corresponding AppCache group should be resetted.
+  IPC_STRUCT_MEMBER(bool, should_reset_appcache)
+
   // Indicates which frame (or worker context) the request is being loaded into,
   // or kInvalidServiceWorkerProviderId.
   IPC_STRUCT_MEMBER(int, service_worker_provider_id)
