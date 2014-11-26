@@ -49,7 +49,7 @@ public:
 
     virtual ~ExtendableEvent();
 
-    void waitUntil(ScriptState*, const ScriptValue&);
+    void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
     virtual const AtomicString& interfaceName() const override;
     virtual void trace(Visitor*) override;

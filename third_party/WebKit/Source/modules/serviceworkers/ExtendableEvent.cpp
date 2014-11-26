@@ -55,10 +55,10 @@ ExtendableEvent::~ExtendableEvent()
 {
 }
 
-void ExtendableEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value)
+void ExtendableEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
     if (m_observer)
-        m_observer->waitUntil(scriptState, value);
+        m_observer->waitUntil(scriptState, value, exceptionState);
 }
 
 ExtendableEvent::ExtendableEvent()

@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/NotImplemented.h"
@@ -77,10 +78,16 @@ void WaitUntilObserver::didDispatchEvent(bool errorOccurred)
     if (errorOccurred)
         m_hasError = true;
     decrementPendingActivity();
+    m_eventDispatched = true;
 }
 
-void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& value)
+void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
+    if (m_eventDispatched) {
+        exceptionState.throwDOMException(InvalidStateError, "The event handler is already finished.");
+        return;
+    }
+
     incrementPendingActivity();
     ScriptPromise::cast(scriptState, value).then(
         ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
@@ -93,6 +100,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, EventType type, 
     , m_eventID(eventID)
     , m_pendingActivity(0)
     , m_hasError(false)
+    , m_eventDispatched(false)
 {
 }
 

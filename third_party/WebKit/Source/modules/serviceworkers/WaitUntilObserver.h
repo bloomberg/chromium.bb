@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class ScriptState;
 class ScriptValue;
@@ -35,7 +36,7 @@ public:
 
     // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.
-    void waitUntil(ScriptState*, const ScriptValue&);
+    void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
     void trace(Visitor*) { }
 
@@ -53,6 +54,7 @@ private:
     int m_eventID;
     int m_pendingActivity;
     bool m_hasError;
+    bool m_eventDispatched;
 };
 
 } // namespace blink
