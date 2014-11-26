@@ -6,19 +6,41 @@
 #define MEDIA_MOJO_SERVICES_MEDIA_TYPE_CONVERTERS_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 
 namespace media {
 class AudioDecoderConfig;
 class VideoDecoderConfig;
 class DecoderBuffer;
+class DecryptConfig;
+struct SubsampleEntry;
 }
 
 namespace mojo {
 
 template <>
+struct TypeConverter<SubsampleEntryPtr, media::SubsampleEntry> {
+  static SubsampleEntryPtr Convert(const media::SubsampleEntry& input);
+};
+template <>
+struct TypeConverter<media::SubsampleEntry, SubsampleEntryPtr> {
+  static media::SubsampleEntry Convert(const SubsampleEntryPtr& input);
+};
+
+template <>
+struct TypeConverter<DecryptConfigPtr, media::DecryptConfig> {
+  static DecryptConfigPtr Convert(const media::DecryptConfig& input);
+};
+template <>
+struct TypeConverter<scoped_ptr<media::DecryptConfig>, DecryptConfigPtr> {
+  static scoped_ptr<media::DecryptConfig> Convert(
+      const DecryptConfigPtr& input);
+};
+
+template <>
 struct TypeConverter<MediaDecoderBufferPtr,
-                     scoped_refptr<media::DecoderBuffer> > {
+                     scoped_refptr<media::DecoderBuffer>> {
   static MediaDecoderBufferPtr Convert(
       const scoped_refptr<media::DecoderBuffer>& input);
 };

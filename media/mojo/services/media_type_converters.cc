@@ -7,6 +7,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
@@ -209,6 +210,43 @@ ASSERT_ENUM_EQ(VideoCodecProfile,
                VIDEO_CODEC_PROFILE_MAX);
 
 // static
+SubsampleEntryPtr
+TypeConverter<SubsampleEntryPtr, media::SubsampleEntry>::Convert(
+    const media::SubsampleEntry& input) {
+  SubsampleEntryPtr mojo_subsample_entry(SubsampleEntry::New());
+  mojo_subsample_entry->clear_bytes = input.clear_bytes;
+  mojo_subsample_entry->cypher_bytes = input.cypher_bytes;
+  return mojo_subsample_entry.Pass();
+}
+
+// static
+media::SubsampleEntry
+TypeConverter<media::SubsampleEntry, SubsampleEntryPtr>::Convert(
+    const SubsampleEntryPtr& input) {
+  return media::SubsampleEntry(input->clear_bytes, input->cypher_bytes);
+}
+
+// static
+DecryptConfigPtr TypeConverter<DecryptConfigPtr, media::DecryptConfig>::Convert(
+    const media::DecryptConfig& input) {
+  DecryptConfigPtr mojo_decrypt_config(DecryptConfig::New());
+  mojo_decrypt_config->key_id = input.key_id();
+  mojo_decrypt_config->iv = input.iv();
+  mojo_decrypt_config->subsamples =
+      Array<SubsampleEntryPtr>::From(input.subsamples());
+  return mojo_decrypt_config.Pass();
+}
+
+// static
+scoped_ptr<media::DecryptConfig>
+TypeConverter<scoped_ptr<media::DecryptConfig>, DecryptConfigPtr>::Convert(
+    const DecryptConfigPtr& input) {
+  return make_scoped_ptr(new media::DecryptConfig(
+      input->key_id, input->iv,
+      input->subsamples.To<std::vector<media::SubsampleEntry>>()));
+}
+
+// static
 MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
     scoped_refptr<media::DecoderBuffer> >::Convert(
         const scoped_refptr<media::DecoderBuffer>& input) {
@@ -234,6 +272,9 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
   std::vector<uint8> side_data(input->side_data(),
                                input->side_data() + input->side_data_size());
   mojo_buffer->side_data.Swap(&side_data);
+
+  if (input->decrypt_config())
+    mojo_buffer->decrypt_config = DecryptConfig::From(*input->decrypt_config());
 
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
@@ -294,6 +335,11 @@ scoped_refptr<media::DecoderBuffer>  TypeConverter<
 
   if (input->is_key_frame)
     buffer->set_is_key_frame(true);
+
+  if (input->decrypt_config) {
+    buffer->set_decrypt_config(
+        input->decrypt_config.To<scoped_ptr<media::DecryptConfig>>());
+  }
 
   media::DecoderBuffer::DiscardPadding discard_padding(
       base::TimeDelta::FromMicroseconds(input->front_discard_usec),
