@@ -4,7 +4,7 @@
 
 'use strict';
 
-installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
+privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
 
     var kDefaultScrollAmount = 6;
     var kDefaultScrollDelayMS = 85;
@@ -163,7 +163,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value < 0)
-                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
+                privateScriptController.throwException(privateScriptController.DOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
             this.setAttribute('scrollamount', value);
         },
     });
@@ -178,7 +178,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value < 0)
-                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
+                privateScriptController.throwException(privateScriptController.DOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
             this.setAttribute('scrolldelay', value);
         },
     });
@@ -193,7 +193,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value <= 0 && value != -1)
-                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is neither positive nor -1.");
+                privateScriptController.throwException(privateScriptController.DOMException.IndexSizeError, "The provided value (" + value + ") is neither positive nor -1.");
             this.setAttribute('loop', value);
         },
     });

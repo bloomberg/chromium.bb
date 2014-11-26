@@ -4,7 +4,7 @@
 
 'use strict';
 
-installClass('PluginPlaceholderElement', function(PluginPlaceholderElementPrototype) {
+privateScriptController.installClass('PluginPlaceholderElement', function(PluginPlaceholderElementPrototype) {
     // FIXME: Load this from a .css file.
     var styleSource =
         '#plugin-placeholder {' +

@@ -4,7 +4,7 @@
 
 "use strict";
 
-installClass("Document", function(DocumentPrototype) {
+privateScriptController.installClass("Document", function(DocumentPrototype) {
     // FIXME: The stylesheet should be defined in a separate css file
     var styleSheet = [
         "div.header {",

@@ -4,7 +4,7 @@
 
 "use strict";
 
-installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
+privateScriptController.installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
 
     PrivateScriptTestPrototype.initialize = function() {
         this.m_shortAttribute = -1;
@@ -115,32 +115,32 @@ installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
     });
 
     Object.defineProperty(PrivateScriptTestPrototype, "nodeAttributeThrowsIndexSizeError", {
-        get: function() { throwException(PrivateScriptDOMException.IndexSizeError, "getter threw error"); },
-        set: function(value) { throwException(PrivateScriptDOMException.IndexSizeError, "setter threw error"); }
+        get: function() { privateScriptController.throwException(privateScriptController.DOMException.IndexSizeError, "getter threw error"); },
+        set: function(value) { privateScriptController.throwException(privateScriptController.DOMException.IndexSizeError, "setter threw error"); }
     });
 
     PrivateScriptTestPrototype.voidMethodThrowsDOMSyntaxError = function() {
-        throwException(PrivateScriptDOMException.SyntaxError, "method threw error");
+        privateScriptController.throwException(privateScriptController.DOMException.SyntaxError, "method threw error");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsError = function() {
-        throwException(PrivateScriptJSError.Error, "method threw Error");
+        privateScriptController.throwException(privateScriptController.JSError.Error, "method threw Error");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsTypeError = function() {
-        throwException(PrivateScriptJSError.TypeError, "method threw TypeError");
+        privateScriptController.throwException(privateScriptController.JSError.TypeError, "method threw TypeError");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsRangeError = function() {
-        throwException(PrivateScriptJSError.RangeError, "method threw RangeError");
+        privateScriptController.throwException(privateScriptController.JSError.RangeError, "method threw RangeError");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsSyntaxError = function() {
-        throwException(PrivateScriptJSError.SyntaxError, "method threw SyntaxError");
+        privateScriptController.throwException(privateScriptController.JSError.SyntaxError, "method threw SyntaxError");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsReferenceError = function() {
-        throwException(PrivateScriptJSError.ReferenceError, "method threw ReferenceError");
+        privateScriptController.throwException(privateScriptController.JSError.ReferenceError, "method threw ReferenceError");
     }
 
     PrivateScriptTestPrototype.voidMethodThrowsStackOverflowError = function() {
