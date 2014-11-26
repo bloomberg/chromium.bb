@@ -14776,11 +14776,18 @@ Do you accept?
         </message>
       </if>
 
+      <!-- Autofill experiment flags -->
       <message name="IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME" desc="Name of the ignore autocomplete='off' for Autofill lab">
         Ignore autocomplete='off' (Autofill)
       </message>
       <message name="IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_DESCRIPTION" desc="Description of the ignore autocomplete='off' for Autofill lab">
         Ignore autocomplete='off' for forms that Chrome can Autofill with credit card or address data.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_NAME" desc="Name of the single click autofill lab">
+        Enable single-click autofill
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_DESCRIPTION" desc="Description of the single click autofill lab">
+        Make autofill suggestions on initial mouse click on a form element.
       </message>
 
       <!-- Reader mode experiment flags -->

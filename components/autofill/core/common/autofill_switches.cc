@@ -11,6 +11,9 @@ namespace switches {
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
+// The "disable" flag for kEnableSingleClickAutofill.
+const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
+
 // Local heuristics override server predictions for name types.
 const char kDisambiguateAutofillServerNameTypes[] =
     "disambiguate-autofill-server-name-types";
@@ -22,6 +25,9 @@ const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
+
+// Enables/disables suggestions without typing anything (on first click).
+const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =

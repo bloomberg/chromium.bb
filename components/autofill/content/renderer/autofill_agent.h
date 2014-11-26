@@ -54,6 +54,39 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual ~AutofillAgent();
 
  private:
+  // Flags passed to ShowSuggestions.
+  struct ShowSuggestionsOptions {
+    // All fields are default initialized to false.
+    ShowSuggestionsOptions();
+
+    // Specifies that suggestions should be shown when |element| contains no
+    // text.
+    bool autofill_on_empty_values;
+
+    // Specifies that suggestions should be shown when the caret is not
+    // after the last character in the element.
+    bool requires_caret_at_end;
+
+    // Specifies that a warning should be displayed to the user if Autofill has
+    // suggestions available, but cannot fill them because it is disabled (e.g.
+    // when trying to fill a credit card form on a non-secure website).
+    bool display_warning_if_disabled;
+
+    // Specifies that all of <datalist> suggestions and no autofill suggestions
+    // are shown. |autofill_on_empty_values| and |requires_caret_at_end| are
+    // ignored if |datalist_only| is true.
+    bool datalist_only;
+
+    // Specifies that all autofill suggestions should be shown and none should
+    // be elided because of the current value of |element| (relevant for inline
+    // autocomplete).
+    bool show_full_suggestion_list;
+
+    // Specifies that only show a suggestions box if |element| is part of a
+    // password form, otherwise show no suggestions.
+    bool show_password_suggestions_only;
+  };
+
   // content::RenderViewObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
@@ -120,32 +153,11 @@ class AutofillAgent : public content::RenderViewObserver,
   // http://bugs.webkit.org/show_bug.cgi?id=16976
   void TextFieldDidChangeImpl(const blink::WebFormControlElement& element);
 
-  // Shows the autofill suggestions for |element|.
-  // This call is asynchronous and may or may not lead to the showing of a
-  // suggestion popup (no popup is shown if there are no available suggestions).
-  // |autofill_on_empty_values| specifies whether suggestions should be shown
-  // when |element| contains no text.
-  // |requires_caret_at_end| specifies whether suggestions should be shown when
-  // the caret is not after the last character in |element|.
-  // |display_warning_if_disabled| specifies whether a warning should be
-  // displayed to the user if Autofill has suggestions available, but cannot
-  // fill them because it is disabled (e.g. when trying to fill a credit card
-  // form on a non-secure website).
-  // |datalist_only| specifies whether all of <datalist> suggestions and no
-  // autofill suggestions are shown. |autofill_on_empty_values| and
-  // |requires_caret_at_end| are ignored if |datalist_only| is true.
-  // |show_full_suggestion_list| specifies that all autofill suggestions should
-  // be shown and none should be elided because of the current value of
-  // |element| (relevant for inline autocomplete).
-  // |show_password_suggestions_only| specifies that only show a suggestions box
-  // if |element| is part of a password form, otherwise show no suggestions.
+  // Shows the autofill suggestions for |element|. This call is asynchronous
+  // and may or may not lead to the showing of a suggestion popup (no popup is
+  // shown if there are no available suggestions).
   void ShowSuggestions(const blink::WebFormControlElement& element,
-                       bool autofill_on_empty_values,
-                       bool requires_caret_at_end,
-                       bool display_warning_if_disabled,
-                       bool datalist_only,
-                       bool show_full_suggestion_list,
-                       bool show_password_suggestions_only);
+                       const ShowSuggestionsOptions& options);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
