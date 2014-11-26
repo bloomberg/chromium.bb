@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,12 +68,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Invoke lookupPrefix on a new Child of a new Element node with a namespace URI
-	and prefix and using the parents namespace URI as an argument, verify if the prefix
-	returned is a valid prefix of the parent.
+*
+    Invoke lookupPrefix on a new Child of a new Element node with a namespace URI
+    and prefix and using the parents namespace URI as an argument, verify if the prefix
+    returned is a valid prefix of the parent.
 
 * @author IBM
 * @author Jenny Hsu
@@ -92,7 +86,7 @@ function nodelookupprefix10() {
       var child;
       var prefix;
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -103,11 +97,8 @@ function nodelookupprefix10() {
       appendedChild = parent.appendChild(child);
       prefix = child.lookupPrefix("http://www.w3.org/1999/xhtml");
       assertEquals("nodelookupprefix10","dom3",prefix);
-       
+
 }
-
-
-
 
 function runTest() {
    nodelookupprefix10();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,16 +67,15 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     The tagName parameter in the "createElement(tagName)"
    method is case-sensitive for XML documents.
-   Retrieve the entire DOM document and invoke its 
+   Retrieve the entire DOM document and invoke its
    "createElement(tagName)" method twice.  Once for tagName
    equal to "acronym" and once for tagName equal to "ACRONYM"
    Each call should create a distinct Element node.  The
-   newly created Elements are then assigned attributes 
+   newly created Elements are then assigned attributes
    that are retrieved.
 
    Modified on 27 June 2003 to avoid setting an invalid style
@@ -101,7 +95,7 @@ function hc_documentcreateelementcasesensitive() {
       var attribute2;
       var nodeName1;
       var nodeName2;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -121,11 +115,8 @@ function hc_documentcreateelementcasesensitive() {
 
       assertEqualsAutoCase("element", "nodeName1","ACRONYM",nodeName1);
        assertEqualsAutoCase("element", "nodeName2","acronym",nodeName2);
-       
+
 }
-
-
-
 
 function runTest() {
    hc_documentcreateelementcasesensitive();

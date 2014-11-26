@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "barfoo");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -71,7 +66,6 @@ function loadComplete() {
         setUpPageStatus = 'complete';
     }
 }
-
 
 /**
 * Checks getParameterNames and canSetParameter for Document.domConfig.
@@ -107,7 +101,7 @@ function domconfigparameternames01() {
       var matchCount = 0;
       var paramValue;
       var canSet;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -125,23 +119,20 @@ for(var indexN1008C = 0;indexN1008C < parameterNames.length; indexN1008C++) {
       canSet = config.canSetParameter(parameterName,paramValue);
       assertTrue("canSetToDefaultValue",canSet);
 config.setParameter(parameterName, paramValue);
-	 
-	if(
-	
-	(("canonical-form".toUpperCase() == parameterName.toUpperCase()) || ("cdata-sections".toUpperCase() == parameterName.toUpperCase()) || ("check-character-normalization".toUpperCase() == parameterName.toUpperCase()) || ("comments".toUpperCase() == parameterName.toUpperCase()) || ("datatype-normalization".toUpperCase() == parameterName.toUpperCase()) || ("entities".toUpperCase() == parameterName.toUpperCase()) || ("error-handler".toUpperCase() == parameterName.toUpperCase()) || ("infoset".toUpperCase() == parameterName.toUpperCase()) || ("namespaces".toUpperCase() == parameterName.toUpperCase()) || ("namespace-declarations".toUpperCase() == parameterName.toUpperCase()) || ("normalize-characters".toUpperCase() == parameterName.toUpperCase()) || ("split-cdata-sections".toUpperCase() == parameterName.toUpperCase()) || ("validate".toUpperCase() == parameterName.toUpperCase()) || ("validate-if-schema".toUpperCase() == parameterName.toUpperCase()) || ("well-formed".toUpperCase() == parameterName.toUpperCase()) || ("element-content-whitespace".toUpperCase() == parameterName.toUpperCase()))
 
-	) {
-	matchCount += 1;
+    if(
 
-	}
-	
-	}
+    (("canonical-form".toUpperCase() == parameterName.toUpperCase()) || ("cdata-sections".toUpperCase() == parameterName.toUpperCase()) || ("check-character-normalization".toUpperCase() == parameterName.toUpperCase()) || ("comments".toUpperCase() == parameterName.toUpperCase()) || ("datatype-normalization".toUpperCase() == parameterName.toUpperCase()) || ("entities".toUpperCase() == parameterName.toUpperCase()) || ("error-handler".toUpperCase() == parameterName.toUpperCase()) || ("infoset".toUpperCase() == parameterName.toUpperCase()) || ("namespaces".toUpperCase() == parameterName.toUpperCase()) || ("namespace-declarations".toUpperCase() == parameterName.toUpperCase()) || ("normalize-characters".toUpperCase() == parameterName.toUpperCase()) || ("split-cdata-sections".toUpperCase() == parameterName.toUpperCase()) || ("validate".toUpperCase() == parameterName.toUpperCase()) || ("validate-if-schema".toUpperCase() == parameterName.toUpperCase()) || ("well-formed".toUpperCase() == parameterName.toUpperCase()) || ("element-content-whitespace".toUpperCase() == parameterName.toUpperCase()))
+
+    ) {
+    matchCount += 1;
+
+    }
+
+    }
    assertEquals("definedParameterCount",16,matchCount);
-       
+
 }
-
-
-
 
 function runTest() {
    domconfigparameternames01();

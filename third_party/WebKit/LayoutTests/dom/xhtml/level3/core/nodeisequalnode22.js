@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,32 +38,30 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var doc1Ref = null;
       if (typeof(this.doc1) != 'undefined') {
         doc1Ref = this.doc1;
       }
       docsLoaded += preload(doc1Ref, "doc1", "barfoo");
-        
+
       var doc2Ref = null;
       if (typeof(this.doc2) != 'undefined') {
         doc2Ref = this.doc2;
       }
       docsLoaded += preload(doc2Ref, "doc2", "barfoo");
-        
+
        if (docsLoaded == 2) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -78,13 +73,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
 
-	
-	Using isEqualNode check if 2 new DocumentType having null public and system ids
-	are equal.
+    Using isEqualNode check if 2 new DocumentType having null public and system ids
+    are equal.
 
 * @author IBM
 * @author Neil Delima
@@ -106,7 +99,7 @@ function nodeisequalnode22() {
 
       var oldDocType;
       var rootName;
-      
+
       var doc1Ref = null;
       if (typeof(this.doc1) != 'undefined') {
         doc1Ref = this.doc1;
@@ -116,7 +109,6 @@ function nodeisequalnode22() {
 
       rootName = oldDocType.name;
 
-      
       var doc2Ref = null;
       if (typeof(this.doc2) != 'undefined') {
         doc2Ref = this.doc2;
@@ -130,9 +122,6 @@ docType1 = domImpl1.createDocumentType(rootName,nullPubId,nullSysId);
       assertTrue("nodeisequalnode22",isEqual);
 
 }
-
-
-
 
 function runTest() {
    nodeisequalnode22();

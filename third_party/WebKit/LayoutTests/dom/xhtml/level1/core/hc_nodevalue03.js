@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,9 +67,8 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
 An entity reference is created, setNodeValue is called with a non-null argument, but getNodeValue
 should still return null.
 
@@ -88,34 +82,34 @@ function hc_nodevalue03() {
     var doc;
       var newNode;
       var newValue;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      
-	if(
-	
-	(builder.contentType == "text/html")
 
-	) {
-	
-	{
-		success = false;
-		try {
+    if(
+
+    (builder.contentType == "text/html")
+
+    ) {
+
+    {
+        success = false;
+        try {
             newNode = doc.createEntityReference("ent1");
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 9);
-		}
-		assertTrue("throw_NOT_SUPPORTED_ERR",success);
-	}
+        }
+        assertTrue("throw_NOT_SUPPORTED_ERR",success);
+    }
 
-	}
-	
-		else {
-			newNode = doc.createEntityReference("ent1");
+    }
+
+        else {
+            newNode = doc.createEntityReference("ent1");
       assertNotNull("createdEntRefNotNull",newNode);
 newValue = newNode.nodeValue;
 
@@ -125,13 +119,10 @@ newValue = newNode.nodeValue;
       newValue = newNode.nodeValue;
 
       assertNull("nullAfterAttemptedChange",newValue);
-    
-		}
-	
+
+        }
+
 }
-
-
-
 
 function runTest() {
    hc_nodevalue03();

@@ -1,15 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
 // expose test function names
 function exposeTestFunctionNames()
@@ -38,26 +36,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "staffNS");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -69,13 +65,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-*       
+*
       Retrieve the XPathEvaluator on which the
       "evaluate("/", documentElement, null, 0, null)" method is invoked with the document
       element. The method should return an XPathResult.
-    
+
 * @author Philippe Le Hégaret
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathEvaluator-evaluate
 */
@@ -90,7 +85,6 @@ function XPathEvaluator_evaluate_documentElement() {
       var result;
       var nullResult = null;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -103,9 +97,6 @@ root = doc.documentElement;
       assertNotNull("notnull",result);
 
 }
-
-
-
 
 function runTest() {
    XPathEvaluator_evaluate_documentElement();

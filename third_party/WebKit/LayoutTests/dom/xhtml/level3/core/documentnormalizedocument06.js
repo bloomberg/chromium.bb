@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "barfoo");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -75,9 +70,9 @@ function loadComplete() {
 
 //DOMErrorMonitor's require a document level variable named errorMonitor
 var errorMonitor;
-	 
+
 /**
-* 
+*
 Add a CDATASection containing "]]>" perform normalization with split-cdata-sections=true.  Should result
 in an warning.
 
@@ -109,7 +104,7 @@ function documentnormalizedocument06() {
       var oldChild;
       var retval;
       errorMonitor = new DOMErrorMonitor();
-      
+
       var errors = new Array();
 
       var error;
@@ -129,7 +124,7 @@ function documentnormalizedocument06() {
       var length;
       var nodeType;
       var nodeValue;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -144,18 +139,17 @@ function documentnormalizedocument06() {
       domConfig = doc.domConfig;
 
       domConfig.setParameter("split-cdata-sections", true);
-	 domConfig.setParameter("error-handler", errorMonitor.handleError);
-	 doc.normalizeDocument();
+     domConfig.setParameter("error-handler", errorMonitor.handleError);
+     doc.normalizeDocument();
       newChild = elem.firstChild;
 
       nodeValue = newChild.nodeValue;
 
       nodeType = newChild.nodeType;
 
-      
-			{
-			assertFalse("wasSplit",
-	((4 == nodeType) && (nodeValue.indexOf("]]>") >= 0))
+            {
+            assertFalse("wasSplit",
+    ((4 == nodeType) && (nodeValue.indexOf("]]>") >= 0))
 );
 errors = errorMonitor.allErrors;
 for(var indexN1010C = 0;indexN1010C < errors.length; indexN1010C++) {
@@ -164,20 +158,19 @@ for(var indexN1010C = 0;indexN1010C < errors.length; indexN1010C++) {
 
       severity = error.severity;
 
-      
-	if(
-	("cdata-sections-splitted" == type)
-	) {
-	relatedData = error.relatedData;
+    if(
+    ("cdata-sections-splitted" == type)
+    ) {
+    relatedData = error.relatedData;
 
       assertSame("relatedData",newChild,relatedData);
 assertEquals("severity",1,severity);
        message = error.message;
 
       length = message.length;
-      	assertTrue("messageNotEmpty",
-      
-	(length > 0)
+          assertTrue("messageNotEmpty",
+
+    (length > 0)
 );
 relatedException = error.relatedException;
 
@@ -198,20 +191,17 @@ lineNumber = location.lineNumber;
 
       splittedCount += 1;
 
-	}
-	
-		else {
-			assertEquals("anyOthersShouldBeWarnings",1,severity);
-       
-		}
-	
-	}
+    }
+
+        else {
+            assertEquals("anyOthersShouldBeWarnings",1,severity);
+
+        }
+
+    }
    assertEquals("oneSplittedWarning",1,splittedCount);
-       
+
 }
-
-
-
 
 function runTest() {
    documentnormalizedocument06();

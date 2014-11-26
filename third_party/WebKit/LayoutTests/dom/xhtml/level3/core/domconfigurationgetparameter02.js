@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,13 +67,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The method getParameter returns the value of a parameter if known. 
-	
-	Get the DOMConfiguration object of a document and verify that a NOT_FOUND_ERR is thrown if the parameter
-	is not found.
+*
+    The method getParameter returns the value of a parameter if known.
+
+    Get the DOMConfiguration object of a document and verify that a NOT_FOUND_ERR is thrown if the parameter
+    is not found.
 
 * @author IBM
 * @author Jenny Hsu
@@ -90,7 +84,7 @@ function domconfigurationgetparameter02() {
     var doc;
       var domConfig;
       var param;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -98,22 +92,18 @@ function domconfigurationgetparameter02() {
       doc = load(docRef, "doc", "hc_staff");
       domConfig = doc.domConfig;
 
-      
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             param = domConfig.getParameter("not-found-param");
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 8);
-		}
-		assertTrue("domconfigurationgetparameter02_NOT_FOUND_ERR",success);
-	}
+        }
+        assertTrue("domconfigurationgetparameter02_NOT_FOUND_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    domconfigurationgetparameter02();

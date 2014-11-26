@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,32 +38,30 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
       var doc2Ref = null;
       if (typeof(this.doc2) != 'undefined') {
         doc2Ref = this.doc2;
       }
       docsLoaded += preload(doc2Ref, "doc2", "hc_staff");
-        
+
        if (docsLoaded == 2) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -78,12 +73,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using replaceChild on a new Attr node, replace its new Text node with a 
-	new EntityReference Node created by another document and verify if a 
-	WRONG_DOCUMENT_ERR is raised.
+*
+    Using replaceChild on a new Attr node, replace its new Text node with a
+    new EntityReference Node created by another document and verify if a
+    WRONG_DOCUMENT_ERR is raised.
 
 * @author IBM
 * @author Neil Delima
@@ -100,13 +94,13 @@ function nodereplacechild37() {
       var nodeValue;
       var replaced;
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      
+
       var doc2Ref = null;
       if (typeof(this.doc2) != 'undefined') {
         doc2Ref = this.doc2;
@@ -116,22 +110,19 @@ function nodereplacechild37() {
       oldChild = doc.createTextNode("Text");
       newChild = doc2.createEntityReference("delta");
       appendedChild = parent.appendChild(oldChild);
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             replaced = parent.replaceChild(newChild,oldChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 4);
-		}
-		assertTrue("throw_WRONG_DOCUMENT_ERR",success);
-	}
+        }
+        assertTrue("throw_WRONG_DOCUMENT_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    nodereplacechild37();

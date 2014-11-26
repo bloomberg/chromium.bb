@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,15 +67,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    The "replaceChild(newChild,oldChild)" method raises a 
+*
+    The "replaceChild(newChild,oldChild)" method raises a
     HIERARCHY_REQUEST_ERR DOMException if this node is of
     a type that does not allow children of the type "newChild"
     to be inserted.
-    
-    Retrieve the root node and attempt to replace 
+
+    Retrieve the root node and attempt to replace
     one of its children with a newly created Attr node.
     An Element node cannot have children of the "Attr"
     type, therefore the desired exception should be raised.
@@ -103,7 +97,7 @@ function hc_nodereplacechildinvalidnodetype() {
       var elementList;
       var oldChild;
       var replacedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -114,22 +108,18 @@ function hc_nodereplacechildinvalidnodetype() {
       oldChild = elementList.item(1);
       rootNode = oldChild.parentNode;
 
-      
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             replacedChild = rootNode.replaceChild(newChild,oldChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 3);
-		}
-		assertTrue("throw_HIERARCHY_REQUEST_ERR",success);
-	}
+        }
+        assertTrue("throw_HIERARCHY_REQUEST_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    hc_nodereplacechildinvalidnodetype();

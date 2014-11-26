@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,32 +38,30 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
       var dupDocRef = null;
       if (typeof(this.dupDoc) != 'undefined') {
         dupDocRef = this.dupDoc;
       }
       docsLoaded += preload(dupDocRef, "dupDoc", "hc_staff");
-        
+
        if (docsLoaded == 2) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -78,17 +73,16 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Retreive the first element node whose localName is "p".  Import it into a new
-	Document with deep=false.  Using isEqualNode check if the original and the imported
-	Element Node are not equal the child nodes are different.
-	Import with deep and the should still be unequal if
-	validating since the
-	new document does not provide the same default attributes.
-	Import it into another instance of the source document
-	and then the imported node and the source should be equal.   
+*
+    Retreive the first element node whose localName is "p".  Import it into a new
+    Document with deep=false.  Using isEqualNode check if the original and the imported
+    Element Node are not equal the child nodes are different.
+    Import with deep and the should still be unequal if
+    validating since the
+    new document does not provide the same default attributes.
+    Import it into another instance of the source document
+    and then the imported node and the source should be equal.
 
 * @author IBM
 * @author Neil Delima
@@ -113,7 +107,7 @@ function nodeisequalnode11() {
       var docElem;
       var rootNS;
       var rootName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -134,14 +128,14 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       assertFalse("nodeisequalnodeFalse11",isEqual);
 elem3 = newDoc.importNode(elem1,true);
       isEqual = elem1.isEqualNode(elem3);
-      
-	if(
-	(getImplementationAttribute("validating") == true)
-	) {
-	assertFalse("deepImportNoDTD",isEqual);
 
-	}
-	
+    if(
+    (getImplementationAttribute("validating") == true)
+    ) {
+    assertFalse("deepImportNoDTD",isEqual);
+
+    }
+
       var dupDocRef = null;
       if (typeof(this.dupDoc) != 'undefined') {
         dupDocRef = this.dupDoc;
@@ -152,9 +146,6 @@ elem3 = newDoc.importNode(elem1,true);
       assertTrue("deepImportSameDTD",isEqual);
 
 }
-
-
-
 
 function runTest() {
    nodeisequalnode11();

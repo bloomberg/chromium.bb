@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using compareDocumentPosition check the document position of the EntityReference node ent4's
-	first child and last child.  Invoke compareDocumentPositon on first child with last child as a parameter
-	should return FOLLOWING, and should return PRECEDING vice versa.
+*
+    Using compareDocumentPosition check the document position of the EntityReference node ent4's
+    first child and last child.  Invoke compareDocumentPositon on first child with last child as a parameter
+    should return FOLLOWING, and should return PRECEDING vice versa.
 
 * @author IBM
 * @author Jenny Hsu
@@ -94,30 +88,30 @@ function nodecomparedocumentposition28() {
       var entRefChild2;
       var entRefChild1Position;
       var entRefChild2Position;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
-      
-	if(
-	(getImplementationAttribute("expandEntityReferences") == false)
-	) {
-	varList = doc.getElementsByTagName("var");
+
+    if(
+    (getImplementationAttribute("expandEntityReferences") == false)
+    ) {
+    varList = doc.getElementsByTagName("var");
       varElem = varList.item(2);
       assertNotNull("varElemNotNull",varElem);
 entRef = varElem.firstChild;
 
       assertNotNull("entRefNotNull",entRef);
 
-	}
-	
-		else {
-			entRef = doc.createEntityReference("ent4");
-      
-		}
-	entRefChild1 = entRef.firstChild;
+    }
+
+        else {
+            entRef = doc.createEntityReference("ent4");
+
+        }
+    entRefChild1 = entRef.firstChild;
 
       assertNotNull("entRefChild1NotNull",entRefChild1);
 entRefChild2 = entRef.lastChild;
@@ -127,11 +121,8 @@ entRefChild1Position = entRefChild1.compareDocumentPosition(entRefChild2);
       assertEquals("nodecomparedocumentpositionFollowing28",4,entRefChild1Position);
        entRefChild2Position = entRefChild2.compareDocumentPosition(entRefChild1);
       assertEquals("nodecomparedocumentpositionPRECEDING28",2,entRefChild2Position);
-       
+
 }
-
-
-
 
 function runTest() {
    nodecomparedocumentposition28();

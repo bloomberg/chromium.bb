@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "table");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     The deleteRow() method throws a INDEX_SIZE_ERR DOMException
-    if the specified index is equal the number of rows. 
- 
+    if the specified index is equal the number of rows.
+
     Retrieve the second TABLE element which has four rows.  Try
     to delete a new row using an index of four.  This should throw
     a INDEX_SIZE_ERR DOMException since the index is equal to the
@@ -94,7 +88,7 @@ function HTMLTableElement37() {
     var nodeList;
       var testNode;
       var doc;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -103,22 +97,19 @@ function HTMLTableElement37() {
       nodeList = doc.getElementsByTagName("table");
       assertSize("Asize",3,nodeList);
 testNode = nodeList.item(1);
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             testNode.deleteRow(4);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 1);
-		}
-		assertTrue("HTMLTableElement37",success);
-	}
+        }
+        assertTrue("HTMLTableElement37",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    HTMLTableElement37();

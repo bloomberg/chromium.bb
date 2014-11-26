@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,15 +68,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The method renameNode renames an existing node and raises a NAMESPACE_ERR
-	if the qualifiedName is malformed per the Namespaces in XML specification.
-	
-	Invoke the renameNode method on a new document node to rename a node to nodes 
-	with malformed qualifiedNames.
-	Check if a NAMESPACE_ERR gets thrown.
+*
+    The method renameNode renames an existing node and raises a NAMESPACE_ERR
+    if the qualifiedName is malformed per the Namespaces in XML specification.
+
+    Invoke the renameNode method on a new document node to rename a node to nodes
+    with malformed qualifiedNames.
+    Check if a NAMESPACE_ERR gets thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -105,7 +99,6 @@ function documentrenamenode19() {
       qualifiedNames[3] = "::0;";
       qualifiedNames[4] = "a:-:c";
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -116,24 +109,21 @@ newDoc = domImpl.createDocument("http://www.w3.org/DOM/Test","newD",nullDocType)
       element = doc.createElementNS("http://www.w3.org/DOM/Test","test");
       for(var indexN1006C = 0;indexN1006C < qualifiedNames.length; indexN1006C++) {
       qualifiedName = qualifiedNames[indexN1006C];
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             renamedNode = doc.renameNode(element,"http://www.w3.org/2000/XMLNS",qualifiedName);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 14);
-		}
-		assertTrue("documentrenamenode19_NAMESPACE_ERR",success);
-	}
+        }
+        assertTrue("documentrenamenode19_NAMESPACE_ERR",success);
+    }
 
-	}
-   
+    }
+
 }
-
-
-
 
 function runTest() {
    documentrenamenode19();

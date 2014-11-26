@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Invoke adoptNode on this document to adopt the a new namespace aware attribute node.  Check 
-	if this attribute has been adopted successfully by verifying the nodeName, namespaceURI, prefix, 
-	specified and ownerElement attributes of the adopted node.
+*
+    Invoke adoptNode on this document to adopt the a new namespace aware attribute node.  Check
+    if this attribute has been adopted successfully by verifying the nodeName, namespaceURI, prefix,
+    specified and ownerElement attributes of the adopted node.
 
 * @author IBM
 * @author Neil Delima
@@ -95,7 +89,7 @@ function documentadoptnode03() {
       var attrOwnerElem;
       var isSpecified;
       var xmlNS = "http://www.w3.org/XML/1998/namespace";
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -103,13 +97,13 @@ function documentadoptnode03() {
       doc = load(docRef, "doc", "hc_staff");
       newAttr = doc.createAttributeNS(xmlNS,"xml:lang");
       adoptedAttr = doc.adoptNode(newAttr);
-      
-	if(
-	
-	(adoptedAttr != null)
 
-	) {
-	nodeName = adoptedAttr.nodeName;
+    if(
+
+    (adoptedAttr != null)
+
+    ) {
+    nodeName = adoptedAttr.nodeName;
 
       nodeNamespaceURI = adoptedAttr.namespaceURI;
 
@@ -125,12 +119,9 @@ function documentadoptnode03() {
        assertNull("documentadoptnode03_ownerDoc",attrOwnerElem);
     assertTrue("documentadoptnode03_specified",isSpecified);
 
-	}
-	
+    }
+
 }
-
-
-
 
 function runTest() {
    documentadoptnode03();

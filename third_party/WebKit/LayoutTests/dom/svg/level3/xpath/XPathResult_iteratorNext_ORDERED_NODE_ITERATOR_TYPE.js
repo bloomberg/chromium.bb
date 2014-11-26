@@ -1,15 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
 // expose test function names
 function exposeTestFunctionNames()
@@ -38,26 +36,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -69,14 +65,13 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    Create an XPathResult ORDERED_NODE_ITERATOR_TYPE XPathResultType for 
+*
+    Create an XPathResult ORDERED_NODE_ITERATOR_TYPE XPathResultType for
     expression /staff/employee/employeeId/text() checking that:
     XPathResult.iteratorNext returns the nodes in document order,
     and that the correct number is returned.
-    
+
 * @author Bob Clary
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathResult-iteratorNext
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathResult
@@ -109,7 +104,7 @@ function XPathResult_iteratorNext_ORDERED_NODE_ITERATOR_TYPE() {
       var outNode;
       var index;
       var text;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -121,59 +116,55 @@ resolver = evaluator.createNSResolver(doc);
 outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresult);
       index = 0;
 outNode = outresult.iterateNext();
-      
+
     while(
-	
-	(outNode != null)
 
-	) {
-	text = outNode.data;
+    (outNode != null)
 
-      
-	if(
-	(0 == index)
-	) {
-	assertEquals("first","EMP0001",text);
-       
-	}
-	
-	if(
-	(1 == index)
-	) {
-	assertEquals("second","EMP0002",text);
-       
-	}
-	
-	if(
-	(2 == index)
-	) {
-	assertEquals("third","EMP0003",text);
-       
-	}
-	
-	if(
-	(3 == index)
-	) {
-	assertEquals("fourth","EMP0004",text);
-       
-	}
-	
-	if(
-	(4 == index)
-	) {
-	assertEquals("fifth","EMP0005",text);
-       
-	}
-	index += 1;
+    ) {
+    text = outNode.data;
+
+    if(
+    (0 == index)
+    ) {
+    assertEquals("first","EMP0001",text);
+
+    }
+
+    if(
+    (1 == index)
+    ) {
+    assertEquals("second","EMP0002",text);
+
+    }
+
+    if(
+    (2 == index)
+    ) {
+    assertEquals("third","EMP0003",text);
+
+    }
+
+    if(
+    (3 == index)
+    ) {
+    assertEquals("fourth","EMP0004",text);
+
+    }
+
+    if(
+    (4 == index)
+    ) {
+    assertEquals("fifth","EMP0005",text);
+
+    }
+    index += 1;
 outNode = outresult.iterateNext();
-      
-	}
+
+    }
 assertEquals("count",5,index);
-       
+
 }
-
-
-
 
 function runTest() {
    XPathResult_iteratorNext_ORDERED_NODE_ITERATOR_TYPE();

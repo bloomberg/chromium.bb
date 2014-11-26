@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "tablerow");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,14 +67,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    The insertCell() method inserts an empty TD cell into this row. 
+*
+    The insertCell() method inserts an empty TD cell into this row.
 
-    
     Retrieve the fourth TR element and examine the value of
-    the cells length attribute which should be set to six.  
+    the cells length attribute which should be set to six.
     Check the value of the last TD element.  Invoke the
     insertCell() which will append the empty cell to the end of the list.
     Check the value of the newly created cell and make sure it is null
@@ -101,7 +94,7 @@ function HTMLTableRowElement12() {
       var newCell;
       var vcells;
       var doc;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -132,11 +125,8 @@ testNode = nodeList.item(3);
       cellNode = trNode.firstChild;
 
       assertNull("value2Link",cellNode);
-    
+
 }
-
-
-
 
 function runTest() {
    HTMLTableRowElement12();

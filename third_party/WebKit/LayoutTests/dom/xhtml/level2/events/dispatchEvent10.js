@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -74,9 +69,9 @@ function loadComplete() {
 
 //EventMonitor's require a document level variable named monitor
 var monitor;
-	 
+
 /**
-* 
+*
 The same monitor is registered twice and an event is dispatched.  The monitor should
 recieve only one handleEvent call.
 
@@ -92,22 +87,21 @@ function dispatchEvent10() {
       var evt;
       var preventDefault;
       monitor = new EventMonitor();
-      
+
       var atEvents = new Array();
 
       var bubbledEvents = new Array();
 
       var capturedEvents = new Array();
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "hc_staff");
       doc.addEventListener("foo", monitor.handleEvent, false);
-	 doc.addEventListener("foo", monitor.handleEvent, false);
-	 evt = doc.createEvent("Events");
+     doc.addEventListener("foo", monitor.handleEvent, false);
+     evt = doc.createEvent("Events");
       evt.initEvent("foo",true,false);
       preventDefault = doc.dispatchEvent(evt);
       atEvents = monitor.atEvents;
@@ -118,9 +112,6 @@ capturedEvents = monitor.capturedEvents;
 assertSize("captureCount",0,capturedEvents);
 
 }
-
-
-
 
 function runTest() {
    dispatchEvent10();

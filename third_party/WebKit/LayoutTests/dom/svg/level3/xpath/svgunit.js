@@ -1,10 +1,10 @@
 /*
-Copyright (c) 2001-2005 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright (c) 2001-2005 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
@@ -13,7 +13,6 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 if (window.testRunner)
     testRunner.dumpAsText();
 /* End additions for WebKit layout test framework. */
-
 
   function assertSize(descr, expected, actual) {
     var actualSize;
@@ -29,16 +28,15 @@ if (window.testRunner)
               assertEquals(descr, expected.toUpperCase(), actual);
           }
       } else {
-          assertEquals(descr, expected, actual); 
+          assertEquals(descr, expected, actual);
       }
   }
-  
 
   function assertEqualsCollectionAutoCase(context, descr, expected, actual) {
     //
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
-    
+
     //
     //  if there length is the same, then every entry in the expected list
     //     must appear once and only once in the actual list
@@ -107,7 +105,6 @@ if (window.testRunner)
     }
   }
 
-
   function assertEqualsListAutoCase(context, descr, expected, actual) {
     var minLength = expected.length;
     if (actual.length < minLength) {
@@ -121,7 +118,6 @@ if (window.testRunner)
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
   }
-
 
   function assertEqualsList(descr, expected, actual) {
     var minLength = expected.length;
@@ -232,7 +228,6 @@ if (window.testRunner)
     }
   }
 
-
 // size() used by assertSize element
 function size(collection)
 {
@@ -258,14 +253,12 @@ function equalsAutoCase(context, expected, actual) {
     return expected == actual;
 }
 
-
 function createTempURI(scheme) {
    if (scheme == "http") {
          return "http://localhost:8080/webdav/tmp" + Math.floor(Math.random() * 100000) + ".xml";
    }
    return "file:///tmp/domts" + Math.floor(Math.random() * 100000) + ".xml";
 }
-
 
 function EventMonitor() {
   this.atEvents = new Array();
@@ -279,7 +272,7 @@ EventMonitor.prototype.handleEvent = function(evt) {
        case 1:
        monitor.capturedEvents[monitor.capturedEvents.length] = evt;
        break;
-       
+
        case 2:
        monitor.atEvents[monitor.atEvents.length] = evt;
        break;
@@ -299,8 +292,6 @@ function DOMErrorImpl(err) {
   this.relatedData = err.relatedData;
   this.location = err.location;
 }
-
-
 
 function DOMErrorMonitor() {
   this.allErrors = new Array();
@@ -336,7 +327,6 @@ UserDataMonitor.prototype.handle = function(operation, key, data, src, dst) {
          new UserDataNotification(operation, key, data, src, dst);
 }
 
-
 function toLowerArray(src) {
    var newArray = new Array();
    var i;
@@ -346,8 +336,6 @@ function toLowerArray(src) {
    return newArray;
 }
 
-
-
 function SVGBuilder() {
     this.contentType = "image/svg+xml";
     this.supportedContentTypes = [ "image/svg+xml" ];
@@ -355,7 +343,7 @@ function SVGBuilder() {
     this.supportsAsyncChange = false;
     this.async = false;
     this.fixedAttributeNames = [
-        "validating",  "expandEntityReferences", "coalescing", 
+        "validating",  "expandEntityReferences", "coalescing",
         "signed", "hasNullString", "ignoringElementContentWhitespace", "namespaceAware", "ignoringComments", "schemaValidating"];
 
     this.fixedAttributeValues = [false,  true, false, true, true , false, true, false, false ];
@@ -416,31 +404,30 @@ SVGBuilder.prototype.cloneNode = function(srcNode, doc) {
          srcChild = srcChild.nextSibling;
       }
       break;
-      
+
       case 3:
       clone = doc.createTextNode(srcNode.nodeValue);
       break;
-      
+
       case 4:
       clone = doc.createCDATASection(srcNode.nodeValue);
       break;
-      
+
       case 5:
       clone = doc.createEntityReference(srcNode.nodeName);
       break;
-                  
+
       case 7:
       clone = doc.createProcessingInstruction(srcNode.target, srcNode.data);
       break;
-      
+
       case 8:
       clone = doc.createComment(srcNode.nodeValue);
       break;
    }
    return clone;
-      
-}
 
+}
 
 SVGBuilder.prototype.load = function(frame, varname, url) {
   req = new XMLHttpRequest;
@@ -458,7 +445,6 @@ SVGBuilder.prototype.getImplementationAttribute = function(attr) {
     throw "Unrecognized implementation attribute: " + attr;
 }
 
-
 SVGBuilder.prototype.setImplementationAttribute = function(attribute, value) {
     var supported = this.getImplementationAttribute(attribute);
     if (supported != value) {
@@ -471,9 +457,6 @@ SVGBuilder.prototype.canSetImplementationAttribute = function(attribute, value) 
     return (supported == value);
 }
 
-
-
-
 function createConfiguredBuilder() {
     return new SVGBuilder();
 }
@@ -482,7 +465,6 @@ function catchInitializationError(buildr, ex) {
    buildr.initializationError = ex;
    buildr.initializationFatalError = ex;
 }
-
 
 function checkFeature(feature, version)
 {
@@ -495,7 +477,6 @@ function checkFeature(feature, version)
   }
 }
 
-
 function changeColor(color) {
    document.getElementsByTagName("rect").item(0).setAttribute("style", "fill:" + color);
 }
@@ -505,7 +486,7 @@ function addMessage(x, y, msg) {
    textElem.setAttributeNS(null, "x", x);
    textElem.setAttributeNS(null, "y", y);
    textElem.appendChild(document.createTextNode(msg));
-   document.documentElement.appendChild(textElem);   
+   document.documentElement.appendChild(textElem);
 }
 
 function checkInitialization(buildr, testname) {
@@ -520,16 +501,13 @@ function preload(docRef, varname, href) {
    return builder.preload(docRef, varname, href);
 }
 
-
 function load(docRef, varname, href) {
    return builder.load(docRef, varname, href);
 }
 
-
 function getImplementationAttribute(attr) {
     return builder.getImplementationAttribute(attr);
 }
-
 
 function setImplementationAttribute(attribute, value) {
     builder.setImplementationAttribute(attribute, value);
@@ -539,11 +517,9 @@ function createXPathEvaluator(doc) {
     return doc;
 }
 
-
 function getImplementation() {
     return builder.getImplementation();
 }
-
 
 function assertEquals(id, expected, actual) {
    var myActual;
@@ -552,7 +528,7 @@ function assertEquals(id, expected, actual) {
        if (actual == null) {
           myActual = "null";
        }
-       throw id + ": assertEquals failed, actual " + actual + ", expected " + expected + "."; 
+       throw id + ": assertEquals failed, actual " + actual + ", expected " + expected + ".";
    }
 }
 
@@ -561,7 +537,6 @@ function assertNull(id, actual) {
        throw id + ": assertNull failed, actual " + actual;
    }
 }
-
 
 function assertTrue(id, actual) {
    if (!actual) {
@@ -574,7 +549,6 @@ function assert(id, actual) {
        throw id + ": assert failed";
    }
 }
-
 
 function assertFalse(id, actual) {
    if (actual) {
@@ -592,7 +566,6 @@ function fail(id) {
     throw id + ": fail";
 }
 
-
 function getSuffix(contentType) {
     switch(contentType) {
         case "text/html":
@@ -609,7 +582,6 @@ function getSuffix(contentType) {
     }
     return ".xml";
 }
-
 
 function getResourceURI(name, scheme, contentType) {
     var base = document.documentURI;
@@ -638,9 +610,8 @@ function onloadHandler() {
     } catch(ex) {
         addMessage("0", "120", exposeTestFunctionNames()[0]);
         changeColor("red");
-        addMessage("0", "140", ex);    
-    }    
+        addMessage("0", "140", ex);
+    }
 }
 // Add loader
 window.addEventListener('load', onloadHandler, false)
-

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -44,26 +41,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -75,9 +70,8 @@ function loadComplete() {
     }
 }
 
-
      /**
-      *    Inner class implementation for variable errHandler 
+      *    Inner class implementation for variable errHandler
       */
 var errHandler;
 
@@ -85,16 +79,16 @@ var errHandler;
         * Constructor
 
         */
-	      
-function DOMErrorHandlerN10048() { 
+
+function DOMErrorHandlerN10048() {
            }
-   
+
         /**
-         *    
+         *
 This method is called on the error handler when an error occurs.
 If an exception is thrown from this method, it is considered to be equivalent of returningtrue.
 
-         * @param error 
+         * @param error
 The error object that describes the error. This object may be reused by the DOM implementation across multiple calls to thehandleErrormethod.
 
          */
@@ -107,15 +101,15 @@ DOMErrorHandlerN10048.prototype.handleError = function(error) {
 }
 
 /**
-* 
-	The normalizeDocument method method acts as if the document was going through a save 
-	and load cycle, putting the document in a "normal" form. 
+*
+    The normalizeDocument method method acts as if the document was going through a save
+    and load cycle, putting the document in a "normal" form.
 
-	Set the validate feature to true.  Invoke the normalizeDocument method on this 
-	document.  Retreive the documentElement node and check the nodeName of this node 
-	to make sure it has not changed.  Now set validate to false and verify the same. 
-	Register an error handler on this Document and in each case make sure that it does
-	not get called.
+    Set the validate feature to true.  Invoke the normalizeDocument method on this
+    document.  Retreive the documentElement node and check the nodeName of this node
+    to make sure it has not changed.  Now set validate to false and verify the same.
+    Register an error handler on this Document and in each case make sure that it does
+    not get called.
 
 * @author IBM
 * @author Neil Delima
@@ -132,8 +126,7 @@ function documentnormalizedocument12() {
       var domConfig;
       var errorHandler;
       errHandler = new DOMErrorHandlerN10048();
-	  
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -142,32 +135,29 @@ function documentnormalizedocument12() {
       domConfig = doc.domConfig;
 
       domConfig.setParameter("error-handler", errHandler.handleError);
-	 canSet = domConfig.canSetParameter("validate",true);
-      
-	if(
-	canSet
-	) {
-	domConfig.setParameter("validate", true);
-	 doc.normalizeDocument();
+     canSet = domConfig.canSetParameter("validate",true);
+
+    if(
+    canSet
+    ) {
+    domConfig.setParameter("validate", true);
+     doc.normalizeDocument();
       docElem = doc.documentElement;
 
       docElemNodeName = docElem.nodeName;
 
       assertEquals("documentnormalizedocument08_True","html",docElemNodeName);
-       
-	}
-	domConfig.setParameter("validate", false);
-	 doc.normalizeDocument();
+
+    }
+    domConfig.setParameter("validate", false);
+     doc.normalizeDocument();
       docElem = doc.documentElement;
 
       docElemNodeName = docElem.nodeName;
 
       assertEquals("documentnormalizedocument08_False","html",docElemNodeName);
-       
+
 }
-
-
-
 
 function runTest() {
    documentnormalizedocument12();

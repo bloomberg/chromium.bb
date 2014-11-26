@@ -1,10 +1,10 @@
 /*
-Copyright (c) 2001-2005 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright (c) 2001-2005 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
@@ -24,16 +24,15 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
               assertEquals(descr, expected.toUpperCase(), actual);
           }
       } else {
-          assertEquals(descr, expected, actual); 
+          assertEquals(descr, expected, actual);
       }
   }
-  
 
   function assertEqualsCollectionAutoCase(context, descr, expected, actual) {
     //
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
-    
+
     //
     //  if there length is the same, then every entry in the expected list
     //     must appear once and only once in the actual list
@@ -102,7 +101,6 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     }
   }
 
-
   function assertEqualsListAutoCase(context, descr, expected, actual) {
     var minLength = expected.length;
     if (actual.length < minLength) {
@@ -116,7 +114,6 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
   }
-
 
   function assertEqualsList(descr, expected, actual) {
     var minLength = expected.length;
@@ -227,7 +224,6 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     }
   }
 
-
 // size() used by assertSize element
 function size(collection)
 {
@@ -265,8 +261,6 @@ function createTempURI(scheme) {
    return "file:///tmp/domts" + Math.floor(Math.random() * 100000) + ".xml";
 }
 
-
-
 function EventMonitor() {
   this.atEvents = new Array();
   this.bubbledEvents = new Array();
@@ -279,7 +273,7 @@ EventMonitor.prototype.handleEvent = function(evt) {
        case 1:
        monitor.capturedEvents[monitor.capturedEvents.length] = evt;
        break;
-       
+
        case 2:
        monitor.atEvents[monitor.atEvents.length] = evt;
        break;
@@ -299,8 +293,6 @@ function DOMErrorImpl(err) {
   this.relatedData = err.relatedData;
   this.location = err.location;
 }
-
-
 
 function DOMErrorMonitor() {
   this.allErrors = new Array();
@@ -336,8 +328,6 @@ UserDataMonitor.prototype.handle = function(operation, key, data, src, dst) {
          new UserDataNotification(operation, key, data, src, dst);
 }
 
-
-
 function HTMLBuilder() {
     this.contentType = "application/xhtml+xml";
     this.supportedContentTypes = [ "application/xhtml+xml" ];
@@ -345,7 +335,7 @@ function HTMLBuilder() {
     this.supportsAsyncChange = false;
     this.async = false;
     this.fixedAttributeNames = [
-        "validating",  "expandEntityReferences", "coalescing", 
+        "validating",  "expandEntityReferences", "coalescing",
         "signed", "hasNullString", "ignoringElementContentWhitespace", "namespaceAware", "ignoringComments", "schemaValidating"];
 
     this.fixedAttributeValues = [false,  true, false, true, true , false, true, false, false ];
@@ -404,31 +394,30 @@ HTMLBuilder.prototype.cloneNode = function(srcNode, doc) {
          srcChild = srcChild.nextSibling;
       }
       break;
-      
+
       case 3:
       clone = doc.createTextNode(srcNode.nodeValue);
       break;
-      
+
       case 4:
       clone = doc.createCDATASection(srcNode.nodeValue);
       break;
-      
+
       case 5:
       clone = doc.createEntityReference(srcNode.nodeName);
       break;
-                  
+
       case 7:
       clone = doc.createProcessingInstruction(srcNode.target, srcNode.data);
       break;
-      
+
       case 8:
       clone = doc.createComment(srcNode.nodeValue);
       break;
    }
    return clone;
-      
-}
 
+}
 
 HTMLBuilder.prototype.load = function(frame, varname, url) {
   if (this.documentVarnames[0] == varname) {
@@ -453,11 +442,11 @@ HTMLBuilder.prototype.load = function(frame, varname, url) {
           null);
       //
       //   Work-around since
-      //   Safari does not create document element 
-      //      create document.      
+      //   Safari does not create document element
+      //      create document.
       if (clone.documentElement == null) {
            clone.appendChild(clone.createElementNS(
-              document.documentElement.namespaceURI, 
+              document.documentElement.namespaceURI,
               document.documentElement.nodeName));
       }
       var attrs = document.documentElement.attributes;
@@ -473,7 +462,7 @@ HTMLBuilder.prototype.load = function(frame, varname, url) {
                var cloneNode = this.cloneNode(srcNode, clone);
              clone.insertBefore(cloneNode, clone.documentElement);
            }
-           srcNode = srcNode.nextSibling; 
+           srcNode = srcNode.nextSibling;
       }
       srcNode = document.documentElement.nextSibling;
       while(srcNode != null) {
@@ -502,7 +491,6 @@ HTMLBuilder.prototype.getImplementationAttribute = function(attr) {
     throw "Unrecognized implementation attribute: " + attr;
 }
 
-
 HTMLBuilder.prototype.setImplementationAttribute = function(attribute, value) {
     var supported = this.getImplementationAttribute(attribute);
     if (supported != value) {
@@ -515,9 +503,6 @@ HTMLBuilder.prototype.canSetImplementationAttribute = function(attribute, value)
     return (supported == value);
 }
 
-
-
-
 function createConfiguredBuilder() {
     return new HTMLBuilder();
 }
@@ -526,7 +511,6 @@ function catchInitializationError(buildr, ex) {
    buildr.initializationError = ex;
    buildr.initializationFatalError = ex;
 }
-
 
 function checkFeature(feature, version)
 {
@@ -542,7 +526,7 @@ function checkFeature(feature, version)
 function setResult(resultType, message) {
    var testName = getTargetURI();
    document.title = testName + ":" + resultType;
-   var xhtmlNS = "http://www.w3.org/1999/xhtml"; 
+   var xhtmlNS = "http://www.w3.org/1999/xhtml";
    var newBody = document.createElementNS(xhtmlNS, "body");
    var newTable = document.createElementNS(xhtmlNS, "table");
    newTable.width = "100%";
@@ -598,16 +582,13 @@ function preload(docRef, varname, href) {
    return builder.preload(docRef, varname, href);
 }
 
-
 function load(docRef, varname, href) {
    return builder.load(docRef, varname, href);
 }
 
-
 function getImplementationAttribute(attr) {
     return builder.getImplementationAttribute(attr);
 }
-
 
 function setImplementationAttribute(attribute, value) {
     builder.setImplementationAttribute(attribute, value);
@@ -622,7 +603,6 @@ function createXPathEvaluator(doc) {
     return doc;
 }
 
-
 function getImplementation() {
     return builder.getImplementation();
 }
@@ -634,7 +614,7 @@ function assertEquals(id, expected, actual) {
        if (actual == null) {
           myActual = "null";
        }
-       throw "failure:" + id + ": assertEquals failed, actual " + myActual + ", expected " + expected + "."; 
+       throw "failure:" + id + ": assertEquals failed, actual " + myActual + ", expected " + expected + ".";
    }
 }
 
@@ -644,13 +624,11 @@ function assertNull(id, actual) {
    }
 }
 
-
 function assertTrue(id, actual) {
    if (!actual) {
        throw "failure:" + id + ": assertTrue failed";
    }
 }
-
 
 function assertFalse(id, actual) {
    if (actual) {
@@ -667,8 +645,6 @@ function assertNotNull(id, actual) {
 function fail(id) {
     throw "failure:" + id +  ": fail";
 }
-
-
 
 function getSuffix(contentType) {
     switch(contentType) {
@@ -687,7 +663,6 @@ function getSuffix(contentType) {
     return ".xhtml";
 }
 
-
 function getResourceURI(name, scheme, contentType) {
     var base = document.documentURI;
     if (base == null) {
@@ -697,8 +672,6 @@ function getResourceURI(name, scheme, contentType) {
     }
     return base + name + getSuffix(contentType);
 }
-
-
 
 function startTest() {
 
@@ -745,6 +718,6 @@ if (window.testRunner) {
     }
 //
 //  End WebKit modification
-//      
+//
 
 }

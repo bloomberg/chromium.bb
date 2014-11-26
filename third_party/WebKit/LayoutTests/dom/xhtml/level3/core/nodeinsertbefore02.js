@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,13 +67,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using insertBefore on a new Document node attempt to insert a new Comment node before
-	this DocumentType node and verify the name of the inserted Comment node.  Now
-	attempt to insert a new Processing Instruction node before the new Comment and 
-	verify the target of the inserted ProcessingInstruction.
+*
+    Using insertBefore on a new Document node attempt to insert a new Comment node before
+    this DocumentType node and verify the name of the inserted Comment node.  Now
+    attempt to insert a new Processing Instruction node before the new Comment and
+    verify the target of the inserted ProcessingInstruction.
 
 * @author IBM
 * @author Neil Delima
@@ -104,7 +98,7 @@ function nodeinsertbefore02() {
       var rootNS;
       var rootName;
       var docElem;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -129,11 +123,8 @@ newDocType = domImpl.createDocumentType(rootName,nullPubId,nullSysId);
       target = insertedPI.target;
 
       assertEquals("nodeinsertbefore02_2","PITarget",target);
-       
+
 }
-
-
-
 
 function runTest() {
    nodeinsertbefore02();

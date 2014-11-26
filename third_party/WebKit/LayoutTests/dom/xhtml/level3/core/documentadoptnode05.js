@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Invoke adoptNode on a new document to adopt the default attribute "dir".  Check if 
-	this attribute has been adopted successfully by verifying the nodeName, namespaceURI, prefix, 
-	specified and ownerElement attributes of the adopted node.
+*
+    Invoke adoptNode on a new document to adopt the default attribute "dir".  Check if
+    this attribute has been adopted successfully by verifying the nodeName, namespaceURI, prefix,
+    specified and ownerElement attributes of the adopted node.
 
 * @author IBM
 * @author Neil Delima
@@ -103,7 +97,7 @@ function documentadoptnode05() {
       var docElem;
       var rootNS;
       var rootName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -121,13 +115,13 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       elementEmp = childList.item(3);
       dir = elementEmp.getAttributeNode("dir");
       adoptedAttr = newDoc.adoptNode(dir);
-      
-	if(
-	
-	(adoptedAttr != null)
 
-	) {
-	nodeName = adoptedAttr.nodeName;
+    if(
+
+    (adoptedAttr != null)
+
+    ) {
+    nodeName = adoptedAttr.nodeName;
 
       nodeNamespaceURI = adoptedAttr.namespaceURI;
 
@@ -143,12 +137,9 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
     assertNull("documentadoptnode05_ownerDoc",attrOwnerElem);
     assertTrue("documentadoptnode05_specified",isSpecified);
 
-	}
-	
+    }
+
 }
-
-
-
 
 function runTest() {
    documentadoptnode05();

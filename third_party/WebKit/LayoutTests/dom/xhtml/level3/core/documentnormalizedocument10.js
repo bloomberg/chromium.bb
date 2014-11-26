@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,16 +68,15 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The normalizeDocument method method acts as if the document was going through a save 
-	and load cycle, putting the document in a "normal" form. 
+*
+    The normalizeDocument method method acts as if the document was going through a save
+    and load cycle, putting the document in a "normal" form.
 
-	Create an Element and a text node and verify the nodeValue of this text node and append these to
-	this Document.  If supported, invoke the setParameter method on this domconfiguration object to set the 
-	"element-content-whitespace"  feature to false.  Invoke the normalizeDocument method and verify if 
-	the text node has been discarded.
+    Create an Element and a text node and verify the nodeValue of this text node and append these to
+    this Document.  If supported, invoke the setParameter method on this domconfiguration object to set the
+    "element-content-whitespace"  feature to false.  Invoke the normalizeDocument method and verify if
+    the text node has been discarded.
 
 * @author IBM
 * @author Neil Delima
@@ -100,7 +94,7 @@ function documentnormalizedocument10() {
       var canSet;
       var appendedChild;
       var domConfig;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -120,31 +114,28 @@ function documentnormalizedocument10() {
       canSet = domConfig.canSetParameter("element-content-whitespace",true);
       assertTrue("canSetElementContentWhitespaceTrue",canSet);
 domConfig.setParameter("element-content-whitespace", true);
-	 doc.normalizeDocument();
+     doc.normalizeDocument();
       text = elem.firstChild;
 
       nodeValue = text.nodeValue;
 
       assertEquals("documentnormalizedocument10_true1","Text          Node",nodeValue);
        canSet = domConfig.canSetParameter("element-content-whitespace",false);
-      
-	if(
-	canSet
-	) {
-	domConfig.setParameter("element-content-whitespace", false);
-	 doc.normalizeDocument();
+
+    if(
+    canSet
+    ) {
+    domConfig.setParameter("element-content-whitespace", false);
+     doc.normalizeDocument();
       text = elem.firstChild;
 
       nodeValue = text.nodeValue;
 
       assertEquals("documentnormalizedocument10_true2","Text Node",nodeValue);
-       
-	}
-	
+
+    }
+
 }
-
-
-
 
 function runTest() {
    documentnormalizedocument10();

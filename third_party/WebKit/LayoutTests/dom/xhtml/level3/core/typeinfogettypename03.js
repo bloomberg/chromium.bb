@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -44,26 +41,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -75,15 +70,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The typeName attribute states the name of a type declared for the associated element or 
-	attribute, or null if unknown. 
+*
+    The typeName attribute states the name of a type declared for the associated element or
+    attribute, or null if unknown.
 
-	Invoke getSchemaTypeInfo method on an attribute having [type definition] property.  Expose 
-	{name} and {target namespace} properties of the [type definition] property.
-	Verify that the typeName of id's schemaTypeInfo are correct.
+    Invoke getSchemaTypeInfo method on an attribute having [type definition] property.  Expose
+    {name} and {target namespace} properties of the [type definition] property.
+    Verify that the typeName of id's schemaTypeInfo are correct.
 
 * @author IBM
 * @author Jenny Hsu
@@ -98,7 +92,7 @@ function typeinfogettypename03() {
       var acElem;
       var attrTypeInfo;
       var typeName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -112,11 +106,8 @@ function typeinfogettypename03() {
       typeName = attrTypeInfo.typeName;
 
       assertEquals("typeinfogettypename03_1","ID",typeName);
-       
+
 }
-
-
-
 
 function runTest() {
    typeinfogettypename03();

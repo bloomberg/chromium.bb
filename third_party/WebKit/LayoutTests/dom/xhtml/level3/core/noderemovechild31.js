@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("expandEntityReferences", false);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,13 +68,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using removeChild on a default Attribute node attempt to remove its EntityReference child node and
-	and verify the name of the returned node that was removed.  Now attempt the reverse
-	and verify if a NO_MODIFICATION_ALLOWED_ERR or NOT_FOUND_ERR is thrown.
-	Then remove an child of the entity reference and expect a NO_MODIFICATION_ALLOWED_ERR.
+*
+    Using removeChild on a default Attribute node attempt to remove its EntityReference child node and
+    and verify the name of the returned node that was removed.  Now attempt the reverse
+    and verify if a NO_MODIFICATION_ALLOWED_ERR or NOT_FOUND_ERR is thrown.
+    Then remove an child of the entity reference and expect a NO_MODIFICATION_ALLOWED_ERR.
 
 * @author IBM
 * @author Neil Delima
@@ -100,7 +94,7 @@ function noderemovechild31() {
       var removedName;
       var appendedChild;
       var entRefChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -119,13 +113,13 @@ function noderemovechild31() {
       removedName = removed.nodeName;
 
       assertEquals("noderemovechild31","delta",removedName);
-       
+
       try {
       removedNode = child.removeChild(parent);
       fail("throw_DOMException");
-     
+
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* NO_MODIFICATION_ALLOWED_ERR */ 7 :
        break;
@@ -134,36 +128,32 @@ function noderemovechild31() {
           default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
         entRefChild = child.firstChild;
 
-      
-	if(
-	
-	(entRefChild != null)
+    if(
 
-	) {
-	
-	{
-		success = false;
-		try {
+    (entRefChild != null)
+
+    ) {
+
+    {
+        success = false;
+        try {
             removedNode = child.removeChild(entRefChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR",success);
+    }
 
-	}
-	
+    }
+
 }
-
-
-
 
 function runTest() {
    noderemovechild31();

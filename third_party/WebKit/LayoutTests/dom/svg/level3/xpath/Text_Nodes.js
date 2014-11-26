@@ -1,15 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
 // expose test function names
 function exposeTestFunctionNames()
@@ -38,13 +36,13 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
@@ -54,10 +52,8 @@ function setUpPage() {
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -69,14 +65,13 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-      1.2.4 Text Nodes - 
+*
+      1.2.4 Text Nodes -
       Create ANY_TYPE XPathResult matching //text(),
       check that each matching Node is a Text Node, and
       that no pair of nodes in the result are siblings.
-    
+
 * @author Bob Clary
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#Mapping
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathEvaluator
@@ -115,7 +110,7 @@ function Text_Nodes() {
       var nextNodePrevSibling;
       var nodeType;
       var isTextNode;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -126,9 +121,9 @@ resolver = evaluator.createNSResolver(doc);
       contextNode =  doc;
 outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresult);
       currNode = outresult.iterateNext();
-      
+
     while(
-    
+
     (currNode != null)
 
     ) {
@@ -137,7 +132,7 @@ outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresul
       isTextNode = "true";
 
     if(
-    
+
     (!(3 == nodeType) && !(4 == nodeType))
 
     ) {
@@ -146,18 +141,17 @@ outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresul
     }
     assertEquals("S1.2.4-Text-Nodes-nodeType","true".toLowerCase(),isTextNode.toLowerCase());
        nextNode = outresult.iterateNext();
-      
+
     if(
-    
+
     (nextNode != null)
 
     ) {
     currNodeNextSibling = currNode.nextSibling;
 
-      
     // WebKit fix: inverted the condition: <http://bugs.webkit.org/show_bug.cgi?id=12560>.
     if(
-    
+
     same(nextNode,currNodeNextSibling)
 
     ) {
@@ -166,26 +160,22 @@ outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresul
         }
     nextNodePrevSibling = nextNode.previousSibling;
 
-      
     // WebKit fix: inverted the condition: <http://bugs.webkit.org/show_bug.cgi?id=12560>.
     if(
-    
+
     same(nextNodePrevSibling,currNode)
 
     ) {
             assertTrue("S1.2.4-Text-Nodes-Adjacent-Prev",false);
 
         }
-    
+
     }
     currNode =  nextNode;
 
     }
 
 }
-
-
-
 
 function runTest() {
    Text_Nodes();

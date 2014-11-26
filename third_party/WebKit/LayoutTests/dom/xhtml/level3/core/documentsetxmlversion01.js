@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Set the value of the version attribute of the XML declaration of this document to 
-	various invalid characters and  verify if a NOT_SUPPORTED_ERR is thrown.
+*
+    Set the value of the version attribute of the XML declaration of this document to
+    various invalid characters and  verify if a NOT_SUPPORTED_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -117,7 +111,6 @@ function documentsetxmlversion01() {
       illegalVersion[26] = "\"";
       illegalVersion[27] = "---";
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -125,25 +118,22 @@ function documentsetxmlversion01() {
       doc = load(docRef, "doc", "hc_staff");
       for(var indexN10087 = 0;indexN10087 < illegalVersion.length; indexN10087++) {
       versionValue = illegalVersion[indexN10087];
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             doc.xmlVersion = versionValue;
 
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 9);
-		}
-		assertTrue("NOT_SUPPORTED_ERR_documentsetversion01",success);
-	}
+        }
+        assertTrue("NOT_SUPPORTED_ERR_documentsetversion01",success);
+    }
 
-	}
-   
+    }
+
 }
-
-
-
 
 function runTest() {
    documentsetxmlversion01();

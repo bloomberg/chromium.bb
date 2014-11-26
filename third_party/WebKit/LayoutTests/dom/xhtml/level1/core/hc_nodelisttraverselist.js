@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,14 +67,13 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     The range of valid child node indices is 0 thru length -1
-   
+
    Create a list of all the children elements of the third
    employee and traverse the list from index=0 thru
-   length -1.     
+   length -1.
 
 * @author Curt Arnold
 * @see http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core#ID-203510337
@@ -106,7 +100,6 @@ function hc_nodelisttraverselist() {
       expected[4] = "var";
       expected[5] = "acronym";
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -122,27 +115,23 @@ function hc_nodelisttraverselist() {
 
       childName = child.nodeName;
 
-      
-	if(
-	(1 == nodeType)
-	) {
-	result[result.length] = childName;
+    if(
+    (1 == nodeType)
+    ) {
+    result[result.length] = childName;
 
-	}
-	
-		else {
-			assertEquals("textNodeType",3,nodeType);
+    }
+
+        else {
+            assertEquals("textNodeType",3,nodeType);
        assertEquals("textNodeName","#text",childName);
-       
-		}
-	
-	}
+
+        }
+
+    }
    assertEqualsListAutoCase("element", "nodeNames",expected,result);
-       
+
 }
-
-
-
 
 function runTest() {
    hc_nodelisttraverselist();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using replaceChild on this Document node attempt to replace this DocumentElement node 
-	with one of its child elements and verify if the name of the replaced documentElement Node.
+*
+    Using replaceChild on this Document node attempt to replace this DocumentElement node
+    with one of its child elements and verify if the name of the replaced documentElement Node.
 
 * @author IBM
 * @author Neil Delima
@@ -92,7 +86,7 @@ function nodereplacechild06() {
       var childList;
       var nodeName;
       var replacedNode;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -102,19 +96,19 @@ function nodereplacechild06() {
 
       childList = doc.getElementsByTagName("p");
       elem = childList.item(0);
-      
+
       try {
       replacedNode = doc.replaceChild(elem,docElem);
-      
+
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* NOT_SUPPORTED_ERR */ 9 :
                return ;
     default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
@@ -123,11 +117,8 @@ function nodereplacechild06() {
       nodeName = replaced.nodeName;
 
       assertEquals("nodereplacechild06","p",nodeName);
-       
+
 }
-
-
-
 
 function runTest() {
    nodereplacechild06();

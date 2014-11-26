@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -74,9 +69,9 @@ function loadComplete() {
 
 //EventMonitor's require a document level variable named monitor
 var monitor;
-	 
+
      /**
-      *    Inner class implementation for variable other 
+      *    Inner class implementation for variable other
       */
 var other;
 
@@ -84,15 +79,15 @@ var other;
         * Constructor
 
         */
-	      
-function EventListenerN10035() { 
+
+function EventListenerN10035() {
            }
-   
+
         /**
-         *    
+         *
 This method is called whenever an event occurs of the type for which theEventListenerinterface was registered.
 
-         * @param evt 
+         * @param evt
 TheEventcontains contextual information about the event. It also contains thestopPropagationand preventDefaultmethods which are used in determining the event's flow and default action.
 
          */
@@ -103,9 +98,9 @@ EventListenerN10035.prototype.handleEvent = function(evt) {
         }
 
 /**
-* 
+*
 A monitor is added, multiple calls to removeEventListener
-are mde with similar but not identical arguments, and an event is dispatched.  
+are mde with similar but not identical arguments, and an event is dispatched.
 The monitor should recieve handleEvent calls.
 
 * @author Curt Arnold
@@ -120,12 +115,11 @@ function dispatchEvent12() {
       var evt;
       var preventDefault;
       monitor = new EventMonitor();
-      
+
       other = new EventListenerN10035();
-      
+
       var events = new Array();
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -133,18 +127,15 @@ function dispatchEvent12() {
       doc = load(docRef, "doc", "hc_staff");
       doc.addEventListener("foo", monitor.handleEvent, false);
       doc.removeEventListener("foo", monitor.handleEvent, true);
-	 doc.removeEventListener("food", monitor.handleEvent, false);
-	 doc.removeEventListener("foo", other.handleEvent, false);
-	 evt = doc.createEvent("Events");
+     doc.removeEventListener("food", monitor.handleEvent, false);
+     doc.removeEventListener("foo", other.handleEvent, false);
+     evt = doc.createEvent("Events");
       evt.initEvent("foo",true,false);
       preventDefault = doc.dispatchEvent(evt);
       events = monitor.allEvents;
 assertSize("eventCount",1,events);
 
 }
-
-
-
 
 function runTest() {
    dispatchEvent12();

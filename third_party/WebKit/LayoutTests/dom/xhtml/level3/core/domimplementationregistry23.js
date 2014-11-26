@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,20 +38,18 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
        if (docsLoaded == 0) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -66,10 +61,9 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-DOMImplementationRegistry.getDOMImplementationList("cOrE 3.0 xMl 3.0 eVeNts 2.0 lS") 
+*
+DOMImplementationRegistry.getDOMImplementationList("cOrE 3.0 xMl 3.0 eVeNts 2.0 lS")
 should return an empty list or a list of DOMImplementation that implements the specified features.
 
 * @author Curt Arnold
@@ -96,25 +90,24 @@ function domimplementationregistry23() {
 domImplList = domImplRegistry.getDOMImplementationList("cOrE 3.0 xMl 3.0 eVeNts 2.0 lS");
          length = domImplList.length;
 
-      
-	if(
-	(0 == length)
-	) {
-	baseImpl = getImplementation();
+    if(
+    (0 == length)
+    ) {
+    baseImpl = getImplementation();
 hasCore = baseImpl.hasFeature("Core","3.0");
 hasXML = baseImpl.hasFeature("XML","3.0");
 hasEvents = baseImpl.hasFeature("Events","2.0");
 hasLS = baseImpl.hasFeature("LS",nullVersion);
 
-			{
-			assertFalse("baseImplFeatures",
-	(hasCore && hasXML && hasEvents && hasLS)
+            {
+            assertFalse("baseImplFeatures",
+    (hasCore && hasXML && hasEvents && hasLS)
 );
 
-	}
-	
-		else {
-			for(var indexN10096 = 0;indexN10096 < domImplList.length; indexN10096++) {
+    }
+
+        else {
+            for(var indexN10096 = 0;indexN10096 < domImplList.length; indexN10096++) {
       domImpl = domImplList.item(indexN10096);
       hasCore = domImpl.hasFeature("Core","3.0");
 assertTrue("hasCore",hasCore);
@@ -125,14 +118,11 @@ assertTrue("hasEvents",hasEvents);
 hasLS = domImpl.hasFeature("LS",nullVersion);
 assertTrue("hasLS",hasLS);
 
-	}
-   
-		}
-	
+    }
+
+        }
+
 }
-
-
-
 
 function runTest() {
    domimplementationregistry23();

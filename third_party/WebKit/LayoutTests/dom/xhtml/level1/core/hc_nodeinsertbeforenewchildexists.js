@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,15 +67,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     If the "newChild" is already in the tree, the
     "insertBefore(newChild,refChild)" method must first
     remove it before the insertion takes place.
-    
+
     Insert a node Element ("em") that is already
-    present in the tree.   The existing node should be 
+    present in the tree.   The existing node should be
     removed first and the new one inserted.   The node is
     inserted at a different position in the tree to assure
     that it was indeed inserted.
@@ -112,7 +106,7 @@ function hc_nodeinsertbeforenewchildexists() {
       var result = new Array();
 
       var nodeType;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -128,23 +122,19 @@ function hc_nodeinsertbeforenewchildexists() {
       child = childList.item(indexN1008C);
       nodeType = child.nodeType;
 
-      
-	if(
-	(1 == nodeType)
-	) {
-	childName = child.nodeName;
+    if(
+    (1 == nodeType)
+    ) {
+    childName = child.nodeName;
 
       result[result.length] = childName;
 
-	}
-	
-	}
+    }
+
+    }
    assertEqualsListAutoCase("element", "childNames",expected,result);
-       
+
 }
-
-
-
 
 function runTest() {
    hc_nodeinsertbeforenewchildexists();

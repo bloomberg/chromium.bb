@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using replaceChild on a new Attr node, replace its new EntityRefernece node with a 
-	new Text Node and verify if a NOT_FOUND_ERR is thrown.
+*
+    Using replaceChild on a new Attr node, replace its new EntityRefernece node with a
+    new Text Node and verify if a NOT_FOUND_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -91,7 +85,7 @@ function nodereplacechild36() {
       var newChild;
       var nodeValue;
       var replaced;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -100,22 +94,19 @@ function nodereplacechild36() {
       parent = doc.createAttributeNS("http://www.w3.org/XML/1998/namespace","xml:lang");
       oldChild = doc.createEntityReference("delta");
       newChild = doc.createTextNode("Text");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             replaced = parent.replaceChild(newChild,oldChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 8);
-		}
-		assertTrue("throw_NOT_FOUND_ERR",success);
-	}
+        }
+        assertTrue("throw_NOT_FOUND_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    nodereplacechild36();

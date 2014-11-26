@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,20 +38,18 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
        if (docsLoaded == 0) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -68,9 +63,9 @@ function loadComplete() {
 
 //DOMErrorMonitor's require a document level variable named errorMonitor
 var errorMonitor;
-	 
+
 /**
-* 
+*
 Create a document with an XML 1.1 valid but XML 1.0 invalid element and
 normalize document with well-formed set to false.
 
@@ -91,37 +86,36 @@ function wellformed02() {
       var retval;
       var domConfig;
       errorMonitor = new DOMErrorMonitor();
-      
+
       var errors = new Array();
 
       var canSet;
       domImpl = getImplementation();
 doc = domImpl.createDocument(nullString,nullString,nullDoctype);
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             elem = doc.createElementNS("http://www.example.org/domts/wellformed02","LegalNameࢎ");
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);
-		}
-		assertTrue("xml10InvalidName",success);
-	}
+        }
+        assertTrue("xml10InvalidName",success);
+    }
 
       try {
       doc.xmlVersion = "1.1";
 
-      
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* NOT_SUPPORTED_ERR */ 9 :
                return ;
     default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
@@ -132,22 +126,19 @@ doc = domImpl.createDocument(nullString,nullString,nullDoctype);
       domConfig = doc.domConfig;
 
       canSet = domConfig.canSetParameter("well-formed",false);
-      
-	if(
-	canSet
-	) {
-	domConfig.setParameter("well-formed", false);
-	 domConfig.setParameter("error-handler", errorMonitor.handleError);
-	 doc.normalizeDocument();
+
+    if(
+    canSet
+    ) {
+    domConfig.setParameter("well-formed", false);
+     domConfig.setParameter("error-handler", errorMonitor.handleError);
+     doc.normalizeDocument();
       errors = errorMonitor.allErrors;
 assertSize("noError",0,errors);
 
-	}
-	
+    }
+
 }
-
-
-
 
 function runTest() {
    wellformed02();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "barfoo");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using removeChild on this Document node attempt to remove a new DocumentType node and
-	verify if the DocumentType node is null.  Attempting to remove the DocumentType
-	a second type should result in a NOT_FOUND_ERR.
+*
+    Using removeChild on this Document node attempt to remove a new DocumentType node and
+    verify if the DocumentType node is null.  Attempting to remove the DocumentType
+    a second type should result in a NOT_FOUND_ERR.
 
 * @author IBM
 * @author Neil Delima
@@ -97,7 +91,7 @@ function noderemovechild05() {
 
       var appendedChild;
       var removedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -105,19 +99,18 @@ function noderemovechild05() {
       doc = load(docRef, "doc", "barfoo");
       docType = doc.doctype;
 
-      
       try {
       removedChild = doc.removeChild(docType);
-      
+
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* NOT_SUPPORTED_ERR */ 9 :
                return ;
     default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
@@ -125,22 +118,19 @@ function noderemovechild05() {
 removedDocType = doc.doctype;
 
       assertNull("noderemovechild05",removedDocType);
-    
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             removedChild = docType.removeChild(doc);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 8);
-		}
-		assertTrue("NOT_FOUND_ERR_noderemovechild05",success);
-	}
+        }
+        assertTrue("NOT_FOUND_ERR_noderemovechild05",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    noderemovechild05();

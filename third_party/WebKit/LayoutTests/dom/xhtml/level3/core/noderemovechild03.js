@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using removeChild on this DocumentElement node attempt to remove this Document node and
-	verify if the DocumentElement is null.  Now try the reverse and a NOT_FOUND_ERR should be
-	thrown.
+*
+    Using removeChild on this DocumentElement node attempt to remove this Document node and
+    verify if the DocumentElement is null.  Now try the reverse and a NOT_FOUND_ERR should be
+    thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -90,7 +84,7 @@ function noderemovechild03() {
       var docElem;
       var removedChild;
       var removed;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -102,22 +96,19 @@ function noderemovechild03() {
       removedChild = doc.documentElement;
 
       assertNull("noderemovechild03",removedChild);
-    
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             removed = docElem.removeChild(doc);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 8);
-		}
-		assertTrue("throw_NOT_FOUND_ERR",success);
-	}
+        }
+        assertTrue("throw_NOT_FOUND_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    noderemovechild03();

@@ -1,14 +1,13 @@
 /*
-Copyright (c) 2001-2005 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright (c) 2001-2005 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3C(r) Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
   function assertSize(descr, expected, actual) {
     var actualSize;
@@ -18,23 +17,22 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   }
 
   function assertEqualsAutoCase(context, descr, expected, actual) {
-  	if (builder.contentType == "text/html") {
-  	    if(context == "attribute") {
-  	    	assertEquals(descr, expected.toLowerCase(), actual.toLowerCase());
-  	    } else {
-  	        assertEquals(descr, expected.toUpperCase(), actual);
-  	    }
-  	} else {
-  		assertEquals(descr, expected, actual); 
-  	}
+      if (builder.contentType == "text/html") {
+          if(context == "attribute") {
+              assertEquals(descr, expected.toLowerCase(), actual.toLowerCase());
+          } else {
+              assertEquals(descr, expected.toUpperCase(), actual);
+          }
+      } else {
+          assertEquals(descr, expected, actual);
+      }
   }
-  
 
   function assertEqualsCollectionAutoCase(context, descr, expected, actual) {
     //
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
-    
+
     //
     //  if there length is the same, then every entry in the expected list
     //     must appear once and only once in the actual list
@@ -48,19 +46,19 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
         matches = 0;
         expectedValue = expected[i];
         for(j = 0; j < actualLen; j++) {
-        	if (builder.contentType == "text/html") {
-        		if (context == "attribute") {
-        			if (expectedValue.toLowerCase() == actual[j].toLowerCase()) {
-        				matches++;
-        			}
-        		} else {
-        			if (expectedValue.toUpperCase() == actual[j]) {
-        				matches++;
-        			}
-        		}
-        	} else {
-            	if(expectedValue == actual[j]) {
-                	matches++;
+            if (builder.contentType == "text/html") {
+                if (context == "attribute") {
+                    if (expectedValue.toLowerCase() == actual[j].toLowerCase()) {
+                        matches++;
+                    }
+                } else {
+                    if (expectedValue.toUpperCase() == actual[j]) {
+                        matches++;
+                    }
+                }
+            } else {
+                if(expectedValue == actual[j]) {
+                    matches++;
                 }
             }
         }
@@ -103,31 +101,29 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     }
   }
 
-
   function assertEqualsListAutoCase(context, descr, expected, actual) {
-	var minLength = expected.length;
-	if (actual.length < minLength) {
-	    minLength = actual.length;
-	}
+    var minLength = expected.length;
+    if (actual.length < minLength) {
+        minLength = actual.length;
+    }
     //
     for(var i = 0; i < minLength; i++) {
-		assertEqualsAutoCase(context, descr, expected[i], actual[i]);
+        assertEqualsAutoCase(context, descr, expected[i], actual[i]);
     }
     //
     //  if they aren't the same size, they aren't equal
     assertEquals(descr, expected.length, actual.length);
   }
 
-
   function assertEqualsList(descr, expected, actual) {
-	var minLength = expected.length;
-	if (actual.length < minLength) {
-	    minLength = actual.length;
-	}
+    var minLength = expected.length;
+    if (actual.length < minLength) {
+        minLength = actual.length;
+    }
     //
     for(var i = 0; i < minLength; i++) {
         if(expected[i] != actual[i]) {
-			assertEquals(descr, expected[i], actual[i]);
+            assertEquals(descr, expected[i], actual[i]);
         }
     }
     //
@@ -228,7 +224,6 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
     }
   }
 
-
 // size() used by assertSize element
 function size(collection)
 {
@@ -241,23 +236,21 @@ function same(expected, actual)
 }
 
 function equalsAutoCase(context, expected, actual) {
-	if (builder.contentType == "text/html") {
-		if (context == "attribute") {
-			return expected.toLowerCase() == actual;
-		}
-		return expected.toUpperCase() == actual;
-	}
-	return expected == actual;
+    if (builder.contentType == "text/html") {
+        if (context == "attribute") {
+            return expected.toLowerCase() == actual;
+        }
+        return expected.toUpperCase() == actual;
+    }
+    return expected == actual;
 }
 
 function createTempURI(scheme) {
    if (scheme == "http") {
-   	  return "http://localhost:8080/webdav/tmp" + Math.floor(Math.random() * 100000) + ".xml";
+         return "http://localhost:8080/webdav/tmp" + Math.floor(Math.random() * 100000) + ".xml";
    }
    return "file:///tmp/domts" + Math.floor(Math.random() * 100000) + ".xml";
 }
-
-
 
 function EventMonitor() {
   this.atEvents = new Array();
@@ -271,7 +264,7 @@ EventMonitor.prototype.handleEvent = function(evt) {
        case 1:
        monitor.capturedEvents[monitor.capturedEvents.length] = evt;
        break;
-       
+
        case 2:
        monitor.atEvents[monitor.atEvents.length] = evt;
        break;
@@ -291,8 +284,6 @@ function DOMErrorImpl(err) {
   this.relatedData = err.relatedData;
   this.location = err.location;
 }
-
-
 
 function DOMErrorMonitor() {
   this.allErrors = new Array();
@@ -320,15 +311,13 @@ function UserDataNotification(operation, key, data, src, dst) {
 }
 
 function UserDataMonitor() {
-	this.allNotifications = new Array();
+    this.allNotifications = new Array();
 }
 
 UserDataMonitor.prototype.handle = function(operation, key, data, src, dst) {
     userDataMonitor.allNotifications[userDataMonitor.allNotifications.length] =
          new UserDataNotification(operation, key, data, src, dst);
 }
-
-
 
 function HTMLBuilder() {
     this.contentType = "text/html";
@@ -337,7 +326,7 @@ function HTMLBuilder() {
     this.supportsAsyncChange = false;
     this.async = false;
     this.fixedAttributeNames = [
-        "validating",  "expandEntityReferences", "coalescing", 
+        "validating",  "expandEntityReferences", "coalescing",
         "signed", "hasNullString", "ignoringElementContentWhitespace", "namespaceAware", "ignoringComments", "schemaValidating"];
 
     this.fixedAttributeValues = [false,  true, false, true, true , false, false, false, false ];
@@ -396,31 +385,30 @@ HTMLBuilder.prototype.cloneNode = function(srcNode, doc) {
          srcChild = srcChild.nextSibling;
       }
       break;
-      
+
       case 3:
       clone = doc.createTextNode(srcNode.nodeValue);
       break;
-      
+
       case 4:
       clone = doc.createCDATASection(srcNode.nodeValue);
       break;
-            
+
       case 7:
       clone = doc.createProcessingInstruction(srcNode.nodeValue);
       break;
-      
+
       case 8:
       clone = doc.createComment(srcNode.nodeValue);
       break;
    }
    return clone;
-      
-}
 
+}
 
 HTMLBuilder.prototype.load = function(frame, varname, url) {
   if (this.documentVarnames[0] == varname) {
-  	return document;
+      return document;
   }
   //
   //
@@ -441,8 +429,8 @@ HTMLBuilder.prototype.load = function(frame, varname, url) {
           null);
       //
       //   Work-around since
-      //   Safari does not create document element 
-      //      create document.      
+      //   Safari does not create document element
+      //      create document.
       if (clone.documentElement == null) {
            clone.appendChild(clone.createElement(document.documentElement.nodeName));
       }
@@ -455,10 +443,10 @@ HTMLBuilder.prototype.load = function(frame, varname, url) {
       var srcNode = document.firstChild;
       while(srcNode != null && srcNode.nodeType != 1) {
           if (srcNode.nodeType != 10) {
-          	 var cloneNode = this.cloneNode(srcNode, clone);
+               var cloneNode = this.cloneNode(srcNode, clone);
              clone.insertBefore(cloneNode, clone.documentElement);
            }
-           srcNode = srcNode.nextSibling; 
+           srcNode = srcNode.nextSibling;
       }
       srcNode = document.documentElement.nextSibling;
       while(srcNode != null) {
@@ -487,7 +475,6 @@ HTMLBuilder.prototype.getImplementationAttribute = function(attr) {
     throw "Unrecognized implementation attribute: " + attr;
 }
 
-
 HTMLBuilder.prototype.setImplementationAttribute = function(attribute, value) {
     var supported = this.getImplementationAttribute(attribute);
     if (supported != value) {
@@ -499,9 +486,6 @@ HTMLBuilder.prototype.canSetImplementationAttribute = function(attribute, value)
     var supported = this.getImplementationAttribute(attribute);
     return (supported == value);
 }
-
-
-
 
 function createConfiguredBuilder() {
     return new HTMLBuilder();
@@ -521,7 +505,6 @@ function toLowerArray(src) {
    return newArray;
 }
 
-
 function checkFeature(feature, version)
 {
   if (!builder.hasFeature(feature, version))
@@ -537,7 +520,7 @@ function setResult(resultType, message) {
    var testName = getTargetURI();
    document.open();
    document.writeln("<html><head>");
-   document.writeln("<meta HTTP-EQUIV='Content-Type' CONTENT='text/html; CHARSET=utf-8'>");    
+   document.writeln("<meta HTTP-EQUIV='Content-Type' CONTENT='text/html; CHARSET=utf-8'>");
    document.write("<title>");
    document.write(testName + ":" + resultType);
    document.write("</title></head><body><table width='100%' border='1' style='color:");
@@ -545,13 +528,13 @@ function setResult(resultType, message) {
       document.writeln("green'><tr><td>Test:</td><td>" + testName + "</td></tr><tr><td>Status:</td><td>Success</td></tr>");
    } else {
       if (resultType == "skip") {
-      	document.writeln("blue'><tr><td>Test:</td><td>" + testName + "</td></tr><tr><td>Status:</td><td>Skipped</td></tr>");
+          document.writeln("blue'><tr><td>Test:</td><td>" + testName + "</td></tr><tr><td>Status:</td><td>Skipped</td></tr>");
       } else {
         document.writeln("red'><tr><td>Test:</td><td>" + testName + "</td><td></tr><tr><td>Status:</td><td>" + resultType + "</td></tr>");
       }
    }
    if (message != null) {
-   		document.writeln("<tr><td>Detail:</td><td>" + message + "</td></tr>");
+           document.writeln("<tr><td>Detail:</td><td>" + message + "</td></tr>");
    }
    document.write("</table></body></html>");
    document.close();
@@ -568,16 +551,13 @@ function preload(docRef, varname, href) {
    return builder.preload(docRef, varname, href);
 }
 
-
 function load(docRef, varname, href) {
    return builder.load(docRef, varname, href);
 }
 
-
 function getImplementationAttribute(attr) {
     return builder.getImplementationAttribute(attr);
 }
-
 
 function setImplementationAttribute(attribute, value) {
     builder.setImplementationAttribute(attribute, value);
@@ -592,7 +572,6 @@ function createXPathEvaluator(doc) {
     return doc;
 }
 
-
 function getImplementation() {
     return builder.getImplementation();
 }
@@ -604,7 +583,7 @@ function assertEquals(id, expected, actual) {
        if (actual == null) {
           myActual = "null";
        }
-       throw "failure:" + id + ": assertEquals failed, actual " + myActual + ", expected " + expected + "."; 
+       throw "failure:" + id + ": assertEquals failed, actual " + myActual + ", expected " + expected + ".";
    }
 }
 
@@ -614,13 +593,11 @@ function assertNull(id, actual) {
    }
 }
 
-
 function assertTrue(id, actual) {
    if (!actual) {
        throw "failure:" + id + ": assertTrue failed";
    }
 }
-
 
 function assertFalse(id, actual) {
    if (actual) {
@@ -637,8 +614,6 @@ function assertNotNull(id, actual) {
 function fail(id) {
     throw "failure:" + id +  ": fail";
 }
-
-
 
 function getSuffix(contentType) {
     switch(contentType) {
@@ -657,18 +632,15 @@ function getSuffix(contentType) {
     return ".html";
 }
 
-
 function getResourceURI(name, scheme, contentType) {
     var base = document.documentURI;
     if (base == null) {
        base = "";
     } else {
-	   base = base.substring(0, base.lastIndexOf('/') + 1) + "files/";
+       base = base.substring(0, base.lastIndexOf('/') + 1) + "files/";
     }
     return base + name + getSuffix(contentType);
 }
-
-
 
 function startTest() {
 
@@ -686,20 +658,20 @@ if (window.testRunner) {
 //  End WebKit modification
 //
 
-	//
-	//   invoke test setup
-	//
-	setUpPage();
+    //
+    //   invoke test setup
+    //
+    setUpPage();
 
-	try {
-	    runTest();
-	    if (builder.initializationError == null) {
-	       setResult(null, null);
-	    } else {
-	       setResult("skip", builder.initializationError);
-	    }
-	} catch(ex) {
-	    if (typeof(ex.substring) != 'undefined' && ex.substring(0, 8) == "failure:") {
+    try {
+        runTest();
+        if (builder.initializationError == null) {
+           setResult(null, null);
+        } else {
+           setResult("skip", builder.initializationError);
+        }
+    } catch(ex) {
+        if (typeof(ex.substring) != 'undefined' && ex.substring(0, 8) == "failure:") {
             setResult("failure", ex.substring(8));
         } else {
             setResult("error", ex);
@@ -716,6 +688,6 @@ if (window.testRunner) {
     }
 //
 //  End WebKit modification
-//      
+//
 
 }

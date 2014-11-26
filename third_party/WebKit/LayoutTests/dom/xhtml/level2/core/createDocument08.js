@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,20 +38,18 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
        if (docsLoaded == 0) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -66,9 +61,8 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
 DOMImplementation.createDocument with an empty qualified name should cause an INVALID_CHARACTER_ERR.
 
 * @author Curt Arnold
@@ -86,21 +80,18 @@ function createDocument08() {
       var charact;
       domImpl = getImplementation();
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             aNewDoc = domImpl.createDocument(namespaceURI,"",docType);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);
-		}
-		assertTrue("throw_INVALID_CHARACTER_ERR",success);
-	}
+        }
+        assertTrue("throw_INVALID_CHARACTER_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    createDocument08();

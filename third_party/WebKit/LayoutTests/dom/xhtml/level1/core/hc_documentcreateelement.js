@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,15 +67,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    The "createElement(tagName)" method creates an Element 
+*
+    The "createElement(tagName)" method creates an Element
    of the type specified.
-   Retrieve the entire DOM document and invoke its 
+   Retrieve the entire DOM document and invoke its
    "createElement(tagName)" method with tagName="acronym".
    The method should create an instance of an Element node
-   whose tagName is "acronym".  The NodeName, NodeType 
+   whose tagName is "acronym".  The NodeName, NodeType
    and NodeValue are returned.
 
 * @author Curt Arnold
@@ -94,7 +88,7 @@ function hc_documentcreateelement() {
       var newElementName;
       var newElementType;
       var newElementValue;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -110,11 +104,8 @@ function hc_documentcreateelement() {
        newElementValue = newElement.nodeValue;
 
       assertNull("valueInitiallyNull",newElementValue);
-    
+
 }
-
-
-
 
 function runTest() {
    hc_documentcreateelement();

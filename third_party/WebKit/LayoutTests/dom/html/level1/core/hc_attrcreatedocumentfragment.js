@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-  Create a new DocumentFragment and add a newly created Element node(with one attribute).  
-  Once the element is added, its attribute should be available as an attribute associated 
+*
+  Create a new DocumentFragment and add a newly created Element node(with one attribute).
+  Once the element is added, its attribute should be available as an attribute associated
   with an Element within a DocumentFragment.
 
 * @author Curt Arnold
@@ -99,7 +93,7 @@ function hc_attrcreatedocumentfragment() {
       var attrName;
       var appendedChild;
       var langAttrCount = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -117,21 +111,17 @@ function hc_attrcreatedocumentfragment() {
       attribute = attributes.item(indexN10078);
       attrName = attribute.nodeName;
 
-      
-	if(
-	equalsAutoCase("attribute", "lang", attrName)
-	) {
-	langAttrCount += 1;
+    if(
+    equalsAutoCase("attribute", "lang", attrName)
+    ) {
+    langAttrCount += 1;
 
-	}
-	
-	}
+    }
+
+    }
    assertEquals("hasLangAttr",1,langAttrCount);
-       
+
 }
-
-
-
 
 function runTest() {
    hc_attrcreatedocumentfragment();

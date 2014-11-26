@@ -1,15 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
 // expose test function names
 function exposeTestFunctionNames()
@@ -38,26 +36,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -69,13 +65,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
       Create an XPathResult for the expression /staff/employee
       for each type of XPathResultType, checking that TYPE_ERR
       is thrown when inappropriate properties and methods are accessed.
-    
+
 * @author Bob Clary
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#TYPE_ERR
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathException
@@ -133,7 +128,6 @@ function XPathResult_TYPE_ERR() {
       nodeTypeList[8] = 8;
       nodeTypeList[9] = 9;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -147,677 +141,673 @@ for(var indexN65778 = 0;indexN65778 < nodeTypeList.length; indexN65778++) {
       outresult = evaluator.evaluate(expression,contextNode,resolver,inNodeType,inresult);
       outNodeType = outresult.resultType;
 
-      
-	if(
-	(outNodeType == NUMBER_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    if(
+    (outNodeType == NUMBER_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_iterateNext_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("number_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("number_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == STRING_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == STRING_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_iterateNext_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("string_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("string_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == BOOLEAN_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == BOOLEAN_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_iterateNext_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("boolean_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("boolean_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == UNORDERED_NODE_ITERATOR_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == UNORDERED_NODE_ITERATOR_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_iterator_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_iterator_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == ORDERED_NODE_ITERATOR_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == ORDERED_NODE_ITERATOR_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_iterator_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_iterator_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == UNORDERED_NODE_SNAPSHOT_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == UNORDERED_NODE_SNAPSHOT_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_snapshot_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_snapshot_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_snapshot_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_snapshot_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_snapshot_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_snapshot_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_snapshot_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_snapshot_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("unordered_node_snapshot_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("unordered_node_snapshot_iterateNext_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == ORDERED_NODE_SNAPSHOT_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == ORDERED_NODE_SNAPSHOT_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_snapshot_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_snapshot_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_snapshot_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_snapshot_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.singleNodeValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_snapshot_singleNodeValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_snapshot_singleNodeValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_snapshot_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_snapshot_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("ordered_node_snapshot_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("ordered_node_snapshot_iterateNext_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == ANY_UNORDERED_NODE_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == ANY_UNORDERED_NODE_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_iterateNext_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("any_unordered_node_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("any_unordered_node_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	if(
-	(outNodeType == FIRST_ORDERED_NODE_TYPE)
-	) {
-	
-	{
-		success = false;
-		try {
+    }
+
+    if(
+    (outNodeType == FIRST_ORDERED_NODE_TYPE)
+    ) {
+
+    {
+        success = false;
+        try {
             booleanValue = outresult.booleanValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_booleanValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_booleanValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             doubleValue = outresult.numberValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_numberValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_numberValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             intValue = outresult.snapshotLength;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_snapshotLength_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_snapshotLength_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             stringValue = outresult.stringValue;
 
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_stringValue_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_stringValue_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.iterateNext();
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_iterateNext_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_iterateNext_TYPE_ERR",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             nodeValue = outresult.snapshotItem(0);
         }
-		catch(ex) {            
+        catch(ex) {
       success = ex.name == 'TypeError';
-		}
-		assertTrue("first_ordered_node_snapshotItem_TYPE_ERR",success);
-	}
+        }
+        assertTrue("first_ordered_node_snapshotItem_TYPE_ERR",success);
+    }
 
-	}
-	
-	}
-   
+    }
+
+    }
+
 }
-
-
-
 
 function runTest() {
    XPathResult_TYPE_ERR();

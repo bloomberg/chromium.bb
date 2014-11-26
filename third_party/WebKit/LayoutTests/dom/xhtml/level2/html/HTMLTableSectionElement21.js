@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "tablesection");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,15 +67,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    The insertRow() method inserts a new empty table row.  
-    
+*
+    The insertRow() method inserts a new empty table row.
+
     Retrieve the first TBODY element and invoke the insertRow() method
-    with an index of two.  The number of rows in the TBODY section before 
-    insertion of the new row is two therefore the row is appended. 
-    After the new row is inserted the number of rows in the TBODY section is 
+    with an index of two.  The number of rows in the TBODY section before
+    insertion of the new row is two therefore the row is appended.
+    After the new row is inserted the number of rows in the TBODY section is
     three.
 
 * @author NIST
@@ -97,7 +91,7 @@ function HTMLTableSectionElement21() {
       var rowsnodeList;
       var vrows;
       var doc;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -117,11 +111,8 @@ testNode = nodeList.item(1);
       vrows = rowsnodeList.length;
 
       assertEquals("rowsLink2",3,vrows);
-       
+
 }
-
-
-
 
 function runTest() {
    HTMLTableSectionElement21();

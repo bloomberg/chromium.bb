@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Retreive the doctype node, create a new Doctype node, call replaceChild and try replacing the
-	docType node with a new docType node.  Check if the docType node was correctly replaced with
-	the new one.
+*
+    Retreive the doctype node, create a new Doctype node, call replaceChild and try replacing the
+    docType node with a new docType node.  Check if the docType node was correctly replaced with
+    the new one.
 
 * @author IBM
 * @author Neil Delima
@@ -99,7 +93,7 @@ function documentgetdoctype01() {
 
       var replaced;
       var rootName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -111,19 +105,19 @@ function documentgetdoctype01() {
 
       domImpl = doc.implementation;
 newDocType = domImpl.createDocumentType(rootName,nullPubID,nullSysID);
-      
+
       try {
       replaced = doc.replaceChild(newDocType,docType);
-      
+
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* NOT_SUPPORTED_ERR */ 9 :
                return ;
     default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
@@ -132,11 +126,8 @@ newDocType = domImpl.createDocumentType(rootName,nullPubID,nullSysID);
       newSysID = replacedDocType.systemId;
 
       assertEquals("newSysIdNull", "null", newSysID);
-    
+
 }
-
-
-
 
 function runTest() {
    documentgetdoctype01();

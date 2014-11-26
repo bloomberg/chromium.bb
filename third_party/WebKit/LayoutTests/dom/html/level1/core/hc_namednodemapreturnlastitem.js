@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    The "item(index)" method returns the indexth item in 
-   the map(test for last item). 
-   
+*
+    The "item(index)" method returns the indexth item in
+   the map(test for last item).
+
    Retrieve the second "acronym" and get the attribute name. Since the
    DOM does not specify an order of these nodes the contents
    of the LAST node can contain either "title" or "class".
@@ -110,7 +104,6 @@ function hc_namednodemapreturnlastitem() {
 
       var actual = new Array();
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -126,26 +119,23 @@ function hc_namednodemapreturnlastitem() {
 
       actual[actual.length] = nodeName;
 
-	}
-   
-	if(
-	
-	(builder.contentType == "text/html")
+    }
 
-	) {
-	assertEqualsCollection("attrName_html",toLowerArray(htmlExpected),toLowerArray(actual));
-       
-	}
-	
-		else {
-			assertEqualsCollection("attrName",expected,actual);
-       
-		}
-	
+    if(
+
+    (builder.contentType == "text/html")
+
+    ) {
+    assertEqualsCollection("attrName_html",toLowerArray(htmlExpected),toLowerArray(actual));
+
+    }
+
+        else {
+            assertEqualsCollection("attrName",expected,actual);
+
+        }
+
 }
-
-
-
 
 function runTest() {
    hc_namednodemapreturnlastitem();

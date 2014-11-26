@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Invoke the adoptNode method on this document using a new PI node created in a new doc
-	as the source.  Verify if the node has been adopted correctly by checking the nodeValue 
-	of the adopted node.
+*
+    Invoke the adoptNode method on this document using a new PI node created in a new doc
+    as the source.  Verify if the node has been adopted correctly by checking the nodeValue
+    of the adopted node.
 
 * @author IBM
 * @author Neil Delima
@@ -100,7 +94,7 @@ function documentadoptnode36() {
       var docElem;
       var rootNS;
       var rootName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -117,20 +111,20 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       newPI1 = newDoc.createProcessingInstruction("PITarget","PIData");
       newPI2 = doc.createProcessingInstruction("PITarget","PIData");
       adoptedPI1 = newDoc.adoptNode(newPI1);
-      
-	if(
-	
-	(adoptedPI1 != null)
 
-	) {
-	adoptedPI2 = newDoc.adoptNode(newPI2);
-      
-	if(
-	
-	(adoptedPI2 != null)
+    if(
 
-	) {
-	piTarget = adoptedPI1.target;
+    (adoptedPI1 != null)
+
+    ) {
+    adoptedPI2 = newDoc.adoptNode(newPI2);
+
+    if(
+
+    (adoptedPI2 != null)
+
+    ) {
+    piTarget = adoptedPI1.target;
 
       piData = adoptedPI1.data;
 
@@ -142,15 +136,12 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
 
       assertEquals("documentadoptnode36_Target2","PITarget",piTarget);
        assertEquals("documentadoptnode36_Data2","PIData",piData);
-       
-	}
-	
-	}
-	
+
+    }
+
+    }
+
 }
-
-
-
 
 function runTest() {
    documentadoptnode36();

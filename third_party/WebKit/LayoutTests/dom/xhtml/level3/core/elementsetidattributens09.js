@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -43,26 +40,24 @@ function setUpPage() {
        setImplementationAttribute("expandEntityReferences", false);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -74,13 +69,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-     The method setIdAttributeNS declares the attribute specified by local name and namespace URI to be of type ID. 
-     If the value of the specified attribute is unique then this element node can later be retrieved using getElementById on Document. 
-     Note, however, that this simply affects this node and does not change any grammar that may be in use. 
-     
+*
+     The method setIdAttributeNS declares the attribute specified by local name and namespace URI to be of type ID.
+     If the value of the specified attribute is unique then this element node can later be retrieved using getElementById on Document.
+     Note, however, that this simply affects this node and does not change any grammar that may be in use.
+
      Invoke setIdAttributeNS on the xmlns attribute of ent4.  Verify that NO_MODIFICATION_ALLOWED_ERR is raised.
 
 * @author IBM
@@ -95,7 +89,7 @@ function elementsetidattributens09() {
       var varElem;
       var entRef;
       var entElement;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -107,22 +101,18 @@ function elementsetidattributens09() {
 
       entElement = entRef.firstChild;
 
-      
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             entElement.setIdAttributeNS("http://www.w3.org/2000/xmlns/","xmlns",true);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    elementsetidattributens09();

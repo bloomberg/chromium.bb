@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -43,26 +40,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -74,15 +69,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The method compareDocumentPosition compares a node with this node with regard to their position in the 
-	document and according to the document order.
-	
-	Using compareDocumentPosition check if the document position of the first CDATASection node
-	of the second element whose localName is name compared with the second CDATASection node
-	is PRECEDING and is FOLLOWING vice versa.
+*
+    The method compareDocumentPosition compares a node with this node with regard to their position in the
+    document and according to the document order.
+
+    Using compareDocumentPosition check if the document position of the first CDATASection node
+    of the second element whose localName is name compared with the second CDATASection node
+    is PRECEDING and is FOLLOWING vice versa.
 
 * @author IBM
 * @author Jenny Hsu
@@ -99,7 +93,7 @@ function nodecomparedocumentposition19() {
       var aNode;
       var cdata1Position;
       var cdata2Position;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -117,11 +111,8 @@ function nodecomparedocumentposition19() {
       assertEquals("nodecomparedocumentposition19_cdata2Follows",4,cdata1Position);
        cdata2Position = cdata2.compareDocumentPosition(cdata1);
       assertEquals("nodecomparedocumentposition_cdata1Precedes",2,cdata2Position);
-       
+
 }
-
-
-
 
 function runTest() {
    nodecomparedocumentposition19();

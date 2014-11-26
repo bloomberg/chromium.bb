@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("signed", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,13 +68,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     The "deleteData(offset,count)" method raises an
    INDEX_SIZE_ERR DOMException if the specified offset
-   is negative. 
-   
+   is negative.
+
    Retrieve the character data of the last child of the
    first employee and invoke its "deleteData(offset,count)"
    method with offset=-5 and count=3.  It should raise the
@@ -98,7 +92,7 @@ function hc_characterdataindexsizeerrdeletedataoffsetnegative() {
       var elementList;
       var nameNode;
       var child;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -108,22 +102,18 @@ function hc_characterdataindexsizeerrdeletedataoffsetnegative() {
       nameNode = elementList.item(0);
       child = nameNode.firstChild;
 
-      
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             child.deleteData(-5,3);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 1);
-		}
-		assertTrue("throws_INDEX_SIZE_ERR",success);
-	}
+        }
+        assertTrue("throws_INDEX_SIZE_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    hc_characterdataindexsizeerrdeletedataoffsetnegative();

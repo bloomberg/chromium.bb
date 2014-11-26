@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,14 +67,13 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	A NO_MODIFICATION_ALLOWED_ERR is raised if the node is read-only.
-	
-	Using insertBefore on a new EntityReference node attempt to insert Element, Text,
-	Comment, ProcessingInstruction and CDATASection nodes before an element child
-	and verify if a NO_MODIFICATION_ALLOWED_ERR is thrown.
+*
+    A NO_MODIFICATION_ALLOWED_ERR is raised if the node is read-only.
+
+    Using insertBefore on a new EntityReference node attempt to insert Element, Text,
+    Comment, ProcessingInstruction and CDATASection nodes before an element child
+    and verify if a NO_MODIFICATION_ALLOWED_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -97,7 +91,7 @@ function nodeinsertbefore15() {
       var pi;
       var cdata;
       var inserted;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -107,70 +101,67 @@ function nodeinsertbefore15() {
       elemChild = entRef.firstChild;
 
       cdata = doc.createCDATASection("CDATASection");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             inserted = entRef.insertBefore(cdata,elemChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_1",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_1",success);
+    }
 pi = doc.createProcessingInstruction("target","data");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             inserted = entRef.insertBefore(pi,elemChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_2",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_2",success);
+    }
 comment = doc.createComment("Comment");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             inserted = entRef.insertBefore(comment,elemChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_3",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_3",success);
+    }
 txt = doc.createTextNode("Text");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             inserted = entRef.insertBefore(txt,elemChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_4",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_4",success);
+    }
 elem = doc.createElementNS("http://www.w3.org/1999/xhtml","body");
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             inserted = entRef.insertBefore(elem,elemChild);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_5",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_5",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    nodeinsertbefore15();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,15 +67,14 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     If the "newChild" is already in the tree, it is first
     removed before the new one is appended.
-    
-    Retrieve the "em" second employee and   
+
+    Retrieve the "em" second employee and
     append the first child to the end of the list.   After
-    the "appendChild(newChild)" method is invoked the first 
+    the "appendChild(newChild)" method is invoked the first
     child should be the one that was second and the last
     child should be the one that was first.
 
@@ -112,7 +106,7 @@ function hc_nodeappendchildchildexists() {
       expected[5] = "em";
 
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -129,7 +123,7 @@ function hc_nodeappendchildchildexists() {
 
       actual[actual.length] = memberName;
 
-	}
+    }
    assertEqualsListAutoCase("element", "liveByTagName",expected,actual);
        childList = childNode.childNodes;
 
@@ -137,23 +131,19 @@ function hc_nodeappendchildchildexists() {
       memberNode = childList.item(indexN1009C);
       nodeType = memberNode.nodeType;
 
-      
-	if(
-	(1 == nodeType)
-	) {
-	memberName = memberNode.nodeName;
+    if(
+    (1 == nodeType)
+    ) {
+    memberName = memberNode.nodeName;
 
       refreshedActual[refreshedActual.length] = memberName;
 
-	}
-	
-	}
+    }
+
+    }
    assertEqualsListAutoCase("element", "refreshedChildNodes",expected,refreshedActual);
-       
+
 }
-
-
-
 
 function runTest() {
    hc_nodeappendchildchildexists();

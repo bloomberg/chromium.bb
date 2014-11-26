@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Invoke the adoptNode method on a new document with a new Element of this
-	Document as the source.  Verify if the node has been adopted correctly by checking the 
-	nodeName of the adopted Element.
+*
+    Invoke the adoptNode method on a new document with a new Element of this
+    Document as the source.  Verify if the node has been adopted correctly by checking the
+    nodeName of the adopted Element.
 
 * @author IBM
 * @author Neil Delima
@@ -98,7 +92,6 @@ function documentadoptnode25() {
       var rootName;
       var nullDocType = null;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -114,25 +107,22 @@ function documentadoptnode25() {
       domImpl = doc.implementation;
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       adoptedNode = newDoc.adoptNode(newElem);
-      
-	if(
-	
-	(adoptedNode != null)
 
-	) {
-	adoptedName = adoptedNode.nodeName;
+    if(
+
+    (adoptedNode != null)
+
+    ) {
+    adoptedName = adoptedNode.nodeName;
 
       adoptedNS = adoptedNode.namespaceURI;
 
       assertEquals("documentadoptnode25_1","th",adoptedName);
        assertEquals("documentadoptnode25_2","http://www.w3.org/1999/xhtml",adoptedNS);
-       
-	}
-	
+
+    }
+
 }
-
-
-
 
 function runTest() {
    documentadoptnode25();

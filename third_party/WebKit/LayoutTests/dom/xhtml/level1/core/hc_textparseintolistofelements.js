@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-    Retrieve the textual data from the last child of the 
-    second employee.   That node is composed of two   
+*
+    Retrieve the textual data from the last child of the
+    second employee.   That node is composed of two
     EntityReference nodes and two Text nodes.   After
     the content node is parsed, the "acronym" Element
     should contain four children with each one of the
@@ -109,7 +103,6 @@ function hc_textparseintolistofelements() {
       expectedExpanded = new Array();
       expectedExpanded[0] = "β Dallas, γ\n 98554";
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -125,44 +118,40 @@ function hc_textparseintolistofelements() {
       child = childList.item(indexN1007C);
       value = child.nodeValue;
 
-      
-	if(
-	
-	(value == null)
+    if(
 
-	) {
-	grandChild = child.firstChild;
+    (value == null)
+
+    ) {
+    grandChild = child.firstChild;
 
       assertNotNull("grandChildNotNull",grandChild);
 value = grandChild.nodeValue;
 
       result[result.length] = value;
 
-	}
-	
-		else {
-			result[result.length] = value;
+    }
 
-		}
-	
-	}
-   
-	if(
-	(1 == length)
-	) {
-	assertEqualsList("assertEqCoalescing",expectedExpanded,result);
-       
-	}
-	
-		else {
-			assertEqualsList("assertEqNormal",expectedNormal,result);
-       
-		}
-	
+        else {
+            result[result.length] = value;
+
+        }
+
+    }
+
+    if(
+    (1 == length)
+    ) {
+    assertEqualsList("assertEqCoalescing",expectedExpanded,result);
+
+    }
+
+        else {
+            assertEqualsList("assertEqNormal",expectedNormal,result);
+
+        }
+
 }
-
-
-
 
 function runTest() {
    hc_textparseintolistofelements();

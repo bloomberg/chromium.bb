@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,17 +68,16 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The method renameNode renames an existing node and raises a  NAMESPACE_ERR
-	if the qualifiedName has a prefix and the namespaceURI is null but a 
-	NOT_SUPPORTED_ERR should be raised since the the type of the specified node is 
-	neither ELEMENT_NODE nor ATTRIBUTE_NODE.
- 
-	Invoke the renameNode method on a new document node to rename a node to nodes 
-	with malformed qualifiedNames.
-	Check if a NOT_SUPPORTED_ERR gets thrown instead of a NAMESPACE_ERR.
+*
+    The method renameNode renames an existing node and raises a  NAMESPACE_ERR
+    if the qualifiedName has a prefix and the namespaceURI is null but a
+    NOT_SUPPORTED_ERR should be raised since the the type of the specified node is
+    neither ELEMENT_NODE nor ATTRIBUTE_NODE.
+
+    Invoke the renameNode method on a new document node to rename a node to nodes
+    with malformed qualifiedNames.
+    Check if a NOT_SUPPORTED_ERR gets thrown instead of a NAMESPACE_ERR.
 
 * @author IBM
 * @author Neil Delima
@@ -107,7 +101,6 @@ function documentrenamenode10() {
       qualifiedNames[4] = "_:0;";
       qualifiedNames[5] = "a:::::c";
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -116,24 +109,21 @@ function documentrenamenode10() {
       textNode = doc.createTextNode(textEntry);
       for(var indexN10060 = 0;indexN10060 < qualifiedNames.length; indexN10060++) {
       qualifiedName = qualifiedNames[indexN10060];
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             renamedNode = doc.renameNode(textNode,"http://www.w3.org/XML/1998/namespace",qualifiedName);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 9);
-		}
-		assertTrue("documentrenamenode10_NOT_SUPPORTED_ERR",success);
-	}
+        }
+        assertTrue("documentrenamenode10_NOT_SUPPORTED_ERR",success);
+    }
 
-	}
-   
+    }
+
 }
-
-
-
 
 function runTest() {
    documentrenamenode10();

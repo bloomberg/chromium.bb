@@ -1,15 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
 
 // expose test function names
 function exposeTestFunctionNames()
@@ -38,26 +36,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -69,13 +65,12 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
       Create an XPathResult for the expression /staff/employee
       for each type of XPathResultType, checking that the resultType
       of the XPathResult matches the requested type.
-    
+
 * @author Bob Clary
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathResultType
 * @see http://www.w3.org/TR/2003/CR-DOM-Level-3-XPath-20030331/xpath#XPathResult
@@ -121,7 +116,6 @@ function XPathResult_resultType() {
       nodeTypeList[8] = 8;
       nodeTypeList[9] = 9;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -135,83 +129,79 @@ for(var indexN65737 = 0;indexN65737 < nodeTypeList.length; indexN65737++) {
       outresult = evaluator.evaluate(expression,contextNode,resolver,inNodeType,inresult);
       outNodeType = outresult.resultType;
 
-      
-	if(
-	(inNodeType == ANY_TYPE)
-	) {
-	assertEquals("ANY_TYPE_resulttype",UNORDERED_NODE_ITERATOR_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == NUMBER_TYPE)
-	) {
-	assertEquals("NUMBER_TYPE_resulttype",NUMBER_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == STRING_TYPE)
-	) {
-	assertEquals("STRING_TYPE_resulttype",STRING_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == BOOLEAN_TYPE)
-	) {
-	assertEquals("BOOLEAN_TYPE_resulttype",BOOLEAN_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == UNORDERED_NODE_ITERATOR_TYPE)
-	) {
-	assertEquals("UNORDERED_NODE_ITERATOR_TYPE_resulttype",UNORDERED_NODE_ITERATOR_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == ORDERED_NODE_ITERATOR_TYPE)
-	) {
-	assertEquals("ORDERED_NODE_ITERATOR_TYPE_resulttype",ORDERED_NODE_ITERATOR_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == UNORDERED_NODE_SNAPSHOT_TYPE)
-	) {
-	assertEquals("UNORDERED_NODE_SNAPSHOT_TYPE_resulttype",UNORDERED_NODE_SNAPSHOT_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == ORDERED_NODE_SNAPSHOT_TYPE)
-	) {
-	assertEquals("ORDERED_NODE_SNAPSHOT_TYPE_resulttype",ORDERED_NODE_SNAPSHOT_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == ANY_UNORDERED_NODE_TYPE)
-	) {
-	assertEquals("ANY_UNORDERED_NODE_TYPE_resulttype",ANY_UNORDERED_NODE_TYPE,outNodeType);
-       
-	}
-	
-	if(
-	(inNodeType == FIRST_ORDERED_NODE_TYPE)
-	) {
-	assertEquals("FIRST_ORDERED_NODE_TYPE_resulttype",FIRST_ORDERED_NODE_TYPE,outNodeType);
-       
-	}
-	
-	}
-   
+    if(
+    (inNodeType == ANY_TYPE)
+    ) {
+    assertEquals("ANY_TYPE_resulttype",UNORDERED_NODE_ITERATOR_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == NUMBER_TYPE)
+    ) {
+    assertEquals("NUMBER_TYPE_resulttype",NUMBER_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == STRING_TYPE)
+    ) {
+    assertEquals("STRING_TYPE_resulttype",STRING_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == BOOLEAN_TYPE)
+    ) {
+    assertEquals("BOOLEAN_TYPE_resulttype",BOOLEAN_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == UNORDERED_NODE_ITERATOR_TYPE)
+    ) {
+    assertEquals("UNORDERED_NODE_ITERATOR_TYPE_resulttype",UNORDERED_NODE_ITERATOR_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == ORDERED_NODE_ITERATOR_TYPE)
+    ) {
+    assertEquals("ORDERED_NODE_ITERATOR_TYPE_resulttype",ORDERED_NODE_ITERATOR_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == UNORDERED_NODE_SNAPSHOT_TYPE)
+    ) {
+    assertEquals("UNORDERED_NODE_SNAPSHOT_TYPE_resulttype",UNORDERED_NODE_SNAPSHOT_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == ORDERED_NODE_SNAPSHOT_TYPE)
+    ) {
+    assertEquals("ORDERED_NODE_SNAPSHOT_TYPE_resulttype",ORDERED_NODE_SNAPSHOT_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == ANY_UNORDERED_NODE_TYPE)
+    ) {
+    assertEquals("ANY_UNORDERED_NODE_TYPE_resulttype",ANY_UNORDERED_NODE_TYPE,outNodeType);
+
+    }
+
+    if(
+    (inNodeType == FIRST_ORDERED_NODE_TYPE)
+    ) {
+    assertEquals("FIRST_ORDERED_NODE_TYPE_resulttype",FIRST_ORDERED_NODE_TYPE,outNodeType);
+
+    }
+
+    }
+
 }
-
-
-
 
 function runTest() {
    XPathResult_resultType();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using replaceChild on a new EntityReference node attempt to replace an Element, Text,
-	Comment, ProcessingInstruction and CDATASection nodes with each other and in each case
-	verify if a NO_MODIFICATION_ALLOWED_ERR is thrown.
+*
+    Using replaceChild on a new EntityReference node attempt to replace an Element, Text,
+    Comment, ProcessingInstruction and CDATASection nodes with each other and in each case
+    verify if a NO_MODIFICATION_ALLOWED_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -95,7 +89,7 @@ function nodereplacechild23() {
       var cdata;
       var replaced;
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -112,66 +106,63 @@ function nodereplacechild23() {
       appendedChild = elem.appendChild(comment);
       appendedChild = elem.appendChild(pi);
       appendedChild = elem.appendChild(cdata);
-      
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             replaced = entRef.replaceChild(cdata,elem);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_1",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_1",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             replaced = entRef.replaceChild(pi,cdata);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_2",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_2",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             replaced = entRef.replaceChild(comment,pi);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_3",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_3",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             replaced = entRef.replaceChild(txt,comment);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_4",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_4",success);
+    }
 
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             replaced = entRef.replaceChild(elem,txt);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 7);
-		}
-		assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_5",success);
-	}
+        }
+        assertTrue("throw_NO_MODIFICATION_ALLOWED_ERR_5",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    nodereplacechild23();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using removeChild on a new Element node attempt to remove a new ProcessingInstruction child 
-	and verify the name of the returned node that was removed.  Now to remove the child 
-	using removeChild on the parent and verify if a NOT_FOUND_ERR is thrown.
+*
+    Using removeChild on a new Element node attempt to remove a new ProcessingInstruction child
+    and verify the name of the returned node that was removed.  Now to remove the child
+    using removeChild on the parent and verify if a NOT_FOUND_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -93,7 +87,7 @@ function noderemovechild23() {
       var removedName;
       var removedNode;
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -106,22 +100,19 @@ function noderemovechild23() {
       removedName = removed.target;
 
       assertEquals("noderemovechild23","TARGET",removedName);
-       
-	{
-		success = false;
-		try {
+
+    {
+        success = false;
+        try {
             removedNode = parent.removeChild(child);
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 8);
-		}
-		assertTrue("throw_NOT_FOUND_ERR",success);
-	}
+        }
+        assertTrue("throw_NOT_FOUND_ERR",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    noderemovechild23();

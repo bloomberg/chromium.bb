@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,18 +68,17 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The adoptNode method changes the ownerDocument of a node, its children, as well as the 
-	attached attribute nodes if there are any. If the node has a parent it is first removed 
-	from its parent child list. 
-	For Element Nodes, specified attribute nodes of the source element are adopted, Default 
-	attributes are discarded and descendants of the source element are recursively adopted. 
+*
+    The adoptNode method changes the ownerDocument of a node, its children, as well as the
+    attached attribute nodes if there are any. If the node has a parent it is first removed
+    from its parent child list.
+    For Element Nodes, specified attribute nodes of the source element are adopted, Default
+    attributes are discarded and descendants of the source element are recursively adopted.
 
-	Invoke the adoptNode method on a new document with the first code element node of this
-	Document as the source.  Verify if the node has been adopted correctly by checking the 
-	length of the this elements childNode list before and after.
+    Invoke the adoptNode method on a new document with the first code element node of this
+    Document as the source.  Verify if the node has been adopted correctly by checking the
+    length of the this elements childNode list before and after.
 
 * @author IBM
 * @author Neil Delima
@@ -105,7 +99,6 @@ function documentadoptnode24() {
       var adoptedLen;
       var nullDocType = null;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -125,11 +118,8 @@ newDoc = domImpl.createDocument("http://www.w3.org/DOM/Test","dom:test",nullDocT
       adoptedLen = adoptedChildren.length;
 
       assertEquals("documentadoptnode24",adoptedLen,codeElemLen);
-       
+
 }
-
-
-
 
 function runTest() {
    documentadoptnode24();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,10 +67,9 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-   Retrieve the entire DOM document and invoke its 
+*
+   Retrieve the entire DOM document and invoke its
    "getImplementation()" method.  This should create a
    DOMImplementation object whose "hasFeature(feature,
    version)" method is invoked with "feature" equal to "html" or "xml".
@@ -91,7 +85,7 @@ function hc_domimplementationfeaturexml() {
     var doc;
       var domImpl;
       var state;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -99,26 +93,23 @@ function hc_domimplementationfeaturexml() {
       doc = load(docRef, "doc", "hc_staff");
       domImpl = doc.implementation;
 
-	if(
-	
-	(builder.contentType == "text/html")
+    if(
 
-	) {
-	state = domImpl.hasFeature("html","1.0");
+    (builder.contentType == "text/html")
+
+    ) {
+    state = domImpl.hasFeature("html","1.0");
 assertTrue("supports_html_1.0",state);
 
-	}
-	
-		else {
-			state = domImpl.hasFeature("xml","1.0");
+    }
+
+        else {
+            state = domImpl.hasFeature("xml","1.0");
 assertTrue("supports_xml_1.0",state);
 
-		}
-	
+        }
+
 }
-
-
-
 
 function runTest() {
    hc_domimplementationfeaturexml();

@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Using isEqualNode check if 2 Attr nodes having the same nodeName and a null namespaceURI 
-	attribute, one created using createAttributeNS and the other retreived from this document
-	are equal.
+*
+    Using isEqualNode check if 2 Attr nodes having the same nodeName and a null namespaceURI
+    attribute, one created using createAttributeNS and the other retreived from this document
+    are equal.
 
 * @author IBM
 * @author Neil Delima
@@ -94,7 +88,6 @@ function nodeisequalnode15() {
       var isEqual;
       var nullNS = null;
 
-      
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -103,27 +96,24 @@ function nodeisequalnode15() {
       elementList = doc.getElementsByTagName("acronym");
       addrElement = elementList.item(3);
       attr1 = addrElement.getAttributeNodeNS(nullNS,"title");
-      
-	if(
-	(getImplementationAttribute("namespaceAware") == true)
-	) {
-	attr2 = doc.createAttributeNS(nullNS,"title");
-      
-	}
-	
-		else {
-			attr2 = doc.createAttribute("title");
-      
-		}
-	attr2.value = "Yes";
+
+    if(
+    (getImplementationAttribute("namespaceAware") == true)
+    ) {
+    attr2 = doc.createAttributeNS(nullNS,"title");
+
+    }
+
+        else {
+            attr2 = doc.createAttribute("title");
+
+        }
+    attr2.value = "Yes";
 
       isEqual = attr1.isEqualNode(attr2);
       assertTrue("nodeisequalnode15",isEqual);
 
 }
-
-
-
 
 function runTest() {
    nodeisequalnode15();

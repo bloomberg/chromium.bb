@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -42,26 +39,24 @@ function setUpPage() {
        setImplementationAttribute("namespaceAware", true);
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -73,17 +68,16 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	The method insertBefore inserts the node newChild before the existing child node refChild. 
-	If refChild is null, insert newChild at the end of the list of children.
-	If newChild is a DocumentFragment object, all of its children are inserted, in the same 
-	order, before refChild.
+*
+    The method insertBefore inserts the node newChild before the existing child node refChild.
+    If refChild is null, insert newChild at the end of the list of children.
+    If newChild is a DocumentFragment object, all of its children are inserted, in the same
+    order, before refChild.
 
-	Using insertBefore on this Document node attempt to insert a new DocumentFragment node 
-	before a Comment node and verify the contents of the Comment node that is a child 
-	of the DocumentFragment.
+    Using insertBefore on this Document node attempt to insert a new DocumentFragment node
+    before a Comment node and verify the contents of the Comment node that is a child
+    of the DocumentFragment.
 
 * @author IBM
 * @author Neil Delima
@@ -100,7 +94,7 @@ function nodeinsertbefore09() {
       var inserted;
       var data;
       var appendedChild;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -117,11 +111,8 @@ function nodeinsertbefore09() {
       data = comment.data;
 
       assertEquals("nodeinsertbefore09","insertComment",data);
-       
+
 }
-
-
-
 
 function runTest() {
    nodeinsertbefore09();

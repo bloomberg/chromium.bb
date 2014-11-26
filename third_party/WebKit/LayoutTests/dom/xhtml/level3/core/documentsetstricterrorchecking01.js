@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,12 +67,11 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
-	Set the strictErrorChecking attribute value on this documentNode to false and then to true.
-	Call the createAttributeNS method on this document with an illegal character in the qualifiedName
-	and check if the INVALID_CHARACTER_ERR is thrown.
+*
+    Set the strictErrorChecking attribute value on this documentNode to false and then to true.
+    Call the createAttributeNS method on this document with an illegal character in the qualifiedName
+    and check if the INVALID_CHARACTER_ERR is thrown.
 
 * @author IBM
 * @author Neil Delima
@@ -88,7 +82,7 @@ function documentsetstricterrorchecking01() {
     if(checkInitialization(builder, "documentsetstricterrorchecking01") != null) return;
     var doc;
       var newAttr;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -98,22 +92,18 @@ function documentsetstricterrorchecking01() {
 
       doc.strictErrorChecking = true;
 
-      
-	{
-		success = false;
-		try {
+    {
+        success = false;
+        try {
             newAttr = doc.createAttributeNS("http://www.w3.org/DOM/Test","@");
         }
-		catch(ex) {
+        catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);
-		}
-		assertTrue("INVALID_CHARACTER_ERR_documentsetstricterrorchecking01",success);
-	}
+        }
+        assertTrue("INVALID_CHARACTER_ERR_documentsetstricterrorchecking01",success);
+    }
 
 }
-
-
-
 
 function runTest() {
    documentsetstricterrorchecking01();

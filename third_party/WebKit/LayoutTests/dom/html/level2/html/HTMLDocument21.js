@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "document");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,9 +67,8 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
 Replaces the current document checks that writeln adds a new line.
 
 * @author Curt Arnold
@@ -92,28 +86,28 @@ function HTMLDocument21() {
       var preElem;
       var preText;
       var preValue;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       doc = load(docRef, "doc", "document");
       doc.open();
-      
-	if(
-	
-	(builder.contentType == "text/html")
 
-	) {
-	doc.writeln("<html>");
-      
-	}
-	
-		else {
-			doc.writeln("<html xmlns='http://www.w3.org/1999/xhtml'>");
-      
-		}
-	doc.writeln("<body>");
+    if(
+
+    (builder.contentType == "text/html")
+
+    ) {
+    doc.writeln("<html>");
+
+    }
+
+        else {
+            doc.writeln("<html xmlns='http://www.w3.org/1999/xhtml'>");
+
+        }
+    doc.writeln("<body>");
       doc.writeln("<title>Replacement</title>");
       doc.writeln("</body>");
       doc.write("<pre>");
@@ -127,11 +121,8 @@ function HTMLDocument21() {
       doc.writeln("</body>");
       doc.writeln("</html>");
       doc.close();
-      
+
 }
-
-
-
 
 function runTest() {
    HTMLDocument21();

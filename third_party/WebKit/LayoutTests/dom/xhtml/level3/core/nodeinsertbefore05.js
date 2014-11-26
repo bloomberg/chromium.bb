@@ -1,16 +1,13 @@
-
 /*
-Copyright Â© 2001-2004 World Wide Web Consortium, 
-(Massachusetts Institute of Technology, European Research Consortium 
-for Informatics and Mathematics, Keio University). All 
-Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the 
-hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+Copyright Â© 2001-2004 World Wide Web Consortium,
+(Massachusetts Institute of Technology, European Research Consortium
+for Informatics and Mathematics, Keio University). All
+Rights Reserved. This work is distributed under the W3CÂ® Software License [1] in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 */
-
-
 
    /**
     *  Gets URI that identifies the test.
@@ -41,26 +38,24 @@ function setUpPage() {
      builder = createConfiguredBuilder();
 
       docsLoaded = 0;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
       }
       docsLoaded += preload(docRef, "doc", "hc_staff");
-        
+
        if (docsLoaded == 1) {
           setUpPageStatus = 'complete';
        }
     } catch(ex) {
-    	catchInitializationError(builder, ex);
+        catchInitializationError(builder, ex);
         setUpPageStatus = 'complete';
     }
 }
 
-
-
 //
-//   This method is called on the completion of 
+//   This method is called on the completion of
 //      each asychronous load started in setUpTests.
 //
 //   When every synchronous loaded document has completed,
@@ -72,11 +67,10 @@ function loadComplete() {
     }
 }
 
-
 /**
-* 
+*
     Attempt to insert a second DocumentType node in a document using Node.insertBefore,
-    should raise either DOMException with either a HIERARCHY_REQUEST_ERR 
+    should raise either DOMException with either a HIERARCHY_REQUEST_ERR
     or NOT_SUPPORTED_ERR code.
 
 * @author IBM
@@ -96,7 +90,7 @@ function nodeinsertbefore05() {
       var nullSysId = null;
 
       var rootName;
-      
+
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
         docRef = this.doc;
@@ -108,13 +102,13 @@ function nodeinsertbefore05() {
 
       domImpl = doc.implementation;
 newDocType = domImpl.createDocumentType(rootName,nullPubId,nullSysId);
-      
+
       try {
       inserted = doc.insertBefore(newDocType,docType);
       fail("throw_DOMException");
-     
+
       } catch (ex) {
-		  if (typeof(ex.code) != 'undefined') {      
+          if (typeof(ex.code) != 'undefined') {
        switch(ex.code) {
        case /* HIERARCHY_REQUEST_ERR */ 3 :
        break;
@@ -123,15 +117,12 @@ newDocType = domImpl.createDocumentType(rootName,nullPubId,nullSysId);
           default:
           throw ex;
           }
-       } else { 
+       } else {
        throw ex;
         }
          }
-        
+
 }
-
-
-
 
 function runTest() {
    nodeinsertbefore05();
