@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/ozone/gpu/ozone_gpu_export.h"
@@ -47,6 +48,7 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
 
  private:
   BufferToPixmapMap native_pixmap_map_;
+  base::Lock native_pixmap_map_lock_;
 };
 
 }  // namespace ui

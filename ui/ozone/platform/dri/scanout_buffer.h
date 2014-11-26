@@ -13,7 +13,7 @@
 namespace ui {
 
 // Abstraction for a DRM buffer that can be scanned-out of.
-class ScanoutBuffer : public base::RefCounted<ScanoutBuffer> {
+class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
  public:
   // ID allocated by the KMS API when the buffer is registered (via the handle).
   virtual uint32_t GetFramebufferId() const = 0;
@@ -27,7 +27,7 @@ class ScanoutBuffer : public base::RefCounted<ScanoutBuffer> {
  protected:
   virtual ~ScanoutBuffer() {}
 
-  friend class base::RefCounted<ScanoutBuffer>;
+  friend class base::RefCountedThreadSafe<ScanoutBuffer>;
 };
 
 class ScanoutBufferGenerator {

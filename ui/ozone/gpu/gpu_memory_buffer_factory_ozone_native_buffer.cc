@@ -131,6 +131,7 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
                << size.height() << " format " << format << ", usage " << usage;
     return false;
   }
+  base::AutoLock lock(native_pixmap_map_lock_);
   native_pixmap_map_[GetIndex(id, client_id)] = pixmap;
   return true;
 }
@@ -138,6 +139,7 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
 void GpuMemoryBufferFactoryOzoneNativeBuffer::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
+  base::AutoLock lock(native_pixmap_map_lock_);
   native_pixmap_map_.erase(GetIndex(id, client_id));
 }
 
@@ -148,12 +150,16 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     unsigned internalformat,
     int client_id) {
-  BufferToPixmapMap::iterator it =
-      native_pixmap_map_.find(GetIndex(id, client_id));
-  if (it == native_pixmap_map_.end()) {
-    return scoped_refptr<gfx::GLImage>();
+  NativePixmap* pixmap = nullptr;
+  {
+    base::AutoLock lock(native_pixmap_map_lock_);
+    BufferToPixmapMap::iterator it =
+        native_pixmap_map_.find(GetIndex(id, client_id));
+    if (it == native_pixmap_map_.end()) {
+      return scoped_refptr<gfx::GLImage>();
+    }
+    pixmap = it->second.get();
   }
-  NativePixmap* pixmap = it->second.get();
   if (pixmap->GetEGLClientBuffer()) {
     DCHECK_EQ(-1, pixmap->GetDmaBufFd());
     scoped_refptr<GLImageOzoneNativePixmap> image =
