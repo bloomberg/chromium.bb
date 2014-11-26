@@ -378,18 +378,13 @@ void TabAndroid::Observe(int type,
 }
 
 void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
-  ScopedJavaLocalRef<jobject> bitmap;
-  SkBitmap favicon = image
-          .AsImageSkia()
-          .GetRepresentation(
-               ResourceBundle::GetSharedInstance().GetMaxScaleFactor())
-          .sk_bitmap();
+  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
+  if (favicon.empty())
+    return;
 
-  if (!favicon.empty()) {
-    bitmap = gfx::ConvertToJavaBitmap(&favicon);
-  }
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(), bitmap.obj());
+  JNIEnv *env = base::android::AttachCurrentThread();
+  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(),
+                              gfx::ConvertToJavaBitmap(&favicon).obj());
 }
 
 void TabAndroid::Destroy(JNIEnv* env, jobject obj) {
