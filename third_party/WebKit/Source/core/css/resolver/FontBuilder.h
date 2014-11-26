@@ -43,7 +43,9 @@ class FontBuilder {
 public:
     FontBuilder(const Document&);
 
-    void setStyle(RenderStyle* style) { m_style = style; }
+    void setFontDescription(const FontDescription& fd) { m_fontDescription = fd; }
+    const FontDescription& fontDescription() const { return m_fontDescription; }
+
     void setInitial(float effectiveZoom);
 
     void didChangeFontParameters(bool);
@@ -68,7 +70,7 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, const RenderStyle* parentStyle, RenderStyle*);
+    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*, const RenderStyle* parentStyle);
 
     void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, RenderStyle*);
 
@@ -105,12 +107,7 @@ private:
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
     const Document& m_document;
-    // FIXME: This member is here on a short-term lease. The plan is to remove
-    // any notion of RenderStyle from here, allowing FontBuilder to build Font objects
-    // directly, rather than as a byproduct of calling RenderStyle::setFontDescription.
-    // FontDescriptionChangeScope should be the only consumer of this member.
-    // If you're using it, U R DOIN IT WRONG.
-    RenderStyle* m_style;
+    FontDescription m_fontDescription;
 
     // Fontbuilder is responsbile for creating the Font()
     // object on RenderStyle from various other font-related
@@ -118,8 +115,6 @@ private:
     // is changed, FontBuilder tracks the need to update
     // style->font() with this bool.
     bool m_fontDirty;
-
-    friend class FontBuilderTest;
 };
 
 }

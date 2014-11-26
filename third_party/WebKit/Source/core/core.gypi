@@ -3538,7 +3538,6 @@
             'css/parser/SizesCalcParserTest.cpp',
             'css/parser/SizesAttributeParserTest.cpp',
             'css/parser/MediaConditionTest.cpp',
-            'css/resolver/FontBuilderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',

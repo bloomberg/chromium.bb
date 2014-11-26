@@ -723,6 +723,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
 PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue& value)
 {
     StyleBuilder::applyProperty(property, state, &value);
+    state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.style(), state.parentStyle());
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
@@ -929,9 +930,8 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     RefPtr<RenderStyle> style = RenderStyle::create();
     FontBuilder fontBuilder(document());
-    fontBuilder.setStyle(style.get());
     fontBuilder.setInitial(style->effectiveZoom());
-    style->font().update(document().styleEngine()->fontSelector());
+    fontBuilder.createFont(document().styleEngine()->fontSelector(), style.get(), nullptr);
     return style.release();
 }
 
@@ -947,7 +947,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 
 void StyleResolver::updateFont(StyleResolverState& state)
 {
-    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
+    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.style(), state.parentStyle());
     state.setConversionFontSizes(CSSToLengthConversionData::FontSizes(state.style(), state.rootElementStyle()));
     state.setConversionZoom(state.style()->effectiveZoom());
 }
@@ -1452,6 +1452,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
+
+            state.fontBuilder().setFontDescription(state.style()->fontDescription());
 
             updateFont(state);
 
