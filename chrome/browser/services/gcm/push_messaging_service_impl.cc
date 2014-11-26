@@ -64,24 +64,29 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
           switches::kEnableExperimentalWebPlatformFeatures)) {
     return;
   }
-  // TODO(johnme): Consider whether push should be enabled in incognito. If it
-  // does get enabled, then be careful that you're reading the pref from the
-  // right profile, as prefs defined in a regular profile are visible in the
-  // corresponding incognito profile unless overrriden.
-  if (!profile || profile->IsOffTheRecord() ||
-      profile->GetPrefs()->GetInteger(prefs::kPushMessagingRegistrationCount) <=
-          0) {
+
+  // TODO(johnme): Consider whether push should be enabled in incognito.
+  if (!profile || profile->IsOffTheRecord())
     return;
-  }
+
+  // TODO(johnme): If push becomes enabled in incognito (and this still uses a
+  // pref), be careful that this pref is read from the right profile, as prefs
+  // defined in a regular profile are visible in the corresponding incognito
+  // profile unless overridden.
+  // TODO(johnme): Make sure this pref doesn't get out of sync after crashes.
+  int count = profile->GetPrefs()->GetInteger(
+      prefs::kPushMessagingRegistrationCount);
+  if (count <= 0)
+    return;
+
   // Create the GCMProfileService, and hence instantiate this class.
   GCMProfileService* gcm_service =
       gcm::GCMProfileServiceFactory::GetForProfile(profile);
   PushMessagingServiceImpl* push_service =
       static_cast<PushMessagingServiceImpl*>(
           gcm_service->push_messaging_service());
-  // Register ourselves as an app handler.
-  gcm_service->driver()->AddAppHandler(kPushMessagingApplicationIdPrefix,
-                                       push_service);
+
+  push_service->IncreasePushRegistrationCount(count);
 }
 
 PushMessagingServiceImpl::PushMessagingServiceImpl(
@@ -89,12 +94,36 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(
     Profile* profile)
     : gcm_profile_service_(gcm_profile_service),
       profile_(profile),
+      push_registration_count_(0),
       weak_factory_(this) {
 }
 
 PushMessagingServiceImpl::~PushMessagingServiceImpl() {
   // TODO(johnme): If it's possible for this to be destroyed before GCMDriver,
   // then we should call RemoveAppHandler.
+}
+
+void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add) {
+  DCHECK(add > 0);
+  if (push_registration_count_ == 0) {
+    gcm_profile_service_->driver()->AddAppHandler(
+        kPushMessagingApplicationIdPrefix, this);
+  }
+  push_registration_count_ += add;
+  profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
+                                   push_registration_count_);
+}
+
+void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract) {
+  DCHECK(subtract > 0);
+  push_registration_count_ -= subtract;
+  DCHECK(push_registration_count_ >= 0);
+  profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
+                                   push_registration_count_);
+  if (push_registration_count_ == 0) {
+    gcm_profile_service_->driver()->RemoveAppHandler(
+        kPushMessagingApplicationIdPrefix);
+  }
 }
 
 bool PushMessagingServiceImpl::CanHandle(const std::string& app_id) const {
@@ -190,8 +219,7 @@ void PushMessagingServiceImpl::Register(
       PushMessagingApplicationId(origin, service_worker_registration_id);
   DCHECK(application_id.IsValid());
 
-  if (profile_->GetPrefs()->GetInteger(
-          prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
+  if (push_registration_count_ >= kMaxRegistrations) {
     RegisterEnd(callback,
                 std::string(),
                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
@@ -281,13 +309,8 @@ void PushMessagingServiceImpl::RegisterEnd(
     content::PushRegistrationStatus status) {
   GURL endpoint = GURL(std::string(kPushMessagingEndpoint));
   callback.Run(endpoint, registration_id, status);
-  if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS) {
-    // TODO(johnme): Make sure the pref doesn't get out of sync after crashes.
-    int registration_count = profile_->GetPrefs()->GetInteger(
-        prefs::kPushMessagingRegistrationCount);
-    profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                     registration_count + 1);
-  }
+  if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS)
+    IncreasePushRegistrationCount(1);
 }
 
 void PushMessagingServiceImpl::DidRegister(
@@ -327,7 +350,6 @@ void PushMessagingServiceImpl::DidRequestPermission(
                  register_callback));
 }
 
-// TODO(johnme): Unregister should decrement the pref, and call
-// RemoveAppHandler if the count drops to zero.
+// TODO(johnme): Unregister should call DecreasePushRegistrationCount.
 
 }  // namespace gcm

@@ -66,6 +66,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SetProfileForTesting(Profile* profile);
 
  private:
+  void IncreasePushRegistrationCount(int add);
+  void DecreasePushRegistrationCount(int subtract);
+
   void DeliverMessageCallback(const PushMessagingApplicationId& application_id,
                               const GCMClient::IncomingMessage& message,
                               content::PushDeliveryStatus status);
@@ -89,6 +92,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   GCMProfileService* gcm_profile_service_;  // It owns us.
 
   Profile* profile_;  // It owns our owner.
+
+  int push_registration_count_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 
