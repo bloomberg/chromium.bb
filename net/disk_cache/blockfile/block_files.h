@@ -136,7 +136,7 @@ class NET_EXPORT_PRIVATE BlockFiles {
   MappedFile* NextFile(MappedFile* file);
 
   // Creates an empty block file and returns its index.
-  int CreateNextBlockFile(FileType block_type);
+  int16 CreateNextBlockFile(FileType block_type);
 
   // Removes a chained block file that is now empty.
   bool RemoveEmptyFile(FileType block_type);

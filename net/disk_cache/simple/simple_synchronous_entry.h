@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE SimpleEntryStat {
                       int stream_index) const;
   int GetEOFOffsetInFile(const std::string& key, int stream_index) const;
   int GetLastEOFOffsetInFile(const std::string& key, int file_index) const;
-  int GetFileSize(const std::string& key, int file_index) const;
+  int64 GetFileSize(const std::string& key, int file_index) const;
 
   base::Time last_used() const { return last_used_; }
   base::Time last_modified() const { return last_modified_; }
@@ -158,7 +158,7 @@ class SimpleSynchronousEntry {
                       int* out_result);
   void WriteSparseData(const EntryOperationData& in_entry_op,
                        net::IOBuffer* in_buf,
-                       int64 max_sparse_data_size,
+                       uint64 max_sparse_data_size,
                        SimpleEntryStat* out_entry_stat,
                        int* out_result);
   void GetAvailableRange(const EntryOperationData& in_entry_op,

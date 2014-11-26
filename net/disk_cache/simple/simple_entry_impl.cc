@@ -1022,9 +1022,9 @@ void SimpleEntryImpl::WriteSparseDataInternal(
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
-  int64 max_sparse_data_size = kint64max;
+  uint64 max_sparse_data_size = kint64max;
   if (backend_.get()) {
-    int64 max_cache_size = backend_->index()->max_size();
+    uint64 max_cache_size = backend_->index()->max_size();
     max_sparse_data_size = max_cache_size / kMaxSparseDataSizeDivisor;
   }
 

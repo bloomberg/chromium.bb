@@ -28,7 +28,7 @@ const char s_types[16] = {4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Returns the type of block (number of consecutive blocks that can be stored)
 // for a given nibble of the bitmap.
-inline int GetMapBlockType(uint8 value) {
+inline int GetMapBlockType(uint32 value) {
   value &= 0xf;
   return s_types[value];
 }
@@ -279,7 +279,7 @@ bool BlockFiles::Init(bool create_files) {
   thread_checker_.reset(new base::ThreadChecker);
 
   block_files_.resize(kFirstAdditionalBlockFile);
-  for (int i = 0; i < kFirstAdditionalBlockFile; i++) {
+  for (int16 i = 0; i < kFirstAdditionalBlockFile; i++) {
     if (create_files)
       if (!CreateBlockFile(i, static_cast<FileType>(i + 1), true))
         return false;
@@ -574,7 +574,7 @@ MappedFile* BlockFiles::FileForNewBlock(FileType block_type, int block_count) {
 MappedFile* BlockFiles::NextFile(MappedFile* file) {
   ScopedFlush flush(file);
   BlockFileHeader* header = reinterpret_cast<BlockFileHeader*>(file->buffer());
-  int new_file = header->next_file;
+  int16 new_file = header->next_file;
   if (!new_file) {
     // RANKINGS is not reported as a type for small entries, but we may be
     // extending the rankings block file.
@@ -595,8 +595,8 @@ MappedFile* BlockFiles::NextFile(MappedFile* file) {
   return GetFile(address);
 }
 
-int BlockFiles::CreateNextBlockFile(FileType block_type) {
-  for (int i = kFirstAdditionalBlockFile; i <= kMaxBlockFile; i++) {
+int16 BlockFiles::CreateNextBlockFile(FileType block_type) {
+  for (int16 i = kFirstAdditionalBlockFile; i <= kMaxBlockFile; i++) {
     if (CreateBlockFile(i, block_type, false))
       return i;
   }

@@ -484,8 +484,10 @@ EntryImpl* BackendImpl::OpenEntryImpl(const std::string& key) {
   if (!cache_entry) {
     CACHE_UMA(AGE_MS, "OpenTime.Miss", 0, start);
     CACHE_UMA(COUNTS_10000, "AllOpenBySize.Miss", 0, current_size);
-    CACHE_UMA(HOURS, "AllOpenByTotalHours.Miss", 0, total_hours);
-    CACHE_UMA(HOURS, "AllOpenByUseHours.Miss", 0, use_hours);
+    CACHE_UMA(HOURS, "AllOpenByTotalHours.Miss", 0,
+              static_cast<base::HistogramBase::Sample>(total_hours));
+    CACHE_UMA(HOURS, "AllOpenByUseHours.Miss", 0,
+              static_cast<base::HistogramBase::Sample>(use_hours));
     stats_.OnEvent(Stats::OPEN_MISS);
     return NULL;
   }
@@ -497,8 +499,10 @@ EntryImpl* BackendImpl::OpenEntryImpl(const std::string& key) {
         cache_entry->entry()->address().value());
   CACHE_UMA(AGE_MS, "OpenTime", 0, start);
   CACHE_UMA(COUNTS_10000, "AllOpenBySize.Hit", 0, current_size);
-  CACHE_UMA(HOURS, "AllOpenByTotalHours.Hit", 0, total_hours);
-  CACHE_UMA(HOURS, "AllOpenByUseHours.Hit", 0, use_hours);
+  CACHE_UMA(HOURS, "AllOpenByTotalHours.Hit", 0,
+            static_cast<base::HistogramBase::Sample>(total_hours));
+  CACHE_UMA(HOURS, "AllOpenByUseHours.Hit", 0,
+            static_cast<base::HistogramBase::Sample>(use_hours));
   stats_.OnEvent(Stats::OPEN_HIT);
   web_fonts_histogram::RecordCacheHit(cache_entry);
   SIMPLE_STATS_COUNTER("disk_cache.hit");
@@ -1886,7 +1890,7 @@ void BackendImpl::ReportStats() {
   // time is the ratio of that bin's total count to the count in the same bin in
   // the TotalTime histogram.
   if (base::RandInt(0, 99) < hit_ratio_as_percentage)
-    CACHE_UMA(HOURS, "HitRatioByTotalTime", 0, implicit_cast<int>(total_hours));
+    CACHE_UMA(HOURS, "HitRatioByTotalTime", 0, static_cast<int>(total_hours));
 
   int64 use_hours = stats_.GetCounter(Stats::LAST_REPORT_TIMER) / 120;
   stats_.SetCounter(Stats::LAST_REPORT_TIMER, stats_.GetCounter(Stats::TIMER));
@@ -1904,7 +1908,7 @@ void BackendImpl::ReportStats() {
   // is the ratio of that bin's total count to the count in the same bin in the
   // UseTime histogram.
   if (base::RandInt(0, 99) < hit_ratio_as_percentage)
-    CACHE_UMA(HOURS, "HitRatioByUseTime", 0, implicit_cast<int>(use_hours));
+    CACHE_UMA(HOURS, "HitRatioByUseTime", 0, static_cast<int>(use_hours));
   CACHE_UMA(PERCENTAGE, "HitRatio", 0, hit_ratio_as_percentage);
 
   int64 trim_rate = stats_.GetCounter(Stats::TRIM_ENTRY) / use_hours;

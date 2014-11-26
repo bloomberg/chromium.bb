@@ -82,9 +82,9 @@ EntryMetadata::EntryMetadata()
     entry_size_(0) {
 }
 
-EntryMetadata::EntryMetadata(base::Time last_used_time, int entry_size)
+EntryMetadata::EntryMetadata(base::Time last_used_time, uint64 entry_size)
     : last_used_time_seconds_since_epoch_(0),
-      entry_size_(entry_size) {
+      entry_size_(base::checked_cast<int32>(entry_size)) {
   SetLastUsedTime(last_used_time);
 }
 
@@ -111,6 +111,14 @@ void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
     last_used_time_seconds_since_epoch_ = 1;
 }
 
+uint64 EntryMetadata::GetEntrySize() const {
+  return entry_size_;
+}
+
+void EntryMetadata::SetEntrySize(uint64 entry_size) {
+  entry_size_ = base::checked_cast<int32>(entry_size);
+}
+
 void EntryMetadata::Serialize(Pickle* pickle) const {
   DCHECK(pickle);
   int64 internal_last_used_time = GetLastUsedTime().ToInternalValue();
@@ -122,10 +130,11 @@ bool EntryMetadata::Deserialize(PickleIterator* it) {
   DCHECK(it);
   int64 tmp_last_used_time;
   uint64 tmp_entry_size;
-  if (!it->ReadInt64(&tmp_last_used_time) || !it->ReadUInt64(&tmp_entry_size))
+  if (!it->ReadInt64(&tmp_last_used_time) || !it->ReadUInt64(&tmp_entry_size) ||
+      tmp_entry_size > static_cast<uint64>(std::numeric_limits<int32>::max()))
     return false;
   SetLastUsedTime(base::Time::FromInternalValue(tmp_last_used_time));
-  entry_size_ = tmp_entry_size;
+  entry_size_ = static_cast<int32>(tmp_entry_size);
   return true;
 }
 
@@ -179,18 +188,13 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
   index_file_->LoadIndexEntries(cache_mtime, reply, load_result);
 }
 
-bool SimpleIndex::SetMaxSize(int max_bytes) {
-  if (max_bytes < 0)
-    return false;
-
+void SimpleIndex::SetMaxSize(uint64 max_bytes) {
   // Zero size means use the default.
-  if (!max_bytes)
-    return true;
-
-  max_size_ = max_bytes;
-  high_watermark_ = max_size_ - max_size_ / kEvictionMarginDivisor;
-  low_watermark_ = max_size_ - 2 * (max_size_ / kEvictionMarginDivisor);
-  return true;
+  if (max_bytes) {
+    max_size_ = max_bytes;
+    high_watermark_ = max_size_ - max_size_ / kEvictionMarginDivisor;
+    low_watermark_ = max_size_ - 2 * (max_size_ / kEvictionMarginDivisor);
+  }
 }
 
 int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
@@ -286,12 +290,12 @@ void SimpleIndex::StartEvictionIfNeeded() {
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
   eviction_start_time_ = base::TimeTicks::Now();
-  SIMPLE_CACHE_UMA(MEMORY_KB,
-                   "Eviction.CacheSizeOnStart2", cache_type_,
-                   cache_size_ / kBytesInKb);
-  SIMPLE_CACHE_UMA(MEMORY_KB,
-                   "Eviction.MaxCacheSizeOnStart2", cache_type_,
-                   max_size_ / kBytesInKb);
+  SIMPLE_CACHE_UMA(
+      MEMORY_KB, "Eviction.CacheSizeOnStart2", cache_type_,
+      static_cast<base::HistogramBase::Sample>(cache_size_ / kBytesInKb));
+  SIMPLE_CACHE_UMA(
+      MEMORY_KB, "Eviction.MaxCacheSizeOnStart2", cache_type_,
+      static_cast<base::HistogramBase::Sample>(max_size_ / kBytesInKb));
   std::vector<uint64> entry_hashes;
   entry_hashes.reserve(entries_set_.size());
   for (EntrySet::const_iterator it = entries_set_.begin(),
@@ -308,8 +312,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
     DCHECK(it != entry_hashes.end());
     EntrySet::iterator found_meta = entries_set_.find(*it);
     DCHECK(found_meta != entries_set_.end());
-    uint64 to_evict_size = found_meta->second.GetEntrySize();
-    evicted_so_far_size += to_evict_size;
+    evicted_so_far_size += found_meta->second.GetEntrySize();
     ++it;
   }
 
@@ -320,15 +323,16 @@ void SimpleIndex::StartEvictionIfNeeded() {
   SIMPLE_CACHE_UMA(TIMES,
                    "Eviction.TimeToSelectEntries", cache_type_,
                    base::TimeTicks::Now() - eviction_start_time_);
-  SIMPLE_CACHE_UMA(MEMORY_KB,
-                   "Eviction.SizeOfEvicted2", cache_type_,
-                   evicted_so_far_size / kBytesInKb);
+  SIMPLE_CACHE_UMA(
+      MEMORY_KB, "Eviction.SizeOfEvicted2", cache_type_,
+      static_cast<base::HistogramBase::Sample>(
+          evicted_so_far_size / kBytesInKb));
 
   delegate_->DoomEntries(&entry_hashes, base::Bind(&SimpleIndex::EvictionDone,
                                                    AsWeakPtr()));
 }
 
-bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, int entry_size) {
+bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, int64 entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   EntrySet::iterator it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
@@ -349,9 +353,9 @@ void SimpleIndex::EvictionDone(int result) {
   SIMPLE_CACHE_UMA(TIMES,
                    "Eviction.TimeToDone", cache_type_,
                    base::TimeTicks::Now() - eviction_start_time_);
-  SIMPLE_CACHE_UMA(MEMORY_KB,
-                   "Eviction.SizeWhenDone2", cache_type_,
-                   cache_size_ / kBytesInKb);
+  SIMPLE_CACHE_UMA(
+      MEMORY_KB, "Eviction.SizeWhenDone2", cache_type_,
+      static_cast<base::HistogramBase::Sample>(cache_size_ / kBytesInKb));
 }
 
 // static
@@ -374,10 +378,10 @@ void SimpleIndex::PostponeWritingToDisk() {
 }
 
 void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
-                                          int entry_size) {
+                                          int64 entry_size) {
   // Update the total cache size with the new entry size.
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_GE(cache_size_, implicit_cast<uint64>((*it)->second.GetEntrySize()));
+  DCHECK_GE(cache_size_, (*it)->second.GetEntrySize());
   cache_size_ -= (*it)->second.GetEntrySize();
   cache_size_ += entry_size;
   (*it)->second.SetEntrySize(entry_size);

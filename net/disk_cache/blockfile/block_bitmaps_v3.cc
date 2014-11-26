@@ -71,7 +71,7 @@ void BlockBitmaps::Clear() {
 void BlockBitmaps::ReportStats() {
   int used_blocks[kFirstAdditionalBlockFile];
   int load[kFirstAdditionalBlockFile];
-  for (int i = 0; i < kFirstAdditionalBlockFile; i++) {
+  for (int16 i = 0; i < kFirstAdditionalBlockFile; i++) {
     GetFileStats(i, &used_blocks[i], &load[i]);
   }
   UMA_HISTOGRAM_COUNTS("DiskCache.Blocks_0", used_blocks[0]);
@@ -104,7 +104,7 @@ bool BlockBitmaps::IsValid(Addr address) {
 }
 
 int BlockBitmaps::GetHeaderNumber(Addr address) {
-  DCHECK_GE(bitmaps_.size(), static_cast<size_t>(kFirstAdditionalBlockFileV3));
+  DCHECK_GE(bitmaps_.size(), kFirstAdditionalBlockFileV3);
   DCHECK(address.is_block_file() || !address.is_initialized());
   if (!address.is_initialized())
     return -1;

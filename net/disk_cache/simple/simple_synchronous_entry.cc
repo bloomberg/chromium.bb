@@ -134,8 +134,8 @@ SimpleEntryStat::SimpleEntryStat(base::Time last_used,
 int SimpleEntryStat::GetOffsetInFile(const std::string& key,
                                      int offset,
                                      int stream_index) const {
-  const int64 headers_size = sizeof(SimpleFileHeader) + key.size();
-  const int64 additional_offset =
+  const size_t headers_size = sizeof(SimpleFileHeader) + key.size();
+  const size_t additional_offset =
       stream_index == 0 ? data_size_[1] + sizeof(SimpleFileEOF) : 0;
   return headers_size + offset + additional_offset;
 }
@@ -154,8 +154,9 @@ int SimpleEntryStat::GetLastEOFOffsetInFile(const std::string& key,
   return GetOffsetInFile(key, eof_data_offset, stream_index);
 }
 
-int SimpleEntryStat::GetFileSize(const std::string& key, int file_index) const {
-  const int total_data_size =
+int64 SimpleEntryStat::GetFileSize(const std::string& key,
+                                   int file_index) const {
+  const int32 total_data_size =
       file_index == 0 ? data_size_[0] + data_size_[1] + sizeof(SimpleFileEOF)
                       : data_size_[2];
   return GetFileSizeFromKeyAndDataSize(key, total_data_size);
@@ -451,7 +452,7 @@ void SimpleSynchronousEntry::ReadSparseData(
 void SimpleSynchronousEntry::WriteSparseData(
     const EntryOperationData& in_entry_op,
     net::IOBuffer* in_buf,
-    int64 max_sparse_data_size,
+    uint64 max_sparse_data_size,
     SimpleEntryStat* out_entry_stat,
     int* out_result) {
   DCHECK(initialized_);
@@ -467,7 +468,7 @@ void SimpleSynchronousEntry::WriteSparseData(
     return;
   }
 
-  int64 sparse_data_size = out_entry_stat->sparse_data_size();
+  uint64 sparse_data_size = out_entry_stat->sparse_data_size();
   // This is a pessimistic estimate; it assumes the entire buffer is going to
   // be appended as a new range, not written over existing ranges.
   if (sparse_data_size + buf_len > max_sparse_data_size) {

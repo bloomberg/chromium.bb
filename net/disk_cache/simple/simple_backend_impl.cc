@@ -271,12 +271,15 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
 }
 
 bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
+  if (max_bytes < 0)
+    return false;
   orig_max_size_ = max_bytes;
-  return index_->SetMaxSize(max_bytes);
+  index_->SetMaxSize(max_bytes);
+  return true;
 }
 
 int SimpleBackendImpl::GetMaxFileSize() const {
-  return index_->max_size() / kMaxFileRatio;
+  return static_cast<int>(index_->max_size() / kMaxFileRatio);
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64 entry_hash) {

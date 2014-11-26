@@ -25,10 +25,10 @@ enum FileType {
 };
 
 const int kMaxBlockSize = 4096 * 4;
-const int kMaxBlockFile = 255;
+const int16 kMaxBlockFile = 255;
 const int kMaxNumBlocks = 4;
-const int kFirstAdditionalBlockFile = 4;
-const int kFirstAdditionalBlockFileV3 = 7;
+const int16 kFirstAdditionalBlockFile = 4;
+const size_t kFirstAdditionalBlockFileV3 = 7;
 
 // Defines a storage address for a cache record
 //

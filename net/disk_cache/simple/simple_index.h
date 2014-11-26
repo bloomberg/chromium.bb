@@ -40,13 +40,13 @@ struct SimpleIndexLoadResult;
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
   EntryMetadata();
-  EntryMetadata(base::Time last_used_time, int entry_size);
+  EntryMetadata(base::Time last_used_time, uint64 entry_size);
 
   base::Time GetLastUsedTime() const;
   void SetLastUsedTime(const base::Time& last_used_time);
 
-  int GetEntrySize() const { return entry_size_; }
-  void SetEntrySize(int entry_size) { entry_size_ = entry_size; }
+  uint64 GetEntrySize() const;
+  void SetEntrySize(uint64 entry_size);
 
   // Serialize the data into the provided pickle.
   void Serialize(Pickle* pickle) const;
@@ -86,8 +86,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void Initialize(base::Time cache_mtime);
 
-  bool SetMaxSize(int max_bytes);
-  int max_size() const { return max_size_; }
+  void SetMaxSize(uint64 max_bytes);
+  uint64 max_size() const { return max_size_; }
 
   void Insert(uint64 entry_hash);
   void Remove(uint64 entry_hash);
@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Update the size (in bytes) of an entry, in the metadata stored in the
   // index. This should be the total disk-file size including all streams of the
   // entry.
-  bool UpdateEntrySize(uint64 entry_hash, int entry_size);
+  bool UpdateEntrySize(uint64 entry_hash, int64 entry_size);
 
   typedef base::hash_map<uint64, EntryMetadata> EntrySet;
 
@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void PostponeWritingToDisk();
 
-  void UpdateEntryIteratorSize(EntrySet::iterator* it, int entry_size);
+  void UpdateEntryIteratorSize(EntrySet::iterator* it, int64 entry_size);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<SimpleIndexLoadResult> load_result);
