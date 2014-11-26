@@ -20,7 +20,7 @@ component("captive_portal") {
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "captive_portal_testing_utils.cc",
@@ -30,7 +30,7 @@ static_library("test_support") {
   deps = [
     ":captive_portal",
     "//base",
-    "//net",
+    "//net:test_support",
     "//url",
   ]
 }
@@ -43,6 +43,9 @@ source_set("unit_tests") {
 
   deps = [
     ":captive_portal",
+    ":test_support",
+    "//base",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

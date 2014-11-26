@@ -13,6 +13,7 @@ source_set("crx_file") {
 
   deps = [
     "//base",
+    "//crypto",
   ]
 }
 
@@ -24,6 +25,7 @@ source_set("unit_tests") {
 
   deps = [
     ":crx_file",
+    "//base",
     "//testing/gtest",
   ]
 }

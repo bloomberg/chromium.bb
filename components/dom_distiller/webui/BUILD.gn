@@ -18,7 +18,9 @@ static_library("webui") {
     "//components/resources",
     "//components/strings",
     "//content/public/browser",
+    "//net",
     "//skia",
     "//sync",
+    "//url",
   ]
 }

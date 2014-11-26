@@ -25,6 +25,7 @@ source_set("unit_tests") {
 
   deps = [
     ":login",
+    "//base",
     "//testing/gtest",
   ]
 }

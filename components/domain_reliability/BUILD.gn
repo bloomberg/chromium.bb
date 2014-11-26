@@ -88,6 +88,9 @@ source_set("unit_tests") {
 
   deps = [
     ":domain_reliability",
+    "//base",
+    "//base/test:test_support",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

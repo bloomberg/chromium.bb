@@ -21,6 +21,7 @@
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'data_reduction_proxy_core_common',
         'pref_registry',
       ],
@@ -60,6 +61,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '..',

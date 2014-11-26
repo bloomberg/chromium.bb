@@ -12,7 +12,9 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
       ],
       'sources': [
         'cloud_devices/common/cloud_device_description.cc',

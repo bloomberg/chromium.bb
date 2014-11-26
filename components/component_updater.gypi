@@ -16,6 +16,7 @@
         '../third_party/zlib/google/zip.gyp:zip',
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
+        '../url/url.gyp:url_lib',
         'crx_file',
         'omaha_client',
       ],

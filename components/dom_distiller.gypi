@@ -13,8 +13,10 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
+            '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
+            '../url/url.gyp:url_lib',
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
             'distilled_page_proto',
@@ -36,6 +38,7 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/base.gyp:base_prefs',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
             '../third_party/dom_distiller_js/dom_distiller_js.gyp:dom_distiller_js_proto',
@@ -116,6 +119,7 @@
             'components.gyp:leveldb_proto_test_support',
             '../sync/sync.gyp:sync',
             '../testing/gmock.gyp:gmock',
+            '../url/url.gyp:url_lib',
           ],
           'include_dirs': [
             '..',
@@ -152,10 +156,13 @@
               'target_name': 'dom_distiller_content',
               'type': 'static_library',
               'dependencies': [
+                '../base/base.gyp:base',
                 '../content/content.gyp:content_browser',
                 '../net/net.gyp:net',
                 '../skia/skia.gyp:skia',
                 '../sync/sync.gyp:sync',
+                '../ui/gfx/gfx.gyp:gfx',
+                '../url/url.gyp:url_lib',
                 'components_resources.gyp:components_resources',
                 'components_strings.gyp:components_strings',
                 'dom_distiller_core',

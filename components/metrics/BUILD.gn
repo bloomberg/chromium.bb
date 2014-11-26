@@ -51,6 +51,8 @@ source_set("metrics") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
+    "//base:prefs",
     "//components/variations",
     "//third_party/zlib",
   ]
@@ -71,7 +73,10 @@ source_set("gpu") {
     ":metrics",
   ]
   deps = [
+    "//base",
+    "//content/public/browser",
     "//gpu/config",
+    "//ui/gfx",
   ]
 }
 
@@ -92,7 +97,9 @@ static_library("net") {
     ":metrics",
   ]
   deps = [
+    "//base",
     "//net",
+    "//url",
   ]
 }
 
@@ -111,12 +118,14 @@ source_set("profiler") {
   ]
   deps = [
     "//base",
+    "//components/variations",
     "//content/public/browser",
+    "//content/public/common",
   ]
 }
 
 # GYP version: components/metrics.gypi:metrics_test_support
-static_library("test_support") {
+source_set("test_support") {
   sources = [
     "test_metrics_service_client.cc",
     "test_metrics_service_client.h",
@@ -124,6 +133,9 @@ static_library("test_support") {
 
   public_deps = [
     ":metrics",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -158,7 +170,12 @@ source_set("unit_tests") {
 
   deps = [
     ":metrics",
+    ":profiler",
+    ":test_support",
+    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/variations",
+    "//content/public/common",
     "//testing/gtest",
   ]
 }

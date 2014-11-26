@@ -13,6 +13,8 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../base/base.gyp:base_prefs',
         '../third_party/zlib/zlib.gyp:zlib',
         'component_metrics_proto',
         'variations',
@@ -82,6 +84,9 @@
         '..',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_browser',
+        '../ui/gfx/gfx.gyp:gfx',
         'component_metrics_proto',
         'metrics',
       ],
@@ -98,7 +103,9 @@
         '..',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../url/url.gyp:url_lib',
         'component_metrics_proto',
         'metrics',
       ],
@@ -122,8 +129,10 @@
       ],
       'dependencies': [
         '../content/content.gyp:content_browser',
+        '../content/content.gyp:content_common',
         'component_metrics_proto',
         'metrics',
+        'variations',
       ],
       'export_dependent_settings': [
         'component_metrics_proto',

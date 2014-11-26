@@ -18,12 +18,15 @@ if (!is_ios) {
       "//components/dom_distiller/core",
     ]
     deps = [
+      "//base",
       "//components/resources",
       "//components/strings",
       "//content/public/browser",
       "//net",
       "//skia",
       "//sync",
+      "//ui/gfx",
+      "//url",
     ]
   }
 }
