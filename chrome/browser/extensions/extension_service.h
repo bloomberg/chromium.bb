@@ -289,6 +289,18 @@ class ExtensionService
   // |was_installed_by_default| flag.
   void DisableUserExtensions(const std::vector<std::string>& except_ids);
 
+  // Puts all extensions in a blocked state: Unloading every extension, and
+  // preventing them from ever loading until UnblockAllExtensions is called.
+  // This state is stored in preferences, so persists until Chrome restarts.
+  //
+  // Component, external component and whitelisted policy installed extensions
+  // are exempt from being Blocked (see CanBlockExtension).
+  void BlockAllExtensions();
+
+  // All blocked extensions are reverted to their previous state, and are
+  // reloaded. Newly added extensions are no longer automatically blocked.
+  void UnblockAllExtensions();
+
   // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extension|'s manifest and re-enables the
   // extension.
@@ -546,6 +558,9 @@ class ExtensionService
   // this extension initially.
   int GetDisableReasonsOnInstalled(const extensions::Extension* extension);
 
+  // Helper method to determine if an extension can be blocked.
+  bool CanBlockExtension(const extensions::Extension* extension) const;
+
   // Helper to determine if updating an extensions should proceed immediately,
   // or if we should delay the update until further notice.
   bool ShouldDelayExtensionUpdate(const std::string& extension_id,
@@ -556,10 +571,11 @@ class ExtensionService
   void ManageBlacklist(
       const extensions::Blacklist::BlacklistStateMap& blacklisted_ids);
 
-  // Add extensions in |blocked| to blacklisted_extensions, remove extensions
-  // that are neither in |blocked|, nor in |unchanged|.
-  void UpdateBlockedExtensions(const extensions::ExtensionIdSet& blocked,
-                               const extensions::ExtensionIdSet& unchanged);
+  // Add extensions in |blacklisted| to blacklisted_extensions, remove
+  // extensions that are neither in |blacklisted|, nor in |unchanged|.
+  void UpdateBlacklistedExtensions(
+      const extensions::ExtensionIdSet& to_blacklist,
+      const extensions::ExtensionIdSet& unchanged);
 
   void UpdateGreylistedExtensions(
       const extensions::ExtensionIdSet& greylist,
@@ -684,6 +700,9 @@ class ExtensionService
   // first time.
   bool is_first_run_;
 
+  // Set to true if extensions are all to be blocked.
+  bool block_extensions_;
+
   // Store the ids of reloading extensions. We use this to re-enable extensions
   // which were disabled for a reload.
   std::set<std::string> reloading_extensions_;
@@ -732,6 +751,8 @@ class ExtensionService
                            GreylistUnknownDontChange);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            ManagementPolicyProhibitsEnableOnInstalled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           BlockAndUnblockBlacklistedExtension);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };

@@ -300,6 +300,7 @@ void ThemeService::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Details<const UnloadedExtensionInfo> unloaded_details(details);
       if (unloaded_details->reason != UnloadedExtensionInfo::REASON_UPDATE &&
+          unloaded_details->reason != UnloadedExtensionInfo::REASON_LOCK_ALL &&
           unloaded_details->extension->is_theme() &&
           unloaded_details->extension->id() == GetThemeID()) {
         UseDefaultTheme();

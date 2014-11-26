@@ -69,6 +69,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // DEPRECATED: Special state for component extensions.
     // Maintained as a placeholder since states may be stored to disk.
     ENABLED_COMPONENT_DEPRECATED,
+    // Add new states here as this enum is stored in prefs.
     NUM_STATES
   };
 
@@ -541,6 +542,7 @@ struct UnloadedExtensionInfo {
     REASON_TERMINATE,         // Extension has terminated.
     REASON_BLACKLIST,         // Extension has been blacklisted.
     REASON_PROFILE_SHUTDOWN,  // Profile is being shut down.
+    REASON_LOCK_ALL,          // All extensions for the profile are blocked.
   };
 
   Reason reason;

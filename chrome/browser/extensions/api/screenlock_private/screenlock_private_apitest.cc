@@ -73,14 +73,9 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
     }
   }
 
-  // Loads |extension_name| as appropriate for the platform and waits for a
-  // pass / fail notification.
+  // Loads |extension_name| and waits for a pass / fail notification.
   void RunTest(const std::string& extension_name) {
-#if defined(OS_CHROMEOS)
     ASSERT_TRUE(RunComponentExtensionTest(extension_name)) << message_;
-#else
-    ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
-#endif
   }
 
  private:

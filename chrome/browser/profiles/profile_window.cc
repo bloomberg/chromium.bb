@@ -17,6 +17,8 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
@@ -28,6 +30,14 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extension_system.h"
+#endif  // defined(ENABLE_EXTENSIONS)
 
 #if !defined(OS_IOS)
 #include "chrome/browser/ui/browser_finder.h"
@@ -44,6 +54,20 @@ namespace {
 
 const char kNewProfileManagementExperimentInternalName[] =
     "enable-new-profile-management";
+
+#if defined(ENABLE_EXTENSIONS)
+void BlockExtensions(Profile* profile) {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  extension_service->BlockAllExtensions();
+}
+
+void UnblockExtensions(Profile* profile) {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  extension_service->UnblockAllExtensions();
+}
+#endif  // defined(ENABLE_EXTENSIONS)
 
 // Handles running a callback when a new Browser for the given profile
 // has been completely created.
@@ -97,6 +121,19 @@ void OpenBrowserWindowForProfile(
     is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
     is_first_run = chrome::startup::IS_FIRST_RUN;
   }
+
+#if defined(ENABLE_EXTENSIONS)
+  // The signin bit will still be set if the profile is being unlocked and the
+  // browser window for it is opening. As part of this unlock process, unblock
+  // all the extensions.
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  int index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (!profile->IsGuestSession() &&
+      cache.ProfileIsSigninRequiredAtIndex(index)) {
+    UnblockExtensions(profile);
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
 
   // If |always_create| is false, and we have a |callback| to run, check
   // whether a browser already exists so that we can run the callback. We don't
@@ -297,11 +334,17 @@ void CloseGuestProfileWindows() {
 }
 
 void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
-  ProfileInfoCache* cache =
-      &g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache* cache = &profile_manager->GetProfileInfoCache();
 
   cache->SetProfileSigninRequiredAtIndex(
       cache->GetIndexOfProfileWithPath(profile_path), true);
+
+#if defined(ENABLE_EXTENSIONS)
+  // Profile guaranteed to exist for it to have been locked.
+  BlockExtensions(profile_manager->GetProfileByPath(profile_path));
+#endif  // defined(ENABLE_EXTENSIONS)
+
   chrome::HideTaskManager();
   UserManager::Show(profile_path,
                     profiles::USER_MANAGER_NO_TUTORIAL,

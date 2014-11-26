@@ -167,10 +167,10 @@ void ExtensionService::AddProviderForTesting(
 
 void ExtensionService::BlacklistExtensionForTest(
     const std::string& extension_id) {
-  ExtensionIdSet blocked;
+  ExtensionIdSet blacklisted;
   ExtensionIdSet unchanged;
-  blocked.insert(extension_id);
-  UpdateBlockedExtensions(blocked, unchanged);
+  blacklisted.insert(extension_id);
+  UpdateBlacklistedExtensions(blacklisted, unchanged);
 }
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
@@ -270,6 +270,7 @@ ExtensionService::ExtensionService(Profile* profile,
       browser_terminating_(false),
       installs_delayed_for_gc_(false),
       is_first_run_(false),
+      block_extensions_(false),
       shared_module_service_(new extensions::SharedModuleService(profile_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -370,11 +371,11 @@ const Extension* ExtensionService::GetExtensionById(
     const std::string& id, bool include_disabled) const {
   int include_mask = ExtensionRegistry::ENABLED;
   if (include_disabled) {
-    // Include blacklisted extensions here because there are hundreds of
-    // callers of this function, and many might assume that this includes those
-    // that have been disabled due to blacklisting.
+    // Include blacklisted and blocked extensions here because there are
+    // hundreds of callers of this function, and many might assume that this
+    // includes those that have been disabled due to blacklisting or blocking.
     include_mask |= ExtensionRegistry::DISABLED |
-                    ExtensionRegistry::BLACKLISTED;
+                    ExtensionRegistry::BLACKLISTED | ExtensionRegistry::BLOCKED;
   }
   return registry_->GetExtensionById(id, include_mask);
 }
@@ -575,12 +576,14 @@ void ExtensionService::ReloadExtensionImpl(
     return;
   }
 
-  // Ignore attempts to reload a blacklisted extension. Sometimes this can
-  // happen in a convoluted reload sequence triggered by the termination of a
-  // blacklisted extension and a naive attempt to reload it. For an example see
-  // http://crbug.com/373842.
-  if (registry_->blacklisted_extensions().Contains(transient_extension_id))
+  // Ignore attempts to reload a blacklisted or blocked extension. Sometimes
+  // this can happen in a convoluted reload sequence triggered by the
+  // termination of a blacklisted or blocked extension and a naive attempt to
+  // reload it. For an example see http://crbug.com/373842.
+  if (registry_->blacklisted_extensions().Contains(transient_extension_id) ||
+      registry_->blocked_extensions().Contains(transient_extension_id)) {
     return;
+  }
 
   base::FilePath path;
 
@@ -785,9 +788,14 @@ bool ExtensionService::IsExtensionEnabled(
   }
 
   if (registry_->disabled_extensions().Contains(extension_id) ||
-      registry_->blacklisted_extensions().Contains(extension_id)) {
+      registry_->blacklisted_extensions().Contains(extension_id) ||
+      registry_->blocked_extensions().Contains(extension_id)) {
     return false;
   }
+
+  if (block_extensions_ &&
+      CanBlockExtension(GetInstalledExtension(extension_id)))
+    return false;
 
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
   // enabled unless otherwise noted.
@@ -913,6 +921,48 @@ void ExtensionService::DisableUserExtensions(
     const std::string& id = (*extension)->id();
     if (except_ids.end() == std::find(except_ids.begin(), except_ids.end(), id))
       DisableExtension(id, extensions::Extension::DISABLE_USER_ACTION);
+  }
+}
+
+// Extensions that are not locked, components or forced by policy should be
+// locked. Extensions are no longer considered enabled or disabled. Blacklisted
+// extensions are now considered both blacklisted and locked.
+void ExtensionService::BlockAllExtensions() {
+  if (block_extensions_)
+    return;
+  block_extensions_ = true;
+
+  // Blacklisted extensions are already unloaded, need not be blocked.
+  scoped_ptr<ExtensionSet> extensions =
+      registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
+                                                ExtensionRegistry::DISABLED |
+                                                ExtensionRegistry::TERMINATED);
+
+  for (const scoped_refptr<const Extension>& extension : *extensions) {
+    const std::string& id = extension->id();
+
+    if (!CanBlockExtension(extension.get()))
+      continue;
+
+    registry_->RemoveEnabled(id);
+    registry_->RemoveDisabled(id);
+    registry_->RemoveTerminated(id);
+
+    registry_->AddBlocked(extension.get());
+    UnloadExtension(id, extensions::UnloadedExtensionInfo::REASON_LOCK_ALL);
+  }
+}
+
+// All locked extensions should revert to being either enabled or disabled
+// as appropriate.
+void ExtensionService::UnblockAllExtensions() {
+  block_extensions_ = false;
+  scoped_ptr<ExtensionSet> to_unblock =
+      registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::BLOCKED);
+
+  for (const scoped_refptr<const Extension>& extension : *to_unblock) {
+    registry_->RemoveBlocked(extension->id());
+    AddExtension(extension.get());
   }
 }
 
@@ -1371,6 +1421,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // installation then threads through the install and pending install flow
     // of this class, and we check when loading installed extensions.
     registry_->AddBlacklisted(extension);
+  } else if (block_extensions_ && CanBlockExtension(extension)) {
+    registry_->AddBlocked(extension);
   } else if (!reloading &&
              extension_prefs_->IsExtensionDisabled(extension->id())) {
     registry_->AddDisabled(extension);
@@ -2194,6 +2246,13 @@ int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
   return Extension::DISABLE_NONE;
 }
 
+// Helper method to determine if an extension can be blocked.
+bool ExtensionService::CanBlockExtension(const Extension* extension) const {
+  return extension->location() != Manifest::COMPONENT &&
+         extension->location() != Manifest::EXTERNAL_COMPONENT &&
+         !system_->management_policy()->MustRemainEnabled(extension, NULL);
+}
+
 bool ExtensionService::ShouldDelayExtensionUpdate(
     const std::string& extension_id,
     bool install_immediately) const {
@@ -2255,7 +2314,7 @@ void ExtensionService::ManageBlacklist(
     const extensions::Blacklist::BlacklistStateMap& state_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::set<std::string> blocked;
+  std::set<std::string> blacklisted;
   ExtensionIdSet greylist;
   ExtensionIdSet unchanged;
   for (extensions::Blacklist::BlacklistStateMap::const_iterator it =
@@ -2267,7 +2326,7 @@ void ExtensionService::ManageBlacklist(
         break;
 
       case extensions::BLACKLISTED_MALWARE:
-        blocked.insert(it->first);
+        blacklisted.insert(it->first);
         break;
 
       case extensions::BLACKLISTED_SECURITY_VULNERABILITY:
@@ -2282,7 +2341,7 @@ void ExtensionService::ManageBlacklist(
     }
   }
 
-  UpdateBlockedExtensions(blocked, unchanged);
+  UpdateBlacklistedExtensions(blacklisted, unchanged);
   UpdateGreylistedExtensions(greylist, unchanged, state_map);
 
   error_controller_->ShowErrorIfNeeded();
@@ -2300,21 +2359,20 @@ void Partition(const ExtensionIdSet& before,
 }
 }  // namespace
 
-void ExtensionService::UpdateBlockedExtensions(
-    const ExtensionIdSet& blocked,
+void ExtensionService::UpdateBlacklistedExtensions(
+    const ExtensionIdSet& blacklisted,
     const ExtensionIdSet& unchanged) {
   ExtensionIdSet not_yet_blocked, no_longer_blocked;
-  Partition(registry_->blacklisted_extensions().GetIDs(),
-            blocked, unchanged,
-            &no_longer_blocked, &not_yet_blocked);
+  Partition(registry_->blacklisted_extensions().GetIDs(), blacklisted,
+            unchanged, &no_longer_blocked, &not_yet_blocked);
 
   for (ExtensionIdSet::iterator it = no_longer_blocked.begin();
        it != no_longer_blocked.end(); ++it) {
     scoped_refptr<const Extension> extension =
         registry_->blacklisted_extensions().GetByID(*it);
     if (!extension.get()) {
-      NOTREACHED() << "Extension " << *it << " no longer blocked, "
-                   << "but it was never blocked.";
+      NOTREACHED() << "Extension " << *it << " no longer blacklisted, "
+                   << "but it was never blacklisted.";
       continue;
     }
     registry_->RemoveBlacklisted(*it);

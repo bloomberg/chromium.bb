@@ -21,11 +21,22 @@ ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
 
 scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet()
     const {
+  return GenerateInstalledExtensionsSet(EVERYTHING).Pass();
+}
+
+scoped_ptr<ExtensionSet> ExtensionRegistry::GenerateInstalledExtensionsSet(
+    int include_mask) const {
   scoped_ptr<ExtensionSet> installed_extensions(new ExtensionSet);
-  installed_extensions->InsertAll(enabled_extensions_);
-  installed_extensions->InsertAll(disabled_extensions_);
-  installed_extensions->InsertAll(terminated_extensions_);
-  installed_extensions->InsertAll(blacklisted_extensions_);
+  if (include_mask & IncludeFlag::ENABLED)
+    installed_extensions->InsertAll(enabled_extensions_);
+  if (include_mask & IncludeFlag::DISABLED)
+    installed_extensions->InsertAll(disabled_extensions_);
+  if (include_mask & IncludeFlag::TERMINATED)
+    installed_extensions->InsertAll(terminated_extensions_);
+  if (include_mask & IncludeFlag::BLACKLISTED)
+    installed_extensions->InsertAll(blacklisted_extensions_);
+  if (include_mask & IncludeFlag::BLOCKED)
+    installed_extensions->InsertAll(blocked_extensions_);
   return installed_extensions.Pass();
 }
 
@@ -108,6 +119,11 @@ const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
     if (extension)
       return extension;
   }
+  if (include_mask & BLOCKED) {
+    const Extension* extension = blocked_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
+  }
   return NULL;
 }
 
@@ -147,11 +163,21 @@ bool ExtensionRegistry::RemoveBlacklisted(const std::string& id) {
   return blacklisted_extensions_.Remove(id);
 }
 
+bool ExtensionRegistry::AddBlocked(
+    const scoped_refptr<const Extension>& extension) {
+  return blocked_extensions_.Insert(extension);
+}
+
+bool ExtensionRegistry::RemoveBlocked(const std::string& id) {
+  return blocked_extensions_.Remove(id);
+}
+
 void ExtensionRegistry::ClearAll() {
   enabled_extensions_.Clear();
   disabled_extensions_.Clear();
   terminated_extensions_.Clear();
   blacklisted_extensions_.Clear();
+  blocked_extensions_.Clear();
 }
 
 void ExtensionRegistry::SetDisabledModificationCallback(

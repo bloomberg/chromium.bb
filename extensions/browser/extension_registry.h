@@ -33,12 +33,13 @@ class ExtensionRegistry : public KeyedService {
  public:
   // Flags to pass to GetExtensionById() to select which sets to look in.
   enum IncludeFlag {
-    NONE        = 0,
-    ENABLED     = 1 << 0,
-    DISABLED    = 1 << 1,
-    TERMINATED  = 1 << 2,
+    NONE = 0,
+    ENABLED = 1 << 0,
+    DISABLED = 1 << 1,
+    TERMINATED = 1 << 2,
     BLACKLISTED = 1 << 3,
-    EVERYTHING = (1 << 4) - 1,
+    BLOCKED = 1 << 4,
+    EVERYTHING = (1 << 5) - 1,
   };
 
   explicit ExtensionRegistry(content::BrowserContext* browser_context);
@@ -63,10 +64,20 @@ class ExtensionRegistry : public KeyedService {
   const ExtensionSet& blacklisted_extensions() const {
     return blacklisted_extensions_;
   }
+  const ExtensionSet& blocked_extensions() const { return blocked_extensions_; }
 
-  // Returns a set of all installed, disabled, blacklisted, and terminated
-  // extensions.
+  // Returns the set of all installed extensions, regardless of state (enabled,
+  // disabled, etc). Equivalent to GenerateInstalledExtensionSet(EVERYTHING).
   scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet() const;
+
+  // Returns a set of all extensions in the subsets specified by |include_mask|.
+  //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
+  //  * disabled_extensions()    --> ExtensionRegistry::DISABLED
+  //  * terminated_extensions()  --> ExtensionRegistry::TERMINATED
+  //  * blacklisted_extensions() --> ExtensionRegistry::BLACKLISTED
+  //  * blocked_extensions()     --> ExtensionRegistry::BLOCKED
+  scoped_ptr<ExtensionSet> GenerateInstalledExtensionsSet(
+      int include_mask) const;
 
   // The usual observer interface.
   void AddObserver(ExtensionRegistryObserver* observer);
@@ -107,6 +118,7 @@ class ExtensionRegistry : public KeyedService {
   //  * disabled_extensions()    --> ExtensionRegistry::DISABLED
   //  * terminated_extensions()  --> ExtensionRegistry::TERMINATED
   //  * blacklisted_extensions() --> ExtensionRegistry::BLACKLISTED
+  //  * blocked_extensions()     --> ExtensionRegistry::BLOCKED
   // Returns NULL if the extension is not found in the selected sets.
   const Extension* GetExtensionById(const std::string& id,
                                     int include_mask) const;
@@ -136,6 +148,10 @@ class ExtensionRegistry : public KeyedService {
   bool AddBlacklisted(const scoped_refptr<const Extension>& extension);
   bool RemoveBlacklisted(const std::string& id);
 
+  // As above, but for the blocked set.
+  bool AddBlocked(const scoped_refptr<const Extension>& extension);
+  bool RemoveBlocked(const std::string& id);
+
   // Removes all extensions from all sets.
   void ClearAll();
 
@@ -163,6 +179,9 @@ class ExtensionRegistry : public KeyedService {
   // so that if extensions are blacklisted by mistake they can easily be
   // un-blacklisted.
   ExtensionSet blacklisted_extensions_;
+
+  // Extensions that are installed and blocked. Will never be loaded.
+  ExtensionSet blocked_extensions_;
 
   ObserverList<ExtensionRegistryObserver> observers_;
 
