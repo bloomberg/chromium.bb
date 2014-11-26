@@ -2921,17 +2921,25 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationIterationCount
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName(bool allowQuotedName)
 {
     CSSParserValue* value = m_valueList->current();
-    // FIXME: Strings are not valid as per spec
-    if (value->unit == CSSPrimitiveValue::CSS_STRING || value->unit == CSSPrimitiveValue::CSS_IDENT) {
-        if (value->unit == CSSPrimitiveValue::CSS_STRING && m_context.useCounter())
+
+    if (value->id == CSSValueNone)
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+
+    if (value->unit == CSSPrimitiveValue::CSS_IDENT)
+        return createPrimitiveStringValue(value);
+
+    if (allowQuotedName && value->unit == CSSPrimitiveValue::CSS_STRING) {
+        // Legacy support for strings in prefixed animations
+        if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::QuotedAnimationName);
-        if (value->id == CSSValueNone || (value->unit == CSSPrimitiveValue::CSS_STRING && equalIgnoringCase(value->string, "none")))
+        if (equalIgnoringCase(value->string, "none"))
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return createPrimitiveStringValue(value);
     }
+
     return nullptr;
 }
 
@@ -3088,8 +3096,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPr
         value = parseAnimationIterationCount();
         break;
     case CSSPropertyAnimationName:
+        value = parseAnimationName(false);
+        break;
     case CSSPropertyWebkitAnimationName:
-        value = parseAnimationName();
+        value = parseAnimationName(true);
         break;
     case CSSPropertyAnimationPlayState:
     case CSSPropertyWebkitAnimationPlayState:

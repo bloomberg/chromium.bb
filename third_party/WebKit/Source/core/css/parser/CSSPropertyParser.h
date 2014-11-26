@@ -123,7 +123,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDuration();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationFillMode();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationIterationCount();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationName();
+    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationName(bool allowQuotedName);
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationPlayState();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
