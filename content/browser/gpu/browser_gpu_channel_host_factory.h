@@ -25,6 +25,11 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static void Terminate();
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
 
+  static void EnableGpuMemoryBufferFactoryUsage(
+      gfx::GpuMemoryBuffer::Usage usage);
+  static bool IsGpuMemoryBufferFactoryUsageEnabled(
+      gfx::GpuMemoryBuffer::Usage usage);
+
   // Overridden from GpuChannelHostFactory:
   bool IsMainThread() override;
   base::MessageLoop* GetMainLoop() override;

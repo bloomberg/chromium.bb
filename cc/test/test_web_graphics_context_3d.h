@@ -330,6 +330,9 @@ class TestWebGraphicsContext3D {
   void set_support_image(bool support) {
     test_capabilities_.gpu.image = support;
   }
+  void set_support_texture_rectangle(bool support) {
+    test_capabilities_.gpu.texture_rectangle = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

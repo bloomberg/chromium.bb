@@ -22,7 +22,6 @@
 
 namespace content {
 
-
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
                                          Format format,

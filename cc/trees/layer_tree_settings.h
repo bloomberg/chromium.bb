@@ -73,6 +73,7 @@ class CC_EXPORT LayerTreeSettings {
   bool strict_layer_property_change_checking;
   bool use_one_copy;
   bool use_zero_copy;
+  bool use_image_external;
   bool ignore_root_layer_flings;
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;

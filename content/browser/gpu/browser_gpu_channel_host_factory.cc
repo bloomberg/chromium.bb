@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/synchronization/waitable_event.h"
@@ -36,6 +38,11 @@
 #endif
 
 namespace content {
+namespace {
+
+base::LazyInstance<std::set<gfx::GpuMemoryBuffer::Usage>>
+    g_enabled_gpu_memory_buffer_usages;
+}
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
@@ -230,6 +237,18 @@ void BrowserGpuChannelHostFactory::Terminate() {
   DCHECK(instance_);
   delete instance_;
   instance_ = NULL;
+}
+
+// static
+void BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
+    gfx::GpuMemoryBuffer::Usage usage) {
+  g_enabled_gpu_memory_buffer_usages.Get().insert(usage);
+}
+
+// static
+bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
+    gfx::GpuMemoryBuffer::Usage usage) {
+  return g_enabled_gpu_memory_buffer_usages.Get().count(usage) != 0;
 }
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
@@ -428,6 +447,10 @@ void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
 bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
+  // Return early if usage is not enabled.
+  if (IsGpuMemoryBufferFactoryUsageEnabled(usage))
+    return false;
+
   // Preferred type is always used by factory.
   std::vector<gfx::GpuMemoryBufferType> supported_types;
   GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);

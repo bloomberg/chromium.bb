@@ -5677,6 +5677,9 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
         TestWebGraphicsContext3D::Create();
     context3d->set_support_image(true);
     context3d->set_support_sync_query(true);
+#if defined(OS_MACOSX)
+    context3d->set_support_texture_rectangle(true);
+#endif
 
     if (delegating_renderer())
       return FakeOutputSurface::CreateDelegating3d(context3d.Pass());

@@ -232,6 +232,8 @@ extern const char kTraceUploadURL[];
 CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
 CONTENT_EXPORT extern const char kUseDiscardableMemory[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
+CONTENT_EXPORT extern const char kEnableNativeGpuMemoryBuffers[];
+CONTENT_EXPORT extern const char kUseImageExternal[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 extern const char kUseSurfaces[];
 extern const char kUtilityCmdPrefix[];

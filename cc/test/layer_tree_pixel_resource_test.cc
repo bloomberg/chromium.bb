@@ -159,7 +159,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterWorkerPool(
     case ZERO_COPY_RASTER_WORKER_POOL:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
-      EXPECT_TRUE(host_impl->CanUseZeroCopyRasterizer());
+      EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
       *resource_pool =
           ResourcePool::Create(resource_provider,
                                draw_texture_target_,
@@ -173,7 +173,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterWorkerPool(
     case ONE_COPY_RASTER_WORKER_POOL:
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
-      EXPECT_TRUE(host_impl->CanUseOneCopyRasterizer());
+      EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
       // We need to create a staging resource pool when using copy rasterizer.
       *staging_resource_pool =
           ResourcePool::Create(resource_provider,

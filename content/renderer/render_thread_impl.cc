@@ -520,6 +520,8 @@ void RenderThreadImpl::Init() {
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
 #endif
 
+  use_image_external_ = command_line.HasSwitch(switches::kUseImageExternal);
+
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
   } else if (command_line.HasSwitch(switches::kEnableLCDText)) {

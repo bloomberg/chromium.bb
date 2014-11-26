@@ -841,6 +841,12 @@ const char kUseDiscardableMemory[] = "use-discardable-memory";
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
+// Enable native GPU memory buffer support when available.
+const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
+
+// Use TEXTURE_EXTERNAL_OES target with CHROMIUM_image extension.
+const char kUseImageExternal[] = "use-image-external";
+
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 

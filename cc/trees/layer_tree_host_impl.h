@@ -481,8 +481,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Only valid for synchronous (non-scheduled) single-threaded case.
   void SynchronouslyInitializeAllTiles();
 
-  bool CanUseZeroCopyRasterizer() const;
-  bool CanUseOneCopyRasterizer() const;
   virtual void CreateResourceAndRasterWorkerPool(
       scoped_ptr<RasterWorkerPool>* raster_worker_pool,
       scoped_ptr<ResourcePool>* resource_pool,

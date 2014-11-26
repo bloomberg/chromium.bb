@@ -50,6 +50,7 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/geofencing/geofencing_dispatcher_host.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -105,6 +106,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
@@ -1020,6 +1022,20 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
+
+  if (BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
+          gfx::GpuMemoryBuffer::MAP)) {
+    std::vector<gfx::GpuMemoryBufferType> supported_types;
+    GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+    DCHECK(!supported_types.empty());
+
+    // The GPU service will always use the preferred type.
+    gfx::GpuMemoryBufferType type = supported_types[0];
+
+    // Surface texture backed GPU memory buffers require TEXTURE_EXTERNAL_OES.
+    if (type == gfx::SURFACE_TEXTURE_BUFFER)
+      command_line->AppendSwitch(switches::kUseImageExternal);
+  }
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

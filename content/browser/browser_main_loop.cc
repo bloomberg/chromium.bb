@@ -430,6 +430,16 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif  // !defined(OS_IOS)
 
+  if (parsed_command_line_.HasSwitch(switches::kEnableNativeGpuMemoryBuffers)) {
+    BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
+        gfx::GpuMemoryBuffer::MAP);
+  }
+
+#if defined(USE_OZONE)
+  BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
+      gfx::GpuMemoryBuffer::SCANOUT);
+#endif
+
   if (parts_)
     parts_->PostEarlyInitialization();
 }
