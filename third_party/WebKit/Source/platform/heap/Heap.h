@@ -251,6 +251,7 @@ public:
     void mark(Visitor*);
     void finalize();
     void markDead();
+    void markUnmarkedObjectsDead();
     virtual void markOrphaned() override
     {
         // Zap the payload with a recognizable value to detect any incorrect

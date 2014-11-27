@@ -803,7 +803,7 @@ void ThreadState::didV8GC()
     m_didV8GCAfterLastGC = true;
 }
 
-void ThreadState::performPendingGC(StackState stackState)
+void ThreadState::runScheduledGC(StackState stackState)
 {
     checkThread();
     if (stackState == NoHeapPointersOnStack) {
@@ -817,6 +817,7 @@ void ThreadState::performPendingGC(StackState stackState)
 
 void ThreadState::makeConsistentForSweeping()
 {
+    ASSERT(Heap::isInGC());
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->makeConsistentForSweeping();
 }
@@ -839,6 +840,7 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
 
 void ThreadState::preGC()
 {
+    ASSERT(Heap::isInGC());
     for (int i = 0; i < NumberOfHeaps; i++) {
         BaseHeap* heap = m_heaps[i];
         heap->makeConsistentForSweeping();
@@ -858,6 +860,7 @@ void ThreadState::preGC()
 
 void ThreadState::postGC()
 {
+    ASSERT(Heap::isInGC());
     setGCState(ThreadState::SweepScheduled);
 }
 
@@ -898,7 +901,7 @@ void ThreadState::resumeThreads()
 void ThreadState::safePoint(StackState stackState)
 {
     checkThread();
-    performPendingGC(stackState);
+    runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_stackState = stackState;
     m_atSafePoint = true;
@@ -941,7 +944,7 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
 #endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
-    performPendingGC(stackState);
+    runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_atSafePoint = true;
     m_stackState = stackState;

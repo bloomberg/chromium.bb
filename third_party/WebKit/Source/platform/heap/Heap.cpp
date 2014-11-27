@@ -556,6 +556,15 @@ void LargeObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
     mark(visitor);
 }
 
+template<typename Header>
+void LargeObject<Header>::markUnmarkedObjectsDead()
+{
+    if (isMarked())
+        unmark();
+    else
+        markDead();
+}
+
 #if ENABLE(ASSERT)
 static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 {
@@ -695,17 +704,17 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
 }
 
 template<typename Header>
-bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
+bool ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize)
 {
     ASSERT(!hasCurrentAllocationArea());
     size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
     int i = m_freeList.m_biggestFreeListIndex;
     for (; i > 0; i--, bucketSize >>= 1) {
-        if (bucketSize < minSize) {
-            // A FreeListEntry for bucketSize might be larger than minSize.
+        if (bucketSize < allocationSize) {
+            // A FreeListEntry for bucketSize might be larger than allocationSize.
             // FIXME: We check only the first FreeListEntry because searching
             // the entire list is costly.
-            if (!m_freeList.m_freeLists[i] || m_freeList.m_freeLists[i]->size() < minSize)
+            if (!m_freeList.m_freeLists[i] || m_freeList.m_freeLists[i]->size() < allocationSize)
                 break;
         }
         FreeListEntry* entry = m_freeList.m_freeLists[i];
@@ -714,7 +723,7 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
             entry->unlink(&m_freeList.m_freeLists[i]);
             setAllocationPoint(entry->address(), entry->size());
             ASSERT(hasCurrentAllocationArea());
-            ASSERT(remainingAllocationSize() >= minSize);
+            ASSERT(remainingAllocationSize() >= allocationSize);
             return true;
         }
     }
@@ -723,18 +732,28 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
 }
 
 template<typename Header>
-void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* gcInfo)
+void ThreadHeap<Header>::ensureCurrentAllocation(size_t allocationSize, const GCInfo* gcInfo)
 {
     setAllocationPoint(0, 0);
-    ASSERT(minSize >= allocationGranularity);
-    if (allocateFromFreeList(minSize))
+    ASSERT(allocationSize >= allocationGranularity);
+    if (allocateFromFreeList(allocationSize))
         return;
-    if (coalesce(minSize) && allocateFromFreeList(minSize))
+    if (coalesce(allocationSize) && allocateFromFreeList(allocationSize))
         return;
     addPageToHeap(gcInfo);
-    bool success = allocateFromFreeList(minSize);
+    bool success = allocateFromFreeList(allocationSize);
     RELEASE_ASSERT(success);
 }
+
+#if ENABLE(ASSERT)
+template<typename Header>
+static bool isLargeObjectAligned(LargeObject<Header>* largeObject, Address address)
+{
+    // Check that a large object is blinkPageSize aligned (modulo the osPageSize
+    // for the guard page).
+    return reinterpret_cast<Address>(largeObject) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(largeObject));
+}
+#endif
 
 template<typename Header>
 BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
@@ -748,13 +767,12 @@ BaseHeapPage* ThreadHeap<Header>::pageFromAddress(Address address)
             return page;
     }
     for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
-        // Check that large pages are blinkPageSize aligned (modulo the
-        // osPageSize for the guard page).
-        ASSERT(reinterpret_cast<Address>(largeObject) - WTF::kSystemPageSize == roundToBlinkPageStart(reinterpret_cast<Address>(largeObject)));
+        ASSERT(isLargeObjectAligned(largeObject, address));
         if (largeObject->contains(address))
             return largeObject;
     }
     for (LargeObject<Header>* largeObject = m_firstLargeObjectAllocatedDuringSweeping; largeObject; largeObject = largeObject->next()) {
+        ASSERT(isLargeObjectAligned(largeObject, address));
         if (largeObject->contains(address))
             return largeObject;
     }
@@ -904,7 +922,7 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
 }
 
 template<typename Header>
-bool ThreadHeap<Header>::coalesce(size_t minSize)
+bool ThreadHeap<Header>::coalesce(size_t allocationSize)
 {
     if (m_threadState->isSweepInProgress())
         return false;
@@ -912,10 +930,11 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
     if (m_promptlyFreedCount < 256)
         return false;
 
-    // The smallest bucket able to satisfy an allocation request for minSize is
-    // the bucket where all free-list entries are guarantied to be larger than
-    // minSize. That bucket is one larger than the bucket minSize would go into.
-    size_t neededBucketIndex = FreeList<Header>::bucketIndexForSize(minSize) + 1;
+    // The smallest bucket able to satisfy an allocation request for
+    // allocationSize is the bucket where all free-list entries are guaranteed
+    // to be larger than allocationSize. That bucket is one larger than
+    // the bucket allocationSize would go into.
+    size_t neededBucketIndex = FreeList<Header>::bucketIndexForSize(allocationSize) + 1;
     size_t neededFreeEntrySize = 1 << neededBucketIndex;
     size_t neededPromptlyFreedSize = neededFreeEntrySize * 3;
     size_t foundFreeEntrySize = 0;
@@ -924,7 +943,7 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
     if (neededPromptlyFreedSize >= blinkPageSize)
         return false;
 
-    TRACE_EVENT_BEGIN2("blink_gc", "ThreadHeap::coalesce" , "requestedSize", (unsigned)minSize , "neededSize", (unsigned)neededFreeEntrySize);
+    TRACE_EVENT_BEGIN2("blink_gc", "ThreadHeap::coalesce" , "requestedSize", (unsigned)allocationSize , "neededSize", (unsigned)neededFreeEntrySize);
 
     // Search for a coalescing candidate.
     ASSERT(!hasCurrentAllocationArea());
@@ -1179,6 +1198,8 @@ void OrphanedPagePool::addOrphanedPage(int index, BaseHeapPage* page)
 NO_SANITIZE_ADDRESS
 void OrphanedPagePool::decommitOrphanedPages()
 {
+    ASSERT(Heap::isInGC());
+
 #if ENABLE(ASSERT)
     // No locking needed as all threads are at safepoints at this point in time.
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
@@ -1485,14 +1506,13 @@ void ThreadHeap<Header>::makeConsistentForSweeping()
 template<typename Header>
 void ThreadHeap<Header>::markUnmarkedObjectsDead()
 {
+    ASSERT(Heap::isInGC());
     ASSERT(isConsistentForSweeping());
-    for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
         page->markUnmarkedObjectsDead();
+    }
     for (LargeObject<Header>* largeObject = m_firstLargeObject; largeObject; largeObject = largeObject->next()) {
-        if (largeObject->isMarked())
-            largeObject->unmark();
-        else
-            largeObject->markDead();
+        largeObject->markUnmarkedObjectsDead();
     }
 }
 
@@ -1633,6 +1653,7 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 template<typename Header>
 void HeapPage<Header>::markUnmarkedObjectsDead()
 {
+    ASSERT(Heap::isInGC());
     for (Address headerAddress = payload(); headerAddress < end();) {
         Header* header = reinterpret_cast<Header*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -2629,6 +2650,7 @@ void ThreadHeap<Header>::prepareHeapForTermination()
         largeObject->setTerminating();
     }
 }
+
 size_t Heap::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;

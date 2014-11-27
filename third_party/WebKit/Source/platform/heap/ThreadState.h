@@ -695,7 +695,7 @@ private:
         m_safePointScopeMarker = 0;
     }
 
-    void performPendingGC(StackState);
+    void runScheduledGC(StackState);
 
     // Finds the Blink HeapPage in this thread-specific heap
     // corresponding to a given address. Return 0 if the address is
