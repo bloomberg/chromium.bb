@@ -54,6 +54,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
+#include "wtf/ArrayBufferContents.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
@@ -348,32 +349,41 @@ PassRefPtr<SkColorFilter> ImageBuffer::createColorSpaceFilter(ColorSpace srcColo
     return adoptRef(SkTableColorFilter::CreateARGB(0, lut, lut, lut));
 }
 
-PassRefPtr<Uint8ClampedArray> ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect) const
+bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::ArrayBufferContents& contents) const
 {
-    if (!isSurfaceValid())
-        return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
+    Checked<int, RecordOverflow> dataSize = 4;
+    dataSize *= rect.width();
+    dataSize *= rect.height();
+    if (dataSize.hasOverflowed())
+        return false;
 
-    float area = 4.0f * rect.width() * rect.height();
-    if (area > static_cast<float>(std::numeric_limits<int>::max()))
-        return nullptr;
+    if (!isSurfaceValid()) {
+        WTF::ArrayBufferContents result(rect.width() * rect.height(), 4, WTF::ArrayBufferContents::ZeroInitialize);
+        result.transfer(contents);
+        return true;
+    }
 
-    RefPtr<Uint8ClampedArray> result = Uint8ClampedArray::createUninitialized(rect.width() * rect.height() * 4);
-
-    if (rect.x() < 0
+    const bool hasStrayArea =
+        rect.x() < 0
         || rect.y() < 0
         || rect.maxX() > m_surface->size().width()
-        || rect.maxY() > m_surface->size().height())
-        result->zeroFill();
+        || rect.maxY() > m_surface->size().height();
+    WTF::ArrayBufferContents result(
+        rect.width() * rect.height(), 4,
+        hasStrayArea
+        ? WTF::ArrayBufferContents::ZeroInitialize
+        : WTF::ArrayBufferContents::DontInitialize);
 
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
     m_surface->willAccessPixels();
-    context()->readPixels(info, result->data(), 4 * rect.width(), rect.x(), rect.y());
-    return result.release();
+    context()->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
+    result.transfer(contents);
+    return true;
 }
 
-void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint)
+void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint)
 {
     if (!isSurfaceValid())
         return;
@@ -396,7 +406,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     ASSERT(originY < sourceRect.maxY());
 
     const size_t srcBytesPerRow = 4 * sourceSize.width();
-    const void* srcAddr = source->data() + originY * srcBytesPerRow + originX * 4;
+    const void* srcAddr = source + originY * srcBytesPerRow + originX * 4;
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType, alphaType);
 
