@@ -1,0 +1,60 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x384
+  RenderBlock {HTML} at (0,0) size 800x384
+    RenderBody {BODY} at (8,8) size 784x368
+      RenderBlock {DIV} at (0,0) size 784x48
+        RenderText {#text} at (0,0) size 352x16
+          text run at (0,0) width 352: "Test all of the values of text-justify for 8bits characters"
+        RenderBR {BR} at (351,0) size 1x16
+        RenderText {#text} at (0,16) size 623x16
+          text run at (0,16) width 623: "This test checks that all of the values for text-justify property works properly for 8bits characters."
+        RenderBR {BR} at (622,16) size 1x16
+        RenderText {#text} at (0,32) size 463x16
+          text run at (0,32) width 463: "Every block has been set as 'text-align: justify' and 'text-align-last: start'."
+      RenderBlock (anonymous) at (0,48) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderInline {B} at (0,0) size 115x16
+          RenderText {#text} at (0,16) size 115x16
+            text run at (0,16) width 115: "text-justify: auto"
+        RenderBR {BR} at (114,16) size 1x16
+      RenderBlock {DIV} at (0,80) size 302x44 [border: (1px solid #000000)]
+        RenderText {#text} at (1,1) size 300x42
+          text run at (1,1) width 300: "Lorem ipsum dolor sit amet, consectetuer"
+          text run at (1,15) width 300: "adipiscing elit. Aenean commodo ligula"
+          text run at (1,29) width 80: "eget dolor."
+      RenderBlock (anonymous) at (0,124) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderInline {B} at (0,0) size 117x16
+          RenderText {#text} at (0,16) size 117x16
+            text run at (0,16) width 117: "text-justify: none"
+        RenderBR {BR} at (116,16) size 1x16
+      RenderBlock {DIV} at (0,156) size 302x44 [border: (1px solid #000000)]
+        RenderText {#text} at (1,1) size 289x42
+          text run at (1,1) width 289: "Lorem ipsum dolor sit amet, consectetuer"
+          text run at (1,15) width 274: "adipiscing elit. Aenean commodo ligula"
+          text run at (1,29) width 80: "eget dolor."
+      RenderBlock (anonymous) at (0,200) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderInline {B} at (0,0) size 158x16
+          RenderText {#text} at (0,16) size 158x16
+            text run at (0,16) width 158: "text-justify: inter-word"
+        RenderBR {BR} at (157,16) size 1x16
+      RenderBlock {DIV} at (0,232) size 302x44 [border: (1px solid #000000)]
+        RenderText {#text} at (1,1) size 300x42
+          text run at (1,1) width 300: "Lorem ipsum dolor sit amet, consectetuer"
+          text run at (1,15) width 300: "adipiscing elit. Aenean commodo ligula"
+          text run at (1,29) width 80: "eget dolor."
+      RenderBlock (anonymous) at (0,276) size 784x32
+        RenderBR {BR} at (0,0) size 0x16
+        RenderInline {B} at (0,0) size 151x16
+          RenderText {#text} at (0,16) size 151x16
+            text run at (0,16) width 151: "text-justify: distribute"
+        RenderBR {BR} at (150,16) size 1x16
+      RenderBlock {DIV} at (0,308) size 302x44 [border: (1px solid #000000)]
+        RenderText {#text} at (1,1) size 300x42
+          text run at (1,1) width 300: "Lorem ipsum dolor sit amet, consectetuer"
+          text run at (1,15) width 300: "adipiscing elit. Aenean commodo ligula"
+          text run at (1,29) width 80: "eget dolor."
+      RenderBlock (anonymous) at (0,352) size 784x16
+        RenderBR {BR} at (0,0) size 0x16

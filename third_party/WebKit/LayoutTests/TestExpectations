@@ -1406,5 +1406,3 @@ crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsManua
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
-
-crbug.com/248894 fast/css3-text/css3-text-justify/text-justify-8bits.html [ NeedsRebaseline ]
