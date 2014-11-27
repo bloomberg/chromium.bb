@@ -82,6 +82,7 @@ class MakeNamesWriter(in_generator.Writer):
             'suffix': suffix,
             'export': export,
             'entries': self.in_file.name_dictionaries,
+            'in_files': self.in_file.file_paths,
         }
 
     @template_expander.use_jinja("MakeNames.h.tmpl", filters=filters)

@@ -53,7 +53,8 @@ def _is_comment(line):
     return line.startswith("//") or line.startswith("#")
 
 class InFile(object):
-    def __init__(self, lines, defaults, valid_values=None, default_parameters=None):
+    def __init__(self, file_paths, lines, defaults, valid_values=None, default_parameters=None):
+        self.file_paths = file_paths
         self.name_dictionaries = []
         self.parameters = copy.deepcopy(default_parameters if default_parameters else {})
         self._defaults = defaults
@@ -67,7 +68,7 @@ class InFile(object):
             assert path.endswith(".in")
             with open(os.path.abspath(path)) as in_file:
                 lines += in_file.readlines()
-        return InFile(lines, defaults, valid_values, default_parameters)
+        return InFile(file_paths, lines, defaults, valid_values, default_parameters)
 
     def _is_sequence(self, arg):
         return (not hasattr(arg, "strip")
