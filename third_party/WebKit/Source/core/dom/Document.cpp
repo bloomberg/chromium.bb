@@ -499,8 +499,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_pluginLoadingTimer(this, &Document::pluginLoadingTimerFired)
     , m_referrerPolicy(ReferrerPolicyDefault)
-    , m_directionSetOnDocumentElement(false)
-    , m_writingModeSetOnDocumentElement(false)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
@@ -1687,10 +1685,8 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         bodyStyle = body->renderStyle();
         if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
-        if (!writingModeSetOnDocumentElement())
-            rootWritingMode = bodyStyle->writingMode();
-        if (!directionSetOnDocumentElement())
-            rootDirection = bodyStyle->direction();
+        rootWritingMode = bodyStyle->writingMode();
+        rootDirection = bodyStyle->direction();
     }
 
     RefPtr<RenderStyle> overflowStyle;

@@ -252,9 +252,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
 void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& state, CSSValue* value)
 {
     state.style()->setDirection(*toCSSPrimitiveValue(value));
-    Element* element = state.element();
-    if (element && element == element->document().documentElement())
-        element->document().setDirectionSetOnDocumentElement(true);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
@@ -877,9 +874,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolver
 {
     if (value->isPrimitiveValue())
         state.setWritingMode(*toCSSPrimitiveValue(value));
-    // FIXME: It is not ok to modify document state while applying style.
-    if (state.element() && state.element() == state.document().documentElement())
-        state.document().setWritingModeSetOnDocumentElement(true);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleResolverState& state, CSSValue* value)

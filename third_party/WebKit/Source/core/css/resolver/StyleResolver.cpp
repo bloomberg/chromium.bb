@@ -517,12 +517,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
-static inline void resetDirectionAndWritingModeOnDocument(Document& document)
-{
-    document.setDirectionSetOnDocumentElement(false);
-    document.setWritingModeSetOnDocumentElement(false);
-}
-
 static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
 {
     for (size_t i = 0; i < contentAttrValues.size(); ++i)
@@ -567,8 +561,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
-    if (element == document().documentElement())
-        resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), element, defaultParent);
 
     if (sharingBehavior == AllowStyleSharing && state.parentStyle()) {
@@ -671,8 +663,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
     ASSERT(document().settings());
     ASSERT(!hasPendingAuthorStyleSheets());
 
-    if (&element == document().documentElement())
-        resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), &element, parentStyle);
 
     MatchResult result;
@@ -871,7 +861,6 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
     ASSERT(!hasPendingAuthorStyleSheets());
-    resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), document().documentElement()); // m_rootElementStyle will be set to the document style.
 
     RefPtr<RenderStyle> style = RenderStyle::create();
