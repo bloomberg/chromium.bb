@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "chromeos/ime/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/extension_ime_util.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 
 #include <string>
 

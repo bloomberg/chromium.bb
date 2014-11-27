@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/fake_ime_keyboard.h"
+#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 
 namespace chromeos {
 namespace input_method {

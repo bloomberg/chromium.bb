@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chromeos/ime/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace user_manager {
 class User;

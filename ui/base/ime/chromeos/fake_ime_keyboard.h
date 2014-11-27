@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
-#define CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
+#ifndef UI_BASE_IME_CHROMEOS_FAKE_IME_KEYBOARD_H_
+#define UI_BASE_IME_CHROMEOS_FAKE_IME_KEYBOARD_H_
 
-#include "chromeos/ime/ime_keyboard.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
+class UI_BASE_EXPORT FakeImeKeyboard : public ImeKeyboard {
  public:
   FakeImeKeyboard();
   virtual ~FakeImeKeyboard();
@@ -42,4 +41,4 @@ class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
+#endif  // UI_BASE_IME_CHROMEOS_FAKE_IME_KEYBOARD_H_

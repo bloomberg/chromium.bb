@@ -16,11 +16,11 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace content {
 class WebUI;

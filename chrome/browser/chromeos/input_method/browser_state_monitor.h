@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
 namespace input_method {

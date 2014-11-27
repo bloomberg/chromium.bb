@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_
-#define CHROMEOS_IME_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_
 
-#include "chromeos/chromeos_export.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class CHROMEOS_EXPORT MockComponentExtIMEManagerDelegate
+class UI_BASE_EXPORT MockComponentExtIMEManagerDelegate
     : public ComponentExtensionIMEManagerDelegate {
  public:
   MockComponentExtIMEManagerDelegate();
@@ -60,4 +60,4 @@ class CHROMEOS_EXPORT MockComponentExtIMEManagerDelegate
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_COMPONENT_EXTENSION_IME_MANAGER_DELEGATE_H_

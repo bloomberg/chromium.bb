@@ -252,27 +252,6 @@
       'dbus/volume_state.h',
       'disks/disk_mount_manager.cc',
       'disks/disk_mount_manager.h',
-      'ime/component_extension_ime_manager.cc',
-      'ime/component_extension_ime_manager.h',
-      'ime/composition_text.cc',
-      'ime/composition_text.h',
-      'ime/extension_ime_util.cc',
-      'ime/extension_ime_util.h',
-      'ime/fake_ime_keyboard.cc',
-      'ime/fake_ime_keyboard.h',
-      'ime/ime_keyboard.cc',
-      'ime/ime_keyboard.h',
-      'ime/ime_keyboard_ozone.cc',
-      'ime/ime_keyboard_ozone.h',
-      'ime/ime_keyboard_x11.cc',
-      'ime/ime_keyboard_x11.h',
-      'ime/input_method_delegate.h',
-      'ime/input_method_descriptor.cc',
-      'ime/input_method_descriptor.h',
-      'ime/input_method_manager.cc',
-      'ime/input_method_manager.h',
-      'ime/input_method_whitelist.cc',
-      'ime/input_method_whitelist.h',
       'login/auth/auth_attempt_state.cc',
       'login/auth/auth_attempt_state.h',
       'login/auth/auth_attempt_state_resolver.cc',
@@ -453,12 +432,6 @@
       'dbus/shill_service_client_unittest.cc',
       'dbus/shill_third_party_vpn_driver_client_unittest.cc',
       'disks/disk_mount_manager_unittest.cc',
-      'ime/component_extension_ime_manager_unittest.cc',
-      'ime/composition_text_unittest.cc',
-      'ime/extension_ime_util_unittest.cc',
-      'ime/ime_keyboard_x11_unittest.cc',
-      'ime/input_method_manager.h',
-      'ime/input_method_whitelist_unittest.cc',
       'login/auth/key_unittest.cc',
       'login/login_state_unittest.cc',
       'network/auto_connect_handler_unittest.cc',
@@ -525,20 +498,6 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [ '<@(chromeos_sources)' ],
-      'conditions': [
-        ['use_x11 == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:x11',
-            '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-        }, {
-          # use_x11 == 0
-          'sources!': [
-            'ime/keyboard_controller.cc',
-            'ime/ime_keyboard.h',
-          ],
-        }],
-      ],
     },
     {
       # GN version: //chromeos:test_support
@@ -579,8 +538,6 @@
         'dbus/services/service_provider_test_helper.h',
         'disks/mock_disk_mount_manager.cc',
         'disks/mock_disk_mount_manager.h',
-        'ime/mock_component_extension_ime_manager_delegate.cc',
-        'ime/mock_component_extension_ime_manager_delegate.h',
         'login/auth/fake_extended_authenticator.cc',
         'login/auth/fake_extended_authenticator.h',
         'login/auth/mock_auth_attempt_state_resolver.cc',
@@ -630,8 +587,6 @@
         'dbus/fake_shill_manager_client.h',
         'dbus/fake_update_engine_client.cc',
         'dbus/fake_update_engine_client.h',
-        'ime/fake_input_method_delegate.cc',
-        'ime/fake_input_method_delegate.h',
       ],
       'include_dirs': [
         '..',
@@ -671,11 +626,6 @@
           ],
           },
         ],
-        ['use_x11 == 1', {
-          'dependencies': [
-            '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-        }]
       ],
     },
     {

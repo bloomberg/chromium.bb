@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/ime_keyboard_x11.h"
+#include "ui/base/ime/chromeos/ime_keyboard_x11.h"
+
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+
+#include "ui/gfx/x/x11_types.h"
 
 namespace chromeos {
 namespace input_method {
@@ -293,7 +298,9 @@ bool ImeKeyboard::CheckLayoutNameForTesting(const std::string& layout_name) {
 }
 
 // static
-ImeKeyboard* ImeKeyboard::Create() { return new ImeKeyboardX11(); }
+ImeKeyboard* ImeKeyboard::Create() {
+  return new ImeKeyboardX11();
+}
 
 }  // namespace input_method
 }  // namespace chromeos

@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
 namespace options {

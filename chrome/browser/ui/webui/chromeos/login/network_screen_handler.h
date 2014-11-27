@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/input_method_manager.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/gfx/point.h"
 
 namespace chromeos {

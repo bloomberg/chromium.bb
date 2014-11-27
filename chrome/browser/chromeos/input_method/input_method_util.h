@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/ime/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
 namespace input_method {

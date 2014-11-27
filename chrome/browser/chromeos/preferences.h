@@ -13,8 +13,8 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
-#include "chromeos/ime/input_method_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 
 class PrefRegistrySimple;
 class PrefService;

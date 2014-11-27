@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_INPUT_METHOD_MANAGER_H_
-#define CHROMEOS_IME_INPUT_METHOD_MANAGER_H_
+#ifndef UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_
+#define UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/ime/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ui_base_export.h"
 
 class Profile;
 
@@ -34,7 +34,7 @@ class ImeKeyboard;
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
 // InputMethodManager::Get().
-class CHROMEOS_EXPORT InputMethodManager {
+class UI_BASE_EXPORT InputMethodManager {
  public:
   enum UISessionState {
     STATE_LOGIN_SCREEN = 0,
@@ -173,16 +173,16 @@ class CHROMEOS_EXPORT InputMethodManager {
 
   // Gets the global instance of InputMethodManager. Initialize() must be called
   // first.
-  static CHROMEOS_EXPORT InputMethodManager* Get();
+  static UI_BASE_EXPORT InputMethodManager* Get();
 
   // Sets the global instance. |instance| will be owned by the internal pointer
   // and deleted by Shutdown().
   // TODO(nona): Instanciate InputMethodManagerImpl inside of this function once
   //             crbug.com/164375 is fixed.
-  static CHROMEOS_EXPORT void Initialize(InputMethodManager* instance);
+  static UI_BASE_EXPORT void Initialize(InputMethodManager* instance);
 
   // Destroy the global instance.
-  static CHROMEOS_EXPORT void Shutdown();
+  static UI_BASE_EXPORT void Shutdown();
 
   // Get the current UI session state (e.g. login screen, lock screen, etc.).
   virtual UISessionState GetUISessionState() = 0;
@@ -239,4 +239,4 @@ class CHROMEOS_EXPORT InputMethodManager {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_INPUT_METHOD_MANAGER_H_
+#endif  // UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_

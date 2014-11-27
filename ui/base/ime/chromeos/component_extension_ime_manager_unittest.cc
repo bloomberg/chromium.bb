@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 
 namespace chromeos {
 namespace input_method {
