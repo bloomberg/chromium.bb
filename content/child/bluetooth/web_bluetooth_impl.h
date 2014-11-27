@@ -26,12 +26,8 @@ class CONTENT_EXPORT WebBluetoothImpl
   ~WebBluetoothImpl();
 
   // blink::WebBluetooth interface:
-  // TODO(scheib): Remove void version after crrev.com/715613005 lands.
   void requestDevice(
-      blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks) override;
-  void requestDevice(
-      blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>*
-          callbacks) override;
+      blink::WebBluetoothRequestDeviceCallbacks* callbacks) override;
 
   // Testing interface:
   void SetBluetoothMockDataSetForTesting(const std::string& name);

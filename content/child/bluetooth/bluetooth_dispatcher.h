@@ -46,11 +46,7 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void OnMessageReceived(const IPC::Message& msg);
 
   // Corresponding to WebBluetoothImpl methods.
-  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
-  void requestDevice(
-      blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks);
-  void requestDevice(blink::WebCallbacks<blink::WebBluetoothDevice,
-                                         blink::WebBluetoothError>* callbacks);
+  void requestDevice(blink::WebBluetoothRequestDeviceCallbacks* callbacks);
   void SetBluetoothMockDataSetForTesting(const std::string& name);
 
   // WorkerTaskRunner::Observer implementation.
@@ -69,12 +65,8 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
 
   // Tracks requests sent to browser to match replies with callbacks.
   // Owns callback objects.
-  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
-  IDMap<blink::WebCallbacks<void, blink::WebBluetoothError>, IDMapOwnPointer>
-      pending_requests_old_;
-  IDMap<
-      blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>,
-      IDMapOwnPointer> pending_requests_;
+  IDMap<blink::WebBluetoothRequestDeviceCallbacks, IDMapOwnPointer>
+      pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

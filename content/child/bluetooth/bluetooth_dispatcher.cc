@@ -86,16 +86,8 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(handled) << "Unhandled message:" << msg.type();
 }
 
-// TODO(scheib): Remove old void version after crrev.com/715613005 lands.
 void BluetoothDispatcher::requestDevice(
-    blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks) {
-  int request_id = pending_requests_old_.Add(callbacks);
-  Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id));
-}
-
-void BluetoothDispatcher::requestDevice(
-    blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>*
-        callbacks) {
+    blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
   int request_id = pending_requests_.Add(callbacks);
   Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id));
 }
@@ -113,33 +105,19 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
     int thread_id,
     int request_id,
     const std::string& device_instance_id) {
-  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
-  if (pending_requests_old_.Lookup(request_id)) {
-    pending_requests_old_.Lookup(request_id)->onSuccess();
-    pending_requests_old_.Remove(request_id);
-  } else {
-    pending_requests_.Lookup(request_id)
-        ->onSuccess(
-            new WebBluetoothDevice(WebString::fromUTF8(device_instance_id)));
-    pending_requests_.Remove(request_id);
-  }
+  pending_requests_.Lookup(request_id)
+      ->onSuccess(
+          new WebBluetoothDevice(WebString::fromUTF8(device_instance_id)));
+  pending_requests_.Remove(request_id);
 }
 
 void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
                                                int request_id,
                                                BluetoothError error_type) {
-  // TODO(scheib): Remove old void version after crrev.com/715613005 lands.
-  if (pending_requests_old_.Lookup(request_id)) {
-    pending_requests_old_.Lookup(request_id)
-        ->onError(new WebBluetoothError(
-            WebBluetoothErrorFromBluetoothError(error_type), ""));
-    pending_requests_old_.Remove(request_id);
-  } else {
-    pending_requests_.Lookup(request_id)
-        ->onError(new WebBluetoothError(
-            WebBluetoothErrorFromBluetoothError(error_type), ""));
-    pending_requests_.Remove(request_id);
-  }
+  pending_requests_.Lookup(request_id)
+      ->onError(new WebBluetoothError(
+          WebBluetoothErrorFromBluetoothError(error_type), ""));
+  pending_requests_.Remove(request_id);
 }
 
 }  // namespace content

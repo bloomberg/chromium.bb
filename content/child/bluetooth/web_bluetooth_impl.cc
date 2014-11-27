@@ -16,16 +16,8 @@ WebBluetoothImpl::WebBluetoothImpl(ThreadSafeSender* thread_safe_sender)
 WebBluetoothImpl::~WebBluetoothImpl() {
 }
 
-// TODO(scheib): Remove old void version after crrev.com/715613005 lands.
 void WebBluetoothImpl::requestDevice(
-    blink::WebCallbacks<void, blink::WebBluetoothError>* callbacks) {
-  GetDispatcher()->requestDevice(callbacks);
-}
-
-// TODO(scheib): Remove old void version after crrev.com/715613005 lands.
-void WebBluetoothImpl::requestDevice(
-    blink::WebCallbacks<blink::WebBluetoothDevice, blink::WebBluetoothError>*
-        callbacks) {
+    blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
   GetDispatcher()->requestDevice(callbacks);
 }
 
