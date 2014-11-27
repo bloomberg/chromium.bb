@@ -1051,8 +1051,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
-    part_of_all = (qualified_target in needed_targets and
-                   not int(spec.get('suppress_wildcard', False)))
+    part_of_all = qualified_target in needed_targets
     if limit_to_target_all and not part_of_all:
       continue
 
