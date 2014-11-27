@@ -155,11 +155,20 @@ function registerInputviewApi() {
     SHIFT: 2
   };
 
-  // Mapping from keyName to keyCode
+  // Mapping from keyName to keyCode (see ui::KeyEvent).
   var nonAlphaNumericKeycodes = {
+    Backquote: 0xC0,
+    Backslash: 0xDC,
     Backspace: 0x08,
-    Tab: 0x09,
+    BracketLeft: 0xDB,
+    BracketRight: 0xDD,
+    Comma: 0xBC,
     Enter: 0x0D,
+    Period: 0xBE,
+    Quote: 0xBF,
+    Semicolon: 0xBA,
+    Slash: 0xBF,
+    Tab: 0x09
   };
 
   /**
@@ -252,16 +261,16 @@ function registerInputviewApi() {
       if (data.altKey)
         event.modifers |= Modifier.ALT;
       if (data.ctrlKey)
-        event.modifiers |= Modifier.CTRL;
+        event.modifiers |= Modifier.CONTROL;
       if (data.shiftKey || data.capsLock)
         event.modifiers |= Modifier.SHIFT;
+
       chrome.virtualKeyboardPrivate.sendKeyEvent(event, logIfError_);
     });
   }
 
   /**
-   * Computes keyCodes based on the US-101 keyboard for common keys.  Required
-   * to properly handle special keys such as backspace.
+   * Computes keyCodes for use with ui::KeyEvent.
    * @param {string} keyChar Character being typed.
    * @param {string} keyName w3c name of the character.
    */
@@ -269,6 +278,15 @@ function registerInputviewApi() {
     var keyCode = nonAlphaNumericKeycodes[keyName];
     if (keyCode)
       return keyCode;
+
+    var match = /Key([A-Z])/.exec(keyName);
+    if (match)
+      return match[1].charCodeAt(0);
+
+    match = /Digit([0-9])/.exec(keyName);
+    if (match)
+      return match[1].charCodeAt(0);
+
     if (keyChar.length == 1) {
       if (keyChar >= 'a' && keyChar <= 'z')
         return keyChar.charCodeAt(0) - 32;
