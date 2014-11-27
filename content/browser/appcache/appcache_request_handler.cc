@@ -15,11 +15,9 @@
 namespace content {
 
 AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
-                                               ResourceType resource_type,
-                                               bool should_reset_appcache)
+                                               ResourceType resource_type)
     : host_(host),
       resource_type_(resource_type),
-      should_reset_appcache_(should_reset_appcache),
       is_waiting_for_cache_selection_(false),
       found_group_id_(0),
       found_cache_id_(0),
@@ -290,13 +288,6 @@ void AppCacheRequestHandler::OnMainResponseFound(
       DCHECK_EQ(resource_type_, RESOURCE_TYPE_SHARED_WORKER);
       host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
     }
-    DeliverNetworkResponse();
-    return;
-  }
-
-  if (should_reset_appcache_ && !manifest_url.is_empty()) {
-    host_->service()->DeleteAppCacheGroup(
-        manifest_url, net::CompletionCallback());
     DeliverNetworkResponse();
     return;
   }

@@ -139,7 +139,6 @@ static ResourceHostMsg_Request CreateResourceRequest(const char* method,
   request.request_context = 0;
   request.appcache_host_id = kAppCacheNoHostId;
   request.download_to_file = false;
-  request.should_reset_appcache = false;
   request.is_main_frame = true;
   request.parent_is_main_frame = false;
   request.parent_render_frame_id = -1;
