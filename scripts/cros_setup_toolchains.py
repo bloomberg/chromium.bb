@@ -835,8 +835,9 @@ def _ProcessBinutilsConfig(target, output_dir):
   else:
     assert len(srcpath) == 1, '%s: did not match exactly 1 path' % globpath
     gold_supported = True
+    srcpath = srcpath[0]
 
-  srcpath = srcpath[0][len(output_dir):]
+  srcpath = srcpath[len(output_dir):]
   gccpath = os.path.join('/usr', 'libexec', 'gcc')
   for prog in os.listdir(output_dir + srcpath):
     # Skip binaries already wrapped.
