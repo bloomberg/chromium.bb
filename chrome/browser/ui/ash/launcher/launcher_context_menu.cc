@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -176,7 +177,8 @@ void LauncherContextMenu::Init() {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
-  if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
+  if (ash::ShelfWidget::ShelfAlignmentAllowed() &&
+      !ash::Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);

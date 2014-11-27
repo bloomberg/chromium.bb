@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,9 +90,13 @@ class ASH_EXPORT ShelfLayoutManager
     return auto_hide_behavior_;
   }
 
-  // Sets the alignment. Returns true if the alignment is changed. Otherwise,
-  // returns false.
+  // Sets the alignment. Returns true if the alignment got changed. If nothing
+  // has visually be changed, false will be returned. This can happen if either
+  // the alignment was already set, or the shelf is currently locked and cannot
+  // be changed at this time. In the latter case the change will be performed
+  // once the shelf gets unlocked.
   bool SetAlignment(ShelfAlignment alignment);
+
   // Returns the desired alignment for the current state, either the user's
   // set alignment (alignment_) or SHELF_ALIGNMENT_BOTTOM when the screen
   // is locked.

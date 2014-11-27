@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -710,10 +710,12 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 
   switch (login_status) {
+    case user::LOGGED_IN_LOCKED:
+      // Shelf alignment changes can be requested while being locked, but will
+      // be applied upon unlock.
     case user::LOGGED_IN_USER:
     case user::LOGGED_IN_OWNER:
       return true;
-    case user::LOGGED_IN_LOCKED:
     case user::LOGGED_IN_PUBLIC:
     case user::LOGGED_IN_SUPERVISED:
     case user::LOGGED_IN_GUEST:

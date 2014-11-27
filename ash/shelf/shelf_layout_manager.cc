@@ -251,9 +251,15 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return false;
 
-  // This should not be called during the lock screen transitions.
-  DCHECK(!Shell::GetInstance()->session_state_delegate()->IsScreenLocked());
   alignment_ = alignment;
+  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+    // The shelf will itself move to the bottom while locked. If a request is
+    // sent to move while being locked, we postpone the move untill the lock
+    // screen goes away.
+    return false;
+  }
+
+  // This should not be called during the lock screen transitions.
   shelf_->SetAlignment(alignment);
   LayoutShelf();
   return true;
