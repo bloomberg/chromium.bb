@@ -116,8 +116,8 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
     }.bind(this)
   };
   webViewEvent.menu = menu;
-  var webviewNode = this.webviewNode;
-  var defaultPrevented = !webviewNode.dispatchEvent(webViewEvent);
+  var element = this.element;
+  var defaultPrevented = !element.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -168,7 +168,7 @@ WebViewImpl.prototype.setupExperimentalContextMenus = function() {
 
   // Expose <webview>.contextMenus object.
   Object.defineProperty(
-      this.webviewNode,
+      this.element,
       'contextMenus',
       {
         get: createContextMenus(),

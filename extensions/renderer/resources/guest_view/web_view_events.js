@@ -265,7 +265,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
     );
   }
 
-  this.webViewImpl.setRequestPropertyOnWebViewNode(request);
+  this.webViewImpl.setRequestPropertyOnWebViewElement(request);
 };
 
 WebViewEvents.prototype.getEvents = function() {

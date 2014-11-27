@@ -542,6 +542,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
   resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
+  resources.push_back(std::make_pair("guestViewContainer",
+                                     IDR_GUEST_VIEW_CONTAINER_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
   resources.push_back(std::make_pair("webViewApiMethods",
                                      IDR_WEB_VIEW_API_METHODS_JS));
@@ -1069,13 +1071,13 @@ void Dispatcher::UpdateOriginPermissions(
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
-  blink::WebCustomElement::addEmbedderCustomElementName("appplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("appview");
-  blink::WebCustomElement::addEmbedderCustomElementName("browserplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("appviewbrowserplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("extensionoptions");
   blink::WebCustomElement::addEmbedderCustomElementName(
-      "extensionoptionsplugin");
+      "extensionoptionsbrowserplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
+  blink::WebCustomElement::addEmbedderCustomElementName("webviewbrowserplugin");
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {

@@ -3,22 +3,42 @@
 // found in the LICENSE file.
 
 var DocumentNatives = requireNative('document_natives');
+var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
 var guestViewInternalNatives = requireNative('guest_view_internal');
 
-function AppViewImpl(appviewNode) {
-  privates(appviewNode).internal = this;
-  this.appviewNode = appviewNode;
-  this.elementAttached = false;
+function AppViewImpl(appviewElement) {
+  GuestViewContainer.call(this, appviewElement)
+
   this.pendingGuestCreation = false;
 
-  this.browserPluginNode = this.createBrowserPluginNode();
-  var shadowRoot = this.appviewNode.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginNode);
+  var shadowRoot = this.element.createShadowRoot();
+  shadowRoot.appendChild(this.browserPluginElement);
   this.viewInstanceId = IdGenerator.GetNextId();
 }
+
+AppViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
+
+AppViewImpl.VIEW_TYPE = 'AppView';
+
+// Add extra functionality to |this.element|.
+AppViewImpl.setupElement = function(proto) {
+  var apiMethods = [
+    'connect'
+  ];
+
+  // Forward proto.foo* method calls to AppViewImpl.foo*.
+  GuestViewContainer.forwardApiMethods(proto, apiMethods);
+}
+
+AppViewImpl.prototype.onElementDetached = function() {
+  if (this.guestInstanceId) {
+    GuestViewInternal.destroyGuest(this.guestInstanceId);
+    this.guestInstanceId = undefined;
+  }
+};
 
 AppViewImpl.prototype.getErrorNode = function() {
   if (!this.errorNode) {
@@ -29,17 +49,9 @@ AppViewImpl.prototype.getErrorNode = function() {
     this.errorNode.style.top = '0px';
     this.errorNode.style.width = '100%';
     this.errorNode.style.height = '100%';
-    this.appviewNode.shadowRoot.appendChild(this.errorNode);
+    this.element.shadowRoot.appendChild(this.errorNode);
   }
   return this.errorNode;
-};
-
-AppViewImpl.prototype.createBrowserPluginNode = function() {
-  // We create BrowserPlugin as a custom element in order to observe changes
-  // to attributes synchronously.
-  var browserPluginNode = new AppViewImpl.BrowserPlugin();
-  privates(browserPluginNode).internal = this;
-  return browserPluginNode;
 };
 
 AppViewImpl.prototype.connect = function(app, data, callback) {
@@ -63,7 +75,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
         guestInstanceId = 0;
       }
       if (!guestInstanceId) {
-        this.browserPluginNode.style.visibility = 'hidden';
+        this.browserPluginElement.style.visibility = 'hidden';
         var errorMsg = 'Unable to connect to app "' + app + '".';
         window.console.warn(errorMsg);
         this.getErrorNode().innerText = errorMsg;
@@ -89,7 +101,7 @@ AppViewImpl.prototype.attachWindow = function(guestInstanceId) {
   var params = {
     'instanceId': this.viewInstanceId
   };
-  this.browserPluginNode.style.visibility = 'visible';
+  this.browserPluginElement.style.visibility = 'visible';
   return guestViewInternalNatives.AttachGuest(
       this.internalInstanceId,
       guestInstanceId,
@@ -99,7 +111,7 @@ AppViewImpl.prototype.attachWindow = function(guestInstanceId) {
 AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    this.browserPluginNode.removeAttribute('internalinstanceid');
+    this.browserPluginElement.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
 
     if (!!this.guestInstanceId && this.guestInstanceId != 0) {
@@ -115,91 +127,4 @@ AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-AppViewImpl.prototype.reset = function() {
-  if (this.guestInstanceId) {
-    GuestViewInternal.destroyGuest(this.guestInstanceId);
-    this.guestInstanceId = undefined;
-  }
-};
-
-function registerBrowserPluginElement() {
-  var proto = Object.create(HTMLObjectElement.prototype);
-
-  proto.createdCallback = function() {
-    this.setAttribute('type', 'application/browser-plugin');
-    this.style.width = '100%';
-    this.style.height = '100%';
-  };
-
-  proto.attachedCallback = function() {
-    // Load the plugin immediately.
-    var unused = this.nonExistentAttribute;
-  };
-
-  proto.attributeChangedCallback = function(name, oldValue, newValue) {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
-  };
-
-  AppViewImpl.BrowserPlugin =
-      DocumentNatives.RegisterElement('appplugin', {extends: 'object',
-                                                    prototype: proto});
-
-  delete proto.createdCallback;
-  delete proto.attachedCallback;
-  delete proto.detachedCallback;
-  delete proto.attributeChangedCallback;
-}
-
-function registerAppViewElement() {
-  var proto = Object.create(HTMLElement.prototype);
-
-  proto.createdCallback = function() {
-    new AppViewImpl(this);
-  };
-
-  proto.attachedCallback = function() {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.elementAttached = true;
-  };
-
-  proto.detachedCallback = function() {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.elementAttached = false;
-    internal.reset();
-  };
-
-  proto.connect = function() {
-    var internal = privates(this).internal;
-    $Function.apply(internal.connect, internal, arguments);
-  }
-
-  window.AppView =
-      DocumentNatives.RegisterElement('appview', {prototype: proto});
-
-  // Delete the callbacks so developers cannot call them and produce unexpected
-  // behavior.
-  delete proto.createdCallback;
-  delete proto.attachedCallback;
-  delete proto.detachedCallback;
-  delete proto.attributeChangedCallback;
-}
-
-var useCapture = true;
-window.addEventListener('readystatechange', function listener(event) {
-  if (document.readyState == 'loading')
-    return;
-
-  registerBrowserPluginElement();
-  registerAppViewElement();
-  window.removeEventListener(event.type, listener, useCapture);
-}, useCapture);
+GuestViewContainer.listenForReadyStateChange(AppViewImpl);

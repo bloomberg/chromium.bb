@@ -24,24 +24,24 @@ function WebViewAttribute(name, webViewImpl) {
 
 // Retrieves and returns the attribute's value.
 WebViewAttribute.prototype.getValue = function() {
-  return this.webViewImpl.webviewNode.getAttribute(this.name) || '';
+  return this.webViewImpl.element.getAttribute(this.name) || '';
 };
 
 // Sets the attribute's value.
 WebViewAttribute.prototype.setValue = function(value) {
-  this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
+  this.webViewImpl.element.setAttribute(this.name, value || '');
 };
 
 // Changes the attribute's value without triggering its mutation handler.
 WebViewAttribute.prototype.setValueIgnoreMutation = function(value) {
   this.ignoreMutation = true;
-  this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
+  this.webViewImpl.element.setAttribute(this.name, value || '');
   this.ignoreMutation = false;
 }
 
 // Defines this attribute as a property on the webview node.
 WebViewAttribute.prototype.defineProperty = function() {
-  Object.defineProperty(this.webViewImpl.webviewNode, this.name, {
+  Object.defineProperty(this.webViewImpl.element, this.name, {
     get: function() {
       return this.getValue();
     }.bind(this),
@@ -63,14 +63,14 @@ function BooleanAttribute(name, webViewImpl) {
 BooleanAttribute.prototype.__proto__ = WebViewAttribute.prototype;
 
 BooleanAttribute.prototype.getValue = function() {
-  return this.webViewImpl.webviewNode.hasAttribute(this.name);
+  return this.webViewImpl.element.hasAttribute(this.name);
 };
 
 BooleanAttribute.prototype.setValue = function(value) {
   if (!value) {
-    this.webViewImpl.webviewNode.removeAttribute(this.name);
+    this.webViewImpl.element.removeAttribute(this.name);
   } else {
-    this.webViewImpl.webviewNode.setAttribute(this.name, '');
+    this.webViewImpl.element.setAttribute(this.name, '');
   }
 };
 
@@ -102,7 +102,7 @@ function AutosizeDimensionAttribute(name, webViewImpl) {
 AutosizeDimensionAttribute.prototype.__proto__ = WebViewAttribute.prototype;
 
 AutosizeDimensionAttribute.prototype.getValue = function() {
-  return parseInt(this.webViewImpl.webviewNode.getAttribute(this.name)) || 0;
+  return parseInt(this.webViewImpl.element.getAttribute(this.name)) || 0;
 };
 
 AutosizeDimensionAttribute.prototype.handleMutation = function(
@@ -196,7 +196,7 @@ SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
   // handle this mutation.
   this.observer.takeRecords();
   this.ignoreMutation = true;
-  this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
+  this.webViewImpl.element.setAttribute(this.name, value || '');
   this.ignoreMutation = false;
 }
 
@@ -235,7 +235,7 @@ SrcAttribute.prototype.setupMutationObserver =
     attributeOldValue: true,
     attributeFilter: [this.name]
   };
-  this.observer.observe(this.webViewImpl.webviewNode, params);
+  this.observer.observe(this.webViewImpl.element, params);
 };
 
 // -----------------------------------------------------------------------------

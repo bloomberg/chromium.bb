@@ -8,48 +8,78 @@
 
 var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
+var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
-var guestViewInternalNatives = requireNative('guest_view_internal');
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
-// Represents the internal state of the WebView node.
-function WebViewImpl(webviewNode) {
-  privates(webviewNode).internal = this;
-  this.webviewNode = webviewNode;
-  this.guest = new GuestView('webview');
+// Represents the internal state of <webview>.
+function WebViewImpl(webviewElement) {
+  GuestViewContainer.call(this, webviewElement)
 
+  this.guest = new GuestView('webview');
   this.beforeFirstNavigation = true;
+  this.viewInstanceId = IdGenerator.GetNextId();
+
+  this.setupWebViewAttributes();
+  this.setupFocusPropagation();
+  this.setupElementProperties();
 
   // on* Event handlers.
   this.on = {};
-
-  this.browserPluginNode = this.createBrowserPluginNode();
-  var shadowRoot = this.webviewNode.createShadowRoot();
-  this.setupWebViewAttributes();
-  this.setupFocusPropagation();
-  this.setupWebviewNodeProperties();
-
-  this.viewInstanceId = IdGenerator.GetNextId();
-
   new WebViewEvents(this, this.viewInstanceId);
 
-  shadowRoot.appendChild(this.browserPluginNode);
+  var shadowRoot = this.element.createShadowRoot();
+  shadowRoot.appendChild(this.browserPluginElement);
 }
 
-WebViewImpl.prototype.createBrowserPluginNode = function() {
-  // We create BrowserPlugin as a custom element in order to observe changes
-  // to attributes synchronously.
-  var browserPluginNode = new WebViewImpl.BrowserPlugin();
-  privates(browserPluginNode).internal = this;
-  return browserPluginNode;
+WebViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
+
+WebViewImpl.VIEW_TYPE = 'WebView';
+
+// Add extra functionality to |this.element|.
+WebViewImpl.setupElement = function(proto) {
+  // Public-facing API methods.
+  var apiMethods = WebViewImpl.getApiMethods();
+
+  // Add the experimental API methods, if available.
+  var experimentalApiMethods =
+      WebViewImpl.maybeGetExperimentalApiMethods();
+  apiMethods = $Array.concat(apiMethods, experimentalApiMethods);
+
+  // Create default implementations for undefined API methods.
+  var createDefaultApiMethod = function(m) {
+    return function(var_args) {
+      if (!this.guest.getId()) {window.console.log(this);
+        return false;
+      }
+      var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
+      $Function.apply(WebViewInternal[m], null, args);
+      return true;
+    };
+  };
+  for (var i = 0; i != apiMethods.length; ++i) {
+    if (WebViewImpl.prototype[apiMethods[i]] == undefined) {
+      WebViewImpl.prototype[apiMethods[i]] =
+          createDefaultApiMethod(apiMethods[i]);
+    }
+  }
+
+  // Forward proto.foo* method calls to WebViewImpl.foo*.
+  GuestViewContainer.forwardApiMethods(proto, apiMethods);
 };
 
-// Resets some state upon reattaching <webview> element to the DOM.
-WebViewImpl.prototype.reset = function() {
+// Initiates navigation once the <webview> element is attached to the DOM.
+WebViewImpl.prototype.onElementAttached = function() {
+  this.parseSrcAttribute();
+};
+
+// Resets some state upon detaching <webview> element from the DOM.
+WebViewImpl.prototype.onElementDetached = function() {
   // If the guest's ID is defined then the <webview> has navigated and has
   // already picked up a partition ID. Thus, we need to reset the initialization
   // state. However, it may be the case that beforeFirstNavigation is false BUT
@@ -67,9 +97,9 @@ WebViewImpl.prototype.reset = function() {
 };
 
 // Sets the <webview>.request property.
-WebViewImpl.prototype.setRequestPropertyOnWebViewNode = function(request) {
+WebViewImpl.prototype.setRequestPropertyOnWebViewElement = function(request) {
   Object.defineProperty(
-      this.webviewNode,
+      this.element,
       'request',
       {
         value: request,
@@ -79,27 +109,27 @@ WebViewImpl.prototype.setRequestPropertyOnWebViewNode = function(request) {
 };
 
 WebViewImpl.prototype.setupFocusPropagation = function() {
-  if (!this.webviewNode.hasAttribute('tabIndex')) {
+  if (!this.element.hasAttribute('tabIndex')) {
     // <webview> needs a tabIndex in order to be focusable.
     // TODO(fsamuel): It would be nice to avoid exposing a tabIndex attribute
     // to allow <webview> to be focusable.
     // See http://crbug.com/231664.
-    this.webviewNode.setAttribute('tabIndex', -1);
+    this.element.setAttribute('tabIndex', -1);
   }
-  this.webviewNode.addEventListener('focus', function(e) {
+  this.element.addEventListener('focus', function(e) {
     // Focus the BrowserPlugin when the <webview> takes focus.
-    this.browserPluginNode.focus();
+    this.browserPluginElement.focus();
   }.bind(this));
-  this.webviewNode.addEventListener('blur', function(e) {
+  this.element.addEventListener('blur', function(e) {
     // Blur the BrowserPlugin when the <webview> loses focus.
-    this.browserPluginNode.blur();
+    this.browserPluginElement.blur();
   }.bind(this));
 };
 
-WebViewImpl.prototype.setupWebviewNodeProperties = function() {
+WebViewImpl.prototype.setupElementProperties = function() {
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
-  Object.defineProperty(this.webviewNode, 'contentWindow', {
+  Object.defineProperty(this.element, 'contentWindow', {
     get: function() {
       if (this.guest.getContentWindow()) {
         return this.guest.getContentWindow();
@@ -112,12 +142,8 @@ WebViewImpl.prototype.setupWebviewNodeProperties = function() {
   });
 };
 
-// This observer monitors mutations to attributes of the <webview> and
-// updates the BrowserPlugin properties accordingly. In turn, updating
-// a BrowserPlugin property will update the corresponding BrowserPlugin
-// attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
-// details.
-WebViewImpl.prototype.handleWebviewAttributeMutation = function(
+// This observer monitors mutations to attributes of the <webview>.
+WebViewImpl.prototype.handleAttributeMutation = function(
     attributeName, oldValue, newValue) {
   if (!this.attributes[attributeName] ||
       this.attributes[attributeName].ignoreMutation) {
@@ -128,11 +154,11 @@ WebViewImpl.prototype.handleWebviewAttributeMutation = function(
   this.attributes[attributeName].handleMutation(oldValue, newValue);
 };
 
-WebViewImpl.prototype.handleBrowserPluginAttributeMutation =
-    function(attributeName, oldValue, newValue) {
+WebViewImpl.prototype.handleBrowserPluginAttributeMutation = function(
+    attributeName, oldValue, newValue) {
   if (attributeName == WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID &&
       !oldValue && !!newValue) {
-    this.browserPluginNode.removeAttribute(
+    this.browserPluginElement.removeAttribute(
         WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID);
     this.internalInstanceId = parseInt(newValue);
 
@@ -147,10 +173,10 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
   var newWidth = webViewEvent.newWidth;
   var newHeight = webViewEvent.newHeight;
 
-  var node = this.webviewNode;
+  var element = this.element;
 
-  var width = node.offsetWidth;
-  var height = node.offsetHeight;
+  var width = element.offsetWidth;
+  var height = element.offsetHeight;
 
   // Check the current bounds to make sure we do not resize <webview>
   // outside of current constraints.
@@ -171,8 +197,8 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
       newWidth <= maxWidth &&
       newHeight >= minHeight &&
       newHeight <= maxHeight)) {
-    node.style.width = newWidth + 'px';
-    node.style.height = newHeight + 'px';
+    element.style.width = newWidth + 'px';
+    element.style.height = newHeight + 'px';
     // Only fire the DOM event if the size of the <webview> has actually
     // changed.
     this.dispatchEvent(webViewEvent);
@@ -180,13 +206,12 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 };
 
 WebViewImpl.prototype.parseSrcAttribute = function() {
-  if (!this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
+  if (!this.elementAttached ||
+      !this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
       !this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue()) {
     return;
   }
 
-  // TODO(paulmeyer): this is ignoring all src attribute changes while the guest
-  // is being created. The last change to src should probably be handled.
   if (!this.guest.getId()) {
     if (this.beforeFirstNavigation) {
       this.beforeFirstNavigation = false;
@@ -216,30 +241,30 @@ WebViewImpl.prototype.createGuest = function() {
 WebViewImpl.prototype.onFrameNameChanged = function(name) {
   name = name || '';
   if (name === '') {
-    this.webviewNode.removeAttribute(WebViewConstants.ATTRIBUTE_NAME);
+    this.element.removeAttribute(WebViewConstants.ATTRIBUTE_NAME);
   } else {
     this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(name);
   }
 };
 
 WebViewImpl.prototype.dispatchEvent = function(webViewEvent) {
-  return this.webviewNode.dispatchEvent(webViewEvent);
+  return this.element.dispatchEvent(webViewEvent);
 };
 
 // Adds an 'on<event>' property on the webview, which can be used to set/unset
 // an event handler.
 WebViewImpl.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
-  Object.defineProperty(this.webviewNode, propertyName, {
+  Object.defineProperty(this.element, propertyName, {
     get: function() {
       return this.on[propertyName];
     }.bind(this),
     set: function(value) {
       if (this.on[propertyName])
-        this.webviewNode.removeEventListener(eventName, this.on[propertyName]);
+        this.element.removeEventListener(eventName, this.on[propertyName]);
       this.on[propertyName] = value;
       if (value)
-        this.webviewNode.addEventListener(eventName, value);
+        this.element.addEventListener(eventName, value);
     }.bind(this),
     enumerable: true
   });
@@ -314,131 +339,6 @@ WebViewImpl.prototype.executeCode = function(func, args) {
   return true;
 }
 
-// Registers browser plugin <object> custom element.
-function registerBrowserPluginElement() {
-  var proto = Object.create(HTMLObjectElement.prototype);
-
-  proto.createdCallback = function() {
-    this.setAttribute('type', 'application/browser-plugin');
-    this.setAttribute('id', 'browser-plugin-' + IdGenerator.GetNextId());
-    // The <object> node fills in the <webview> container.
-    this.style.width = '100%';
-    this.style.height = '100%';
-  };
-
-  proto.attributeChangedCallback = function(name, oldValue, newValue) {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
-  };
-
-  proto.attachedCallback = function() {
-    // Load the plugin immediately.
-    var unused = this.nonExistentAttribute;
-  };
-
-  WebViewImpl.BrowserPlugin =
-      DocumentNatives.RegisterElement('browserplugin', {extends: 'object',
-                                                        prototype: proto});
-
-  delete proto.createdCallback;
-  delete proto.attachedCallback;
-  delete proto.detachedCallback;
-  delete proto.attributeChangedCallback;
-}
-
-// Registers <webview> custom element.
-function registerWebViewElement() {
-  var proto = Object.create(HTMLElement.prototype);
-
-  proto.createdCallback = function() {
-    new WebViewImpl(this);
-  };
-
-  proto.attributeChangedCallback = function(name, oldValue, newValue) {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.handleWebviewAttributeMutation(name, oldValue, newValue);
-  };
-
-  proto.detachedCallback = function() {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.reset();
-  };
-
-  proto.attachedCallback = function() {
-    var internal = privates(this).internal;
-    if (!internal) {
-      return;
-    }
-    internal.parseSrcAttribute();
-  };
-
-  // Public-facing API methods.
-  var apiMethods = WebViewImpl.getApiMethods();
-
-  // Add the experimental API methods, if available.
-  var experimentalApiMethods =
-      WebViewImpl.maybeGetExperimentalApiMethods();
-  apiMethods = $Array.concat(apiMethods, experimentalApiMethods);
-
-  // Create default implementations for undefined API methods.
-  var createDefaultApiMethod = function(m) {
-    return function(var_args) {
-      if (!this.guest.getId()) {
-        return false;
-      }
-      var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
-      $Function.apply(WebViewInternal[m], null, args);
-      return true;
-    };
-  };
-  for (var i = 0; i != apiMethods.length; ++i) {
-    if (WebViewImpl.prototype[apiMethods[i]] == undefined) {
-      WebViewImpl.prototype[apiMethods[i]] =
-          createDefaultApiMethod(apiMethods[i]);
-    }
-  }
-
-  // Forward proto.foo* method calls to WebViewImpl.foo*.
-  var createProtoHandler = function(m) {
-    return function(var_args) {
-      var internal = privates(this).internal;
-      return $Function.apply(internal[m], internal, arguments);
-    };
-  };
-  for (var i = 0; i != apiMethods.length; ++i) {
-    proto[apiMethods[i]] = createProtoHandler(apiMethods[i]);
-  }
-
-  window.WebView =
-      DocumentNatives.RegisterElement('webview', {prototype: proto});
-
-  // Delete the callbacks so developers cannot call them and produce unexpected
-  // behavior.
-  delete proto.createdCallback;
-  delete proto.attachedCallback;
-  delete proto.detachedCallback;
-  delete proto.attributeChangedCallback;
-}
-
-var useCapture = true;
-window.addEventListener('readystatechange', function listener(event) {
-  if (document.readyState == 'loading')
-    return;
-
-  registerBrowserPluginElement();
-  registerWebViewElement();
-  window.removeEventListener(event.type, listener, useCapture);
-}, useCapture);
-
 // Implemented when the ChromeWebView API is available.
 WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 
@@ -446,6 +346,7 @@ WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
 WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
 
+GuestViewContainer.listenForReadyStateChange(WebViewImpl);
+
 // Exports.
 exports.WebViewImpl = WebViewImpl;
-exports.WebViewInternal = WebViewInternal;
