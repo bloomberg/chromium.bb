@@ -303,15 +303,8 @@ void StartPageService::LoadContents() {
   contents_delegate_.reset(new StartPageWebContentsDelegate());
   contents_->SetDelegate(contents_delegate_.get());
 
-  GURL url(chrome::kChromeUIAppListStartPageURL);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(::switches::kAppListStartPageURL)) {
-    url = GURL(
-        command_line->GetSwitchValueASCII(::switches::kAppListStartPageURL));
-  }
-
   contents_->GetController().LoadURL(
-      url,
+      GURL(chrome::kChromeUIAppListStartPageURL),
       content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());

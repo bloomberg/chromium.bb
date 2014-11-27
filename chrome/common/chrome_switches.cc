@@ -77,9 +77,6 @@ const char kAppId[]                         = "app-id";
 // mode.
 const char kApp[]                           = "app";
 
-// Specifies an URL to use for app list start page.
-const char kAppListStartPageURL[]           = "app-list-start-page-url";
-
 // Overrides the apps checkout URL, which is used to determine when to expose
 // some private APIs.
 const char kAppsCheckoutURL[]               = "apps-checkout-url";
