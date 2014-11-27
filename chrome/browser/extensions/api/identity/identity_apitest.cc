@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_account_reconcilor.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -33,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "components/crx_file/id_util.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -530,7 +532,70 @@ IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
   EXPECT_TRUE(ExpectGetAccounts(only_primary));
 }
 
-class IdentityGetProfileUserInfoFunctionTest : public ExtensionBrowserTest {
+class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    AsyncExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                  base::Bind(&IdentityTestWithSignin::
+                                 OnWillCreateBrowserContextServices,
+                             base::Unretained(this)))
+            .Pass();
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    // Replace the signin manager and token service with fakes. Do this ahead of
+    // creating the browser so that a bunch of classes don't register as
+    // observers and end up needing to unregister when the fake is substituted.
+    SigninManagerFactory::GetInstance()->SetTestingFactory(
+        context, &FakeSigninManagerBase::Build);
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        context, &BuildFakeProfileOAuth2TokenService);
+    AccountReconcilorFactory::GetInstance()->SetTestingFactory(
+        context, &FakeAccountReconcilor::Build);
+  }
+
+  void SetUpOnMainThread() override {
+    AsyncExtensionBrowserTest::SetUpOnMainThread();
+
+    // Grab references to the fake signin manager and token service.
+    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
+        SigninManagerFactory::GetInstance()->GetForProfile(profile()));
+    ASSERT_TRUE(signin_manager_);
+    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
+        ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
+            profile()));
+    ASSERT_TRUE(token_service_);
+  }
+
+ protected:
+  void SignIn(const std::string account_key) {
+#if defined(OS_CHROMEOS)
+    signin_manager_->SetAuthenticatedUsername(account_key);
+#else
+    signin_manager_->SignIn(account_key, "password");
+#endif
+    token_service_->IssueRefreshTokenForUser(account_key, "refresh_token");
+  }
+
+  void SignIn(const std::string& account_key, const std::string& gaia) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    account_tracker->SeedAccountInfo(gaia, account_key);
+    SignIn(account_key);
+  }
+
+  FakeSigninManagerForTesting* signin_manager_;
+  FakeProfileOAuth2TokenService* token_service_;
+
+  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+};
+
+class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
  protected:
   scoped_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
     scoped_refptr<IdentityGetProfileUserInfoFunction> func(
@@ -568,11 +633,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, NotSignedIn) {
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
-  profile()->GetPrefs()
-      ->SetString(prefs::kGoogleServicesUsername, "president@example.com");
-  profile()->GetPrefs()
-      ->SetString(prefs::kGoogleServicesUserAccountId, "12345");
-
+  SignIn("president@example.com", "12345");
   scoped_ptr<api::identity::ProfileUserInfo> info =
       RunGetProfileUserInfoWithEmail();
   EXPECT_EQ("president@example.com", info->email);
@@ -588,67 +649,17 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
                        SignedInNoEmail) {
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   "president@example.com");
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
-                                   "12345");
-
+  SignIn("president@example.com", "12345");
   scoped_ptr<api::identity::ProfileUserInfo> info = RunGetProfileUserInfo();
   EXPECT_TRUE(info->email.empty());
   EXPECT_EQ("12345", info->id);
 }
 
-class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
+class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
  public:
   void SetUpCommandLine(CommandLine* command_line) override {
-    AsyncExtensionBrowserTest::SetUpCommandLine(command_line);
+    IdentityTestWithSignin::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kExtensionsMultiAccount);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    AsyncExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    will_create_browser_context_services_subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                  base::Bind(&GetAuthTokenFunctionTest::
-                                 OnWillCreateBrowserContextServices,
-                             base::Unretained(this)))
-            .Pass();
-  }
-
-  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    // Replace the signin manager and token service with fakes. Do this ahead of
-    // creating the browser so that a bunch of classes don't register as
-    // observers and end up needing to unregister when the fake is substituted.
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &FakeSigninManagerBase::Build);
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeProfileOAuth2TokenService);
-    AccountReconcilorFactory::GetInstance()->SetTestingFactory(
-        context, &FakeAccountReconcilor::Build);
-  }
-
-  void SetUpOnMainThread() override {
-    AsyncExtensionBrowserTest::SetUpOnMainThread();
-
-    // Grab references to the fake signin manager and token service.
-    signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetInstance()->GetForProfile(profile()));
-    ASSERT_TRUE(signin_manager_);
-    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
-        ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
-            profile()));
-    ASSERT_TRUE(token_service_);
-  }
-
-  void SignIn(const std::string account_key) {
-#if defined(OS_CHROMEOS)
-    signin_manager_->SetAuthenticatedUsername(account_key);
-#else
-    signin_manager_->SignIn(account_key, "password");
-#endif
-    token_service_->IssueRefreshTokenForUser(account_key, "refresh_token");
   }
 
   void IssueLoginRefreshTokenForAccount(const std::string account_key) {
@@ -674,9 +685,6 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
     SCOPES = 2,
     AS_COMPONENT = 4
   };
-
-  FakeSigninManagerForTesting* signin_manager_;
-  FakeProfileOAuth2TokenService* token_service_;
 
   ~GetAuthTokenFunctionTest() override {}
 
@@ -744,9 +752,6 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
  private:
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;
-
-  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
