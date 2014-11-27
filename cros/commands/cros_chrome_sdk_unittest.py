@@ -422,8 +422,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
 
-  def testFullVersion(self):
-    """Test full version calculation."""
+  def testFullVersionCaching(self):
+    """Test full version calculation and caching."""
     def RaiseException(*_args, **_kwargs):
       raise Exception('boom')
 
@@ -440,6 +440,14 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
         side_effect=RaiseException)
     self.assertEquals(
         self.FULL_VERSION,
+        self.sdk.GetFullVersion(self.VERSION))
+    # Test that we access GS again if the board is changed.
+    self.sdk.board += '2'
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        output=self.FULL_VERSION + '2')
+    self.assertEquals(
+        self.FULL_VERSION + '2',
         self.sdk.GetFullVersion(self.VERSION))
 
   def testBadVersion(self):

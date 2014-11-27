@@ -263,18 +263,22 @@ class SDKFetcher(object):
     return target, target != current
 
   def GetFullVersion(self, version):
-    """Add the release branch to a ChromeOS platform version.
+    """Add the release branch and build number to a ChromeOS platform version.
+
+    This will specify where you can get the latest build for the given version
+    for the current board.
 
     Args:
       version: A ChromeOS platform number of the form XXXX.XX.XX, i.e.,
         3918.0.0.
 
     Returns:
-      The version with release branch prepended.  I.e., R28-3918.0.0.
+      The version with release branch and build number added, as needed. E.g.
+      R28-3918.0.0-b1234.
     """
     assert not version.startswith('R')
 
-    with self.misc_cache.Lookup(('full-version', version)) as ref:
+    with self.misc_cache.Lookup(('full-version', self.board, version)) as ref:
       if ref.Exists(lock=True):
         return osutils.ReadFile(ref.path).strip()
       else:
