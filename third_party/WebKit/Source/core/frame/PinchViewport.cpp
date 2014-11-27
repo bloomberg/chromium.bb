@@ -35,6 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -215,6 +216,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
         Document* document = mainFrame()->document();
         document->enqueueScrollEventForNode(document);
 
+        mainFrame()->loader().client()->didChangeScrollOffset();
         valuesChanged = true;
     }
 

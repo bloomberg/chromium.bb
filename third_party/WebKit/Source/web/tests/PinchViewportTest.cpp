@@ -897,6 +897,7 @@ TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
 class MockWebFrameClient : public WebFrameClient {
 public:
     MOCK_METHOD1(showContextMenu, void(const WebContextMenuData&));
+    MOCK_METHOD1(didChangeScrollOffset, void(WebLocalFrame*));
 };
 
 MATCHER_P2(ContextMenuAtLocation, x, y,
@@ -956,6 +957,39 @@ TEST_F(PinchViewportTest, TestContextMenuShownInCorrectLocation)
     mouseDownEvent.button = WebMouseEvent::ButtonRight;
     webViewImpl()->handleInputEvent(mouseDownEvent);
     webViewImpl()->handleInputEvent(mouseUpEvent);
+
+    // Reset the old client so destruction can occur naturally.
+    webViewImpl()->mainFrameImpl()->setClient(oldClient);
+}
+
+// Test that the client is notified if page scroll events.
+TEST_F(PinchViewportTest, TestClientNotifiedOfScrollEvents)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(200, 300));
+
+    registerMockedHttpURLLoad("200-by-300.html");
+    navigateTo(m_baseURL + "200-by-300.html");
+
+    WebFrameClient* oldClient = webViewImpl()->mainFrameImpl()->client();
+    MockWebFrameClient mockWebFrameClient;
+    webViewImpl()->mainFrameImpl()->setClient(&mockWebFrameClient);
+
+    webViewImpl()->setPageScaleFactor(2);
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+
+    EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
+    pinchViewport.setLocation(FloatPoint(60, 80));
+    Mock::VerifyAndClearExpectations(&mockWebFrameClient);
+
+    // Scroll vertically.
+    EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
+    pinchViewport.setLocation(FloatPoint(60, 90));
+    Mock::VerifyAndClearExpectations(&mockWebFrameClient);
+
+    // Scroll horizontally.
+    EXPECT_CALL(mockWebFrameClient, didChangeScrollOffset(_));
+    pinchViewport.setLocation(FloatPoint(70, 90));
 
     // Reset the old client so destruction can occur naturally.
     webViewImpl()->mainFrameImpl()->setClient(oldClient);
