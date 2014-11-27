@@ -983,6 +983,9 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
+    assert isinstance(property_name, basestring), (
+        "property_name is not a string: %r" % property_name)
+
     cache_key = '_prop:' + property_name
     if cache and cache_key in self._cache:
       return self._cache[cache_key]
@@ -1016,6 +1019,10 @@ class DeviceUtils(object):
         set on the device (e.g. because it is not rooted).
       CommandTimeoutError on timeout.
     """
+    assert isinstance(property_name, basestring), (
+        "property_name is not a string: %r" % property_name)
+    assert isinstance(value, basestring), "value is not a string: %r" % value
+
     self.RunShellCommand(['setprop', property_name, value], check_return=True)
     if property_name in self._cache:
       del self._cache[property_name]
